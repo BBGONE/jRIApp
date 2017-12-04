@@ -91,11 +91,18 @@ class _ObjectEvents extends ObjectEvents {
             // when already is ready, immediately raise the event
             utils.queue.enque(() => { handler.apply(self, [self, {}]); });
         } else {
+            // subscribe to the event
             super.on(name, handler, nmspace, context, priority);
         }
     }
 }
 
+/**
+  * This class  has nothing to do with the twitter bootstrap
+  * it is used as the Root object of the JRIApp framework
+  * it is created when this module is loaded and is a Singleton object
+  * its lifetime spans the lifetime of the HTML page
+*/
 export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     public static _initFramework() {
         dom.ready(() => {

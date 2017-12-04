@@ -12,21 +12,26 @@ import { EventHelper, IEventList } from "./utils/eventhelper";
 
 const checks = Checks, coreUtils = CoreUtils,
     evHelper = EventHelper, sys = SysUtils, signature = { signature: "BaseObject" };
-//can be used in external IBaseObject implementations
+
+//it can be used in external IBaseObject implementations
 export const objSignature: object = signature;
 
 sys._isBaseObj = function (obj: any): boolean {
     return (!!obj && obj.__objSig === signature);
 };
 
-const enum OBJ_EVENTS {
+export const enum ObjState { None = 0, Disposing = 1, Disposed = 2 }
+
+export const enum OBJ_EVENTS {
     error = "error",
-    destroyed = "destroyed"
+    disposed = "disposed"
 }
 
-const enum ObjState { None = 0, Disposing = 1, Disposed = 2 }
+export function createObjectEvents(owner: IBaseObject): IObjectEvents {
+    return new ObjectEvents(owner);
+}
 
-export class DummyEvents implements IObjectEvents {
+class DummyEvents implements IObjectEvents {
     canRaise(name: string): boolean {
         return false;
     }
@@ -49,10 +54,10 @@ export class DummyEvents implements IObjectEvents {
     offProp(prop?: string, nmspace?: string): void {
     }
     addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void {
-        this.on(OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
+        this.on(OBJ_EVENTS.disposed, handler, nmspace, context, priority);
     }
     offOnDisposed(nmspace?: string): void {
-        this.off(OBJ_EVENTS.destroyed, nmspace);
+        this.off(OBJ_EVENTS.disposed, nmspace);
     }
     addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void {
         this.on(OBJ_EVENTS.error, handler, nmspace, context, priority);
@@ -134,10 +139,10 @@ export class ObjectEvents implements IObjectEvents {
         }
     }
     addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void {
-        this.on(OBJ_EVENTS.destroyed, handler, nmspace, context, priority);
+        this.on(OBJ_EVENTS.disposed, handler, nmspace, context, priority);
     }
     offOnDisposed(nmspace?: string): void {
-        this.off(OBJ_EVENTS.destroyed, nmspace);
+        this.off(OBJ_EVENTS.disposed, nmspace);
     }
     addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void {
         this.on(OBJ_EVENTS.error, handler, nmspace, context, priority);
@@ -150,7 +155,7 @@ export class ObjectEvents implements IObjectEvents {
     }
 }
 
-const dummyEvents = new DummyEvents();
+export const dummyEvents: IObjectEvents = new DummyEvents();
 
 export class BaseObject implements IBaseObject {
     private _objState: ObjState;
@@ -198,7 +203,7 @@ export class BaseObject implements IBaseObject {
         }
         try {
             if (!!this._objEvents) {
-                this._objEvents.raise(OBJ_EVENTS.destroyed, {});
+                this._objEvents.raise(OBJ_EVENTS.disposed, {});
                 this._objEvents.off();
                 this._objEvents = null;
             }

@@ -1245,17 +1245,21 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
     sys._isBaseObj = function (obj) {
         return (!!obj && obj.__objSig === signature);
     };
-    var OBJ_EVENTS;
-    (function (OBJ_EVENTS) {
-        OBJ_EVENTS["error"] = "error";
-        OBJ_EVENTS["destroyed"] = "destroyed";
-    })(OBJ_EVENTS || (OBJ_EVENTS = {}));
     var ObjState;
     (function (ObjState) {
         ObjState[ObjState["None"] = 0] = "None";
         ObjState[ObjState["Disposing"] = 1] = "Disposing";
         ObjState[ObjState["Disposed"] = 2] = "Disposed";
-    })(ObjState || (ObjState = {}));
+    })(ObjState = exports.ObjState || (exports.ObjState = {}));
+    var OBJ_EVENTS;
+    (function (OBJ_EVENTS) {
+        OBJ_EVENTS["error"] = "error";
+        OBJ_EVENTS["disposed"] = "disposed";
+    })(OBJ_EVENTS = exports.OBJ_EVENTS || (exports.OBJ_EVENTS = {}));
+    function createObjectEvents(owner) {
+        return new ObjectEvents(owner);
+    }
+    exports.createObjectEvents = createObjectEvents;
     var DummyEvents = (function () {
         function DummyEvents() {
         }
@@ -1279,10 +1283,10 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
         DummyEvents.prototype.offProp = function (prop, nmspace) {
         };
         DummyEvents.prototype.addOnDisposed = function (handler, nmspace, context, priority) {
-            this.on("destroyed", handler, nmspace, context, priority);
+            this.on("disposed", handler, nmspace, context, priority);
         };
         DummyEvents.prototype.offOnDisposed = function (nmspace) {
-            this.off("destroyed", nmspace);
+            this.off("disposed", nmspace);
         };
         DummyEvents.prototype.addOnError = function (handler, nmspace, context, priority) {
             this.on("error", handler, nmspace, context, priority);
@@ -1299,7 +1303,6 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
         });
         return DummyEvents;
     }());
-    exports.DummyEvents = DummyEvents;
     var ObjectEvents = (function () {
         function ObjectEvents(owner) {
             this._events = null;
@@ -1364,10 +1367,10 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             }
         };
         ObjectEvents.prototype.addOnDisposed = function (handler, nmspace, context, priority) {
-            this.on("destroyed", handler, nmspace, context, priority);
+            this.on("disposed", handler, nmspace, context, priority);
         };
         ObjectEvents.prototype.offOnDisposed = function (nmspace) {
-            this.off("destroyed", nmspace);
+            this.off("disposed", nmspace);
         };
         ObjectEvents.prototype.addOnError = function (handler, nmspace, context, priority) {
             this.on("error", handler, nmspace, context, priority);
@@ -1385,7 +1388,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
         return ObjectEvents;
     }());
     exports.ObjectEvents = ObjectEvents;
-    var dummyEvents = new DummyEvents();
+    exports.dummyEvents = new DummyEvents();
     var BaseObject = (function () {
         function BaseObject() {
             this._objState = 0;
@@ -1427,7 +1430,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             }
             try {
                 if (!!this._objEvents) {
-                    this._objEvents.raise("destroyed", {});
+                    this._objEvents.raise("disposed", {});
                     this._objEvents.off();
                     this._objEvents = null;
                 }
@@ -1439,7 +1442,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
         Object.defineProperty(BaseObject.prototype, "objEvents", {
             get: function () {
                 if (this._objState === 2) {
-                    return dummyEvents;
+                    return exports.dummyEvents;
                 }
                 if (!this._objEvents) {
                     this._objEvents = this._createObjEvents();
@@ -5188,6 +5191,91 @@ define("jriapp_shared/utils/weakmap", ["require", "exports"], function (require,
         return WeakMap;
     }());
 });
+define("jriapp_shared/utils/mixobj", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/error", "jriapp_shared/utils/weakmap", "jriapp_shared/object"], function (require, exports, checks_9, error_4, weakmap_1, object_7) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var checks = checks_9.Checks, signature = object_7.objSignature, weakmap = weakmap_1.createWeakMap();
+    function MixObject(Base) {
+        return (function (_super) {
+            __extends(class_1, _super);
+            function class_1() {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                var _this = _super.apply(this, args) || this;
+                weakmap.set(_this, { objState: 0, events: null });
+                return _this;
+            }
+            class_1.prototype.isHasProp = function (prop) {
+                return checks.isHasProp(this, prop);
+            };
+            class_1.prototype.handleError = function (error, source) {
+                if (error_4.ERROR.checkIsDummy(error)) {
+                    return true;
+                }
+                if (!error.message) {
+                    error = new Error("Error: " + error);
+                }
+                var args = { error: error, source: source, isHandled: false };
+                this.objEvents.raise("error", args);
+                var isHandled = args.isHandled;
+                if (!isHandled) {
+                    isHandled = error_4.ERROR.handleError(this, error, source);
+                }
+                return isHandled;
+            };
+            class_1.prototype.getIsDisposed = function () {
+                var state = weakmap.get(this);
+                return !state || state.objState === 2;
+            };
+            class_1.prototype.getIsStateDirty = function () {
+                var state = weakmap.get(this);
+                return !state || state.objState !== 0;
+            };
+            class_1.prototype.dispose = function () {
+                var state = weakmap.get(this);
+                if (!state || state.objState === 2) {
+                    return;
+                }
+                try {
+                    if (!!state.events) {
+                        state.events.raise("disposed", {});
+                        state.events.off();
+                        state.events = null;
+                    }
+                }
+                finally {
+                    state.objState = 2;
+                    weakmap.delete(this);
+                }
+            };
+            Object.defineProperty(class_1.prototype, "objEvents", {
+                get: function () {
+                    var state = weakmap.get(this);
+                    if (!state || state.objState === 2) {
+                        return object_7.dummyEvents;
+                    }
+                    if (!state.events) {
+                        state.events = object_7.createObjectEvents(this);
+                    }
+                    return state.events;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(class_1.prototype, "__objSig", {
+                get: function () {
+                    return signature;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return class_1;
+        }(Base));
+    }
+    exports.MixObject = MixObject;
+});
 define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/list"], function (require, exports, utils_9, lang_8, utils_10, base_2, list_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -5275,10 +5363,10 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
     }(list_2.BaseList));
     exports.BaseDictionary = BaseDictionary;
 });
-define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/checks"], function (require, exports, checks_9) {
+define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/checks"], function (require, exports, checks_10) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var checks = checks_9.Checks;
+    var checks = checks_10.Checks;
     var Lazy = (function () {
         function Lazy(factory) {
             this._val = null;
@@ -5324,7 +5412,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_5, errors_9, object_7, jsonbag_1, jsonarray_1, weakmap_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/utils/mixobj", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_5, errors_9, object_8, jsonbag_1, jsonarray_1, weakmap_2, mixobj_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5333,10 +5421,11 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     __export(const_5);
     __export(int_5);
     __export(errors_9);
-    __export(object_7);
+    __export(object_8);
     __export(jsonbag_1);
     __export(jsonarray_1);
-    exports.createWeakMap = weakmap_1.createWeakMap;
+    exports.createWeakMap = weakmap_2.createWeakMap;
+    exports.MixObject = mixobj_1.MixObject;
     exports.LocaleSTRS = lang_9.STRS;
     exports.LocaleERRS = lang_9.ERRS;
     exports.BaseCollection = base_3.BaseCollection;

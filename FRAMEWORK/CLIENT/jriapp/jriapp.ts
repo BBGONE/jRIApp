@@ -1,5 +1,4 @@
 ﻿/// <reference path="../thirdparty/moment.d.ts" />
-/// <reference path="../thirdparty/require.d.ts" />
 /// <reference path="../built/jriapp_shared.d.ts" />
 
 /** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
@@ -32,6 +31,6 @@ export {
 
 export { Application } from "./jriapp/app";
 
-export const VERSION = "2.4.1";
+export const VERSION = "2.4.2";
 
 Bootstrap._initFramework();

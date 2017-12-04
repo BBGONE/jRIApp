@@ -6,6 +6,7 @@ export * from "./jriapp_shared/object";
 export * from "./jriapp_shared/utils/jsonbag";
 export * from "./jriapp_shared/utils/jsonarray";
 export { createWeakMap } from "./jriapp_shared/utils/weakmap";
+export { MixObject } from "./jriapp_shared/utils/mixobj";
 
 export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "./jriapp_shared/lang";
 

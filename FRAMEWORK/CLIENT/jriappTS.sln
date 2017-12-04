@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jriappTS", "jriapp\jriappTS.csproj", "{1BF71F16-DB40-4BF1-A9BB-CF053FBD0F03}"
 EndProject
@@ -13,7 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "thirdparty", "thirdparty", 
 		thirdparty\jqueryui.d.ts = thirdparty\jqueryui.d.ts
 		thirdparty\moment.d.ts = thirdparty\moment.d.ts
 		thirdparty\qtip2.d.ts = thirdparty\qtip2.d.ts
-		thirdparty\require.d.ts = thirdparty\require.d.ts
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sharedTS", "shared\sharedTS.csproj", "{B72754C8-DAF4-4F8F-B880-AE4D8AEC911D}"

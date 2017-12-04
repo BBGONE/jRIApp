@@ -1,5 +1,4 @@
 /// <reference path="../thirdparty/moment.d.ts" />
-/// <reference path="../thirdparty/require.d.ts" />
 /// <reference path="jriapp_shared.d.ts" />
 declare module "jriapp/const" {
     export const TOOLTIP_SVC = "tooltipSVC";
@@ -994,5 +993,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.4.1";
+    export const VERSION = "2.4.2";
 }

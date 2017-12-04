@@ -5,6 +5,8 @@ import { createCssLoader as createCSSLoader } from "./sloader";
 
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, _async = utils.defer,
     arr = utils.arr, CSSPrefix = "css!";
+//ambient require function
+declare var require: any;
 
 let _moduleLoader: IModuleLoader = null;
 
@@ -82,13 +84,14 @@ class ModuleLoader implements IModuleLoader {
                 };
             });
 
+            //load the modules providing module names to ambient require
             require(forLoad, () => {
                 forLoad.forEach((name) => {
                     const load = self._loads[name];
                     load.state = LOAD_STATE.LOADED;
                     load.defered.resolve();
                 });
-            }, (err) => {
+            }, (err: any) => {
                 forLoad.forEach((name) => {
                     const load = self._loads[name];
                     load.state = LOAD_STATE.LOADED;
@@ -159,6 +162,8 @@ class ModuleLoader implements IModuleLoader {
         if (this.isCSS(name)) {
             name = name.substr(CSSPrefix.length);
         }
+
+        //convert the name to url using ambient require
         return require.toUrl(name);
     }
 }

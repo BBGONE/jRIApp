@@ -476,21 +476,16 @@ declare module "jriapp_shared/utils/eventhelper" {
 declare module "jriapp_shared/object" {
     import { IBaseObject, TPriority, TEventHandler, TErrorHandler, TPropChangedHandler, IObjectEvents } from "jriapp_shared/int";
     export const objSignature: object;
-    export class DummyEvents implements IObjectEvents {
-        canRaise(name: string): boolean;
-        on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
-        off(name?: string, nmspace?: string): void;
-        offNS(nmspace?: string): void;
-        raise(name: string, args: any): void;
-        raiseProp(name: string): void;
-        onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void;
-        offProp(prop?: string, nmspace?: string): void;
-        addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void;
-        offOnDisposed(nmspace?: string): void;
-        addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void;
-        offOnError(nmspace?: string): void;
-        readonly owner: IBaseObject;
+    export const enum ObjState {
+        None = 0,
+        Disposing = 1,
+        Disposed = 2,
     }
+    export const enum OBJ_EVENTS {
+        error = "error",
+        disposed = "disposed",
+    }
+    export function createObjectEvents(owner: IBaseObject): IObjectEvents;
     export class ObjectEvents implements IObjectEvents {
         private _events;
         private _owner;
@@ -509,6 +504,7 @@ declare module "jriapp_shared/object" {
         offOnError(nmspace?: string): void;
         readonly owner: IBaseObject;
     }
+    export const dummyEvents: IObjectEvents;
     export class BaseObject implements IBaseObject {
         private _objState;
         private _objEvents;
@@ -1450,6 +1446,20 @@ declare module "jriapp_shared/utils/weakmap" {
     import { IWeakMap } from "jriapp_shared/int";
     export function createWeakMap(): IWeakMap;
 }
+declare module "jriapp_shared/utils/mixobj" {
+    import { IObjectEvents, TAnyConstructor } from "jriapp_shared/int";
+    export function MixObject<T extends TAnyConstructor<{}>>(Base: T): {
+        new (...args: any[]): {
+            isHasProp(prop: string): boolean;
+            handleError(error: any, source: any): boolean;
+            getIsDisposed(): boolean;
+            getIsStateDirty(): boolean;
+            dispose(): void;
+            readonly objEvents: IObjectEvents;
+            readonly __objSig: object;
+        };
+    } & T;
+}
 declare module "jriapp_shared/collection/dictionary" {
     import { IPropInfo } from "jriapp_shared/collection/int";
     import { BaseList, IListItem } from "jriapp_shared/collection/list";
@@ -1484,6 +1494,7 @@ declare module "jriapp_shared" {
     export * from "jriapp_shared/utils/jsonbag";
     export * from "jriapp_shared/utils/jsonarray";
     export { createWeakMap } from "jriapp_shared/utils/weakmap";
+    export { MixObject } from "jriapp_shared/utils/mixobj";
     export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "jriapp_shared/lang";
     export { BaseCollection } from "jriapp_shared/collection/base";
     export { CollectionItem } from "jriapp_shared/collection/item";

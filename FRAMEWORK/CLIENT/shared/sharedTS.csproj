@@ -20,6 +20,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
@@ -56,6 +57,7 @@
     <TypeScriptCompile Include="jriapp_shared\utils\jsonbag.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\lazy.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\logger.ts" />
+    <TypeScriptCompile Include="jriapp_shared\utils\mixobj.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\queue.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\strutils.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\sysutils.ts" />
