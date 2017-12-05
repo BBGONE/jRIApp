@@ -134,6 +134,8 @@ export interface IDataGridOptions {
     isPrependNewRows?: boolean;
     // if all additionally added rows are prepended to the table (instead of appended)
     isPrependAllRows?: boolean;
+    //show or not tooltips on edit and delete buttons (false by default)
+    isActionsToolTips?: boolean;
 }
 
 
@@ -204,7 +206,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 isCanDelete: null,
                 isHandleAddNew: false,
                 isPrependNewRows: false,
-                isPrependAllRows: false
+                isPrependAllRows: false,
+                isActionsToolTips: false
             });
 
         if (!!options.dataSource && !sys.isCollection(options.dataSource)) {

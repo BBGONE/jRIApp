@@ -4194,23 +4194,27 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
                 return;
             }
             this.setDisposing();
-            this._cleanUp();
+            this._cleanUp(this.td);
             _super.prototype.dispose.call(this);
         };
         ActionsCell.prototype._setupButtons = function (btns) {
-            var self = this;
+            var self = this, isActionsToolTips = self.grid.options.isActionsToolTips;
             btns.forEach(function (el) {
                 dom.setData(el, "cell", self);
                 var name = el.getAttribute("data-name");
-                baseview_7.fn_addToolTip(el, jriapp_shared_22.LocaleSTRS.TEXT[const_2.txtMap[name]]);
+                if (isActionsToolTips) {
+                    baseview_7.fn_addToolTip(el, jriapp_shared_22.LocaleSTRS.TEXT[const_2.txtMap[name]]);
+                }
                 el.setAttribute("data-scope", self.column.uniqueID);
             });
         };
-        ActionsCell.prototype._cleanUp = function () {
-            var td = this.td, btns = dom.queryAll(td, const_2.actionsSelector);
+        ActionsCell.prototype._cleanUp = function (td) {
+            var self = this, btns = dom.queryAll(td, const_2.actionsSelector), isActionsToolTips = self.grid.options.isActionsToolTips;
             btns.forEach(function (el) {
                 dom.removeData(el);
-                baseview_7.fn_addToolTip(el, null);
+                if (isActionsToolTips) {
+                    baseview_7.fn_addToolTip(el, null);
+                }
             });
         };
         Object.defineProperty(ActionsCell.prototype, "editBtnsHTML", {
@@ -4234,11 +4238,8 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
             configurable: true
         });
         ActionsCell.prototype._createButtons = function (isEditing) {
-            if (!this.td) {
-                return;
-            }
             var self = this, td = this.td;
-            this._cleanUp();
+            this._cleanUp(td);
             td.innerHTML = "";
             if (isEditing) {
                 self._isEditing = true;
@@ -5258,7 +5259,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 isCanDelete: null,
                 isHandleAddNew: false,
                 isPrependNewRows: false,
-                isPrependAllRows: false
+                isPrependAllRows: false,
+                isActionsToolTips: false
             });
             if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
                 throw new Error(jriapp_shared_30.LocaleERRS.ERR_GRID_DATASRC_INVALID);

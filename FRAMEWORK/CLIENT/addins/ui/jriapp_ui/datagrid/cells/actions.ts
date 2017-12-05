@@ -29,23 +29,28 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
             return;
         }
         this.setDisposing();
-        this._cleanUp();
+        this._cleanUp(this.td);
         super.dispose();
     }
-    private _setupButtons(btns: HTMLElement[]) {
-        const self = this;
+    private _setupButtons(btns: Element[]) {
+        const self = this, isActionsToolTips = self.grid.options.isActionsToolTips;
         btns.forEach((el) => {
             dom.setData(el, "cell", self);
             const name = el.getAttribute(DATA_ATTR.DATA_NAME);
-            fn_addToolTip(el, STRS.TEXT[txtMap[name]]);
+            if (isActionsToolTips) {
+                fn_addToolTip(el, STRS.TEXT[txtMap[name]]);
+            }
             el.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, self.column.uniqueID);
         });
     }
-    private _cleanUp():void {
-        const td = this.td, btns = dom.queryAll<HTMLElement>(td, actionsSelector);
+    private _cleanUp(td: HTMLTableCellElement): void {
+        const self = this, btns = dom.queryAll<Element>(td, actionsSelector),
+            isActionsToolTips = self.grid.options.isActionsToolTips;
         btns.forEach((el) => {
             dom.removeData(el);
-            fn_addToolTip(el, null);
+            if (isActionsToolTips) {
+                fn_addToolTip(el, null);
+            }
         });
     }
     protected get editBtnsHTML() {
@@ -61,12 +66,8 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         return viewBtnsHTML;
     }
     protected _createButtons(isEditing: boolean) {
-        if (!this.td) {
-            return;
-        }
-
         const self = this, td = this.td;
-        this._cleanUp();
+        this._cleanUp(td);
         td.innerHTML = "";
 
         if (isEditing) {

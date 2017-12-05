@@ -885,7 +885,7 @@ declare module "jriapp_ui/datagrid/cells/actions" {
         constructor(options: ICellOptions);
         dispose(): void;
         private _setupButtons(btns);
-        private _cleanUp();
+        private _cleanUp(td);
         protected readonly editBtnsHTML: string;
         protected readonly viewBtnsHTML: string;
         protected _createButtons(isEditing: boolean): void;
@@ -1160,6 +1160,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         editor?: IDialogConstructorOptions;
         isPrependNewRows?: boolean;
         isPrependAllRows?: boolean;
+        isActionsToolTips?: boolean;
     }
     export interface IDataGridConstructorOptions extends IDataGridOptions {
         el: HTMLTableElement;
