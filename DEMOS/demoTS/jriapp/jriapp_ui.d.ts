@@ -107,7 +107,7 @@ declare module "jriapp_ui/utils/eventbag" {
         getProp(name: string): ICommand;
         setProp(name: string, command: ICommand): void;
         readonly isPropertyBag: boolean;
-        trigger(eventName: string, args?: any): void;
+        trigger(eventName: string, args?: any): boolean;
         toString(): string;
         dispose(): void;
     }
@@ -158,6 +158,7 @@ declare module "jriapp_ui/utils/datepicker" {
 declare module "jriapp_ui/baseview" {
     import { BaseObject, IPropertyBag, IValidationInfo } from "jriapp_shared";
     import { IElView, IApplication, IViewOptions } from "jriapp/int";
+    import { DelegateFlags } from "jriapp/bootstrap";
     import { ICommand } from "jriapp/mvvm";
     import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
     export { IEventChangedArgs, EVENT_CHANGE_TYPE };
@@ -203,11 +204,13 @@ declare module "jriapp_ui/baseview" {
     export class BaseElView extends BaseObject implements IElView {
         private _objId;
         private _el;
+        private _delegateFlags;
+        private _delegateEvents;
         protected _errors: IValidationInfo[];
         protected _toolTip: string;
-        private _eventStore;
-        private _props;
-        private _classes;
+        private _eventBag;
+        private _propBag;
+        private _classBag;
         private _display;
         private _css;
         constructor(options: IViewOptions);
@@ -220,6 +223,8 @@ declare module "jriapp_ui/baseview" {
         protected _setFieldError(isError: boolean): void;
         protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;
         protected _setToolTip(el: Element, tip: string, isError?: boolean): void;
+        protected _setIsDelegated(flag: DelegateFlags): void;
+        _isDelegated(flag: DelegateFlags): boolean;
         dispose(): void;
         toString(): string;
         readonly el: HTMLElement;
@@ -231,6 +236,7 @@ declare module "jriapp_ui/baseview" {
         readonly events: IPropertyBag;
         readonly props: IPropertyBag;
         readonly classes: IPropertyBag;
+        readonly delegateEvents: boolean;
         css: string;
         readonly app: IApplication;
     }
@@ -256,6 +262,9 @@ declare module "jriapp_ui/textbox" {
     };
     export class TextBoxElView extends InputElView {
         constructor(options: ITextBoxOptions);
+        handle_change(e: Event): void;
+        handle_keypress(e: KeyboardEvent): void;
+        handle_keyup(e: KeyboardEvent): void;
         addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string): void;
         offOnKeyPress(nmspace?: string): void;
         toString(): string;
@@ -274,18 +283,13 @@ declare module "jriapp_ui/content/string" {
     }
 }
 declare module "jriapp_ui/textarea" {
-    import { ITextBoxOptions, TKeyPressArgs } from "jriapp_ui/textbox";
-    import { BaseElView } from "jriapp_ui/baseview";
+    import { TextBoxElView, ITextBoxOptions } from "jriapp_ui/textbox";
     export interface ITextAreaOptions extends ITextBoxOptions {
         wrap?: string;
     }
-    export class TextAreaElView extends BaseElView {
+    export class TextAreaElView extends TextBoxElView {
         constructor(options: ITextAreaOptions);
-        addOnKeyPress(fn: (sender: TextAreaElView, args: TKeyPressArgs) => void, nmspace?: string): void;
-        offOnKeyPress(nmspace?: string): void;
         toString(): string;
-        value: string;
-        isEnabled: boolean;
         wrap: string;
     }
 }
@@ -309,6 +313,7 @@ declare module "jriapp_ui/checkbox" {
     export class CheckBoxElView extends InputElView {
         private _checked;
         constructor(options: IViewOptions);
+        handle_change(e: Event): void;
         protected _updateState(): void;
         toString(): string;
         checked: boolean;
@@ -579,7 +584,7 @@ declare module "jriapp_ui/dialog" {
         private _result;
         private _options;
         private _submitInfo;
-        private _currentSelectable;
+        private _focusedElView;
         private _deferredTemplate;
         constructor(options: IDialogConstructorOptions);
         addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject): void;
@@ -886,8 +891,8 @@ declare module "jriapp_ui/datagrid/cells/actions" {
         dispose(): void;
         private _setupButtons(btns);
         private _cleanUp(td);
-        protected readonly editBtnsHTML: string;
-        protected readonly viewBtnsHTML: string;
+        protected readonly editBtnsHTML: string[];
+        protected readonly viewBtnsHTML: string[];
         protected _createButtons(isEditing: boolean): void;
         update(): void;
         toString(): string;
@@ -981,6 +986,7 @@ declare module "jriapp_ui/datagrid/rows/row" {
 declare module "jriapp_ui/datagrid/cells/base" {
     import { BaseObject } from "jriapp_shared";
     import { ICollectionItem } from "jriapp_shared/collection/int";
+    import { DelegateFlags } from "jriapp/bootstrap";
     import { DblClick } from "jriapp_ui/utils/dblclick";
     import { Row } from "jriapp_ui/datagrid/rows/row";
     import { BaseColumn } from "jriapp_ui/datagrid/columns/base";
@@ -998,8 +1004,10 @@ declare module "jriapp_ui/datagrid/cells/base" {
         protected _click: DblClick;
         private _num;
         constructor(options: ICellOptions);
+        _isDelegated(flag: DelegateFlags): boolean;
         protected _onCellClicked(row?: Row): void;
         protected _onDblClicked(row?: Row): void;
+        handle_click(e: Event): void;
         click(): void;
         scrollIntoView(): void;
         dispose(): void;
@@ -1274,7 +1282,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _setDataSource(v: ICollection<ICollectionItem>): void;
         _getInternal(): IInternalDataGridMethods;
         updateColumnsSize(): void;
-        getISelectable(): ISelectable;
         sortByColumn(column: DataColumn): IPromise<any>;
         selectRows(isSelect: boolean): void;
         findRowByItem(item: ICollectionItem): Row;
@@ -1290,6 +1297,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         focus(): void;
         addNew(): void;
         dispose(): void;
+        readonly selectable: ISelectable;
         readonly table: HTMLTableElement;
         readonly options: IDataGridConstructorOptions;
         readonly _tBodyEl: HTMLTableSectionElement;
@@ -1437,7 +1445,6 @@ declare module "jriapp_ui/stackpanel" {
             item: ICollectionItem;
         }>, nmspace?: string, context?: IBaseObject): void;
         offOnItemClicked(nmspace?: string): void;
-        protected _getContainerEl(): HTMLElement;
         protected _onKeyDown(key: number, event: Event): void;
         protected _onKeyUp(key: number, event: Event): void;
         protected _updateCurrent(item: ICollectionItem, withScroll: boolean): void;
@@ -1456,12 +1463,12 @@ declare module "jriapp_ui/stackpanel" {
         protected _refresh(): void;
         protected _setDataSource(v: ICollection<ICollectionItem>): void;
         dispose(): void;
-        getISelectable(): ISelectable;
         scrollToItem(item: ICollectionItem, isUp?: boolean): void;
         scrollToCurrent(isUp?: boolean): void;
         focus(): void;
         getDivElementByItem(item: ICollectionItem): HTMLElement;
         toString(): string;
+        readonly selectable: ISelectable;
         readonly el: HTMLElement;
         readonly uniqueID: string;
         readonly orientation: "vertical" | "horizontal";
@@ -1526,18 +1533,18 @@ declare module "jriapp_ui/command" {
     export class CommandElView extends BaseElView {
         private _command;
         private _commandParam;
-        private _preventDefault;
-        private _stopPropagation;
-        private _disabled;
+        private _flags;
         constructor(options: ICommandViewOptions);
+        private _getFlag(flag);
+        private _setFlag(v, flag);
         private _onCanExecuteChanged(cmd, args);
         protected _onCommandChanged(): void;
         protected invokeCommand(args: any, isAsync: boolean): void;
         dispose(): void;
         toString(): string;
-        isEnabled: boolean;
         command: ICommand;
         commandParam: any;
+        isEnabled: boolean;
         readonly preventDefault: boolean;
         readonly stopPropagation: boolean;
     }
@@ -1635,9 +1642,8 @@ declare module "jriapp_ui/datepicker" {
     }
 }
 declare module "jriapp_ui/anchor" {
-    import { IViewOptions } from "jriapp/int";
-    import { CommandElView } from "jriapp_ui/command";
-    export interface IAncorOptions extends IViewOptions {
+    import { CommandElView, ICommandViewOptions } from "jriapp_ui/command";
+    export interface IAncorOptions extends ICommandViewOptions {
         imageSrc?: string;
         glyph?: string;
     }
@@ -1647,7 +1653,8 @@ declare module "jriapp_ui/anchor" {
         private _image;
         private _span;
         constructor(options: IAncorOptions);
-        protected _onClick(e: Event): void;
+        handle_click(e: Event): void;
+        protected onClick(): void;
         protected _updateImage(src: string): void;
         protected _updateGlyph(glyph: string): void;
         dispose(): void;
@@ -1688,12 +1695,12 @@ declare module "jriapp_ui/busy" {
     }
 }
 declare module "jriapp_ui/button" {
-    import { IViewOptions } from "jriapp/int";
-    import { CommandElView } from "jriapp_ui/command";
+    import { CommandElView, ICommandViewOptions } from "jriapp_ui/command";
     export class ButtonElView extends CommandElView {
         private _isButton;
-        constructor(options: IViewOptions);
-        protected _onClick(e: Event): void;
+        constructor(options: ICommandViewOptions);
+        handle_click(e: Event): void;
+        onClick(): void;
         toString(): string;
         value: string;
         text: string;
@@ -1706,6 +1713,7 @@ declare module "jriapp_ui/checkbox3" {
     export class CheckBoxThreeStateElView extends InputElView {
         private _checked;
         constructor(options: IViewOptions);
+        handle_change(e: Event): void;
         protected _updateState(): void;
         toString(): string;
         checked: boolean;
@@ -1728,7 +1736,7 @@ declare module "jriapp_ui/expander" {
         constructor(options: IExpanderOptions);
         protected refresh(): void;
         protected _onCommandChanged(): void;
-        protected _onClick(e: any): void;
+        protected onClick(): void;
         invokeCommand(): void;
         toString(): string;
         isExpanded: boolean;

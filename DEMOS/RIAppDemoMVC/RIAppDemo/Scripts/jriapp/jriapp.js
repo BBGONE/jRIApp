@@ -1009,11 +1009,11 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
             }
             return arrHelper.merge(arr);
         };
-        EventHelper.getDelegateListener = function (root, fnMatch, listener) {
+        EventHelper.getDelegateListener = function (root, isMatch, listener) {
             var res = function (event) {
                 var target = event.target;
                 while (!!target && target !== root) {
-                    if (fnMatch(target)) {
+                    if (isMatch(target)) {
                         var eventCopy = new EventWrap(event, target);
                         listener.apply(target, [eventCopy]);
                         return;
@@ -1586,7 +1586,8 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
 define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/dom", "jriapp_shared/utils/deferred", "jriapp_shared/utils/queue"], function (require, exports, jriapp_shared_10, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, dom_3, deferred_1, queue_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_10.Utils, dom = dom_3.DomUtils, win = dom.window, doc = win.document, _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err, ERRS = jriapp_shared_10.LocaleERRS;
+    var utils = jriapp_shared_10.Utils, dom = dom_3.DomUtils, win = dom.window, doc = win.document, checks = utils.check, _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err, ERRS = jriapp_shared_10.LocaleERRS;
+    exports.delegateWeakMap = jriapp_shared_10.createWeakMap(), exports.selectableWeakMap = jriapp_shared_10.createWeakMap();
     (function () {
         var win = dom.window;
         if (!win.Promise) {
@@ -1609,6 +1610,21 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
     })();
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
     var _stylesLoader = sloader_1.createCssLoader();
+    var DelegateFlags;
+    (function (DelegateFlags) {
+        DelegateFlags[DelegateFlags["click"] = 0] = "click";
+        DelegateFlags[DelegateFlags["change"] = 1] = "change";
+        DelegateFlags[DelegateFlags["keypress"] = 2] = "keypress";
+        DelegateFlags[DelegateFlags["keydown"] = 3] = "keydown";
+        DelegateFlags[DelegateFlags["keyup"] = 4] = "keyup";
+    })(DelegateFlags = exports.DelegateFlags || (exports.DelegateFlags = {}));
+    var delegateName = {
+        click: 0,
+        change: 1,
+        keypress: 2,
+        keydown: 3,
+        keyup: 4
+    };
     var GLOB_EVENTS;
     (function (GLOB_EVENTS) {
         GLOB_EVENTS["load"] = "load";
@@ -1617,7 +1633,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
     })(GLOB_EVENTS || (GLOB_EVENTS = {}));
     var PROP_NAME;
     (function (PROP_NAME) {
-        PROP_NAME["curSelectable"] = "currentSelectable";
+        PROP_NAME["focusedElView"] = "focusedElView";
         PROP_NAME["isReady"] = "isReady";
     })(PROP_NAME || (PROP_NAME = {}));
     var BootstrapState;
@@ -1657,7 +1673,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             }
             _this._bootState = 0;
             _this._appInst = null;
-            _this._currentSelectable = null;
+            _this._focusedElView = null;
             _this._objId = coreUtils.getNewID("app");
             _this._exports = {};
             _this._moduleInits = [];
@@ -1680,12 +1696,6 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             _this._internal = {
                 initialize: function () {
                     return self._initialize();
-                },
-                trackSelectable: function (selectable) {
-                    self._trackSelectable(selectable);
-                },
-                untrackSelectable: function (selectable) {
-                    self._untrackSelectable(selectable);
                 },
                 registerApp: function (app) {
                     self._registerApp(app);
@@ -1718,21 +1728,42 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             });
         };
         Bootstrap.prototype._bindGlobalEvents = function () {
+            var _this = this;
             var self = this;
             dom.events.on(doc, "click", function (e) {
-                e.stopPropagation();
-                self.currentSelectable = null;
+                var target = e.target;
+                while (!!target && target !== doc) {
+                    var obj = exports.selectableWeakMap.get(target);
+                    if (!!obj) {
+                        self.focusedElView = obj;
+                        return;
+                    }
+                    target = target.parentElement;
+                }
+                self.focusedElView = null;
             }, this._objId);
+            var delegateMap = exports.delegateWeakMap;
+            coreUtils.forEachProp(delegateName, (function (name, flag) {
+                var fn_name = "handle_" + name;
+                dom.events.on(doc, name, function (e) {
+                    var obj = delegateMap.get(e.target);
+                    obj[fn_name](e.originalEvent);
+                }, {
+                    nmspace: _this._objId,
+                    matchElement: function (el) {
+                        var obj = delegateMap.get(el);
+                        return !!obj && !!obj._isDelegated(flag) && checks.isFunc(obj[fn_name]);
+                    }
+                });
+            }));
             dom.events.on(doc, "keydown", function (e) {
-                e.stopPropagation();
-                if (!!self._currentSelectable) {
-                    self._currentSelectable.getISelectable().onKeyDown(e.which, e);
+                if (!!self._focusedElView) {
+                    self._focusedElView.selectable.onKeyDown(e.which, e);
                 }
             }, this._objId);
             dom.events.on(doc, "keyup", function (e) {
-                e.stopPropagation();
-                if (!!self._currentSelectable) {
-                    self._currentSelectable.getISelectable().onKeyUp(e.which, e);
+                if (!!self._focusedElView) {
+                    self._focusedElView.selectable.onKeyUp(e.which, e);
                 }
             }, this._objId);
             dom.events.on(win, "beforeunload", function () {
@@ -1817,23 +1848,6 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                 self._bootState = 4;
                 ERROR.reThrow(err, _this.handleError(err, self));
             });
-        };
-        Bootstrap.prototype._trackSelectable = function (selectable) {
-            var self = this, isel = selectable.getISelectable(), el = isel.getContainerEl();
-            dom.events.on(el, "click", function (e) {
-                e.stopPropagation();
-                var target = e.target;
-                if (dom.isContained(target, el)) {
-                    self.currentSelectable = selectable;
-                }
-            }, isel.getUniqueID());
-        };
-        Bootstrap.prototype._untrackSelectable = function (selectable) {
-            var isel = selectable.getISelectable(), el = isel.getContainerEl();
-            dom.events.off(el, "click", isel.getUniqueID());
-            if (this.currentSelectable === selectable) {
-                this.currentSelectable = null;
-            }
         };
         Bootstrap.prototype._registerApp = function (app) {
             if (!!this._appInst) {
@@ -2039,14 +2053,14 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Bootstrap.prototype, "currentSelectable", {
+        Object.defineProperty(Bootstrap.prototype, "focusedElView", {
             get: function () {
-                return this._currentSelectable;
+                return this._focusedElView;
             },
             set: function (v) {
-                if (this._currentSelectable !== v) {
-                    this._currentSelectable = v;
-                    this.objEvents.raiseProp("currentSelectable");
+                if (this._focusedElView !== v) {
+                    this._focusedElView = v;
+                    this.objEvents.raiseProp("focusedElView");
                 }
             },
             enumerable: true,
@@ -4224,6 +4238,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.4.3";
+    exports.VERSION = "2.5.0";
     bootstrap_7.Bootstrap._initFramework();
 });

@@ -71,15 +71,18 @@
 <div id="main" style="opacity:0;" >
     <ul class="dynatree-container" data-bind="{this.dataSource,to=rootView,source=fbrowserVM}" data-view="options:{templateID:ItemListTemplate}"></ul>
 
-    <a class="btn btn-info btn-small" style="margin: 15px 5px 5px 0px;" data-bind="{this.command,to=collapseCommand,source=fbrowserVM}">Collapse Tree</a>&nbsp;
-    <a class="btn btn-info btn-small" style="margin: 15px 5px 5px 0px;" data-bind="{this.command,to=reloadCommand,source=fbrowserVM}">Expand Tree</a>
+    <a class="btn btn-info btn-small" style="margin: 15px 5px 5px 0px;" data-bind="{this.command,to=collapseCommand,source=fbrowserVM}" data-view="options:{delegate:true}">Collapse Tree</a>&nbsp;
+    <a class="btn btn-info btn-small" style="margin: 15px 5px 5px 0px;" data-bind="{this.command,to=reloadCommand,source=fbrowserVM}" data-view="options:{delegate:true}">Expand Tree</a>
 </div>
 
 <script id="ItemListTemplate" type="text/html" data-role="template">
     <div>
         <span data-bind="{this.css,to=ExtraProps.css1}">
-            <a style="margin: 0px; padding: 0px;" data-bind="{this.command,to=ExtraProps.toggleCommand}"><span data-bind="{this.css,to=ExtraProps.css2}"></span></a>
-            <a style="margin: 0px; padding: 0px;" data-bind="{this.command,to=ExtraProps.clickCommand}"><span class="dynatree-icon"></span><span class="dynatree-title" data-bind="{this.value,to=Name}"></span></a>
+            <a style="margin: 0px; padding: 0px;" data-bind="{this.command,to=ExtraProps.toggleCommand}" data-view="options:{delegate:true}">
+            <span data-bind="{this.css,to=ExtraProps.css2}"></span></a>
+            <a style="margin: 0px; padding: 0px;" data-bind="{this.command,to=ExtraProps.clickCommand}" data-view="options:{delegate:true}">
+            <span class="dynatree-icon"></span>
+            <span class="dynatree-title" data-bind="{this.value,to=Name}"></span></a>
         </span>
         <ul data-bind="{this.dataSource,to=ExtraProps.childView}" data-view="options:{templateID:ItemListTemplate}"></ul>
     </div>

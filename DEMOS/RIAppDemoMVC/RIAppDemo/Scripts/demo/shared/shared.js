@@ -485,9 +485,9 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
                     self._updateSelection();
                     self._hide();
                 }, this.uniqueID);
-                bootstrap.currentSelectable = self._lookupGrid;
+                bootstrap.focusedElView = self._lookupGrid;
                 $(dom.document).on('keyup.' + this.uniqueID, function (e) {
-                    if (bootstrap.currentSelectable === self._lookupGrid) {
+                    if (bootstrap.focusedElView === self._lookupGrid) {
                         if (self._onKeyPress(e.which))
                             e.stopPropagation();
                     }

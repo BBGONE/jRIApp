@@ -104,37 +104,53 @@
 <!--using dataform is convenient because it sets a datacontext scope for all its content-->
 <div id="demoContent" style="opacity:0;" data-bind="{this.dataContext,source=demoVM}" data-view="name=dataform">
     <fieldset>
-        <legend>Radios elements data binding example (using Dictionary in View Models)</legend>
+        <legend>Radios elements (click on them to fill the stackpanels)</legend>
         <label class="radioItem">
-            <input type="radio" class="ria-radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue1}"/>
-            <span data-bind1="{this.value,to=radioValues['radioValue1'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue1'].comment}"></span>
+            <input type="radio" class="ria-radio" name="radioItem" data-view="options:{delegate:true}"
+                   data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue1}"/>
+            <span data-bind1="{this.value,to=radioValues['radioValue1'].value}" 
+                  data-bind2="{this.toolTip,to=radioValues['radioValue1'].comment}"></span>
         </label>
         <label class="radioItem">
-            <input type="radio" class="ria-radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue2}"/>
-            <span data-bind1="{this.value,to=radioValues['radioValue2'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue2'].comment}"></span>
+            <input type="radio" class="ria-radio" name="radioItem" data-view="options:{delegate:true}"
+                   data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue2}"/>
+            <span data-bind1="{this.value,to=radioValues['radioValue2'].value}" 
+                  data-bind2="{this.toolTip,to=radioValues['radioValue2'].comment}"></span>
         </label>
         <label class="radioItem">
-            <input type="radio" class="ria-radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue3}"/>
-            <span data-bind1="{this.value,to=radioValues['radioValue3'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue3'].comment}"></span>
+            <input type="radio" class="ria-radio" name="radioItem" data-view="options:{delegate:true}"
+                   data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue3}"/>
+            <span data-bind1="{this.value,to=radioValues['radioValue3'].value}" 
+                  data-bind2="{this.toolTip,to=radioValues['radioValue3'].comment}"></span>
         </label>
         <label class="radioItem">
-            <input type="radio" class="ria-radio" name="radioItem" data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue4}"/>
-            <span data-bind1="{this.value,to=radioValues['radioValue4'].value}" data-bind2="{this.toolTip,to=radioValues['radioValue4'].comment}"></span>
+            <input type="radio" class="ria-radio" name="radioItem" data-view="options:{delegate:true}"
+                   data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue4}"/>
+            <span data-bind1="{this.value,to=radioValues['radioValue4'].value}" 
+                  data-bind2="{this.toolTip,to=radioValues['radioValue4'].comment}"></span>
         </label>
     </fieldset>
     <h3>
         Demo of using Vertical and Horizontal StackPanels &nbsp;(count:&nbsp;<span data-bind="{this.value,to=historyList.count}"></span>)
     </h3>
     <!--example of using stackpanel for vertical and horizontal list view-->
-    <div class="stackPanelV" data-bind="{this.dataSource,to=historyList}" data-view="name=stackpanel,options:{templateID:stackPanelItemTemplateV,orientation:vertical}"></div>
-    <div class="stackPanelH" data-bind="{this.dataSource,to=historyList}" data-view="name=stackpanel,options:{templateID:stackPanelItemTemplateH,orientation:horizontal}"></div>
+    <div class="stackPanelV" 
+         data-bind="{this.dataSource,to=historyList}" 
+         data-view="name=stackpanel,options:{templateID:stackPanelItemTemplateV,orientation:vertical}"></div>
+    <div class="stackPanelH" 
+         data-bind="{this.dataSource,to=historyList}" 
+         data-view="name=stackpanel,options:{templateID:stackPanelItemTemplateH,orientation:horizontal}"></div>
     <br style="clear: both"/>
-    <button class="btn btn-info btn-small" style="margin: 5px 5px 5px 0px;" data-bind="{this.command,to=clearListCommand}">Clear list</button>
+    <button class="btn btn-info btn-small" 
+            style="margin: 5px 5px 5px 0px;" 
+            data-bind="{this.command,to=clearListCommand}">Clear list</button>
 
     <br/>
     <fieldset>
-        <legend>Summary (ordered list)</legend>
-        <ol style="max-height: 150px; overflow: auto; width: 300px;" data-bind="{this.dataSource,to=historyList}" data-view="options:{templateID:ItemListTemplate}"></ol>
+        <legend>Summary (ordered list databound to the collection)</legend>
+        <ol style="max-height: 150px; overflow: auto; width: 300px;" 
+            data-bind="{this.dataSource,to=historyList}" 
+            data-view="options:{templateID:ItemListTemplate}"></ol>
     </fieldset>
 </div>
 
