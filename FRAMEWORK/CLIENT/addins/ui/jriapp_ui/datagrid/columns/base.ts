@@ -1,17 +1,15 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject, Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-import { DATA_ATTR } from "jriapp/const";
 import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
 import { fn_addToolTip } from "../../baseview";
-import { bootstrap } from "jriapp/bootstrap";
+import { selectableWeakMap } from "jriapp/bootstrap";
 
 import { css } from "../const";
-import { BaseCell } from "../cells/base";
 import { DataGrid } from "../datagrid";
 
-const utils = Utils, dom = DomUtils, doc = dom.document, boot = bootstrap;
+const utils = Utils, dom = DomUtils, doc = dom.document;
 
 export interface IColumnInfo {
     "type"?: string;
@@ -58,33 +56,13 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         }
 
         this._grid._getInternal().getHeader().appendChild(col);
+        selectableWeakMap.set(this._col, this._grid);
 
         // a click on column itself
         dom.events.on(this._col, "click", (e) => {
-            e.stopPropagation();
-            boot.currentSelectable = grid;
             grid._getInternal().setCurrentColumn(self);
             self._onColumnClicked();
         }, this.uniqueID);
-
-        // a click on any cell
-        dom.events.on(this.grid.table, "click", (e) => {
-            e.stopPropagation();
-            const td = <HTMLElement>e.target, cell = <BaseCell<BaseColumn>>dom.getData(td, "cell");
-            if (!!cell) {
-                boot.currentSelectable = grid;
-                grid._getInternal().setCurrentColumn(self);
-                cell.click();
-            }
-        }, {
-                nmspace: this.uniqueID,
-                // using delegation
-                matchElement: (el: Element) => {
-                    const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
-                        tag = el.tagName.toLowerCase();
-                    return self.uniqueID === attr && tag === "td";
-                }
-            });
 
         if (!!this._options.width) {
             this._th.style.width = this._options.width;
@@ -107,6 +85,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
             return;
         }
         this.setDisposing();
+        selectableWeakMap.delete(this._col);
         dom.events.offNS(this.grid.table, this.uniqueID);
 
         if (!!this._options.tip) {

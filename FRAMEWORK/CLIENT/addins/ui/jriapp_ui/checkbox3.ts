@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { IViewOptions } from "jriapp/int";
 import { Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-import { IViewOptions } from "jriapp/int";
-import { bootstrap } from "jriapp/bootstrap";
+import { bootstrap, delegateWeakMap, DelegateFlags } from "jriapp/bootstrap";
 import { InputElView } from "./input";
 import { css, PROP_NAME } from "./baseview";
 
-const checks = Utils.check, dom = DomUtils, boot = bootstrap;
+const checks = Utils.check, dom = DomUtils, boot = bootstrap, delegateMap = delegateWeakMap;
 
 export class CheckBoxThreeStateElView extends InputElView {
     private _checked: boolean;
@@ -18,16 +18,23 @@ export class CheckBoxThreeStateElView extends InputElView {
         chk.checked = false;
         chk.indeterminate = this._checked === null;
 
-        dom.events.on(this.el, "click", (e) => {
-            e.stopPropagation();
-            if (self.checked === null) {
-                self.checked = true;
-            } else {
-                self.checked = !self.checked ? null : false;
-            }
-        }, this.uniqueID);
-
+        if (this.delegateEvents) {
+            delegateMap.set(this.el, this);
+            this._setIsDelegated(DelegateFlags.change);
+        } else {
+            dom.events.on(this.el, "change", (e) => {
+                e.stopPropagation();
+                self.handle_change(e);
+            }, this.uniqueID);
+        }
         this._updateState();
+    }
+    handle_change(e: Event) {
+        if (this.checked === null) {
+            this.checked = true;
+        } else {
+            this.checked = !this.checked ? null : false;
+        }
     }
     protected _updateState() {
         dom.setClass([this.el], css.checkedNull, !checks.isNt(this.checked));

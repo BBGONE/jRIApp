@@ -1,13 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DomUtils } from "jriapp/utils/dom";
-import { IViewOptions } from "jriapp/int";
-import { bootstrap } from "jriapp/bootstrap";
+import { bootstrap, delegateWeakMap, DelegateFlags } from "jriapp/bootstrap";
 import { css, PROP_NAME } from "./baseview";
-import { CommandElView } from "./command";
+import { CommandElView, ICommandViewOptions } from "./command";
 
-const dom = DomUtils, boot = bootstrap;
+const dom = DomUtils, boot = bootstrap, delegateMap = delegateWeakMap;
 
-export interface IAncorOptions extends IViewOptions {
+export interface IAncorOptions extends ICommandViewOptions {
     imageSrc?: string;
     glyph?: string;
 }
@@ -35,17 +34,25 @@ export class AnchorElView extends CommandElView {
         }
 
         dom.addClass([this.el], css.commandLink);
-        dom.events.on(this.el, "click", (e) => {
-            self._onClick(e);
-        }, this.uniqueID);
+        if (this.delegateEvents) {
+            delegateMap.set(this.el, this);
+            this._setIsDelegated(DelegateFlags.click);
+        } else {
+            dom.events.on(this.el, "click", (e) => {
+                self.handle_click(e);
+            }, this.uniqueID);
+        }
     }
-    protected _onClick(e: Event): void {
+    handle_click(e: Event): void {
         if (this.stopPropagation) {
             e.stopPropagation();
         }
         if (this.preventDefault) {
             e.preventDefault();
         }
+        this.onClick();
+    }
+    protected onClick(): void {
         this.invokeCommand(null, true);
     }
     protected _updateImage(src: string): void {

@@ -13,7 +13,7 @@ import {
 import {
     ICollection, ICollectionItem, ICollChangedArgs
 } from "jriapp_shared/collection/int";
-import { bootstrap } from "jriapp";
+import { bootstrap, selectableWeakMap } from "jriapp/bootstrap";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
     strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
@@ -95,9 +95,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         this._currentItem = null;
         this._itemMap = {};
         this._selectable = {
-            getContainerEl: () => {
-                return self._getContainerEl();
-            },
             getUniqueID: () => {
                 return self.uniqueID;
             },
@@ -110,8 +107,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         };
 
         dom.events.on(this._el, "click", (e) => {
-            e.stopPropagation();
-            boot.currentSelectable = self;
             const el = <HTMLElement>e.target, mappedItem: IMappedItem = dom.getData(el, "data");
             self._onItemClicked(mappedItem.el, mappedItem.item);
         }, {
@@ -124,8 +119,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
                 }
             });
 
-        boot._getInternal().trackSelectable(this);
-
+        selectableWeakMap.set(this._el, this);
         const ds = this._options.dataSource;
         this._setDataSource(ds);
     }
@@ -135,7 +129,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     offOnItemClicked(nmspace?: string) {
         this.objEvents.off(PNL_EVENTS.item_clicked, nmspace);
     }
-    protected _getContainerEl() { return this.el; }
     protected _onKeyDown(key: number, event: Event) {
         const ds = this.dataSource, self = this;
         if (!ds) {
@@ -352,8 +345,8 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             return;
         }
         this.setDisposing();
+        selectableWeakMap.delete(this._el);
         this._debounce.dispose();
-        boot._getInternal().untrackSelectable(this);
         this._unbindDS();
         this._clearContent();
         dom.removeClass([this._el], css.stackpanel);
@@ -365,9 +358,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         this._itemMap = {};
         this._options = <any>{};
         super.dispose();
-    }
-    getISelectable(): ISelectable {
-        return this._selectable;
     }
     scrollToItem(item: ICollectionItem, isUp?: boolean) {
         if (!item) {
@@ -412,7 +402,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     }
     focus() {
         this.scrollToCurrent(true);
-        boot.currentSelectable = this;
+        boot.focusedElView = this;
     }
     getDivElementByItem(item: ICollectionItem) {
         const mappedItem = this._itemMap[item._key];
@@ -420,6 +410,9 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     }
     toString() {
         return "StackPanel";
+    }
+    get selectable(): ISelectable {
+        return this._selectable;
     }
     get el() { return this._options.el; }
     get uniqueID() { return this._objId; }

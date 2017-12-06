@@ -1278,6 +1278,8 @@ declare module "jriapp_shared/collection/aspect" {
         private _valueBag;
         constructor(collection: BaseCollection<TItem>);
         protected _onErrorsChanged(): void;
+        private _getFlag(flag);
+        private _setFlag(v, flag);
         protected _setIsEdited(v: boolean): void;
         protected _setIsCancelling(v: boolean): void;
         protected _beginEdit(): boolean;

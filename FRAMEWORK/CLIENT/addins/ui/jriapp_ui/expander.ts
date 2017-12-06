@@ -41,10 +41,7 @@ export class ExpanderElView extends AnchorElView {
         super._onCommandChanged();
         this.invokeCommand();
     }
-    protected _onClick(e: any) {
-        if (this.preventDefault) {
-            e.preventDefault();
-        }
+    protected onClick() {
         this.isExpanded = !this.isExpanded;
     }
     // override

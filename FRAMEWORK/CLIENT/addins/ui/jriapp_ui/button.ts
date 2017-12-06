@@ -1,39 +1,46 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { bootstrap } from "jriapp/bootstrap";
+import { bootstrap, delegateWeakMap, DelegateFlags } from "jriapp/bootstrap";
 import { PROP_NAME } from "./baseview";
-import { CommandElView } from "./command";
+import { CommandElView, ICommandViewOptions } from "./command";
 
-const boot = bootstrap, dom = DomUtils;
+const boot = bootstrap, dom = DomUtils, delegateMap = delegateWeakMap;
 
 export class ButtonElView extends CommandElView {
     private _isButton: boolean;
 
-    constructor(options: IViewOptions) {
+    constructor(options: ICommandViewOptions) {
         super(options);
         const self = this;
         this._isButton = this.el.tagName.toLowerCase() === "button";
-        dom.events.on(this.el, "click", (e) => {
-            self._onClick(e);
-        }, this.uniqueID);
+        if (this.delegateEvents) {
+            delegateMap.set(this.el, this);
+            this._setIsDelegated(DelegateFlags.click);
+        } else {
+            dom.events.on(this.el, "click", (e) => {
+                self.handle_click(e);
+            }, this.uniqueID);
+        }
     }
-    protected _onClick(e: Event) {
+    handle_click(e: Event): void {
         if (this.stopPropagation) {
             e.stopPropagation();
         }
         if (this.preventDefault) {
             e.preventDefault();
         }
+        this.onClick();
+    }
+    onClick(): void {
         this.invokeCommand(null, true);
     }
-    toString() {
+    toString(): string {
         return "ButtonElView";
     }
     get value(): string {
         return this._isButton ? (<HTMLButtonElement>this.el).textContent : (<HTMLInputElement>this.el).value;
     }
-    set value(v) {
+    set value(v: string) {
         const x = this.value;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
@@ -46,10 +53,10 @@ export class ButtonElView extends CommandElView {
             this.objEvents.raiseProp(PROP_NAME.value);
         }
     }
-    get text() {
+    get text(): string {
         return this.el.textContent;
     }
-    set text(v) {
+    set text(v: string) {
         const x = this.el.textContent;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
@@ -57,10 +64,10 @@ export class ButtonElView extends CommandElView {
             this.objEvents.raiseProp(PROP_NAME.text);
         }
     }
-    get html() {
+    get html(): string {
         return this._isButton ? (<HTMLButtonElement>this.el).innerHTML : (<HTMLInputElement>this.el).value;
     }
-    set html(v) {
+    set html(v: string) {
         const x = this.html;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {

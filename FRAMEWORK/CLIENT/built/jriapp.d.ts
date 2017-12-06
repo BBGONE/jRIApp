@@ -87,13 +87,12 @@ declare module "jriapp/int" {
         convertToTarget(val: any, param: any, dataContext: any): any;
     }
     export interface ISelectable {
-        getContainerEl(): HTMLElement;
         getUniqueID(): string;
         onKeyDown(key: number, event: Event): void;
         onKeyUp(key: number, event: Event): void;
     }
     export interface ISelectableProvider {
-        getISelectable(): ISelectable;
+        readonly selectable: ISelectable;
     }
     export interface IExports {
         getExports(): IIndexer<any>;
@@ -145,6 +144,7 @@ declare module "jriapp/int" {
         css?: string;
         tip?: string;
         el: HTMLElement;
+        delegate?: boolean;
     }
     export interface IElViewStore {
         getElView(el: HTMLElement): IElView;
@@ -611,14 +611,20 @@ declare module "jriapp/utils/sloader" {
     }
 }
 declare module "jriapp/bootstrap" {
-    import { IIndexer, IBaseObject, IPromise, TErrorHandler, TEventHandler, BaseObject, IObjectEvents } from "jriapp_shared";
+    import { IIndexer, IBaseObject, IPromise, TErrorHandler, TEventHandler, BaseObject, IObjectEvents, IWeakMap } from "jriapp_shared";
     import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IContentFactoryList, IElViewRegister, IStylesLoader } from "jriapp/int";
     import { Defaults } from "jriapp/defaults";
     import { TemplateLoader } from "jriapp/utils/tloader";
+    export const delegateWeakMap: IWeakMap, selectableWeakMap: IWeakMap;
+    export const enum DelegateFlags {
+        click = 0,
+        change = 1,
+        keypress = 2,
+        keydown = 3,
+        keyup = 4,
+    }
     export interface IInternalBootstrapMethods {
         initialize(): IPromise<Bootstrap>;
-        trackSelectable(selectable: ISelectableProvider): void;
-        untrackSelectable(selectable: ISelectableProvider): void;
         registerApp(app: IApplication): void;
         unregisterApp(app: IApplication): void;
         registerObject(root: IExports, name: string, obj: any): void;
@@ -637,7 +643,7 @@ declare module "jriapp/bootstrap" {
     export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         static _initFramework(): void;
         private _appInst;
-        private _currentSelectable;
+        private _focusedElView;
         private _defaults;
         private _templateLoader;
         private _bootState;
@@ -656,8 +662,6 @@ declare module "jriapp/bootstrap" {
         protected _createObjEvents(): IObjectEvents;
         private _init();
         private _initialize();
-        private _trackSelectable(selectable);
-        private _untrackSelectable(selectable);
         private _registerApp(app);
         private _unregisterApp(app);
         private _destroyApp();
@@ -692,7 +696,7 @@ declare module "jriapp/bootstrap" {
         readonly elViewRegister: IElViewRegister;
         readonly contentFactory: IContentFactoryList;
         readonly templateLoader: TemplateLoader;
-        currentSelectable: ISelectableProvider;
+        focusedElView: ISelectableProvider;
         readonly defaults: Defaults;
         readonly isReady: boolean;
         readonly state: BootstrapState;
@@ -993,5 +997,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.4.3";
+    export const VERSION = "2.5.0";
 }

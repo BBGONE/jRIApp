@@ -25,10 +25,10 @@ export class EventBag extends BaseObject implements IPropertyBag {
         this._onChange = onChange;
     }
     // override
-    isHasProp(prop: string) {
+    isHasProp(prop: string): boolean {
         return true;
     }
-   // implement IPropertyBag
+    // implement IPropertyBag
     getProp(name: string): ICommand {
         if (!this._dic) {
             return null;
@@ -60,7 +60,6 @@ export class EventBag extends BaseObject implements IPropertyBag {
         }
         this._dic[eventName] = command;
         if (!!this._onChange) {
-
             if (!old) {
                 this._onChange(this, {
                     name: eventName,
@@ -80,21 +79,23 @@ export class EventBag extends BaseObject implements IPropertyBag {
             this.objEvents.raiseProp(name);
         }
     }
-    get isPropertyBag() {
+    get isPropertyBag(): boolean {
         return true;
     }
-
-    trigger(eventName: string, args?: any) {
+    trigger(eventName: string, args?: any): boolean {
         if (!this._dic) {
-            return;
+            return false;
         }
         const command = this._dic[eventName];
         if (!command) {
-            return;
+            return false;
         }
         args = args || {};
         if (command.canExecute(this, args)) {
             command.execute(this, args);
+            return true;
+        } else {
+            return false;
         }
     }
     toString() {

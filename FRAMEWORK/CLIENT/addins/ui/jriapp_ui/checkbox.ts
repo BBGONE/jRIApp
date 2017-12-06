@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+import { IViewOptions } from "jriapp/int";
 import { Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-import { IViewOptions } from "jriapp/int";
-import { bootstrap } from "jriapp/bootstrap";
+import { bootstrap, delegateWeakMap, DelegateFlags } from "jriapp/bootstrap";
 import { css, PROP_NAME } from "./baseview";
 import { InputElView } from "./input";
 
-const dom = DomUtils, checks = Utils.check, boot = bootstrap;
+const dom = DomUtils, checks = Utils.check, boot = bootstrap, delegateMap = delegateWeakMap;
 
 export class CheckBoxElView extends InputElView {
     private _checked: boolean;
@@ -17,15 +17,22 @@ export class CheckBoxElView extends InputElView {
         this._checked = null;
         chk.checked = false;
 
-        dom.events.on(this.el, "change", (e) => {
-            e.stopPropagation();
-            const chk = <HTMLInputElement>self.el;
-            if (self.checked !== chk.checked) {
-                self.checked = chk.checked;
-            }
-        }, this.uniqueID);
-
+        if (this.delegateEvents) {
+            delegateMap.set(this.el, this);
+            this._setIsDelegated(DelegateFlags.change);
+        } else {
+            dom.events.on(this.el, "change", (e) => {
+                e.stopPropagation();
+                self.handle_change(e);
+            }, this.uniqueID);
+        }
         this._updateState();
+    }
+    handle_change(e: Event) {
+        const chk = <HTMLInputElement>this.el;
+        if (this.checked !== chk.checked) {
+            this.checked = chk.checked;
+        }
     }
     protected _updateState() {
         dom.setClass([this.el], css.checkedNull, !checks.isNt(this.checked));

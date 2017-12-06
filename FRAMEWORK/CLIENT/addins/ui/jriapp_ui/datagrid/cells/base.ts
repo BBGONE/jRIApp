@@ -1,15 +1,15 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { BaseObject, Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-import { DATA_ATTR } from "jriapp/const";
 import { ICollectionItem } from "jriapp_shared/collection/int";
+import { delegateWeakMap, DelegateFlags } from "jriapp/bootstrap";
 
 import { DblClick } from "../../utils/dblclick";
 import { Row } from "../rows/row";
 import { BaseColumn } from "../columns/base";
 import { DataGrid } from "../datagrid";
 
-const utils = Utils, dom = DomUtils;
+const utils = Utils, dom = DomUtils, delegateMap = delegateWeakMap;
 
 export interface ICellOptions {
     row: Row;
@@ -36,9 +36,9 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
             }, options);
         this._row = options.row;
         this._td = options.td;
+        delegateMap.set(this._td, this);
         this._column = <TColumn>options.column;
         this._num = options.num;
-        this._td.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this._column.uniqueID);
         dom.setData(this._td, "cell", this);
         if (!!this._column.options.rowCellCss) {
             dom.addClass([this._td], this._column.options.rowCellCss);
@@ -46,10 +46,17 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
         this._click = new DblClick();
         this._row.tr.appendChild(this._td);
     }
+    _isDelegated(flag: DelegateFlags): boolean {
+        return flag === DelegateFlags.click;
+    }
     protected _onCellClicked(row?: Row) {
     }
     protected _onDblClicked(row?: Row) {
         this.grid._getInternal().onCellDblClicked(this);
+    }
+    handle_click(e: Event) {
+        this.grid._getInternal().setCurrentColumn(this.column);
+        this.click();
     }
     click() {
         this.grid.currentRow = this._row;
@@ -63,6 +70,7 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
             return;
         }
         this.setDisposing();
+        delegateMap.delete(this._td);
         if (!!this._click) {
             this._click.dispose();
             this._click = null;

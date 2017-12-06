@@ -184,12 +184,12 @@ class EventHelper {
         // return merged array
         return arrHelper.merge(arr);
     }
-    static getDelegateListener(root: TDomElement, fnMatch: (el: TDomElement) => boolean, listener: THandlerFunc): (event: Event) => void {
+    static getDelegateListener(root: TDomElement, isMatch: (el: TDomElement) => boolean, listener: THandlerFunc): (event: Event) => void {
         const res = (event: Event): void => {
             let target: TDomElement = <any>event.target;
             // go up to the parent node
             while (!!target && target !== root) {
-                if (fnMatch(target)) {
+                if (isMatch(target)) {
                     const eventCopy = new EventWrap(event, target);
                     listener.apply(target, [eventCopy]);
                     return;

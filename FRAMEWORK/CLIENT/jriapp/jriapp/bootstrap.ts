@@ -1,7 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import {
     DUMY_ERROR, IIndexer, IBaseObject, IPromise, TErrorHandler,
-    TEventHandler, TPriority, LocaleERRS, BaseObject, Utils, ObjectEvents, IObjectEvents
+    TEventHandler, TPriority, LocaleERRS, BaseObject, Utils, ObjectEvents,
+    IObjectEvents, createWeakMap, IWeakMap
 } from "jriapp_shared";
 import { STORE_KEY } from "./const";
 import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore,
@@ -16,9 +17,12 @@ import { DomUtils } from "./utils/dom";
 import { Promise } from "jriapp_shared/utils/deferred";
 import { createQueue } from "jriapp_shared/utils/queue";
 
-const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document,
+const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document, checks = utils.check,
     _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err,
     ERRS = LocaleERRS;
+
+export const delegateWeakMap: IWeakMap = createWeakMap(),
+    selectableWeakMap: IWeakMap = createWeakMap();
 
 // Implements polyfill for requestAnimationFrame API && Promise
 (function () {
@@ -53,6 +57,22 @@ const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document,
 const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
 const _stylesLoader: IStylesLoader = createCssLoader();
 
+export const enum DelegateFlags {
+    click = 0,
+    change = 1,
+    keypress = 2,
+    keydown = 3,
+    keyup = 4
+}
+
+const delegateName: IIndexer<DelegateFlags> = {
+    click: DelegateFlags.click,
+    change: DelegateFlags.change,
+    keypress: DelegateFlags.keypress,
+    keydown: DelegateFlags.keydown,
+    keyup: DelegateFlags.keyup
+};
+
 const enum GLOB_EVENTS {
     load = "load",
     unload = "unload",
@@ -60,14 +80,12 @@ const enum GLOB_EVENTS {
 }
 
 const enum PROP_NAME {
-    curSelectable = "currentSelectable",
+    focusedElView = "focusedElView",
     isReady = "isReady"
 }
 
 export interface IInternalBootstrapMethods {
     initialize(): IPromise<Bootstrap>;
-    trackSelectable(selectable: ISelectableProvider): void;
-    untrackSelectable(selectable: ISelectableProvider): void;
     registerApp(app: IApplication): void;
     unregisterApp(app: IApplication): void;
     registerObject(root: IExports, name: string, obj: any): void;
@@ -110,7 +128,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         });
     }
     private _appInst: IApplication;
-    private _currentSelectable: ISelectableProvider;
+    private _focusedElView: ISelectableProvider;
     private _defaults: Defaults;
     private _templateLoader: TemplateLoader;
     private _bootState: BootstrapState;
@@ -129,7 +147,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         }
         this._bootState = BootstrapState.None;
         this._appInst = null;
-        this._currentSelectable = null;
+        this._focusedElView = null;
         this._objId = coreUtils.getNewID("app");
 
         // exported types
@@ -154,12 +172,6 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._internal = {
             initialize: () => {
                 return self._initialize();
-            },
-            trackSelectable: (selectable: ISelectableProvider) => {
-                self._trackSelectable(selectable);
-            },
-            untrackSelectable: (selectable: ISelectableProvider) => {
-                self._untrackSelectable(selectable);
             },
             registerApp: (app: IApplication) => {
                 self._registerApp(app);
@@ -188,22 +200,48 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     private _bindGlobalEvents(): void {
         const self = this;
-        // doc.addEventListener
-        // when clicked outside any Selectable set _currentSelectable = null
+
+        // when clicked outside any Selectable Element View set focusedElView to null
         dom.events.on(doc, "click", (e) => {
-            e.stopPropagation();
-            self.currentSelectable = null;
+            let target: Element | HTMLDocument = <any>e.target;
+            // go up to the parent node
+            while (!!target && target !== doc) {
+                const obj = selectableWeakMap.get(target);
+                if (!!obj) {
+                    //set as current selectable
+                    self.focusedElView = obj;
+                    return;
+                }
+                target = (<Element><any>target).parentElement;
+            }
+            // set to null if it's not inside a selectable
+            self.focusedElView = null;
         }, this._objId);
+
+        const delegateMap = delegateWeakMap;
+        // event delegation - capturing delegated events
+        coreUtils.forEachProp(delegateName, ((name, flag) => {
+            const fn_name = "handle_" + name;
+            dom.events.on(doc, name, (e) => {
+                const obj: any = delegateMap.get(e.target);
+                obj[fn_name](e.originalEvent);
+            }, {
+                    nmspace: this._objId,
+                    matchElement: (el: Element) => {
+                        const obj = delegateMap.get(el);
+                        return !!obj && !!obj._isDelegated(flag) && checks.isFunc(obj[fn_name]);
+                    }
+                });
+        }));
+
         dom.events.on(doc, "keydown", (e) => {
-            e.stopPropagation();
-            if (!!self._currentSelectable) {
-                self._currentSelectable.getISelectable().onKeyDown(e.which, e);
+            if (!!self._focusedElView) {
+                self._focusedElView.selectable.onKeyDown(e.which, e);
             }
         }, this._objId);
         dom.events.on(doc, "keyup", (e) => {
-            e.stopPropagation();
-            if (!!self._currentSelectable) {
-                self._currentSelectable.getISelectable().onKeyUp(e.which, e);
+            if (!!self._focusedElView) {
+                self._focusedElView.selectable.onKeyUp(e.which, e);
             }
         }, this._objId);
 
@@ -301,24 +339,6 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             self._bootState = BootstrapState.Error;
             ERROR.reThrow(err, this.handleError(err, self));
         });
-    }
-    private _trackSelectable(selectable: ISelectableProvider): void {
-        const self = this, isel = selectable.getISelectable(), el = isel.getContainerEl();
-        dom.events.on(el, "click", (e) => {
-            e.stopPropagation();
-            const target = e.target;
-            if (dom.isContained(target, el)) {
-                self.currentSelectable = selectable;
-            }
-        }, isel.getUniqueID());
-    }
-    private _untrackSelectable(selectable: ISelectableProvider): void {
-        const isel = selectable.getISelectable(),
-            el = isel.getContainerEl();
-        dom.events.off(el, "click", isel.getUniqueID());
-        if (this.currentSelectable === selectable) {
-            this.currentSelectable = null;
-        }
     }
     private _registerApp(app: IApplication): void {
         if (!!this._appInst) {
@@ -514,13 +534,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     get elViewRegister(): IElViewRegister { return this._elViewRegister; }
     get contentFactory(): IContentFactoryList { return this._contentFactory; }
     get templateLoader(): TemplateLoader { return this._templateLoader; }
-    get currentSelectable(): ISelectableProvider {
-        return this._currentSelectable;
+    get focusedElView(): ISelectableProvider {
+        return this._focusedElView;
     }
-    set currentSelectable(v: ISelectableProvider) {
-        if (this._currentSelectable !== v) {
-            this._currentSelectable = v;
-            this.objEvents.raiseProp(PROP_NAME.curSelectable);
+    set focusedElView(v: ISelectableProvider) {
+        if (this._focusedElView !== v) {
+            this._focusedElView = v;
+            this.objEvents.raiseProp(PROP_NAME.focusedElView);
         }
     }
     get defaults() {

@@ -4125,21 +4125,22 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype._onErrorsChanged = function () {
             this.objEvents.raise("errors_changed", {});
         };
-        ItemAspect.prototype._setIsEdited = function (v) {
+        ItemAspect.prototype._getFlag = function (flag) {
+            return !!(this._flags & (1 << flag));
+        };
+        ItemAspect.prototype._setFlag = function (v, flag) {
             if (v) {
-                this._flags |= (1 << 1);
+                this._flags |= (1 << flag);
             }
             else {
-                this._flags &= ~(1 << 1);
+                this._flags &= ~(1 << flag);
             }
         };
+        ItemAspect.prototype._setIsEdited = function (v) {
+            this._setFlag(v, 1);
+        };
         ItemAspect.prototype._setIsCancelling = function (v) {
-            if (v) {
-                this._flags |= (1 << 3);
-            }
-            else {
-                this._flags &= ~(1 << 3);
-            }
+            this._setFlag(v, 3);
         };
         ItemAspect.prototype._beginEdit = function () {
             fn_checkDetached(this);
@@ -4248,21 +4249,11 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             this._key = v;
         };
         ItemAspect.prototype._setIsAttached = function (v) {
-            if (v) {
-                this._flags |= (1 << 0);
-            }
-            else {
-                this._flags &= ~(1 << 0);
-            }
+            this._setFlag(v, 0);
         };
         ItemAspect.prototype._setIsRefreshing = function (v) {
             if (this.isRefreshing !== v) {
-                if (v) {
-                    this._flags |= (1 << 2);
-                }
-                else {
-                    this._flags &= ~(1 << 2);
-                }
+                this._setFlag(v, 2);
                 this.objEvents.raiseProp(int_3.PROP_NAME.isRefreshing);
             }
         };
@@ -4589,28 +4580,28 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         });
         Object.defineProperty(ItemAspect.prototype, "isEdited", {
             get: function () {
-                return !!(this._flags & (1 << 1));
+                return this._getFlag(1);
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "isDetached", {
             get: function () {
-                return !(this._flags & (1 << 0));
+                return !this._getFlag(0);
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "isRefreshing", {
             get: function () {
-                return !!(this._flags & (1 << 2));
+                return this._getFlag(2);
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "isCancelling", {
             get: function () {
-                return !!(this._flags & (1 << 3));
+                return this._getFlag(3);
             },
             enumerable: true,
             configurable: true

@@ -8,7 +8,7 @@ import { IViewOptions } from "jriapp/int";
 import { BaseElView, fn_addToolTip } from "./baseview";
 import { COLL_CHANGE_REASON, COLL_CHANGE_TYPE } from "jriapp_shared/collection/const";
 import { ICollection, ICollectionItem } from "jriapp_shared/collection/int";
-import { bootstrap } from "jriapp";
+import { bootstrap } from "jriapp/bootstrap";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
     strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
@@ -88,6 +88,7 @@ export class Pager extends BaseObject {
         this._toolTips = [];
         this._pageDebounce = new Debounce();
         this._dsDebounce = new Debounce();
+
         dom.events.on(this._el, "click", (e) => {
             e.preventDefault();
             const a = <HTMLElement>e.target, page = parseInt(a.getAttribute("data-page"), 10);
@@ -108,6 +109,7 @@ export class Pager extends BaseObject {
                     return self._objId === attr && tag === "a";
                 }
             });
+
         this._bindDS();
     }
     protected _addToolTip(el: Element, tip: string) {

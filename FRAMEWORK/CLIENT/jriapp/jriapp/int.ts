@@ -44,14 +44,13 @@ export interface IConverter {
 }
 
 export interface ISelectable {
-    getContainerEl(): HTMLElement;
     getUniqueID(): string;
     onKeyDown(key: number, event: Event): void;
     onKeyUp(key: number, event: Event): void;
 }
 
 export interface ISelectableProvider {
-    getISelectable(): ISelectable;
+    readonly selectable: ISelectable;
 }
 
 export interface IExports {
@@ -116,6 +115,8 @@ export interface IViewOptions {
     css?: string;
     tip?: string;
     el: HTMLElement;
+    //use event delegation or not
+    delegate?: boolean;
 }
 
 export interface IElViewStore {

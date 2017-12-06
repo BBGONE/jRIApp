@@ -11,7 +11,7 @@ import {
 import {
     Parser
 } from "jriapp/utils/parser";
-import { bootstrap } from "jriapp/bootstrap";
+import { bootstrap, selectableWeakMap } from "jriapp/bootstrap";
 import {
     COLL_CHANGE_REASON, ITEM_STATUS, COLL_CHANGE_TYPE
 } from "jriapp_shared/collection/const";
@@ -240,9 +240,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._pageDebounce = new Debounce();
 
         this._selectable = {
-            getContainerEl: () => {
-                return self._contaner;
-            },
             getUniqueID: () => {
                 return self.uniqueID;
             },
@@ -305,8 +302,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             }
         };
         this._createColumns();
-
-        boot._getInternal().trackSelectable(this);
+        selectableWeakMap.set(table, this);
         _gridCreated(this);
 
         const ds = this._options.dataSource;
@@ -814,16 +810,18 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._wrapper = wrapper;
         this._header = header;
         this._contaner = container;
+        selectableWeakMap.set(this._contaner, this);
     }
     protected _unWrapTable() {
         if (!this._header) {
             return;
         }
+        selectableWeakMap.delete(this._contaner);
         this._header.remove();
         this._header = null;
-        // remove wrapDiv
+        // first call to remove wrap div
         dom.unwrap(this.table);
-        // remove container
+        // second call to remove container div
         dom.unwrap(this.table);
         this._wrapper = null;
         this._contaner = null;
@@ -996,9 +994,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             col.updateWidth();
         });
     }
-    getISelectable(): ISelectable {
-        return this._selectable;
-    }
     sortByColumn(column: DataColumn): IPromise<any> {
         const ds = this.dataSource;
         if (!ds) {
@@ -1131,7 +1126,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     focus() {
         this.scrollToCurrent(ROW_POSITION.Up);
-        boot.currentSelectable = this;
+        boot.focusedElView = this;
     }
     addNew() {
         const ds = this.dataSource;
@@ -1147,6 +1142,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             return;
         }
         this.setDisposing();
+        selectableWeakMap.delete(this._table);
         this._scrollDebounce.dispose();
         this._dsDebounce.dispose();
         this._pageDebounce.dispose();
@@ -1154,7 +1150,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._clearGrid();
         this._unbindDS();
         _gridDestroyed(this);
-        boot._getInternal().untrackSelectable(this);
         if (!!this._details) {
             this._details.dispose();
             this._details = null;
@@ -1181,6 +1176,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._selectable = null;
         this._internal = null;
         super.dispose();
+    }
+    get selectable(): ISelectable {
+        return this._selectable;
     }
     get table(): HTMLTableElement {
         return this._table;
@@ -1240,7 +1238,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this.currentItem = null;
         }
     }
-    get editingRow() { return this._editingRow; }
+    get editingRow() {
+        return this._editingRow;
+    }
     get isHasEditor() {
         return (this._options.editor && this._options.editor.templateID);
     }

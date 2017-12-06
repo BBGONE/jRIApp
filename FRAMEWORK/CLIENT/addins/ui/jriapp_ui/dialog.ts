@@ -136,8 +136,8 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     private _result: "ok" | "cancel";
     private _options: IDialogOptions;
     private _submitInfo: SubmitInfo;
-    // save the global's currentSelectable  before showing and restore it on dialog's closing
-    private _currentSelectable: ISelectableProvider;
+    // saves the bootstrap's focusedElView  before showing and restore it on dialog's closing
+    private _focusedElView: ISelectableProvider;
     private _deferredTemplate: IDeferred<ITemplate>;
 
     constructor(options: IDialogConstructorOptions) {
@@ -175,7 +175,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._template = null;
         this._$dlgEl = null;
         this._result = null;
-        this._currentSelectable = null;
+        this._focusedElView = null;
         this._submitInfo = null;
         this._options = {
             width: options.width,
@@ -374,12 +374,12 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             this._template.dataContext = null;
             this._submitInfo = null;
         }
-        let csel = this._currentSelectable;
-        this._currentSelectable = null;
-        utils.queue.enque(() => { boot.currentSelectable = csel; csel = null; });
+        let csel = this._focusedElView;
+        this._focusedElView = null;
+        utils.queue.enque(() => { boot.focusedElView = csel; csel = null; });
     }
     protected _onShow() {
-        this._currentSelectable = boot.currentSelectable;
+        this._focusedElView = boot.focusedElView;
         this._submitInfo = new SubmitInfo(this.dataContext);
         if (!!this._fnOnShow) {
             this._fnOnShow(this);

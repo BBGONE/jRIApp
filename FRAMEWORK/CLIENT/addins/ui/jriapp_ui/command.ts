@@ -5,36 +5,54 @@ import { DomUtils } from "jriapp/utils/dom";
 import { ICommand } from "jriapp/mvvm";
 import { BaseElView, PROP_NAME, css } from "./baseview";
 
-const utils = Utils, dom = DomUtils, checks = utils.check, sys = utils.sys;
+const utils = Utils, dom = DomUtils, sys = utils.sys;
 
 export interface ICommandViewOptions extends IViewOptions {
     preventDefault?: boolean;
     stopPropagation?: boolean;
 }
 
+const enum CommandFlags {
+    PreventDefault = 0,
+    StopPropagation = 1,
+    Disabled= 2
+}
+
 export class CommandElView extends BaseElView {
     private _command: ICommand;
     private _commandParam: any;
-    private _preventDefault: boolean;
-    private _stopPropagation: boolean;
-    private _disabled: boolean;
+    private _flags: number;
 
     constructor(options: ICommandViewOptions) {
         super(options);
         this._command = null;
         this._commandParam = null;
-        this._preventDefault = !!options.preventDefault;
-        this._stopPropagation = !!options.stopPropagation;
-        this._disabled = ("disabled" in this.el) ? checks.undefined : false;
+        this._flags = 0;
+        this._setFlag(!!options.preventDefault, CommandFlags.PreventDefault);
+        this._setFlag(!!options.stopPropagation, CommandFlags.StopPropagation);
+        const disabled = ("disabled" in this.el) && (<any>this.el).disabled;
+        if (disabled) {
+            this._setFlag(disabled, CommandFlags.Disabled);
+        }
         dom.setClass([this.el], css.disabled, this.isEnabled);
     }
-    private _onCanExecuteChanged(cmd: ICommand, args: any) {
+    private _getFlag(flag: CommandFlags): boolean {
+        return !!(this._flags & (1 << flag));
+    }
+    private _setFlag(v: boolean, flag: CommandFlags) {
+        if (v) {
+            this._flags |= (1 << flag);
+        } else {
+            this._flags &= ~(1 << flag);
+        }
+    }
+    private _onCanExecuteChanged(cmd: ICommand, args: any): void {
         this.isEnabled = cmd.canExecute(this, this._commandParam);
     }
-    protected _onCommandChanged() {
+    protected _onCommandChanged(): void {
         this.objEvents.raiseProp(PROP_NAME.command);
     }
-    protected invokeCommand(args: any, isAsync: boolean) {
+    protected invokeCommand(args: any, isAsync: boolean): void {
         const self = this;
         args = args || this._commandParam || {};
         if (!!self.command && self.command.canExecute(self, args)) {
@@ -57,7 +75,7 @@ export class CommandElView extends BaseElView {
             }
         }
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -71,27 +89,6 @@ export class CommandElView extends BaseElView {
     }
     toString(): string {
         return "CommandElView";
-    }
-    get isEnabled(): boolean {
-        const el: any = this.el;
-        if (this._disabled === checks.undefined) {
-            return !el.disabled;
-        } else {
-            return !this._disabled;
-        }
-    }
-    set isEnabled(v: boolean) {
-        const el: any = this.el;
-        if (v !== this.isEnabled) {
-            if (this._disabled === checks.undefined) {
-                el.disabled = !v;
-            } else {
-                this._disabled = !v;
-            }
-
-            dom.setClass([this.el], css.disabled, !!v);
-            this.objEvents.raiseProp(PROP_NAME.isEnabled);
-        }
     }
     get command(): ICommand { return this._command; }
     set command(v: ICommand) {
@@ -110,17 +107,38 @@ export class CommandElView extends BaseElView {
             this._onCommandChanged();
         }
     }
-    get commandParam() { return this._commandParam; }
-    set commandParam(v) {
+    get commandParam(): any { return this._commandParam; }
+    set commandParam(v: any) {
         if (v !== this._commandParam) {
             this._commandParam = v;
             this.objEvents.raiseProp(PROP_NAME.commandParam);
         }
     }
-    get preventDefault() {
-        return this._preventDefault;
+    get isEnabled(): boolean {
+        const el: any = this.el;
+        if (("disabled" in this.el)) {
+            return !el.disabled;
+        } else {
+            return !this._getFlag(CommandFlags.Disabled)
+        }
     }
-    get stopPropagation() {
-        return this._stopPropagation;
+    set isEnabled(v: boolean) {
+        const el: any = this.el;
+        if (v !== this.isEnabled) {
+            if (("disabled" in this.el)) {
+                el.disabled = !v;
+                this._setFlag(!v, CommandFlags.Disabled);
+            } else {
+                this._setFlag(!v, CommandFlags.Disabled);
+            }
+            dom.setClass([this.el], css.disabled, !!v);
+            this.objEvents.raiseProp(PROP_NAME.isEnabled);
+        }
+    }
+    get preventDefault(): boolean {
+        return this._getFlag(CommandFlags.PreventDefault);
+    }
+    get stopPropagation(): boolean {
+        return this._getFlag(CommandFlags.StopPropagation);
     }
 }

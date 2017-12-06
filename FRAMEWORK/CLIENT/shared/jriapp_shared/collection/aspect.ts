@@ -76,19 +76,21 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
     protected _onErrorsChanged() {
         this.objEvents.raise(ITEM_EVENTS.errors_changed, {});
     }
-    protected _setIsEdited(v: boolean) {
+    private _getFlag(flag: AspectFlags): boolean {
+        return !!(this._flags & (1 << flag));
+    }
+    private _setFlag(v: boolean, flag: AspectFlags) {
         if (v) {
-            this._flags |= (1 << AspectFlags.IsEdited);
+            this._flags |= (1 << flag);
         } else {
-            this._flags &= ~(1 << AspectFlags.IsEdited);
+            this._flags &= ~(1 << flag);
         }
     }
+    protected _setIsEdited(v: boolean) {
+        this._setFlag(v, AspectFlags.IsEdited);
+    }
     protected _setIsCancelling(v: boolean) {
-        if (v) {
-            this._flags |= (1 << AspectFlags.IsCancelling);
-        } else {
-            this._flags &= ~(1 << AspectFlags.IsCancelling);
-        }
+        this._setFlag(v, AspectFlags.IsCancelling);
     }
     protected _beginEdit(): boolean {
         fn_checkDetached(this);
@@ -208,19 +210,11 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         this._key = v;
     }
     _setIsAttached(v: boolean) {
-        if (v) {
-            this._flags |= (1 << AspectFlags.IsAttached);
-        } else {
-            this._flags &= ~(1 << AspectFlags.IsAttached);
-        }
+        this._setFlag(v, AspectFlags.IsAttached);
     }
     _setIsRefreshing(v: boolean) {
         if (this.isRefreshing !== v) {
-            if (v) {
-                this._flags |= (1 << AspectFlags.IsRefreshing);
-            } else {
-                this._flags &= ~(1 << AspectFlags.IsRefreshing);
-            }
+            this._setFlag(v, AspectFlags.IsRefreshing);
             this.objEvents.raiseProp(PROP_NAME.isRefreshing);
         }
     }
@@ -506,16 +500,16 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         return this._status === ITEM_STATUS.Deleted;
     }
     get isEdited(): boolean {
-        return !!(this._flags & (1 << AspectFlags.IsEdited));
+        return this._getFlag(AspectFlags.IsEdited);
     }
     get isDetached(): boolean {
         // opposite of attached!
-        return !(this._flags & (1 << AspectFlags.IsAttached));
+        return !this._getFlag(AspectFlags.IsAttached);
     }
     get isRefreshing(): boolean {
-        return !!(this._flags & (1 << AspectFlags.IsRefreshing));
+        return this._getFlag(AspectFlags.IsRefreshing);
     }
     get isCancelling(): boolean {
-        return !!(this._flags & (1 << AspectFlags.IsCancelling));
+        return this._getFlag(AspectFlags.IsCancelling);
     }
 }

@@ -6,7 +6,7 @@ import { DomUtils } from "jriapp/utils/dom";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { TOOLTIP_SVC, DATEPICKER_SVC, DATA_ATTR } from "jriapp/const";
 import { ITooltipService, IElView, IElViewStore, IApplication, IViewOptions } from "jriapp/int";
-import { bootstrap } from "jriapp/bootstrap";
+import { bootstrap, delegateWeakMap, DelegateFlags } from "jriapp/bootstrap";
 import { ICommand } from "jriapp/mvvm";
 import { EventBag, EVENT_CHANGE_TYPE, IEventChangedArgs } from "./utils/eventbag";
 import { PropertyBag } from "./utils/propbag";
@@ -17,7 +17,8 @@ import { createDatepickerSvc } from "./utils/datepicker";
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
 const utils = Utils, coreUtils = utils.core, dom = DomUtils, checks = utils.check,
-    boot = bootstrap, viewChecks = ViewChecks;
+    boot = bootstrap, viewChecks = ViewChecks, delegateMap = delegateWeakMap;
+
 
 viewChecks.isElView = (obj: any) => {
     return !!obj && obj instanceof BaseElView;
@@ -74,11 +75,13 @@ export const enum PROP_NAME {
 export class BaseElView extends BaseObject implements IElView {
     private _objId: string;
     private _el: HTMLElement;
+    private _delegateFlags: DelegateFlags;
+    private _delegateEvents: boolean;
     protected _errors: IValidationInfo[];
     protected _toolTip: string;
-    private _eventStore: EventBag;
-    private _props: IPropertyBag;
-    private _classes: IPropertyBag;
+    private _eventBag: EventBag;
+    private _propBag: IPropertyBag;
+    private _classBag: IPropertyBag;
     // saves old display before making display: none
     private _display: string;
     private _css: string;
@@ -88,11 +91,12 @@ export class BaseElView extends BaseObject implements IElView {
         const el = options.el;
         this._el = el;
         this._toolTip = options.tip;
-
+        this._delegateEvents = !!options.delegate;
+        this._delegateFlags = 0;
         // lazily initialized
-        this._eventStore = null;
-        this._props = null;
-        this._classes = null;
+        this._eventBag = null;
+        this._propBag = null;
+        this._classBag = null;
         this._display = null;
         this._css = options.css;
 
@@ -123,9 +127,8 @@ export class BaseElView extends BaseObject implements IElView {
             return;
         }
         dom.events.on(this.el, name, (e) => {
-            e.stopPropagation();
-            if (!!self._eventStore) {
-                self._eventStore.trigger(name, e);
+            if (!!self._eventBag) {
+                self._eventBag.trigger(name, e);
             }
         }, this.uniqueID);
     }
@@ -167,6 +170,12 @@ export class BaseElView extends BaseObject implements IElView {
     protected _setToolTip(el: Element, tip: string, isError?: boolean) {
         fn_addToolTip(el, tip, isError);
     }
+    protected _setIsDelegated(flag: DelegateFlags) {
+        this._delegateFlags |= (1 << flag);
+    }
+    _isDelegated(flag: DelegateFlags): boolean {
+        return !!(this._delegateFlags & (1 << flag));
+    }
     dispose() {
         if (this.getIsDisposed()) {
             return;
@@ -178,17 +187,21 @@ export class BaseElView extends BaseObject implements IElView {
             this._toolTip = null;
             this._setToolTip(this.el, null);
             this.validationErrors = null;
-            if (!!this._eventStore) {
-                this._eventStore.dispose();
-                this._eventStore = null;
+            if (this._delegateFlags !== 0) {
+                delegateMap.delete(this.el);
+                this._delegateFlags = 0;
             }
-            if (!!this._props) {
-                this._props.dispose();
-                this._props = null;
+            if (!!this._eventBag) {
+                this._eventBag.dispose();
+                this._eventBag = null;
             }
-            if (!!this._classes) {
-                this._classes.dispose();
-                this._classes = null;
+            if (!!this._propBag) {
+                this._propBag.dispose();
+                this._propBag = null;
+            }
+            if (!!this._classBag) {
+                this._classBag.dispose();
+                this._classBag = null;
             }
         } finally {
             this._getStore().setElView(this.el, null);
@@ -247,35 +260,38 @@ export class BaseElView extends BaseObject implements IElView {
     }
     // stores commands for data binding to the HtmlElement's events
     get events(): IPropertyBag {
-        if (!this._eventStore) {
+        if (!this._eventBag) {
             if (this.getIsStateDirty()) {
                 return checks.undefined;
             }
-            this._eventStore = new EventBag((s, a) => {
+            this._eventBag = new EventBag((s, a) => {
                 this._onEventChanged(a);
             });
         }
-        return this._eventStore;
+        return this._eventBag;
     }
     // exposes All HTML Element properties for data binding directly to them
     get props(): IPropertyBag {
-        if (!this._props) {
+        if (!this._propBag) {
             if (this.getIsStateDirty()) {
                 return checks.undefined;
             }
-            this._props = new PropertyBag(this.el);
+            this._propBag = new PropertyBag(this.el);
         }
-        return this._props;
+        return this._propBag;
     }
     // exposes All CSS Classes for data binding directly to them
     get classes(): IPropertyBag {
-        if (!this._classes) {
+        if (!this._classBag) {
             if (this.getIsStateDirty()) {
                 return checks.undefined;
             }
-            this._classes = new CSSBag(this.el);
+            this._classBag = new CSSBag(this.el);
         }
-        return this._classes;
+        return this._classBag;
+    }
+    get delegateEvents(): boolean {
+        return this._delegateEvents;
     }
     get css() {
         return this._css;
