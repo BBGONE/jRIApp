@@ -13,7 +13,7 @@ export class ButtonElView extends CommandElView {
         super(options);
         const self = this;
         this._isButton = this.el.tagName.toLowerCase() === "button";
-        if (this.delegateEvents) {
+        if (this.isDelegationOn) {
             delegateMap.set(this.el, this);
             this._setIsDelegated(DelegateFlags.click);
         } else {

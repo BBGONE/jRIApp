@@ -116,7 +116,7 @@ export interface IViewOptions {
     tip?: string;
     el: HTMLElement;
     //use event delegation or not
-    delegate?: boolean;
+    nodelegate?: boolean;
 }
 
 export interface IElViewStore {

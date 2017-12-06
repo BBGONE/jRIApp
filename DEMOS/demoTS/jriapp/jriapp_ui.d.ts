@@ -205,7 +205,7 @@ declare module "jriapp_ui/baseview" {
         private _objId;
         private _el;
         private _delegateFlags;
-        private _delegateEvents;
+        private _isDelegationOn;
         protected _errors: IValidationInfo[];
         protected _toolTip: string;
         private _eventBag;
@@ -236,7 +236,7 @@ declare module "jriapp_ui/baseview" {
         readonly events: IPropertyBag;
         readonly props: IPropertyBag;
         readonly classes: IPropertyBag;
-        readonly delegateEvents: boolean;
+        readonly isDelegationOn: boolean;
         css: string;
         readonly app: IApplication;
     }

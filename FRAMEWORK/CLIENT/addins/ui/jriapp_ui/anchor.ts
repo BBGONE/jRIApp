@@ -34,7 +34,7 @@ export class AnchorElView extends CommandElView {
         }
 
         dom.addClass([this.el], css.commandLink);
-        if (this.delegateEvents) {
+        if (this.isDelegationOn) {
             delegateMap.set(this.el, this);
             this._setIsDelegated(DelegateFlags.click);
         } else {

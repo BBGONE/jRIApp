@@ -144,7 +144,7 @@ declare module "jriapp/int" {
         css?: string;
         tip?: string;
         el: HTMLElement;
-        delegate?: boolean;
+        nodelegate?: boolean;
     }
     export interface IElViewStore {
         getElView(el: HTMLElement): IElView;
@@ -997,5 +997,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.5.0";
+    export const VERSION = "2.5.1";
 }

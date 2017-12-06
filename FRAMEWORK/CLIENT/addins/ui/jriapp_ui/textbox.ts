@@ -25,7 +25,7 @@ export class TextBoxElView extends InputElView {
     constructor(options: ITextBoxOptions) {
         super(options);
         const self = this;
-        if (this.delegateEvents) {
+        if (this.isDelegationOn) {
             delegateMap.set(this.el, this);
             this._setIsDelegated(DelegateFlags.change);
             this._setIsDelegated(DelegateFlags.keypress);

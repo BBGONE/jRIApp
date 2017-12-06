@@ -18,7 +18,7 @@ export class CheckBoxThreeStateElView extends InputElView {
         chk.checked = false;
         chk.indeterminate = this._checked === null;
 
-        if (this.delegateEvents) {
+        if (this.isDelegationOn) {
             delegateMap.set(this.el, this);
             this._setIsDelegated(DelegateFlags.change);
         } else {

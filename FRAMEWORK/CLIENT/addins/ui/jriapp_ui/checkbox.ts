@@ -17,7 +17,7 @@ export class CheckBoxElView extends InputElView {
         this._checked = null;
         chk.checked = false;
 
-        if (this.delegateEvents) {
+        if (this.isDelegationOn) {
             delegateMap.set(this.el, this);
             this._setIsDelegated(DelegateFlags.change);
         } else {

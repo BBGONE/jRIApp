@@ -849,7 +849,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             var el = options.el;
             _this._el = el;
             _this._toolTip = options.tip;
-            _this._delegateEvents = !!options.delegate;
+            _this._isDelegationOn = !(options.nodelegate === true);
             _this._delegateFlags = 0;
             _this._eventBag = null;
             _this._propBag = null;
@@ -1083,9 +1083,9 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BaseElView.prototype, "delegateEvents", {
+        Object.defineProperty(BaseElView.prototype, "isDelegationOn", {
             get: function () {
-                return this._delegateEvents;
+                return this._isDelegationOn;
             },
             enumerable: true,
             configurable: true
@@ -1182,7 +1182,7 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
         function TextBoxElView(options) {
             var _this = _super.call(this, options) || this;
             var self = _this;
-            if (_this.delegateEvents) {
+            if (_this.isDelegationOn) {
                 delegateMap.set(_this.el, _this);
                 _this._setIsDelegated(1);
                 _this._setIsDelegated(2);
@@ -1399,7 +1399,7 @@ define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/uti
             var self = _this, chk = _this.el;
             _this._checked = null;
             chk.checked = false;
-            if (_this.delegateEvents) {
+            if (_this.isDelegationOn) {
                 delegateMap.set(_this.el, _this);
                 _this._setIsDelegated(1);
             }
@@ -8391,7 +8391,7 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                 _this.glyph = options.glyph;
             }
             dom.addClass([_this.el], "ria-command-link");
-            if (_this.delegateEvents) {
+            if (_this.isDelegationOn) {
                 delegateMap.set(_this.el, _this);
                 _this._setIsDelegated(0);
             }
@@ -8698,7 +8698,7 @@ define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
             var _this = _super.call(this, options) || this;
             var self = _this;
             _this._isButton = _this.el.tagName.toLowerCase() === "button";
-            if (_this.delegateEvents) {
+            if (_this.isDelegationOn) {
                 delegateMap.set(_this.el, _this);
                 _this._setIsDelegated(0);
             }
@@ -8798,7 +8798,7 @@ define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/ut
             _this._checked = null;
             chk.checked = false;
             chk.indeterminate = _this._checked === null;
-            if (_this.delegateEvents) {
+            if (_this.isDelegationOn) {
                 delegateMap.set(_this.el, _this);
                 _this._setIsDelegated(1);
             }
