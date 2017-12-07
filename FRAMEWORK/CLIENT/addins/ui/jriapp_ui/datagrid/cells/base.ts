@@ -39,7 +39,6 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
         delegateMap.set(this._td, this);
         this._column = <TColumn>options.column;
         this._num = options.num;
-        dom.setData(this._td, "cell", this);
         if (!!this._column.options.rowCellCss) {
             dom.addClass([this._td], this._column.options.rowCellCss);
         }

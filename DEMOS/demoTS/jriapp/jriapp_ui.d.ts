@@ -205,7 +205,6 @@ declare module "jriapp_ui/baseview" {
         private _objId;
         private _el;
         private _delegateFlags;
-        private _isDelegationOn;
         protected _errors: IValidationInfo[];
         protected _toolTip: string;
         private _eventBag;

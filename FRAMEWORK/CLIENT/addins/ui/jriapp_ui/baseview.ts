@@ -76,7 +76,6 @@ export class BaseElView extends BaseObject implements IElView {
     private _objId: string;
     private _el: HTMLElement;
     private _delegateFlags: DelegateFlags;
-    private _isDelegationOn: boolean;
     protected _errors: IValidationInfo[];
     protected _toolTip: string;
     private _eventBag: EventBag;
@@ -91,8 +90,7 @@ export class BaseElView extends BaseObject implements IElView {
         const el = options.el;
         this._el = el;
         this._toolTip = options.tip;
-        this._isDelegationOn = !(options.nodelegate === true);
-        this._delegateFlags = 0;
+        this._delegateFlags = (options.nodelegate === true) ? 0 : 1;
         // lazily initialized
         this._eventBag = null;
         this._propBag = null;
@@ -291,7 +289,7 @@ export class BaseElView extends BaseObject implements IElView {
         return this._classBag;
     }
     get isDelegationOn(): boolean {
-        return this._isDelegationOn;
+        return !!(this._delegateFlags & (1 << DelegateFlags.delegationOn));
     }
     get css() {
         return this._css;

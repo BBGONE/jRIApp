@@ -58,11 +58,12 @@ const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
 const _stylesLoader: IStylesLoader = createCssLoader();
 
 export const enum DelegateFlags {
-    click = 0,
-    change = 1,
-    keypress = 2,
-    keydown = 3,
-    keyup = 4
+    delegationOn = 0,
+    click = 1,
+    change = 2,
+    keypress = 3,
+    keydown = 4,
+    keyup = 5
 }
 
 const delegateName: IIndexer<DelegateFlags> = {

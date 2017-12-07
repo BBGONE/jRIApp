@@ -1612,18 +1612,19 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
     var _stylesLoader = sloader_1.createCssLoader();
     var DelegateFlags;
     (function (DelegateFlags) {
-        DelegateFlags[DelegateFlags["click"] = 0] = "click";
-        DelegateFlags[DelegateFlags["change"] = 1] = "change";
-        DelegateFlags[DelegateFlags["keypress"] = 2] = "keypress";
-        DelegateFlags[DelegateFlags["keydown"] = 3] = "keydown";
-        DelegateFlags[DelegateFlags["keyup"] = 4] = "keyup";
+        DelegateFlags[DelegateFlags["delegationOn"] = 0] = "delegationOn";
+        DelegateFlags[DelegateFlags["click"] = 1] = "click";
+        DelegateFlags[DelegateFlags["change"] = 2] = "change";
+        DelegateFlags[DelegateFlags["keypress"] = 3] = "keypress";
+        DelegateFlags[DelegateFlags["keydown"] = 4] = "keydown";
+        DelegateFlags[DelegateFlags["keyup"] = 5] = "keyup";
     })(DelegateFlags = exports.DelegateFlags || (exports.DelegateFlags = {}));
     var delegateName = {
-        click: 0,
-        change: 1,
-        keypress: 2,
-        keydown: 3,
-        keyup: 4
+        click: 1,
+        change: 2,
+        keypress: 3,
+        keydown: 4,
+        keyup: 5
     };
     var GLOB_EVENTS;
     (function (GLOB_EVENTS) {
@@ -4238,6 +4239,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.5.1";
+    exports.VERSION = "2.5.2";
     bootstrap_7.Bootstrap._initFramework();
 });

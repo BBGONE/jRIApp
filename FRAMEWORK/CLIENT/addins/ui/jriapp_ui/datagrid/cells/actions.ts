@@ -34,13 +34,13 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
     }
     private _setupButtons(btns: Element[]): void {
         const self = this, isActionsToolTips = self.grid.options.isActionsToolTips;
-        btns.forEach((el) => {
-            dom.setData(el, "cell", self);
-            const name = el.getAttribute(DATA_ATTR.DATA_NAME);
+        btns.forEach((btn) => {
+            dom.setData(btn, "cell", self);
+            const name = btn.getAttribute(DATA_ATTR.DATA_NAME);
             if (isActionsToolTips) {
-                fn_addToolTip(el, STRS.TEXT[txtMap[name]]);
+                fn_addToolTip(btn, STRS.TEXT[txtMap[name]]);
             }
-            el.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, self.column.uniqueID);
+            btn.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, self.column.uniqueID);
         });
     }
     private _cleanUp(td: HTMLTableCellElement): void {

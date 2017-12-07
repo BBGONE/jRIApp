@@ -849,8 +849,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             var el = options.el;
             _this._el = el;
             _this._toolTip = options.tip;
-            _this._isDelegationOn = !(options.nodelegate === true);
-            _this._delegateFlags = 0;
+            _this._delegateFlags = (options.nodelegate === true) ? 0 : 1;
             _this._eventBag = null;
             _this._propBag = null;
             _this._classBag = null;
@@ -1085,7 +1084,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         });
         Object.defineProperty(BaseElView.prototype, "isDelegationOn", {
             get: function () {
-                return this._isDelegationOn;
+                return !!(this._delegateFlags & (1 << 0));
             },
             enumerable: true,
             configurable: true
@@ -1184,10 +1183,10 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
             var self = _this;
             if (_this.isDelegationOn) {
                 delegateMap.set(_this.el, _this);
-                _this._setIsDelegated(1);
                 _this._setIsDelegated(2);
+                _this._setIsDelegated(3);
                 if (!!options.updateOnKeyUp) {
-                    _this._setIsDelegated(4);
+                    _this._setIsDelegated(5);
                 }
             }
             else {
@@ -1401,7 +1400,7 @@ define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/uti
             chk.checked = false;
             if (_this.isDelegationOn) {
                 delegateMap.set(_this.el, _this);
-                _this._setIsDelegated(1);
+                _this._setIsDelegated(2);
             }
             else {
                 dom.events.on(_this.el, "change", function (e) {
@@ -4178,13 +4177,13 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
         };
         ActionsCell.prototype._setupButtons = function (btns) {
             var self = this, isActionsToolTips = self.grid.options.isActionsToolTips;
-            btns.forEach(function (el) {
-                dom.setData(el, "cell", self);
-                var name = el.getAttribute("data-name");
+            btns.forEach(function (btn) {
+                dom.setData(btn, "cell", self);
+                var name = btn.getAttribute("data-name");
                 if (isActionsToolTips) {
-                    baseview_6.fn_addToolTip(el, jriapp_shared_22.LocaleSTRS.TEXT[const_2.txtMap[name]]);
+                    baseview_6.fn_addToolTip(btn, jriapp_shared_22.LocaleSTRS.TEXT[const_2.txtMap[name]]);
                 }
-                el.setAttribute("data-scope", self.column.uniqueID);
+                btn.setAttribute("data-scope", self.column.uniqueID);
             });
         };
         ActionsCell.prototype._cleanUp = function (td) {
@@ -4699,7 +4698,6 @@ define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_shared", 
             delegateMap.set(_this._td, _this);
             _this._column = options.column;
             _this._num = options.num;
-            dom.setData(_this._td, "cell", _this);
             if (!!_this._column.options.rowCellCss) {
                 dom.addClass([_this._td], _this._column.options.rowCellCss);
             }
@@ -4708,7 +4706,7 @@ define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_shared", 
             return _this;
         }
         BaseCell.prototype._isDelegated = function (flag) {
-            return flag === 0;
+            return flag === 1;
         };
         BaseCell.prototype._onCellClicked = function (row) {
         };
@@ -8393,7 +8391,7 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
             dom.addClass([_this.el], "ria-command-link");
             if (_this.isDelegationOn) {
                 delegateMap.set(_this.el, _this);
-                _this._setIsDelegated(0);
+                _this._setIsDelegated(1);
             }
             else {
                 dom.events.on(_this.el, "click", function (e) {
@@ -8700,7 +8698,7 @@ define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
             _this._isButton = _this.el.tagName.toLowerCase() === "button";
             if (_this.isDelegationOn) {
                 delegateMap.set(_this.el, _this);
-                _this._setIsDelegated(0);
+                _this._setIsDelegated(1);
             }
             else {
                 dom.events.on(_this.el, "click", function (e) {
@@ -8800,7 +8798,7 @@ define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/ut
             chk.indeterminate = _this._checked === null;
             if (_this.isDelegationOn) {
                 delegateMap.set(_this.el, _this);
-                _this._setIsDelegated(1);
+                _this._setIsDelegated(2);
             }
             else {
                 dom.events.on(_this.el, "change", function (e) {

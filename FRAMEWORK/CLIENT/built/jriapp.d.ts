@@ -617,11 +617,12 @@ declare module "jriapp/bootstrap" {
     import { TemplateLoader } from "jriapp/utils/tloader";
     export const delegateWeakMap: IWeakMap, selectableWeakMap: IWeakMap;
     export const enum DelegateFlags {
-        click = 0,
-        change = 1,
-        keypress = 2,
-        keydown = 3,
-        keyup = 4,
+        delegationOn = 0,
+        click = 1,
+        change = 2,
+        keypress = 3,
+        keydown = 4,
+        keyup = 5,
     }
     export interface IInternalBootstrapMethods {
         initialize(): IPromise<Bootstrap>;
@@ -997,5 +998,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.5.1";
+    export const VERSION = "2.5.2";
 }
