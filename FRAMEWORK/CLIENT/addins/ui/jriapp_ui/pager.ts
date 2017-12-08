@@ -140,7 +140,7 @@ export class Pager extends BaseObject {
             pageCount = this.pageCount;
 
         if (rowCount > 0) {
-            if (this.showPreviousAndNext) {
+            if (this.showPreviousAndNext && !(this.hideOnSinglePage && (pageCount === 1))) {
                 el.appendChild(this._createFirst());
                 el.appendChild(this._createPrevious());
                 el.appendChild(this._createCurrent());

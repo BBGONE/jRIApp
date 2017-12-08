@@ -6558,7 +6558,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             }
             var rowCount = this.rowCount, currentPage = this.currentPage, pageCount = this.pageCount;
             if (rowCount > 0) {
-                if (this.showPreviousAndNext) {
+                if (this.showPreviousAndNext && !(this.hideOnSinglePage && (pageCount === 1))) {
                     el.appendChild(this._createFirst());
                     el.appendChild(this._createPrevious());
                     el.appendChild(this._createCurrent());
