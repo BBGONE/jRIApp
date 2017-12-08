@@ -73,7 +73,7 @@ const enum GLOB_EVENTS {
 }
 
 const enum PROP_NAME {
-    focusedElView = "focusedElView",
+    selectedControl = "selectedControl",
     isReady = "isReady"
 }
 
@@ -534,7 +534,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     set selectedControl(v: ISelectableProvider) {
         if (this._selectedControl !== v) {
             this._selectedControl = v;
-            this.objEvents.raiseProp(PROP_NAME.focusedElView);
+            this.objEvents.raiseProp(PROP_NAME.selectedControl);
         }
     }
     get defaults() {

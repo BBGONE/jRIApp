@@ -1634,7 +1634,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
     })(GLOB_EVENTS || (GLOB_EVENTS = {}));
     var PROP_NAME;
     (function (PROP_NAME) {
-        PROP_NAME["focusedElView"] = "focusedElView";
+        PROP_NAME["selectedControl"] = "selectedControl";
         PROP_NAME["isReady"] = "isReady";
     })(PROP_NAME || (PROP_NAME = {}));
     var BootstrapState;
@@ -2062,7 +2062,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             set: function (v) {
                 if (this._selectedControl !== v) {
                     this._selectedControl = v;
-                    this.objEvents.raiseProp("focusedElView");
+                    this.objEvents.raiseProp("selectedControl");
                 }
             },
             enumerable: true,
@@ -4243,6 +4243,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.5.5";
+    exports.VERSION = "2.5.6";
     bootstrap_7.Bootstrap._initFramework();
 });
