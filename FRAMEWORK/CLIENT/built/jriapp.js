@@ -1619,7 +1619,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
     })();
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
     var _stylesLoader = sloader_1.createCssLoader();
-    var eventName = {
+    var eventNames = {
         click: 1,
         change: 2,
         keypress: 3,
@@ -1743,7 +1743,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                 }
                 self.focusedElView = null;
             }, this._objId);
-            coreUtils.forEachProp(eventName, (function (name, flag) {
+            coreUtils.forEachProp(eventNames, (function (name, flag) {
                 var fn_name = "handle_" + name;
                 dom.events.on(doc, name, function (e) {
                     var obj = subscribeMap.get(e.target);
@@ -4243,6 +4243,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.5.3";
+    exports.VERSION = "2.5.4";
     bootstrap_7.Bootstrap._initFramework();
 });

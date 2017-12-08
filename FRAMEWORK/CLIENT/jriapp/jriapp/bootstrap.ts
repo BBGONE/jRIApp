@@ -58,7 +58,7 @@ export const subscribeWeakMap: IWeakMap = createWeakMap(), selectableProviderWea
 const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
 const _stylesLoader: IStylesLoader = createCssLoader();
 
-const eventName: IIndexer<SubscribeFlags> = {
+const eventNames: IIndexer<SubscribeFlags> = {
     click: SubscribeFlags.click,
     change: SubscribeFlags.change,
     keypress: SubscribeFlags.keypress,
@@ -212,7 +212,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         }, this._objId);
 
         // event delegation - capturing delegated events
-        coreUtils.forEachProp(eventName, ((name, flag) => {
+        coreUtils.forEachProp(eventNames, ((name, flag) => {
             const fn_name = "handle_" + name;
             dom.events.on(doc, name, (e) => {
                 const obj: any = subscribeMap.get(e.target);

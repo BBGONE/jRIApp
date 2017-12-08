@@ -241,46 +241,41 @@ td.ria-row-selector input[type="checkbox"] {
 .ria-pager {
     font-family: Frutiger Linotype, Trebuchet MS, Tahoma, Arial;
     font-size: 10pt;
-    color: white;
     margin-top: 8px;
     box-sizing: border-box;
 }
 
-    .ria-pager-info {
-        font-family: Frutiger Linotype, Trebuchet MS, Tahoma, Arial;
-        font-size: 10pt;
-        padding: 2px;
-        box-sizing: border-box;
-        color: black;
-    }
+.ria-pager-info {
+    padding: 2px;
+    box-sizing: border-box;
+    color: black;
+}
 
-    .ria-pager-info-num {
-        color: Highlight;
-    }
+.ria-pager-info-num {
+    color: Highlight;
+}
 
-    .ria-pager-current-page {
-        font-family: Frutiger Linotype, Trebuchet MS, Tahoma, Arial;
-        font-size: 10pt;
-        font-weight: bold;
-        color: #000000;
-        background-color: #ffffcc;
-        border: 1px ridge dimgray;
-        padding: 2px;
-        margin: 1px;
-        box-sizing: border-box;
-    }
+.ria-pager-page {
+    display: inline-block;
+    border: 1px solid #DDDDDD;
+    padding: 5px;
+    margin: 3px;
+    box-sizing: border-box;
+}
 
-    .ria-pager-other-page {
-        font-family: Frutiger Linotype, Trebuchet MS, Tahoma, Arial;
-        font-size: 10pt;
-        background-color: #f0f1f2;
-        padding: 2px;
-        margin: 1px;
-        box-sizing: border-box;
-    }
+.ria-pager-current-page {
+    font-weight: bold;
+    color: #000000;
+    background-color: #ffffcc;
+}
+
+.ria-pager-other-page {
+    font-weight: normal;
+    color: white;
+    background-color: #f0f1f2;
+}
 
 /* ************ StackPanel styles ************* */
-
 .ria-stackpanel {
     margin-top: 10px;
     margin-bottom: 5px;
@@ -288,14 +283,14 @@ td.ria-row-selector input[type="checkbox"] {
     box-sizing: border-box;
 }
 
-    .ria-stackpanel-item {
-        margin: 1px 3px 1px 3px;
-        box-sizing: border-box;
-    }
-
     .ria-stackpanel .ria-item-deleted {
         display: none !important;
     }
+
+.ria-stackpanel-item {
+    margin: 1px 3px 1px 3px;
+    box-sizing: border-box;
+}
 
 .ria-horizontal-panel .ria-stackpanel-item {
     display: inline-block;

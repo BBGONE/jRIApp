@@ -370,7 +370,8 @@ declare module "jriapp_ui/listbox" {
     import { BaseObject, TEventHandler } from "jriapp_shared";
     import { ITEM_STATUS } from "jriapp_shared/collection/const";
     import { ICollection, ICollectionItem, ICollChangedArgs } from "jriapp_shared/collection/int";
-    import { IViewOptions } from "jriapp/int";
+    import { SubscribeFlags } from "jriapp/const";
+    import { IViewOptions, ISubscriber } from "jriapp/int";
     import { BaseElView } from "jriapp_ui/baseview";
     export interface IOptionStateProvider {
         getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
@@ -392,7 +393,7 @@ declare module "jriapp_ui/listbox" {
         item: ICollectionItem;
         op: HTMLOptionElement;
     }
-    export class ListBox extends BaseObject {
+    export class ListBox extends BaseObject implements ISubscriber {
         private _el;
         private _objId;
         private _isRefreshing;
@@ -412,6 +413,8 @@ declare module "jriapp_ui/listbox" {
         private _isDSFilled;
         constructor(options: IListBoxConstructorOptions);
         dispose(): void;
+        isSubscribed(flag: SubscribeFlags): boolean;
+        handle_change(e: Event): void;
         addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
         offOnRefreshed(nmspace?: string): void;
         protected _onChanged(): void;
@@ -1379,7 +1382,8 @@ declare module "jriapp_ui/pager" {
         protected _unbindDS(): void;
         protected _clearContent(): void;
         protected _reset(): void;
-        protected _createLink(page: number, text: string, tip?: string): HTMLElement;
+        protected _createLink(page: number, text: string): HTMLElement;
+        private _addScope(el, page);
         protected _createFirst(): HTMLElement;
         protected _createPrevious(): HTMLElement;
         protected _createCurrent(): HTMLElement;

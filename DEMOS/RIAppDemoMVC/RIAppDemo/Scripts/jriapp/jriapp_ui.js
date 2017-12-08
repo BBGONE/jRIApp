@@ -791,7 +791,7 @@ define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jr
 define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/const", "jriapp/bootstrap", "jriapp_ui/utils/eventbag", "jriapp_ui/utils/propbag", "jriapp_ui/utils/cssbag", "jriapp_ui/utils/tooltip", "jriapp_ui/utils/datepicker"], function (require, exports, jriapp_shared_9, dom_5, viewchecks_1, const_1, bootstrap_3, eventbag_1, propbag_1, cssbag_1, tooltip_1, datepicker_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_9.Utils, coreUtils = utils.core, dom = dom_5.DomUtils, checks = utils.check, boot = bootstrap_3.bootstrap, viewChecks = viewchecks_1.ViewChecks, delegateMap = bootstrap_3.delegateWeakMap;
+    var utils = jriapp_shared_9.Utils, coreUtils = utils.core, dom = dom_5.DomUtils, checks = utils.check, boot = bootstrap_3.bootstrap, viewChecks = viewchecks_1.ViewChecks, subscribeMap = bootstrap_3.subscribeWeakMap;
     viewChecks.isElView = function (obj) {
         return !!obj && obj instanceof BaseElView;
     };
@@ -849,7 +849,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             var el = options.el;
             _this._el = el;
             _this._toolTip = options.tip;
-            _this._delegateFlags = (options.nodelegate === true) ? 0 : 1;
+            _this._subscribeFlags = (options.nodelegate === true) ? 0 : 1;
             _this._eventBag = null;
             _this._propBag = null;
             _this._classBag = null;
@@ -927,11 +927,11 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         BaseElView.prototype._setToolTip = function (el, tip, isError) {
             fn_addToolTip(el, tip, isError);
         };
-        BaseElView.prototype._setIsDelegated = function (flag) {
-            this._delegateFlags |= (1 << flag);
+        BaseElView.prototype._setIsSubcribed = function (flag) {
+            this._subscribeFlags |= (1 << flag);
         };
-        BaseElView.prototype._isDelegated = function (flag) {
-            return !!(this._delegateFlags & (1 << flag));
+        BaseElView.prototype.isSubscribed = function (flag) {
+            return !!(this._subscribeFlags & (1 << flag));
         };
         BaseElView.prototype.dispose = function () {
             if (this.getIsDisposed()) {
@@ -944,9 +944,9 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                 this._toolTip = null;
                 this._setToolTip(this.el, null);
                 this.validationErrors = null;
-                if (this._delegateFlags !== 0) {
-                    delegateMap.delete(this.el);
-                    this._delegateFlags = 0;
+                if (this._subscribeFlags !== 0) {
+                    subscribeMap.delete(this.el);
+                    this._subscribeFlags = 0;
                 }
                 if (!!this._eventBag) {
                     this._eventBag.dispose();
@@ -1084,7 +1084,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         });
         Object.defineProperty(BaseElView.prototype, "isDelegationOn", {
             get: function () {
-                return !!(this._delegateFlags & (1 << 0));
+                return !!(this._subscribeFlags & (1 << 0));
             },
             enumerable: true,
             configurable: true
@@ -1171,7 +1171,7 @@ define("jriapp_ui/input", ["require", "exports", "jriapp_ui/baseview"], function
 define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/input"], function (require, exports, dom_6, bootstrap_4, input_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var dom = dom_6.DomUtils, delegateMap = bootstrap_4.delegateWeakMap;
+    var dom = dom_6.DomUtils, subscribeMap = bootstrap_4.subscribeWeakMap;
     var TXTBOX_EVENTS;
     (function (TXTBOX_EVENTS) {
         TXTBOX_EVENTS["keypress"] = "keypress";
@@ -1182,11 +1182,11 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
             var _this = _super.call(this, options) || this;
             var self = _this;
             if (_this.isDelegationOn) {
-                delegateMap.set(_this.el, _this);
-                _this._setIsDelegated(2);
-                _this._setIsDelegated(3);
+                subscribeMap.set(_this.el, _this);
+                _this._setIsSubcribed(2);
+                _this._setIsSubcribed(3);
                 if (!!options.updateOnKeyUp) {
-                    _this._setIsDelegated(5);
+                    _this._setIsSubcribed(5);
                 }
             }
             else {
@@ -1390,7 +1390,7 @@ define("jriapp_ui/content/multyline", ["require", "exports", "jriapp_shared", "j
 define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/input"], function (require, exports, jriapp_shared_11, dom_8, bootstrap_6, input_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var dom = dom_8.DomUtils, checks = jriapp_shared_11.Utils.check, boot = bootstrap_6.bootstrap, delegateMap = bootstrap_6.delegateWeakMap;
+    var dom = dom_8.DomUtils, checks = jriapp_shared_11.Utils.check, boot = bootstrap_6.bootstrap, subscribeMap = bootstrap_6.subscribeWeakMap;
     var CheckBoxElView = (function (_super) {
         __extends(CheckBoxElView, _super);
         function CheckBoxElView(options) {
@@ -1399,8 +1399,8 @@ define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/uti
             _this._checked = null;
             chk.checked = false;
             if (_this.isDelegationOn) {
-                delegateMap.set(_this.el, _this);
-                _this._setIsDelegated(2);
+                subscribeMap.set(_this.el, _this);
+                _this._setIsSubcribed(2);
             }
             else {
                 dom.events.on(_this.el, "change", function (e) {
@@ -1669,7 +1669,7 @@ define("jriapp_ui/content/datetime", ["require", "exports", "jriapp/bootstrap", 
 define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, jriapp_shared_13, dom_11, bootstrap_9, baseview_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_13.Utils, dom = dom_11.DomUtils, doc = dom.document, sys = utils.sys, checks = utils.check, coreUtils = utils.core, boot = bootstrap_9.bootstrap;
+    var utils = jriapp_shared_13.Utils, dom = dom_11.DomUtils, doc = dom.document, sys = utils.sys, checks = utils.check, coreUtils = utils.core, boot = bootstrap_9.bootstrap, subscribeMap = bootstrap_9.subscribeWeakMap;
     var PROP_NAME;
     (function (PROP_NAME) {
         PROP_NAME["dataSource"] = "dataSource";
@@ -1709,13 +1709,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             _this._options = options;
             _this._objId = coreUtils.getNewID("lst");
             _this._isDSFilled = false;
-            dom.events.on(_this.el, "change", function (e) {
-                e.stopPropagation();
-                if (self._isRefreshing) {
-                    return;
-                }
-                self._onChanged();
-            }, _this._objId);
             _this._textProvider = null;
             _this._stateProvider = null;
             _this._isRefreshing = false;
@@ -1734,6 +1727,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 var item = data.item, path = self.statePath, val = !path ? null : sys.resolvePath(item, path), spr = self._stateProvider;
                 data.op.className = !spr ? "" : spr.getCSS(item, data.op.index, val);
             };
+            subscribeMap.set(_this._el, _this);
             var ds = _this._options.dataSource;
             _this._setDataSource(ds);
             return _this;
@@ -1743,6 +1737,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 return;
             }
             this.setDisposing();
+            subscribeMap.delete(this._el);
             this._dsDebounce.dispose();
             this._stDebounce.dispose();
             this._txtDebounce.dispose();
@@ -1759,6 +1754,15 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._stateProvider = null;
             this._isDSFilled = false;
             _super.prototype.dispose.call(this);
+        };
+        ListBox.prototype.isSubscribed = function (flag) {
+            return flag === 2;
+        };
+        ListBox.prototype.handle_change = function (e) {
+            if (this._isRefreshing) {
+                return;
+            }
+            this._onChanged();
         };
         ListBox.prototype.addOnRefreshed = function (fn, nmspace, context) {
             this.objEvents.on("refreshed", fn, nmspace, context);
@@ -3721,7 +3725,7 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
                 dom.addClass([col], _this._options.colCellCss);
             }
             _this._grid._getInternal().getHeader().appendChild(col);
-            bootstrap_14.selectableWeakMap.set(_this._col, _this._grid);
+            bootstrap_14.selectableProviderWeakMap.set(_this._col, _this._grid);
             dom.events.on(_this._col, "click", function (e) {
                 grid._getInternal().setCurrentColumn(self);
                 self._onColumnClicked();
@@ -3747,7 +3751,7 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
                 return;
             }
             this.setDisposing();
-            bootstrap_14.selectableWeakMap.delete(this._col);
+            bootstrap_14.selectableProviderWeakMap.delete(this._col);
             dom.events.offNS(this.grid.table, this.uniqueID);
             if (!!this._options.tip) {
                 baseview_5.fn_addToolTip(this._col, null);
@@ -4682,7 +4686,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
 define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/utils/dblclick"], function (require, exports, jriapp_shared_25, dom_25, bootstrap_16, dblclick_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_25.Utils, dom = dom_25.DomUtils, delegateMap = bootstrap_16.delegateWeakMap;
+    var utils = jriapp_shared_25.Utils, dom = dom_25.DomUtils, subscribeMap = bootstrap_16.subscribeWeakMap;
     var BaseCell = (function (_super) {
         __extends(BaseCell, _super);
         function BaseCell(options) {
@@ -4695,7 +4699,7 @@ define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_shared", 
             }, options);
             _this._row = options.row;
             _this._td = options.td;
-            delegateMap.set(_this._td, _this);
+            subscribeMap.set(_this._td, _this);
             _this._column = options.column;
             _this._num = options.num;
             if (!!_this._column.options.rowCellCss) {
@@ -4705,13 +4709,13 @@ define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_shared", 
             _this._row.tr.appendChild(_this._td);
             return _this;
         }
-        BaseCell.prototype._isDelegated = function (flag) {
-            return flag === 1;
-        };
         BaseCell.prototype._onCellClicked = function (row) {
         };
         BaseCell.prototype._onDblClicked = function (row) {
             this.grid._getInternal().onCellDblClicked(this);
+        };
+        BaseCell.prototype.isSubscribed = function (flag) {
+            return flag === 1;
         };
         BaseCell.prototype.handle_click = function (e) {
             this.grid._getInternal().setCurrentColumn(this.column);
@@ -4729,7 +4733,7 @@ define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_shared", 
                 return;
             }
             this.setDisposing();
-            delegateMap.delete(this._td);
+            subscribeMap.delete(this._td);
             if (!!this._click) {
                 this._click.dispose();
                 this._click = null;
@@ -5330,7 +5334,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 }
             };
             _this._createColumns();
-            bootstrap_17.selectableWeakMap.set(table, _this);
+            bootstrap_17.selectableProviderWeakMap.set(table, _this);
             _gridCreated(_this);
             var ds = _this._options.dataSource;
             _this._setDataSource(ds);
@@ -5835,13 +5839,13 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             this._wrapper = wrapper;
             this._header = header;
             this._contaner = container;
-            bootstrap_17.selectableWeakMap.set(this._contaner, this);
+            bootstrap_17.selectableProviderWeakMap.set(this._contaner, this);
         };
         DataGrid.prototype._unWrapTable = function () {
             if (!this._header) {
                 return;
             }
-            bootstrap_17.selectableWeakMap.delete(this._contaner);
+            bootstrap_17.selectableProviderWeakMap.delete(this._contaner);
             this._header.remove();
             this._header = null;
             dom.unwrap(this.table);
@@ -6145,7 +6149,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 return;
             }
             this.setDisposing();
-            bootstrap_17.selectableWeakMap.delete(this._table);
+            bootstrap_17.selectableProviderWeakMap.delete(this._table);
             this._scrollDebounce.dispose();
             this._dsDebounce.dispose();
             this._pageDebounce.dispose();
@@ -6469,6 +6473,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
     (function (css) {
         css["pager"] = "ria-pager";
         css["info"] = "ria-pager-info";
+        css["page"] = "ria-pager-page";
         css["currentPage"] = "ria-pager-current-page";
         css["otherPage"] = "ria-pager-other-page";
     })(css || (css = {}));
@@ -6524,8 +6529,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             }, {
                 nmspace: _this._objId,
                 matchElement: function (el) {
-                    var attr = el.getAttribute("data-scope"), tag = el.tagName.toLowerCase();
-                    return self._objId === attr && tag === "a";
+                    var attr = el.getAttribute("data-scope");
+                    return self._objId === attr;
                 }
             });
             _this._bindDS();
@@ -6681,37 +6686,40 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             this._rowCount = ds.totalCount;
             this.render();
         };
-        Pager.prototype._createLink = function (page, text, tip) {
+        Pager.prototype._createLink = function (page, text) {
             var a = this._createElement("a");
             a.textContent = ("" + text);
             a.setAttribute("href", "javascript:void(0)");
-            if (!!tip) {
-                this._addToolTip(a, tip);
-            }
-            a.setAttribute("data-scope", this._objId);
-            a.setAttribute("data-page", "" + page);
             return a;
+        };
+        Pager.prototype._addScope = function (el, page) {
+            el.setAttribute("data-scope", this._objId);
+            el.setAttribute("data-page", "" + page);
         };
         Pager.prototype._createFirst = function () {
             var span = this._createElement("span");
-            var tip;
             if (this.showTip) {
-                tip = _STRS.firstPageTip;
+                var tip = _STRS.firstPageTip;
+                this._addToolTip(span, tip);
             }
-            var a = this._createLink(1, _STRS.firstText, tip);
+            var a = this._createLink(1, _STRS.firstText);
+            dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
+            this._addScope(span, 1);
             return span;
         };
         Pager.prototype._createPrevious = function () {
             var span = this._createElement("span"), previousPage = this.currentPage - 1;
-            var tip;
             if (this.showTip) {
-                tip = strUtils.format(_STRS.prevPageTip, previousPage);
+                var tip = strUtils.format(_STRS.prevPageTip, previousPage);
+                this._addToolTip(span, tip);
             }
-            var a = this._createLink(previousPage, _STRS.previousText, tip);
+            var a = this._createLink(previousPage, _STRS.previousText);
+            dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
+            this._addScope(span, previousPage);
             return span;
         };
         Pager.prototype._createCurrent = function () {
@@ -6720,40 +6728,47 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             if (this.showTip) {
                 this._addToolTip(span, this._buildTip(currentPage));
             }
+            dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-current-page");
             return span;
         };
         Pager.prototype._createOther = function (page) {
             var span = this._createElement("span");
-            var tip;
             if (this.showTip) {
-                tip = this._buildTip(page);
+                var tip = this._buildTip(page);
+                this._addToolTip(span, tip);
             }
-            var a = this._createLink(page, "" + page, tip);
+            var a = this._createLink(page, "" + page);
+            dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
+            this._addScope(span, page);
             return span;
         };
         Pager.prototype._createNext = function () {
             var span = this._createElement("span"), nextPage = this.currentPage + 1;
-            var tip;
             if (this.showTip) {
-                tip = strUtils.format(_STRS.nextPageTip, nextPage);
+                var tip = strUtils.format(_STRS.nextPageTip, nextPage);
+                this._addToolTip(span, tip);
             }
-            var a = this._createLink(nextPage, _STRS.nextText, tip);
+            var a = this._createLink(nextPage, _STRS.nextText);
+            dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
+            this._addScope(span, nextPage);
             return span;
         };
         Pager.prototype._createLast = function () {
             var span = this._createElement("span");
-            var tip;
             if (this.showTip) {
-                tip = _STRS.lastPageTip;
+                var tip = _STRS.lastPageTip;
+                this._addToolTip(span, tip);
             }
-            var a = this._createLink(this.pageCount, _STRS.lastText, tip);
+            var a = this._createLink(this.pageCount, _STRS.lastText);
+            dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
+            this._addScope(span, this.pageCount);
             return span;
         };
         Pager.prototype._buildTip = function (page) {
@@ -7080,7 +7095,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                     return self.uniqueID === attr && tag === self._itemTag;
                 }
             });
-            bootstrap_19.selectableWeakMap.set(_this._el, _this);
+            bootstrap_19.selectableProviderWeakMap.set(_this._el, _this);
             var ds = _this._options.dataSource;
             _this._setDataSource(ds);
             return _this;
@@ -7310,7 +7325,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 return;
             }
             this.setDisposing();
-            bootstrap_19.selectableWeakMap.delete(this._el);
+            bootstrap_19.selectableProviderWeakMap.delete(this._el);
             this._debounce.dispose();
             this._unbindDS();
             this._clearContent();
@@ -8372,7 +8387,7 @@ define("jriapp_ui/datepicker", ["require", "exports", "jriapp/const", "jriapp/bo
 define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/command"], function (require, exports, dom_34, bootstrap_24, command_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var dom = dom_34.DomUtils, boot = bootstrap_24.bootstrap, delegateMap = bootstrap_24.delegateWeakMap;
+    var dom = dom_34.DomUtils, boot = bootstrap_24.bootstrap, subscribeMap = bootstrap_24.subscribeWeakMap;
     var AnchorElView = (function (_super) {
         __extends(AnchorElView, _super);
         function AnchorElView(options) {
@@ -8390,8 +8405,8 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
             }
             dom.addClass([_this.el], "ria-command-link");
             if (_this.isDelegationOn) {
-                delegateMap.set(_this.el, _this);
-                _this._setIsDelegated(1);
+                subscribeMap.set(_this.el, _this);
+                _this._setIsSubcribed(1);
             }
             else {
                 dom.events.on(_this.el, "click", function (e) {
@@ -8689,7 +8704,7 @@ define("jriapp_ui/busy", ["require", "exports", "jriapp_shared", "jriapp_ui/util
 define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/command"], function (require, exports, dom_36, bootstrap_27, command_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var boot = bootstrap_27.bootstrap, dom = dom_36.DomUtils, delegateMap = bootstrap_27.delegateWeakMap;
+    var boot = bootstrap_27.bootstrap, dom = dom_36.DomUtils, subscribeMap = bootstrap_27.subscribeWeakMap;
     var ButtonElView = (function (_super) {
         __extends(ButtonElView, _super);
         function ButtonElView(options) {
@@ -8697,8 +8712,8 @@ define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
             var self = _this;
             _this._isButton = _this.el.tagName.toLowerCase() === "button";
             if (_this.isDelegationOn) {
-                delegateMap.set(_this.el, _this);
-                _this._setIsDelegated(1);
+                subscribeMap.set(_this.el, _this);
+                _this._setIsSubcribed(1);
             }
             else {
                 dom.events.on(_this.el, "click", function (e) {
@@ -8787,7 +8802,7 @@ define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
 define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/input"], function (require, exports, jriapp_shared_38, dom_37, bootstrap_28, input_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var checks = jriapp_shared_38.Utils.check, dom = dom_37.DomUtils, boot = bootstrap_28.bootstrap, delegateMap = bootstrap_28.delegateWeakMap;
+    var checks = jriapp_shared_38.Utils.check, dom = dom_37.DomUtils, boot = bootstrap_28.bootstrap, subscribeMap = bootstrap_28.subscribeWeakMap;
     var CheckBoxThreeStateElView = (function (_super) {
         __extends(CheckBoxThreeStateElView, _super);
         function CheckBoxThreeStateElView(options) {
@@ -8797,8 +8812,8 @@ define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/ut
             chk.checked = false;
             chk.indeterminate = _this._checked === null;
             if (_this.isDelegationOn) {
-                delegateMap.set(_this.el, _this);
-                _this._setIsDelegated(2);
+                subscribeMap.set(_this.el, _this);
+                _this._setIsSubcribed(2);
             }
             else {
                 dom.events.on(_this.el, "change", function (e) {

@@ -52,9 +52,17 @@ declare module "jriapp/const" {
         TwoWay = 2,
         BackWay = 3,
     }
+    export const enum SubscribeFlags {
+        delegationOn = 0,
+        click = 1,
+        change = 2,
+        keypress = 3,
+        keydown = 4,
+        keyup = 5,
+    }
 }
 declare module "jriapp/int" {
-    import { BINDING_MODE, BindTo } from "jriapp/const";
+    import { BINDING_MODE, BindTo, SubscribeFlags } from "jriapp/const";
     import { IBaseObject, IDisposable, IIndexer, IPromise, IVoidPromise, IValidationInfo, IErrorHandler, TEventHandler, IConfig } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     export interface IJRIAppConfig extends IConfig {
@@ -73,6 +81,9 @@ declare module "jriapp/int" {
         addObj(b: IBaseObject): void;
         removeObj(b: IBaseObject): void;
         getObjs(): IBaseObject[];
+    }
+    export interface ISubscriber {
+        isSubscribed(flag: SubscribeFlags): boolean;
     }
     export interface IDatepicker {
         datepickerRegion: string;
@@ -615,15 +626,7 @@ declare module "jriapp/bootstrap" {
     import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IContentFactoryList, IElViewRegister, IStylesLoader } from "jriapp/int";
     import { Defaults } from "jriapp/defaults";
     import { TemplateLoader } from "jriapp/utils/tloader";
-    export const delegateWeakMap: IWeakMap, selectableWeakMap: IWeakMap;
-    export const enum DelegateFlags {
-        delegationOn = 0,
-        click = 1,
-        change = 2,
-        keypress = 3,
-        keydown = 4,
-        keyup = 5,
-    }
+    export const subscribeWeakMap: IWeakMap, selectableProviderWeakMap: IWeakMap;
     export interface IInternalBootstrapMethods {
         initialize(): IPromise<Bootstrap>;
         registerApp(app: IApplication): void;
@@ -986,17 +989,17 @@ declare module "jriapp" {
     export * from "jriapp_shared/collection/int";
     export * from "jriapp_shared/utils/jsonbag";
     export { Promise } from "jriapp_shared/utils/deferred";
-    export { KEYS, BINDING_MODE, BindTo } from "jriapp/const";
-    export { IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, IBindingInfo, IBindingOptions, IConverter, IContentFactory, IDatepicker, IElView, ITooltipService, ISelectable, ISelectableProvider, ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo, IViewOptions } from "jriapp/int";
+    export { KEYS, BINDING_MODE, BindTo, SubscribeFlags } from "jriapp/const";
+    export { IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, IBindingInfo, IBindingOptions, IConverter, IContentFactory, IDatepicker, IElView, ITooltipService, ISelectable, ISelectableProvider, ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo, IViewOptions, ISubscriber } from "jriapp/int";
     export { DomUtils as DOM } from "jriapp/utils/dom";
     export { ViewChecks } from "jriapp/utils/viewchecks";
     export { BaseConverter } from "jriapp/converter";
-    export { bootstrap } from "jriapp/bootstrap";
+    export { bootstrap, subscribeWeakMap, selectableProviderWeakMap } from "jriapp/bootstrap";
     export { Binding } from "jriapp/binding";
     export { createTemplate, ITemplateOptions } from "jriapp/template";
     export { LifeTimeScope } from "jriapp/utils/lifetime";
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.5.2";
+    export const VERSION = "2.5.4";
 }

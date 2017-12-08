@@ -17,6 +17,7 @@ const _STRS = STRS.PAGER;
 const enum css {
     pager = "ria-pager",
     info = "ria-pager-info",
+    page = "ria-pager-page",
     currentPage = "ria-pager-current-page",
     otherPage = "ria-pager-other-page"
 }
@@ -104,9 +105,8 @@ export class Pager extends BaseObject {
                 nmspace: this._objId,
                 // using delegation
                 matchElement: (el: Element) => {
-                    const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
-                        tag = el.tagName.toLowerCase();
-                    return self._objId === attr && tag === "a";
+                    const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE);
+                    return self._objId === attr;
                 }
             });
 
@@ -279,41 +279,42 @@ export class Pager extends BaseObject {
         this._rowCount = ds.totalCount;
         this.render();
     }
-    protected _createLink(page: number, text: string, tip?: string) {
+    protected _createLink(page: number, text: string) {
         const a = this._createElement("a");
         a.textContent = ("" + text);
         a.setAttribute("href", "javascript:void(0)");
-
-        if (!!tip) {
-            this._addToolTip(a, tip);
-        }
-        a.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this._objId);
-        a.setAttribute("data-page", "" + page);
         return a;
+    }
+    private _addScope(el: Element, page: number): void {
+        el.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this._objId);
+        el.setAttribute("data-page", "" + page);
     }
     protected _createFirst() {
         const span = this._createElement("span");
-        let tip: string;
 
         if (this.showTip) {
-            tip = _STRS.firstPageTip;
+            const tip = _STRS.firstPageTip;
+            this._addToolTip(span, tip);
         }
-        const a = this._createLink(1, _STRS.firstText, tip);
+        const a = this._createLink(1, _STRS.firstText);
+        dom.addClass([span], css.page);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
+        this._addScope(span, 1);
         return span;
     }
     protected _createPrevious() {
         const span = this._createElement("span"), previousPage = this.currentPage - 1;
-        let tip: string;
 
         if (this.showTip) {
-            tip = strUtils.format(_STRS.prevPageTip, previousPage);
+            const tip = strUtils.format(_STRS.prevPageTip, previousPage);
+            this._addToolTip(span, tip);
         }
-
-        const a = this._createLink(previousPage, _STRS.previousText, tip);
+        const a = this._createLink(previousPage, _STRS.previousText);
+        dom.addClass([span], css.page);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
+        this._addScope(span, previousPage);
         return span;
     }
     protected _createCurrent() {
@@ -324,44 +325,51 @@ export class Pager extends BaseObject {
         if (this.showTip) {
             this._addToolTip(span, this._buildTip(currentPage));
         }
+        dom.addClass([span], css.page);
         dom.addClass([span], css.currentPage);
         return span;
     }
     protected _createOther(page: number) {
         const span = this._createElement("span");
-        let tip: string;
 
         if (this.showTip) {
-            tip = this._buildTip(page);
+            const tip = this._buildTip(page);
+            this._addToolTip(span, tip);
         }
 
-        const a = this._createLink(page, "" + page, tip);
+        const a = this._createLink(page, "" + page);
+        dom.addClass([span], css.page);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
+        this._addScope(span, page);
         return span;
     }
     protected _createNext() {
         const span = this._createElement("span"), nextPage = this.currentPage + 1;
-        let tip: string;
 
         if (this.showTip) {
-            tip = strUtils.format(_STRS.nextPageTip, nextPage);
+            const tip = strUtils.format(_STRS.nextPageTip, nextPage);
+            this._addToolTip(span, tip);
         }
-        const a = this._createLink(nextPage, _STRS.nextText, tip);
+        const a = this._createLink(nextPage, _STRS.nextText);
+        dom.addClass([span], css.page);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
+        this._addScope(span, nextPage);
         return span;
     }
     protected _createLast() {
         const span = this._createElement("span");
-        let tip: string;
 
         if (this.showTip) {
-            tip = _STRS.lastPageTip;
+            const tip = _STRS.lastPageTip;
+            this._addToolTip(span, tip);
         }
-        const a = this._createLink(this.pageCount, _STRS.lastText, tip);
+        const a = this._createLink(this.pageCount, _STRS.lastText);
+        dom.addClass([span], css.page);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
+        this._addScope(span, this.pageCount);
         return span;
     }
     protected _buildTip(page: number) {

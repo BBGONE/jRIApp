@@ -1669,7 +1669,7 @@ define("jriapp_ui/content/datetime", ["require", "exports", "jriapp/bootstrap", 
 define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, jriapp_shared_13, dom_11, bootstrap_9, baseview_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_13.Utils, dom = dom_11.DomUtils, doc = dom.document, sys = utils.sys, checks = utils.check, coreUtils = utils.core, boot = bootstrap_9.bootstrap;
+    var utils = jriapp_shared_13.Utils, dom = dom_11.DomUtils, doc = dom.document, sys = utils.sys, checks = utils.check, coreUtils = utils.core, boot = bootstrap_9.bootstrap, subscribeMap = bootstrap_9.subscribeWeakMap;
     var PROP_NAME;
     (function (PROP_NAME) {
         PROP_NAME["dataSource"] = "dataSource";
@@ -1709,13 +1709,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             _this._options = options;
             _this._objId = coreUtils.getNewID("lst");
             _this._isDSFilled = false;
-            dom.events.on(_this.el, "change", function (e) {
-                e.stopPropagation();
-                if (self._isRefreshing) {
-                    return;
-                }
-                self._onChanged();
-            }, _this._objId);
             _this._textProvider = null;
             _this._stateProvider = null;
             _this._isRefreshing = false;
@@ -1734,6 +1727,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 var item = data.item, path = self.statePath, val = !path ? null : sys.resolvePath(item, path), spr = self._stateProvider;
                 data.op.className = !spr ? "" : spr.getCSS(item, data.op.index, val);
             };
+            subscribeMap.set(_this._el, _this);
             var ds = _this._options.dataSource;
             _this._setDataSource(ds);
             return _this;
@@ -1743,6 +1737,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 return;
             }
             this.setDisposing();
+            subscribeMap.delete(this._el);
             this._dsDebounce.dispose();
             this._stDebounce.dispose();
             this._txtDebounce.dispose();
@@ -1759,6 +1754,15 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._stateProvider = null;
             this._isDSFilled = false;
             _super.prototype.dispose.call(this);
+        };
+        ListBox.prototype.isSubscribed = function (flag) {
+            return flag === 2;
+        };
+        ListBox.prototype.handle_change = function (e) {
+            if (this._isRefreshing) {
+                return;
+            }
+            this._onChanged();
         };
         ListBox.prototype.addOnRefreshed = function (fn, nmspace, context) {
             this.objEvents.on("refreshed", fn, nmspace, context);
@@ -6469,6 +6473,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
     (function (css) {
         css["pager"] = "ria-pager";
         css["info"] = "ria-pager-info";
+        css["page"] = "ria-pager-page";
         css["currentPage"] = "ria-pager-current-page";
         css["otherPage"] = "ria-pager-other-page";
     })(css || (css = {}));
@@ -6524,8 +6529,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             }, {
                 nmspace: _this._objId,
                 matchElement: function (el) {
-                    var attr = el.getAttribute("data-scope"), tag = el.tagName.toLowerCase();
-                    return self._objId === attr && tag === "a";
+                    var attr = el.getAttribute("data-scope");
+                    return self._objId === attr;
                 }
             });
             _this._bindDS();
@@ -6681,37 +6686,40 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             this._rowCount = ds.totalCount;
             this.render();
         };
-        Pager.prototype._createLink = function (page, text, tip) {
+        Pager.prototype._createLink = function (page, text) {
             var a = this._createElement("a");
             a.textContent = ("" + text);
             a.setAttribute("href", "javascript:void(0)");
-            if (!!tip) {
-                this._addToolTip(a, tip);
-            }
-            a.setAttribute("data-scope", this._objId);
-            a.setAttribute("data-page", "" + page);
             return a;
+        };
+        Pager.prototype._addScope = function (el, page) {
+            el.setAttribute("data-scope", this._objId);
+            el.setAttribute("data-page", "" + page);
         };
         Pager.prototype._createFirst = function () {
             var span = this._createElement("span");
-            var tip;
             if (this.showTip) {
-                tip = _STRS.firstPageTip;
+                var tip = _STRS.firstPageTip;
+                this._addToolTip(span, tip);
             }
-            var a = this._createLink(1, _STRS.firstText, tip);
+            var a = this._createLink(1, _STRS.firstText);
+            dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
+            this._addScope(span, 1);
             return span;
         };
         Pager.prototype._createPrevious = function () {
             var span = this._createElement("span"), previousPage = this.currentPage - 1;
-            var tip;
             if (this.showTip) {
-                tip = strUtils.format(_STRS.prevPageTip, previousPage);
+                var tip = strUtils.format(_STRS.prevPageTip, previousPage);
+                this._addToolTip(span, tip);
             }
-            var a = this._createLink(previousPage, _STRS.previousText, tip);
+            var a = this._createLink(previousPage, _STRS.previousText);
+            dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
+            this._addScope(span, previousPage);
             return span;
         };
         Pager.prototype._createCurrent = function () {
@@ -6720,40 +6728,47 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             if (this.showTip) {
                 this._addToolTip(span, this._buildTip(currentPage));
             }
+            dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-current-page");
             return span;
         };
         Pager.prototype._createOther = function (page) {
             var span = this._createElement("span");
-            var tip;
             if (this.showTip) {
-                tip = this._buildTip(page);
+                var tip = this._buildTip(page);
+                this._addToolTip(span, tip);
             }
-            var a = this._createLink(page, "" + page, tip);
+            var a = this._createLink(page, "" + page);
+            dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
+            this._addScope(span, page);
             return span;
         };
         Pager.prototype._createNext = function () {
             var span = this._createElement("span"), nextPage = this.currentPage + 1;
-            var tip;
             if (this.showTip) {
-                tip = strUtils.format(_STRS.nextPageTip, nextPage);
+                var tip = strUtils.format(_STRS.nextPageTip, nextPage);
+                this._addToolTip(span, tip);
             }
-            var a = this._createLink(nextPage, _STRS.nextText, tip);
+            var a = this._createLink(nextPage, _STRS.nextText);
+            dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
+            this._addScope(span, nextPage);
             return span;
         };
         Pager.prototype._createLast = function () {
             var span = this._createElement("span");
-            var tip;
             if (this.showTip) {
-                tip = _STRS.lastPageTip;
+                var tip = _STRS.lastPageTip;
+                this._addToolTip(span, tip);
             }
-            var a = this._createLink(this.pageCount, _STRS.lastText, tip);
+            var a = this._createLink(this.pageCount, _STRS.lastText);
+            dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
+            this._addScope(span, this.pageCount);
             return span;
         };
         Pager.prototype._buildTip = function (page) {

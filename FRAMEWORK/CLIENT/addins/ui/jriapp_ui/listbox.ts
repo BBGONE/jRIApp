@@ -9,12 +9,13 @@ import {
 import {
     ICollection, ICollectionItem, ICollChangedArgs
 } from "jriapp_shared/collection/int";
-import { IViewOptions } from "jriapp/int";
-import { bootstrap } from "jriapp/bootstrap";
+import { SubscribeFlags } from "jriapp/const";
+import { IViewOptions, ISubscriber } from "jriapp/int";
+import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
-    checks = utils.check, coreUtils = utils.core, boot = bootstrap;
+    checks = utils.check, coreUtils = utils.core, boot = bootstrap, subscribeMap = subscribeWeakMap;
 
 export interface IOptionStateProvider {
     getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
@@ -61,7 +62,7 @@ const enum LISTBOX_EVENTS {
     return (checks.isNt(v)) ? "" : ("" + v);
  }
 
-export class ListBox extends BaseObject {
+export class ListBox extends BaseObject implements ISubscriber {
     private _el: HTMLSelectElement;
     private _objId: string;
     private _isRefreshing: boolean;
@@ -98,13 +99,6 @@ export class ListBox extends BaseObject {
         this._options = options;
         this._objId = coreUtils.getNewID("lst");
         this._isDSFilled = false;
-        dom.events.on(this.el, "change", (e) => {
-            e.stopPropagation();
-            if (self._isRefreshing) {
-                return;
-            }
-            self._onChanged();
-        }, this._objId);
         this._textProvider = null;
         this._stateProvider = null;
         this._isRefreshing = false;
@@ -125,6 +119,8 @@ export class ListBox extends BaseObject {
             data.op.className = !spr ? "" : spr.getCSS(item, data.op.index, val);
         };
 
+        subscribeMap.set(this._el, this);
+
         const ds = this._options.dataSource;
         this._setDataSource(ds);
     }
@@ -133,6 +129,7 @@ export class ListBox extends BaseObject {
             return;
         }
         this.setDisposing();
+        subscribeMap.delete(this._el);
         this._dsDebounce.dispose();
         this._stDebounce.dispose();
         this._txtDebounce.dispose();
@@ -149,6 +146,15 @@ export class ListBox extends BaseObject {
         this._stateProvider = null;
         this._isDSFilled = false;
         super.dispose();
+    }
+    isSubscribed(flag: SubscribeFlags): boolean {
+        return flag === SubscribeFlags.change;
+    }
+    handle_change(e: Event) {
+        if (this._isRefreshing) {
+            return;
+        }
+        this._onChanged();
     }
     addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any) {
         this.objEvents.on(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
