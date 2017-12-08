@@ -2,14 +2,16 @@
 import { BaseObject, Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { ICollectionItem } from "jriapp_shared/collection/int";
-import { delegateWeakMap, DelegateFlags } from "jriapp/bootstrap";
+import { SubscribeFlags } from "jriapp/const";
+import { ISubscriber } from "jriapp/int";
+import { subscribeWeakMap } from "jriapp/bootstrap";
 
 import { DblClick } from "../../utils/dblclick";
 import { Row } from "../rows/row";
 import { BaseColumn } from "../columns/base";
 import { DataGrid } from "../datagrid";
 
-const utils = Utils, dom = DomUtils, delegateMap = delegateWeakMap;
+const utils = Utils, dom = DomUtils, subscribeMap = subscribeWeakMap;
 
 export interface ICellOptions {
     row: Row;
@@ -18,7 +20,7 @@ export interface ICellOptions {
     num: number;
 }
 
-export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
+export class BaseCell<TColumn extends BaseColumn> extends BaseObject implements ISubscriber {
     private _row: Row;
     private _td: HTMLTableCellElement;
     private _column: TColumn;
@@ -36,7 +38,7 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
             }, options);
         this._row = options.row;
         this._td = options.td;
-        delegateMap.set(this._td, this);
+        subscribeMap.set(this._td, this);
         this._column = <TColumn>options.column;
         this._num = options.num;
         if (!!this._column.options.rowCellCss) {
@@ -45,13 +47,13 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
         this._click = new DblClick();
         this._row.tr.appendChild(this._td);
     }
-    _isDelegated(flag: DelegateFlags): boolean {
-        return flag === DelegateFlags.click;
-    }
     protected _onCellClicked(row?: Row) {
     }
     protected _onDblClicked(row?: Row) {
         this.grid._getInternal().onCellDblClicked(this);
+    }
+    isSubscribed(flag: SubscribeFlags): boolean {
+        return flag === SubscribeFlags.click;
     }
     handle_click(e: Event) {
         this.grid._getInternal().setCurrentColumn(this.column);
@@ -69,7 +71,7 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
             return;
         }
         this.setDisposing();
-        delegateMap.delete(this._td);
+        subscribeMap.delete(this._td);
         if (!!this._click) {
             this._click.dispose();
             this._click = null;

@@ -11,7 +11,7 @@ import {
 import {
     Parser
 } from "jriapp/utils/parser";
-import { bootstrap, selectableWeakMap } from "jriapp/bootstrap";
+import { bootstrap, selectableProviderWeakMap } from "jriapp/bootstrap";
 import {
     COLL_CHANGE_REASON, ITEM_STATUS, COLL_CHANGE_TYPE
 } from "jriapp_shared/collection/const";
@@ -302,7 +302,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             }
         };
         this._createColumns();
-        selectableWeakMap.set(table, this);
+        selectableProviderWeakMap.set(table, this);
         _gridCreated(this);
 
         const ds = this._options.dataSource;
@@ -810,13 +810,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._wrapper = wrapper;
         this._header = header;
         this._contaner = container;
-        selectableWeakMap.set(this._contaner, this);
+        selectableProviderWeakMap.set(this._contaner, this);
     }
     protected _unWrapTable() {
         if (!this._header) {
             return;
         }
-        selectableWeakMap.delete(this._contaner);
+        selectableProviderWeakMap.delete(this._contaner);
         this._header.remove();
         this._header = null;
         // first call to remove wrap div
@@ -1142,7 +1142,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             return;
         }
         this.setDisposing();
-        selectableWeakMap.delete(this._table);
+        selectableProviderWeakMap.delete(this._table);
         this._scrollDebounce.dispose();
         this._dsDebounce.dispose();
         this._pageDebounce.dispose();

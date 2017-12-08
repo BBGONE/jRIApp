@@ -1,10 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DomUtils } from "jriapp/utils/dom";
-import { bootstrap, delegateWeakMap, DelegateFlags } from "jriapp/bootstrap";
+import { SubscribeFlags } from "jriapp/const";
+import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { PROP_NAME } from "./baseview";
 import { CommandElView, ICommandViewOptions } from "./command";
 
-const boot = bootstrap, dom = DomUtils, delegateMap = delegateWeakMap;
+const boot = bootstrap, dom = DomUtils, subscribeMap = subscribeWeakMap;
 
 export class ButtonElView extends CommandElView {
     private _isButton: boolean;
@@ -14,8 +15,8 @@ export class ButtonElView extends CommandElView {
         const self = this;
         this._isButton = this.el.tagName.toLowerCase() === "button";
         if (this.isDelegationOn) {
-            delegateMap.set(this.el, this);
-            this._setIsDelegated(DelegateFlags.click);
+            subscribeMap.set(this.el, this);
+            this._setIsSubcribed(SubscribeFlags.click);
         } else {
             dom.events.on(this.el, "click", (e) => {
                 self.handle_click(e);

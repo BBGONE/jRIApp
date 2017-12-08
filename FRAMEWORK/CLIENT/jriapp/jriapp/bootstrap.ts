@@ -4,9 +4,11 @@ import {
     TEventHandler, TPriority, LocaleERRS, BaseObject, Utils, ObjectEvents,
     IObjectEvents, createWeakMap, IWeakMap
 } from "jriapp_shared";
-import { STORE_KEY } from "./const";
-import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore,
-    IContentFactoryList, IElViewRegister, IStylesLoader } from "./int";
+import { STORE_KEY, SubscribeFlags } from "./const";
+import {
+    IApplication, ISelectableProvider, IExports, IConverter, ISvcStore,
+    IContentFactoryList, IElViewRegister, IStylesLoader, ISubscriber
+} from "./int";
 import { createElViewRegister } from "./elview";
 import { createContentFactoryList } from "./content";
 import { Defaults } from "defaults";
@@ -21,8 +23,7 @@ const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document, check
     _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err,
     ERRS = LocaleERRS;
 
-export const delegateWeakMap: IWeakMap = createWeakMap(),
-    selectableWeakMap: IWeakMap = createWeakMap();
+export const subscribeWeakMap: IWeakMap = createWeakMap(), selectableProviderWeakMap: IWeakMap = createWeakMap();
 
 // Implements polyfill for requestAnimationFrame API && Promise
 (function () {
@@ -57,21 +58,12 @@ export const delegateWeakMap: IWeakMap = createWeakMap(),
 const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
 const _stylesLoader: IStylesLoader = createCssLoader();
 
-export const enum DelegateFlags {
-    delegationOn = 0,
-    click = 1,
-    change = 2,
-    keypress = 3,
-    keydown = 4,
-    keyup = 5
-}
-
-const delegateName: IIndexer<DelegateFlags> = {
-    click: DelegateFlags.click,
-    change: DelegateFlags.change,
-    keypress: DelegateFlags.keypress,
-    keydown: DelegateFlags.keydown,
-    keyup: DelegateFlags.keyup
+const eventName: IIndexer<SubscribeFlags> = {
+    click: SubscribeFlags.click,
+    change: SubscribeFlags.change,
+    keypress: SubscribeFlags.keypress,
+    keydown: SubscribeFlags.keydown,
+    keyup: SubscribeFlags.keyup
 };
 
 const enum GLOB_EVENTS {
@@ -200,14 +192,14 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         ERROR.addHandler("*", this);
     }
     private _bindGlobalEvents(): void {
-        const self = this;
+        const self = this, subscribeMap = subscribeWeakMap, selectableMap = selectableProviderWeakMap;
 
         // when clicked outside any Selectable Element View set focusedElView to null
         dom.events.on(doc, "click", (e) => {
             let target: Element | HTMLDocument = <any>e.target;
             // go up to the parent node
             while (!!target && target !== doc) {
-                const obj = selectableWeakMap.get(target);
+                const obj = selectableMap.get(target);
                 if (!!obj) {
                     //set as current selectable
                     self.focusedElView = obj;
@@ -219,18 +211,19 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             self.focusedElView = null;
         }, this._objId);
 
-        const delegateMap = delegateWeakMap;
         // event delegation - capturing delegated events
-        coreUtils.forEachProp(delegateName, ((name, flag) => {
+        coreUtils.forEachProp(eventName, ((name, flag) => {
             const fn_name = "handle_" + name;
             dom.events.on(doc, name, (e) => {
-                const obj: any = delegateMap.get(e.target);
-                obj[fn_name](e.originalEvent);
+                const obj: any = subscribeMap.get(e.target);
+                if (checks.isFunc(obj[fn_name])) {
+                    obj[fn_name](e.originalEvent);
+                }
             }, {
                     nmspace: this._objId,
                     matchElement: (el: Element) => {
-                        const obj = delegateMap.get(el);
-                        return !!obj && !!obj._isDelegated(flag) && checks.isFunc(obj[fn_name]);
+                        const obj: ISubscriber = subscribeMap.get(el);
+                        return !!obj && !!obj.isSubscribed(flag);
                     }
                 });
         }));

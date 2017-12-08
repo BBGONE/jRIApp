@@ -157,8 +157,8 @@ declare module "jriapp_ui/utils/datepicker" {
 }
 declare module "jriapp_ui/baseview" {
     import { BaseObject, IPropertyBag, IValidationInfo } from "jriapp_shared";
-    import { IElView, IApplication, IViewOptions } from "jriapp/int";
-    import { DelegateFlags } from "jriapp/bootstrap";
+    import { SubscribeFlags } from "jriapp/const";
+    import { IElView, IApplication, IViewOptions, ISubscriber } from "jriapp/int";
     import { ICommand } from "jriapp/mvvm";
     import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
     export { IEventChangedArgs, EVENT_CHANGE_TYPE };
@@ -201,10 +201,10 @@ declare module "jriapp_ui/baseview" {
         src = "src",
         click = "click",
     }
-    export class BaseElView extends BaseObject implements IElView {
+    export class BaseElView extends BaseObject implements IElView, ISubscriber {
         private _objId;
         private _el;
-        private _delegateFlags;
+        private _subscribeFlags;
         protected _errors: IValidationInfo[];
         protected _toolTip: string;
         private _eventBag;
@@ -222,8 +222,8 @@ declare module "jriapp_ui/baseview" {
         protected _setFieldError(isError: boolean): void;
         protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;
         protected _setToolTip(el: Element, tip: string, isError?: boolean): void;
-        protected _setIsDelegated(flag: DelegateFlags): void;
-        _isDelegated(flag: DelegateFlags): boolean;
+        protected _setIsSubcribed(flag: SubscribeFlags): void;
+        isSubscribed(flag: SubscribeFlags): boolean;
         dispose(): void;
         toString(): string;
         readonly el: HTMLElement;
@@ -985,7 +985,8 @@ declare module "jriapp_ui/datagrid/rows/row" {
 declare module "jriapp_ui/datagrid/cells/base" {
     import { BaseObject } from "jriapp_shared";
     import { ICollectionItem } from "jriapp_shared/collection/int";
-    import { DelegateFlags } from "jriapp/bootstrap";
+    import { SubscribeFlags } from "jriapp/const";
+    import { ISubscriber } from "jriapp/int";
     import { DblClick } from "jriapp_ui/utils/dblclick";
     import { Row } from "jriapp_ui/datagrid/rows/row";
     import { BaseColumn } from "jriapp_ui/datagrid/columns/base";
@@ -996,16 +997,16 @@ declare module "jriapp_ui/datagrid/cells/base" {
         column: BaseColumn;
         num: number;
     }
-    export class BaseCell<TColumn extends BaseColumn> extends BaseObject {
+    export class BaseCell<TColumn extends BaseColumn> extends BaseObject implements ISubscriber {
         private _row;
         private _td;
         private _column;
         protected _click: DblClick;
         private _num;
         constructor(options: ICellOptions);
-        _isDelegated(flag: DelegateFlags): boolean;
         protected _onCellClicked(row?: Row): void;
         protected _onDblClicked(row?: Row): void;
+        isSubscribed(flag: SubscribeFlags): boolean;
         handle_click(e: Event): void;
         click(): void;
         scrollIntoView(): void;

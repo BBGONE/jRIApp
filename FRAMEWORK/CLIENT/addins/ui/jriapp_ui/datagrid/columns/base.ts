@@ -4,7 +4,7 @@ import { DomUtils } from "jriapp/utils/dom";
 import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
 import { fn_addToolTip } from "../../baseview";
-import { selectableWeakMap } from "jriapp/bootstrap";
+import { selectableProviderWeakMap } from "jriapp/bootstrap";
 
 import { css } from "../const";
 import { DataGrid } from "../datagrid";
@@ -56,7 +56,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         }
 
         this._grid._getInternal().getHeader().appendChild(col);
-        selectableWeakMap.set(this._col, this._grid);
+        selectableProviderWeakMap.set(this._col, this._grid);
 
         // a click on column itself
         dom.events.on(this._col, "click", (e) => {
@@ -85,7 +85,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
             return;
         }
         this.setDisposing();
-        selectableWeakMap.delete(this._col);
+        selectableProviderWeakMap.delete(this._col);
         dom.events.offNS(this.grid.table, this.uniqueID);
 
         if (!!this._options.tip) {

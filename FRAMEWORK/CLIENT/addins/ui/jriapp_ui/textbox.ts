@@ -1,11 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { bootstrap, delegateWeakMap, DelegateFlags } from "jriapp/bootstrap";
+import { SubscribeFlags } from "jriapp/const";
+import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { PROP_NAME } from "./baseview";
 import { InputElView } from "./input";
 
-const dom = DomUtils, delegateMap = delegateWeakMap;
+const dom = DomUtils, subscribeMap = subscribeWeakMap;
 
 const enum TXTBOX_EVENTS {
     keypress = "keypress"
@@ -26,11 +27,11 @@ export class TextBoxElView extends InputElView {
         super(options);
         const self = this;
         if (this.isDelegationOn) {
-            delegateMap.set(this.el, this);
-            this._setIsDelegated(DelegateFlags.change);
-            this._setIsDelegated(DelegateFlags.keypress);
+            subscribeMap.set(this.el, this);
+            this._setIsSubcribed(SubscribeFlags.change);
+            this._setIsSubcribed(SubscribeFlags.keypress);
             if (!!options.updateOnKeyUp) {
-                this._setIsDelegated(DelegateFlags.keyup);
+                this._setIsSubcribed(SubscribeFlags.keyup);
             }
         } else {
             dom.events.on(this.el, "change", (e) => {

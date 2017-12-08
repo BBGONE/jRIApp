@@ -50,3 +50,12 @@ export const enum BINDING_MODE {
     TwoWay = 2,
     BackWay = 3
 }
+
+export const enum SubscribeFlags {
+    delegationOn = 0,
+    click = 1,
+    change = 2,
+    keypress = 3,
+    keydown = 4,
+    keyup = 5
+}

@@ -4,9 +4,9 @@ import {
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { ViewChecks } from "jriapp/utils/viewchecks";
-import { TOOLTIP_SVC, DATEPICKER_SVC, DATA_ATTR } from "jriapp/const";
-import { ITooltipService, IElView, IElViewStore, IApplication, IViewOptions } from "jriapp/int";
-import { bootstrap, delegateWeakMap, DelegateFlags } from "jriapp/bootstrap";
+import { TOOLTIP_SVC, DATEPICKER_SVC, DATA_ATTR, SubscribeFlags } from "jriapp/const";
+import { ITooltipService, IElView, IElViewStore, IApplication, IViewOptions, ISubscriber } from "jriapp/int";
+import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { ICommand } from "jriapp/mvvm";
 import { EventBag, EVENT_CHANGE_TYPE, IEventChangedArgs } from "./utils/eventbag";
 import { PropertyBag } from "./utils/propbag";
@@ -17,7 +17,7 @@ import { createDatepickerSvc } from "./utils/datepicker";
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
 const utils = Utils, coreUtils = utils.core, dom = DomUtils, checks = utils.check,
-    boot = bootstrap, viewChecks = ViewChecks, delegateMap = delegateWeakMap;
+    boot = bootstrap, viewChecks = ViewChecks, subscribeMap = subscribeWeakMap;
 
 
 viewChecks.isElView = (obj: any) => {
@@ -72,10 +72,10 @@ export const enum PROP_NAME {
     click = "click"
 }
 
-export class BaseElView extends BaseObject implements IElView {
+export class BaseElView extends BaseObject implements IElView, ISubscriber {
     private _objId: string;
     private _el: HTMLElement;
-    private _delegateFlags: DelegateFlags;
+    private _subscribeFlags: SubscribeFlags;
     protected _errors: IValidationInfo[];
     protected _toolTip: string;
     private _eventBag: EventBag;
@@ -90,7 +90,7 @@ export class BaseElView extends BaseObject implements IElView {
         const el = options.el;
         this._el = el;
         this._toolTip = options.tip;
-        this._delegateFlags = (options.nodelegate === true) ? 0 : 1;
+        this._subscribeFlags = (options.nodelegate === true) ? 0 : 1;
         // lazily initialized
         this._eventBag = null;
         this._propBag = null;
@@ -168,11 +168,11 @@ export class BaseElView extends BaseObject implements IElView {
     protected _setToolTip(el: Element, tip: string, isError?: boolean) {
         fn_addToolTip(el, tip, isError);
     }
-    protected _setIsDelegated(flag: DelegateFlags) {
-        this._delegateFlags |= (1 << flag);
+    protected _setIsSubcribed(flag: SubscribeFlags) {
+        this._subscribeFlags |= (1 << flag);
     }
-    _isDelegated(flag: DelegateFlags): boolean {
-        return !!(this._delegateFlags & (1 << flag));
+    isSubscribed(flag: SubscribeFlags): boolean {
+        return !!(this._subscribeFlags & (1 << flag));
     }
     dispose() {
         if (this.getIsDisposed()) {
@@ -185,9 +185,9 @@ export class BaseElView extends BaseObject implements IElView {
             this._toolTip = null;
             this._setToolTip(this.el, null);
             this.validationErrors = null;
-            if (this._delegateFlags !== 0) {
-                delegateMap.delete(this.el);
-                this._delegateFlags = 0;
+            if (this._subscribeFlags !== 0) {
+                subscribeMap.delete(this.el);
+                this._subscribeFlags = 0;
             }
             if (!!this._eventBag) {
                 this._eventBag.dispose();
@@ -289,7 +289,7 @@ export class BaseElView extends BaseObject implements IElView {
         return this._classBag;
     }
     get isDelegationOn(): boolean {
-        return !!(this._delegateFlags & (1 << DelegateFlags.delegationOn));
+        return !!(this._subscribeFlags & (1 << SubscribeFlags.delegationOn));
     }
     get css() {
         return this._css;

@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BINDING_MODE, BindTo } from "./const";
+import { BINDING_MODE, BindTo, SubscribeFlags } from "./const";
 import {
     IBaseObject, IDisposable, IIndexer, IPromise,
     IVoidPromise, IValidationInfo, IErrorHandler, TEventHandler, IConfig
@@ -27,6 +27,10 @@ export interface ILifeTimeScope extends IBaseObject {
     addObj(b: IBaseObject): void;
     removeObj(b: IBaseObject): void;
     getObjs(): IBaseObject[];
+}
+
+export interface ISubscriber {
+    isSubscribed(flag: SubscribeFlags): boolean;
 }
 
 export interface IDatepicker {

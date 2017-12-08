@@ -70,6 +70,15 @@ define("jriapp/const", ["require", "exports"], function (require, exports) {
         BINDING_MODE[BINDING_MODE["TwoWay"] = 2] = "TwoWay";
         BINDING_MODE[BINDING_MODE["BackWay"] = 3] = "BackWay";
     })(BINDING_MODE = exports.BINDING_MODE || (exports.BINDING_MODE = {}));
+    var SubscribeFlags;
+    (function (SubscribeFlags) {
+        SubscribeFlags[SubscribeFlags["delegationOn"] = 0] = "delegationOn";
+        SubscribeFlags[SubscribeFlags["click"] = 1] = "click";
+        SubscribeFlags[SubscribeFlags["change"] = 2] = "change";
+        SubscribeFlags[SubscribeFlags["keypress"] = 3] = "keypress";
+        SubscribeFlags[SubscribeFlags["keydown"] = 4] = "keydown";
+        SubscribeFlags[SubscribeFlags["keyup"] = 5] = "keyup";
+    })(SubscribeFlags = exports.SubscribeFlags || (exports.SubscribeFlags = {}));
 });
 define("jriapp/int", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -1587,7 +1596,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_10.Utils, dom = dom_3.DomUtils, win = dom.window, doc = win.document, checks = utils.check, _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err, ERRS = jriapp_shared_10.LocaleERRS;
-    exports.delegateWeakMap = jriapp_shared_10.createWeakMap(), exports.selectableWeakMap = jriapp_shared_10.createWeakMap();
+    exports.subscribeWeakMap = jriapp_shared_10.createWeakMap(), exports.selectableProviderWeakMap = jriapp_shared_10.createWeakMap();
     (function () {
         var win = dom.window;
         if (!win.Promise) {
@@ -1610,16 +1619,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
     })();
     var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
     var _stylesLoader = sloader_1.createCssLoader();
-    var DelegateFlags;
-    (function (DelegateFlags) {
-        DelegateFlags[DelegateFlags["delegationOn"] = 0] = "delegationOn";
-        DelegateFlags[DelegateFlags["click"] = 1] = "click";
-        DelegateFlags[DelegateFlags["change"] = 2] = "change";
-        DelegateFlags[DelegateFlags["keypress"] = 3] = "keypress";
-        DelegateFlags[DelegateFlags["keydown"] = 4] = "keydown";
-        DelegateFlags[DelegateFlags["keyup"] = 5] = "keyup";
-    })(DelegateFlags = exports.DelegateFlags || (exports.DelegateFlags = {}));
-    var delegateName = {
+    var eventName = {
         click: 1,
         change: 2,
         keypress: 3,
@@ -1730,11 +1730,11 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
         };
         Bootstrap.prototype._bindGlobalEvents = function () {
             var _this = this;
-            var self = this;
+            var self = this, subscribeMap = exports.subscribeWeakMap, selectableMap = exports.selectableProviderWeakMap;
             dom.events.on(doc, "click", function (e) {
                 var target = e.target;
                 while (!!target && target !== doc) {
-                    var obj = exports.selectableWeakMap.get(target);
+                    var obj = selectableMap.get(target);
                     if (!!obj) {
                         self.focusedElView = obj;
                         return;
@@ -1743,17 +1743,18 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                 }
                 self.focusedElView = null;
             }, this._objId);
-            var delegateMap = exports.delegateWeakMap;
-            coreUtils.forEachProp(delegateName, (function (name, flag) {
+            coreUtils.forEachProp(eventName, (function (name, flag) {
                 var fn_name = "handle_" + name;
                 dom.events.on(doc, name, function (e) {
-                    var obj = delegateMap.get(e.target);
-                    obj[fn_name](e.originalEvent);
+                    var obj = subscribeMap.get(e.target);
+                    if (checks.isFunc(obj[fn_name])) {
+                        obj[fn_name](e.originalEvent);
+                    }
                 }, {
                     nmspace: _this._objId,
                     matchElement: function (el) {
-                        var obj = delegateMap.get(el);
-                        return !!obj && !!obj._isDelegated(flag) && checks.isFunc(obj[fn_name]);
+                        var obj = subscribeMap.get(el);
+                        return !!obj && !!obj.isSubscribed(flag);
                     }
                 });
             }));
@@ -4226,10 +4227,13 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.KEYS = const_2.KEYS;
     exports.BINDING_MODE = const_2.BINDING_MODE;
     exports.BindTo = const_2.BindTo;
+    exports.SubscribeFlags = const_2.SubscribeFlags;
     exports.DOM = dom_7.DomUtils;
     exports.ViewChecks = viewchecks_4.ViewChecks;
     exports.BaseConverter = converter_1.BaseConverter;
     exports.bootstrap = bootstrap_8.bootstrap;
+    exports.subscribeWeakMap = bootstrap_8.subscribeWeakMap;
+    exports.selectableProviderWeakMap = bootstrap_8.selectableProviderWeakMap;
     exports.Binding = binding_2.Binding;
     exports.createTemplate = template_1.createTemplate;
     exports.LifeTimeScope = lifetime_2.LifeTimeScope;
@@ -4239,6 +4243,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.5.2";
+    exports.VERSION = "2.5.3";
     bootstrap_7.Bootstrap._initFramework();
 });

@@ -2,11 +2,12 @@
 import { IViewOptions } from "jriapp/int";
 import { Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-import { bootstrap, delegateWeakMap, DelegateFlags } from "jriapp/bootstrap";
+import { SubscribeFlags } from "jriapp/const";
+import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { css, PROP_NAME } from "./baseview";
 import { InputElView } from "./input";
 
-const dom = DomUtils, checks = Utils.check, boot = bootstrap, delegateMap = delegateWeakMap;
+const dom = DomUtils, checks = Utils.check, boot = bootstrap, subscribeMap = subscribeWeakMap;
 
 export class CheckBoxElView extends InputElView {
     private _checked: boolean;
@@ -18,8 +19,8 @@ export class CheckBoxElView extends InputElView {
         chk.checked = false;
 
         if (this.isDelegationOn) {
-            delegateMap.set(this.el, this);
-            this._setIsDelegated(DelegateFlags.change);
+            subscribeMap.set(this.el, this);
+            this._setIsSubcribed(SubscribeFlags.change);
         } else {
             dom.events.on(this.el, "change", (e) => {
                 e.stopPropagation();

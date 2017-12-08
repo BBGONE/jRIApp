@@ -1,10 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DomUtils } from "jriapp/utils/dom";
-import { bootstrap, delegateWeakMap, DelegateFlags } from "jriapp/bootstrap";
+import { SubscribeFlags } from "jriapp/const";
+import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { css, PROP_NAME } from "./baseview";
 import { CommandElView, ICommandViewOptions } from "./command";
 
-const dom = DomUtils, boot = bootstrap, delegateMap = delegateWeakMap;
+const dom = DomUtils, boot = bootstrap, subscribeMap = subscribeWeakMap;
 
 export interface IAncorOptions extends ICommandViewOptions {
     imageSrc?: string;
@@ -35,8 +36,8 @@ export class AnchorElView extends CommandElView {
 
         dom.addClass([this.el], css.commandLink);
         if (this.isDelegationOn) {
-            delegateMap.set(this.el, this);
-            this._setIsDelegated(DelegateFlags.click);
+            subscribeMap.set(this.el, this);
+            this._setIsSubcribed(SubscribeFlags.click);
         } else {
             dom.events.on(this.el, "click", (e) => {
                 self.handle_click(e);

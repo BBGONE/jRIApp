@@ -13,7 +13,7 @@ import {
 import {
     ICollection, ICollectionItem, ICollChangedArgs
 } from "jriapp_shared/collection/int";
-import { bootstrap, selectableWeakMap } from "jriapp/bootstrap";
+import { bootstrap, selectableProviderWeakMap } from "jriapp/bootstrap";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
     strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
@@ -119,7 +119,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
                 }
             });
 
-        selectableWeakMap.set(this._el, this);
+        selectableProviderWeakMap.set(this._el, this);
         const ds = this._options.dataSource;
         this._setDataSource(ds);
     }
@@ -345,7 +345,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             return;
         }
         this.setDisposing();
-        selectableWeakMap.delete(this._el);
+        selectableProviderWeakMap.delete(this._el);
         this._debounce.dispose();
         this._unbindDS();
         this._clearContent();
