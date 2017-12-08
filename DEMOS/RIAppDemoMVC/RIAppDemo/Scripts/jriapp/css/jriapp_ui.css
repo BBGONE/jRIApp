@@ -252,15 +252,25 @@ td.ria-row-selector input[type="checkbox"] {
 }
 
 .ria-pager-info-num {
-    color: Highlight;
+    color: highlight;
 }
 
 .ria-pager-page {
     display: inline-block;
     border: 1px solid #DDDDDD;
-    padding: 5px;
+    padding: 4px;
+    margin: 2px;
+    min-width: 24px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.ria-pager-interval {
+    display: inline-block;
+    padding: 4px;
     margin: 3px;
     box-sizing: border-box;
+    color: highlight;
 }
 
 .ria-pager-current-page {

@@ -1382,11 +1382,12 @@ declare module "jriapp_ui/pager" {
         protected _unbindDS(): void;
         protected _clearContent(): void;
         protected _reset(): void;
-        protected _createLink(page: number, text: string): HTMLElement;
+        protected _createLink(text: string): HTMLElement;
         private _addScope(el, page);
         protected _createFirst(): HTMLElement;
         protected _createPrevious(): HTMLElement;
         protected _createCurrent(): HTMLElement;
+        protected _createInterval(): HTMLElement;
         protected _createOther(page: number): HTMLElement;
         protected _createNext(): HTMLElement;
         protected _createLast(): HTMLElement;
@@ -1404,7 +1405,6 @@ declare module "jriapp_ui/pager" {
         hideOnSinglePage: boolean;
         showTip: boolean;
         showInfo: boolean;
-        showFirstAndLast: boolean;
         showPreviousAndNext: boolean;
         showNumbers: boolean;
         isVisible: boolean;

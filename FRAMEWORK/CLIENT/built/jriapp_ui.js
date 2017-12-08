@@ -6468,6 +6468,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
     var _STRS = jriapp_shared_31.LocaleSTRS.PAGER;
     var css;
     (function (css) {
+        css["interval"] = "ria-pager-interval";
         css["pager"] = "ria-pager";
         css["info"] = "ria-pager-info";
         css["page"] = "ria-pager-page";
@@ -6491,11 +6492,10 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 showTip: true,
                 showInfo: false,
                 showNumbers: true,
-                showFirstAndLast: true,
                 showPreviousAndNext: false,
                 useSlider: true,
                 hideOnSinglePage: true,
-                sliderSize: 25
+                sliderSize: 10
             }, options);
             var self = _this;
             _this._display = null;
@@ -6557,14 +6557,15 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 return;
             }
             var rowCount = this.rowCount, currentPage = this.currentPage, pageCount = this.pageCount;
-            if (currentPage > 0 && rowCount > 0 && !(this.hideOnSinglePage && (pageCount === 1))) {
-                if (this.showFirstAndLast && (currentPage !== 1)) {
+            if (rowCount > 0) {
+                if (this.showPreviousAndNext) {
                     el.appendChild(this._createFirst());
-                }
-                if (this.showPreviousAndNext && (currentPage !== 1)) {
                     el.appendChild(this._createPrevious());
+                    el.appendChild(this._createCurrent());
+                    el.appendChild(this._createNext());
+                    el.appendChild(this._createLast());
                 }
-                if (this.showNumbers) {
+                if (this.showNumbers && currentPage > 0 && !(this.hideOnSinglePage && (pageCount === 1))) {
                     var sliderSize = this.sliderSize;
                     var start = 1, end = pageCount, half = void 0, above = void 0, below = void 0;
                     if (this.useSlider && (sliderSize > 0)) {
@@ -6585,7 +6586,23 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                         start = below;
                         end = above;
                     }
-                    for (var i = start; i <= end; i++) {
+                    var _start = start === 1 ? 2 : start;
+                    var _end = end === pageCount ? end - 1 : end;
+                    if (1 === currentPage) {
+                        el.appendChild(this._createCurrent());
+                    }
+                    else {
+                        el.appendChild(this._createOther(1));
+                    }
+                    if (_start > 2) {
+                        if (_start === 3) {
+                            el.appendChild(this._createOther(2));
+                        }
+                        else {
+                            el.appendChild(this._createInterval());
+                        }
+                    }
+                    for (var i = _start; i <= _end; i++) {
                         if (i === currentPage) {
                             el.appendChild(this._createCurrent());
                         }
@@ -6593,12 +6610,20 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                             el.appendChild(this._createOther(i));
                         }
                     }
-                }
-                if (this.showPreviousAndNext && (currentPage !== pageCount)) {
-                    el.appendChild(this._createNext());
-                }
-                if (this.showFirstAndLast && (currentPage !== pageCount)) {
-                    el.appendChild(this._createLast());
+                    if (_end < pageCount - 1) {
+                        if (_end === pageCount - 2) {
+                            el.appendChild(this._createOther(pageCount - 1));
+                        }
+                        else {
+                            el.appendChild(this._createInterval());
+                        }
+                    }
+                    if (pageCount === currentPage) {
+                        el.appendChild(this._createCurrent());
+                    }
+                    else {
+                        el.appendChild(this._createOther(pageCount));
+                    }
                 }
             }
             if (this.showInfo && rowCount > 0 && currentPage > 0) {
@@ -6683,7 +6708,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             this._rowCount = ds.totalCount;
             this.render();
         };
-        Pager.prototype._createLink = function (page, text) {
+        Pager.prototype._createLink = function (text) {
             var a = this._createElement("a");
             a.textContent = ("" + text);
             a.setAttribute("href", "javascript:void(0)");
@@ -6699,7 +6724,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 var tip = _STRS.firstPageTip;
                 this._addToolTip(span, tip);
             }
-            var a = this._createLink(1, _STRS.firstText);
+            var a = this._createLink(_STRS.firstText);
             dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
@@ -6707,12 +6732,16 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             return span;
         };
         Pager.prototype._createPrevious = function () {
-            var span = this._createElement("span"), previousPage = this.currentPage - 1;
+            var span = this._createElement("span");
+            var previousPage = this.currentPage - 1;
+            if (previousPage < 1) {
+                previousPage = 1;
+            }
             if (this.showTip) {
                 var tip = strUtils.format(_STRS.prevPageTip, previousPage);
                 this._addToolTip(span, tip);
             }
-            var a = this._createLink(previousPage, _STRS.previousText);
+            var a = this._createLink(_STRS.previousText);
             dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
@@ -6729,13 +6758,19 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             dom.addClass([span], "ria-pager-current-page");
             return span;
         };
+        Pager.prototype._createInterval = function () {
+            var span = this._createElement("span");
+            dom.addClass([span], "ria-pager-interval");
+            span.textContent = ("...");
+            return span;
+        };
         Pager.prototype._createOther = function (page) {
             var span = this._createElement("span");
             if (this.showTip) {
                 var tip = this._buildTip(page);
                 this._addToolTip(span, tip);
             }
-            var a = this._createLink(page, "" + page);
+            var a = this._createLink("" + page);
             dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
@@ -6743,12 +6778,16 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             return span;
         };
         Pager.prototype._createNext = function () {
-            var span = this._createElement("span"), nextPage = this.currentPage + 1;
+            var span = this._createElement("span"), pageCount = this.pageCount;
+            var nextPage = this.currentPage + 1;
+            if (nextPage > pageCount) {
+                nextPage = pageCount;
+            }
             if (this.showTip) {
                 var tip = strUtils.format(_STRS.nextPageTip, nextPage);
                 this._addToolTip(span, tip);
             }
-            var a = this._createLink(nextPage, _STRS.nextText);
+            var a = this._createLink(_STRS.nextText);
             dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
@@ -6761,7 +6800,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 var tip = _STRS.lastPageTip;
                 this._addToolTip(span, tip);
             }
-            var a = this._createLink(this.pageCount, _STRS.lastText);
+            var a = this._createLink(_STRS.lastText);
             dom.addClass([span], "ria-pager-page");
             dom.addClass([span], "ria-pager-other-page");
             span.appendChild(a);
@@ -6908,17 +6947,6 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             set: function (v) {
                 if (this._options.showInfo !== v) {
                     this._options.showInfo = v;
-                    this.render();
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Pager.prototype, "showFirstAndLast", {
-            get: function () { return this._options.showFirstAndLast; },
-            set: function (v) {
-                if (this.showFirstAndLast !== v) {
-                    this._options.showFirstAndLast = v;
                     this.render();
                 }
             },

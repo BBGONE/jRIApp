@@ -15,6 +15,7 @@ const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
 const _STRS = STRS.PAGER;
 
 const enum css {
+    interval = "ria-pager-interval",
     pager = "ria-pager",
     info = "ria-pager-info",
     page = "ria-pager-page",
@@ -68,11 +69,10 @@ export class Pager extends BaseObject {
                 showTip: true,
                 showInfo: false,
                 showNumbers: true,
-                showFirstAndLast: true,
                 showPreviousAndNext: false,
                 useSlider: true,
                 hideOnSinglePage: true,
-                sliderSize: 25
+                sliderSize: 10
             }, options);
         const self = this;
         this._display = null;
@@ -139,16 +139,16 @@ export class Pager extends BaseObject {
         const rowCount = this.rowCount, currentPage = this.currentPage,
             pageCount = this.pageCount;
 
-        if (currentPage > 0 && rowCount > 0 && !(this.hideOnSinglePage && (pageCount === 1))) {
-            if (this.showFirstAndLast && (currentPage !== 1)) {
+        if (rowCount > 0) {
+            if (this.showPreviousAndNext) {
                 el.appendChild(this._createFirst());
-            }
-
-            if (this.showPreviousAndNext && (currentPage !== 1)) {
                 el.appendChild(this._createPrevious());
+                el.appendChild(this._createCurrent());
+                el.appendChild(this._createNext());
+                el.appendChild(this._createLast());
             }
 
-            if (this.showNumbers) {
+            if (this.showNumbers && currentPage > 0 && !(this.hideOnSinglePage && (pageCount === 1))) {
                 const sliderSize = this.sliderSize;
                 let start = 1, end = pageCount, half: number, above: number, below: number;
 
@@ -176,22 +176,46 @@ export class Pager extends BaseObject {
                     end = above;
                 }
 
-                for (let i = start; i <= end; i++) {
+                let _start = start === 1 ? 2 : start;
+                let _end = end === pageCount ? end - 1 : end;
+
+
+                if (1 === currentPage) {
+                    el.appendChild(this._createCurrent());
+                } else {
+                    el.appendChild(this._createOther(1));
+                }
+
+                if (_start > 2) {
+                    if (_start === 3) {
+                        el.appendChild(this._createOther(2));
+                    } else {
+                        el.appendChild(this._createInterval());
+                    }
+                }
+
+                for (let i = _start; i <= _end; i++) {
                     if (i === currentPage) {
                         el.appendChild(this._createCurrent());
                     } else {
                         el.appendChild(this._createOther(i));
                     }
                 }
-            }
 
-            if (this.showPreviousAndNext && (currentPage !== pageCount)) {
-                el.appendChild(this._createNext());
-            }
+                if (_end < pageCount - 1) {
+                    if (_end === pageCount - 2) {
+                        el.appendChild(this._createOther(pageCount - 1));
+                    } else {
+                        el.appendChild(this._createInterval());
+                    }
+                }
 
-            if (this.showFirstAndLast && (currentPage !== pageCount)) {
-                el.appendChild(this._createLast());
-            }
+                if (pageCount === currentPage) {
+                    el.appendChild(this._createCurrent());
+                } else {
+                    el.appendChild(this._createOther(pageCount));
+                }
+            } // if (this.showNumbers)
         }
 
         if (this.showInfo && rowCount > 0 && currentPage > 0) {
@@ -279,7 +303,7 @@ export class Pager extends BaseObject {
         this._rowCount = ds.totalCount;
         this.render();
     }
-    protected _createLink(page: number, text: string) {
+    protected _createLink(text: string) {
         const a = this._createElement("a");
         a.textContent = ("" + text);
         a.setAttribute("href", "javascript:void(0)");
@@ -296,7 +320,7 @@ export class Pager extends BaseObject {
             const tip = _STRS.firstPageTip;
             this._addToolTip(span, tip);
         }
-        const a = this._createLink(1, _STRS.firstText);
+        const a = this._createLink(_STRS.firstText);
         dom.addClass([span], css.page);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
@@ -304,13 +328,16 @@ export class Pager extends BaseObject {
         return span;
     }
     protected _createPrevious() {
-        const span = this._createElement("span"), previousPage = this.currentPage - 1;
-
+        const span = this._createElement("span");
+        let previousPage = this.currentPage - 1;
+        if (previousPage < 1) {
+            previousPage = 1;
+        }
         if (this.showTip) {
             const tip = strUtils.format(_STRS.prevPageTip, previousPage);
             this._addToolTip(span, tip);
         }
-        const a = this._createLink(previousPage, _STRS.previousText);
+        const a = this._createLink(_STRS.previousText);
         dom.addClass([span], css.page);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
@@ -329,6 +356,12 @@ export class Pager extends BaseObject {
         dom.addClass([span], css.currentPage);
         return span;
     }
+    protected _createInterval() {
+        const span = this._createElement("span");
+        dom.addClass([span], css.interval);
+        span.textContent = ("...");
+        return span;
+    }
     protected _createOther(page: number) {
         const span = this._createElement("span");
 
@@ -337,7 +370,7 @@ export class Pager extends BaseObject {
             this._addToolTip(span, tip);
         }
 
-        const a = this._createLink(page, "" + page);
+        const a = this._createLink("" + page);
         dom.addClass([span], css.page);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
@@ -345,13 +378,16 @@ export class Pager extends BaseObject {
         return span;
     }
     protected _createNext() {
-        const span = this._createElement("span"), nextPage = this.currentPage + 1;
-
+        const span = this._createElement("span"), pageCount = this.pageCount;
+        let nextPage = this.currentPage + 1;
+        if (nextPage > pageCount) {
+            nextPage = pageCount;
+        }
         if (this.showTip) {
             const tip = strUtils.format(_STRS.nextPageTip, nextPage);
             this._addToolTip(span, tip);
         }
-        const a = this._createLink(nextPage, _STRS.nextText);
+        const a = this._createLink(_STRS.nextText);
         dom.addClass([span], css.page);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
@@ -365,7 +401,7 @@ export class Pager extends BaseObject {
             const tip = _STRS.lastPageTip;
             this._addToolTip(span, tip);
         }
-        const a = this._createLink(this.pageCount, _STRS.lastText);
+        const a = this._createLink(_STRS.lastText);
         dom.addClass([span], css.page);
         dom.addClass([span], css.otherPage);
         span.appendChild(a);
@@ -474,13 +510,6 @@ export class Pager extends BaseObject {
     set showInfo(v) {
         if (this._options.showInfo !== v) {
             this._options.showInfo = v;
-            this.render();
-        }
-    }
-    get showFirstAndLast() { return this._options.showFirstAndLast; }
-    set showFirstAndLast(v) {
-        if (this.showFirstAndLast !== v) {
-            this._options.showFirstAndLast = v;
             this.render();
         }
     }
