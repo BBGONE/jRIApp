@@ -241,7 +241,7 @@ td.ria-row-selector input[type="checkbox"] {
 .ria-pager {
     font-family: Frutiger Linotype, Trebuchet MS, Tahoma, Arial;
     font-size: 10pt;
-    margin-top: 8px;
+    margin-top: 0px;
     box-sizing: border-box;
 }
 

@@ -95,9 +95,6 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         this._currentItem = null;
         this._itemMap = {};
         this._selectable = {
-            getUniqueID: () => {
-                return self.uniqueID;
-            },
             onKeyDown: (key: number, event: Event) => {
                 self._onKeyDown(key, event);
             },
@@ -402,7 +399,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     }
     focus() {
         this.scrollToCurrent(true);
-        boot.focusedElView = this;
+        boot.selectedControl = this;
     }
     getDivElementByItem(item: ICollectionItem) {
         const mappedItem = this._itemMap[item._key];

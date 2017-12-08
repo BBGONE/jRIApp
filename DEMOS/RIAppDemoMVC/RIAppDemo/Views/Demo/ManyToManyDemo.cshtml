@@ -298,7 +298,9 @@ title:'Customer editing'}";
     <div style="border: none; height: 40px; margin-top: 0px; text-align: left; width: 100%;">
         <!--pager-->
         <div style="float: left;" data-bind="{this.dataSource,to=dbSet,source=customerVM}" data-view="name=pager,options={sliderSize:10,hideOnSinglePage=false}"></div>
-        <div style="float: left; padding-left: 10px; padding-top: 10px;"><span>Total:</span>&nbsp;<span data-bind="{this.value,to=totalCount,source=customerVM.dbSet}"></span></div>
+        <div style="float: left; padding-left: 10px; padding-top: 11px; padding-bottom:11px;">
+            <span>Total:</span>&nbsp;<span data-bind="{this.value,to=totalCount,source=customerVM.dbSet}"></span>
+        </div>
     </div>
 </div>
 

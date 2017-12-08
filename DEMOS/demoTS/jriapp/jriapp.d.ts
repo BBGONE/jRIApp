@@ -98,7 +98,6 @@ declare module "jriapp/int" {
         convertToTarget(val: any, param: any, dataContext: any): any;
     }
     export interface ISelectable {
-        getUniqueID(): string;
         onKeyDown(key: number, event: Event): void;
         onKeyUp(key: number, event: Event): void;
     }
@@ -646,8 +645,8 @@ declare module "jriapp/bootstrap" {
     }
     export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         static _initFramework(): void;
-        private _appInst;
-        private _focusedElView;
+        private _app;
+        private _selectedControl;
         private _defaults;
         private _templateLoader;
         private _bootState;
@@ -700,7 +699,7 @@ declare module "jriapp/bootstrap" {
         readonly elViewRegister: IElViewRegister;
         readonly contentFactory: IContentFactoryList;
         readonly templateLoader: TemplateLoader;
-        focusedElView: ISelectableProvider;
+        selectedControl: ISelectableProvider;
         readonly defaults: Defaults;
         readonly isReady: boolean;
         readonly state: BootstrapState;
@@ -1001,5 +1000,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.5.4";
+    export const VERSION = "2.5.5";
 }

@@ -48,7 +48,6 @@ export interface IConverter {
 }
 
 export interface ISelectable {
-    getUniqueID(): string;
     onKeyDown(key: number, event: Event): void;
     onKeyUp(key: number, event: Event): void;
 }

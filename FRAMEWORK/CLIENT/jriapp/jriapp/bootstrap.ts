@@ -120,8 +120,8 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             bootstrap._getInternal().initialize();
         });
     }
-    private _appInst: IApplication;
-    private _focusedElView: ISelectableProvider;
+    private _app: IApplication;
+    private _selectedControl: ISelectableProvider;
     private _defaults: Defaults;
     private _templateLoader: TemplateLoader;
     private _bootState: BootstrapState;
@@ -139,8 +139,8 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             throw new Error(ERRS.ERR_GLOBAL_SINGLTON);
         }
         this._bootState = BootstrapState.None;
-        this._appInst = null;
-        this._focusedElView = null;
+        this._app = null;
+        this._selectedControl = null;
         this._objId = coreUtils.getNewID("app");
 
         // exported types
@@ -202,13 +202,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
                 const obj = selectableMap.get(target);
                 if (!!obj) {
                     //set as current selectable
-                    self.focusedElView = obj;
+                    self.selectedControl = obj;
                     return;
                 }
                 target = (<Element><any>target).parentElement;
             }
             // set to null if it's not inside a selectable
-            self.focusedElView = null;
+            self.selectedControl = null;
         }, this._objId);
 
         // event delegation - capturing delegated events
@@ -229,13 +229,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         }));
 
         dom.events.on(doc, "keydown", (e) => {
-            if (!!self._focusedElView) {
-                self._focusedElView.selectable.onKeyDown(e.which, e);
+            if (!!self._selectedControl) {
+                self._selectedControl.selectable.onKeyDown(e.which, e);
             }
         }, this._objId);
         dom.events.on(doc, "keyup", (e) => {
-            if (!!self._focusedElView) {
-                self._focusedElView.selectable.onKeyUp(e.which, e);
+            if (!!self._selectedControl) {
+                self._selectedControl.selectable.onKeyUp(e.which, e);
             }
         }, this._objId);
 
@@ -335,14 +335,14 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         });
     }
     private _registerApp(app: IApplication): void {
-        if (!!this._appInst) {
+        if (!!this._app) {
             throw new Error("Application already registered");
         }
-        this._appInst = app;
+        this._app = app;
         ERROR.addHandler(app.appName, app);
     }
     private _unregisterApp(app: IApplication): void {
-        if (!this._appInst || this._appInst.appName !== app.appName) {
+        if (!this._app || this._app.appName !== app.appName) {
             throw new Error("Invalid operation");
         }
 
@@ -351,11 +351,11 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             this.templateLoader.unRegisterTemplateGroup(app.appName);
             this.templateLoader.unRegisterTemplateLoader(app.appName);
         } finally {
-            this._appInst = null;
+            this._app = null;
         }
     }
     private _destroyApp(): void {
-        const self = this, app = self._appInst;
+        const self = this, app = self._app;
         if (!!app && !app.getIsStateDirty()) {
             app.dispose();
         }
@@ -427,7 +427,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         return this._exports;
     }
     getApp(): IApplication {
-        return this._appInst;
+        return this._app;
     }
     init(onInit: (bootstrap: Bootstrap) => void): void {
         const self = this;
@@ -528,12 +528,12 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     get elViewRegister(): IElViewRegister { return this._elViewRegister; }
     get contentFactory(): IContentFactoryList { return this._contentFactory; }
     get templateLoader(): TemplateLoader { return this._templateLoader; }
-    get focusedElView(): ISelectableProvider {
-        return this._focusedElView;
+    get selectedControl(): ISelectableProvider {
+        return this._selectedControl;
     }
-    set focusedElView(v: ISelectableProvider) {
-        if (this._focusedElView !== v) {
-            this._focusedElView = v;
+    set selectedControl(v: ISelectableProvider) {
+        if (this._selectedControl !== v) {
+            this._selectedControl = v;
             this.objEvents.raiseProp(PROP_NAME.focusedElView);
         }
     }

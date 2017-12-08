@@ -240,9 +240,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._pageDebounce = new Debounce();
 
         this._selectable = {
-            getUniqueID: () => {
-                return self.uniqueID;
-            },
             onKeyDown: (key: number, event: Event) => {
                 self._onKeyDown(key, event);
             },
@@ -1126,7 +1123,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     focus() {
         this.scrollToCurrent(ROW_POSITION.Up);
-        boot.focusedElView = this;
+        boot.selectedControl = this;
     }
     addNew() {
         const ds = this.dataSource;

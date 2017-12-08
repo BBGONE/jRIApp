@@ -3134,10 +3134,10 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             }
             var csel = this._focusedElView;
             this._focusedElView = null;
-            utils.queue.enque(function () { boot.focusedElView = csel; csel = null; });
+            utils.queue.enque(function () { boot.selectedControl = csel; csel = null; });
         };
         DataEditDialog.prototype._onShow = function () {
-            this._focusedElView = boot.focusedElView;
+            this._focusedElView = boot.selectedControl;
             this._submitInfo = new SubmitInfo(this.dataContext);
             if (!!this._fnOnShow) {
                 this._fnOnShow(this);
@@ -5273,9 +5273,6 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             _this._dsDebounce = new jriapp_shared_30.Debounce();
             _this._pageDebounce = new jriapp_shared_30.Debounce();
             _this._selectable = {
-                getUniqueID: function () {
-                    return self.uniqueID;
-                },
                 onKeyDown: function (key, event) {
                     self._onKeyDown(key, event);
                 },
@@ -6132,7 +6129,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         };
         DataGrid.prototype.focus = function () {
             this.scrollToCurrent(0);
-            boot.focusedElView = this;
+            boot.selectedControl = this;
         };
         DataGrid.prototype.addNew = function () {
             var ds = this.dataSource;
@@ -7075,9 +7072,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             _this._currentItem = null;
             _this._itemMap = {};
             _this._selectable = {
-                getUniqueID: function () {
-                    return self.uniqueID;
-                },
                 onKeyDown: function (key, event) {
                     self._onKeyDown(key, event);
                 },
@@ -7369,7 +7363,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
         };
         StackPanel.prototype.focus = function () {
             this.scrollToCurrent(true);
-            boot.focusedElView = this;
+            boot.selectedControl = this;
         };
         StackPanel.prototype.getDivElementByItem = function (item) {
             var mappedItem = this._itemMap[item._key];

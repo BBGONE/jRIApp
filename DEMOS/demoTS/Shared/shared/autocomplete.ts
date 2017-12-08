@@ -225,10 +225,10 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
                 self._hide();
             }, this.uniqueID);
 
-            bootstrap.focusedElView = self._lookupGrid;
+            bootstrap.selectedControl = self._lookupGrid;
 
             $(dom.document).on('keyup.' + this.uniqueID, function (e) {
-                if (bootstrap.focusedElView === self._lookupGrid) {
+                if (bootstrap.selectedControl === self._lookupGrid) {
                     if (self._onKeyPress(e.which))
                         e.stopPropagation();
                 }

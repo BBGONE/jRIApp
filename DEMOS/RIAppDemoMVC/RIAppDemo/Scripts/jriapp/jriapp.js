@@ -1673,8 +1673,8 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                 throw new Error(ERRS.ERR_GLOBAL_SINGLTON);
             }
             _this._bootState = 0;
-            _this._appInst = null;
-            _this._focusedElView = null;
+            _this._app = null;
+            _this._selectedControl = null;
             _this._objId = coreUtils.getNewID("app");
             _this._exports = {};
             _this._moduleInits = [];
@@ -1736,12 +1736,12 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                 while (!!target && target !== doc) {
                     var obj = selectableMap.get(target);
                     if (!!obj) {
-                        self.focusedElView = obj;
+                        self.selectedControl = obj;
                         return;
                     }
                     target = target.parentElement;
                 }
-                self.focusedElView = null;
+                self.selectedControl = null;
             }, this._objId);
             coreUtils.forEachProp(eventNames, (function (name, flag) {
                 var fn_name = "handle_" + name;
@@ -1759,13 +1759,13 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                 });
             }));
             dom.events.on(doc, "keydown", function (e) {
-                if (!!self._focusedElView) {
-                    self._focusedElView.selectable.onKeyDown(e.which, e);
+                if (!!self._selectedControl) {
+                    self._selectedControl.selectable.onKeyDown(e.which, e);
                 }
             }, this._objId);
             dom.events.on(doc, "keyup", function (e) {
-                if (!!self._focusedElView) {
-                    self._focusedElView.selectable.onKeyUp(e.which, e);
+                if (!!self._selectedControl) {
+                    self._selectedControl.selectable.onKeyUp(e.which, e);
                 }
             }, this._objId);
             dom.events.on(win, "beforeunload", function () {
@@ -1852,14 +1852,14 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             });
         };
         Bootstrap.prototype._registerApp = function (app) {
-            if (!!this._appInst) {
+            if (!!this._app) {
                 throw new Error("Application already registered");
             }
-            this._appInst = app;
+            this._app = app;
             ERROR.addHandler(app.appName, app);
         };
         Bootstrap.prototype._unregisterApp = function (app) {
-            if (!this._appInst || this._appInst.appName !== app.appName) {
+            if (!this._app || this._app.appName !== app.appName) {
                 throw new Error("Invalid operation");
             }
             try {
@@ -1868,11 +1868,11 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                 this.templateLoader.unRegisterTemplateLoader(app.appName);
             }
             finally {
-                this._appInst = null;
+                this._app = null;
             }
         };
         Bootstrap.prototype._destroyApp = function () {
-            var self = this, app = self._appInst;
+            var self = this, app = self._app;
             if (!!app && !app.getIsStateDirty()) {
                 app.dispose();
             }
@@ -1944,7 +1944,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             return this._exports;
         };
         Bootstrap.prototype.getApp = function () {
-            return this._appInst;
+            return this._app;
         };
         Bootstrap.prototype.init = function (onInit) {
             var self = this;
@@ -2055,13 +2055,13 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Bootstrap.prototype, "focusedElView", {
+        Object.defineProperty(Bootstrap.prototype, "selectedControl", {
             get: function () {
-                return this._focusedElView;
+                return this._selectedControl;
             },
             set: function (v) {
-                if (this._focusedElView !== v) {
-                    this._focusedElView = v;
+                if (this._selectedControl !== v) {
+                    this._selectedControl = v;
                     this.objEvents.raiseProp("focusedElView");
                 }
             },
@@ -4243,6 +4243,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.5.4";
+    exports.VERSION = "2.5.5";
     bootstrap_7.Bootstrap._initFramework();
 });
