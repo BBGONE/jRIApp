@@ -6503,6 +6503,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 throw new Error(jriapp_shared_31.LocaleERRS.ERR_PAGER_DATASRC_INVALID);
             }
             _this._options = options;
+            options.sliderSize = options.sliderSize < 3 ? 3 : options.sliderSize;
             _this._el = options.el;
             dom.addClass([_this._el], "ria-pager");
             _this._objId = coreUtils.getNewID("pgr");
@@ -6568,7 +6569,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 if (this.showNumbers && currentPage > 0 && !(this.hideOnSinglePage && (pageCount === 1))) {
                     var sliderSize = this.sliderSize;
                     var start = 1, end = pageCount, half = void 0, above = void 0, below = void 0;
-                    if (this.useSlider && (sliderSize > 0)) {
+                    if (this.useSlider && (sliderSize > 0) && (sliderSize < (pageCount - 3))) {
                         half = Math.floor(((sliderSize - 1) / 2));
                         above = (currentPage + half) + ((sliderSize - 1) % 2);
                         below = (currentPage - half);
@@ -6610,8 +6611,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                             el.appendChild(this._createOther(i));
                         }
                     }
-                    if (_end < pageCount - 1) {
-                        if (_end === pageCount - 2) {
+                    if (_end < (pageCount - 1)) {
+                        if (_end === (pageCount - 2)) {
                             el.appendChild(this._createOther(pageCount - 1));
                         }
                         else {

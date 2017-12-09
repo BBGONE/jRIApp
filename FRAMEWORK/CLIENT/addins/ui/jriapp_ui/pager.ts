@@ -80,6 +80,9 @@ export class Pager extends BaseObject {
             throw new Error(ERRS.ERR_PAGER_DATASRC_INVALID);
         }
         this._options = options;
+        //no use to have a sliderSize < 3
+        options.sliderSize = options.sliderSize < 3 ? 3 : options.sliderSize;
+
         this._el = options.el;
         dom.addClass([this._el], css.pager);
         this._objId = coreUtils.getNewID("pgr");
@@ -152,7 +155,7 @@ export class Pager extends BaseObject {
                 const sliderSize = this.sliderSize;
                 let start = 1, end = pageCount, half: number, above: number, below: number;
 
-                if (this.useSlider && (sliderSize > 0)) {
+                if (this.useSlider && (sliderSize > 0) && (sliderSize < (pageCount - 3))) {
                     half = Math.floor(((sliderSize - 1) / 2));
                     above = (currentPage + half) + ((sliderSize - 1) % 2);
                     below = (currentPage - half);
@@ -175,10 +178,8 @@ export class Pager extends BaseObject {
                     start = below;
                     end = above;
                 }
-
                 let _start = start === 1 ? 2 : start;
                 let _end = end === pageCount ? end - 1 : end;
-
 
                 if (1 === currentPage) {
                     el.appendChild(this._createCurrent());
@@ -202,8 +203,8 @@ export class Pager extends BaseObject {
                     }
                 }
 
-                if (_end < pageCount - 1) {
-                    if (_end === pageCount - 2) {
+                if (_end < (pageCount - 1)) {
+                    if (_end === (pageCount - 2)) {
                         el.appendChild(this._createOther(pageCount - 1));
                     } else {
                         el.appendChild(this._createInterval());
