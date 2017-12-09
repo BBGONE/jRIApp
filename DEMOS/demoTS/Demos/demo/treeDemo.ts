@@ -23,6 +23,12 @@ export interface IFolderBrowserOptions {
     permissionInfo?: dbMOD.IPermissionsInfo;
 }
 
+class RootDataView extends dbMOD.DataView<FOLDERBROWSER_SVC.FileSystemObject> {
+}
+
+class ChildDataView extends dbMOD.ChildDataView<FOLDERBROWSER_SVC.FileSystemObject> {
+}
+
 export class ExProps extends RIAPP.BaseObject {
     private _item: FOLDERBROWSER_SVC.FileSystemObject;
     private _childView: dbMOD.ChildDataView<FOLDERBROWSER_SVC.FileSystemObject>
@@ -38,8 +44,9 @@ export class ExProps extends RIAPP.BaseObject {
         this._item = item;
         this._dbContext = dbContext;
         this._childView = null;
-        if (item.HasSubDirs)
+        if (item.HasSubDirs) {
             this._childView = this.createChildView();
+        }
 
         this._dbSet = <FOLDERBROWSER_SVC.FileSystemObjectDb>item._aspect.dbSet;
         self._toggleCommand = new RIAPP.Command(function (s, a) {
@@ -87,14 +94,20 @@ export class ExProps extends RIAPP.BaseObject {
     }
     createChildView() {
         const self = this;
-        let dvw = new dbMOD.ChildDataView<FOLDERBROWSER_SVC.FileSystemObject>(
+        let dvw = new ChildDataView(
             {
                 association: self._dbContext.associations.getChildToParent(),
-                parentItem: self._item
+                parentItem: self._item,
+                //we need to use refresh explicitly after the ChildDataView creation
+                explicitRefresh: true
             });
+
         dvw.addOnFill((s, a) => {
-                self.refreshCss();
+            self.refreshCss();
         });
+
+        //explicit refresh with no async
+        dvw.syncRefresh();
         return dvw;
     }
     loadChildren() {
@@ -219,7 +232,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
     }
     private createDataView() {
         const self = this;
-        let res = new dbMOD.DataView<FOLDERBROWSER_SVC.FileSystemObject>(
+        let res = new RootDataView(
             {
                 dataSource: self._dbSet,
                 fn_filter: (item) => {

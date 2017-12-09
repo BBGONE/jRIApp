@@ -3775,9 +3775,9 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 var oldItem = self._itemsByKey[item._key];
                 if (!oldItem) {
                     self._itemsByKey[item._key] = item;
+                    self._items.push(item);
                     newItems.push(item);
                     positions.push(self._items.length - 1);
-                    self._items.push(item);
                     items.push(item);
                 }
                 else {
@@ -4017,13 +4017,15 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 _this._refresh(0);
             });
         };
+        DataView.prototype.syncRefresh = function () {
+            this._refresh(0);
+        };
         DataView.prototype.dispose = function () {
             if (this.getIsDisposed()) {
                 return;
             }
             this.setDisposing();
             this._refreshDebounce.dispose();
-            this._refreshDebounce = null;
             this._unbindDS();
             this._dataSource = null;
             this._fnFilter = null;
@@ -4143,7 +4145,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             };
             _this._parentDebounce = new jriapp_shared_10.Debounce(350);
             _this._association = assoc;
-            if (!!parentItem) {
+            if (!!parentItem && !options.explicitRefresh) {
                 var queue = utils.defer.getTaskQueue();
                 queue.enque(function () {
                     self._refresh(0);

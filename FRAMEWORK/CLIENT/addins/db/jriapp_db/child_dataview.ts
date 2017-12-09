@@ -14,6 +14,7 @@ export interface IChildDataViewOptions<TItem extends IEntityItem> {
     fn_filter?: (item: TItem) => boolean;
     fn_sort?: (item1: TItem, item2: TItem) => number;
     parentItem?: IEntityItem;
+    explicitRefresh?: boolean;
 }
 
 export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
@@ -67,7 +68,7 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
         };
         this._parentDebounce = new Debounce(350);
         this._association = assoc;
-        if (!!parentItem) {
+        if (!!parentItem && !options.explicitRefresh) {
             const queue = utils.defer.getTaskQueue();
             queue.enque(() => {
                 self._refresh(COLL_CHANGE_REASON.None);

@@ -136,6 +136,7 @@ export interface IDataGridOptions {
     isPrependAllRows?: boolean;
     //show or not tooltips on edit and delete buttons (false by default)
     isActionsToolTips?: boolean;
+    syncSetDatasource?: boolean;
 }
 
 
@@ -207,7 +208,8 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 isHandleAddNew: false,
                 isPrependNewRows: false,
                 isPrependAllRows: false,
-                isActionsToolTips: false
+                isActionsToolTips: false,
+                syncSetDatasource: false
             });
 
         if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
@@ -962,7 +964,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     protected _setDataSource(v: ICollection<ICollectionItem>) {
         this._unbindDS();
         this._options.dataSource = v;
-        this._dsDebounce.enque(() => {
+        const fn_init = () => {
             const ds = this._options.dataSource;
             if (!!ds && !ds.getIsStateDirty()) {
                 this._bindDS();
@@ -970,7 +972,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             } else {
                 this._clearGrid();
             }
-        });
+        };
+
+        if (!!this._options.syncSetDatasource) {
+            fn_init();
+        } else {
+            this._dsDebounce.enque(fn_init);
+        }
     }
     _getInternal(): IInternalDataGridMethods {
         return this._internal;

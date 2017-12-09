@@ -5242,7 +5242,8 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 isHandleAddNew: false,
                 isPrependNewRows: false,
                 isPrependAllRows: false,
-                isActionsToolTips: false
+                isActionsToolTips: false,
+                syncSetDatasource: false
             });
             if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
                 throw new Error(jriapp_shared_30.LocaleERRS.ERR_GRID_DATASRC_INVALID);
@@ -5987,7 +5988,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             var _this = this;
             this._unbindDS();
             this._options.dataSource = v;
-            this._dsDebounce.enque(function () {
+            var fn_init = function () {
                 var ds = _this._options.dataSource;
                 if (!!ds && !ds.getIsStateDirty()) {
                     _this._bindDS();
@@ -5996,7 +5997,13 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 else {
                     _this._clearGrid();
                 }
-            });
+            };
+            if (!!this._options.syncSetDatasource) {
+                fn_init();
+            }
+            else {
+                this._dsDebounce.enque(fn_init);
+            }
         };
         DataGrid.prototype._getInternal = function () {
             return this._internal;
@@ -7079,7 +7086,8 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 el: null,
                 dataSource: null,
                 templateID: null,
-                orientation: VERTICAL
+                orientation: VERTICAL,
+                syncSetDatasource: false
             }, options);
             if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
                 throw new Error(jriapp_shared_32.LocaleERRS.ERR_STACKPNL_DATASRC_INVALID);
@@ -7332,7 +7340,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             var _this = this;
             this._unbindDS();
             this._options.dataSource = v;
-            this._debounce.enque(function () {
+            var fn_init = function () {
                 var ds = _this._options.dataSource;
                 if (!!ds && !ds.getIsStateDirty()) {
                     _this._bindDS();
@@ -7341,7 +7349,13 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 else {
                     _this._clearContent();
                 }
-            });
+            };
+            if (!!this._options.syncSetDatasource) {
+                fn_init();
+            }
+            else {
+                this._debounce.enque(fn_init);
+            }
         };
         StackPanel.prototype.dispose = function () {
             if (this.getIsDisposed()) {

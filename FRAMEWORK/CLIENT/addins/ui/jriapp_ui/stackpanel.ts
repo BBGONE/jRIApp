@@ -34,13 +34,13 @@ const enum PROP_NAME {
 }
 
 const VERTICAL = "vertical", HORIZONTAL = "horizontal";
+interface IMappedItem { el: HTMLElement; template: ITemplate; item: ICollectionItem; }
 
 export interface IStackPanelOptions {
     templateID: string;
     orientation?: "vertical" | "horizontal";
+    syncSetDatasource?: boolean;
 }
-
-interface IMappedItem { el: HTMLElement; template: ITemplate; item: ICollectionItem; }
 
 export interface IStackPanelConstructorOptions extends IStackPanelOptions {
     el: HTMLElement;
@@ -71,7 +71,8 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
                 el: null,
                 dataSource: null,
                 templateID: null,
-                orientation: VERTICAL
+                orientation: VERTICAL,
+                syncSetDatasource: false
             }, options);
 
         if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
@@ -327,7 +328,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     protected _setDataSource(v: ICollection<ICollectionItem>) {
         this._unbindDS();
         this._options.dataSource = v;
-        this._debounce.enque(() => {
+        const fn_init = () => {
             const ds = this._options.dataSource;
             if (!!ds && !ds.getIsStateDirty()) {
                 this._bindDS();
@@ -335,7 +336,13 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             } else {
                 this._clearContent();
             }
-        });
+        };
+
+        if (!!this._options.syncSetDatasource) {
+            fn_init();
+        } else {
+            this._debounce.enque(fn_init);
+        }
     }
     dispose() {
         if (this.getIsDisposed()) {

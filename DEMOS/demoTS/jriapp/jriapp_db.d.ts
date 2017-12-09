@@ -835,6 +835,7 @@ declare module "jriapp_db/dataview" {
         sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
         clear(): void;
         refresh(): void;
+        syncRefresh(): void;
         dispose(): void;
         readonly errors: Errors<TItem>;
         readonly dataSource: ICollection<TItem>;
@@ -856,6 +857,7 @@ declare module "jriapp_db/child_dataview" {
         fn_filter?: (item: TItem) => boolean;
         fn_sort?: (item1: TItem, item2: TItem) => number;
         parentItem?: IEntityItem;
+        explicitRefresh?: boolean;
     }
     export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
         private _setParent;

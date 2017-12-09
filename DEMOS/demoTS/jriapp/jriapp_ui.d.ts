@@ -1172,6 +1172,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         isPrependNewRows?: boolean;
         isPrependAllRows?: boolean;
         isActionsToolTips?: boolean;
+        syncSetDatasource?: boolean;
     }
     export interface IDataGridConstructorOptions extends IDataGridOptions {
         el: HTMLTableElement;
@@ -1429,6 +1430,7 @@ declare module "jriapp_ui/stackpanel" {
     export interface IStackPanelOptions {
         templateID: string;
         orientation?: "vertical" | "horizontal";
+        syncSetDatasource?: boolean;
     }
     export interface IStackPanelConstructorOptions extends IStackPanelOptions {
         el: HTMLElement;

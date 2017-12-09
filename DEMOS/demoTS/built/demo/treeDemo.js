@@ -12,6 +12,20 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT";
+    var RootDataView = (function (_super) {
+        __extends(RootDataView, _super);
+        function RootDataView() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return RootDataView;
+    }(dbMOD.DataView));
+    var ChildDataView = (function (_super) {
+        __extends(ChildDataView, _super);
+        function ChildDataView() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return ChildDataView;
+    }(dbMOD.ChildDataView));
     var ExProps = (function (_super) {
         __extends(ExProps, _super);
         function ExProps(item, dbContext) {
@@ -20,8 +34,9 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             _this._item = item;
             _this._dbContext = dbContext;
             _this._childView = null;
-            if (item.HasSubDirs)
+            if (item.HasSubDirs) {
                 _this._childView = _this.createChildView();
+            }
             _this._dbSet = item._aspect.dbSet;
             self._toggleCommand = new RIAPP.Command(function (s, a) {
                 if (!self.childView)
@@ -68,13 +83,15 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
         };
         ExProps.prototype.createChildView = function () {
             var self = this;
-            var dvw = new dbMOD.ChildDataView({
+            var dvw = new ChildDataView({
                 association: self._dbContext.associations.getChildToParent(),
-                parentItem: self._item
+                parentItem: self._item,
+                explicitRefresh: true
             });
             dvw.addOnFill(function (s, a) {
                 self.refreshCss();
             });
+            dvw.syncRefresh();
             return dvw;
         };
         ExProps.prototype.loadChildren = function () {
@@ -209,7 +226,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
         };
         FolderBrowser.prototype.createDataView = function () {
             var self = this;
-            var res = new dbMOD.DataView({
+            var res = new RootDataView({
                 dataSource: self._dbSet,
                 fn_filter: function (item) {
                     return item.Level == 0;

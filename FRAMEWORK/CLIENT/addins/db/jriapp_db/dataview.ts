@@ -147,9 +147,9 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             const oldItem = self._itemsByKey[item._key];
             if (!oldItem) {
                 self._itemsByKey[item._key] = item;
+                self._items.push(item);
                 newItems.push(item);
                 positions.push(self._items.length - 1);
-                self._items.push(item);
                 items.push(item);
             } else {
                 items.push(oldItem);
@@ -173,6 +173,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             items: newItems,
             pos: positions
         });
+
         this._onFillEnd({
             items: items,
             newItems: newItems,
@@ -390,13 +391,15 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             this._refresh(COLL_CHANGE_REASON.None);
         });
     }
+    syncRefresh(): void {
+        this._refresh(COLL_CHANGE_REASON.None);
+    }
     dispose() {
         if (this.getIsDisposed()) {
             return;
         }
         this.setDisposing();
         this._refreshDebounce.dispose();
-        this._refreshDebounce = null;
         this._unbindDS();
         this._dataSource = null;
         this._fnFilter = null;
