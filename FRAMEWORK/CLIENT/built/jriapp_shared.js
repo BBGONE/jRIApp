@@ -3442,6 +3442,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             return !args.isCancel;
         };
         BaseCollection.prototype._clear = function (reason, oper) {
+            var _this = this;
             this.objEvents.raise("clearing", { reason: reason });
             this.cancelEdit();
             this._EditingItem = null;
@@ -3465,7 +3466,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 this._onCountChanged();
             }
             finally {
-                this._clearItems(oldItems);
+                utils.defer.getTaskQueue().enque(function () {
+                    _this._clearItems(oldItems);
+                });
             }
         };
         BaseCollection.prototype._setIsLoading = function (v) {

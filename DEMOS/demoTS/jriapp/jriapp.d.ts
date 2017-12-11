@@ -1000,5 +1000,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.5.9";
+    export const VERSION = "2.6.0";
 }

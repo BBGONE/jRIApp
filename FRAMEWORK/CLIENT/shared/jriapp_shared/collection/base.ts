@@ -604,7 +604,9 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             this.objEvents.raise(COLL_EVENTS.cleared, { reason: reason });
             this._onCountChanged();
         } finally {
-            this._clearItems(oldItems);
+            utils.defer.getTaskQueue().enque(() => {
+                this._clearItems(oldItems);
+            });
         }
     }
     _setIsLoading(v: boolean) {
