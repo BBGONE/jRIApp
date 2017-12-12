@@ -9,14 +9,13 @@ import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR, ELVIEW_NM } from "jriapp/const";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { IContent, IElView, ILifeTimeScope, IViewOptions, IApplication } from "jriapp/int";
-import { Parser } from "jriapp/utils/parser";
 import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView, fn_addToolTip } from "./baseview";
 import { Binding } from "jriapp/binding";
 import { parseContentAttr } from "./content/int";
 
 const utils = Utils, dom = DomUtils, checks = utils.check, coreUtils = utils.core, strUtils = utils.str,
-    sys = utils.sys, parser = Parser, boot = bootstrap, viewChecks = ViewChecks, _async = utils.defer;
+    sys = utils.sys, boot = bootstrap, viewChecks = ViewChecks, _async = utils.defer;
 
 export const enum css {
     dataform = "ria-dataform",
@@ -29,24 +28,15 @@ viewChecks.setIsInsideTemplate = (elView: BaseElView) => {
     }
 };
 
-viewChecks.isDataForm = (el: HTMLElement) => {
+viewChecks.isDataForm = (el: Element) => {
     if (!el) {
         return false;
     }
-
-    if (el.hasAttribute(DATA_ATTR.DATA_FORM)) {
-        return true;
-    } else {
-        const attr = el.getAttribute(DATA_ATTR.DATA_VIEW);
-        if (!attr) {
-            return false;
-        }
-        const opts = parser.parseOptions(attr);
-        return (opts.length > 0 && opts[0].name === ELVIEW_NM.DataForm);
-    }
+    const attr = el.getAttribute(DATA_ATTR.DATA_VIEW);
+    return (!attr) ? false : (attr === ELVIEW_NM.DataForm);
 };
 
-viewChecks.isInsideDataForm = (el: HTMLElement) => {
+viewChecks.isInsideDataForm = (el: Element) => {
     if (!el) {
         return false;
     }
@@ -64,7 +54,7 @@ viewChecks.isInsideDataForm = (el: HTMLElement) => {
 };
 
 // check if the element inside of any dataform in the forms array
-viewChecks.isInNestedForm = (root: any, forms: HTMLElement[], el: HTMLElement) => {
+viewChecks.isInNestedForm = (root: any, forms: Element[], el: Element) => {
     const len = forms.length;
     if (len === 0) {
         return false;
@@ -95,11 +85,11 @@ viewChecks.isInNestedForm = (root: any, forms: HTMLElement[], el: HTMLElement) =
        in case of dataforms nesting, element's parent dataform can be nested dataform
        this function returns element dataform
 */
-viewChecks.getParentDataForm = (rootForm: HTMLElement, el: HTMLElement) => {
+viewChecks.getParentDataForm = (rootForm: Element, el: Element) => {
     if (!el) {
         return null;
     }
-    const parent = el.parentElement;
+    const parent: Element = el.parentElement;
     if (!!parent) {
         if (parent === rootForm) {
             return rootForm;
@@ -135,7 +125,7 @@ const enum PROP_NAME {
 }
 
 export class DataForm extends BaseObject {
-    private static _DATA_FORM_SELECTOR = ["*[", DATA_ATTR.DATA_FORM, "]"].join("");
+    private static _DATA_FORM_SELECTOR = ["*[", DATA_ATTR.DATA_VIEW, "='", ELVIEW_NM.DataForm, "']"].join("");
     private static _DATA_CONTENT_SELECTOR = ["*[", DATA_ATTR.DATA_CONTENT, "]:not([", DATA_ATTR.DATA_COLUMN, "])"].join("");
     private _el: HTMLElement;
     private _objId: string;
@@ -172,7 +162,7 @@ export class DataForm extends BaseObject {
         // if this form is nested inside another dataform
         // subscribe for parent's dispose event
         if (!!parent) {
-            self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent);
+            self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent, null);
             self._parentDataForm.objEvents.addOnDisposed(() => {
                 // dispose itself if parent form is destroyed
                 if (!self.getIsStateDirty()) {
@@ -223,8 +213,13 @@ export class DataForm extends BaseObject {
             self._content.push(content);
             content.render();
         });
+        const promise = self.app._getInternal().bindElements({
+            scope: this._el,
+            dataContext: dctx,
+            isDataForm: true,
+            isTemplate: this.isInsideTemplate
+        });
 
-        const promise = self.app._getInternal().bindElements(this._el, dctx, true, this.isInsideTemplate);
         return promise.then((lftm) => {
             if (self.getIsStateDirty()) {
                 lftm.dispose();

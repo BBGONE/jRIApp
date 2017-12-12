@@ -3567,7 +3567,6 @@ define("jriapp_ui/datagrid/const", ["require", "exports"], function (require, ex
         css["colSortAsc"] = "ria-sort-asc";
         css["colSortDesc"] = "ria-sort-desc";
     })(css = exports.css || (exports.css = {}));
-    exports.actionsSelector = 'span[data-role="row-action"]';
     exports.txtMap = {
         img_ok: "txtOk",
         img_cancel: "txtCancel",
@@ -4159,6 +4158,7 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_22.Utils, dom = dom_21.DomUtils, strUtils = utils.str;
     exports.editName = "img_edit", exports.deleteName = "img_delete";
+    var actionsSelector = 'span[data-role="row-action"]';
     var _editBtnsHTML = ['<span data-role="row-action" data-name="img_ok" class="{0}"></span>', '<span data-role="row-action" data-name="img_cancel" class="{1}"></span>'];
     var _viewBtnsHTML = ['<span data-role="row-action" data-name="img_edit" class="{0}"></span>', '<span data-role="row-action" data-name="img_delete" class="{1}"></span>'];
     var editBtnsHTML = null, viewBtnsHTML = null;
@@ -4191,7 +4191,7 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
             });
         };
         ActionsCell.prototype._cleanUp = function (td) {
-            var self = this, btns = dom.queryAll(td, const_2.actionsSelector), isActionsToolTips = self.grid.options.isActionsToolTips;
+            var self = this, btns = dom.queryAll(td, actionsSelector), isActionsToolTips = self.grid.options.isActionsToolTips;
             btns.forEach(function (el) {
                 dom.removeData(el);
                 if (isActionsToolTips) {
@@ -7876,10 +7876,10 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/mvv
     ;
     boot.registerElView("template", TemplateElView);
 });
-define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/utils/parser", "jriapp/bootstrap", "jriapp_ui/baseview", "jriapp_ui/content/int"], function (require, exports, jriapp_shared_36, dom_33, viewchecks_3, parser_3, bootstrap_22, baseview_12, int_6) {
+define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/bootstrap", "jriapp_ui/baseview", "jriapp_ui/content/int"], function (require, exports, jriapp_shared_36, dom_33, viewchecks_3, bootstrap_22, baseview_12, int_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_36.Utils, dom = dom_33.DomUtils, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, sys = utils.sys, parser = parser_3.Parser, boot = bootstrap_22.bootstrap, viewChecks = viewchecks_3.ViewChecks, _async = utils.defer;
+    var utils = jriapp_shared_36.Utils, dom = dom_33.DomUtils, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, sys = utils.sys, boot = bootstrap_22.bootstrap, viewChecks = viewchecks_3.ViewChecks, _async = utils.defer;
     var css;
     (function (css) {
         css["dataform"] = "ria-dataform";
@@ -7894,17 +7894,8 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
         if (!el) {
             return false;
         }
-        if (el.hasAttribute("data-form")) {
-            return true;
-        }
-        else {
-            var attr = el.getAttribute("data-view");
-            if (!attr) {
-                return false;
-            }
-            var opts = parser.parseOptions(attr);
-            return (opts.length > 0 && opts[0].name === "dataform");
-        }
+        var attr = el.getAttribute("data-view");
+        return (!attr) ? false : (attr === "dataform");
     };
     viewChecks.isInsideDataForm = function (el) {
         if (!el) {
@@ -7999,7 +7990,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             _this._contentPromise = null;
             var parent = viewChecks.getParentDataForm(null, _this._el);
             if (!!parent) {
-                self._parentDataForm = _this.app.viewFactory.getOrCreateElView(parent);
+                self._parentDataForm = _this.app.viewFactory.getOrCreateElView(parent, null);
                 self._parentDataForm.objEvents.addOnDisposed(function () {
                     if (!self.getIsStateDirty()) {
                         self.dispose();
@@ -8043,7 +8034,12 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                 self._content.push(content);
                 content.render();
             });
-            var promise = self.app._getInternal().bindElements(this._el, dctx, true, this.isInsideTemplate);
+            var promise = self.app._getInternal().bindElements({
+                scope: this._el,
+                dataContext: dctx,
+                isDataForm: true,
+                isTemplate: this.isInsideTemplate
+            });
             return promise.then(function (lftm) {
                 if (self.getIsStateDirty()) {
                     lftm.dispose();
@@ -8278,7 +8274,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             enumerable: true,
             configurable: true
         });
-        DataForm._DATA_FORM_SELECTOR = ["*[", "data-form", "]"].join("");
+        DataForm._DATA_FORM_SELECTOR = ["*[", "data-view", "='", "dataform", "']"].join("");
         DataForm._DATA_CONTENT_SELECTOR = ["*[", "data-content", "]:not([", "data-column", "])"].join("");
         return DataForm;
     }(jriapp_shared_36.BaseObject));

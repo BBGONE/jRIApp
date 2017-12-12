@@ -4,7 +4,7 @@ import {
 } from "jriapp_shared";
 import { DATA_ATTR } from "./const";
 import {
-    IElViewStore, IElView, IViewType, IExports, IViewOptions,
+    IElViewStore, IElView, IViewType, IExports, IViewOptions, IElViewInfo,
     IElViewFactory, IElViewRegister
 } from "./int";
 import { bootstrap } from "./bootstrap";
@@ -92,10 +92,7 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
         this._register = null;
         super.dispose();
     }
-    createElView(viewInfo: {
-        name: string;
-        options: IViewOptions;
-    }): IElView {
+    createElView(viewInfo: IElViewInfo): IElView {
         let viewType: IViewType, elView: IElView;
         const options = viewInfo.options, el = options.el;
 
@@ -135,31 +132,33 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
         return elView;
     }
     // checks if the element already has created and attached an ElView, if no then it creates and attaches ElView for the element
-    getOrCreateElView(el: HTMLElement): IElView {
+    getOrCreateElView(el: HTMLElement, dataContext: any = null): IElView {
         const elView = this.store.getElView(el);
         // check if element view is already created for this element
         if (!!elView) {
             return elView;
         }
-        const info = this.getElementViewInfo(el);
+        const info = this.getElementViewInfo(el, dataContext);
         return this.createElView(info);
     }
-    getElementViewInfo(el: HTMLElement): { name: string; options: IViewOptions; } {
-        let viewName: string = null, vwOptions: IViewOptions = null, attr: string, dataViewOpArr: any[],
-            dataViewOp: any;
+    getElementViewInfo(el: HTMLElement, dataContext: any = null): IElViewInfo {
+        let viewName: string = null;
         if (el.hasAttribute(DATA_ATTR.DATA_VIEW)) {
-            attr = el.getAttribute(DATA_ATTR.DATA_VIEW);
-            dataViewOpArr = parser.parseOptions(attr);
-            if (!!dataViewOpArr && dataViewOpArr.length > 0) {
-                dataViewOp = dataViewOpArr[0];
-                if (!!dataViewOp.name && dataViewOp.name !== "default") {
-                    viewName = dataViewOp.name;
-                }
-                vwOptions = dataViewOp.options;
+            const attr = el.getAttribute(DATA_ATTR.DATA_VIEW);
+            if (!!attr && attr !== "default") {
+                viewName = attr;
             }
         }
-        const options: IViewOptions = utils.core.merge({ el: el }, vwOptions);
-        return { name: viewName, options: options };
+        let options: any;
+        if (el.hasAttribute(DATA_ATTR.DATA_VIEW_OPTIONS)) {
+            const attr = el.getAttribute(DATA_ATTR.DATA_VIEW_OPTIONS);
+            options = parser.parseViewOptions(attr, bootstrap.getApp(), dataContext);
+            options.el = el;
+        } else {
+            options = { el: el };
+        }
+       
+        return { name: viewName, options: <IViewOptions>options };
     }
     get store() {
         return this._store;

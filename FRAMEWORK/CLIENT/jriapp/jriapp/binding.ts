@@ -131,7 +131,7 @@ export function getBindingOptions(
                 bindingOpts.target = defaultTarget;
             } else {
                 // if no fixed target, then target evaluation starts from this app
-                bindingOpts.target = parser.resolveSource(app, sys.getPathParts(fixedTarget));
+                bindingOpts.target = parser.resolvePath(app, sys.getPathParts(fixedTarget));
             }
         } else {
             bindingOpts.target = fixedTarget;
@@ -148,7 +148,7 @@ export function getBindingOptions(
                 bindingOpts.source = defaultTarget;
             } else {
                 // source evaluation starts from this app
-                bindingOpts.source = parser.resolveSource(app, sys.getPathParts(fixedSource));
+                bindingOpts.source = parser.resolvePath(app, sys.getPathParts(fixedSource));
             }
         } else {
             bindingOpts.source = fixedSource;
@@ -586,10 +586,10 @@ export class Binding extends BaseObject implements IBinding {
             }
         }
     }
-    protected _setTarget(value: any) {
+    protected _setTarget(value: any): boolean {
         if (!!this._state) {
             this._state.target = value;
-            return;
+            return false;
         }
 
         if (this._target !== value) {
@@ -614,12 +614,16 @@ export class Binding extends BaseObject implements IBinding {
             if (!!this._target && !this._tgtEnd) {
                 throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, this._tgtPath.join(".")));
             }
+
+            return true;
+        } else {
+            return false;
         }
     }
-    protected _setSource(value: any) {
+    protected _setSource(value: any): boolean {
         if (!!this._state) {
             this._state.source = value;
-            return;
+            return false;
         }
 
         if (this._source !== value) {
@@ -638,6 +642,9 @@ export class Binding extends BaseObject implements IBinding {
             this._setPathItem(null, BindTo.Source, 0, this._srcPath);
             this._source = value;
             this._parseSrc(this._source, this._srcPath, 0);
+            return true
+        } else {
+            return false;
         }
     }
     dispose() {
@@ -673,13 +680,15 @@ export class Binding extends BaseObject implements IBinding {
     }
     get target() { return this._target; }
     set target(v: IBaseObject) {
-        this._setTarget(v);
-        this._update();
+        if (this._setTarget(v)) {
+            this._update();
+        }
     }
     get source() { return this._source; }
     set source(v) {
-        this._setSource(v);
-        this._update();
+        if (this._setSource(v)) {
+            this._update();
+        }
     }
     get targetPath() { return this._tgtPath; }
     get sourcePath() { return this._srcPath; }

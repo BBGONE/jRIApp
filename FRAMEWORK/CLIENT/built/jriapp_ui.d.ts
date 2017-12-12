@@ -716,7 +716,6 @@ declare module "jriapp_ui/datagrid/const" {
         colSortAsc = "ria-sort-asc",
         colSortDesc = "ria-sort-desc",
     }
-    export const actionsSelector = "span[data-role=\"row-action\"]";
     export const txtMap: IIndexer<string>;
     export const enum PROP_NAME {
         isCurrent = "isCurrent",

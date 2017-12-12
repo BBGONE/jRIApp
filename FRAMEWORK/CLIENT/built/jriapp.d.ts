@@ -11,12 +11,12 @@ declare module "jriapp/const" {
     export const enum DATA_ATTR {
         DATA_BIND = "data-bind",
         DATA_VIEW = "data-view",
+        DATA_VIEW_OPTIONS = "data-view-options",
         DATA_EVENT_SCOPE = "data-scope",
         DATA_ITEM_KEY = "data-key",
         DATA_CONTENT = "data-content",
         DATA_COLUMN = "data-column",
         DATA_NAME = "data-name",
-        DATA_FORM = "data-form",
         DATA_REQUIRE = "data-require",
     }
     export const enum KEYS {
@@ -131,10 +131,10 @@ declare module "jriapp/int" {
         propName: string;
     }
     export interface IBindableElement {
-        el: HTMLElement;
-        dataView: string;
-        dataForm: string;
-        expressions: string[];
+        el: Element;
+        needToBind: boolean;
+        dataForm: boolean;
+        bindings: string[];
     }
     export interface ITemplate extends IBaseObject {
         findElByDataName(name: string): HTMLElement[];
@@ -166,16 +166,14 @@ declare module "jriapp/int" {
         getElViewType(name: string): IViewType;
         dispose(): void;
     }
+    export interface IElViewInfo {
+        readonly name: string;
+        readonly options: IViewOptions;
+    }
     export interface IElViewFactory {
-        createElView(viewInfo: {
-            name: string;
-            options: IViewOptions;
-        }): IElView;
-        getOrCreateElView(el: HTMLElement): IElView;
-        getElementViewInfo(el: HTMLElement): {
-            name: string;
-            options: IViewOptions;
-        };
+        createElView(viewInfo: IElViewInfo): IElView;
+        getOrCreateElView(el: Element, dataContext: any): IElView;
+        getElementViewInfo(el: Element, dataContext: any): IElViewInfo;
         store: IElViewStore;
         register: IElViewRegister;
         dispose(): void;
@@ -188,9 +186,15 @@ declare module "jriapp/int" {
         app: IApplication;
         validationErrors: IValidationInfo[];
     }
+    export interface IBindArgs {
+        readonly scope: Document | Element;
+        readonly dataContext: any;
+        readonly isDataForm: boolean;
+        readonly isTemplate: boolean;
+    }
     export interface IDataBindingService extends IDisposable {
-        bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope>;
-        bindElements(scope: Document | HTMLElement, defaultDataContext: any, isDataFormBind: boolean, isInsideTemplate: boolean): IPromise<ILifeTimeScope>;
+        bindTemplateElements(templateEl: Element, dataContext: any): IPromise<ILifeTimeScope>;
+        bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
         setUpBindings(): IVoidPromise;
         bind(opts: IBindingOptions): IBinding;
     }
@@ -293,8 +297,8 @@ declare module "jriapp/int" {
         whenAllLoaded(): IPromise<void>;
     }
     export interface IInternalAppMethods {
-        bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope>;
-        bindElements(scope: Document | HTMLElement, dctx: any, isDataFormBind: boolean, isInsideTemplate: boolean): IPromise<ILifeTimeScope>;
+        bindTemplateElements(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
+        bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
     }
     export interface IApplication extends IErrorHandler, IExports, IBaseObject {
         _getInternal(): IInternalAppMethods;
@@ -332,13 +336,10 @@ declare module "jriapp/int" {
 }
 declare module "jriapp/utils/parser" {
     export class Parser {
-        private static _checkKeyVal(kv);
-        private static _addKeyVal(kv, parts);
-        private static _getKeyVals(val);
-        static resolveSource(root: any, srcParts: string[]): any;
-        static getBraceParts(val: string, firstOnly: boolean): string[];
-        static parseOption(part: string): any;
-        static parseOptions(str: string): any[];
+        static resolvePath(root: any, srcParts: string[]): any;
+        static parseOptions(options: string): any[];
+        static parseBindings(bindings: string[]): any[];
+        static parseViewOptions(options: string, app: any, defSource: any): any;
     }
 }
 declare module "jriapp/elview" {
@@ -712,10 +713,10 @@ declare module "jriapp/utils/viewchecks" {
         static isElView: (obj: any) => boolean;
         static isTemplateElView: (obj: any) => boolean;
         static setIsInsideTemplate: (elView: IElView) => void;
-        static isDataForm: (el: HTMLElement) => boolean;
-        static isInsideDataForm: (el: HTMLElement) => boolean;
-        static isInNestedForm: (root: any, forms: HTMLElement[], el: HTMLElement) => boolean;
-        static getParentDataForm: (rootForm: HTMLElement, el: HTMLElement) => HTMLElement;
+        static isDataForm: (el: Element) => boolean;
+        static isInsideDataForm: (el: Element) => boolean;
+        static isInNestedForm: (root: any, forms: Element[], el: Element) => boolean;
+        static getParentDataForm: (rootForm: Element, el: Element) => Element;
     }
 }
 declare module "jriapp/converter" {
@@ -808,8 +809,8 @@ declare module "jriapp/binding" {
         private _cleanUp(obj);
         private _updateTarget();
         private _updateSource();
-        protected _setTarget(value: any): void;
-        protected _setSource(value: any): void;
+        protected _setTarget(value: any): boolean;
+        protected _setSource(value: any): boolean;
         dispose(): void;
         toString(): string;
         readonly uniqueID: string;
@@ -927,7 +928,7 @@ declare module "jriapp/utils/mloader" {
 }
 declare module "jriapp/databindsvc" {
     import { IElViewFactory, IDataBindingService } from "jriapp/int";
-    export function createDataBindSvc(root: Document | HTMLElement, elViewFactory: IElViewFactory): IDataBindingService;
+    export function createDataBindSvc(root: Document | Element, elViewFactory: IElViewFactory): IDataBindingService;
 }
 declare module "jriapp/app" {
     import { IIndexer, TEventHandler, IPromise, TErrorHandler, IBaseObject, BaseObject } from "jriapp_shared";
@@ -1000,5 +1001,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.6.0";
+    export const VERSION = "2.6.1";
 }

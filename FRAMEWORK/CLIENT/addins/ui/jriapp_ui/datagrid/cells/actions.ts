@@ -5,12 +5,13 @@ import { DATA_ATTR, } from "jriapp/const";
 import { ButtonCss } from "jriapp/int";
 import { fn_addToolTip } from "../../baseview";
 
-import { css, actionsSelector, txtMap } from "../const";
+import { css, txtMap } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { ActionsColumn } from "../columns/actions";
 
 const utils = Utils, dom = DomUtils, strUtils = utils.str; //, checks = utils.check;
 export const editName = "img_edit", deleteName = "img_delete";
+const actionsSelector = 'span[data-role="row-action"]';
 const _editBtnsHTML = ['<span data-role="row-action" data-name="img_ok" class="{0}"></span>','<span data-role="row-action" data-name="img_cancel" class="{1}"></span>'];
 const _viewBtnsHTML = ['<span data-role="row-action" data-name="img_edit" class="{0}"></span>', '<span data-role="row-action" data-name="img_delete" class="{1}"></span>'];
 let editBtnsHTML: string[] = null, viewBtnsHTML: string[] = null;

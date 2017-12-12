@@ -181,7 +181,7 @@ class Template extends BaseObject implements ITemplate {
         self._loadedElem = loadedEl;
         self._onLoading();
         templateEl.appendChild(loadedEl);
-        const promise = self.app._getInternal().bindTemplateElements(loadedEl);
+        const promise = self.app._getInternal().bindTemplateElements(loadedEl, this.dataContext);
         return promise.then((lftm) => {
             if (self.getIsStateDirty()) {
                 lftm.dispose();
@@ -274,10 +274,12 @@ class Template extends BaseObject implements ITemplate {
     toString() {
         return "ITemplate";
     }
-    get loadedElem() {
+    get loadedElem(): HTMLElement {
         return this._loadedElem;
     }
-    get dataContext() { return this._dataContext; }
+    get dataContext(): any {
+        return this._dataContext;
+    }
     set dataContext(v) {
         if (this._dataContext !== v) {
             this._dataContext = v;
@@ -285,7 +287,9 @@ class Template extends BaseObject implements ITemplate {
             this.objEvents.raiseProp(PROP_NAME.dataContext);
         }
     }
-    get templateID() { return this._templateID; }
+    get templateID(): string {
+        return this._templateID;
+    }
     set templateID(v) {
         if (this._templateID !== v) {
             this._templateID = v;
@@ -293,7 +297,9 @@ class Template extends BaseObject implements ITemplate {
             this.objEvents.raiseProp(PROP_NAME.templateID);
         }
     }
-    get el() { return this._el; }
+    get el(): HTMLElement {
+        return this._el;
+    }
     get app(): IApplication {
         return bootstrap.getApp();
     }

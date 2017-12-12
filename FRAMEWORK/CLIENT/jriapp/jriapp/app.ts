@@ -6,8 +6,8 @@ import {
 import { STORE_KEY } from "./const";
 import {
     IElViewFactory, IViewType, IApplication,
-    IBindingOptions, IAppOptions, IInternalAppMethods,
-    IConverter, ITemplateGroupInfo, ITemplateGroupInfoEx, IDataBindingService, IBinding
+    IBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo,
+    ITemplateGroupInfoEx, IDataBindingService, IBinding, IBindArgs
 } from "./int";
 import { bootstrap } from "./bootstrap";
 import { DomUtils } from "./utils/dom";
@@ -58,11 +58,11 @@ export class Application extends BaseObject implements IApplication {
         this._exports = {};
         this._UC = {};
         this._internal = {
-            bindTemplateElements: (templateEl: HTMLElement) => {
-                return self._dataBindingService.bindTemplateElements(templateEl);
+            bindTemplateElements: (templateEl: HTMLElement, dataContext: any) => {
+                return self._dataBindingService.bindTemplateElements(templateEl, dataContext);
             },
-            bindElements: (scope: Document | HTMLElement, dctx: any, isDataFormBind: boolean, isInsideTemplate: boolean) => {
-                return self._dataBindingService.bindElements(scope, dctx, isDataFormBind, isInsideTemplate);
+            bindElements: (args: IBindArgs) => {
+                return self._dataBindingService.bindElements(args);
             }
         };
 

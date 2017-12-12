@@ -47,8 +47,6 @@ export const enum css {
     colSortDesc = "ria-sort-desc"
 }
 
-export const actionsSelector = 'span[data-role="row-action"]';
-
 export const txtMap: IIndexer<string> = {
     img_ok: "txtOk",
     img_cancel: "txtCancel",

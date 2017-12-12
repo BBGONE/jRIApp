@@ -11,12 +11,12 @@ export const enum STORE_KEY {
 export const enum DATA_ATTR {
     DATA_BIND = "data-bind",
     DATA_VIEW = "data-view",
+    DATA_VIEW_OPTIONS = "data-view-options",
     DATA_EVENT_SCOPE = "data-scope",
     DATA_ITEM_KEY = "data-key",
     DATA_CONTENT = "data-content",
     DATA_COLUMN = "data-column",
     DATA_NAME = "data-name",
-    DATA_FORM = "data-form",
     DATA_REQUIRE = "data-require"
 }
 

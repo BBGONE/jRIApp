@@ -90,10 +90,10 @@ export interface IUnResolvedBindingArgs {
 
 
 export interface IBindableElement {
-    el: HTMLElement;
-    dataView: string;
-    dataForm: string;
-    expressions: string[];
+    el: Element;
+    needToBind: boolean;
+    dataForm: boolean;
+    bindings: string[];
 }
 
 // --Template interfaces
@@ -134,10 +134,15 @@ export interface IElViewRegister {
     dispose(): void;
 }
 
+export interface IElViewInfo {
+    readonly name: string;
+    readonly options: IViewOptions;
+}
+
 export interface IElViewFactory {
-    createElView(viewInfo: { name: string; options: IViewOptions; }): IElView;
-    getOrCreateElView(el: HTMLElement): IElView;
-    getElementViewInfo(el: HTMLElement): { name: string; options: IViewOptions; };
+    createElView(viewInfo: IElViewInfo): IElView;
+    getOrCreateElView(el: Element, dataContext: any): IElView;
+    getElementViewInfo(el: Element, dataContext: any): IElViewInfo;
     store: IElViewStore;
     register: IElViewRegister;
     dispose(): void;
@@ -154,9 +159,16 @@ export interface IElView extends IBaseObject {
     validationErrors: IValidationInfo[];
 }
 
+export interface IBindArgs  {
+    readonly scope: Document | Element;
+    readonly dataContext: any;
+    readonly isDataForm: boolean;
+    readonly isTemplate: boolean;
+}
+
 export interface IDataBindingService extends IDisposable {
-    bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope>;
-    bindElements(scope: Document | HTMLElement, defaultDataContext: any, isDataFormBind: boolean, isInsideTemplate: boolean): IPromise<ILifeTimeScope>;
+    bindTemplateElements(templateEl: Element, dataContext: any): IPromise<ILifeTimeScope>;
+    bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
     setUpBindings(): IVoidPromise;
     bind(opts: IBindingOptions): IBinding;
 }
@@ -271,8 +283,8 @@ export interface IModuleLoader {
 
 // --Application interfaces
 export interface IInternalAppMethods {
-    bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope>;
-    bindElements(scope: Document | HTMLElement, dctx: any, isDataFormBind: boolean, isInsideTemplate: boolean): IPromise<ILifeTimeScope>;
+    bindTemplateElements(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
+    bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
 }
 
 export interface IApplication extends IErrorHandler, IExports, IBaseObject {
