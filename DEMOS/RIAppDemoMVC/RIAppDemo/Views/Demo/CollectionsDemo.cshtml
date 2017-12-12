@@ -102,7 +102,7 @@
 <h2 class="ex8">@ViewBag.Title</h2>
 
 <!--using dataform is convenient because it sets a datacontext scope for all its content-->
-<div id="demoContent" style="opacity:0;" data-bind="{this.dataContext,source=demoVM}" data-view="name=dataform">
+<div id="demoContent" style="opacity:0;" data-bind="{this.dataContext,source=demoVM}" data-view="dataform">
     <fieldset>
         <legend>Radios elements (click on them to fill the stackpanels)</legend>
         <label class="radioItem">
@@ -136,10 +136,12 @@
     <!--example of using stackpanel for vertical and horizontal list view-->
     <div class="stackPanelV" 
          data-bind="{this.dataSource,to=historyList}" 
-         data-view="name=stackpanel,options:{templateID:stackPanelItemTemplateV,orientation:vertical}"></div>
+         data-view="stackpanel"
+         data-view-options="{templateID:stackPanelItemTemplateV,orientation:vertical}"></div>
     <div class="stackPanelH" 
          data-bind="{this.dataSource,to=historyList}" 
-         data-view="name=stackpanel,options:{templateID:stackPanelItemTemplateH,orientation:horizontal}"></div>
+         data-view="stackpanel"
+         data-view-options="{templateID:stackPanelItemTemplateH,orientation:horizontal}"></div>
     <br style="clear: both"/>
     <button class="btn btn-info btn-small" 
             style="margin: 5px 5px 5px 0px;" 
@@ -150,7 +152,7 @@
         <legend>Summary (ordered list databound to the collection)</legend>
         <ol style="max-height: 150px; overflow: auto; width: 300px;" 
             data-bind="{this.dataSource,to=historyList}" 
-            data-view="options:{templateID:ItemListTemplate}"></ol>
+            data-view-options="{templateID:ItemListTemplate}"></ol>
     </fieldset>
 </div>
 

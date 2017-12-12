@@ -11,7 +11,8 @@
         <table data-name="gridCustomers"
                data-bind-1="{this.dataSource,to=dbSet,source=customerVM}"
                data-bind-2="{this.myGridEvents,to=gridEvents,source=customerVM}"
-               data-view="name=my_grid,options={wrapCss:customerTableWrap,isHandleAddNew:true,editor:{templateID:customerEditTemplate,width:500,height:550,title:'Customer editing'},details:{templateID:customerDetailsTemplate}}">
+               data-view="my_grid"
+               data-view-options="{wrapCss:customerTableWrap,isHandleAddNew:true,editor:{templateID:customerEditTemplate,width:500,height:550,title:'Customer editing'},details:{templateID:customerDetailsTemplate}}">
             <thead>
                 <tr>
                     <th data-column="width:35px,type:row_expander"></th>
@@ -28,7 +29,7 @@
     </div>
     <div style="border: none; margin-top: 20px; text-align: left; width: 100%;">
         <!--pager-->
-        <div style="float: left;" data-bind="{this.dataSource,to=dbSet,source=customerVM}" data-view="name=pager,options={sliderSize:10}"></div>
+        <div style="float: left;" data-bind="{this.dataSource,to=dbSet,source=customerVM}" data-view="pager" data-view-options="{sliderSize:10}"></div>
         <div style="float: left; padding-left: 10px; padding-top: 11px; padding-bottom:11px;">
             <span>Total:</span>&nbsp;<span data-bind="{this.value,to=dbSet.totalCount,source=customerVM}"></span>
         </div>
@@ -45,7 +46,7 @@
 
 <script id="goToInfoColTemplate" type="text/html" data-role="template">
     <a style="display: inline-block; padding: 2px;" data-bind-1="{this.command,to=switchViewCommand,source=customerVM}"
-       data-bind-2="{this.commandParam,to=uiMainRoute.custDetTemplName,source=customerVM}" data-view="options={tip:'Go to details'}">
+       data-bind-2="{this.commandParam,to=uiMainRoute.custDetTemplName,source=customerVM}" data-view-options="{tip:'Go to details'}">
         <i class="icon-user"></i>
     </a>
 </script>
@@ -53,11 +54,11 @@
 <script id="SPAcustDetailTemplate" type="text/html" data-role="template">
     <!--for switching views between customerInfo and customerAddr-->
     <div id="infoDynaContent" data-bind-1="{this.templateID,to=uiCustDetRoute.viewName}"  data-bind-2="{this.dataContext}"
-         data-bind-3="{this.animation,to=uiCustDetRoute.animation}" data-view="name=dynacontent"></div>
+         data-bind-3="{this.animation,to=uiCustDetRoute.animation}" data-view="dynacontent"></div>
 </script>
 
 <script id="customerEditTemplate" type="text/html" data-role="template">
-    <div style="width: 100%;" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+    <div style="width: 100%;" data-bind="{this.dataContext,mode=OneWay}" data-view="dataform">
         <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
             <colgroup>
                 <col style="border: none; text-align: left; width: 125px;" />
@@ -151,7 +152,8 @@
 
 <script id="customerDetailsTemplate" type="text/html" data-role="template">
     @*Grid details template for customer's orders*@
-    <div data-name="tabs" style="min-height: 400px; margin: 5px; padding: 5px; width: 95%;" data-view="name='tabs',options:{hide:{effect:clip,duration:500},show:{effect:clip,duration:500}}">
+    <div data-name="tabs" style="min-height: 400px; margin: 5px; padding: 5px; width: 95%;" data-view="tabs"
+         data-view-options="{hide:{effect:clip,duration:500},show:{effect:clip,duration:500}}">
         <div id="detailsTabs">
             <ul>
                 <li>
@@ -221,7 +223,8 @@
                 <table style="font-size: 9pt; margin-bottom: 3px;" data-name="tblOrders"
                        data-bind-1="{this.dataSource,to=dbSet,source=customerVM.ordersVM}"
                        data-bind-2="{this.myGridEvents,to=gridEvents,source=customerVM.ordersVM}"
-                       data-view="name=my_grid,options={isUseScrollIntoDetails:false,isHandleAddNew:true,editor:{templateID:orderEditTemplate,width:650,height:550,title:'Order editing'},details:{templateID:orderDetailsTemplate}}">
+                       data-view="my_grid"
+                       data-view-options="{isUseScrollIntoDetails:false,isHandleAddNew:true,editor:{templateID:orderEditTemplate,width:650,height:550,title:'Order editing'},details:{templateID:orderDetailsTemplate}}">
                     <thead>
                         <tr>
                             <th data-column="width:20px,type:row_expander"></th>
@@ -239,7 +242,7 @@
                 </table>
                 <button class="btn btn-info btn-small"
                         data-bind="@Model.BindAddNewOrder"
-                        data-view="@Model.OptionsAddNewOrder">
+                        data-view-options="@Model.OptionsAddNewOrder">
                     <i class="icon-plus"></i>&nbsp;New Order
                 </button>
             </div>
@@ -248,7 +251,7 @@
 </script>
 
 <script id="orderEditTemplate" type="text/html" data-role="template">
-    <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+    <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="dataform">
         <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
             <colgroup>
                 <col style="border: none; text-align: left; width: 225px;" />
@@ -389,7 +392,7 @@
 </script>
 
 <script id="orderDetEditTemplate" type="text/html" data-role="template">
-    <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+    <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="dataform">
         <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
             <colgroup>
                 <col style="border: none; text-align: left; width: 225px;" />
@@ -452,7 +455,8 @@
 <script id="orderDetailsTemplate" type="text/html" data-role="template">
     @*Grid details template for order Details*@
     <div style="margin: 0px; width: 100%;">
-        <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-bind="this.tabsEvents,to=tabsEvents,source=customerVM.ordersVM" data-view="name='tabs',options:{hide:{effect:clip,duration:500},show:{effect:clip,duration:500}}">
+        <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-bind="this.tabsEvents,to=tabsEvents,source=customerVM.ordersVM" 
+             data-view="tabs" data-view-options="{hide:{effect:clip,duration:500},show:{effect:clip,duration:500}}">
             <div id="odeTabs">
                 <ul>
                     <li>
@@ -466,7 +470,7 @@
                     </li>
                 </ul>
                 <div id="sta">
-                    <form action="#" style="padding: 15px; width: 100%;" data-bind="{this.dataContext,to=Address}"  data-view="name=dataform">
+                    <form action="#" style="padding: 15px; width: 100%;" data-bind="{this.dataContext,to=Address}"  data-view="dataform">
                         <dl class="dl-horizontal">
                             <dt>
                                 <span class="addressLabel">AddressLine1:</span>
@@ -510,7 +514,7 @@
                 </div>
                 <div id="bta">
                     <form action="#" style="padding: 15px; width: 100%;" data-bind="{this.dataContext,to=Address1}"
-                          data-view="name=dataform">
+                          data-view="dataform">
                         <dl class="dl-horizontal">
                             <dt>
                                 <span class="addressLabel">AddressLine1:</span>
@@ -555,7 +559,7 @@
                 <div id="ode">
                     <table style="font-size: 9pt;" data-name="tblOrderDetails"
                            data-bind="{this.dataSource,to=dbSet,source=customerVM.ordersVM.orderDetailsVM}"
-                           data-view="options={wrapCss:orderDetailTableWrap,isHandleAddNew:true,editor:{templateID:orderDetEditTemplate,width:650,height:550,title:'Order Detail editing'}}">
+                           data-view-options="{wrapCss:orderDetailTableWrap,isHandleAddNew:true,editor:{templateID:orderDetEditTemplate,width:650,height:550,title:'Order Detail editing'}}">
                         <thead>
                             <tr>
                                 <th data-column="width:50px,type:row_actions"></th>
@@ -583,7 +587,8 @@
     <span>
         autocomplete here-->
         <input type="text" style="margin-left: 0px; width: 300px;" data-bind="{this.dataContext}"
-               data-view="name=productAutocomplete,options={dbContext:dbContext,fieldName:Name,dbSetName:LookUpProduct,queryName:ReadProductLookUp,templateId:prodAutocompleteTemplate,width:300px}" />&nbsp;
+               data-view="productAutocomplete"
+               data-view-options="{dbContext:dbContext,fieldName:Name,dbSetName:LookUpProduct,queryName:ReadProductLookUp,templateId:prodAutocompleteTemplate,width:300px}" />&nbsp;
         <b>*</b>
     </span>
 </script>
@@ -592,9 +597,9 @@
     @*an example of autocomplete implementation*@
     <div style="height: 98%; margin: 0px; padding: 2px; position: relative;">
         <div style="margin-left: 1px; position: relative; vertical-align: top;"
-             data-bind="{this.isBusy,to=isLoading}" data-view="name=busy">
+             data-bind="{this.isBusy,to=isLoading}" data-view="busy">
             <table data-name="lookupGrid" data-bind="{this.dataSource,to=gridDataSource}"
-                   data-view="options={wrapCss:autocompleteTableWrap,headerCss:autocompleteTableHeader}">
+                   data-view-options="{wrapCss:autocompleteTableWrap,headerCss:autocompleteTableHeader}">
                 <thead>
                     <tr>
                         <th data-column="width:100%,sortable:true,title:Name" data-content="fieldName:Name"></th>
@@ -605,7 +610,7 @@
         </div>
         <div style="text-align: left;position: relative;">
             <!--pager-->
-            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" data-view="name=pager,options={sliderSize:5,hideOnSinglePage=true}">
+            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" data-view="pager" data-view-options="{sliderSize:5,hideOnSinglePage=true}">
             </div>
             <div style="float: left; padding: 5px;">
                 <span>Total:</span>&nbsp;<span data-bind="{this.value,to=gridDataSource.totalCount}"></span>

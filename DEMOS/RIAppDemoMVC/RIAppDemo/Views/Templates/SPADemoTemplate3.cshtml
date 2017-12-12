@@ -20,9 +20,9 @@
             </nav>
 
             <!--
-            <span data-bind="{this.someProp,to=customerAddressVM}" data-view="name=debugger"></span>
+            <span data-bind="{this.someProp,to=customerAddressVM}" data-view="debugger"></span>
             -->
-            <table data-name="gridCustAddr" data-bind="{this.dataSource,to=custAdressView}" data-view="options={wrapCss:addressTableWrap,headerCss:addressTableHeader}">
+            <table data-name="gridCustAddr" data-bind="{this.dataSource,to=custAdressView}" data-view-options="{wrapCss:addressTableWrap,headerCss:addressTableHeader}">
                 <thead>
                     <tr>
                         <th data-column="width:10%,title=Type,sortable:true,sortMemberName=AddressType;AddressLine" data-content="fieldName:AddressType,readOnly:true"></th>
@@ -54,7 +54,7 @@
             <!-- we can use dataform to assign to it datacontext that is other than inside this template.
             the look of the form changes to editing when the current entity is began editing
             -->
-            <form action="#" style="width: 100%" data-bind="{this.dataContext,to=Address}" data-view="name=dataform">
+            <form action="#" style="width: 100%" data-bind="{this.dataContext,to=Address}" data-view="dataform">
                 <dl class="dl-horizontal">
                     <dt>
                         <span class="addressLabel">AddressLine1:</span>
@@ -107,7 +107,7 @@
             <span>Customer:</span>&nbsp;<span style="color: Blue; font-weight: bold;" data-bind="{this.value,to=customer.ComplexProp.Name}"></span>
         </div>
         <!--for switching views between linkAdrTemplate and newAdrTemplate-->
-        <div id="addrDynaContent" data-bind="{this.templateID,to=uiAddressRoute.viewName}{this.dataContext}" data-view="name=dynacontent"></div>
+        <div id="addrDynaContent" data-bind="{this.templateID,to=uiAddressRoute.viewName}{this.dataContext}" data-view="dynacontent"></div>
     </div>
 </script>
 
@@ -129,7 +129,7 @@
                     <td style="vertical-align: top;">
                         <div style="height: 310px; vertical-align: top; width: 350px;">
                             <table data-name="gridCustAddr" data-bind="{this.dataSource,to=custAdressView,source=customerVM.customerAddressVM}"
-                                   data-view="options={wrapCss:findAddrTableWrap,isCanDelete=false,isCanEdit=true,isUseScrollInto=false}">
+                                   data-view-options="{wrapCss:findAddrTableWrap,isCanDelete=false,isCanEdit=true,isUseScrollInto=false}">
                                 <thead>
                                     <tr>
                                         <th data-column="width:50px,type:row_actions"></th>
@@ -159,7 +159,7 @@
                     <td style="vertical-align: top;">
                         <div style="height: 310px; vertical-align: top;">
                             <table style="position: relative" data-bind="{this.dataSource,to=addressInfosView}{this.grid,to=grid,mode=BackWay}"
-                                   data-view="options={wrapCss:findAddrTableWrap}">
+                                   data-view-options="{wrapCss:findAddrTableWrap}">
                                 <thead>
                                     <tr>
                                         <th data-column="width:100%,sortable:true,title:Address" data-content="fieldName:AddressLine1,readOnly:true"></th>
@@ -185,7 +185,7 @@
                     <td>
                         <div style="border: none; height: 40px; margin-bottom: 5px; margin-top: 10px; text-align: left; width: 100%;">
                             <!--pager-->
-                            <div style="float: left;" data-bind="{this.dataSource,to=addressInfosView}" data-view="name=pager,options={sliderSize:5}">
+                            <div style="float: left;" data-bind="{this.dataSource,to=addressInfosView}" data-view="pager" data-view-options="{sliderSize:5}">
                             </div>
                             <div style="float: left; padding-left: 10px; padding-top: 10px; padding-bottom:10px;">
                                 <span>Total:</span>&nbsp;<span data-bind="{this.value,to=addressInfosView.totalCount}"></span>
@@ -201,7 +201,7 @@
 <script id="newAdrTemplate" type="text/html" data-role="template">
     <div data-name="newAddress" style="margin: 4px; max-width: 500px; width: 95%;">
         <form action="#" style="width: 100%" data-bind="{this.dataContext,to=newAddress}"
-              data-view="name=dataform">
+              data-view="dataform">
             <dl class="dl-horizontal">
                 <dt>
                     <span class="addressLabel">AddressLine1:</span>

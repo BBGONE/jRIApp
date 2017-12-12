@@ -169,7 +169,7 @@
 
 <h2 class="ex8">@ViewBag.Title</h2>
 
-<div id="demoContent" style="opacity:0;" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="name=busy">
+<div id="demoContent" style="opacity:0;" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="busy">
     <div id="leftPanel">
         <div style="height: 97%; vertical-align: top;">
             @{
@@ -183,7 +183,7 @@ title:'Customer editing'}";
             }
             <table data-name="gridCustomers" 
                    data-bind="{this.dataSource,to=dbSet,source=customerVM}" 
-                   data-view="options={@gridOptions}">
+                   data-view-options="{@gridOptions}">
                 <thead>
                 <tr>
                     <th data-column="width:50px,type:row_actions"/>
@@ -196,7 +196,7 @@ title:'Customer editing'}";
     </div>
 
     <div id="rightPanel">
-        <div id="customerInfo" style="max-width: 800px;" data-bind="{this.dataContext,to=currentItem,source=customerVM}" data-view="name=dataform">
+        <div id="customerInfo" style="max-width: 800px;" data-bind="{this.dataContext,to=currentItem,source=customerVM}" data-view="dataform">
             <fieldset>
                 <legend>Customer Info</legend>
                 <table style="background-color: transparent; border: none; table-layout: fixed; width: 100%;">
@@ -266,7 +266,7 @@ title:'Customer editing'}";
                 <legend>Customer Addresses</legend>
                 <table data-name="gridCustAddr" 
                        data-bind="{this.dataSource,to=custAdressView,source=customerVM.customerAddressVM}" 
-                       data-view="options={wrapCss:addressTableWrap,headerCss:addressTableHeader}">
+                       data-view-options="{wrapCss:addressTableWrap,headerCss:addressTableHeader}">
                     <thead>
                     <tr>
                         <!--we can use one column with templated data content or several ordinary columns-->
@@ -290,14 +290,14 @@ title:'Customer editing'}";
         <!--customerAddr-->
         <!--
         //example of using stackpanel for horizontal list view
-        <div style="width:100%; overflow:auto;" data-bind="{this.dataSource,to=custAdressView,source=customerVM.custAddrVM}" data-view="name=stackpanel,options:{templateID:stackPanelItemTemplate,orientation:horizontal}"></div>
+        <div style="width:100%; overflow:auto;" data-bind="{this.dataSource,to=custAdressView,source=customerVM.custAddrVM}" data-view="stackpanel" data-view-options="{templateID:stackPanelItemTemplate,orientation:horizontal}"></div>
         -->
     </div>
     <!--right panel-->
 
     <div style="border: none; height: 40px; margin-top: 0px; text-align: left; width: 100%;">
         <!--pager-->
-        <div style="float: left;" data-bind="{this.dataSource,to=dbSet,source=customerVM}" data-view="name=pager,options={sliderSize:11,hideOnSinglePage=false}"></div>
+        <div style="float: left;" data-bind="{this.dataSource,to=dbSet,source=customerVM}" data-view="pager" data-view-options="{sliderSize:11,hideOnSinglePage=false}"></div>
         <div style="float: left; padding-left: 10px; padding-top: 11px; padding-bottom:11px;">
             <span>Total:</span>&nbsp;<span data-bind="{this.value,to=totalCount,source=customerVM.dbSet}"></span>
         </div>
@@ -308,7 +308,7 @@ title:'Customer editing'}";
 
 <script id="customerEditTemplate" type="text/html" data-role="template">
     <div style="margin: 0px; width: 100%;">
-        <form action="#" style="width: 100%" data-bind="{this.dataContext}" data-view="name=dataform">
+        <form action="#" style="width: 100%" data-bind="{this.dataContext}" data-view="dataform">
             <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
                 <colgroup>
                     <col style="border: none; text-align: left; width: 125px;"/>
@@ -408,7 +408,7 @@ title:'Customer editing'}";
 <script id="salespersonTemplate2" type="text/html" data-role="template">
     <span>
         <input type="text" style="margin-left: 0px; width: 200px;" data-bind="{this.value,to=SalesPerson,mode=TwoWay}{this.dataContext}"
-               data-view="name=autocomplete,options={fieldName:SalesPerson,dbContext:dbContext,dbSetName:SalesInfo,queryName:ReadSalesInfo,templateId:salePerAutocompleteTemplate,width:200px,height:250px}"/>
+               data-view="autocomplete" data-view-options="{fieldName:SalesPerson,dbContext:dbContext,dbSetName:SalesInfo,queryName:ReadSalesInfo,templateId:salePerAutocompleteTemplate,width:200px,height:250px}"/>
         &nbsp;<span style="color: Gray;">&lt;--autocomplete here</span>
     </span>
 </script>
@@ -417,9 +417,9 @@ title:'Customer editing'}";
     @*example of autocomplete implementation*@
     <div style="height: 97%; margin: 0px; padding: 2px; position: relative;">
         <div style="margin-left: 1px; position: relative; vertical-align: top;"
-             data-bind="{this.isBusy,to=isLoading}" data-view="name=busy">
+             data-bind="{this.isBusy,to=isLoading}" data-view="busy">
             <table data-name="lookupGrid" data-bind="{this.dataSource,to=gridDataSource}"
-                   data-view="options={wrapCss:autocompleteTableWrap,headerCss:autocompleteTableHeader}">
+                   data-view-options="{wrapCss:autocompleteTableWrap,headerCss:autocompleteTableHeader}">
                 <thead>
                 <tr>
                     <th data-column="width:100%,sortable:true,title:Name" data-content="fieldName:SalesPerson"></th>
@@ -430,7 +430,7 @@ title:'Customer editing'}";
         </div>
         <div style="text-align: left; position:relative;">
             <!--pager-->
-            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" data-view="name=pager,options={sliderSize:5,hideOnSinglePage=true}">
+            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" data-view="pager" data-view-options="{sliderSize:5,hideOnSinglePage=true}">
             </div>
             <div style="float: left; padding: 5px;">
                 <span>Total:</span>&nbsp;<span data-bind="{this.value,to=gridDataSource.totalCount}"></span>
@@ -459,7 +459,7 @@ title:'Customer editing'}";
             <!-- we can use dataform to assign to it datacontext that is other than inside this template.
             the look of the form changes to editing when the current entity is began editing
             -->
-            <form action="#" style="width: 100%" data-bind="{this.dataContext,to=Address}" data-view="name=dataform">
+            <form action="#" style="width: 100%" data-bind="{this.dataContext,to=Address}" data-view="dataform">
                 <dl class="dl-horizontal">
                     <dt>
                         <span class="addressLabel">AddressLine1:</span></dt>
@@ -520,7 +520,7 @@ title:'Customer editing'}";
                         <td style="vertical-align: top;">
                             <div style="height: 310px; vertical-align: top; width: 350px;">
                                 <table data-name="gridCustAddr" data-bind="{this.dataSource,to=custAdressView,source=customerVM.customerAddressVM}"
-                                       data-view="options={wrapCss:findAddrTableWrap,isCanDelete=false,isCanEdit=true,isUseScrollInto=false}">
+                                       data-view-options="{wrapCss:findAddrTableWrap,isCanDelete=false,isCanEdit=true,isUseScrollInto=false}">
                                     <thead>
                                     <tr>
                                         <th data-column="width:50px,type:row_actions"></th>
@@ -550,7 +550,7 @@ title:'Customer editing'}";
                         <td style="vertical-align: top;">
                             <div style="height: 310px; vertical-align: top;">
                                 <table style="position: relative" data-bind="{this.dataSource,to=addressInfosView}{this.grid,to=grid,mode=BackWay}"
-                                       data-view="options={wrapCss:findAddrTableWrap}">
+                                       data-view-options="{wrapCss:findAddrTableWrap}">
                                     <thead>
                                     <tr>
                                         <th data-column="width:100%,sortable:true,title:Address" data-content="fieldName:AddressLine1"></th>
@@ -576,7 +576,7 @@ title:'Customer editing'}";
                         <td>
                             <div style="border: none; height: 40px; margin-bottom: 5px; margin-top: 3px; text-align: left; width: 100%;">
                                 <!--pager-->
-                                <div style="float: left;" data-bind="{this.dataSource,to=addressInfosView}" data-view="name=pager,options={sliderSize:5}">
+                                <div style="float: left;" data-bind="{this.dataSource,to=addressInfosView}" data-view="pager" data-view-options="{sliderSize:5}">
                                 </div>
                                 <div style="float: left; padding-left: 10px; padding-top: 10px;">
                                     <span>Total:</span>&nbsp;<span data-bind="{this.value,to=addressInfosView.totalCount}"></span>
@@ -590,7 +590,7 @@ title:'Customer editing'}";
         <!--will be visible only when adding new address-->
         <div data-name="newAddress" style="height: 95%; width: 95%;" data-bind="{this.isVisible,to=isAddingNew}">
             <form action="#" style="width: 100%" data-bind="{this.dataContext,to=newAddress}"
-                  data-view="name=dataform">
+                  data-view="dataform">
                 <dl class="dl-horizontal">
                     <dt>
                         <span class="addressLabel">AddressLine1:</span></dt>
@@ -634,7 +634,7 @@ title:'Customer editing'}";
         <fieldset>
             <legend>
                 <span class="address" data-bind="{this.value,to=AddressType}"></span></legend>
-            <span data-bind="{this.value,to=AddressLine}"></span>&nbsp;<a data-bind="{this.command,to=helpCommand,source=customerVM},{this.commandParam}" data-view="options={tip='click me for help!',linkimg='@Url.Content("~/Scripts/jriapp/img/help.gif")'}">help</a>
+            <span data-bind="{this.value,to=AddressLine}"></span>&nbsp;<a data-bind="{this.command,to=helpCommand,source=customerVM},{this.commandParam}" data-view-options="{tip='click me for help!',linkimg='@Url.Content("~/Scripts/jriapp/img/help.gif")'}">help</a>
         </fieldset>
     </div>
 </script>

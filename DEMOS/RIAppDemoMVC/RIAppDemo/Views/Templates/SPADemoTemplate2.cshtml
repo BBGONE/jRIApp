@@ -4,7 +4,7 @@
 }
 
 <script id="customerInfo" type="text/html" data-role="template">
-    <div style="max-width: 800px;" data-bind="{this.dataContext,to=currentItem}" data-view="name=dataform" data-require="test1,test3,css!css/test1.css">
+    <div style="max-width: 800px;" data-bind="{this.dataContext,to=currentItem}" data-view="dataform" data-require="test1,test3,css!css/test1.css">
         <fieldset>
             <legend><span style="color: Blue; font-weight: bold;" data-bind="{this.value,to=ComplexProp.Name}"></span></legend>
             <nav>
@@ -87,7 +87,7 @@
                 </tbody>
             </table>
             <!--this nested dataform is only to test how the dataform nesting is working!!! it is not needed here, really.-->
-            <div style="float: right; margin-right: 60px;" data-bind="{this.dataContext}" data-view="name=dataform" data-name="test1">
+            <div style="float: right; margin-right: 60px;" data-bind="{this.dataContext}" data-view="dataform" data-name="test1">
                 <button class="btn btn-info btn-small" style="margin: 5px;" data-bind="{this.command,to=editCommand,source=customerVM}{this.isVisible,to=_aspect.isEditing,converter=notConverter}"><i class="icon-plus"></i>&nbsp;Edit Customer</button>
                 <button class="btn btn-info btn-small" style="margin: 5px; width: 100px;" data-bind="{this.command,to=endEditCommand,source=customerVM}{this.isVisible,to=_aspect.isEditing}">OK</button>
                 <button class="btn btn-info btn-small" style="margin: 5px; width: 100px;" data-bind="{this.command,to=cancelEditCommand,source=customerVM}{this.isVisible,to=_aspect.isEditing}">Cancel</button>
@@ -103,7 +103,7 @@
 <script  id="salespersonTemplate2" type="text/html" data-role="template">
     <span>
         <input type="text" style="margin-left: 0px; width: 200px;" data-bind="{this.value,to=SalesPerson,mode=TwoWay}{this.dataContext}"
-               data-view="name=autocomplete,options={dbContext:dbContext,fieldName:SalesPerson,dbSetName:SalesInfo,queryName:ReadSalesInfo,templateId:salePerAutocompleteTemplate,width:200px,height:200px}" />
+               data-view="autocomplete," data-view-options="{dbContext:dbContext,fieldName:SalesPerson,dbSetName:SalesInfo,queryName:ReadSalesInfo,templateId:salePerAutocompleteTemplate,width:200px,height:200px}" />
         &nbsp;<span style="color: Gray;">&lt;--autocomplete here</span>
     </span>
 </script>
@@ -112,9 +112,9 @@
     @*example of autocomplete implementation*@
     <div style="height: 97%; margin: 0px; padding: 2px; position: relative;">
         <div style="margin-left: 1px; position: relative; vertical-align: top;"
-             data-bind="{this.isBusy,to=isLoading}" data-view="name=busy">
+             data-bind="{this.isBusy,to=isLoading}" data-view="busy">
             <table data-name="lookupGrid" data-bind="{this.dataSource,to=gridDataSource}"
-                   data-view="options={wrapCss:autocompleteSalePTableWrap,headerCss:autocompleteTableHeader}">
+                   data-view-options="{wrapCss:autocompleteSalePTableWrap,headerCss:autocompleteTableHeader}">
                 <thead>
                     <tr>
                         <th data-column="width:100%,sortable:true,title:Name" data-content="fieldName:SalesPerson"></th>
@@ -125,7 +125,7 @@
         </div>
         <div style="text-align: left;position: relative;">
             <!--pager-->
-            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" data-view="name=pager,options={sliderSize:5,hideOnSinglePage=true}">
+            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" data-view="pager" data-view-options="{sliderSize:5,hideOnSinglePage=true}">
             </div>
             <div style="float: left; padding: 5px;">
                 <span>Total:</span>&nbsp;<span data-bind="{this.value,to=gridDataSource.totalCount}"></span>

@@ -23,12 +23,12 @@ define("jriapp/const", ["require", "exports"], function (require, exports) {
     (function (DATA_ATTR) {
         DATA_ATTR["DATA_BIND"] = "data-bind";
         DATA_ATTR["DATA_VIEW"] = "data-view";
+        DATA_ATTR["DATA_VIEW_OPTIONS"] = "data-view-options";
         DATA_ATTR["DATA_EVENT_SCOPE"] = "data-scope";
         DATA_ATTR["DATA_ITEM_KEY"] = "data-key";
         DATA_ATTR["DATA_CONTENT"] = "data-content";
         DATA_ATTR["DATA_COLUMN"] = "data-column";
         DATA_ATTR["DATA_NAME"] = "data-name";
-        DATA_ATTR["DATA_FORM"] = "data-form";
         DATA_ATTR["DATA_REQUIRE"] = "data-require";
     })(DATA_ATTR = exports.DATA_ATTR || (exports.DATA_ATTR = {}));
     var KEYS;
@@ -100,95 +100,207 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
     Object.defineProperty(exports, "__esModule", { value: true });
     var checks = jriapp_shared_1.Utils.check, strUtils = jriapp_shared_1.Utils.str, coreUtils = jriapp_shared_1.Utils.core, sys = jriapp_shared_1.Utils.sys;
     var trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g;
+    var testEvalRX = /^eval\s*[(]\s*((?:\w*\.?\w*)*)\s*(?:[,]\s*((?:\w*\.?\w*)*)\s*)?[)]$/g;
     var VAL_DELIMETER1 = ":", VAL_DELIMETER2 = "=", KEY_VAL_DELIMETER = ",";
     function trimOuterBraces(val) {
-        return strUtils.trim(val.replace(trimOuterBracesRX, ""));
+        return strUtils.fastTrim(val.replace(trimOuterBracesRX, ""));
     }
     function isInsideBraces(str) {
         return (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}"));
     }
+    function _checkKeyVal(kv) {
+        if (kv.val === "" && strUtils.startsWith(kv.key, "this.")) {
+            kv.val = kv.key.substr(5);
+            kv.key = "targetPath";
+        }
+    }
+    function _addKeyVal(kv, parts) {
+        if (kv.val) {
+            if (checks.isNumeric(kv.val)) {
+                kv.val = Number(kv.val);
+            }
+            else if (checks.isBoolString(kv.val)) {
+                kv.val = coreUtils.parseBool(kv.val);
+            }
+        }
+        parts.push(kv);
+    }
+    function _getBraceParts(val, firstOnly) {
+        var i, s = "", ch, literal, cnt = 0;
+        var parts = [];
+        for (i = 0; i < val.length; i += 1) {
+            ch = val.charAt(i);
+            if (ch === "'" || ch === '"') {
+                if (!literal) {
+                    literal = ch;
+                }
+                else if (literal === ch) {
+                    literal = null;
+                }
+            }
+            if (!literal && ch === "{") {
+                cnt += 1;
+                s += ch;
+            }
+            else if (!literal && ch === "}") {
+                cnt -= 1;
+                s += ch;
+                if (cnt === 0) {
+                    parts.push(s);
+                    s = "";
+                    if (firstOnly) {
+                        return parts;
+                    }
+                }
+            }
+            else {
+                if (cnt > 0) {
+                    s += ch;
+                }
+            }
+        }
+        return parts;
+    }
+    function _getKeyVals(val) {
+        var i, ch, literal, parts = [], kv = { key: "", val: "" }, isKey = true;
+        var vd1 = VAL_DELIMETER1, vd2 = VAL_DELIMETER2, kvd = KEY_VAL_DELIMETER;
+        for (i = 0; i < val.length; i += 1) {
+            ch = val.charAt(i);
+            if (ch === "'" || ch === '"') {
+                if (!literal) {
+                    literal = ch;
+                }
+                else if (literal === ch) {
+                    literal = null;
+                }
+            }
+            if (ch === "(") {
+                if (!literal) {
+                    literal = ch;
+                }
+            }
+            if (ch === ")") {
+                if (literal === "(") {
+                    literal = null;
+                }
+            }
+            if (!literal && ch === "{" && !isKey) {
+                var bracePart = val.substr(i);
+                var braceParts = _getBraceParts(bracePart, true);
+                if (braceParts.length > 0) {
+                    bracePart = braceParts[0];
+                    kv.val += bracePart;
+                    i += bracePart.length - 1;
+                }
+                else {
+                    throw new Error(strUtils.format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, bracePart));
+                }
+                continue;
+            }
+            if (!literal && ch === kvd) {
+                if (!!kv.key) {
+                    _addKeyVal(kv, parts);
+                    kv = { key: "", val: "" };
+                    isKey = true;
+                }
+            }
+            else if (!literal && (ch === vd1 || ch === vd2)) {
+                isKey = false;
+            }
+            else {
+                if (isKey) {
+                    kv.key += ch;
+                }
+                else {
+                    kv.val += ch;
+                }
+            }
+        }
+        if (!!kv.key) {
+            _addKeyVal(kv, parts);
+        }
+        parts.forEach(function (kv) {
+            kv.key = strUtils.fastTrim(kv.key);
+            if (checks.isString(kv.val)) {
+                kv.val = strUtils.fastTrim(kv.val);
+            }
+            _checkKeyVal(kv);
+        });
+        parts = parts.filter(function (kv) {
+            return kv.val !== "";
+        });
+        return parts;
+    }
+    function _getEvalPath(str) {
+        var matches = testEvalRX.exec(str);
+        var evalpath = (!!matches && matches.length > 1) ? {
+            path: matches[1],
+            source: (matches.length > 2) ? matches[2] : null
+        } : {
+            path: null,
+            source: null
+        };
+        return evalpath;
+    }
+    function _parseOption(part, app, defSource) {
+        var res = {};
+        part = strUtils.fastTrim(part);
+        if (isInsideBraces(part)) {
+            part = trimOuterBraces(part);
+        }
+        var kvals = _getKeyVals(part);
+        kvals.forEach(function (kv) {
+            var isEval = false, evalpath = null;
+            var isString = checks.isString(kv.val);
+            if (isString && !!app) {
+                evalpath = _getEvalPath(kv.val);
+                isEval = !!evalpath.path;
+            }
+            if (isEval) {
+                var source = defSource || app;
+                if (!!evalpath.source) {
+                    source = Parser.resolvePath(app, sys.getPathParts(evalpath.source));
+                }
+                res[kv.key] = Parser.resolvePath(source, sys.getPathParts(evalpath.path));
+            }
+            else if (isString && isInsideBraces(kv.val)) {
+                res[kv.key] = _parseOption(kv.val, app, defSource);
+            }
+            else {
+                if (isString) {
+                    res[kv.key] = strUtils.trimQuotes(kv.val);
+                }
+                else {
+                    res[kv.key] = kv.val;
+                }
+            }
+        });
+        return res;
+    }
+    function _parseOptions(strs, app, defSource) {
+        var res = [];
+        var parts = [];
+        for (var i = 0; i < strs.length; i += 1) {
+            strs[i] = strUtils.fastTrim(strs[i]);
+            if (isInsideBraces(strs[i])) {
+                var subparts = _getBraceParts(strs[i], false);
+                for (var k = 0; k < subparts.length; k += 1) {
+                    parts.push(subparts[k]);
+                }
+            }
+            else {
+                parts.push(strs[i]);
+            }
+        }
+        for (var j = 0; j < parts.length; j += 1) {
+            res.push(_parseOption(parts[j], app, defSource));
+        }
+        return res;
+    }
     var Parser = (function () {
         function Parser() {
         }
-        Parser._checkKeyVal = function (kv) {
-            if (kv.val === "" && strUtils.startsWith(kv.key, "this.")) {
-                kv.val = kv.key.substr(5);
-                kv.key = "targetPath";
-            }
-        };
-        Parser._addKeyVal = function (kv, parts) {
-            if (kv.val) {
-                if (checks.isNumeric(kv.val)) {
-                    kv.val = Number(kv.val);
-                }
-                else if (checks.isBoolString(kv.val)) {
-                    kv.val = coreUtils.parseBool(kv.val);
-                }
-            }
-            parts.push(kv);
-        };
-        Parser._getKeyVals = function (val) {
-            var self = Parser;
-            var i, ch, literal, parts = [], kv = { key: "", val: "" }, isKey = true;
-            var vd1 = VAL_DELIMETER1, vd2 = VAL_DELIMETER2, kvd = KEY_VAL_DELIMETER;
-            for (i = 0; i < val.length; i += 1) {
-                ch = val.charAt(i);
-                if (ch === "'" || ch === '"') {
-                    if (!literal) {
-                        literal = ch;
-                    }
-                    else if (literal === ch) {
-                        literal = null;
-                    }
-                }
-                if (!literal && ch === "{" && !isKey) {
-                    var bracePart = val.substr(i);
-                    var braceParts = self.getBraceParts(bracePart, true);
-                    if (braceParts.length > 0) {
-                        bracePart = braceParts[0];
-                        kv.val += bracePart;
-                        i += bracePart.length - 1;
-                    }
-                    else {
-                        throw new Error(strUtils.format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, bracePart));
-                    }
-                    continue;
-                }
-                if (!literal && ch === kvd) {
-                    if (!!kv.key) {
-                        self._addKeyVal(kv, parts);
-                        kv = { key: "", val: "" };
-                        isKey = true;
-                    }
-                }
-                else if (!literal && (ch === vd1 || ch === vd2)) {
-                    isKey = false;
-                }
-                else {
-                    if (isKey) {
-                        kv.key += ch;
-                    }
-                    else {
-                        kv.val += ch;
-                    }
-                }
-            }
-            if (!!kv.key) {
-                self._addKeyVal(kv, parts);
-            }
-            parts.forEach(function (kv) {
-                kv.key = strUtils.trim(kv.key);
-                if (checks.isString(kv.val)) {
-                    kv.val = strUtils.trim(kv.val);
-                }
-                self._checkKeyVal(kv);
-            });
-            parts = parts.filter(function (kv) {
-                return kv.val !== "";
-            });
-            return parts;
-        };
-        Parser.resolveSource = function (root, srcParts) {
+        Parser.resolvePath = function (root, srcParts) {
             var self = Parser;
             if (!root) {
                 return checks.undefined;
@@ -197,80 +309,19 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                 return root;
             }
             if (srcParts.length > 0) {
-                return self.resolveSource(sys.getProp(root, srcParts[0]), srcParts.slice(1));
+                return self.resolvePath(sys.getProp(root, srcParts[0]), srcParts.slice(1));
             }
-            throw new Error("Invalid operation");
+            throw new Error("Parser could not resolve the source");
         };
-        Parser.getBraceParts = function (val, firstOnly) {
-            var i, s = "", ch, literal, cnt = 0;
-            var parts = [];
-            for (i = 0; i < val.length; i += 1) {
-                ch = val.charAt(i);
-                if (ch === "'" || ch === '"') {
-                    if (!literal) {
-                        literal = ch;
-                    }
-                    else if (literal === ch) {
-                        literal = null;
-                    }
-                }
-                if (!literal && ch === "{") {
-                    cnt += 1;
-                    s += ch;
-                }
-                else if (!literal && ch === "}") {
-                    cnt -= 1;
-                    s += ch;
-                    if (cnt === 0) {
-                        parts.push(s);
-                        s = "";
-                        if (firstOnly) {
-                            return parts;
-                        }
-                    }
-                }
-                else {
-                    if (cnt > 0) {
-                        s += ch;
-                    }
-                }
-            }
-            return parts;
+        Parser.parseOptions = function (options) {
+            return _parseOptions([options], null, null);
         };
-        Parser.parseOption = function (part) {
-            var self = Parser, res = {};
-            part = strUtils.trim(part);
-            if (isInsideBraces(part)) {
-                part = trimOuterBraces(part);
-            }
-            var kvals = self._getKeyVals(part);
-            kvals.forEach(function (kv) {
-                var isString = checks.isString(kv.val);
-                if (isString && isInsideBraces(kv.val)) {
-                    res[kv.key] = self.parseOption(kv.val);
-                }
-                else {
-                    if (isString) {
-                        res[kv.key] = strUtils.trimQuotes(kv.val);
-                    }
-                    else {
-                        res[kv.key] = kv.val;
-                    }
-                }
-            });
-            return res;
+        Parser.parseBindings = function (bindings) {
+            return _parseOptions(bindings, null, null);
         };
-        Parser.parseOptions = function (str) {
-            var self = Parser, res = [];
-            str = strUtils.trim(str);
-            var parts = [str];
-            if (isInsideBraces(str)) {
-                parts = self.getBraceParts(str, false);
-            }
-            parts.forEach(function (part) {
-                res.push(self.parseOption(part));
-            });
-            return res;
+        Parser.parseViewOptions = function (options, app, defSource) {
+            var res = _parseOptions([options], app, defSource);
+            return (!!res && res.length > 0) ? res[0] : {};
         };
         return Parser;
     }());
@@ -389,28 +440,33 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstra
             }
             return elView;
         };
-        ElViewFactory.prototype.getOrCreateElView = function (el) {
+        ElViewFactory.prototype.getOrCreateElView = function (el, dataContext) {
+            if (dataContext === void 0) { dataContext = null; }
             var elView = this.store.getElView(el);
             if (!!elView) {
                 return elView;
             }
-            var info = this.getElementViewInfo(el);
+            var info = this.getElementViewInfo(el, dataContext);
             return this.createElView(info);
         };
-        ElViewFactory.prototype.getElementViewInfo = function (el) {
-            var viewName = null, vwOptions = null, attr, dataViewOpArr, dataViewOp;
+        ElViewFactory.prototype.getElementViewInfo = function (el, dataContext) {
+            if (dataContext === void 0) { dataContext = null; }
+            var viewName = null;
             if (el.hasAttribute("data-view")) {
-                attr = el.getAttribute("data-view");
-                dataViewOpArr = parser.parseOptions(attr);
-                if (!!dataViewOpArr && dataViewOpArr.length > 0) {
-                    dataViewOp = dataViewOpArr[0];
-                    if (!!dataViewOp.name && dataViewOp.name !== "default") {
-                        viewName = dataViewOp.name;
-                    }
-                    vwOptions = dataViewOp.options;
+                var attr = el.getAttribute("data-view");
+                if (!!attr && attr !== "default") {
+                    viewName = attr;
                 }
             }
-            var options = utils.core.merge({ el: el }, vwOptions);
+            var options;
+            if (el.hasAttribute("data-view-options")) {
+                var attr = el.getAttribute("data-view-options");
+                options = parser.parseViewOptions(attr, bootstrap_1.bootstrap.getApp(), dataContext);
+                options.el = el;
+            }
+            else {
+                options = { el: el };
+            }
             return { name: viewName, options: options };
         };
         Object.defineProperty(ElViewFactory.prototype, "store", {
@@ -2437,7 +2493,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     bindingOpts.target = defaultTarget;
                 }
                 else {
-                    bindingOpts.target = parser.resolveSource(app, sys.getPathParts(fixedTarget));
+                    bindingOpts.target = parser.resolvePath(app, sys.getPathParts(fixedTarget));
                 }
             }
             else {
@@ -2454,7 +2510,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     bindingOpts.source = defaultTarget;
                 }
                 else {
-                    bindingOpts.source = parser.resolveSource(app, sys.getPathParts(fixedSource));
+                    bindingOpts.source = parser.resolvePath(app, sys.getPathParts(fixedSource));
                 }
             }
             else {
@@ -2808,7 +2864,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         Binding.prototype._setTarget = function (value) {
             if (!!this._state) {
                 this._state.target = value;
-                return;
+                return false;
             }
             if (this._target !== value) {
                 if (!!this._tgtEnd && !(this._mode === 3)) {
@@ -2832,12 +2888,16 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 if (!!this._target && !this._tgtEnd) {
                     throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, this._tgtPath.join(".")));
                 }
+                return true;
+            }
+            else {
+                return false;
             }
         };
         Binding.prototype._setSource = function (value) {
             if (!!this._state) {
                 this._state.source = value;
-                return;
+                return false;
             }
             if (this._source !== value) {
                 if (!!this._srcEnd && (this._mode === 3)) {
@@ -2855,6 +2915,10 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 this._setPathItem(null, 0, 0, this._srcPath);
                 this._source = value;
                 this._parseSrc(this._source, this._srcPath, 0);
+                return true;
+            }
+            else {
+                return false;
             }
         };
         Binding.prototype.dispose = function () {
@@ -2894,8 +2958,9 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         Object.defineProperty(Binding.prototype, "target", {
             get: function () { return this._target; },
             set: function (v) {
-                this._setTarget(v);
-                this._update();
+                if (this._setTarget(v)) {
+                    this._update();
+                }
             },
             enumerable: true,
             configurable: true
@@ -2903,8 +2968,9 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         Object.defineProperty(Binding.prototype, "source", {
             get: function () { return this._source; },
             set: function (v) {
-                this._setSource(v);
-                this._update();
+                if (this._setSource(v)) {
+                    this._update();
+                }
             },
             enumerable: true,
             configurable: true
@@ -3173,7 +3239,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
             self._loadedElem = loadedEl;
             self._onLoading();
             templateEl.appendChild(loadedEl);
-            var promise = self.app._getInternal().bindTemplateElements(loadedEl);
+            var promise = self.app._getInternal().bindTemplateElements(loadedEl, this.dataContext);
             return promise.then(function (lftm) {
                 if (self.getIsStateDirty()) {
                     lftm.dispose();
@@ -3270,7 +3336,9 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
             configurable: true
         });
         Object.defineProperty(Template.prototype, "dataContext", {
-            get: function () { return this._dataContext; },
+            get: function () {
+                return this._dataContext;
+            },
             set: function (v) {
                 if (this._dataContext !== v) {
                     this._dataContext = v;
@@ -3282,7 +3350,9 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
             configurable: true
         });
         Object.defineProperty(Template.prototype, "templateID", {
-            get: function () { return this._templateID; },
+            get: function () {
+                return this._templateID;
+            },
             set: function (v) {
                 if (this._templateID !== v) {
                     this._templateID = v;
@@ -3294,7 +3364,9 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
             configurable: true
         });
         Object.defineProperty(Template.prototype, "el", {
-            get: function () { return this._el; },
+            get: function () {
+                return this._el;
+            },
             enumerable: true,
             configurable: true
         });
@@ -3694,8 +3766,14 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
     exports.createDataBindSvc = createDataBindSvc;
     function fn_toBindableElement(el) {
         var val, attr;
-        var allAttrs = el.attributes, res = { el: el, dataView: null, dataForm: null, expressions: [] };
+        var allAttrs = el.attributes, res = {
+            el: el,
+            needToBind: false,
+            dataForm: false,
+            bindings: []
+        };
         var n = allAttrs.length;
+        var dataViewName, hasOptions = false;
         for (var i = 0; i < n; i++) {
             attr = allAttrs[i];
             if (strUtils.startsWith(attr.name, "data-bind")) {
@@ -3706,16 +3784,20 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
                 if (val[0] !== "{" && val[val.length - 1] !== "}") {
                     val = "{" + val + "}";
                 }
-                res.expressions.push(val);
+                res.bindings.push(val);
             }
-            if (strUtils.startsWith(attr.name, "data-form")) {
-                res.dataForm = attr.value.trim();
-            }
-            if (strUtils.startsWith(attr.name, "data-view")) {
-                res.dataView = attr.value.trim();
+            if (attr.name === "data-view") {
+                dataViewName = attr.value;
             }
         }
-        return (!!res.dataView || res.expressions.length > 0) ? res : null;
+        if (el.hasAttribute("data-view-options")) {
+            hasOptions = true;
+        }
+        if (dataViewName === "dataform") {
+            res.dataForm = true;
+        }
+        res.needToBind = !!dataViewName || hasOptions || res.bindings.length > 0;
+        return res.needToBind ? res : null;
     }
     function fn_getBindableElements(scope) {
         var result = [], allElems = dom.queryAll(scope, "*");
@@ -3752,14 +3834,6 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
             return bindElem.el;
         });
     }
-    function fn_updDataFormAttr(bindElems) {
-        bindElems.forEach(function (bindElem) {
-            if (!bindElem.dataForm && viewChecks.isDataForm(bindElem.el)) {
-                bindElem.el.setAttribute("data-form", "yes");
-                bindElem.dataForm = "yes";
-            }
-        });
-    }
     var DataBindingService = (function (_super) {
         __extends(DataBindingService, _super);
         function DataBindingService(root, elViewFactory) {
@@ -3776,24 +3850,22 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
                 this._objLifeTime = null;
             }
         };
-        DataBindingService.prototype._bindElView = function (elView, bindElem, lftm, isInsideTemplate, defSource) {
+        DataBindingService.prototype._bindElView = function (args) {
             var self = this;
-            lftm.addObj(elView);
-            if (isInsideTemplate) {
-                viewChecks.setIsInsideTemplate(elView);
+            args.lftm.addObj(args.elView);
+            if (args.isTemplate) {
+                viewChecks.setIsInsideTemplate(args.elView);
             }
-            var bindAttr = bindElem.expressions.join("");
-            if (!!bindAttr) {
-                var tempOpts = parser.parseOptions(bindAttr), len = tempOpts.length;
+            var bindings = args.bindElem.bindings;
+            if (!!bindings && bindings.length > 0) {
+                var bindInfos = parser.parseBindings(bindings), len = bindInfos.length;
                 for (var j = 0; j < len; j += 1) {
-                    var info = tempOpts[j];
-                    var op = binding_1.getBindingOptions(info, elView, defSource);
-                    var binding = self.bind(op);
-                    lftm.addObj(binding);
+                    var op = binding_1.getBindingOptions(bindInfos[j], args.elView, args.defSource), binding = self.bind(op);
+                    args.lftm.addObj(binding);
                 }
             }
         };
-        DataBindingService.prototype._bindTemplateElements = function (templateEl) {
+        DataBindingService.prototype._bindTemplateElements = function (templateEl, dataContext) {
             var self = this, defer = _async.createDeferred(true);
             var bindElems;
             try {
@@ -3807,13 +3879,19 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
                         bindElems.push(rootBindEl);
                     }
                 }
-                fn_updDataFormAttr(bindElems);
-                var forms_1 = fn_getDataFormElements(bindElems), needBinding = bindElems.filter(function (bindElem) {
+                var forms_1 = fn_getDataFormElements(bindElems);
+                var needBinding = bindElems.filter(function (bindElem) {
                     return !viewChecks.isInNestedForm(templateEl, forms_1, bindElem.el);
                 });
                 needBinding.forEach(function (bindElem) {
-                    var elView = self._elViewFactory.getOrCreateElView(bindElem.el);
-                    self._bindElView(elView, bindElem, lftm_1, true, null);
+                    var elView = self._elViewFactory.getOrCreateElView(bindElem.el, dataContext);
+                    self._bindElView({
+                        elView: elView,
+                        bindElem: bindElem,
+                        lftm: lftm_1,
+                        isTemplate: true,
+                        defSource: dataContext
+                    });
                 });
                 defer.resolve(lftm_1);
             }
@@ -3825,16 +3903,16 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
             }
             return defer.promise();
         };
-        DataBindingService.prototype.bindTemplateElements = function (templateEl) {
+        DataBindingService.prototype.bindTemplateElements = function (templateEl, dataContext) {
             var self = this, requiredModules = fn_getRequiredModules(templateEl);
             var res;
             if (requiredModules.length > 0) {
                 res = self._mloader.load(requiredModules).then(function () {
-                    return self._bindTemplateElements(templateEl);
+                    return self._bindTemplateElements(templateEl, dataContext);
                 });
             }
             else {
-                res = self._bindTemplateElements(templateEl);
+                res = self._bindTemplateElements(templateEl, dataContext);
             }
             res.catch(function (err) {
                 utils.queue.enque(function () {
@@ -3843,20 +3921,24 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
             });
             return res;
         };
-        DataBindingService.prototype.bindElements = function (scope, defaultDataContext, isDataFormBind, isInsideTemplate) {
+        DataBindingService.prototype.bindElements = function (args) {
             var self = this, defer = _async.createDeferred(true);
-            scope = scope || doc;
+            var scope = args.scope || doc;
             try {
                 var bindElems = fn_getBindableElements(scope), lftm_2 = new lifetime_1.LifeTimeScope();
-                if (!isDataFormBind) {
-                    fn_updDataFormAttr(bindElems);
-                }
-                var forms_2 = fn_getDataFormElements(bindElems), needBinding = bindElems.filter(function (bindElem) {
+                var forms_2 = fn_getDataFormElements(bindElems);
+                var needsBinding = bindElems.filter(function (bindElem) {
                     return !viewChecks.isInNestedForm(scope, forms_2, bindElem.el);
                 });
-                needBinding.forEach(function (bindElem) {
-                    var elView = self._elViewFactory.getOrCreateElView(bindElem.el);
-                    self._bindElView(elView, bindElem, lftm_2, isInsideTemplate, defaultDataContext);
+                needsBinding.forEach(function (bindElem) {
+                    var elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
+                    self._bindElView({
+                        elView: elView,
+                        bindElem: bindElem,
+                        lftm: lftm_2,
+                        isTemplate: args.isTemplate,
+                        defSource: args.dataContext
+                    });
                 });
                 defer.resolve(lftm_2);
             }
@@ -3869,9 +3951,14 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
             return defer.promise();
         };
         DataBindingService.prototype.setUpBindings = function () {
-            var defScope = this._root, defaultDataContext = boot.getApp(), self = this;
+            var defScope = this._root, dataContext = boot.getApp(), self = this;
             this._cleanUp();
-            var promise = this.bindElements(defScope, defaultDataContext, false, false);
+            var promise = this.bindElements({
+                scope: defScope,
+                dataContext: dataContext,
+                isDataForm: false,
+                isTemplate: false
+            });
             return promise.then(function (lftm) {
                 if (self.getIsStateDirty()) {
                     lftm.dispose();
@@ -3930,11 +4017,11 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             _this._exports = {};
             _this._UC = {};
             _this._internal = {
-                bindTemplateElements: function (templateEl) {
-                    return self._dataBindingService.bindTemplateElements(templateEl);
+                bindTemplateElements: function (templateEl, dataContext) {
+                    return self._dataBindingService.bindTemplateElements(templateEl, dataContext);
                 },
-                bindElements: function (scope, dctx, isDataFormBind, isInsideTemplate) {
-                    return self._dataBindingService.bindElements(scope, dctx, isDataFormBind, isInsideTemplate);
+                bindElements: function (args) {
+                    return self._dataBindingService.bindElements(args);
                 }
             };
             boot._getInternal().registerApp(_this);
@@ -4243,6 +4330,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.6.0";
+    exports.VERSION = "2.6.1";
     bootstrap_7.Bootstrap._initFramework();
 });

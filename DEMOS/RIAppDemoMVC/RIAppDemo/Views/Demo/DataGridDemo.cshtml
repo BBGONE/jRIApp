@@ -182,31 +182,45 @@
 <h2 class="ex8" style="display: inline-block;">@ViewBag.Title</h2>
 
 <header id="title">
-    <a id="expander" data-bind="{this.command,to=expanderCommand,mode=OneWay,source=headerVM}" data-view="name=expander"></a>
+    <a id="expander" data-bind="{this.command,to=expanderCommand,mode=OneWay,source=headerVM}" data-view="expander"></a>
     <span style="margin-left: 5px;">Filter</span>
     <span style="margin-left: 5px;" data-bind="{this.html,to=sseMessage,mode=OneWay,source=app}"></span>
 </header>
 
-<form id="demoHeader" data-bind="{this.dataContext,source=productVM}" data-view="name=dataform">
+<form id="demoHeader" data-bind="{this.dataContext,source=productVM}" data-view="dataform">
     <table>
         <tr>
             <td>
                 <label for="prodNum">Product Number:</label>
-                <input type="text" id="prodNum" placeholder="Product number" data-bind-value="{this.value,to=filter.prodNumber,mode=TwoWay}" data-bind-tooltip="{this.toolTip,to=filter.searchTextToolTip}"/>
+                <input type="text" id="prodNum" placeholder="Product number" 
+                       data-bind-value="{this.value,to=filter.prodNumber,mode=TwoWay}" 
+                       data-bind-tooltip="{this.toolTip,to=filter.searchTextToolTip}"/>
             </td>
             <td>
-                <label for="prodName">Name:</label>
-                <input type="text" id="prodName" placeholder="Name" data-bind-1="{this.value,to=filter.name,mode=TwoWay}" data-bind-2="{this.toolTip,to=filter.searchTextToolTip}"/>
+                <div data-bind="{this.dataContext,to=filter}" data-view="dataform">
+                    @*using here a nested dataform just for testing how the dataContext is propagated from above*@
+                    <label for="prodName">Name:</label>
+                    <input type="text" id="prodName" placeholder="Name"
+                           data-bind-1="{this.value,to=name,mode=TwoWay}"
+                           data-bind-2="{this.toolTip,to=searchTextToolTip}" />
+                </div>
             </td>
             <td>
-                <label for="prodMCat">Main Category:</label>
+                
+                    <label for="prodMCat">Main Category:</label>
                 <select id="prodMCat" size="1" class="span3"
-                        data-bind-1="{this.dataSource,to=filter.ParentCategories}"
                         data-bind-2="{this.selectedValue,to=filter.parentCategoryID,mode=TwoWay}"
                         data-bind-3="{this.textProvider,to=optionTextProvider}"
                         data-bind-4="{this.stateProvider,to=optionStateProvider}"
-                        data-view="options:{valuePath=ProductCategoryID,textPath=Name}">
-                </select>
+                        @*providing the datasource through the options - not using databinding*@
+                                        @*
+    eval(ParentCategories,productVM.filter) takes two arguments - the first is the path, the second is the source
+    the second parameter is optional. Their semantics is the same as in the usual databinding.
+    We could write it without the source argument, like that -
+    data-view-options="{valuePath=ProductCategoryID,textPath=Name,dataSource=eval(filter.ParentCategories)}"></select>
+                                        *@
+                        data-view-options="{valuePath=ProductCategoryID,textPath=Name,dataSource=eval(ParentCategories,productVM.filter)}"></select>
+               
             </td>
             <td>
                 <label for="prodSCat">Sub Category:</label>
@@ -217,7 +231,7 @@
                         data-bind-4="{this.toolTip,to=filter.selectedCategory.Name}"
                         data-bind-5="{this.textProvider,to=optionTextProvider}"
                         data-bind-6="{this.stateProvider,to=optionStateProvider}"
-                        data-view="options:{valuePath=ProductCategoryID,textPath=Name}">
+                        data-view-options="{valuePath=ProductCategoryID,textPath=Name}">
                 </select>
             </td>
             <td>
@@ -229,7 +243,7 @@
                         data-bind-4="{this.selectedItem,to=filter.selectedModel,mode=TwoWay}"
                         data-bind-5="{this.textProvider,to=optionTextProvider}"
                         data-bind-6="{this.stateProvider,to=optionStateProvider}"
-                        data-view="options:{valuePath=ProductModelID,textPath=Name}">
+                        data-view-options="{valuePath=ProductModelID,textPath=Name}">
                 </select>
             </td>
         </tr>
@@ -239,33 +253,39 @@
                 <select id="sizes" size="1" class="span2"
                         data-bind-1="{this.dataSource,to=filter.sizes}"
                         data-bind-2="{this.selectedValue,to=filter.size,mode=TwoWay}"
-                        data-view="options:{tip:'Choose the right size',valuePath=key,textPath=val}">
+                        data-view-options="{tip:'Choose the right size',valuePath=key,textPath=val}">
                 </select>
             </td>
             <td colspan="4">
                 <div style="display: inline-block;">
                     <label for="saleStart1">Sales Start Date Begin:</label>
-                    <input type="text" id="saleStart1" placeholder="Enter Date" data-bind="{this.value,to=filter.saleStart1,mode=TwoWay,converter=dateConverter}" data-view="name:datepicker,options={datepicker:{ showOn:button,yearRange:'-15:c',changeMonth: true,changeYear: true }}"/>
+                    <input type="text" id="saleStart1" placeholder="Enter Date" 
+                           data-bind="{this.value,to=filter.saleStart1,mode=TwoWay,converter=dateConverter}" 
+                           data-view="datepicker"
+                           data-view-options="{datepicker:{ showOn:button,yearRange:'-15:c',changeMonth: true,changeYear: true }}"/>
                 </div>
                 <div style="display: inline-block; margin-left: 5px;">
                     <label for="saleStart2">Sales Start Date End:</label>
-                    <input type="text" id="saleStart2" placeholder="Enter Date" data-bind="{this.value,to=filter.saleStart2,mode=TwoWay,converter=dateConverter}" data-view="name:datepicker,options={datepicker:{ showOn:button,yearRange:'-15:c',changeMonth: true,changeYear: true }}"/>
+                    <input type="text" id="saleStart2" placeholder="Enter Date" 
+                           data-bind="{this.value,to=filter.saleStart2,mode=TwoWay,converter=dateConverter}" 
+                           data-view="datepicker"
+                           data-view-options="{datepicker:{ showOn:button,yearRange:'-15:c',changeMonth: true,changeYear: true }}"/>
                 </div>
             </td>
         </tr>
     </table>
     <!--this nested dataform is only to test how the dataform nesting is working!!! it is not needed here, really.-->
-    <div data-bind="{this.dataContext}" data-view="name=dataform">
+    <div data-bind="{this.dataContext}" data-view="dataform">
         <a id="btn_filter" class="btn btn-info btn-small" data-bind="{this.command,to=loadCommand}"><i class="icon-search"></i>&nbsp;Filter</a>
         <a id="btn_reset" class="btn btn-info btn-small" data-bind="{this.command,to=filter.resetCommand}"><i class="icon-retweet"></i>&nbsp;Reset</a>
-        <a class="btn btn-info btn-small" data-bind="{this.command,to=openWsCommand,source=websockVM}" data-view="options={tip:'Do not forget to start the demo websocket service!'}">Connect Websocket</a>
+        <a class="btn btn-info btn-small" data-bind="{this.command,to=openWsCommand,source=websockVM}" data-view-options="{tip:'Do not forget to start the demo websocket service!'}">Connect Websocket</a>
         <a class="btn btn-info btn-small" data-bind="{this.command,to=closeWsCommand,source=websockVM}">Close Websocket</a>
         <a class="btn btn-info btn-small" data-bind="{this.command,to=openESCommand,source=sseVM}">Connect SSEvents</a>
         <a class="btn btn-info btn-small" data-bind="{this.command,to=closeESCommand,source=sseVM}">Close SSEvents</a>
     </div>
 </form>
 
-<div id="demoContent" style="opacity:0;" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="name=busy">
+<div id="demoContent" style="opacity:0;" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="busy">
     <div style="height: 85%; vertical-align: top;">
         @{
             string gridProductsOptions = @"resizeMode:overflow,
@@ -281,7 +301,8 @@
         <table data-name="gridProducts" data-bind1="{this.dataSource,to=dbSet,source=productVM}"
                data-bind2="{this.grid,to=grid,mode=BackWay,source=productVM}"
                data-bind3="{this.stateProvider,to=rowStateProvider,source=productVM}"
-               data-view="name=resizable_grid,options={@gridProductsOptions}">
+               data-view="resizable_grid"
+               data-view-options="{@gridProductsOptions}">
             <thead>
             <tr>
                 <th data-column="width:35px,type:row_expander,tip='Row expander'"></th>
@@ -302,7 +323,8 @@
     </div>
     <div style="border: none; height: 15%; margin-top: 20px; text-align: left; width: 100%;">
         <!--pager-->
-        <div style="float: left;" data-bind="{this.dataSource,to=dbSet,source=productVM}" data-view="name=pager,options={sliderSize:5,showTip:false,showInfo:true}"></div>
+        <div style="float: left;" data-bind="{this.dataSource,to=dbSet,source=productVM}" data-view="pager"
+             data-view-options="{sliderSize:5,showTip:false,showInfo:true}"></div>
         <button class="btn btn-info btn-small" style="float: right;" data-bind="{this.command,to=addNewCommand,mode=OneWay,source=productVM}"><i class="icon-plus"></i>&nbsp;New Product</button>
     </div>
 </div>
@@ -322,7 +344,9 @@
 <script id="productNumberTemplate" type="text/html" data-role="template">
     <div style="margin-top: 2px; border: 1px solid blue; border-radius: 3px 4px; width:95%; height:90%;">
         <div style="position: relative; top: 50%; transform: translateY(-50%);">
-            <a style="color: white;" data-name="Product Number Column" data-bind1="{this.command,to=columnCommand,source=productVM}" data-bind2="{this.commandParam,to=currentItem,source=productVM}" data-view="options:{stopPropagation=true}">Product #</a>
+            <a style="color: white;" data-name="Product Number Column" data-bind1="{this.command,to=columnCommand,source=productVM}" 
+               data-bind2="{this.commandParam,to=currentItem,source=productVM}" 
+               data-view-options="{stopPropagation=true}">Product #</a>
         </div>
     </div>
 </script>

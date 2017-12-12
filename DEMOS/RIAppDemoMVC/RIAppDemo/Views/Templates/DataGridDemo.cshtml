@@ -12,7 +12,7 @@
 <script id="productDetailsTemplate" type="text/html" data-role="template">
     <!--Grid details product template-->
     <div style="background-color: white; margin: 0px; min-height: 200px; width: 100%;">
-        <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-bind="{this.tabsEvents,to=tabsEvents,source=productVM}" data-view="name='tabs'">
+        <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-bind="{this.tabsEvents,to=tabsEvents,source=productVM}" data-view="tabs">
             <div id="myTabs">
                 <ul>
                     <li>
@@ -30,27 +30,29 @@
                     <input type="text" style="color: Green; margin: 5px; width: 220px;" data-bind="{this.value,to=Name,mode=TwoWay}" />
                     <br />
                     <a class="btn btn-info btn-small" data-bind="{this.command,to=testInvokeCommand,source=productVM}{this.commandParam}"
-                       data-view="options={tip='Invokes method on the server and displays result'}">
+                       data-view-options="{tip='Invokes method on the server and displays result'}">
                         Click Me to invoke service method
                     </a>
                 </div>
                 <div id="b">
-                    <img style="float: left; max-height: 200px; max-width: 350px;" data-bind="{this.id,to=ProductID}{this.fileName,to=ThumbnailPhotoFileName}" alt="Product Image" src="" data-view="name=fileImage,options={baseUri:'@Url.Action("DownloadThumbnail", "File", new {httproute = "ApiByAction"})'}" /><br />
+                    <img style="float: left; max-height: 200px; max-width: 350px;" data-bind="{this.id,to=ProductID}{this.fileName,to=ThumbnailPhotoFileName}" alt="Product Image" src="" 
+                         data-view="fileImage" data-view-options="{baseUri:'@Url.Action("DownloadThumbnail", "File", new {httproute = "ApiByAction"})'}" /><br />
                     <div style="float: left; margin-left: 8px;">
-                        click to download the image: <a class="btn btn-info btn-small" data-bind="{this.text,to=ThumbnailPhotoFileName}{this.id,to=ProductID}" data-view="name=fileLink,options={baseUri:'@Url.RouteUrl("Default", new {controller = "Download", action = "ThumbnailDownload"})'}">
+                        click to download the image: <a class="btn btn-info btn-small" data-bind="{this.text,to=ThumbnailPhotoFileName}{this.id,to=ProductID}" 
+                                                        data-view="fileLink" data-view-options="{baseUri:'@Url.RouteUrl("Default", new {controller = "Download", action = "ThumbnailDownload"})'}">
                         </a>
                     </div>
                     <div style="clear: both; padding: 5px 0px 5px 0px;">
                         <!--bind commandParameter to current datacontext, that is product entity-->
                         <a class="btn btn-info btn-small" data-name="upload" data-bind="{this.command,to=dialogCommand,source=uploadVM}{this.commandParam}"
-                           data-view="options={tip='click me to upload product thumbnail photo'}">
+                           data-view-options="{tip='click me to upload product thumbnail photo'}">
                             Upload product thumbnail
                         </a>
                     </div>
                 </div>
                 <div id="c">
                     <table style="font-size: 9pt;" data-name="tblOrderDetails" data-bind="{this.dataSource,to=vwSalesOrderDet,source=productVM}"
-                           data-view="options={wrapCss:orderDetailTableWrap,isHandleAddNew:true,editor:{templateID:orderDetEditTemplate,width:650,height:550,submitOnOK:true,title:'Order Detail editing'}}">
+                           data-view-options="{wrapCss:orderDetailTableWrap,isHandleAddNew:true,editor:{templateID:orderDetEditTemplate,width:650,height:550,submitOnOK:true,title:'Order Detail editing'}}">
                         <thead>
                             <tr>
                                 <th data-column="width:50px,type:row_actions"></th>
@@ -84,7 +86,7 @@
                         <i class="icon-folder-open">
                         </i>
                     </a><a data-name="btn-load" class="btn btn-info btn-small" data-bind="{this.command,to=uploadCommand}"
-                           data-view="options={tip='Click to upload a file'}">
+                           data-view-options="{tip='Click to upload a file'}">
                         Upload
                     </a>
                 </div>
@@ -109,7 +111,7 @@
 </script>
 
 <script id="orderDetEditTemplate" type="text/html" data-role="template">
-    <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+    <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="dataform">
         <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
             <colgroup>
                 <col style="border: none; text-align: left; width: 225px;" />

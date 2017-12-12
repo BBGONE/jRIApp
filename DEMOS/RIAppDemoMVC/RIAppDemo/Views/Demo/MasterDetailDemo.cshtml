@@ -7,17 +7,17 @@
 }
 @{ 
     string BindGridCustomers = "{this.dataSource,to=dbSet,source=customerVM}{this.grid,to=grid,mode=BackWay,source=customerVM}";
-    string OptionsGridCustomers = @"options={wrapCss:customerTableWrap,
+    string OptionsGridCustomers = @"{wrapCss:customerTableWrap,
 isHandleAddNew:true,
 editor:{templateID:customerEditTemplate,width:500,height:550,title:'Customer editing'},
 details:{templateID:customerDetailsTemplate}}";
     string BindTableCustOrders = "{this.dataSource,to=dbSet,source=customerVM.ordersVM}{this.grid,to=grid,mode=BackWay,source=customerVM.ordersVM}";
-    string OptionsTableCustOrders = @"options={isUseScrollIntoDetails:false,
+    string OptionsTableCustOrders = @"{isUseScrollIntoDetails:false,
 isHandleAddNew:true,
 editor:{templateID:orderEditTemplate,width:650,height:550,title:'Order editing'},
 details:{templateID:orderDetailsTemplate}}";
     string BindAddNewOrder = "{this.command,to=addNewCommand,source=customerVM.ordersVM}";
-    string OptionsAddNewOrder = "options={tip:This is not a Real World example how to add an order!!!}";
+    string OptionsAddNewOrder = "{tip:This is not a Real World example how to add an order!!!}";
 }
 
 <style type="text/css">
@@ -112,9 +112,9 @@ details:{templateID:orderDetailsTemplate}}";
 
 <h2 class="ex8">@ViewBag.Title</h2>
 
-<div id="demoContent" style="opacity:0;" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="name=busy">
+<div id="demoContent" style="opacity:0;" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="busy">
     <div style="height: 85%; vertical-align: top;">
-        <table data-name="gridCustomers" data-bind="@BindGridCustomers" data-view="@OptionsGridCustomers">
+        <table data-name="gridCustomers" data-bind="@BindGridCustomers" data-view-options="@OptionsGridCustomers">
             <thead>
             <tr>
                 <th data-column="width:35px,type:row_expander"></th>
@@ -133,7 +133,7 @@ details:{templateID:orderDetailsTemplate}}";
     </div>
     <div style="border: none; padding-top: 20px; text-align: left; width: 100%;">
         <!--pager-->
-        <div style="float: left;" data-bind="{this.dataSource,to=dbSet,source=customerVM}" data-view="name=pager,options={sliderSize:10}"></div>
+        <div style="float: left;" data-bind="{this.dataSource,to=dbSet,source=customerVM}" data-view="pager" data-view-options="{sliderSize:10}"></div>
         <div style="float: left; padding-left: 10px; padding-top: 10px;padding-bottom: 10px;">
             <span>Total:</span>&nbsp;<span data-bind="{this.value,to=dbSet.totalCount,source=customerVM}"></span>
         </div>
@@ -150,7 +150,7 @@ details:{templateID:orderDetailsTemplate}}";
 
 <script id="customerEditTemplate" type="text/html" data-role="template">
     <div style="margin: 0px; width: 100%;">
-        <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+        <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="dataform">
             <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
                 <colgroup>
                     <col style="border: none; text-align: left; width: 125px;"/>
@@ -245,7 +245,7 @@ details:{templateID:orderDetailsTemplate}}";
 <script id="customerDetailsTemplate" type="text/html" data-role="template">
     @*Grid details template for customer's orders*@
     <div style="margin: 0px; min-height: 400px; width: 100%;">
-        <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-view="name='tabs',options:{hide:{effect:clip,duration:500},show:{effect:clip,duration:500}}">
+        <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-view="tabs" data-view-options="{hide:{effect:clip,duration:500},show:{effect:clip,duration:500}}">
             <div id="detailsTabs">
                 <ul>
                     <li>
@@ -312,7 +312,7 @@ details:{templateID:orderDetailsTemplate}}";
                     world it should never be done in this way.<br/>
                     It is here just to show you the capabilties you have with the framework to manage
                     master-details.
-                    <table style="font-size: 9pt; margin-bottom: 3px;" data-name="tblOrders" data-bind="@BindTableCustOrders" data-view="@OptionsTableCustOrders">
+                    <table style="font-size: 9pt; margin-bottom: 3px;" data-name="tblOrders" data-bind="@BindTableCustOrders" data-view-options="@OptionsTableCustOrders">
                         <thead>
                         <tr>
                             <th data-column="width:20px,type:row_expander"></th>
@@ -328,7 +328,7 @@ details:{templateID:orderDetailsTemplate}}";
                         </thead>
                         <tbody></tbody>
                     </table>
-                    <button class="btn btn-info btn-small" data-bind="@BindAddNewOrder" data-view="@OptionsAddNewOrder">
+                    <button class="btn btn-info btn-small" data-bind="@BindAddNewOrder" data-view-options="@OptionsAddNewOrder">
                         <i class="icon-plus"></i>&nbsp;New Order
                     </button>
                 </div>
@@ -338,7 +338,7 @@ details:{templateID:orderDetailsTemplate}}";
 </script>
 <script id="orderEditTemplate" type="text/html" data-role="template">
     <div style="margin: 0px; width: 100%;">
-        <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+        <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="dataform">
             <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
                 <colgroup>
                     <col style="border: none; text-align: left; width: 225px;"/>
@@ -484,7 +484,7 @@ details:{templateID:orderDetailsTemplate}}";
 
 <script id="orderDetEditTemplate" type="text/html" data-role="template">
     <div style="margin: 0px; width: 100%;">
-        <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+        <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="dataform">
             <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
                 <colgroup>
                     <col style="border: none; text-align: left; width: 225px;"/>
@@ -548,7 +548,8 @@ details:{templateID:orderDetailsTemplate}}";
 <script id="orderDetailsTemplate" type="text/html" data-role="template">
     @*Grid details template for order Details*@
     <div style="margin: 0px; width: 100%;">
-        <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-bind="this.tabsEvents,to=tabsEvents,source=customerVM.ordersVM" data-view="name=tabs,options:{hide:{effect:clip,duration:500},show:{effect:clip,duration:500}}">
+        <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-bind="this.tabsEvents,to=tabsEvents,source=customerVM.ordersVM" data-view="tabs"
+             data-view-options="{hide:{effect:clip,duration:500},show:{effect:clip,duration:500}}">
             <div id="odeTabs">
                 <ul>
                     <li>
@@ -563,7 +564,7 @@ details:{templateID:orderDetailsTemplate}}";
                 </ul>
                 <div id="sta">
                     <form action="#" style="padding: 15px; width: 100%;" data-bind="{this.dataContext,to=Address}"
-                          data-view="name=dataform">
+                          data-view="dataform">
                         <dl class="dl-horizontal">
                             <dt>
                                 <span class="addressLabel">AddressLine1:</span></dt>
@@ -601,7 +602,7 @@ details:{templateID:orderDetailsTemplate}}";
                 </div>
                 <div id="bta">
                     <form action="#" style="padding: 15px; width: 100%;" data-bind="{this.dataContext,to=Address1}"
-                          data-view="name=dataform">
+                          data-view="dataform">
                         <dl class="dl-horizontal">
                             <dt>
                                 <span class="addressLabel">AddressLine1:</span></dt>
@@ -639,7 +640,7 @@ details:{templateID:orderDetailsTemplate}}";
                 </div>
                 <div id="ode">
                     <table style="font-size: 9pt;" data-name="tblOrderDetails" data-bind="{this.dataSource,to=dbSet,source=customerVM.ordersVM.orderDetailsVM}"
-                           data-view="options={wrapCss:orderDetailTableWrap,isHandleAddNew:true,editor:{templateID:orderDetEditTemplate,width:650,height:550,title:'Order Detail editing'}}">
+                           data-view-options="{wrapCss:orderDetailTableWrap,isHandleAddNew:true,editor:{templateID:orderDetEditTemplate,width:650,height:550,title:'Order Detail editing'}}">
                         <thead>
                         <tr>
                             <th data-column="width:50px,type:row_actions"></th>
@@ -669,7 +670,8 @@ details:{templateID:orderDetailsTemplate}}";
     <span>
         autocomplete here-->
         <input type="text" style="margin-left: 0px; width: 300px;" data-bind="{this.dataContext}"
-               data-view="name=productAutocomplete,options={dbContext:dbContext,fieldName:Name,dbSetName:LookUpProduct,queryName:ReadProductLookUp,templateId:prodAutocompleteTemplate,width:300px}"/>&nbsp;<b>*</b>
+               data-view="productAutocomplete"
+               data-view-options="{dbContext:dbContext,fieldName:Name,dbSetName:LookUpProduct,queryName:ReadProductLookUp,templateId:prodAutocompleteTemplate,width:300px}"/>&nbsp;<b>*</b>
     </span>
 </script>
 
@@ -677,9 +679,9 @@ details:{templateID:orderDetailsTemplate}}";
     @*example of autocomplete implementation*@
     <div style="height: 98%; margin: 0px; padding: 2px; position: relative;">
         <div style="margin-left: 1px; position: relative; vertical-align: top;"
-             data-bind="{this.isBusy,to=isLoading}" data-view="name=busy">
+             data-bind="{this.isBusy,to=isLoading}" data-view="busy">
             <table data-name="lookupGrid" data-bind="{this.dataSource,to=gridDataSource}"
-                   data-view="options={wrapCss:autocompleteTableWrap,headerCss:autocompleteTableHeader}">
+                   data-view-options="{wrapCss:autocompleteTableWrap,headerCss:autocompleteTableHeader}">
                 <thead>
                 <tr>
                     <th data-column="width:100%,sortable:true,title:Name" data-content="fieldName:Name"></th>
@@ -690,7 +692,7 @@ details:{templateID:orderDetailsTemplate}}";
         </div>
         <div style="position: relative; text-align: left;">
             <!--pager-->
-            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" data-view="name=pager,options={sliderSize:5,hideOnSinglePage=true}">
+            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" data-view="pager" data-view-options="{sliderSize:5,hideOnSinglePage=true}">
             </div>
             <div style="float: left; padding: 5px;">
                 <span>Total:</span>&nbsp;<span data-bind="{this.value,to=gridDataSource.totalCount}"></span>
