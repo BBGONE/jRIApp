@@ -97,9 +97,9 @@ function _getKeyVals(val: string): { key: string; val: any; }[] {
                 literal = null;
             }
         }
-        // is this content inside ( ) ?
-        if (ch === "(") {
-            if (!literal) {
+        // is this content inside eval( ) ?
+        if (ch === "(" && checks.isString(kv.val)) {
+            if (!literal && strUtils.fastTrim(kv.val) === "eval") {
                 literal = ch;
             }
         }
@@ -233,20 +233,23 @@ function _parseOptions(strs: string[], app: any, defSource: any): any[] {
 
 export class Parser {
     static resolvePath(root: any, srcParts: string[]): any {
-        const self = Parser;
-        if (!root) {
-            return checks.undefined;
-        }
-
-        if (srcParts.length === 0) {
+        if (checks.isNt(root)) {
             return root;
         }
 
-        if (srcParts.length > 0) {
-            return self.resolvePath(sys.getProp(root, srcParts[0]), srcParts.slice(1));
+        if (!srcParts || srcParts.length === 0) {
+            return root;
         }
 
-        throw new Error("Parser could not resolve the source");
+        let obj = root;
+        for (let i = 0; i < srcParts.length; i += 1) {
+            obj = sys.getProp(obj, srcParts[i]);
+            if (checks.isNt(obj)) {
+                return obj;
+            } 
+        }
+
+        return obj;
     }
     static parseOptions(options: string): any[] {
         return _parseOptions([options], null, null);

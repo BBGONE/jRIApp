@@ -85,7 +85,7 @@ export class SysUtils {
         const parts: string[] = (!path) ? [] : path.split("."), parts2: string[] = [];
 
         parts.forEach(function (part) {
-            part = part.trim();
+            part = strUtils.fastTrim(part);
             // if empty part
             if (!part) {
                 throw new Error("Invalid path: " + path);
@@ -97,10 +97,10 @@ export class SysUtils {
                     if (!!matches[1]) {
                         // if more than one object
                         if (!!obj) {
-                            throw new Error("Invalid path: " + path);
+                            throw new Error("Invalid Path: " + path);
                         }
 
-                        obj = matches[1].trim();
+                        obj = strUtils.fastTrim(matches[1]);
                         if (!!obj) {
                             parts2.push(obj);
                         }

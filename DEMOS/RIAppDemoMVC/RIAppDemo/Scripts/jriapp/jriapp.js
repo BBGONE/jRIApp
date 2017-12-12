@@ -174,8 +174,8 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                     literal = null;
                 }
             }
-            if (ch === "(") {
-                if (!literal) {
+            if (ch === "(" && checks.isString(kv.val)) {
+                if (!literal && strUtils.fastTrim(kv.val) === "eval") {
                     literal = ch;
                 }
             }
@@ -301,17 +301,20 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         function Parser() {
         }
         Parser.resolvePath = function (root, srcParts) {
-            var self = Parser;
-            if (!root) {
-                return checks.undefined;
-            }
-            if (srcParts.length === 0) {
+            if (checks.isNt(root)) {
                 return root;
             }
-            if (srcParts.length > 0) {
-                return self.resolvePath(sys.getProp(root, srcParts[0]), srcParts.slice(1));
+            if (!srcParts || srcParts.length === 0) {
+                return root;
             }
-            throw new Error("Parser could not resolve the source");
+            var obj = root;
+            for (var i = 0; i < srcParts.length; i += 1) {
+                obj = sys.getProp(obj, srcParts[i]);
+                if (checks.isNt(obj)) {
+                    return obj;
+                }
+            }
+            return obj;
         };
         Parser.parseOptions = function (options) {
             return _parseOptions([options], null, null);
@@ -1143,7 +1146,7 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
 define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils/domevents"], function (require, exports, jriapp_shared_7, domevents_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var arrHelper = jriapp_shared_7.Utils.arr, win = window, doc = win.document, queue = jriapp_shared_7.Utils.queue, hasClassList = (!!window.document.documentElement.classList), weakmap = jriapp_shared_7.createWeakMap();
+    var arrHelper = jriapp_shared_7.Utils.arr, strUtils = jriapp_shared_7.Utils.str, win = window, doc = win.document, queue = jriapp_shared_7.Utils.queue, hasClassList = (!!window.document.documentElement.classList), weakmap = jriapp_shared_7.createWeakMap();
     var _checkDOMReady = (function () {
         var funcs = [], hack = doc.documentElement.doScroll, domContentLoaded = "DOMContentLoaded";
         var isDOMloaded = (hack ? /^loaded|^c/ : /^loaded|^i|^c/).test(doc.readyState);
@@ -1288,7 +1291,7 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
             }
             var arr = className.split(" ");
             for (var i = 0; i < arr.length; i += 1) {
-                arr[i] = arr[i].trim();
+                arr[i] = strUtils.fastTrim(arr[i]);
                 if (!!arr[i]) {
                     res[arr[i]] = i;
                 }
@@ -1305,20 +1308,20 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
                 if (!v) {
                     return;
                 }
-                var name = v.trim();
+                var name = strUtils.fastTrim(v);
                 if (!name) {
                     return;
                 }
                 var op = v.charAt(0);
                 if (op == "+" || op == "-") {
-                    name = v.substr(1).trim();
+                    name = strUtils.fastTrim(v.substr(1));
                 }
                 if (!name) {
                     return;
                 }
                 var arr = name.split(" ");
                 for (var i = 0; i < arr.length; i += 1) {
-                    var v2 = arr[i].trim();
+                    var v2 = strUtils.fastTrim(arr[i]);
                     if (!!v2) {
                         if (op != "-") {
                             toAdd.push(v2);
@@ -1368,7 +1371,7 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
             }
             var _arr = css.split(" ");
             for (var i = 0; i < _arr.length; i += 1) {
-                _arr[i] = _arr[i].trim();
+                _arr[i] = strUtils.fastTrim(_arr[i]);
             }
             var arr = _arr.filter(function (val) { return !!val; });
             if (hasClassList && arr.length === 1) {
@@ -3777,7 +3780,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
         for (var i = 0; i < n; i++) {
             attr = allAttrs[i];
             if (strUtils.startsWith(attr.name, "data-bind")) {
-                val = attr.value.trim();
+                val = strUtils.fastTrim(attr.value);
                 if (!val) {
                     throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, attr.name, "empty"));
                 }
@@ -4330,6 +4333,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.6.1";
+    exports.VERSION = "2.6.2";
     bootstrap_7.Bootstrap._initFramework();
 });

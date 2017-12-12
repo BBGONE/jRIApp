@@ -36,7 +36,7 @@ function fn_toBindableElement(el: Element): IBindableElement {
     for (let i = 0; i < n; i++) {
         attr = allAttrs[i];
         if (strUtils.startsWith(attr.name, DATA_ATTR.DATA_BIND)) {
-            val = attr.value.trim();
+            val = strUtils.fastTrim(attr.value);
             if (!val) {
                 throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, attr.name, "empty"));
             }

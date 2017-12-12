@@ -2,7 +2,7 @@
 import { IIndexer, Utils, createWeakMap, TFunc } from "jriapp_shared";
 import { DomEvents } from "./domevents";
 
-const arrHelper = Utils.arr, win = window, doc = win.document, queue = Utils.queue,
+const arrHelper = Utils.arr, strUtils = Utils.str, win = window, doc = win.document, queue = Utils.queue,
     hasClassList = (!!window.document.documentElement.classList), weakmap = createWeakMap();
 
 export type TCheckDOMReady  = (closure: TFunc) => void;
@@ -162,7 +162,7 @@ export class DomUtils {
         }
         const arr: string[] = className.split(" ");
         for (let i = 0; i < arr.length; i += 1) {
-            arr[i] = arr[i].trim();
+            arr[i] = strUtils.fastTrim(arr[i]);
             if (!!arr[i]) {
                 res[arr[i]] = i;
             }
@@ -186,13 +186,13 @@ export class DomUtils {
                 return;
             }
 
-            let name = v.trim();
+            let name = strUtils.fastTrim(v);
             if (!name) {
                 return;
             }
             const op = v.charAt(0);
             if (op == "+" || op == "-") {
-                name = v.substr(1).trim();
+                name = strUtils.fastTrim(v.substr(1));
             }
             if (!name) {
                 return;
@@ -200,7 +200,7 @@ export class DomUtils {
 
             const arr: string[] = name.split(" ");
             for (let i = 0; i < arr.length; i += 1) {
-                const v2 = arr[i].trim();
+                const v2 = strUtils.fastTrim(arr[i]);
                 if (!!v2) {
                     if (op != "-") {
                         toAdd.push(v2);
@@ -251,7 +251,7 @@ export class DomUtils {
 
         const _arr: string[] = css.split(" ");
         for (let i = 0; i < _arr.length; i += 1) {
-            _arr[i] = _arr[i].trim();
+            _arr[i] = strUtils.fastTrim(_arr[i]);
         }
         const arr = _arr.filter((val) => !!val);
 
