@@ -102,7 +102,7 @@ namespace RIAPP.DataService.WebApi
         public class ChunkedActionResult<TRes> : IHttpActionResult
             where TRes : class
         {
-            private static readonly string ResultContentType = MediaTypeNames.Text.Plain;
+            private static readonly string ResultContentType = "application/json";
             private readonly ISerializer _serializer;
 
             public ChunkedActionResult(HttpRequestMessage request, TRes res, ISerializer serializer)

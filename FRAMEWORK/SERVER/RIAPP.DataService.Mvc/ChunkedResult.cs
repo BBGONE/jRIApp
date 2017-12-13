@@ -9,7 +9,7 @@ namespace RIAPP.DataService.Mvc
     public class ChunkedResult<T> : ActionResult
         where T : class
     {
-        private static readonly string ResultContentType = MediaTypeNames.Text.Plain;
+        private static readonly string ResultContentType = "application/json";
         private readonly ISerializer _serializer;
 
         public ChunkedResult(T res, ISerializer serializer)
