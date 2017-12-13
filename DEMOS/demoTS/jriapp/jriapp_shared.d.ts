@@ -246,7 +246,9 @@ declare module "jriapp_shared/utils/sysutils" {
         static getPathParts(path: string): string[];
         static getProp(obj: any, prop: string): any;
         static setProp(obj: any, prop: string, val: any): void;
-        static resolvePath(obj: any, path: string): any;
+        static resolveOwner(root: any, path: string, separator?: string): any;
+        static resolvePath(root: any, path: string): any;
+        static resolvePath2(root: any, srcParts: string[]): any;
     }
 }
 declare module "jriapp_shared/utils/coreutils" {
@@ -260,7 +262,6 @@ declare module "jriapp_shared/utils/coreutils" {
         static setValue(root: any, namePath: string, val: any, checkOverwrite?: boolean, separator?: string): void;
         static getValue(root: any, namePath: string, separator?: string): any;
         static removeValue(root: any, namePath: string, separator?: string): any;
-        static resolveOwner(obj: any, path: string, separator?: string): any;
         static uuid(len?: number, radix?: number): string;
         static parseBool(a: any): boolean;
         static round(num: number, decimals: number): number;

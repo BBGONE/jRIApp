@@ -4,8 +4,14 @@ const checks = Utils.check, strUtils = Utils.str, coreUtils = Utils.core,
     sys = Utils.sys;
 
 const trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g;
-const testEvalRX = /^eval\s*[(]\s*((?:\w*\.?\w*)*)\s*(?:[,]\s*((?:\w*\.?\w*)*)\s*)?[)]$/g;
-const VAL_DELIMETER1 = ":", VAL_DELIMETER2 = "=", KEY_VAL_DELIMETER = ",";
+
+const enum TOKEN {
+    DELIMETER1 = ":",
+    DELIMETER2 = "=",
+    COMMA = ",",
+    EVAL = "eval",
+    THIS = "this."
+}
 
 
 function trimOuterBraces(val: string): string {
@@ -17,8 +23,8 @@ function isInsideBraces(str: string): boolean {
 
 
  function _checkKeyVal(kv: { key: string; val: any; }) {
-    // key starts with this like used in binding expressions this.property
-    if (kv.val === "" && strUtils.startsWith(kv.key, "this.")) {
+     // key starts with this like used in binding expressions this.property
+     if (kv.val === "" && strUtils.startsWith(kv.key, TOKEN.THIS)) {
         kv.val = kv.key.substr(5); // extract property
         kv.key = "targetPath";
     }
@@ -80,12 +86,17 @@ function _addKeyVal(kv: {
     return parts;
 }
 
+interface IKeyVal {
+    tag?: string;
+    key: string;
+    val: any;
+}
+
 // extract key - value pairs
-function _getKeyVals(val: string): { key: string; val: any; }[] {
+function _getKeyVals(val: string): IKeyVal[] {
     let i: number, ch: string, literal: string,
-        parts: { key: string; val: any; }[] = [],
-        kv: { key: string; val: any; } = { key: "", val: "" }, isKey = true;
-    const vd1 = VAL_DELIMETER1, vd2 = VAL_DELIMETER2, kvd = KEY_VAL_DELIMETER;
+        parts: IKeyVal[] = [], kv: IKeyVal = { tag: null, key: "", val: "" }, isKey = true;
+    
 
     for (i = 0; i < val.length; i += 1) {
         ch = val.charAt(i);
@@ -99,10 +110,12 @@ function _getKeyVals(val: string): { key: string; val: any; }[] {
         }
         // is this content inside eval( ) ?
         if (ch === "(" && checks.isString(kv.val)) {
-            if (!literal && strUtils.fastTrim(kv.val) === "eval") {
+            if (!literal && strUtils.fastTrim(kv.val) === TOKEN.EVAL) {
                 literal = ch;
+                kv.tag = TOKEN.EVAL;
             }
         }
+
         if (ch === ")") {
             if (literal === "(") {
                 literal = null;
@@ -123,13 +136,13 @@ function _getKeyVals(val: string): { key: string; val: any; }[] {
             continue;
         }
 
-        if (!literal && ch === kvd) {
+        if (!literal && ch === TOKEN.COMMA) {
             if (!!kv.key) {
                 _addKeyVal(kv, parts);
-                kv = { key: "", val: "" };
+                kv = {tag: null, key: "", val: "" };
                 isKey = true; // currently parsing key value
             }
-        } else if (!literal && (ch === vd1 || ch === vd2)) {
+        } else if (!literal && (ch === TOKEN.DELIMETER1 || ch === TOKEN.DELIMETER2)) {
             isKey = false; // begin parsing value
         } else {
             if (isKey) {
@@ -158,19 +171,54 @@ function _getKeyVals(val: string): { key: string; val: any; }[] {
     return parts;
 }
 
-function _getEvalPath(str: string): { path: string; source: string; } {
-    // the regexp produces two groups
-    // for "eval(ttttt.yyyy.gggg,hhh.ddd)" it produces a match with 
-    // matches[1] = ttttt.yyyy.gggg, matches[2] = hhh.ddd
-    const matches = testEvalRX.exec(str);
-    const evalpath = (!!matches && matches.length > 1) ? {
-        path: matches[1],
-        source: (matches.length > 2) ? matches[2] : null
-    } : {
-            path: null,
-            source: null
-        };
-    return evalpath;
+function _getEvalParts(val: string): string[] {
+    let ch: string, is_expression = false,
+        parts: string[] = [], part = "";
+
+
+    for (let i = 0; i < val.length; i += 1) {
+        ch = val.charAt(i);
+        // is this content inside eval( ) ?
+        if (ch === "(" && checks.isString(part)) {
+            if (is_expression ) {
+                throw new Error("Invalid expression: " + val);
+            }
+
+            if (!is_expression && strUtils.fastTrim(part) === TOKEN.EVAL) {
+                part = "";
+                is_expression = true;
+                continue;
+            }
+        }
+
+        if (ch === ")") {
+            if (is_expression) {
+                is_expression = false;
+                parts.push(part);
+                part = "";
+                if (parts.length > 2) {
+                    throw new Error("Invalid expression: " + val);
+                }
+                break;
+            } else {
+                throw new Error("Invalid expression: " + val);
+            }
+        }
+
+        if (ch === TOKEN.COMMA && is_expression) {
+            parts.push(part);
+            part = "";
+            continue;
+        }
+
+        part += ch; 
+    }
+
+    for (let j = 0; j < parts.length; j += 1) {
+        parts[j] = strUtils.fastTrim(parts[j]);
+    }
+
+    return parts;
 }
 
 function _parseOption(part: string, app: any, defSource: any): any {
@@ -181,20 +229,21 @@ function _parseOption(part: string, app: any, defSource: any): any {
     }
     const kvals = _getKeyVals(part);
     kvals.forEach(function (kv) {
-        let isEval = false, evalpath: { path: string; source: string; } = null;
+        let isEval = false, evalparts:string[];
         const isString = checks.isString(kv.val);
 
-        if (isString && !!app) {
-            evalpath = _getEvalPath(kv.val);
-            isEval = !!evalpath.path;
+        if (isString && kv.tag === TOKEN.EVAL && !!app) {
+            evalparts = _getEvalParts(kv.val);
+            isEval = evalparts.length > 0;
         }
 
         if (isEval) {
             let source = defSource || app;
-            if (!!evalpath.source) {
-                source = Parser.resolvePath(app, sys.getPathParts(evalpath.source));
+            if (evalparts.length > 1) {
+                //resolve source (second path in the array)
+                source = sys.resolvePath(app, evalparts[1]);
             }
-            res[kv.key] = Parser.resolvePath(source, sys.getPathParts(evalpath.path));
+            res[kv.key] = sys.resolvePath(source, evalparts[0]);
         } else if (isString && isInsideBraces(kv.val)) {
             res[kv.key] = _parseOption(kv.val, app, defSource);
         } else {
@@ -232,25 +281,6 @@ function _parseOptions(strs: string[], app: any, defSource: any): any[] {
 }
 
 export class Parser {
-    static resolvePath(root: any, srcParts: string[]): any {
-        if (checks.isNt(root)) {
-            return root;
-        }
-
-        if (!srcParts || srcParts.length === 0) {
-            return root;
-        }
-
-        let obj = root;
-        for (let i = 0; i < srcParts.length; i += 1) {
-            obj = sys.getProp(obj, srcParts[i]);
-            if (checks.isNt(obj)) {
-                return obj;
-            } 
-        }
-
-        return obj;
-    }
     static parseOptions(options: string): any[] {
         return _parseOptions([options], null, null);
     }

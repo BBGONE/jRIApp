@@ -137,7 +137,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     private _options: IDialogOptions;
     private _submitInfo: SubmitInfo;
     // saves the bootstrap's selectedControl  before showing and restore it on dialog's closing
-    private _focusedElView: ISelectableProvider;
+    private _selectedControl: ISelectableProvider;
     private _deferredTemplate: IDeferred<ITemplate>;
 
     constructor(options: IDialogConstructorOptions) {
@@ -175,7 +175,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._template = null;
         this._$dlgEl = null;
         this._result = null;
-        this._focusedElView = null;
+        this._selectedControl = null;
         this._submitInfo = null;
         this._options = {
             width: options.width,
@@ -374,12 +374,12 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             this._template.dataContext = null;
             this._submitInfo = null;
         }
-        let csel = this._focusedElView;
-        this._focusedElView = null;
+        let csel = this._selectedControl;
+        this._selectedControl = null;
         utils.queue.enque(() => { boot.selectedControl = csel; csel = null; });
     }
     protected _onShow() {
-        this._focusedElView = boot.selectedControl;
+        this._selectedControl = boot.selectedControl;
         this._submitInfo = new SubmitInfo(this.dataContext);
         if (!!this._fnOnShow) {
             this._fnOnShow(this);

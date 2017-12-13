@@ -69,21 +69,6 @@ export class CoreUtils {
         // returns deleted value
         return val;
     }
-    // the object that directly has this property (last object in chain obj1.obj2.lastObj)
-    static resolveOwner(obj: any, path: string, separator = "."): any {
-        const parts = path.split(separator), len = parts.length;
-        if (len === 1) {
-            return obj;
-        }
-        let res = obj;
-        for (let i = 0; i < len - 1; i += 1) {
-            res = res[parts[i]];
-            if (res === checks.undefined || res === null) {
-                return res;
-            }
-        }
-        return res;
-    }
     static uuid(len?: number, radix?: number): string {
         let i: number;
         const chars = UUID_CHARS, uuid: string[] = [], rnd = Math.random;

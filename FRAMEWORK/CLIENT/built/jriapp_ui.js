@@ -2934,7 +2934,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             _this._template = null;
             _this._$dlgEl = null;
             _this._result = null;
-            _this._focusedElView = null;
+            _this._selectedControl = null;
             _this._submitInfo = null;
             _this._options = {
                 width: options.width,
@@ -3132,12 +3132,12 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 this._template.dataContext = null;
                 this._submitInfo = null;
             }
-            var csel = this._focusedElView;
-            this._focusedElView = null;
+            var csel = this._selectedControl;
+            this._selectedControl = null;
             utils.queue.enque(function () { boot.selectedControl = csel; csel = null; });
         };
         DataEditDialog.prototype._onShow = function () {
-            this._focusedElView = boot.selectedControl;
+            this._selectedControl = boot.selectedControl;
             this._submitInfo = new SubmitInfo(this.dataContext);
             if (!!this._fnOnShow) {
                 this._fnOnShow(this);

@@ -100,8 +100,14 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
     Object.defineProperty(exports, "__esModule", { value: true });
     var checks = jriapp_shared_1.Utils.check, strUtils = jriapp_shared_1.Utils.str, coreUtils = jriapp_shared_1.Utils.core, sys = jriapp_shared_1.Utils.sys;
     var trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g;
-    var testEvalRX = /^eval\s*[(]\s*((?:\w*\.?\w*)*)\s*(?:[,]\s*((?:\w*\.?\w*)*)\s*)?[)]$/g;
-    var VAL_DELIMETER1 = ":", VAL_DELIMETER2 = "=", KEY_VAL_DELIMETER = ",";
+    var TOKEN;
+    (function (TOKEN) {
+        TOKEN["DELIMETER1"] = ":";
+        TOKEN["DELIMETER2"] = "=";
+        TOKEN["COMMA"] = ",";
+        TOKEN["EVAL"] = "eval";
+        TOKEN["THIS"] = "this.";
+    })(TOKEN || (TOKEN = {}));
     function trimOuterBraces(val) {
         return strUtils.fastTrim(val.replace(trimOuterBracesRX, ""));
     }
@@ -162,8 +168,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         return parts;
     }
     function _getKeyVals(val) {
-        var i, ch, literal, parts = [], kv = { key: "", val: "" }, isKey = true;
-        var vd1 = VAL_DELIMETER1, vd2 = VAL_DELIMETER2, kvd = KEY_VAL_DELIMETER;
+        var i, ch, literal, parts = [], kv = { tag: null, key: "", val: "" }, isKey = true;
         for (i = 0; i < val.length; i += 1) {
             ch = val.charAt(i);
             if (ch === "'" || ch === '"') {
@@ -177,6 +182,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             if (ch === "(" && checks.isString(kv.val)) {
                 if (!literal && strUtils.fastTrim(kv.val) === "eval") {
                     literal = ch;
+                    kv.tag = "eval";
                 }
             }
             if (ch === ")") {
@@ -197,14 +203,14 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                 }
                 continue;
             }
-            if (!literal && ch === kvd) {
+            if (!literal && ch === ",") {
                 if (!!kv.key) {
                     _addKeyVal(kv, parts);
-                    kv = { key: "", val: "" };
+                    kv = { tag: null, key: "", val: "" };
                     isKey = true;
                 }
             }
-            else if (!literal && (ch === vd1 || ch === vd2)) {
+            else if (!literal && (ch === ":" || ch === "=")) {
                 isKey = false;
             }
             else {
@@ -231,16 +237,45 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         });
         return parts;
     }
-    function _getEvalPath(str) {
-        var matches = testEvalRX.exec(str);
-        var evalpath = (!!matches && matches.length > 1) ? {
-            path: matches[1],
-            source: (matches.length > 2) ? matches[2] : null
-        } : {
-            path: null,
-            source: null
-        };
-        return evalpath;
+    function _getEvalParts(val) {
+        var ch, is_expression = false, parts = [], part = "";
+        for (var i = 0; i < val.length; i += 1) {
+            ch = val.charAt(i);
+            if (ch === "(" && checks.isString(part)) {
+                if (is_expression) {
+                    throw new Error("Invalid expression: " + val);
+                }
+                if (!is_expression && strUtils.fastTrim(part) === "eval") {
+                    part = "";
+                    is_expression = true;
+                    continue;
+                }
+            }
+            if (ch === ")") {
+                if (is_expression) {
+                    is_expression = false;
+                    parts.push(part);
+                    part = "";
+                    if (parts.length > 2) {
+                        throw new Error("Invalid expression: " + val);
+                    }
+                    break;
+                }
+                else {
+                    throw new Error("Invalid expression: " + val);
+                }
+            }
+            if (ch === "," && is_expression) {
+                parts.push(part);
+                part = "";
+                continue;
+            }
+            part += ch;
+        }
+        for (var j = 0; j < parts.length; j += 1) {
+            parts[j] = strUtils.fastTrim(parts[j]);
+        }
+        return parts;
     }
     function _parseOption(part, app, defSource) {
         var res = {};
@@ -250,18 +285,18 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         }
         var kvals = _getKeyVals(part);
         kvals.forEach(function (kv) {
-            var isEval = false, evalpath = null;
+            var isEval = false, evalparts;
             var isString = checks.isString(kv.val);
-            if (isString && !!app) {
-                evalpath = _getEvalPath(kv.val);
-                isEval = !!evalpath.path;
+            if (isString && kv.tag === "eval" && !!app) {
+                evalparts = _getEvalParts(kv.val);
+                isEval = evalparts.length > 0;
             }
             if (isEval) {
                 var source = defSource || app;
-                if (!!evalpath.source) {
-                    source = Parser.resolvePath(app, sys.getPathParts(evalpath.source));
+                if (evalparts.length > 1) {
+                    source = sys.resolvePath(app, evalparts[1]);
                 }
-                res[kv.key] = Parser.resolvePath(source, sys.getPathParts(evalpath.path));
+                res[kv.key] = sys.resolvePath(source, evalparts[0]);
             }
             else if (isString && isInsideBraces(kv.val)) {
                 res[kv.key] = _parseOption(kv.val, app, defSource);
@@ -300,22 +335,6 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
     var Parser = (function () {
         function Parser() {
         }
-        Parser.resolvePath = function (root, srcParts) {
-            if (checks.isNt(root)) {
-                return root;
-            }
-            if (!srcParts || srcParts.length === 0) {
-                return root;
-            }
-            var obj = root;
-            for (var i = 0; i < srcParts.length; i += 1) {
-                obj = sys.getProp(obj, srcParts[i]);
-                if (checks.isNt(obj)) {
-                    return obj;
-                }
-            }
-            return obj;
-        };
         Parser.parseOptions = function (options) {
             return _parseOptions([options], null, null);
         };
@@ -2401,10 +2420,10 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
     boot.registerConverter("floatConverter", floatConverter);
     boot.registerConverter("notConverter", new NotConverter());
 });
-define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/viewchecks", "jriapp/utils/parser", "jriapp/bootstrap"], function (require, exports, jriapp_shared_12, viewchecks_1, parser_2, bootstrap_3) {
+define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/viewchecks", "jriapp/bootstrap"], function (require, exports, jriapp_shared_12, viewchecks_1, bootstrap_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_12.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys, debug = utils.debug, log = utils.log, parser = parser_2.Parser, boot = bootstrap_3.bootstrap, ERRS = jriapp_shared_12.LocaleERRS, viewChecks = viewchecks_1.ViewChecks;
+    var utils = jriapp_shared_12.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys, debug = utils.debug, log = utils.log, boot = bootstrap_3.bootstrap, ERRS = jriapp_shared_12.LocaleERRS, viewChecks = viewchecks_1.ViewChecks;
     sys.isBinding = function (obj) {
         return (!!obj && obj instanceof Binding);
     };
@@ -2496,7 +2515,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     bindingOpts.target = defaultTarget;
                 }
                 else {
-                    bindingOpts.target = parser.resolvePath(app, sys.getPathParts(fixedTarget));
+                    bindingOpts.target = sys.resolvePath(app, fixedTarget);
                 }
             }
             else {
@@ -2513,7 +2532,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     bindingOpts.source = defaultTarget;
                 }
                 else {
-                    bindingOpts.source = parser.resolvePath(app, sys.getPathParts(fixedSource));
+                    bindingOpts.source = sys.resolvePath(app, fixedSource);
                 }
             }
             else {
@@ -3759,10 +3778,10 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
         return ModuleLoader;
     }());
 });
-define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/lifetime", "jriapp/utils/dom", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/utils/parser"], function (require, exports, jriapp_shared_18, bootstrap_5, lifetime_1, dom_5, mloader_1, binding_1, viewchecks_3, parser_3) {
+define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/lifetime", "jriapp/utils/dom", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/utils/parser"], function (require, exports, jriapp_shared_18, bootstrap_5, lifetime_1, dom_5, mloader_1, binding_1, viewchecks_3, parser_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_18.Utils, _async = utils.defer, viewChecks = viewchecks_3.ViewChecks, dom = dom_5.DomUtils, doc = dom.document, strUtils = utils.str, boot = bootstrap_5.bootstrap, ERRS = jriapp_shared_18.LocaleERRS, parser = parser_3.Parser;
+    var utils = jriapp_shared_18.Utils, _async = utils.defer, viewChecks = viewchecks_3.ViewChecks, dom = dom_5.DomUtils, doc = dom.document, strUtils = utils.str, boot = bootstrap_5.bootstrap, ERRS = jriapp_shared_18.LocaleERRS, parser = parser_2.Parser;
     function createDataBindSvc(root, elViewFactory) {
         return new DataBindingService(root, elViewFactory);
     }
@@ -4333,6 +4352,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.6.2";
+    exports.VERSION = "2.6.3";
     bootstrap_7.Bootstrap._initFramework();
 });

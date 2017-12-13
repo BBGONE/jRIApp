@@ -586,7 +586,7 @@ declare module "jriapp_ui/dialog" {
         private _result;
         private _options;
         private _submitInfo;
-        private _focusedElView;
+        private _selectedControl;
         private _deferredTemplate;
         constructor(options: IDialogConstructorOptions);
         addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject): void;

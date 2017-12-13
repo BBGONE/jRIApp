@@ -9,12 +9,11 @@ import {
     IBinding, IConverter, IElView
 } from "./int";
 import { ViewChecks } from "./utils/viewchecks";
-import { Parser } from "./utils/parser";
 import { bootstrap } from "./bootstrap";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     sys = utils.sys, debug = utils.debug, log = utils.log,
-    parser = Parser, boot = bootstrap, ERRS = LocaleERRS, viewChecks = ViewChecks;
+    boot = bootstrap, ERRS = LocaleERRS, viewChecks = ViewChecks;
 
 sys.isBinding = (obj: any) => {
     return (!!obj && obj instanceof Binding);
@@ -131,7 +130,7 @@ export function getBindingOptions(
                 bindingOpts.target = defaultTarget;
             } else {
                 // if no fixed target, then target evaluation starts from this app
-                bindingOpts.target = parser.resolvePath(app, sys.getPathParts(fixedTarget));
+                bindingOpts.target = sys.resolvePath(app, fixedTarget);
             }
         } else {
             bindingOpts.target = fixedTarget;
@@ -148,7 +147,7 @@ export function getBindingOptions(
                 bindingOpts.source = defaultTarget;
             } else {
                 // source evaluation starts from this app
-                bindingOpts.source = parser.resolvePath(app, sys.getPathParts(fixedSource));
+                bindingOpts.source = sys.resolvePath(app, fixedSource);
             }
         } else {
             bindingOpts.source = fixedSource;

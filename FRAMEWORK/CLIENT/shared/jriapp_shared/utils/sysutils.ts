@@ -88,7 +88,7 @@ export class SysUtils {
             part = strUtils.fastTrim(part);
             // if empty part
             if (!part) {
-                throw new Error("Invalid path: " + path);
+                throw new Error("Invalid Path: " + path);
             }
 
             let obj: string = null, matches: any[] = INDEX_PROP_RX.exec(part);
@@ -176,19 +176,44 @@ export class SysUtils {
 
         obj[prop] = val;
     }
-    static resolvePath(obj: any, path: string): any {
+    // the object that directly has this property (last object in chain obj1.obj2.lastObj)
+    static resolveOwner(root: any, path: string, separator = "."): any {
         const self = SysUtils;
         if (!path) {
-            return obj;
+            return root;
         }
         const parts = self.getPathParts(path), maxindex = parts.length - 1;
-        let res = obj;
+        let res = root;
         for (let i = 0; i < maxindex; i += 1) {
             res = self.getProp(res, parts[i]);
-            if (!res) {
-                return checks.undefined;
+            if (checks.isNt(res)) {
+                return res;
             }
         }
-        return self.getProp(res, parts[maxindex]);
+        return res;
+    }
+    static resolvePath(root: any, path: string): any {
+        const self = SysUtils;
+        return self.resolvePath2(root, self.getPathParts(path));
+    }
+    static resolvePath2(root: any, srcParts: string[]): any {
+        const self = SysUtils;
+        if (checks.isNt(root)) {
+            return root;
+        }
+
+        if (!srcParts || srcParts.length === 0) {
+            return root;
+        }
+
+        let obj = root;
+        for (let i = 0; i < srcParts.length; i += 1) {
+            obj = self.getProp(obj, srcParts[i]);
+            if (checks.isNt(obj)) {
+                return obj;
+            }
+        }
+
+        return obj;
     }
 }

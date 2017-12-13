@@ -6,14 +6,12 @@ import {
 import { ERRS } from "./lang";
 import { SysUtils } from "./utils/sysutils";
 import { Checks } from "./utils/checks";
-import { CoreUtils } from "./utils/coreutils";
 import { ERROR } from "./utils/error";
 import { EventHelper, IEventList } from "./utils/eventhelper";
 
-const checks = Checks, coreUtils = CoreUtils,
-    evHelper = EventHelper, sys = SysUtils, signature = { signature: "BaseObject" };
+const checks = Checks, evHelper = EventHelper, sys = SysUtils, signature = { signature: "BaseObject" };
 
-//it can be used in external IBaseObject implementations
+// it can be used in external IBaseObject implementations
 export const objSignature: object = signature;
 
 sys._isBaseObj = function (obj: any): boolean {
@@ -107,11 +105,11 @@ export class ObjectEvents implements IObjectEvents {
         if (!name) {
             throw new Error(ERRS.ERR_PROP_NAME_EMPTY);
         }
-        //in case of complex name like: prop1.prop2.prop3
+        // in case of complex name like: prop1.prop2.prop3
         const data = { property: name }, parts = name.split("."),
             lastProp = parts[parts.length - 1];
         if (parts.length > 1) {
-            const owner = coreUtils.resolveOwner(this._owner, name);
+            const owner = sys.resolveOwner(this._owner, name);
             if (!!owner && !!sys.isBaseObj(owner)) {
                 owner.objEvents.raiseProp(lastProp);
             }
@@ -130,8 +128,9 @@ export class ObjectEvents implements IObjectEvents {
         evHelper.add(this._events, "0" + prop, handler, nmspace, context, priority);
     }
     offProp(prop?: string, nmspace?: string): void {
-        if (this._owner.getIsDisposed())
+        if (this._owner.getIsDisposed()) {
             return;
+        }
         if (!!prop) {
             evHelper.remove(this._events, "0" + prop, nmspace);
         } else {

@@ -336,7 +336,6 @@ declare module "jriapp/int" {
 }
 declare module "jriapp/utils/parser" {
     export class Parser {
-        static resolvePath(root: any, srcParts: string[]): any;
         static parseOptions(options: string): any[];
         static parseBindings(bindings: string[]): any[];
         static parseViewOptions(options: string, app: any, defSource: any): any;
@@ -1001,5 +1000,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.6.2";
+    export const VERSION = "2.6.3";
 }
