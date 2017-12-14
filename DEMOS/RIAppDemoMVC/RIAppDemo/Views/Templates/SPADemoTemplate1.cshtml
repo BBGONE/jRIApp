@@ -29,9 +29,11 @@
     </div>
     <div style="border: none; margin-top: 20px; text-align: left; width: 100%;">
         <!--pager-->
-        <div style="float: left;" data-bind="{this.dataSource,to=dbSet,source=customerVM}" data-view="pager" data-view-options="{sliderSize:10}"></div>
+        <div style="float: left;" data-bind="{this.dataSource,to=dbSet,source=customerVM}" 
+             data-view="pager" 
+             data-view-options="{sliderSize:11}"></div>
         <div style="float: left; padding-left: 10px; padding-top: 11px; padding-bottom:11px;">
-            <span>Total:</span>&nbsp;<span data-bind="{this.value,to=dbSet.totalCount,source=customerVM}"></span>
+            <span>Total rows:</span>&nbsp;<span data-bind="{this.value,to=dbSet.totalCount,source=customerVM}"></span>
         </div>
 
         <div style="float: right;">
@@ -610,10 +612,12 @@
         </div>
         <div style="text-align: left;position: relative;">
             <!--pager-->
-            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" data-view="pager" data-view-options="{sliderSize:5,hideOnSinglePage=true}">
+            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" 
+                 data-view="pager" 
+                 data-view-options="{sliderSize:5,hideOnSinglePage=true}">
             </div>
             <div style="float: left; padding: 5px;">
-                <span>Total:</span>&nbsp;<span data-bind="{this.value,to=gridDataSource.totalCount}"></span>
+                <span>Total rows:</span>&nbsp;<span data-bind="{this.value,to=gridDataSource.totalCount}"></span>
             </div>
         </div>
         <br style="clear: both;" />

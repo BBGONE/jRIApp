@@ -1700,7 +1700,8 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 dataSource: null,
                 valuePath: null,
                 textPath: null,
-                statePath: null
+                statePath: null,
+                syncSetDatasource: false
             }, options);
             if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
                 throw new Error(jriapp_shared_13.LocaleERRS.ERR_LISTBOX_DATASRC_INVALID);
@@ -2158,7 +2159,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this.setChanges();
             this._unbindDS();
             this._options.dataSource = v;
-            this._dsDebounce.enque(function () {
+            var fn_init = function () {
                 try {
                     var ds = _this._options.dataSource;
                     _this._txtDebounce.cancel();
@@ -2175,7 +2176,13 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 finally {
                     _this.checkChanges();
                 }
-            });
+            };
+            if (!!this._options.syncSetDatasource) {
+                fn_init();
+            }
+            else {
+                this._dsDebounce.enque(fn_init);
+            }
         };
         Object.defineProperty(ListBox.prototype, "selectedIndex", {
             get: function () {
@@ -2250,7 +2257,9 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "valuePath", {
-            get: function () { return this._options.valuePath; },
+            get: function () {
+                return this._options.valuePath;
+            },
             set: function (v) {
                 if (v !== this.valuePath) {
                     this._options.valuePath = v;
@@ -2262,7 +2271,9 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "textPath", {
-            get: function () { return this._options.textPath; },
+            get: function () {
+                return this._options.textPath;
+            },
             set: function (v) {
                 if (v !== this.textPath) {
                     this._options.textPath = v;
@@ -2274,12 +2285,16 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "statePath", {
-            get: function () { return this._options.statePath; },
+            get: function () {
+                return this._options.statePath;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "isEnabled", {
-            get: function () { return this._getIsEnabled(this.el); },
+            get: function () {
+                return this._getIsEnabled(this.el);
+            },
             set: function (v) {
                 if (v !== this.isEnabled) {
                     this._setIsEnabled(this.el, v);
@@ -2290,7 +2305,9 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "textProvider", {
-            get: function () { return this._textProvider; },
+            get: function () {
+                return this._textProvider;
+            },
             set: function (v) {
                 var _this = this;
                 if (v !== this._textProvider) {
@@ -2305,7 +2322,9 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "stateProvider", {
-            get: function () { return this._stateProvider; },
+            get: function () {
+                return this._stateProvider;
+            },
             set: function (v) {
                 var _this = this;
                 if (v !== this._stateProvider) {
@@ -2320,7 +2339,9 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "el", {
-            get: function () { return this._el; },
+            get: function () {
+                return this._el;
+            },
             enumerable: true,
             configurable: true
         });
@@ -2508,18 +2529,19 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_14.Utils, dom = dom_12.DomUtils, doc = dom.document, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys;
-    var PROP_NAME = {
-        dataSource: "dataSource",
-        selectedItem: "selectedItem",
-        selectedValue: "selectedValue",
-        valuePath: "valuePath",
-        textPath: "textPath",
-        isEnabled: "isEnabled",
-        listBox: "listBox",
-        value: "value",
-        textProvider: "textProvider",
-        stateProvider: "stateProvider"
-    };
+    var PROP_NAME;
+    (function (PROP_NAME) {
+        PROP_NAME["dataSource"] = "dataSource";
+        PROP_NAME["selectedItem"] = "selectedItem";
+        PROP_NAME["selectedValue"] = "selectedValue";
+        PROP_NAME["valuePath"] = "valuePath";
+        PROP_NAME["textPath"] = "textPath";
+        PROP_NAME["isEnabled"] = "isEnabled";
+        PROP_NAME["listBox"] = "listBox";
+        PROP_NAME["value"] = "value";
+        PROP_NAME["textProvider"] = "textProvider";
+        PROP_NAME["stateProvider"] = "stateProvider";
+    })(PROP_NAME || (PROP_NAME = {}));
     var LOOKUP_EVENTS;
     (function (LOOKUP_EVENTS) {
         LOOKUP_EVENTS["obj_created"] = "object_created";
@@ -2533,8 +2555,8 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
                 throw new Error(strUtils.format(jriapp_shared_14.LocaleERRS.ERR_ASSERTION_FAILED, "contentOptions.name === 'lookup'"));
             }
             _this = _super.call(this, options) || this;
-            _this._spanView = null;
-            _this._listBoxElView = null;
+            _this._span = null;
+            _this._listBox = null;
             _this._isListBoxCachedExternally = false;
             _this._valBinding = null;
             _this._listBinding = null;
@@ -2557,73 +2579,80 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
         LookupContent.prototype.offOnObjectNeeded = function (nmspace) {
             this.objEvents.off("object_needed", nmspace);
         };
-        LookupContent.prototype.getListBoxElView = function () {
-            if (!!this._listBoxElView) {
-                return this._listBoxElView;
+        LookupContent.prototype.getListBox = function () {
+            if (!!this._listBox) {
+                return this._listBox;
             }
-            var lookUpOptions = this._options.options, objectKey = "listBoxElView";
-            var args1 = { objectKey: objectKey, object: null };
+            var lookUpOptions = this._options.options, objectKey = "listBox";
+            var args1 = {
+                objectKey: objectKey,
+                result: null
+            };
             this.objEvents.raise("object_needed", args1);
-            if (!!args1.object) {
+            if (!!args1.result) {
                 this._isListBoxCachedExternally = true;
-                this._listBoxElView = args1.object;
+                this._listBox = args1.result;
             }
-            if (!!this._listBoxElView) {
-                this._listBoxElView.listBox.addOnRefreshed(this.onListRefreshed, this.uniqueID, this);
-                return this._listBoxElView;
+            if (!!this._listBox) {
+                this._listBox.addOnRefreshed(this.onListRefreshed, this.uniqueID, this);
+                return this._listBox;
             }
-            var listBoxElView = this.createListBoxElView(lookUpOptions);
-            var args2 = { objectKey: objectKey, object: listBoxElView, isCachedExternally: false };
+            var listBox = this.createListBox(lookUpOptions);
+            var args2 = {
+                objectKey: objectKey,
+                result: listBox,
+                isCachedExternally: false
+            };
             this.objEvents.raise("object_created", args2);
             this._isListBoxCachedExternally = args2.isCachedExternally;
-            this._listBoxElView = listBoxElView;
-            this._listBoxElView.listBox.addOnRefreshed(this.onListRefreshed, this.uniqueID, this);
-            return this._listBoxElView;
+            this._listBox = listBox;
+            this._listBox.addOnRefreshed(this.onListRefreshed, this.uniqueID, this);
+            return this._listBox;
         };
         LookupContent.prototype.onListRefreshed = function () {
             this.updateTextValue();
         };
-        LookupContent.prototype.createListBoxElView = function (lookUpOptions) {
+        LookupContent.prototype.createListBox = function (lookUpOptions) {
             var options = {
                 valuePath: lookUpOptions.valuePath,
                 textPath: lookUpOptions.textPath,
                 statePath: (!lookUpOptions.statePath) ? null : lookUpOptions.statePath,
-                el: doc.createElement("select")
-            }, el = options.el, dataSource = sys.resolvePath(this.app, lookUpOptions.dataSource);
+                el: doc.createElement("select"),
+                syncSetDatasource: true,
+                dataSource: sys.resolvePath(this.app, lookUpOptions.dataSource)
+            }, el = options.el;
             el.setAttribute("size", "1");
-            var elView = new listbox_1.ListBoxElView(options);
-            elView.dataSource = dataSource;
-            return elView;
+            return new listbox_1.ListBox(options);
         };
         LookupContent.prototype.updateTextValue = function () {
-            var spanView = this.getSpanView();
-            spanView.value = this.getLookupText();
+            var span = this.getSpan();
+            span.value = this.getLookupText();
         };
         LookupContent.prototype.getLookupText = function () {
-            var listBoxView = this.getListBoxElView();
-            return listBoxView.listBox.getText(this.value);
+            var listBox = this.getListBox();
+            return listBox.getText(this.value);
         };
-        LookupContent.prototype.getSpanView = function () {
-            if (!!this._spanView) {
-                return this._spanView;
+        LookupContent.prototype.getSpan = function () {
+            if (!!this._span) {
+                return this._span;
             }
             var el = doc.createElement("span"), displayInfo = this._options.displayInfo;
             if (!!displayInfo && !!displayInfo.displayCss) {
                 dom.addClass([el], displayInfo.displayCss);
             }
             var spanView = new span_1.SpanElView({ el: el });
-            this._spanView = spanView;
-            return this._spanView;
+            this._span = spanView;
+            return this._span;
         };
         LookupContent.prototype.createTargetElement = function () {
-            var tgt, selectView, spanView;
+            var tgt, listBox, spanView;
             if (this.isEditing && this.getIsCanBeEdited()) {
-                selectView = this.getListBoxElView();
-                this._listBinding = this.bindToList(selectView);
-                tgt = selectView;
+                listBox = this.getListBox();
+                this._listBinding = this.bindToList(listBox);
+                tgt = listBox;
             }
             else {
-                spanView = this.getSpanView();
+                spanView = this.getSpan();
                 this._valBinding = this.bindToValue();
                 tgt = spanView;
             }
@@ -2644,9 +2673,9 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
                 this._valBinding.dispose();
                 this._valBinding = null;
             }
-            if (!!this._listBoxElView && this._isListBoxCachedExternally) {
-                this._listBoxElView.listBox.objEvents.offNS(this.uniqueID);
-                this._listBoxElView = null;
+            if (!!this._listBox && this._isListBoxCachedExternally) {
+                this._listBox.objEvents.offNS(this.uniqueID);
+                this._listBox = null;
             }
         };
         LookupContent.prototype.updateBindingSource = function () {
@@ -2663,19 +2692,19 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
             }
             var options = {
                 target: this, source: this._dataContext,
-                targetPath: PROP_NAME.value, sourcePath: this._options.fieldName,
+                targetPath: "value", sourcePath: this._options.fieldName,
                 mode: 1,
                 converter: null, converterParam: null, isSourceFixed: false
             };
             return this.app.bind(options);
         };
-        LookupContent.prototype.bindToList = function (selectView) {
+        LookupContent.prototype.bindToList = function (listBox) {
             if (!this._options.fieldName) {
                 return null;
             }
             var options = {
-                target: selectView, source: this._dataContext,
-                targetPath: PROP_NAME.selectedValue, sourcePath: this._options.fieldName,
+                target: listBox, source: this._dataContext,
+                targetPath: "selectedValue", sourcePath: this._options.fieldName,
                 mode: 2,
                 converter: null, converterParam: null, isSourceFixed: false
             };
@@ -2692,16 +2721,16 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
             }
             this.setDisposing();
             this.cleanUp();
-            if (!!this._listBoxElView) {
-                this._listBoxElView.listBox.objEvents.offNS(this.uniqueID);
-                if (!this._isListBoxCachedExternally && !this._listBoxElView.getIsStateDirty()) {
-                    this._listBoxElView.dispose();
+            if (!!this._listBox) {
+                this._listBox.objEvents.offNS(this.uniqueID);
+                if (!this._isListBoxCachedExternally && !this._listBox.getIsStateDirty()) {
+                    this._listBox.dispose();
                 }
-                this._listBoxElView = null;
+                this._listBox = null;
             }
-            if (!!this._spanView) {
-                this._spanView.dispose();
-                this._spanView = null;
+            if (!!this._span) {
+                this._span.dispose();
+                this._span = null;
             }
             _super.prototype.dispose.call(this);
         };
@@ -2709,11 +2738,13 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
             return "LookupContent";
         };
         Object.defineProperty(LookupContent.prototype, "value", {
-            get: function () { return this._value; },
+            get: function () {
+                return this._value;
+            },
             set: function (v) {
                 if (this._value !== v) {
                     this._value = v;
-                    this.objEvents.raiseProp(PROP_NAME.value);
+                    this.objEvents.raiseProp("value");
                 }
                 this.updateTextValue();
             },
@@ -2721,7 +2752,9 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
             configurable: true
         });
         Object.defineProperty(LookupContent.prototype, "uniqueID", {
-            get: function () { return this._objId; },
+            get: function () {
+                return this._objId;
+            },
             enumerable: true,
             configurable: true
         });
@@ -3930,11 +3963,11 @@ define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_shared"
             var self = this;
             return function (content) {
                 content.addOnObjectCreated(function (sender, args) {
-                    self._cacheObject(args.objectKey, args.object);
+                    self._cacheObject(args.objectKey, args.result);
                     args.isCachedExternally = !!self._getCachedObject(args.objectKey);
                 });
                 content.addOnObjectNeeded(function (sender, args) {
-                    args.object = self._getCachedObject(args.objectKey);
+                    args.result = self._getCachedObject(args.objectKey);
                 });
             };
         };
@@ -6410,27 +6443,35 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     args.css = self._stateProvider.getCSS(args.row.item, args.val);
                 }
             }, this.uniqueID);
+            self._grid.objEvents.onProp("*", function (sender, args) {
+                switch (args.property) {
+                    case "dataSource":
+                        self.objEvents.raiseProp(args.property);
+                        break;
+                }
+            }, self.uniqueID);
         };
         Object.defineProperty(DataGridElView.prototype, "dataSource", {
             get: function () {
                 return this.grid.dataSource;
             },
             set: function (v) {
-                if (this.dataSource !== v) {
-                    this.grid.dataSource = v;
-                    this.objEvents.raiseProp("dataSource");
-                }
+                this.grid.dataSource = v;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DataGridElView.prototype, "grid", {
-            get: function () { return this._grid; },
+            get: function () {
+                return this._grid;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DataGridElView.prototype, "stateProvider", {
-            get: function () { return this._stateProvider; },
+            get: function () {
+                return this._stateProvider;
+            },
             set: function (v) {
                 var _this = this;
                 if (v !== this._stateProvider) {
@@ -6462,6 +6503,13 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(DataGridElView.prototype, "selectable", {
+            get: function () {
+                return this._grid.selectable;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return DataGridElView;
     }(baseview_7.BaseElView));
     exports.DataGridElView = DataGridElView;
@@ -6488,6 +6536,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
         PROP_NAME["rowCount"] = "rowCount";
         PROP_NAME["currentPage"] = "currentPage";
         PROP_NAME["pager"] = "pager";
+        PROP_NAME["parentControl"] = "parentControl";
+        PROP_NAME["isVisible"] = "isVisible";
     })(PROP_NAME || (PROP_NAME = {}));
     var Pager = (function (_super) {
         __extends(Pager, _super);
@@ -6539,6 +6589,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 }
             });
             _this._bindDS();
+            bootstrap_18.selectableProviderWeakMap.set(_this._el, _this);
             return _this;
         }
         Pager.prototype._addToolTip = function (el, tip) {
@@ -6660,6 +6711,8 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 return;
             }
             this.setDisposing();
+            bootstrap_18.selectableProviderWeakMap.delete(this._el);
+            this.parentControl = null;
             this._pageDebounce.dispose();
             this._dsDebounce.dispose();
             this._unbindDS();
@@ -7007,6 +7060,26 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Pager.prototype, "selectable", {
+            get: function () {
+                return !this._parentControl ? null : this._parentControl.selectable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Pager.prototype, "parentControl", {
+            get: function () {
+                return this._parentControl;
+            },
+            set: function (v) {
+                if (this._parentControl !== v) {
+                    this._parentControl = v;
+                    this.objEvents.raiseProp("parentControl");
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         return Pager;
     }(jriapp_shared_31.BaseObject));
     exports.Pager = Pager;
@@ -7014,7 +7087,16 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
         __extends(PagerElView, _super);
         function PagerElView(options) {
             var _this = _super.call(this, options) || this;
+            var self = _this;
             _this._pager = new Pager(options);
+            self._pager.objEvents.onProp("*", function (sender, args) {
+                switch (args.property) {
+                    case "dataSource":
+                    case "parentControl":
+                        self.objEvents.raiseProp(args.property);
+                        break;
+                }
+            }, self.uniqueID);
             return _this;
         }
         PagerElView.prototype.dispose = function () {
@@ -7035,16 +7117,32 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 return this._pager.dataSource;
             },
             set: function (v) {
-                if (this.dataSource !== v) {
-                    this._pager.dataSource = v;
-                    this.objEvents.raiseProp("dataSource");
-                }
+                this._pager.dataSource = v;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(PagerElView.prototype, "pager", {
-            get: function () { return this._pager; },
+            get: function () {
+                return this._pager;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PagerElView.prototype, "selectable", {
+            get: function () {
+                return this._pager.selectable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PagerElView.prototype, "parentControl", {
+            get: function () {
+                return this._pager.parentControl;
+            },
+            set: function (v) {
+                this._pager.parentControl = v;
+            },
             enumerable: true,
             configurable: true
         });
@@ -7473,6 +7571,13 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                     self._panelEvents.onItemClicked(args.item);
                 }
             }, _this.uniqueID);
+            _this._panel.objEvents.onProp("*", function (sender, args) {
+                switch (args.property) {
+                    case "dataSource":
+                        self.objEvents.raiseProp(args.property);
+                        break;
+                }
+            }, self.uniqueID);
             return _this;
         }
         StackPanelElView.prototype.dispose = function () {
@@ -7494,16 +7599,15 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 return this._panel.dataSource;
             },
             set: function (v) {
-                if (this.dataSource !== v) {
-                    this._panel.dataSource = v;
-                    this.objEvents.raiseProp("dataSource");
-                }
+                this._panel.dataSource = v;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(StackPanelElView.prototype, "panelEvents", {
-            get: function () { return this._panelEvents; },
+            get: function () {
+                return this._panelEvents;
+            },
             set: function (v) {
                 var old = this._panelEvents;
                 if (v !== old) {
@@ -7515,7 +7619,16 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             configurable: true
         });
         Object.defineProperty(StackPanelElView.prototype, "panel", {
-            get: function () { return this._panel; },
+            get: function () {
+                return this._panel;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(StackPanelElView.prototype, "selectable", {
+            get: function () {
+                return this._panel.selectable;
+            },
             enumerable: true,
             configurable: true
         });

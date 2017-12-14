@@ -4,11 +4,11 @@ import {
 } from "jriapp_shared";
 import { DATA_ATTR } from "jriapp/const";
 import { DomUtils } from "jriapp/utils/dom";
-import { IViewOptions } from "jriapp/int";
+import { IViewOptions, ISelectable, ISelectableProvider } from "jriapp/int";
 import { BaseElView, fn_addToolTip } from "./baseview";
 import { COLL_CHANGE_REASON, COLL_CHANGE_TYPE } from "jriapp_shared/collection/const";
 import { ICollection, ICollectionItem } from "jriapp_shared/collection/int";
-import { bootstrap } from "jriapp/bootstrap";
+import { bootstrap, selectableProviderWeakMap } from "jriapp/bootstrap";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
     strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
@@ -43,10 +43,12 @@ const enum PROP_NAME {
     dataSource = "dataSource",
     rowCount = "rowCount",
     currentPage = "currentPage",
-    pager = "pager"
+    pager = "pager",
+    parentControl = "parentControl",
+    isVisible = "isVisible"
 }
 
-export class Pager extends BaseObject {
+export class Pager extends BaseObject implements ISelectableProvider {
     private _el: HTMLElement;
     private _objId: string;
     private _options: IPagerConstructorOptions;
@@ -59,6 +61,7 @@ export class Pager extends BaseObject {
     private _display: string;
     //an array of elements to which the toolTips are added
     private _toolTips: Element[];
+    private _parentControl: ISelectableProvider;
 
     constructor(options: IPagerConstructorOptions) {
         super();
@@ -114,6 +117,7 @@ export class Pager extends BaseObject {
             });
 
         this._bindDS();
+        selectableProviderWeakMap.set(this._el, this);
     }
     protected _addToolTip(el: Element, tip: string) {
         fn_addToolTip(el, tip);
@@ -248,6 +252,8 @@ export class Pager extends BaseObject {
             return;
         }
         this.setDisposing();
+        selectableProviderWeakMap.delete(this._el);
+        this.parentControl = null;
         this._pageDebounce.dispose();
         this._dsDebounce.dispose();
         this._unbindDS();
@@ -545,7 +551,19 @@ export class Pager extends BaseObject {
             } else {
                 this.el.style.display = (!this._display ? "" : this._display);
             }
-            this.objEvents.raiseProp("isVisible");
+            this.objEvents.raiseProp(PROP_NAME.isVisible);
+        }
+    }
+    get selectable(): ISelectable {
+        return !this._parentControl ? null : this._parentControl.selectable;
+    }
+    get parentControl() {
+        return this._parentControl;
+    }
+    set parentControl(v) {
+        if (this._parentControl !== v) {
+            this._parentControl = v;
+            this.objEvents.raiseProp(PROP_NAME.parentControl);
         }
     }
 }
@@ -553,12 +571,21 @@ export class Pager extends BaseObject {
 export interface IPagerViewOptions extends IPagerOptions, IViewOptions {
 }
 
-export class PagerElView extends BaseElView {
+export class PagerElView extends BaseElView implements ISelectableProvider {
     private _pager: Pager;
 
     constructor(options: IPagerViewOptions) {
         super(options);
+        const self = this;
         this._pager = new Pager(<IPagerConstructorOptions>options);
+        self._pager.objEvents.onProp("*", (sender, args) => {
+            switch (args.property) {
+                case PROP_NAME.dataSource:
+                case PROP_NAME.parentControl:
+                    self.objEvents.raiseProp(args.property);
+                    break;
+            }
+        }, self.uniqueID);
     }
     dispose() {
         if (this.getIsDisposed()) {
@@ -577,12 +604,20 @@ export class PagerElView extends BaseElView {
         return this._pager.dataSource;
     }
     set dataSource(v) {
-        if (this.dataSource !== v) {
-            this._pager.dataSource = v;
-            this.objEvents.raiseProp(PROP_NAME.dataSource);
-        }
+        this._pager.dataSource = v;
     }
-    get pager() { return this._pager; }
+    get pager() {
+        return this._pager;
+    }
+    get selectable(): ISelectable {
+        return this._pager.selectable;
+    }
+    get parentControl() {
+        return this._pager.parentControl;
+    }
+    set parentControl(v) {
+        this._pager.parentControl = v;
+    }
 }
 
 boot.registerElView("pager", PagerElView);

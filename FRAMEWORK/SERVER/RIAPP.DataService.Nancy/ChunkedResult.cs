@@ -9,7 +9,7 @@ namespace RIAPP.DataService.Nancy
     public class ChunkedResult<T> : Response
         where T: class
     {
-        private static string ResultContentType = System.Net.Mime.MediaTypeNames.Text.Plain;
+        private static string ResultContentType = "application/json";
         private RIAPPInterface.ISerializer _serializer;
 
         public ChunkedResult(T res, RIAPPInterface.ISerializer serializer)

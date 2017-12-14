@@ -125,10 +125,12 @@
         </div>
         <div style="text-align: left;position: relative;">
             <!--pager-->
-            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" data-view="pager" data-view-options="{sliderSize:5,hideOnSinglePage=true}">
+            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" 
+                 data-view="pager" 
+                 data-view-options="{sliderSize:5,hideOnSinglePage=true}">
             </div>
             <div style="float: left; padding: 5px;">
-                <span>Total:</span>&nbsp;<span data-bind="{this.value,to=gridDataSource.totalCount}"></span>
+                <span>Total rows:</span>&nbsp;<span data-bind="{this.value,to=gridDataSource.totalCount}"></span>
             </div>
         </div>
         <br style="clear: both;" />

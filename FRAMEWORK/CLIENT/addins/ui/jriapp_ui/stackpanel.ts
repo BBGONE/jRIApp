@@ -439,7 +439,7 @@ export interface IPanelEvents {
     onItemClicked(item: ICollectionItem): void;
 }
 
-export class StackPanelElView extends BaseElView {
+export class StackPanelElView extends BaseElView implements ISelectableProvider {
     private _panel: StackPanel;
     private _panelEvents: IPanelEvents;
 
@@ -453,6 +453,13 @@ export class StackPanelElView extends BaseElView {
                 self._panelEvents.onItemClicked(args.item);
             }
         }, this.uniqueID);
+        this._panel.objEvents.onProp("*", (sender, args) => {
+            switch (args.property) {
+                case PROP_NAME.dataSource:
+                    self.objEvents.raiseProp(args.property);
+                    break;
+            }
+        }, self.uniqueID);
     }
     dispose() {
         if (this.getIsDisposed()) {
@@ -472,12 +479,11 @@ export class StackPanelElView extends BaseElView {
         return this._panel.dataSource;
     }
     set dataSource(v: ICollection<ICollectionItem>) {
-        if (this.dataSource !== v) {
-            this._panel.dataSource = v;
-            this.objEvents.raiseProp(PROP_NAME.dataSource);
-        }
+        this._panel.dataSource = v;
     }
-    get panelEvents() { return this._panelEvents; }
+    get panelEvents() {
+        return this._panelEvents;
+    }
     set panelEvents(v) {
         const old = this._panelEvents;
         if (v !== old) {
@@ -485,7 +491,12 @@ export class StackPanelElView extends BaseElView {
             this.objEvents.raiseProp(PROP_NAME.panelEvents);
         }
     }
-    get panel() { return this._panel; }
+    get panel() {
+        return this._panel;
+    }
+    get selectable(): ISelectable {
+        return this._panel.selectable;
+    }
 }
 
 boot.registerElView("stackpanel", StackPanelElView);

@@ -215,8 +215,15 @@ export interface IBinding extends IBaseObject {
 
 // --Content interfaces
 export interface IExternallyCachable {
-    addOnObjectCreated(fn: (sender: any, args: { objectKey: string; object: IBaseObject; isCachedExternally: boolean; }) => void, nmspace?: string): void;
-    addOnObjectNeeded(fn: (sender: any, args: { objectKey: string; object: IBaseObject; }) => void, nmspace?: string): void;
+    addOnObjectCreated(fn: (sender: any, args: {
+        objectKey: string;
+        result: IBaseObject;
+        isCachedExternally: boolean;
+    }) => void, nmspace?: string): void;
+    addOnObjectNeeded(fn: (sender: any, args: {
+        objectKey: string;
+        result: IBaseObject;
+    }) => void, nmspace?: string): void;
 }
 
 export interface IContent extends IBaseObject {

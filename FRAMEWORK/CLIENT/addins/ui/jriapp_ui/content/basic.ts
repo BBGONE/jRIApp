@@ -7,8 +7,8 @@ import { IFieldInfo } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { BINDING_MODE } from "jriapp/const";
 import {
-    IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView,
-    IViewOptions, IBindingInfo, IBindingOptions, IApplication
+    IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions,
+    IBindingInfo, IBindingOptions, IApplication
 } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { Binding, getBindingOptions } from "jriapp/binding";
@@ -17,7 +17,11 @@ import { LifeTimeScope } from "jriapp/utils/lifetime";
 import { css } from "./int";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, coreUtils = utils.core,
-   boot = bootstrap, sys = utils.sys;
+    boot = bootstrap, sys = utils.sys;
+
+export interface IContentView extends IBaseObject {
+    readonly el: HTMLElement;
+}
 
 export class BasicContent extends BaseObject implements IContent {
     protected _parentEl: HTMLElement;
@@ -28,7 +32,7 @@ export class BasicContent extends BaseObject implements IContent {
     protected _dataContext: any;
     protected _lfScope: ILifeTimeScope;
     // the target of the data binding
-    protected _target: IElView;
+    protected _target: IContentView;
 
     constructor(options: IConstructorContentOptions) {
         super();
@@ -49,7 +53,7 @@ export class BasicContent extends BaseObject implements IContent {
         this._target = null;
         dom.addClass([this._parentEl], css.content);
     }
-    protected updateCss() {
+    protected updateCss(): void {
         const displayInfo = this._options.displayInfo, el = this._parentEl, fieldInfo = this.getFieldInfo();
         if (this._isEditing && this.getIsCanBeEdited()) {
             if (!!displayInfo) {
@@ -77,7 +81,7 @@ export class BasicContent extends BaseObject implements IContent {
             }
         }
     }
-    protected getIsCanBeEdited() {
+    protected getIsCanBeEdited(): boolean {
         if (this._isReadOnly) {
             return false;
         }
@@ -88,7 +92,7 @@ export class BasicContent extends BaseObject implements IContent {
         const editable = sys.getEditable(this._dataContext);
         return !!editable && !finf.isReadOnly && finf.fieldType !== FIELD_TYPE.Calculated;
     }
-    protected createTargetElement(): IElView {
+    protected createTargetElement(): IContentView {
         let el: HTMLElement;
         const info: { name: string; options: any; } = { name: null, options: null };
         if (this._isEditing && this.getIsCanBeEdited()) {
@@ -131,7 +135,7 @@ export class BasicContent extends BaseObject implements IContent {
         }
         return res;
     }
-    protected updateBindingSource() {
+    protected updateBindingSource(): void {
         const bindings = this.getBindings(), len = bindings.length;
         for (let i = 0; i < len; i += 1) {
             const binding: Binding = bindings[i];
@@ -140,7 +144,7 @@ export class BasicContent extends BaseObject implements IContent {
             }
         }
     }
-    protected cleanUp() {
+    protected cleanUp(): void {
         if (!!this._lfScope) {
             this._lfScope.dispose();
             this._lfScope = null;
@@ -151,7 +155,7 @@ export class BasicContent extends BaseObject implements IContent {
         }
         this._target = null;
     }
-    protected getElementView(el: HTMLElement, viewInfo: { name: string; options: IViewOptions; }): IElView {
+    protected getElementView(el: HTMLElement, viewInfo: { name: string; options: IViewOptions; }): IContentView {
         const factory = boot.getApp().viewFactory, elView = factory.store.getElView(el);
         if (!!elView) {
             return elView;
@@ -162,7 +166,7 @@ export class BasicContent extends BaseObject implements IContent {
     protected getFieldInfo(): IFieldInfo {
         return this._options.fieldInfo;
     }
-    render() {
+    render(): void {
         try {
             this.cleanUp();
             const bindingInfo = this._options.bindingInfo;
@@ -180,7 +184,7 @@ export class BasicContent extends BaseObject implements IContent {
             utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -200,7 +204,7 @@ export class BasicContent extends BaseObject implements IContent {
         this._options = null;
         super.dispose();
     }
-    toString() {
+    toString(): string {
         return "BasicContent";
     }
     get parentEl() { return this._parentEl; }

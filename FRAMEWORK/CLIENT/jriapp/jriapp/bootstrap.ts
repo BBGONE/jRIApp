@@ -230,12 +230,18 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
 
         dom.events.on(doc, "keydown", (e) => {
             if (!!self._selectedControl) {
-                self._selectedControl.selectable.onKeyDown(e.which, e);
+                const selectable = self._selectedControl.selectable;
+                if (!!selectable) {
+                    selectable.onKeyDown(e.which, e);
+                }
             }
         }, this._objId);
         dom.events.on(doc, "keyup", (e) => {
             if (!!self._selectedControl) {
-                self._selectedControl.selectable.onKeyUp(e.which, e);
+                const selectable = self._selectedControl.selectable;
+                if (!!selectable) {
+                    selectable.onKeyUp(e.which, e);
+                }
             }
         }, this._objId);
 
@@ -521,13 +527,21 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     loadOwnStyle(name: string): IPromise<string> {
         return this.stylesLoader.loadOwnStyle(name);
     }
-    toString() {
+    toString(): string {
         return "JRIApp Bootstrap";
     }
-    get stylesLoader(): IStylesLoader { return _stylesLoader; }
-    get elViewRegister(): IElViewRegister { return this._elViewRegister; }
-    get contentFactory(): IContentFactoryList { return this._contentFactory; }
-    get templateLoader(): TemplateLoader { return this._templateLoader; }
+    get stylesLoader(): IStylesLoader {
+        return _stylesLoader;
+    }
+    get elViewRegister(): IElViewRegister {
+        return this._elViewRegister;
+    }
+    get contentFactory(): IContentFactoryList {
+        return this._contentFactory;
+    }
+    get templateLoader(): TemplateLoader {
+        return this._templateLoader;
+    }
     get selectedControl(): ISelectableProvider {
         return this._selectedControl;
     }

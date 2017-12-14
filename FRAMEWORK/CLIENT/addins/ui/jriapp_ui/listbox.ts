@@ -30,6 +30,7 @@ export interface IListBoxOptions {
     textPath: string;
     statePath?: string;
     emptyOptionText?: string;
+    syncSetDatasource?: boolean;
 }
 
 export interface IListBoxConstructorOptions extends IListBoxOptions {
@@ -58,9 +59,9 @@ const enum LISTBOX_EVENTS {
     refreshed = "refreshed"
 }
 
- function fn_Str(v: any): string {
+function fn_Str(v: any): string {
     return (checks.isNt(v)) ? "" : ("" + v);
- }
+}
 
 export class ListBox extends BaseObject implements ISubscriber {
     private _el: HTMLSelectElement;
@@ -90,7 +91,8 @@ export class ListBox extends BaseObject implements ISubscriber {
                 dataSource: null,
                 valuePath: null,
                 textPath: null,
-                statePath: null
+                statePath: null,
+                syncSetDatasource: false
             }, options);
         if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
             throw new Error(ERRS.ERR_LISTBOX_DATASRC_INVALID);
@@ -124,7 +126,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         const ds = this._options.dataSource;
         this._setDataSource(ds);
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -150,19 +152,19 @@ export class ListBox extends BaseObject implements ISubscriber {
     isSubscribed(flag: SubscribeFlags): boolean {
         return flag === SubscribeFlags.change;
     }
-    handle_change(e: Event) {
+    handle_change(e: Event): void {
         if (this._isRefreshing) {
             return;
         }
         this._onChanged();
     }
-    addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any) {
+    addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void {
         this.objEvents.on(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
     }
-    offOnRefreshed(nmspace?: string) {
+    offOnRefreshed(nmspace?: string): void {
         this.objEvents.off(LISTBOX_EVENTS.refreshed, nmspace);
     }
-    protected _onChanged() {
+    protected _onChanged(): void {
         const data: IMappedItem = this.getByIndex(this.selectedIndex);
         if (!data) {
             this.selectedValue = null;
@@ -327,7 +329,7 @@ export class ListBox extends BaseObject implements ISubscriber {
             }
         }
     }
-    private _bindDS() {
+    private _bindDS(): void {
         const self = this, ds = this.dataSource;
         if (!ds) {
             return;
@@ -346,7 +348,7 @@ export class ListBox extends BaseObject implements ISubscriber {
             self._onCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
         }, self._objId);
     }
-    private _unbindDS() {
+    private _unbindDS(): void {
         const self = this, ds = this.dataSource;
         if (!ds) {
             return;
@@ -366,7 +368,7 @@ export class ListBox extends BaseObject implements ISubscriber {
                 text = this._options.emptyOptionText;
             }
         } else {
-           text = this._getText(item, selEl.options.length);
+            text = this._getText(item, selEl.options.length);
         }
         const val = fn_Str(this._getValue(item));
         const oOption = doc.createElement("option");
@@ -397,7 +399,7 @@ export class ListBox extends BaseObject implements ISubscriber {
 
         return data;
     }
-    private _mapByValue() {
+    private _mapByValue(): void {
         const self = this;
         this._valMap = {};
         coreUtils.forEachProp(this._keyMap, (key) => {
@@ -407,20 +409,20 @@ export class ListBox extends BaseObject implements ISubscriber {
             }
         });
     }
-    private _resetText() {
+    private _resetText(): void {
         const self = this;
         coreUtils.forEachProp(this._keyMap, (key) => {
             const data = self._keyMap[key];
             data.op.text = self._getText(data.item, data.op.index);
         });
     }
-    private _resetState() {
+    private _resetState(): void {
         const self = this;
         coreUtils.forEachProp(this._keyMap, (key) => {
             self._fnState(self._keyMap[key]);
         });
     }
-    private _removeOption(item: ICollectionItem) {
+    private _removeOption(item: ICollectionItem): void {
         if (!!item) {
             const key = item._key, data = this._keyMap[key];
             if (!data) {
@@ -441,7 +443,7 @@ export class ListBox extends BaseObject implements ISubscriber {
             this.updateSelected(v);
         }
     }
-    private _clear() {
+    private _clear(): void {
         const self = this, keys = Object.keys(self._keyMap);
         keys.forEach((key) => {
             const data = self._keyMap[key];
@@ -485,7 +487,7 @@ export class ListBox extends BaseObject implements ISubscriber {
 
         this.objEvents.raise(LISTBOX_EVENTS.refreshed, {});
     }
-    protected getItemIndex(item: ICollectionItem) {
+    protected getItemIndex(item: ICollectionItem): number {
         if (!item || item.getIsStateDirty()) {
             return -1;
         }
@@ -507,7 +509,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         }
         return null;
     }
-    protected updateSelected(v: any) {
+    protected updateSelected(v: any): void {
         const data: IMappedItem = (checks.isNt(v) ? null : this.getByValue(v));
         const index = (!data ? 0 : data.op.index), oldRefreshing = this._isRefreshing;
         this._isRefreshing = true;
@@ -544,18 +546,18 @@ export class ListBox extends BaseObject implements ISubscriber {
             }
         });
     }
-    protected _setIsEnabled(el: HTMLSelectElement, v: boolean) {
+    protected _setIsEnabled(el: HTMLSelectElement, v: boolean): void {
         el.disabled = !v;
     }
-    protected _getIsEnabled(el: HTMLSelectElement) {
+    protected _getIsEnabled(el: HTMLSelectElement): boolean {
         return !el.disabled;
     }
-    protected _setDataSource(v: ICollection<ICollectionItem>) {
+    protected _setDataSource(v: ICollection<ICollectionItem>): void {
         this._isDSFilled = false;
         this.setChanges();
         this._unbindDS();
         this._options.dataSource = v;
-        this._dsDebounce.enque(() => {
+        const fn_init = () => {
             try {
                 const ds = this._options.dataSource;
                 this._txtDebounce.cancel();
@@ -571,7 +573,13 @@ export class ListBox extends BaseObject implements ISubscriber {
             } finally {
                 this.checkChanges();
             }
-        });
+        };
+
+        if (!!this._options.syncSetDatasource) {
+            fn_init();
+        } else {
+            this._dsDebounce.enque(fn_init);
+        }
     }
     protected get selectedIndex(): number {
         return (!this.el || this.el.length == 0) ? -1 : this.el.selectedIndex;
@@ -585,10 +593,10 @@ export class ListBox extends BaseObject implements ISubscriber {
         const data: IMappedItem = this.getByValue(val);
         return (!data) ? "" : data.op.text;
     }
-    toString() {
+    toString(): string {
         return "ListBox";
     }
-    get dataSource() {
+    get dataSource(): ICollection<ICollectionItem> {
         return this._options.dataSource;
     }
     set dataSource(v) {
@@ -597,7 +605,7 @@ export class ListBox extends BaseObject implements ISubscriber {
             this.objEvents.raiseProp(PROP_NAME.dataSource);
         }
     }
-    get selectedValue() {
+    get selectedValue(): any {
         return (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) ? checks.undefined : this._selectedValue;
     }
     set selectedValue(v) {
@@ -612,7 +620,7 @@ export class ListBox extends BaseObject implements ISubscriber {
             }
         }
     }
-    get selectedItem() {
+    get selectedItem(): ICollectionItem {
         const item: IMappedItem = this.getByValue(this._selectedValue);
         return (!item ? null : item.item);
     }
@@ -629,7 +637,9 @@ export class ListBox extends BaseObject implements ISubscriber {
             }
         }
     }
-    get valuePath() { return this._options.valuePath; }
+    get valuePath(): string {
+        return this._options.valuePath;
+    }
     set valuePath(v: string) {
         if (v !== this.valuePath) {
             this._options.valuePath = v;
@@ -637,7 +647,9 @@ export class ListBox extends BaseObject implements ISubscriber {
             this.objEvents.raiseProp(PROP_NAME.valuePath);
         }
     }
-    get textPath() { return this._options.textPath; }
+    get textPath(): string {
+        return this._options.textPath;
+    }
     set textPath(v: string) {
         if (v !== this.textPath) {
             this._options.textPath = v;
@@ -645,15 +657,21 @@ export class ListBox extends BaseObject implements ISubscriber {
             this.objEvents.raiseProp(PROP_NAME.textPath);
         }
     }
-    get statePath() { return this._options.statePath; }
-    get isEnabled() { return this._getIsEnabled(this.el); }
+    get statePath(): string {
+        return this._options.statePath;
+    }
+    get isEnabled(): boolean {
+        return this._getIsEnabled(this.el);
+    }
     set isEnabled(v) {
         if (v !== this.isEnabled) {
             this._setIsEnabled(this.el, v);
             this.objEvents.raiseProp(PROP_NAME.isEnabled);
         }
     }
-    get textProvider() { return this._textProvider; }
+    get textProvider(): IOptionTextProvider {
+        return this._textProvider;
+    }
     set textProvider(v: IOptionTextProvider) {
         if (v !== this._textProvider) {
             this._textProvider = v;
@@ -663,7 +681,9 @@ export class ListBox extends BaseObject implements ISubscriber {
             this.objEvents.raiseProp(PROP_NAME.textProvider);
         }
     }
-    get stateProvider() { return this._stateProvider; }
+    get stateProvider(): IOptionStateProvider {
+        return this._stateProvider;
+    }
     set stateProvider(v: IOptionStateProvider) {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
@@ -673,7 +693,9 @@ export class ListBox extends BaseObject implements ISubscriber {
             this.objEvents.raiseProp(PROP_NAME.stateProvider);
         }
     }
-    get el() { return this._el; }
+    get el(): HTMLSelectElement {
+        return this._el;
+    }
 }
 
 export interface IListBoxViewOptions extends IListBoxOptions, IViewOptions {

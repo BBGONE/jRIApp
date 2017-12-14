@@ -26,8 +26,11 @@ declare module "jriapp_ui/content/int" {
 declare module "jriapp_ui/content/basic" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
-    import { IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IElView, IViewOptions, IBindingInfo, IBindingOptions, IApplication } from "jriapp/int";
+    import { IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions, IBindingInfo, IBindingOptions, IApplication } from "jriapp/int";
     import { Binding } from "jriapp/binding";
+    export interface IContentView extends IBaseObject {
+        readonly el: HTMLElement;
+    }
     export class BasicContent extends BaseObject implements IContent {
         protected _parentEl: HTMLElement;
         protected _el: HTMLElement;
@@ -36,11 +39,11 @@ declare module "jriapp_ui/content/basic" {
         private _isEditing;
         protected _dataContext: any;
         protected _lfScope: ILifeTimeScope;
-        protected _target: IElView;
+        protected _target: IContentView;
         constructor(options: IConstructorContentOptions);
         protected updateCss(): void;
         protected getIsCanBeEdited(): boolean;
-        protected createTargetElement(): IElView;
+        protected createTargetElement(): IContentView;
         protected getBindingOption(bindingInfo: IBindingInfo, target: IBaseObject, dataContext: any, targetPath: string): IBindingOptions;
         protected getBindings(): Binding[];
         protected updateBindingSource(): void;
@@ -48,13 +51,13 @@ declare module "jriapp_ui/content/basic" {
         protected getElementView(el: HTMLElement, viewInfo: {
             name: string;
             options: IViewOptions;
-        }): IElView;
+        }): IContentView;
         protected getFieldInfo(): IFieldInfo;
         render(): void;
         dispose(): void;
         toString(): string;
         readonly parentEl: HTMLElement;
-        readonly target: IElView;
+        readonly target: IContentView;
         isEditing: boolean;
         dataContext: any;
         readonly app: IApplication;
@@ -294,13 +297,13 @@ declare module "jriapp_ui/textarea" {
 }
 declare module "jriapp_ui/content/multyline" {
     import { IFieldInfo } from "jriapp_shared/collection/int";
-    import { IElView, IConstructorContentOptions } from "jriapp/int";
-    import { BasicContent } from "jriapp_ui/content/basic";
+    import { IConstructorContentOptions } from "jriapp/int";
+    import { BasicContent, IContentView } from "jriapp_ui/content/basic";
     export class MultyLineContent extends BasicContent {
         static _allowedKeys: number[];
         private readonly allowedKeys;
         constructor(options: IConstructorContentOptions);
-        protected createTargetElement(): IElView;
+        protected createTargetElement(): IContentView;
         protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean;
         render(): void;
         toString(): string;
@@ -319,14 +322,14 @@ declare module "jriapp_ui/checkbox" {
     }
 }
 declare module "jriapp_ui/content/bool" {
-    import { IElView, IConstructorContentOptions } from "jriapp/int";
+    import { IConstructorContentOptions } from "jriapp/int";
     import { CheckBoxElView } from "jriapp_ui/checkbox";
-    import { BasicContent } from "jriapp_ui/content/basic";
+    import { BasicContent, IContentView } from "jriapp_ui/content/basic";
     export class BoolContent extends BasicContent {
         constructor(options: IConstructorContentOptions);
         protected cleanUp(): void;
         protected createCheckBoxView(): CheckBoxElView;
-        protected createTargetElement(): IElView;
+        protected createTargetElement(): IContentView;
         protected updateCss(): void;
         render(): void;
         dispose(): void;
@@ -348,12 +351,12 @@ declare module "jriapp_ui/content/number" {
 }
 declare module "jriapp_ui/content/date" {
     import { IBaseObject } from "jriapp_shared";
-    import { IConstructorContentOptions, IBindingInfo, IElView, IBindingOptions } from "jriapp/int";
-    import { BasicContent } from "jriapp_ui/content/basic";
+    import { IConstructorContentOptions, IBindingInfo, IBindingOptions } from "jriapp/int";
+    import { BasicContent, IContentView } from "jriapp_ui/content/basic";
     export class DateContent extends BasicContent {
         constructor(options: IConstructorContentOptions);
         protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions;
-        protected createTargetElement(): IElView;
+        protected createTargetElement(): IContentView;
         toString(): string;
     }
 }
@@ -384,6 +387,7 @@ declare module "jriapp_ui/listbox" {
         textPath: string;
         statePath?: string;
         emptyOptionText?: string;
+        syncSetDatasource?: boolean;
     }
     export interface IListBoxConstructorOptions extends IListBoxOptions {
         el: HTMLSelectElement;
@@ -485,10 +489,10 @@ declare module "jriapp_ui/span" {
 }
 declare module "jriapp_ui/content/listbox" {
     import { IBaseObject } from "jriapp_shared";
-    import { IExternallyCachable, IBinding, IConstructorContentOptions, IElView } from "jriapp/int";
-    import { ListBoxElView } from "jriapp_ui/listbox";
+    import { IExternallyCachable, IBinding, IConstructorContentOptions } from "jriapp/int";
+    import { ListBox } from "jriapp_ui/listbox";
     import { SpanElView } from "jriapp_ui/span";
-    import { BasicContent } from "jriapp_ui/content/basic";
+    import { BasicContent, IContentView } from "jriapp_ui/content/basic";
     export interface ILookupOptions {
         dataSource: string;
         valuePath: string;
@@ -497,18 +501,18 @@ declare module "jriapp_ui/content/listbox" {
     }
     export type TObjCreatedArgs = {
         objectKey: string;
-        object: IBaseObject;
+        result: IBaseObject;
         isCachedExternally: boolean;
     };
     export type TObjNeededArgs = {
         objectKey: string;
-        object: IBaseObject;
+        result: IBaseObject;
     };
     export class LookupContent extends BasicContent implements IExternallyCachable {
-        private _spanView;
+        private _span;
         private _valBinding;
         private _listBinding;
-        private _listBoxElView;
+        private _listBox;
         private _isListBoxCachedExternally;
         private _value;
         private _objId;
@@ -517,17 +521,17 @@ declare module "jriapp_ui/content/listbox" {
         offOnObjectCreated(nmspace?: string): void;
         addOnObjectNeeded(fn: (sender: LookupContent, args: TObjNeededArgs) => void, nmspace?: string): void;
         offOnObjectNeeded(nmspace?: string): void;
-        protected getListBoxElView(): ListBoxElView;
+        protected getListBox(): ListBox;
         protected onListRefreshed(): void;
-        protected createListBoxElView(lookUpOptions: ILookupOptions): ListBoxElView;
+        protected createListBox(lookUpOptions: ILookupOptions): ListBox;
         protected updateTextValue(): void;
         protected getLookupText(): string;
-        protected getSpanView(): SpanElView;
-        protected createTargetElement(): IElView;
+        protected getSpan(): SpanElView;
+        protected createTargetElement(): IContentView;
         protected cleanUp(): void;
         protected updateBindingSource(): void;
         protected bindToValue(): IBinding;
-        protected bindToList(selectView: ListBoxElView): IBinding;
+        protected bindToList(listBox: ListBox): IBinding;
         render(): void;
         dispose(): void;
         toString(): string;
@@ -1325,7 +1329,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
     }
     export interface IDataGridViewOptions extends IDataGridOptions, IViewOptions {
     }
-    export class DataGridElView extends BaseElView {
+    export class DataGridElView extends BaseElView implements ISelectableProvider {
         private _grid;
         private _stateProvider;
         private _stateDebounce;
@@ -1337,11 +1341,12 @@ declare module "jriapp_ui/datagrid/datagrid" {
         readonly grid: DataGrid;
         stateProvider: IRowStateProvider;
         animation: IDataGridAnimation;
+        readonly selectable: ISelectable;
     }
 }
 declare module "jriapp_ui/pager" {
     import { BaseObject } from "jriapp_shared";
-    import { IViewOptions } from "jriapp/int";
+    import { IViewOptions, ISelectable, ISelectableProvider } from "jriapp/int";
     import { BaseElView } from "jriapp_ui/baseview";
     import { ICollection, ICollectionItem } from "jriapp_shared/collection/int";
     export interface IPagerOptions {
@@ -1358,7 +1363,7 @@ declare module "jriapp_ui/pager" {
         el: HTMLElement;
         dataSource: ICollection<ICollectionItem>;
     }
-    export class Pager extends BaseObject {
+    export class Pager extends BaseObject implements ISelectableProvider {
         private _el;
         private _objId;
         private _options;
@@ -1369,6 +1374,7 @@ declare module "jriapp_ui/pager" {
         private _dsDebounce;
         private _display;
         private _toolTips;
+        private _parentControl;
         constructor(options: IPagerConstructorOptions);
         protected _addToolTip(el: Element, tip: string): void;
         protected _cleanUp(): void;
@@ -1408,16 +1414,20 @@ declare module "jriapp_ui/pager" {
         showPreviousAndNext: boolean;
         showNumbers: boolean;
         isVisible: boolean;
+        readonly selectable: ISelectable;
+        parentControl: ISelectableProvider;
     }
     export interface IPagerViewOptions extends IPagerOptions, IViewOptions {
     }
-    export class PagerElView extends BaseElView {
+    export class PagerElView extends BaseElView implements ISelectableProvider {
         private _pager;
         constructor(options: IPagerViewOptions);
         dispose(): void;
         toString(): string;
         dataSource: ICollection<ICollectionItem>;
         readonly pager: Pager;
+        readonly selectable: ISelectable;
+        parentControl: ISelectableProvider;
     }
 }
 declare module "jriapp_ui/stackpanel" {
@@ -1486,7 +1496,7 @@ declare module "jriapp_ui/stackpanel" {
     export interface IPanelEvents {
         onItemClicked(item: ICollectionItem): void;
     }
-    export class StackPanelElView extends BaseElView {
+    export class StackPanelElView extends BaseElView implements ISelectableProvider {
         private _panel;
         private _panelEvents;
         constructor(options: IStackPanelViewOptions);
@@ -1495,6 +1505,7 @@ declare module "jriapp_ui/stackpanel" {
         dataSource: ICollection<ICollectionItem>;
         panelEvents: IPanelEvents;
         readonly panel: StackPanel;
+        readonly selectable: ISelectable;
     }
 }
 declare module "jriapp_ui/tabs" {

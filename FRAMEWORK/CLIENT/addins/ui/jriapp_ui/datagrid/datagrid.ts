@@ -1280,7 +1280,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
 export interface IDataGridViewOptions extends IDataGridOptions, IViewOptions {
 }
 
-export class DataGridElView extends BaseElView {
+export class DataGridElView extends BaseElView implements ISelectableProvider {
     private _grid: DataGrid;
     private _stateProvider: IRowStateProvider;
     private _stateDebounce: Debounce;
@@ -1321,18 +1321,26 @@ export class DataGridElView extends BaseElView {
                 args.css = self._stateProvider.getCSS(args.row.item, args.val);
             }
         }, this.uniqueID);
+        self._grid.objEvents.onProp("*", (sender, args) => {
+            switch (args.property) {
+                case PROP_NAME.dataSource:
+                    self.objEvents.raiseProp(args.property);
+                    break;
+            }
+        }, self.uniqueID);
     }
     get dataSource(): ICollection<ICollectionItem> {
         return this.grid.dataSource;
     }
     set dataSource(v) {
-        if (this.dataSource !== v) {
-            this.grid.dataSource = v;
-            this.objEvents.raiseProp(PROP_NAME.dataSource);
-        }
+        this.grid.dataSource = v;
     }
-    get grid(): DataGrid { return this._grid; }
-    get stateProvider(): IRowStateProvider { return this._stateProvider; }
+    get grid(): DataGrid {
+        return this._grid;
+    }
+    get stateProvider(): IRowStateProvider {
+        return this._stateProvider;
+    }
     set stateProvider(v: IRowStateProvider) {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
@@ -1344,7 +1352,6 @@ export class DataGridElView extends BaseElView {
                     row.updateUIState();
                 });
             });
-
             this.objEvents.raiseProp(PROP_NAME.stateProvider);
         }
     }
@@ -1356,6 +1363,9 @@ export class DataGridElView extends BaseElView {
             this._grid.options.animation = v;
             this.objEvents.raiseProp(PROP_NAME.animation);
         }
+    }
+    get selectable(): ISelectable {
+        return this._grid.selectable;
     }
 }
 

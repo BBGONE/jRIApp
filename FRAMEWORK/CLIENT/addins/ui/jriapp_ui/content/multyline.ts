@@ -2,11 +2,11 @@
 import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { KEYS } from "jriapp/const";
-import { IElView, IConstructorContentOptions } from "jriapp/int";
+import { IConstructorContentOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { TextAreaElView } from "../textarea";
 
-import { BasicContent } from "./basic";
+import { BasicContent, IContentView } from "./basic";
 
 const utils = Utils, NAME = "multyline", strUtils = utils.str, dom = DomUtils, document = dom.document;
 
@@ -25,7 +25,7 @@ export class MultyLineContent extends BasicContent {
         }
         super(options);
     }
-    protected createTargetElement(): IElView {
+    protected createTargetElement(): IContentView {
         let el: HTMLElement;
         const info: { name: string; options: any; } = { name: null, options: null };
         if (this.isEditing && this.getIsCanBeEdited()) {
@@ -39,13 +39,13 @@ export class MultyLineContent extends BasicContent {
         this._el = el;
         return this.getElementView(this._el, info);
     }
-    protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string) {
+    protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean {
         if (this.allowedKeys.indexOf(keyCode) > -1) {
             return true;
         }
         return !(fieldInfo.maxLength > 0 && value.length >= fieldInfo.maxLength);
     }
-    render() {
+    render(): void {
         super.render();
         const self = this, fieldInfo = self.getFieldInfo();
 

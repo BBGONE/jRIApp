@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { DomUtils } from "jriapp/utils/dom";
 import { BINDING_MODE } from "jriapp/const";
-import { IElView, IConstructorContentOptions } from "jriapp/int";
+import { IConstructorContentOptions } from "jriapp/int";
 import { LifeTimeScope } from "jriapp/utils/lifetime";
 import { CheckBoxElView } from "../checkbox";
 
 import { css } from "./int";
-import { BasicContent } from "./basic";
+import { BasicContent, IContentView } from "./basic";
 
 const dom = DomUtils, doc = dom.document;
 
@@ -34,7 +34,7 @@ export class BoolContent extends BasicContent {
         const chbxView = new CheckBoxElView({ el: chk });
         return chbxView;
     }
-    protected createTargetElement(): IElView {
+    protected createTargetElement(): IContentView {
         let tgt = this._target;
         if (!tgt) {
             tgt = this.createCheckBoxView();

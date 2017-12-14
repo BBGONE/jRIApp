@@ -1,8 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
 import { IBaseObject, LocaleERRS as ERRS, Utils } from "jriapp_shared";
-import { IConstructorContentOptions, IBindingInfo, IElView, IBindingOptions } from "jriapp/int";
+import { IConstructorContentOptions, IBindingInfo, IBindingOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { BasicContent } from "./basic";
+import { BasicContent, IContentView } from "./basic";
 
 const utils = Utils, strUtils = utils.str, doc = DomUtils.document;
 
@@ -20,7 +20,7 @@ export class DateContent extends BasicContent {
         options.converter = this.app.getConverter("dateConverter");
         return options;
     }
-    protected createTargetElement(): IElView {
+    protected createTargetElement(): IContentView {
         let el: HTMLElement;
         const info: { name: string; options: any; } = { name: null, options: null };
         if (this.isEditing && this.getIsCanBeEdited()) {
@@ -35,7 +35,7 @@ export class DateContent extends BasicContent {
         this._el = el;
         return this.getElementView(this._el, info);
     }
-    toString() {
+    toString(): string {
         return "DateContent";
     }
 }

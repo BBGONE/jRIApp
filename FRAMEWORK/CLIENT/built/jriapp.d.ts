@@ -235,12 +235,12 @@ declare module "jriapp/int" {
     export interface IExternallyCachable {
         addOnObjectCreated(fn: (sender: any, args: {
             objectKey: string;
-            object: IBaseObject;
+            result: IBaseObject;
             isCachedExternally: boolean;
         }) => void, nmspace?: string): void;
         addOnObjectNeeded(fn: (sender: any, args: {
             objectKey: string;
-            object: IBaseObject;
+            result: IBaseObject;
         }) => void, nmspace?: string): void;
     }
     export interface IContent extends IBaseObject {
@@ -1000,5 +1000,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.6.3";
+    export const VERSION = "2.6.4";
 }

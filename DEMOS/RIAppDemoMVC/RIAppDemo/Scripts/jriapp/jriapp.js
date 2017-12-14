@@ -1838,12 +1838,18 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             }));
             dom.events.on(doc, "keydown", function (e) {
                 if (!!self._selectedControl) {
-                    self._selectedControl.selectable.onKeyDown(e.which, e);
+                    var selectable = self._selectedControl.selectable;
+                    if (!!selectable) {
+                        selectable.onKeyDown(e.which, e);
+                    }
                 }
             }, this._objId);
             dom.events.on(doc, "keyup", function (e) {
                 if (!!self._selectedControl) {
-                    self._selectedControl.selectable.onKeyUp(e.which, e);
+                    var selectable = self._selectedControl.selectable;
+                    if (!!selectable) {
+                        selectable.onKeyUp(e.which, e);
+                    }
                 }
             }, this._objId);
             dom.events.on(win, "beforeunload", function () {
@@ -2114,22 +2120,30 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             return "JRIApp Bootstrap";
         };
         Object.defineProperty(Bootstrap.prototype, "stylesLoader", {
-            get: function () { return _stylesLoader; },
+            get: function () {
+                return _stylesLoader;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Bootstrap.prototype, "elViewRegister", {
-            get: function () { return this._elViewRegister; },
+            get: function () {
+                return this._elViewRegister;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Bootstrap.prototype, "contentFactory", {
-            get: function () { return this._contentFactory; },
+            get: function () {
+                return this._contentFactory;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Bootstrap.prototype, "templateLoader", {
-            get: function () { return this._templateLoader; },
+            get: function () {
+                return this._templateLoader;
+            },
             enumerable: true,
             configurable: true
         });
@@ -4352,6 +4366,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.6.3";
+    exports.VERSION = "2.6.4";
     bootstrap_7.Bootstrap._initFramework();
 });

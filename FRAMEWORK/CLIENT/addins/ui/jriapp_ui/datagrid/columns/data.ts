@@ -45,11 +45,11 @@ export class DataColumn extends BaseColumn {
         const self = this;
         return (content: IExternallyCachable) => {
             content.addOnObjectCreated((sender, args) => {
-                self._cacheObject(args.objectKey, args.object);
+                self._cacheObject(args.objectKey, args.result);
                 args.isCachedExternally = !!self._getCachedObject(args.objectKey);
             });
             content.addOnObjectNeeded((sender, args) => {
-                args.object = self._getCachedObject(args.objectKey);
+                args.result = self._getCachedObject(args.objectKey);
             });
         };
     }
