@@ -143,6 +143,11 @@ export class CustomerBag extends RIAPP.JsonBag {
         }
         return this._addresses.list;
     }
+    //just for testing eval in converter param (instead of fixed param value)
+    get dateFormat(): string
+    {
+        return "DD.MM.YYYY HH:mm:ss";
+    }
 }
 
 export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
@@ -314,6 +319,10 @@ export class DemoApplication extends RIAPP.Application {
     get dbContext() { return this._dbContext; }
     get errorVM() { return this._errorVM; }
     get customerVM() { return this._customerVM; }
+    //just for testing eval in converter param (instead of fixed param value)
+    get dateFormat(): string {
+        return "MM.DD.YYYY HH:mm:ss";
+    }
 }
 
 //bootstrap error handler - the last resort (typically display message to the user)

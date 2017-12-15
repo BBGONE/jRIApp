@@ -52,7 +52,8 @@ export function parseContentAttr(contentAttr: string): IContentOptions {
             sourcePath: attr.fieldName,
             mode: "OneWay",
             converter: null,
-            param: null
+            param: null,
+            isEval: false
         };
 
         contentOptions.bindingInfo = bindInfo;

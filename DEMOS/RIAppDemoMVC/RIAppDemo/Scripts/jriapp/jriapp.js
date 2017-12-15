@@ -107,7 +107,14 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         TOKEN["COMMA"] = ",";
         TOKEN["EVAL"] = "eval";
         TOKEN["THIS"] = "this.";
+        TOKEN["PARAM"] = "param";
     })(TOKEN || (TOKEN = {}));
+    var PARSE_TYPE;
+    (function (PARSE_TYPE) {
+        PARSE_TYPE[PARSE_TYPE["NONE"] = 0] = "NONE";
+        PARSE_TYPE[PARSE_TYPE["BINDING"] = 1] = "BINDING";
+        PARSE_TYPE[PARSE_TYPE["VIEW"] = 2] = "VIEW";
+    })(PARSE_TYPE || (PARSE_TYPE = {}));
     function trimOuterBraces(val) {
         return strUtils.fastTrim(val.replace(trimOuterBracesRX, ""));
     }
@@ -277,8 +284,18 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         }
         return parts;
     }
-    function _parseOption(part, app, defSource) {
-        var res = {};
+    function _parseOption(parse_type, part, app, defSource) {
+        var res = parse_type === 1 ? {
+            targetPath: "",
+            sourcePath: "",
+            to: "",
+            target: null,
+            source: null,
+            mode: "OneWay",
+            converter: null,
+            param: null,
+            isEval: false
+        } : {};
         part = strUtils.fastTrim(part);
         if (isInsideBraces(part)) {
             part = trimOuterBraces(part);
@@ -286,20 +303,32 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         var kvals = _getKeyVals(part);
         kvals.forEach(function (kv) {
             var isEval = false, evalparts;
-            var isString = checks.isString(kv.val);
-            if (isString && kv.tag === "eval" && !!app) {
+            var isString = checks.isString(kv.val), isGetEval = parse_type === 2 || parse_type === 1;
+            if (isGetEval && isString && kv.tag === "eval") {
                 evalparts = _getEvalParts(kv.val);
                 isEval = evalparts.length > 0;
             }
             if (isEval) {
-                var source = defSource || app;
-                if (evalparts.length > 1) {
-                    source = sys.resolvePath(app, evalparts[1]);
+                switch (parse_type) {
+                    case 2:
+                        var source = defSource || app;
+                        if (evalparts.length > 1) {
+                            source = sys.resolvePath(app, evalparts[1]);
+                        }
+                        res[kv.key] = sys.resolvePath(source, evalparts[0]);
+                        break;
+                    case 1:
+                        if (evalparts.length > 0 && kv.key === "param") {
+                            res[kv.key] = evalparts;
+                            res.isEval = true;
+                        }
+                        break;
+                    default:
+                        throw new Error("Invalid Operation");
                 }
-                res[kv.key] = sys.resolvePath(source, evalparts[0]);
             }
             else if (isString && isInsideBraces(kv.val)) {
-                res[kv.key] = _parseOption(kv.val, app, defSource);
+                res[kv.key] = _parseOption(parse_type, kv.val, app, defSource);
             }
             else {
                 if (isString) {
@@ -312,7 +341,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         });
         return res;
     }
-    function _parseOptions(strs, app, defSource) {
+    function _parseOptions(parse_type, strs, app, defSource) {
         var res = [];
         var parts = [];
         for (var i = 0; i < strs.length; i += 1) {
@@ -328,7 +357,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             }
         }
         for (var j = 0; j < parts.length; j += 1) {
-            res.push(_parseOption(parts[j], app, defSource));
+            res.push(_parseOption(parse_type, parts[j], app, defSource));
         }
         return res;
     }
@@ -336,13 +365,13 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         function Parser() {
         }
         Parser.parseOptions = function (options) {
-            return _parseOptions([options], null, null);
+            return _parseOptions(0, [options], null, null);
         };
         Parser.parseBindings = function (bindings) {
-            return _parseOptions(bindings, null, null);
+            return _parseOptions(1, bindings, null, null);
         };
         Parser.parseViewOptions = function (options, app, defSource) {
-            var res = _parseOptions([options], app, defSource);
+            var res = _parseOptions(2, [options], app, defSource);
             return (!!res && res.length > 0) ? res[0] : {};
         };
         return Parser;
@@ -2482,16 +2511,17 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         TwoWay: 2,
         BackWay: 3
     };
-    function getBindingOptions(bindInfo, defaultTarget, defaultSource) {
+    function getBindingOptions(bindInfo, defTarget, dataContext) {
         var bindingOpts = {
-            mode: 1,
-            param: null,
-            converter: null,
             targetPath: null,
             sourcePath: null,
             target: null,
             source: null,
-            isSourceFixed: false
+            isSourceFixed: false,
+            mode: 1,
+            converter: null,
+            param: null,
+            isEval: false
         };
         var converter;
         var app = boot.getApp();
@@ -2513,6 +2543,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         }
         if (!!bindInfo.param) {
             bindingOpts.param = bindInfo.param;
+            bindingOpts.isEval = bindInfo.isEval;
         }
         if (!!bindInfo.mode) {
             bindingOpts.mode = bindModeMap[bindInfo.mode];
@@ -2521,12 +2552,12 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             bindingOpts.converter = converter;
         }
         if (!fixedTarget) {
-            bindingOpts.target = defaultTarget;
+            bindingOpts.target = defTarget;
         }
         else {
             if (checks.isString(fixedTarget)) {
                 if (fixedTarget === "this") {
-                    bindingOpts.target = defaultTarget;
+                    bindingOpts.target = defTarget;
                 }
                 else {
                     bindingOpts.target = sys.resolvePath(app, fixedTarget);
@@ -2537,13 +2568,13 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             }
         }
         if (!fixedSource) {
-            bindingOpts.source = defaultSource;
+            bindingOpts.source = dataContext;
         }
         else {
             bindingOpts.isSourceFixed = true;
             if (checks.isString(fixedSource)) {
                 if (fixedSource === "this") {
-                    bindingOpts.source = defaultTarget;
+                    bindingOpts.source = defTarget;
                 }
                 else {
                     bindingOpts.source = sys.resolvePath(app, fixedSource);
@@ -2560,11 +2591,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         __extends(Binding, _super);
         function Binding(options) {
             var _this = _super.call(this) || this;
-            var opts = coreUtils.extend({
-                target: null, source: null,
-                targetPath: null, sourcePath: null, mode: 1,
-                converter: null, param: null, isSourceFixed: false
-            }, options);
+            var opts = options;
             if (checks.isString(opts.mode)) {
                 opts.mode = bindModeMap[opts.mode];
             }
@@ -2585,7 +2612,8 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             _this._state = null;
             _this._mode = opts.mode;
             _this._converter = !opts.converter ? null : opts.converter;
-            _this._converterParam = opts.param;
+            _this._param = opts.param;
+            _this._isEval = !!opts.isEval;
             _this._srcPath = sys.getPathParts(opts.sourcePath);
             _this._tgtPath = sys.getPathParts(opts.targetPath);
             if (_this._tgtPath.length < 1) {
@@ -2872,7 +2900,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     this.targetValue = this.sourceValue;
                 }
                 else {
-                    this.targetValue = this._converter.convertToTarget(this.sourceValue, this._converterParam, this._srcEnd);
+                    this.targetValue = this._converter.convertToTarget(this.sourceValue, this.param, this._srcEnd);
                 }
             }
             catch (ex) {
@@ -2888,7 +2916,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     this.sourceValue = this.targetValue;
                 }
                 else {
-                    this.sourceValue = this._converter.convertToSource(this.targetValue, this._converterParam, this._srcEnd);
+                    this.sourceValue = this._converter.convertToSource(this.targetValue, this.param, this._srcEnd);
                 }
             }
             catch (ex) {
@@ -2971,7 +2999,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             this._setTarget(null);
             this._state = null;
             this._converter = null;
-            this._converterParam = null;
+            this._param = null;
             this._srcPath = null;
             this._tgtPath = null;
             this._srcEnd = null;
@@ -3062,6 +3090,11 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Binding.prototype, "isSourceFixed", {
+            get: function () { return this._srcFixed; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Binding.prototype, "mode", {
             get: function () { return this._mode; },
             enumerable: true,
@@ -3069,18 +3102,26 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         });
         Object.defineProperty(Binding.prototype, "converter", {
             get: function () { return this._converter; },
-            set: function (v) { this._converter = v; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Binding.prototype, "param", {
-            get: function () { return this._converterParam; },
-            set: function (v) { this._converterParam = v; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Binding.prototype, "isSourceFixed", {
-            get: function () { return this._srcFixed; },
+            get: function () {
+                if (this._isEval) {
+                    if (checks.isNt(this._param)) {
+                        return this._param;
+                    }
+                    var evalparts = this._param;
+                    var source = this.source;
+                    if (evalparts.length > 1) {
+                        source = sys.resolvePath(boot.getApp(), evalparts[1]);
+                    }
+                    return sys.resolvePath(source, evalparts[0]);
+                }
+                else {
+                    return this._param;
+                }
+            },
             enumerable: true,
             configurable: true
         });
@@ -3896,7 +3937,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
             if (!!bindings && bindings.length > 0) {
                 var bindInfos = parser.parseBindings(bindings), len = bindInfos.length;
                 for (var j = 0; j < len; j += 1) {
-                    var op = binding_1.getBindingOptions(bindInfos[j], args.elView, args.defSource), binding = self.bind(op);
+                    var op = binding_1.getBindingOptions(bindInfos[j], args.elView, args.dataContext), binding = self.bind(op);
                     args.lftm.addObj(binding);
                 }
             }
@@ -3926,7 +3967,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
                         bindElem: bindElem,
                         lftm: lftm_1,
                         isTemplate: true,
-                        defSource: dataContext
+                        dataContext: dataContext
                     });
                 });
                 defer.resolve(lftm_1);
@@ -3973,7 +4014,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
                         bindElem: bindElem,
                         lftm: lftm_2,
                         isTemplate: args.isTemplate,
-                        defSource: args.dataContext
+                        dataContext: args.dataContext
                     });
                 });
                 defer.resolve(lftm_2);
@@ -4366,6 +4407,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.7.0";
+    exports.VERSION = "2.7.1";
     bootstrap_7.Bootstrap._initFramework();
 });

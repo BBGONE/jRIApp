@@ -104,7 +104,7 @@ interface IBindElViewArgs {
     readonly bindElem: IBindableElement;
     readonly lftm: ILifeTimeScope;
     readonly isTemplate: boolean;
-    readonly defSource: any;
+    readonly dataContext: any;
 }
 
 class DataBindingService extends BaseObject implements IDataBindingService, IErrorHandler {
@@ -139,7 +139,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             const bindInfos: IBindingInfo[] = parser.parseBindings(bindings),
                 len = bindInfos.length;
             for (let j = 0; j < len; j += 1) {
-                const op = getBindingOptions(bindInfos[j], args.elView, args.defSource),
+                const op = getBindingOptions(bindInfos[j], args.elView, args.dataContext),
                     binding = self.bind(op);
                 args.lftm.addObj(binding);
             }
@@ -173,7 +173,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
                     bindElem: bindElem,
                     lftm: lftm,
                     isTemplate: true,
-                    defSource: dataContext
+                    dataContext: dataContext
                 });
             });
 
@@ -224,7 +224,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
                     bindElem: bindElem,
                     lftm: lftm,
                     isTemplate: args.isTemplate,
-                    defSource: args.dataContext
+                    dataContext: args.dataContext
                 });
             });
 

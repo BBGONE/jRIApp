@@ -199,25 +199,27 @@ declare module "jriapp/int" {
         bind(opts: IBindingOptions): IBinding;
     }
     export interface IBindingOptions {
-        mode?: BINDING_MODE;
-        param?: any;
-        converter?: IConverter;
         targetPath: string;
         sourcePath?: string;
         target?: IBaseObject;
         source?: any;
         isSourceFixed?: boolean;
+        mode?: BINDING_MODE;
+        converter?: IConverter;
+        param?: any;
+        isEval?: boolean;
     }
     export type TBindingMode = "OneTime" | "OneWay" | "TwoWay" | "BackWay";
     export interface IBindingInfo {
-        mode?: TBindingMode;
-        param?: any;
-        converter?: any;
         targetPath: string;
         sourcePath?: string;
         to?: string;
         target?: any;
         source?: any;
+        mode?: TBindingMode;
+        converter?: any;
+        param?: any;
+        isEval?: boolean;
     }
     export interface IBinding extends IBaseObject {
         target: IBaseObject;
@@ -226,10 +228,10 @@ declare module "jriapp/int" {
         sourcePath: string[];
         sourceValue: any;
         targetValue: any;
-        mode: BINDING_MODE;
-        converter: IConverter;
-        param: any;
-        isSourceFixed: boolean;
+        readonly isSourceFixed: boolean;
+        readonly mode: BINDING_MODE;
+        readonly converter: IConverter;
+        readonly param: any;
         isDisabled: boolean;
     }
     export interface IExternallyCachable {
@@ -776,12 +778,13 @@ declare module "jriapp/binding" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
     import { BINDING_MODE } from "jriapp/const";
     import { IBindingInfo, IBindingOptions, IBinding, IConverter } from "jriapp/int";
-    export function getBindingOptions(bindInfo: IBindingInfo, defaultTarget: IBaseObject, defaultSource: any): IBindingOptions;
+    export function getBindingOptions(bindInfo: IBindingInfo, defTarget: IBaseObject, dataContext: any): IBindingOptions;
     export class Binding extends BaseObject implements IBinding {
         private _state;
         private _mode;
         private _converter;
-        private _converterParam;
+        private _param;
+        private _isEval;
         private _srcPath;
         private _tgtPath;
         private _srcFixed;
@@ -819,10 +822,10 @@ declare module "jriapp/binding" {
         readonly sourcePath: string[];
         sourceValue: any;
         targetValue: any;
-        readonly mode: BINDING_MODE;
-        converter: IConverter;
-        param: any;
         readonly isSourceFixed: boolean;
+        readonly mode: BINDING_MODE;
+        readonly converter: IConverter;
+        readonly param: any;
         isDisabled: boolean;
     }
 }
@@ -1000,5 +1003,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.7.0";
+    export const VERSION = "2.7.1";
 }

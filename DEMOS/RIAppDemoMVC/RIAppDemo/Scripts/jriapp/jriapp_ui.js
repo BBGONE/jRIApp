@@ -40,7 +40,8 @@ define("jriapp_ui/content/int", ["require", "exports", "jriapp_shared", "jriapp/
                 sourcePath: attr.fieldName,
                 mode: "OneWay",
                 converter: null,
-                param: null
+                param: null,
+                isEval: false
             };
             contentOptions.bindingInfo = bindInfo;
             contentOptions.displayInfo = attr.css;
@@ -2699,10 +2700,11 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
                 source: this._dataContext,
                 targetPath: "value",
                 sourcePath: this._options.fieldName,
+                isSourceFixed: false,
                 mode: 1,
                 converter: null,
                 param: null,
-                isSourceFixed: false
+                isEval: false
             };
             return this.app.bind(options);
         };
@@ -2715,10 +2717,11 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
                 source: this._dataContext,
                 targetPath: "selectedValue",
                 sourcePath: this._options.fieldName,
+                isSourceFixed: false,
                 mode: 2,
                 converter: null,
                 param: null,
-                isSourceFixed: false
+                isEval: false
             };
             return this.app.bind(options);
         };

@@ -207,10 +207,11 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             source: this._dataContext,
             targetPath: PROP_NAME.value,
             sourcePath: this._options.fieldName,
+            isSourceFixed: false,
             mode: BINDING_MODE.OneWay,
             converter: null,
             param: null,
-            isSourceFixed: false
+            isEval: false
         };
         return this.app.bind(options);
     }
@@ -224,10 +225,11 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             source: this._dataContext,
             targetPath: PROP_NAME.selectedValue,
             sourcePath: this._options.fieldName,
+            isSourceFixed: false,
             mode: BINDING_MODE.TwoWay,
             converter: null,
             param: null,
-            isSourceFixed: false
+            isEval: false
         };
         return this.app.bind(options);
     }

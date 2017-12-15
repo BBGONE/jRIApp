@@ -74,19 +74,17 @@ interface IBindingState {
     target: any;
 }
 
-export function getBindingOptions(
-    bindInfo: IBindingInfo,
-    defaultTarget: IBaseObject,
-    defaultSource: any) {
+export function getBindingOptions(bindInfo: IBindingInfo, defTarget: IBaseObject, dataContext: any): IBindingOptions {
     const bindingOpts: IBindingOptions = {
-        mode: BINDING_MODE.OneWay,
-        param: null,
-        converter: null,
         targetPath: null,
         sourcePath: null,
         target: null,
         source: null,
-        isSourceFixed: false
+        isSourceFixed: false,
+        mode: BINDING_MODE.OneWay,
+        converter: null,
+        param: null,
+        isEval: false
     };
 
     let converter: IConverter;
@@ -112,6 +110,7 @@ export function getBindingOptions(
 
     if (!!bindInfo.param) {
         bindingOpts.param = bindInfo.param;
+        bindingOpts.isEval = bindInfo.isEval;
     }
 
     if (!!bindInfo.mode) {
@@ -123,11 +122,11 @@ export function getBindingOptions(
     }
 
     if (!fixedTarget) {
-        bindingOpts.target = defaultTarget;
+        bindingOpts.target = defTarget;
     } else {
         if (checks.isString(fixedTarget)) {
             if (fixedTarget === "this") {
-                bindingOpts.target = defaultTarget;
+                bindingOpts.target = defTarget;
             } else {
                 // if no fixed target, then target evaluation starts from this app
                 bindingOpts.target = sys.resolvePath(app, fixedTarget);
@@ -139,17 +138,18 @@ export function getBindingOptions(
 
     if (!fixedSource) {
         // if source is not supplied use defaultSource parameter as source
-        bindingOpts.source = defaultSource;
+        bindingOpts.source = dataContext;
     } else {
         bindingOpts.isSourceFixed = true;
         if (checks.isString(fixedSource)) {
             if (fixedSource === "this") {
-                bindingOpts.source = defaultTarget;
+                bindingOpts.source = defTarget;
             } else {
                 // source evaluation starts from this app
                 bindingOpts.source = sys.resolvePath(app, fixedSource);
             }
         } else {
+            //this can happen when binding to inline literal source
             bindingOpts.source = fixedSource;
         }
     }
@@ -161,7 +161,10 @@ export class Binding extends BaseObject implements IBinding {
     private _state: IBindingState;
     private _mode: BINDING_MODE;
     private _converter: IConverter;
-    private _converterParam: any;
+    // converter Param
+    private _param: any;
+    // Is converter Param an eval expression and needs to be evaluated?
+    private _isEval: boolean;
     private _srcPath: string[];
     private _tgtPath: string[];
     private _srcFixed: boolean;
@@ -179,16 +182,20 @@ export class Binding extends BaseObject implements IBinding {
 
     constructor(options: IBindingOptions) {
         super();
+        /*
         const opts: IBindingOptions = coreUtils.extend({
             target: null,
             source: null,
             targetPath: null,
             sourcePath: null,
+            isSourceFixed: false,
             mode: BINDING_MODE.OneWay,
             converter: null,
             param: null,
-            isSourceFixed: false
+            isEval: false
         }, options);
+        */
+        const opts = options;
 
         if (checks.isString(opts.mode)) {
             opts.mode = bindModeMap[opts.mode];
@@ -216,7 +223,8 @@ export class Binding extends BaseObject implements IBinding {
         this._state = null;
         this._mode = opts.mode;
         this._converter = !opts.converter ? null : opts.converter;
-        this._converterParam = opts.param;
+        this._param = opts.param;
+        this._isEval = !!opts.isEval;
         this._srcPath = sys.getPathParts(opts.sourcePath);
         this._tgtPath = sys.getPathParts(opts.targetPath);
         if (this._tgtPath.length < 1) {
@@ -563,7 +571,7 @@ export class Binding extends BaseObject implements IBinding {
             if (!this._converter) {
                 this.targetValue = this.sourceValue;
             } else {
-                this.targetValue = this._converter.convertToTarget(this.sourceValue, this._converterParam, this._srcEnd);
+                this.targetValue = this._converter.convertToTarget(this.sourceValue, this.param, this._srcEnd);
             }
         } catch (ex) {
             utils.err.reThrow(ex, this.handleError(ex, this));
@@ -577,7 +585,7 @@ export class Binding extends BaseObject implements IBinding {
             if (!this._converter) {
                 this.sourceValue = this.targetValue;
             } else {
-                this.sourceValue = this._converter.convertToSource(this.targetValue, this._converterParam, this._srcEnd);
+                this.sourceValue = this._converter.convertToSource(this.targetValue, this.param, this._srcEnd);
             }
         } catch (ex) {
             if (!sys.isValidationError(ex) || !viewChecks.isElView(this._tgtEnd)) {
@@ -651,7 +659,7 @@ export class Binding extends BaseObject implements IBinding {
             return false;
         }
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -665,7 +673,7 @@ export class Binding extends BaseObject implements IBinding {
         this._setTarget(null);
         this._state = null;
         this._converter = null;
-        this._converterParam = null;
+        this._param = null;
         this._srcPath = null;
         this._tgtPath = null;
         this._srcEnd = null;
@@ -675,28 +683,27 @@ export class Binding extends BaseObject implements IBinding {
         this._umask = 0;
         super.dispose();
     }
-    toString() {
+    toString(): string {
         return "Binding";
     }
-
-    get uniqueID() {
+    get uniqueID(): string {
         return this._objId;
     }
-    get target() { return this._target; }
+    get target(): IBaseObject { return this._target; }
     set target(v: IBaseObject) {
         if (this._setTarget(v)) {
             this._update();
         }
     }
-    get source() { return this._source; }
-    set source(v) {
+    get source(): any { return this._source; }
+    set source(v: any) {
         if (this._setSource(v)) {
             this._update();
         }
     }
-    get targetPath() { return this._tgtPath; }
-    get sourcePath() { return this._srcPath; }
-    get sourceValue() {
+    get targetPath(): string[] { return this._tgtPath; }
+    get sourcePath(): string[] { return this._srcPath; }
+    get sourceValue():any {
         let res: any = null;
         if (this._srcPath.length === 0) {
             res = this._srcEnd;
@@ -707,14 +714,14 @@ export class Binding extends BaseObject implements IBinding {
         }
         return res;
     }
-    set sourceValue(v) {
+    set sourceValue(v: any) {
         if (this._srcPath.length === 0 || !this._srcEnd || v === checks.undefined) {
             return;
         }
         const prop = this._srcPath[this._srcPath.length - 1];
         sys.setProp(this._srcEnd, prop, v);
     }
-    get targetValue() {
+    get targetValue(): any {
         let res: any = null;
         if (!!this._tgtEnd) {
             const prop = this._tgtPath[this._tgtPath.length - 1];
@@ -722,20 +729,33 @@ export class Binding extends BaseObject implements IBinding {
         }
         return res;
     }
-    set targetValue(v) {
+    set targetValue(v: any) {
         if (this._tgtPath.length === 0 || !this._tgtEnd || v === checks.undefined) {
             return;
         }
         const prop = this._tgtPath[this._tgtPath.length - 1];
         sys.setProp(this._tgtEnd, prop, v);
     }
-    get mode() { return this._mode; }
-    get converter() { return this._converter; }
-    set converter(v: IConverter) { this._converter = v; }
-    get param() { return this._converterParam; }
-    set param(v) { this._converterParam = v; }
-    get isSourceFixed() { return this._srcFixed; }
-    get isDisabled() { return !!this._state; }
+    get isSourceFixed(): boolean { return this._srcFixed; }
+    get mode(): BINDING_MODE { return this._mode; }
+    get converter(): IConverter { return this._converter; }
+    get param(): any {
+        if (this._isEval) {
+            if (checks.isNt(this._param)) {
+                return this._param;
+            } 
+            const evalparts = <string[]>this._param;
+            let source = this.source;
+            if (evalparts.length > 1) {
+                //resolve source (second path relative to the application in the array)
+                source = sys.resolvePath(boot.getApp(), evalparts[1]);
+            }
+            return sys.resolvePath(source, evalparts[0]);
+        } else {
+            return this._param;
+        }
+    }
+    get isDisabled(): boolean { return !!this._state; }
     set isDisabled(v) {
         let s: IBindingState;
         v = !!v;

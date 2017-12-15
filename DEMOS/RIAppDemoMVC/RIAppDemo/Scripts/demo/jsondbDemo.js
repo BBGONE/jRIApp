@@ -139,6 +139,13 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(CustomerBag.prototype, "dateFormat", {
+            get: function () {
+                return "DD.MM.YYYY HH:mm:ss";
+            },
+            enumerable: true,
+            configurable: true
+        });
         return CustomerBag;
     }(RIAPP.JsonBag));
     exports.CustomerBag = CustomerBag;
@@ -321,6 +328,13 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         });
         Object.defineProperty(DemoApplication.prototype, "customerVM", {
             get: function () { return this._customerVM; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DemoApplication.prototype, "dateFormat", {
+            get: function () {
+                return "MM.DD.YYYY HH:mm:ss";
+            },
             enumerable: true,
             configurable: true
         });
