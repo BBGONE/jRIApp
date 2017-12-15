@@ -5,11 +5,11 @@
 /// <reference path="../thirdparty/qtip2.d.ts" />
 declare module "jriapp_ui/content/int" {
     import { IContentOptions, ITemplateInfo } from "jriapp/int";
-    export const css: {
-        content: string;
-        required: string;
-        checkbox: string;
-    };
+    export const enum css {
+        content = "ria-content-field",
+        required = "ria-required-field",
+        checkbox = "ria-checkbox",
+    }
     export interface IDataContentAttr {
         fieldName?: string;
         readOnly?: boolean;

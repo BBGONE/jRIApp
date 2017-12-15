@@ -11,11 +11,11 @@ import {
 
 const utils = Utils, coreUtils = utils.core, checks = utils.check, parser = Parser;
 
-export const css = {
-    content: "ria-content-field",
-    required: "ria-required-field",
-    checkbox: "ria-checkbox"
-};
+export const enum css {
+    content = "ria-content-field",
+    required = "ria-required-field",
+    checkbox = "ria-checkbox"
+}
 
 // the result of parsing of the data-content attribute
 export interface IDataContentAttr {
@@ -46,10 +46,13 @@ export function parseContentAttr(contentAttr: string): IContentOptions {
     const attr: IDataContentAttr = tempOpts[0];
     if (!attr.template && !!attr.fieldName) {
         const bindInfo: IBindingInfo = {
-            target: null, source: null,
-            targetPath: null, sourcePath: attr.fieldName,
+            target: null,
+            source: null,
+            targetPath: null,
+            sourcePath: attr.fieldName,
             mode: "OneWay",
-            converter: null, converterParam: null
+            converter: null,
+            param: null
         };
 
         contentOptions.bindingInfo = bindInfo;

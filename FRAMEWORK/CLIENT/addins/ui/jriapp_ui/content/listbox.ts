@@ -203,10 +203,14 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         }
 
         const options: IBindingOptions = {
-            target: this, source: this._dataContext,
-            targetPath: PROP_NAME.value, sourcePath: this._options.fieldName,
+            target: this,
+            source: this._dataContext,
+            targetPath: PROP_NAME.value,
+            sourcePath: this._options.fieldName,
             mode: BINDING_MODE.OneWay,
-            converter: null, converterParam: null, isSourceFixed: false
+            converter: null,
+            param: null,
+            isSourceFixed: false
         };
         return this.app.bind(options);
     }
@@ -216,10 +220,14 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         }
 
         const options: IBindingOptions = {
-            target: listBox, source: this._dataContext,
-            targetPath: PROP_NAME.selectedValue, sourcePath: this._options.fieldName,
+            target: listBox,
+            source: this._dataContext,
+            targetPath: PROP_NAME.selectedValue,
+            sourcePath: this._options.fieldName,
             mode: BINDING_MODE.TwoWay,
-            converter: null, converterParam: null, isSourceFixed: false
+            converter: null,
+            param: null,
+            isSourceFixed: false
         };
         return this.app.bind(options);
     }

@@ -80,7 +80,7 @@ export function getBindingOptions(
     defaultSource: any) {
     const bindingOpts: IBindingOptions = {
         mode: BINDING_MODE.OneWay,
-        converterParam: null,
+        param: null,
         converter: null,
         targetPath: null,
         sourcePath: null,
@@ -110,8 +110,8 @@ export function getBindingOptions(
         bindingOpts.targetPath = bindInfo.targetPath;
     }
 
-    if (!!bindInfo.converterParam) {
-        bindingOpts.converterParam = bindInfo.converterParam;
+    if (!!bindInfo.param) {
+        bindingOpts.param = bindInfo.param;
     }
 
     if (!!bindInfo.mode) {
@@ -180,9 +180,14 @@ export class Binding extends BaseObject implements IBinding {
     constructor(options: IBindingOptions) {
         super();
         const opts: IBindingOptions = coreUtils.extend({
-            target: null, source: null,
-            targetPath: null, sourcePath: null, mode: BINDING_MODE.OneWay,
-            converter: null, converterParam: null, isSourceFixed: false
+            target: null,
+            source: null,
+            targetPath: null,
+            sourcePath: null,
+            mode: BINDING_MODE.OneWay,
+            converter: null,
+            param: null,
+            isSourceFixed: false
         }, options);
 
         if (checks.isString(opts.mode)) {
@@ -211,7 +216,7 @@ export class Binding extends BaseObject implements IBinding {
         this._state = null;
         this._mode = opts.mode;
         this._converter = !opts.converter ? null : opts.converter;
-        this._converterParam = opts.converterParam;
+        this._converterParam = opts.param;
         this._srcPath = sys.getPathParts(opts.sourcePath);
         this._tgtPath = sys.getPathParts(opts.targetPath);
         if (this._tgtPath.length < 1) {
@@ -727,8 +732,8 @@ export class Binding extends BaseObject implements IBinding {
     get mode() { return this._mode; }
     get converter() { return this._converter; }
     set converter(v: IConverter) { this._converter = v; }
-    get converterParam() { return this._converterParam; }
-    set converterParam(v) { this._converterParam = v; }
+    get param() { return this._converterParam; }
+    set param(v) { this._converterParam = v; }
     get isSourceFixed() { return this._srcFixed; }
     get isDisabled() { return !!this._state; }
     set isDisabled(v) {

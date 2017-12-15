@@ -107,25 +107,25 @@
         <legend>Radios elements (click on them to fill the stackpanels)</legend>
         <label class="radioItem">
             <input type="radio" class="ria-radio" name="radioItem"
-                   data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue1}"/>
+                   data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,param=radioValue1}"/>
             <span data-bind1="{this.value,to=radioValues['radioValue1'].value}" 
                   data-bind2="{this.toolTip,to=radioValues['radioValue1'].comment}"></span>
         </label>
         <label class="radioItem">
             <input type="radio" class="ria-radio" name="radioItem"
-                   data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue2}"/>
+                   data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,param=radioValue2}"/>
             <span data-bind1="{this.value,to=radioValues['radioValue2'].value}" 
                   data-bind2="{this.toolTip,to=radioValues['radioValue2'].comment}"></span>
         </label>
         <label class="radioItem">
             <input type="radio" class="ria-radio" name="radioItem"
-                   data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue3}"/>
+                   data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,param=radioValue3}"/>
             <span data-bind1="{this.value,to=radioValues['radioValue3'].value}" 
                   data-bind2="{this.toolTip,to=radioValues['radioValue3'].comment}"></span>
         </label>
         <label class="radioItem">
             <input type="radio" class="ria-radio" name="radioItem"
-                   data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,converterParam=radioValue4}"/>
+                   data-bind="{this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,param=radioValue4}"/>
             <span data-bind1="{this.value,to=radioValues['radioValue4'].value}" 
                   data-bind2="{this.toolTip,to=radioValues['radioValue4'].comment}"></span>
         </label>
@@ -162,7 +162,7 @@
             <span style="color: Blue;" data-bind="{this.value,to=radioValue}"></span>
         </strong>
         <br/>
-        Time:&nbsp;<span data-bind="{this.value,to=time,converter=dateTimeConverter,converterParam='HH:mm:ss'}"></span>
+        Time:&nbsp;<span data-bind="{this.value,to=time,converter=dateTimeConverter,param='HH:mm:ss'}"></span>
     </div>
 </script>
 <script id="stackPanelItemTemplateH" type="text/html" data-role="template">
@@ -171,12 +171,12 @@
             <span style="color: Blue;" data-bind="{this.value,to=radioValue}"></span>
         </strong>
         <br/>
-        Time:&nbsp;<span data-bind="{this.value,to=time,converter=dateTimeConverter,converterParam='HH:mm:ss'}"></span>
+        Time:&nbsp;<span data-bind="{this.value,to=time,converter=dateTimeConverter,param='HH:mm:ss'}"></span>
     </div>
 </script>
 <script id="ItemListTemplate" type="text/html" data-role="template">
     <div style="padding-left: 5px;">
         <span style="color: Blue; margin-right: 10px;" data-bind="{this.value,to=radioValue}"></span>Time:&nbsp;
-        <span data-bind="{this.value,to=time,converter=dateTimeConverter,converterParam='HH:mm:ss'}"></span>
+        <span data-bind="{this.value,to=time,converter=dateTimeConverter,param='HH:mm:ss'}"></span>
     </div>
 </script>

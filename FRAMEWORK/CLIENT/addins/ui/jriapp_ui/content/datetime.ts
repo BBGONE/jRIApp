@@ -13,16 +13,16 @@ export class DateTimeContent extends BasicContent {
         const finf = this.getFieldInfo(), defaults = bootstrap.defaults;
         switch (finf.dataType) {
             case DATA_TYPE.DateTime:
-                options.converterParam = defaults.dateTimeFormat;
+                options.param = defaults.dateTimeFormat;
                 break;
             case DATA_TYPE.Date:
-                options.converterParam = defaults.dateFormat;
+                options.param = defaults.dateFormat;
                 break;
             case DATA_TYPE.Time:
-                options.converterParam = defaults.timeFormat;
+                options.param = defaults.timeFormat;
                 break;
             default:
-                options.converterParam = null;
+                options.param = null;
                 break;
         }
         return options;

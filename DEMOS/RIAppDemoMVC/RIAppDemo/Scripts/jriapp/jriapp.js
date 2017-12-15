@@ -2485,7 +2485,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
     function getBindingOptions(bindInfo, defaultTarget, defaultSource) {
         var bindingOpts = {
             mode: 1,
-            converterParam: null,
+            param: null,
             converter: null,
             targetPath: null,
             sourcePath: null,
@@ -2511,8 +2511,8 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         if (!!bindInfo.targetPath) {
             bindingOpts.targetPath = bindInfo.targetPath;
         }
-        if (!!bindInfo.converterParam) {
-            bindingOpts.converterParam = bindInfo.converterParam;
+        if (!!bindInfo.param) {
+            bindingOpts.param = bindInfo.param;
         }
         if (!!bindInfo.mode) {
             bindingOpts.mode = bindModeMap[bindInfo.mode];
@@ -2563,7 +2563,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             var opts = coreUtils.extend({
                 target: null, source: null,
                 targetPath: null, sourcePath: null, mode: 1,
-                converter: null, converterParam: null, isSourceFixed: false
+                converter: null, param: null, isSourceFixed: false
             }, options);
             if (checks.isString(opts.mode)) {
                 opts.mode = bindModeMap[opts.mode];
@@ -2585,7 +2585,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             _this._state = null;
             _this._mode = opts.mode;
             _this._converter = !opts.converter ? null : opts.converter;
-            _this._converterParam = opts.converterParam;
+            _this._converterParam = opts.param;
             _this._srcPath = sys.getPathParts(opts.sourcePath);
             _this._tgtPath = sys.getPathParts(opts.targetPath);
             if (_this._tgtPath.length < 1) {
@@ -3073,7 +3073,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Binding.prototype, "converterParam", {
+        Object.defineProperty(Binding.prototype, "param", {
             get: function () { return this._converterParam; },
             set: function (v) { this._converterParam = v; },
             enumerable: true,
@@ -4366,6 +4366,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.6.4";
+    exports.VERSION = "2.7.0";
     bootstrap_7.Bootstrap._initFramework();
 });

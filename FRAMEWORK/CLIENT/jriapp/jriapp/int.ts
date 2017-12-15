@@ -176,7 +176,7 @@ export interface IDataBindingService extends IDisposable {
 // --Binding interfaces
 export interface IBindingOptions {
     mode?: BINDING_MODE;
-    converterParam?: any;
+    param?: any;
     converter?: IConverter;
     targetPath: string;
     sourcePath?: string;
@@ -190,7 +190,7 @@ export type TBindingMode = "OneTime" | "OneWay" | "TwoWay" | "BackWay";
 // the result of parsing a data binding expression -typically all properties are strings here
 export interface IBindingInfo {
     mode?: TBindingMode;
-    converterParam?: any;
+    param?: any;
     converter?: any;
     targetPath: string;
     sourcePath?: string;
@@ -208,7 +208,7 @@ export interface IBinding extends IBaseObject {
     targetValue: any;
     mode: BINDING_MODE;
     converter: IConverter;
-    converterParam: any;
+    param: any;
     isSourceFixed: boolean;
     isDisabled: boolean;
 }

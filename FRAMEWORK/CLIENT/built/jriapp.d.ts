@@ -200,7 +200,7 @@ declare module "jriapp/int" {
     }
     export interface IBindingOptions {
         mode?: BINDING_MODE;
-        converterParam?: any;
+        param?: any;
         converter?: IConverter;
         targetPath: string;
         sourcePath?: string;
@@ -211,7 +211,7 @@ declare module "jriapp/int" {
     export type TBindingMode = "OneTime" | "OneWay" | "TwoWay" | "BackWay";
     export interface IBindingInfo {
         mode?: TBindingMode;
-        converterParam?: any;
+        param?: any;
         converter?: any;
         targetPath: string;
         sourcePath?: string;
@@ -228,7 +228,7 @@ declare module "jriapp/int" {
         targetValue: any;
         mode: BINDING_MODE;
         converter: IConverter;
-        converterParam: any;
+        param: any;
         isSourceFixed: boolean;
         isDisabled: boolean;
     }
@@ -821,7 +821,7 @@ declare module "jriapp/binding" {
         targetValue: any;
         readonly mode: BINDING_MODE;
         converter: IConverter;
-        converterParam: any;
+        param: any;
         readonly isSourceFixed: boolean;
         isDisabled: boolean;
     }
@@ -1000,5 +1000,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.6.4";
+    export const VERSION = "2.7.0";
 }

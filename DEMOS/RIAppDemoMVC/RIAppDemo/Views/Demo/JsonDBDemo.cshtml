@@ -192,7 +192,7 @@
                         ModifiedDate:
                     </td>
                     <td>
-                        <input type="text" style="width:180px;" data-bind="{this.value,to=Customer[ModifiedDate],converter=dateTimeConverter,converterParam='DD.MM.YYYY HH:mm:ss',mode=TwoWay}" />
+                        <input type="text" style="width:180px;" data-bind="{this.value,to=Customer[ModifiedDate],converter=dateTimeConverter,param='DD.MM.YYYY HH:mm:ss',mode=TwoWay}" />
                     </td>
                 </tr>
             </tbody>
@@ -223,7 +223,7 @@
 </script>
 
 <script id="dateTemplate" type="text/html" data-role="template">
-    <span data-bind="{this.value,to=Customer[ModifiedDate],converter=dateTimeConverter,converterParam='DD.MM.YYYY HH:mm:ss'}"></span>
+    <span data-bind="{this.value,to=Customer[ModifiedDate],converter=dateTimeConverter,param='DD.MM.YYYY HH:mm:ss'}"></span>
 </script>
 
 <script id="custDetTemplate" type="text/html" data-role="template">

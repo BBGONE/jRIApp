@@ -7,7 +7,7 @@ import * as DEMODB from "../demo/demoDB";
 import { DemoApplication } from "./app";
 import { OrderVM } from "./orderVM";
 
-let utils = RIAPP.Utils, $ = uiMOD.$;
+const utils = RIAPP.Utils, $ = uiMOD.$;
 
 export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     private _dataGrid: uiMOD.DataGrid;
