@@ -340,7 +340,7 @@ declare module "jriapp/utils/parser" {
     export class Parser {
         static parseOptions(options: string): any[];
         static parseBindings(bindings: string[]): any[];
-        static parseViewOptions(options: string, app: any, defSource: any): any;
+        static parseViewOptions(options: string, app: any, dataContext: any): any;
     }
 }
 declare module "jriapp/elview" {

@@ -19,6 +19,18 @@ sys.isBinding = (obj: any) => {
     return (!!obj && obj instanceof Binding);
 };
 
+interface IBindingState {
+    source: any;
+    target: any;
+}
+
+const bindModeMap: IIndexer<BINDING_MODE> = {
+    OneTime: BINDING_MODE.OneTime,
+    OneWay: BINDING_MODE.OneWay,
+    TwoWay: BINDING_MODE.TwoWay,
+    BackWay: BINDING_MODE.BackWay
+};
+
 /**
  * Unresolved binding - property path is invalid or source is empty
  */
@@ -60,18 +72,6 @@ function fn_reportMaxRec(bindTo: BindTo, src: any, tgt: any, spath: string, tpat
     msg += ", target path: '" + tpath + "'";
 
     log.error(msg);
-}
-
-const bindModeMap: IIndexer<BINDING_MODE> = {
-    OneTime: BINDING_MODE.OneTime,
-    OneWay: BINDING_MODE.OneWay,
-    TwoWay: BINDING_MODE.TwoWay,
-    BackWay: BINDING_MODE.BackWay
-};
-
-interface IBindingState {
-    source: any;
-    target: any;
 }
 
 export function getBindingOptions(bindInfo: IBindingInfo, defTarget: IBaseObject, dataContext: any): IBindingOptions {
@@ -571,7 +571,7 @@ export class Binding extends BaseObject implements IBinding {
             if (!this._converter) {
                 this.targetValue = this.sourceValue;
             } else {
-                this.targetValue = this._converter.convertToTarget(this.sourceValue, this.param, this._srcEnd);
+                this.targetValue = this._converter.convertToTarget(this.sourceValue, this.param, this.source);
             }
         } catch (ex) {
             utils.err.reThrow(ex, this.handleError(ex, this));
@@ -585,7 +585,7 @@ export class Binding extends BaseObject implements IBinding {
             if (!this._converter) {
                 this.sourceValue = this.targetValue;
             } else {
-                this.sourceValue = this._converter.convertToSource(this.targetValue, this.param, this._srcEnd);
+                this.sourceValue = this._converter.convertToSource(this.targetValue, this.param, this.source);
             }
         } catch (ex) {
             if (!sys.isValidationError(ex) || !viewChecks.isElView(this._tgtEnd)) {
@@ -647,7 +647,7 @@ export class Binding extends BaseObject implements IBinding {
                     this._cntUSrc -= 1;
                     // sanity check
                     if (this._cntUSrc < 0) {
-                        throw new Error("Invalid operation: this._cntUSrc = " + this._cntUSrc);
+                        throw new Error("Invalid Operation: this._cntUSrc = " + this._cntUSrc);
                     }
                 }
             }
@@ -707,8 +707,7 @@ export class Binding extends BaseObject implements IBinding {
         let res: any = null;
         if (this._srcPath.length === 0) {
             res = this._srcEnd;
-        }
-        if (!!this._srcEnd) {
+        } else if (!!this._srcEnd) {
             const prop = this._srcPath[this._srcPath.length - 1];
             res = sys.getProp(this._srcEnd, prop);
         }
@@ -723,7 +722,9 @@ export class Binding extends BaseObject implements IBinding {
     }
     get targetValue(): any {
         let res: any = null;
-        if (!!this._tgtEnd) {
+        if (this._tgtPath.length === 0) {
+            res = this._tgtEnd;
+        } else if (!!this._tgtEnd) {
             const prop = this._tgtPath[this._tgtPath.length - 1];
             res = sys.getProp(this._tgtEnd, prop);
         }

@@ -108,6 +108,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         TOKEN["EVAL"] = "eval";
         TOKEN["THIS"] = "this.";
         TOKEN["PARAM"] = "param";
+        TOKEN["TARGET_PATH"] = "targetPath";
     })(TOKEN || (TOKEN = {}));
     var PARSE_TYPE;
     (function (PARSE_TYPE) {
@@ -115,6 +116,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         PARSE_TYPE[PARSE_TYPE["BINDING"] = 1] = "BINDING";
         PARSE_TYPE[PARSE_TYPE["VIEW"] = 2] = "VIEW";
     })(PARSE_TYPE || (PARSE_TYPE = {}));
+    var len_this = "this.".length;
     function trimOuterBraces(val) {
         return strUtils.fastTrim(val.replace(trimOuterBracesRX, ""));
     }
@@ -122,21 +124,12 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         return (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}"));
     }
     function _checkKeyVal(kv) {
-        if (kv.val === "" && strUtils.startsWith(kv.key, "this.")) {
-            kv.val = kv.key.substr(5);
-            kv.key = "targetPath";
+        if (checks.isNumeric(kv.val)) {
+            kv.val = Number(kv.val);
         }
-    }
-    function _addKeyVal(kv, parts) {
-        if (kv.val) {
-            if (checks.isNumeric(kv.val)) {
-                kv.val = Number(kv.val);
-            }
-            else if (checks.isBoolString(kv.val)) {
-                kv.val = coreUtils.parseBool(kv.val);
-            }
+        else if (checks.isBoolString(kv.val)) {
+            kv.val = coreUtils.parseBool(kv.val);
         }
-        parts.push(kv);
     }
     function _getBraceParts(val, firstOnly) {
         var i, s = "", ch, literal, cnt = 0;
@@ -212,7 +205,8 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             }
             if (!literal && ch === ",") {
                 if (!!kv.key) {
-                    _addKeyVal(kv, parts);
+                    _checkKeyVal(kv);
+                    parts.push(kv);
                     kv = { tag: null, key: "", val: "" };
                     isKey = true;
                 }
@@ -230,14 +224,14 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             }
         }
         if (!!kv.key) {
-            _addKeyVal(kv, parts);
+            _checkKeyVal(kv);
+            parts.push(kv);
         }
         parts.forEach(function (kv) {
             kv.key = strUtils.fastTrim(kv.key);
             if (checks.isString(kv.val)) {
                 kv.val = strUtils.fastTrim(kv.val);
             }
-            _checkKeyVal(kv);
         });
         parts = parts.filter(function (kv) {
             return kv.val !== "";
@@ -284,7 +278,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         }
         return parts;
     }
-    function _parseOption(parse_type, part, app, defSource) {
+    function _parseOption(parse_type, part, app, dataContext) {
         var res = parse_type === 1 ? {
             targetPath: "",
             sourcePath: "",
@@ -303,15 +297,19 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         var kvals = _getKeyVals(part);
         kvals.forEach(function (kv) {
             var isEval = false, evalparts;
-            var isString = checks.isString(kv.val), isGetEval = parse_type === 2 || parse_type === 1;
-            if (isGetEval && isString && kv.tag === "eval") {
+            var isString = checks.isString(kv.val), isTryGetEval = parse_type === 2 || parse_type === 1;
+            if (parse_type === 1 && !kv.val && strUtils.startsWith(kv.key, "this.")) {
+                kv.val = kv.key.substr(len_this);
+                kv.key = "targetPath";
+            }
+            if (isTryGetEval && isString && kv.tag === "eval") {
                 evalparts = _getEvalParts(kv.val);
                 isEval = evalparts.length > 0;
             }
             if (isEval) {
                 switch (parse_type) {
                     case 2:
-                        var source = defSource || app;
+                        var source = dataContext || app;
                         if (evalparts.length > 1) {
                             source = sys.resolvePath(app, evalparts[1]);
                         }
@@ -328,7 +326,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                 }
             }
             else if (isString && isInsideBraces(kv.val)) {
-                res[kv.key] = _parseOption(parse_type, kv.val, app, defSource);
+                res[kv.key] = _parseOption(parse_type, kv.val, app, dataContext);
             }
             else {
                 if (isString) {
@@ -341,7 +339,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         });
         return res;
     }
-    function _parseOptions(parse_type, strs, app, defSource) {
+    function _parseOptions(parse_type, strs, app, dataContext) {
         var res = [];
         var parts = [];
         for (var i = 0; i < strs.length; i += 1) {
@@ -357,7 +355,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             }
         }
         for (var j = 0; j < parts.length; j += 1) {
-            res.push(_parseOption(parse_type, parts[j], app, defSource));
+            res.push(_parseOption(parse_type, parts[j], app, dataContext));
         }
         return res;
     }
@@ -370,8 +368,8 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         Parser.parseBindings = function (bindings) {
             return _parseOptions(1, bindings, null, null);
         };
-        Parser.parseViewOptions = function (options, app, defSource) {
-            var res = _parseOptions(2, [options], app, defSource);
+        Parser.parseViewOptions = function (options, app, dataContext) {
+            var res = _parseOptions(2, [options], app, dataContext);
             return (!!res && res.length > 0) ? res[0] : {};
         };
         return Parser;
@@ -2470,6 +2468,12 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
     sys.isBinding = function (obj) {
         return (!!obj && obj instanceof Binding);
     };
+    var bindModeMap = {
+        OneTime: 0,
+        OneWay: 1,
+        TwoWay: 2,
+        BackWay: 3
+    };
     function fn_reportUnResolved(bindTo, root, path, propName) {
         if (!debug.isDebugging()) {
             return;
@@ -2505,12 +2509,6 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         msg += ", target path: '" + tpath + "'";
         log.error(msg);
     }
-    var bindModeMap = {
-        OneTime: 0,
-        OneWay: 1,
-        TwoWay: 2,
-        BackWay: 3
-    };
     function getBindingOptions(bindInfo, defTarget, dataContext) {
         var bindingOpts = {
             targetPath: null,
@@ -2900,7 +2898,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     this.targetValue = this.sourceValue;
                 }
                 else {
-                    this.targetValue = this._converter.convertToTarget(this.sourceValue, this.param, this._srcEnd);
+                    this.targetValue = this._converter.convertToTarget(this.sourceValue, this.param, this.source);
                 }
             }
             catch (ex) {
@@ -2916,7 +2914,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     this.sourceValue = this.targetValue;
                 }
                 else {
-                    this.sourceValue = this._converter.convertToSource(this.targetValue, this.param, this._srcEnd);
+                    this.sourceValue = this._converter.convertToSource(this.targetValue, this.param, this.source);
                 }
             }
             catch (ex) {
@@ -2972,7 +2970,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     finally {
                         this._cntUSrc -= 1;
                         if (this._cntUSrc < 0) {
-                            throw new Error("Invalid operation: this._cntUSrc = " + this._cntUSrc);
+                            throw new Error("Invalid Operation: this._cntUSrc = " + this._cntUSrc);
                         }
                     }
                 }
@@ -3055,7 +3053,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 if (this._srcPath.length === 0) {
                     res = this._srcEnd;
                 }
-                if (!!this._srcEnd) {
+                else if (!!this._srcEnd) {
                     var prop = this._srcPath[this._srcPath.length - 1];
                     res = sys.getProp(this._srcEnd, prop);
                 }
@@ -3074,7 +3072,10 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         Object.defineProperty(Binding.prototype, "targetValue", {
             get: function () {
                 var res = null;
-                if (!!this._tgtEnd) {
+                if (this._tgtPath.length === 0) {
+                    res = this._tgtEnd;
+                }
+                else if (!!this._tgtEnd) {
                     var prop = this._tgtPath[this._tgtPath.length - 1];
                     res = sys.getProp(this._tgtEnd, prop);
                 }
