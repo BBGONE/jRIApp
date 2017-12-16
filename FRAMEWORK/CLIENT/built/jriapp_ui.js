@@ -6554,6 +6554,11 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
         PROP_NAME["parentControl"] = "parentControl";
         PROP_NAME["isVisible"] = "isVisible";
     })(PROP_NAME || (PROP_NAME = {}));
+    function _removeToolTips(toolTips) {
+        toolTips.forEach(function (el) {
+            baseview_8.fn_addToolTip(el, null);
+        });
+    }
     var Pager = (function (_super) {
         __extends(Pager, _super);
         function Pager(options) {
@@ -6577,7 +6582,6 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             _this._options = options;
             options.sliderSize = options.sliderSize < 3 ? 3 : options.sliderSize;
             _this._el = options.el;
-            dom.addClass([_this._el], "ria-pager");
             _this._objId = coreUtils.getNewID("pgr");
             _this._rowsPerPage = 0;
             _this._rowCount = 0;
@@ -6607,26 +6611,40 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             bootstrap_18.selectableProviderWeakMap.set(_this._el, _this);
             return _this;
         }
+        Pager.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            bootstrap_18.selectableProviderWeakMap.delete(this._el);
+            this.parentControl = null;
+            this._pageDebounce.dispose();
+            this._dsDebounce.dispose();
+            this._unbindDS();
+            this._clearContent();
+            dom.events.offNS(this._el, this._objId);
+            this._el = null;
+            this._options = {};
+            _super.prototype.dispose.call(this);
+        };
         Pager.prototype._addToolTip = function (el, tip) {
             baseview_8.fn_addToolTip(el, tip);
             if (!!tip) {
                 this._toolTips.push(el);
             }
         };
-        Pager.prototype._cleanUp = function () {
-            var _this = this;
-            var arr = this._toolTips;
-            this._toolTips = [];
-            arr.forEach(function (el) {
-                _this._addToolTip(el, null);
-            });
-        };
         Pager.prototype._createElement = function (tag) {
             return doc.createElement(tag);
         };
+        Pager.prototype._clearContent = function () {
+            this._el.innerHTML = "";
+            _removeToolTips(this._toolTips);
+            this._toolTips = [];
+        };
         Pager.prototype.render = function () {
-            this._clearContent();
-            var docFr = doc.createDocumentFragment();
+            var div = doc.createElement("div"), docFr = doc.createDocumentFragment(), oldToolTips = this._toolTips;
+            this._toolTips = [];
+            dom.addClass([div], "ria-pager");
             if (this.rowsPerPage <= 0) {
                 return;
             }
@@ -6711,7 +6729,15 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 docFr.appendChild(spacer);
                 docFr.appendChild(span);
             }
-            this._el.appendChild(docFr);
+            div.appendChild(docFr);
+            var old = this._el.firstChild;
+            if (!old) {
+                this._el.appendChild(div);
+            }
+            else {
+                this._el.replaceChild(div, this._el.firstChild);
+            }
+            _removeToolTips(oldToolTips);
         };
         Pager.prototype._onPageSizeChanged = function (ds) {
             this.rowsPerPage = ds.pageSize;
@@ -6721,23 +6747,6 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
         };
         Pager.prototype._onTotalCountChanged = function (ds) {
             this.rowCount = ds.totalCount;
-        };
-        Pager.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            bootstrap_18.selectableProviderWeakMap.delete(this._el);
-            this.parentControl = null;
-            this._pageDebounce.dispose();
-            this._dsDebounce.dispose();
-            this._unbindDS();
-            this._clearContent();
-            dom.events.offNS(this._el, this._objId);
-            dom.removeClass([this.el], "ria-pager");
-            this._el = null;
-            this._options = {};
-            _super.prototype.dispose.call(this);
         };
         Pager.prototype._bindDS = function () {
             var self = this, ds = this.dataSource;
@@ -6766,10 +6775,6 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 return;
             }
             ds.objEvents.offNS(self._objId);
-        };
-        Pager.prototype._clearContent = function () {
-            this._cleanUp();
-            this._el.innerHTML = "";
         };
         Pager.prototype._reset = function () {
             var ds = this.dataSource;

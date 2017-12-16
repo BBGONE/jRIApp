@@ -48,6 +48,12 @@ const enum PROP_NAME {
     isVisible = "isVisible"
 }
 
+function _removeToolTips(toolTips: Element[]): void {
+    toolTips.forEach((el) => {
+        fn_addToolTip(el, null);
+    });
+}
+
 export class Pager extends BaseObject implements ISelectableProvider {
     private _el: HTMLElement;
     private _objId: string;
@@ -87,7 +93,6 @@ export class Pager extends BaseObject implements ISelectableProvider {
         options.sliderSize = options.sliderSize < 3 ? 3 : options.sliderSize;
 
         this._el = options.el;
-        dom.addClass([this._el], css.pager);
         this._objId = coreUtils.getNewID("pgr");
         this._rowsPerPage = 0;
         this._rowCount = 0;
@@ -119,25 +124,40 @@ export class Pager extends BaseObject implements ISelectableProvider {
         this._bindDS();
         selectableProviderWeakMap.set(this._el, this);
     }
+    dispose() {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        selectableProviderWeakMap.delete(this._el);
+        this.parentControl = null;
+        this._pageDebounce.dispose();
+        this._dsDebounce.dispose();
+        this._unbindDS();
+        this._clearContent();
+        dom.events.offNS(this._el, this._objId);
+        this._el = null;
+        this._options = <any>{};
+        super.dispose();
+    }
     protected _addToolTip(el: Element, tip: string) {
         fn_addToolTip(el, tip);
         if (!!tip) {
             this._toolTips.push(el);
         }
     }
-    protected _cleanUp() {
-        const arr = this._toolTips;
-        this._toolTips = [];
-        arr.forEach((el) => {
-            this._addToolTip(el, null);
-        });
-    }
     protected _createElement(tag: string): HTMLElement {
         return doc.createElement(tag);
     }
-    protected render() {
-        this._clearContent();
-        const docFr = doc.createDocumentFragment();
+    protected _clearContent(): void {
+        this._el.innerHTML = "";
+        _removeToolTips(this._toolTips);
+        this._toolTips = [];
+    }
+    protected render(): void {
+        const div = doc.createElement("div"), docFr = doc.createDocumentFragment(), oldToolTips = this._toolTips;
+        this._toolTips = [];
+        dom.addClass([div], css.pager);
 
         if (this.rowsPerPage <= 0) {
             return;
@@ -237,7 +257,15 @@ export class Pager extends BaseObject implements ISelectableProvider {
             docFr.appendChild(spacer);
             docFr.appendChild(span);
         }
-        this._el.appendChild(docFr);
+        div.appendChild(docFr);
+
+        const old = this._el.firstChild;
+        if (!old) {
+            this._el.appendChild(div);
+        } else {
+            this._el.replaceChild(div, this._el.firstChild);
+        }
+        _removeToolTips(oldToolTips);
     }
     protected _onPageSizeChanged(ds: ICollection<ICollectionItem>) {
         this.rowsPerPage = ds.pageSize;
@@ -247,23 +275,6 @@ export class Pager extends BaseObject implements ISelectableProvider {
     }
     protected _onTotalCountChanged(ds: ICollection<ICollectionItem>) {
         this.rowCount = ds.totalCount;
-    }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        selectableProviderWeakMap.delete(this._el);
-        this.parentControl = null;
-        this._pageDebounce.dispose();
-        this._dsDebounce.dispose();
-        this._unbindDS();
-        this._clearContent();
-        dom.events.offNS(this._el, this._objId);
-        dom.removeClass([this.el], css.pager);
-        this._el = null;
-        this._options = <any>{};
-        super.dispose();
     }
     protected _bindDS() {
         const self = this, ds = this.dataSource;
@@ -292,10 +303,6 @@ export class Pager extends BaseObject implements ISelectableProvider {
             return;
         }
         ds.objEvents.offNS(self._objId);
-    }
-    protected _clearContent() {
-        this._cleanUp();
-        this._el.innerHTML = "";
     }
     protected _reset() {
         const ds = this.dataSource;
