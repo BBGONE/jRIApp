@@ -1,98 +1,116 @@
-﻿@{
+﻿@using RIAPP.DataService.Mvc.Utils
+@{
     Layout = "~/Views/Shared/_LayoutDemo.cshtml";
 }
 @{
     ViewBag.Title = "Data Binding Demo";
 }
 
-<style type="text/css">
-    #demoHeader label { color: Blue; }
+@section CssImport
+{
+    <style type="text/css">
+        #demoHeader label {
+            color: Blue;
+        }
 
-    #demoContent {
-        height: 600px;
-        overflow: visible;
-        position: relative;
-        vertical-align: top;
-    }
+        #demoContent {
+            height: 600px;
+            overflow: visible;
+            position: relative;
+            vertical-align: top;
+        }
 
-    #demoContent > fieldset { border-radius: 5px; }
+            #demoContent > fieldset {
+                border-radius: 5px;
+            }
 
-    #demoContent fieldset > legend {
-        color: Blue;
-        font-weight: bold;
-    }
+            #demoContent fieldset > legend {
+                color: Blue;
+                font-weight: bold;
+            }
 
-    #demoContent .radioItem {
-        display: inline-block;
-        margin: 4px;
-        padding: 4px;
-    }
+            #demoContent .radioItem {
+                display: inline-block;
+                margin: 4px;
+                padding: 4px;
+            }
 
-    .stackPanelItem { width: 170px; }
+        .stackPanelItem {
+            width: 170px;
+        }
 
-    .stackPanelItem fieldset { border-radius: 5px; }
+            .stackPanelItem fieldset {
+                border-radius: 5px;
+            }
 
-    .stackPanelItem fieldset legend {
-        color: Blue;
-        font-weight: bold;
-    }
+                .stackPanelItem fieldset legend {
+                    color: Blue;
+                    font-weight: bold;
+                }
 
-    .leftOffset{
-        margin: 5px 5px 5px 0px;
-    }
+        .leftOffset {
+            margin: 5px 5px 5px 0px;
+        }
 
-    .testBtn{
-        min-width:120px; 
-        min-height:30px;
-    }
+        .testBtn {
+            min-width: 120px;
+            min-height: 30px;
+        }
 
-    a.testBtn.testClass {
-        background-color: darkgray;
-        background-image: none;
-    }
+        a.testBtn.testClass {
+            background-color: darkgray;
+            background-image: none;
+        }
 
-    label {
-        color: blue;
-    }
-</style>
+        label {
+            color: blue;
+        }
+    </style>
+    <link href="@Url.Content("~/Scripts/jquery/external/MonthPicker.css",true)" rel="stylesheet" type="text/css" />
+}
+
+@section JSImport
+{
+    <script src="@Url.Content("~/Scripts/jquery/external/MonthPicker.js", true)" type="text/javascript"></script>
+}
 
 <script type="text/javascript">
-    require(["jriapp", "bindingsDemo"],
-        function(RIAPP, DEMO) {
-            //create and start application here
-            RIAPP.bootstrap.startApp(function() {
+        require(["jriapp", "bindingsDemo"],
+            function (RIAPP, DEMO) {
+                //create and start application here
+                RIAPP.bootstrap.startApp(function () {
                     return new DEMO.DemoApplication(DEMO.appOptions);
                 },
-                function(app) {
-                    //just an example of how to create the data binding in code 
-                    //store the reference to the Binding's instance - in case we need to destroy it when we want
-                    //BUT - even without storing the reference it can not be removed by garbage collector, because it subscribed to property changes
-                    //in the TestObject (and TestObject's instance hold references to the subscriber)
-                    //P.S.- we really don't need to use data binding here, because we can do the same logic inside the TestObject's code
-                    //but can be used for testing purposes
-                    app.UC.createdBinding = app.bind({
-                        sourcePath: 'testProperty1',
-                        targetPath: 'testProperty2',
-                        source: app.testObject,
-                        mode: 'OneWay',
-                        target: app.testObject,
-                        converter: app.getConverter('uppercaseConverter'),
-                        param: null
+                    function (app) {
+                        //just an example of how to create the data binding in code
+                        //store the reference to the Binding's instance - in case we need to destroy it when we want
+                        //BUT - even without storing the reference it can not be removed by garbage collector, because it subscribed to property changes
+                        //in the TestObject (and TestObject's instance hold references to the subscriber)
+                        //P.S.- we really don't need to use data binding here, because we can do the same logic inside the TestObject's code
+                        //but can be used for testing purposes
+                        app.UC.createdBinding = app.bind({
+                            sourcePath: 'testProperty1',
+                            targetPath: 'testProperty2',
+                            source: app.testObject,
+                            mode: 'OneWay',
+                            target: app.testObject,
+                            converter: app.getConverter('uppercaseConverter'),
+                            param: null
+                        });
+                    }).then(function () {
+                        $("#demoContent").animate({ opacity: 1 }, 1000);
                     });
-                }).then(function () {
-                    $("#demoContent").animate({ opacity: 1 }, 1000);
-                });
-        });
+            });
 
-    $(document).ready(function ($) {
-        var $examples = $('script[type="text/x-example"]');
-        $examples.each(function (index, el) {
-            var $script = $(this);
-            var $pre = $("<pre></pre>");
-            $pre.text($script.html());
-            $script.replaceWith($pre);
+        $(document).ready(function ($) {
+            var $examples = $('script[type="text/x-example"]');
+            $examples.each(function (index, el) {
+                var $script = $(this);
+                var $pre = $("<pre></pre>");
+                $pre.text($script.html());
+                $script.replaceWith($pre);
+            });
         });
-    });
 </script>
 
 <h2 class="ex8">@ViewBag.Title</h2>
@@ -104,13 +122,16 @@
         <div class="leftOffset">
             <label>testProperty1 to the element view's value property with updateOnKeyUp option: </label>
             <!--without the updateOnKeyUp option, value is updated only when textbox loses the focus-->
-            <input type="text" data-bind="{this.value,to=testProperty1,mode=TwoWay,source=testObject}" data-view-options="{updateOnKeyUp=true}" style="width: 250px"/>
+            <input type="text" data-bind="{this.value,to=testProperty1,mode=TwoWay,source=testObject}" 
+                   data-view-options="updateOnKeyUp=true,tip='TwoWay databinding means that the data passes in both directions: from the source to the target and otherwise. The default is OneWay databinding (from source to target)'" style="width: 250px"/>
             &nbsp;<span data-bind="{this.value,to=testProperty2,source=testObject}"></span>
             <p>P.S. while editing the buttons below will get disabled when the text length < 4</p>
         </div>
         <div class="leftOffset">
             <label>testProperty3 bound using BackWay binding option and without updateOnKeyUp option: </label>
-            <input type="text" data-bind="{this.value,to=testProperty3,mode=BackWay,source=testObject}"  style="width: 250px" />
+            <input type="text" data-bind="{this.value,to=testProperty3,mode=BackWay,source=testObject}"
+                   data-view-options="tip='BackWay databinding passes the data only from the target (the textbox here) to the source (testObject here). It does not listen for source changes.'"
+                   style="width: 250px" />
             &nbsp;<span data-bind="{this.value,to=testProperty3,source=testObject}"></span>
         </div>
         <div class="leftOffset">
@@ -118,7 +139,11 @@
                                                     data-bind-1="{this.dataSource,to=months,source=testObject}"
                                                     data-bind-2="{this.selectedValue,to=month,mode=TwoWay,source=testObject}" 
                                                     data-view-options="{valuePath=key,textPath=val,emptyOptionText='Select month ...'}"></select>
-            &nbsp;<span data-bind="{this.value,to=month,source=testObject}"></span>
+            &nbsp;<span data-bind="{this.value,to=month,source=testObject}"></span>&nbsp;&nbsp;
+            <input type="text" data-view="monthpicker" data-view-options="tip='the selected Month and Year is converted to the date type using a converter'"
+                   data-bind="{this.value,to=yearmonth,mode=TwoWay,source=testObject,converter=yearmonthConverter,param='MM/YYYY'}" 
+                   style="width:150px;" placeholder="MM/YYYY" />
+            &nbsp;<span data-bind="{this.value,to=yearmonth,source=testObject,converter=yearmonthConverter,param='MM/YYYY'}"></span>
         </div>
         <div class="leftOffset">
             <label>Formats: </label><select size="1" style="width: 220px" 

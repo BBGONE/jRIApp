@@ -143,6 +143,16 @@ declare module "header" {
         readonly $topPanel: JQuery;
     }
 }
+declare module "monthpicker" {
+    import * as RIAPP from "jriapp";
+    import * as uiMOD from "jriapp_ui";
+    export class MonthPickerElView extends uiMOD.TextBoxElView {
+        constructor(options: any);
+        dispose(): void;
+        toString(): string;
+    }
+    export function initModule(app: RIAPP.Application): void;
+}
 declare module "ssevents" {
     import * as RIAPP from "jriapp";
     export class SSEventsVM extends RIAPP.BaseObject {

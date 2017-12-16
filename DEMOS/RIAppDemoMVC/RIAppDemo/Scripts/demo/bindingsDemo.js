@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "jriapp", "./demoDB", "common"], function (require, exports, RIAPP, DEMODB, COMMON) {
+define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], function (require, exports, RIAPP, DEMODB, COMMON, MONTHPICKER) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
@@ -18,20 +18,48 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             return _super !== null && _super.apply(this, arguments) || this;
         }
         UppercaseConverter.prototype.convertToSource = function (val, param, dataContext) {
-            if (utils.check.isString(val))
+            if (utils.check.isString(val)) {
                 return val.toLowerCase();
-            else
+            }
+            else {
                 return val;
+            }
         };
         UppercaseConverter.prototype.convertToTarget = function (val, param, dataContext) {
-            if (utils.check.isString(val))
+            if (utils.check.isString(val)) {
                 return val.toUpperCase();
-            else
+            }
+            else {
                 return val;
+            }
         };
         return UppercaseConverter;
     }(RIAPP.BaseConverter));
     exports.UppercaseConverter = UppercaseConverter;
+    var YearMonthConverter = (function (_super) {
+        __extends(YearMonthConverter, _super);
+        function YearMonthConverter() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        YearMonthConverter.prototype.convertToSource = function (val, param, dataContext) {
+            if (utils.check.isString(val)) {
+                return moment('01/' + val, 'DD/' + param).toDate();
+            }
+            else {
+                return null;
+            }
+        };
+        YearMonthConverter.prototype.convertToTarget = function (val, param, dataContext) {
+            if (utils.check.isDate(val)) {
+                return moment(val).format(param);
+            }
+            else {
+                return "";
+            }
+        };
+        return YearMonthConverter;
+    }(RIAPP.BaseConverter));
+    exports.YearMonthConverter = YearMonthConverter;
     var NotConverter = (function (_super) {
         __extends(NotConverter, _super);
         function NotConverter() {
@@ -61,6 +89,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             _this._testProperty2 = null;
             _this._testProperty3 = null;
             _this._boolProperty = null;
+            _this._yearmonth = null;
             _this._testCommand = new RIAPP.Command(function (sender, args) {
                 self._onTestCommandExecuted();
             }, self, function (sender, args) {
@@ -205,6 +234,17 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(TestObject.prototype, "yearmonth", {
+            get: function () { return this._yearmonth; },
+            set: function (v) {
+                if (v !== this._yearmonth) {
+                    this._yearmonth = v;
+                    this.objEvents.raiseProp('yearmonth');
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         return TestObject;
     }(RIAPP.BaseObject));
     exports.TestObject = TestObject;
@@ -266,14 +306,16 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         alert(args.error.message);
     });
     function initModule(app) {
-        console.log("INIT Module");
+        console.log("INIT bindingsDemo Module");
         app.registerConverter('uppercaseConverter', new UppercaseConverter());
         app.registerConverter('notConverter', new NotConverter());
+        app.registerConverter('yearmonthConverter', new YearMonthConverter());
     }
     ;
     exports.appOptions = {
         modulesInits: {
             "COMMON": COMMON.initModule,
+            "MONTHPICK": MONTHPICKER.initModule,
             "BINDDEMO": initModule
         }
     };

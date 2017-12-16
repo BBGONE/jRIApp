@@ -2,6 +2,7 @@
 import * as RIAPP from "jriapp";
 import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
+import * as MONTHPICKER from "monthpicker";
 
 let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
@@ -22,6 +23,22 @@ export class UppercaseConverter extends RIAPP.BaseConverter {
     }
 }
 
+export class YearMonthConverter extends RIAPP.BaseConverter {
+    convertToSource(val: any, param: string, dataContext: any): any {
+        if (utils.check.isString(val)) {
+            return moment('01/' + val, 'DD/' + param).toDate();
+        } else {
+            return null;
+        }
+    }
+    convertToTarget(val: any, param: string, dataContext: any): any {
+        if (utils.check.isDate(val)) {
+            return moment(val).format(param);
+        } else {
+            return "";
+        }
+    }
+}
 export class NotConverter extends RIAPP.BaseConverter {
     convertToSource(val: any, param: any, dataContext: any): any {
             return !val;
@@ -50,6 +67,7 @@ export class TestObject extends RIAPP.BaseObject {
     private _formatItem: DEMODB.StrKeyValListItem;
     private _formats: DEMODB.StrKeyValDictionary;
     private _boolProperty: boolean;
+    private _yearmonth: Date;
 
     constructor(initPropValue: string) {
         super();
@@ -58,6 +76,7 @@ export class TestObject extends RIAPP.BaseObject {
         this._testProperty2 = null;
         this._testProperty3 = null;
         this._boolProperty = null;
+        this._yearmonth = null;
 
         //untyped command parameter and untyped "this" - nongeneric command
         this._testCommand = new RIAPP.Command(function (sender, args) {
@@ -158,6 +177,13 @@ export class TestObject extends RIAPP.BaseObject {
         }
     }
     get months() { return this._months; }
+    get yearmonth() { return this._yearmonth; }
+    set yearmonth(v) {
+        if (v !== this._yearmonth) {
+            this._yearmonth = v;
+            this.objEvents.raiseProp('yearmonth');
+        }
+    }
 }
 
 export class DemoApplication extends RIAPP.Application {
@@ -209,15 +235,17 @@ bootstrap.objEvents.addOnError(function (sender, args) {
 });
 
 function initModule(app: RIAPP.Application) {
-    console.log("INIT Module");
+    console.log("INIT bindingsDemo Module");
     app.registerConverter('uppercaseConverter', new UppercaseConverter());
     app.registerConverter('notConverter', new NotConverter());
+    app.registerConverter('yearmonthConverter', new YearMonthConverter());
 };
 
 
-export let appOptions: RIAPP.IAppOptions = {
+export const appOptions: RIAPP.IAppOptions = {
     modulesInits: {
         "COMMON": COMMON.initModule,
+        "MONTHPICK": MONTHPICKER.initModule,
         "BINDDEMO": initModule
     }
 };

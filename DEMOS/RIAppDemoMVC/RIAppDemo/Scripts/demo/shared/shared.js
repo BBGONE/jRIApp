@@ -694,6 +694,42 @@ define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (requir
     }(RIAPP.ViewModel));
     exports.HeaderVM = HeaderVM;
 });
+define("monthpicker", ["require", "exports", "jriapp_ui"], function (require, exports, uiMOD) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var $ = uiMOD.$;
+    var MonthPickerElView = (function (_super) {
+        __extends(MonthPickerElView, _super);
+        function MonthPickerElView(options) {
+            var _this = _super.call(this, options) || this;
+            var self = _this, $el = $(_this.el);
+            $el.MonthPicker({
+                OnAfterChooseMonth: function (selectedDate) {
+                    self.objEvents.raiseProp("value");
+                },
+                Button: "<button class='btn lnkbtn btn-info'>...</button>"
+            });
+            return _this;
+        }
+        MonthPickerElView.prototype.dispose = function () {
+            if (this.getIsDisposed())
+                return;
+            this.setDisposing();
+            var $el = $(this.el);
+            uiMOD.JQueryUtils.dispose$Plugin($el, "MonthPicker");
+            _super.prototype.dispose.call(this);
+        };
+        MonthPickerElView.prototype.toString = function () {
+            return "MonthPickerElView";
+        };
+        return MonthPickerElView;
+    }(uiMOD.TextBoxElView));
+    exports.MonthPickerElView = MonthPickerElView;
+    function initModule(app) {
+        app.registerElView("monthpicker", MonthPickerElView);
+    }
+    exports.initModule = initModule;
+});
 define("ssevents", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
