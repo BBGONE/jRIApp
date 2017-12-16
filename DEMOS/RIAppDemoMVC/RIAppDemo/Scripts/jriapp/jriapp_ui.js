@@ -6625,19 +6625,19 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             return doc.createElement(tag);
         };
         Pager.prototype.render = function () {
-            var el = this._el;
             this._clearContent();
+            var docFr = doc.createDocumentFragment();
             if (this.rowsPerPage <= 0) {
                 return;
             }
             var rowCount = this.rowCount, currentPage = this.currentPage, pageCount = this.pageCount;
             if (rowCount > 0) {
                 if (this.showPreviousAndNext && !(this.hideOnSinglePage && (pageCount === 1))) {
-                    el.appendChild(this._createFirst());
-                    el.appendChild(this._createPrevious());
-                    el.appendChild(this._createCurrent());
-                    el.appendChild(this._createNext());
-                    el.appendChild(this._createLast());
+                    docFr.appendChild(this._createFirst());
+                    docFr.appendChild(this._createPrevious());
+                    docFr.appendChild(this._createCurrent());
+                    docFr.appendChild(this._createNext());
+                    docFr.appendChild(this._createLast());
                 }
                 if (this.showNumbers && currentPage > 0 && !(this.hideOnSinglePage && (pageCount === 1))) {
                     var sliderSize = this.sliderSize;
@@ -6663,40 +6663,40 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     var _start = start === 1 ? 2 : start;
                     var _end = end === pageCount ? end - 1 : end;
                     if (1 === currentPage) {
-                        el.appendChild(this._createCurrent());
+                        docFr.appendChild(this._createCurrent());
                     }
                     else {
-                        el.appendChild(this._createOther(1));
+                        docFr.appendChild(this._createOther(1));
                     }
                     if (_start > 2) {
                         if (_start === 3) {
-                            el.appendChild(this._createOther(2));
+                            docFr.appendChild(this._createOther(2));
                         }
                         else {
-                            el.appendChild(this._createInterval());
+                            docFr.appendChild(this._createInterval());
                         }
                     }
                     for (var i = _start; i <= _end; i++) {
                         if (i === currentPage) {
-                            el.appendChild(this._createCurrent());
+                            docFr.appendChild(this._createCurrent());
                         }
                         else {
-                            el.appendChild(this._createOther(i));
+                            docFr.appendChild(this._createOther(i));
                         }
                     }
                     if (_end < (pageCount - 1)) {
                         if (_end === (pageCount - 2)) {
-                            el.appendChild(this._createOther(pageCount - 1));
+                            docFr.appendChild(this._createOther(pageCount - 1));
                         }
                         else {
-                            el.appendChild(this._createInterval());
+                            docFr.appendChild(this._createInterval());
                         }
                     }
                     if (pageCount === currentPage) {
-                        el.appendChild(this._createCurrent());
+                        docFr.appendChild(this._createCurrent());
                     }
                     else {
-                        el.appendChild(this._createOther(pageCount));
+                        docFr.appendChild(this._createOther(pageCount));
                     }
                 }
             }
@@ -6708,9 +6708,10 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                 span.innerHTML = info;
                 var spacer = this._createElement("span");
                 spacer.innerHTML = "&nbsp;&nbsp;";
-                el.appendChild(spacer);
-                el.appendChild(span);
+                docFr.appendChild(spacer);
+                docFr.appendChild(span);
             }
+            this._el.appendChild(docFr);
         };
         Pager.prototype._onPageSizeChanged = function (ds) {
             this.rowsPerPage = ds.pageSize;

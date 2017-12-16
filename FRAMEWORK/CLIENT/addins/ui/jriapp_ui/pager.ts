@@ -136,8 +136,8 @@ export class Pager extends BaseObject implements ISelectableProvider {
         return doc.createElement(tag);
     }
     protected render() {
-        const el = this._el;
         this._clearContent();
+        const docFr = doc.createDocumentFragment();
 
         if (this.rowsPerPage <= 0) {
             return;
@@ -148,11 +148,11 @@ export class Pager extends BaseObject implements ISelectableProvider {
 
         if (rowCount > 0) {
             if (this.showPreviousAndNext && !(this.hideOnSinglePage && (pageCount === 1))) {
-                el.appendChild(this._createFirst());
-                el.appendChild(this._createPrevious());
-                el.appendChild(this._createCurrent());
-                el.appendChild(this._createNext());
-                el.appendChild(this._createLast());
+                docFr.appendChild(this._createFirst());
+                docFr.appendChild(this._createPrevious());
+                docFr.appendChild(this._createCurrent());
+                docFr.appendChild(this._createNext());
+                docFr.appendChild(this._createLast());
             }
 
             if (this.showNumbers && currentPage > 0 && !(this.hideOnSinglePage && (pageCount === 1))) {
@@ -186,39 +186,39 @@ export class Pager extends BaseObject implements ISelectableProvider {
                 let _end = end === pageCount ? end - 1 : end;
 
                 if (1 === currentPage) {
-                    el.appendChild(this._createCurrent());
+                    docFr.appendChild(this._createCurrent());
                 } else {
-                    el.appendChild(this._createOther(1));
+                    docFr.appendChild(this._createOther(1));
                 }
 
                 if (_start > 2) {
                     if (_start === 3) {
-                        el.appendChild(this._createOther(2));
+                        docFr.appendChild(this._createOther(2));
                     } else {
-                        el.appendChild(this._createInterval());
+                        docFr.appendChild(this._createInterval());
                     }
                 }
 
                 for (let i = _start; i <= _end; i++) {
                     if (i === currentPage) {
-                        el.appendChild(this._createCurrent());
+                        docFr.appendChild(this._createCurrent());
                     } else {
-                        el.appendChild(this._createOther(i));
+                        docFr.appendChild(this._createOther(i));
                     }
                 }
 
                 if (_end < (pageCount - 1)) {
                     if (_end === (pageCount - 2)) {
-                        el.appendChild(this._createOther(pageCount - 1));
+                        docFr.appendChild(this._createOther(pageCount - 1));
                     } else {
-                        el.appendChild(this._createInterval());
+                        docFr.appendChild(this._createInterval());
                     }
                 }
 
                 if (pageCount === currentPage) {
-                    el.appendChild(this._createCurrent());
+                    docFr.appendChild(this._createCurrent());
                 } else {
-                    el.appendChild(this._createOther(pageCount));
+                    docFr.appendChild(this._createOther(pageCount));
                 }
             } // if (this.showNumbers)
         }
@@ -234,9 +234,10 @@ export class Pager extends BaseObject implements ISelectableProvider {
             span.innerHTML = info;
             const spacer = this._createElement("span");
             spacer.innerHTML = "&nbsp;&nbsp;";
-            el.appendChild(spacer);
-            el.appendChild(span);
-        } 
+            docFr.appendChild(spacer);
+            docFr.appendChild(span);
+        }
+        this._el.appendChild(docFr);
     }
     protected _onPageSizeChanged(ds: ICollection<ICollectionItem>) {
         this.rowsPerPage = ds.pageSize;
