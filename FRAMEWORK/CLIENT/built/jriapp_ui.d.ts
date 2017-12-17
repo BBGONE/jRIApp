@@ -413,21 +413,10 @@ declare module "jriapp_ui/listbox" {
         private _txtDebounce;
         private _stDebounce;
         private _changeDebounce;
-        private _fnCheckChanges;
+        private _fnCheckSelectedValue;
         private _isDSFilled;
         constructor(options: IListBoxConstructorOptions);
         dispose(): void;
-        isSubscribed(flag: SubscribeFlags): boolean;
-        handle_change(e: Event): void;
-        addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
-        offOnRefreshed(nmspace?: string): void;
-        protected _onChanged(): void;
-        protected _getValue(item: ICollectionItem): any;
-        protected _getText(item: ICollectionItem, index: number): string;
-        protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
-        protected _onEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean): void;
-        protected _onStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS): void;
-        protected _onCommitChanges(item: ICollectionItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
         private _bindDS();
         private _unbindDS();
         private _addOption(item, first);
@@ -437,16 +426,27 @@ declare module "jriapp_ui/listbox" {
         private _removeOption(item);
         private _clear();
         private _refresh();
+        protected _onChanged(): void;
+        protected _getValue(item: ICollectionItem): any;
+        protected _getText(item: ICollectionItem, index: number): string;
+        protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
+        protected _onEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean): void;
+        protected _onStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS): void;
+        protected _onCommitChanges(item: ICollectionItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
         protected getItemIndex(item: ICollectionItem): number;
         protected getByValue(val: any): IMappedItem;
         protected getByIndex(index: number): IMappedItem;
         protected updateSelected(v: any): void;
-        protected setChanges(): void;
-        protected checkChanges(): void;
-        protected _setIsEnabled(el: HTMLSelectElement, v: boolean): void;
-        protected _getIsEnabled(el: HTMLSelectElement): boolean;
-        protected _setDataSource(v: ICollection<ICollectionItem>): void;
+        protected beginTrackSelectedValue(): void;
+        protected endTrackSelectedValue(): void;
+        protected setIsEnabled(el: HTMLSelectElement, v: boolean): void;
+        protected getIsEnabled(el: HTMLSelectElement): boolean;
+        protected setDataSource(v: ICollection<ICollectionItem>): void;
         protected selectedIndex: number;
+        isSubscribed(flag: SubscribeFlags): boolean;
+        handle_change(e: Event): void;
+        addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
+        offOnRefreshed(nmspace?: string): void;
         getText(val: any): string;
         toString(): string;
         dataSource: ICollection<ICollectionItem>;
@@ -1224,33 +1224,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _pageDebounce;
         private _updateCurrent;
         constructor(options: IDataGridConstructorOptions);
-        addOnRowExpanded(fn: TEventHandler<DataGrid, {
-            collapsedRow: Row;
-            expandedRow: Row;
-            isExpanded: boolean;
-        }>, nmspace?: string, context?: any): void;
-        offOnRowExpanded(nmspace?: string): void;
-        addOnRowSelected(fn: TEventHandler<DataGrid, {
-            row: Row;
-        }>, nmspace?: string, context?: any): void;
-        offOnRowSelected(nmspace?: string): void;
-        addOnPageChanged(fn: TEventHandler<DataGrid, any>, nmspace?: string, context?: any): void;
-        offOnPageChanged(nmspace?: string): void;
-        addOnRowStateChanged(fn: TEventHandler<DataGrid, {
-            row: Row;
-            val: any;
-            css: string;
-        }>, nmspace?: string, context?: any): void;
-        offOnRowStateChanged(nmspace?: string): void;
-        addOnCellDblClicked(fn: TEventHandler<DataGrid, {
-            cell: BaseCell<BaseColumn>;
-        }>, nmspace?: string, context?: any): void;
-        offOnCellDblClicked(nmspace?: string): void;
-        addOnRowAction(fn: TEventHandler<DataGrid, {
-            row: Row;
-            action: ROW_ACTION;
-        }>, nmspace?: string, context?: any): void;
-        offOnRowAction(nmspace?: string): void;
+        dispose(): void;
         protected _onKeyDown(key: number, event: Event): void;
         protected _onKeyUp(key: number, event: Event): void;
         protected _isRowExpanded(row: Row): boolean;
@@ -1286,7 +1260,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _createDetails(): DetailsRow;
         protected _createFillSpace(): FillSpaceRow;
         protected _scrollTo(yPos: number, animate: boolean): void;
-        protected _setDataSource(v: ICollection<ICollectionItem>): void;
+        protected setDataSource(v: ICollection<ICollectionItem>): void;
         _getInternal(): IInternalDataGridMethods;
         updateColumnsSize(): void;
         sortByColumn(column: DataColumn): IPromise<any>;
@@ -1303,7 +1277,33 @@ declare module "jriapp_ui/datagrid/datagrid" {
         scrollToCurrent(pos?: ROW_POSITION, animate?: boolean): void;
         focus(): void;
         addNew(): void;
-        dispose(): void;
+        addOnRowExpanded(fn: TEventHandler<DataGrid, {
+            collapsedRow: Row;
+            expandedRow: Row;
+            isExpanded: boolean;
+        }>, nmspace?: string, context?: any): void;
+        offOnRowExpanded(nmspace?: string): void;
+        addOnRowSelected(fn: TEventHandler<DataGrid, {
+            row: Row;
+        }>, nmspace?: string, context?: any): void;
+        offOnRowSelected(nmspace?: string): void;
+        addOnPageChanged(fn: TEventHandler<DataGrid, any>, nmspace?: string, context?: any): void;
+        offOnPageChanged(nmspace?: string): void;
+        addOnRowStateChanged(fn: TEventHandler<DataGrid, {
+            row: Row;
+            val: any;
+            css: string;
+        }>, nmspace?: string, context?: any): void;
+        offOnRowStateChanged(nmspace?: string): void;
+        addOnCellDblClicked(fn: TEventHandler<DataGrid, {
+            cell: BaseCell<BaseColumn>;
+        }>, nmspace?: string, context?: any): void;
+        offOnCellDblClicked(nmspace?: string): void;
+        addOnRowAction(fn: TEventHandler<DataGrid, {
+            row: Row;
+            action: ROW_ACTION;
+        }>, nmspace?: string, context?: any): void;
+        offOnRowAction(nmspace?: string): void;
         readonly selectable: ISelectable;
         readonly table: HTMLTableElement;
         readonly options: IDataGridConstructorOptions;
@@ -1397,7 +1397,7 @@ declare module "jriapp_ui/pager" {
         protected _createNext(): HTMLElement;
         protected _createLast(): HTMLElement;
         protected _buildTip(page: number): string;
-        protected _setDataSource(v: ICollection<ICollectionItem>): void;
+        protected setDataSource(v: ICollection<ICollectionItem>): void;
         toString(): string;
         readonly el: HTMLElement;
         dataSource: ICollection<ICollectionItem>;
@@ -1455,10 +1455,7 @@ declare module "jriapp_ui/stackpanel" {
         private _isKeyNavigation;
         private _debounce;
         constructor(options: IStackPanelConstructorOptions);
-        addOnItemClicked(fn: TEventHandler<StackPanel, {
-            item: ICollectionItem;
-        }>, nmspace?: string, context?: IBaseObject): void;
-        offOnItemClicked(nmspace?: string): void;
+        dispose(): void;
         protected _onKeyDown(key: number, event: Event): void;
         protected _onKeyUp(key: number, event: Event): void;
         protected _updateCurrent(item: ICollectionItem, withScroll: boolean): void;
@@ -1475,12 +1472,15 @@ declare module "jriapp_ui/stackpanel" {
         protected _removeItemByKey(key: string): void;
         protected _removeItem(item: ICollectionItem): void;
         protected _refresh(): void;
-        protected _setDataSource(v: ICollection<ICollectionItem>): void;
-        dispose(): void;
+        protected setDataSource(v: ICollection<ICollectionItem>): void;
+        addOnItemClicked(fn: TEventHandler<StackPanel, {
+            item: ICollectionItem;
+        }>, nmspace?: string, context?: IBaseObject): void;
+        offOnItemClicked(nmspace?: string): void;
+        getDivElementByItem(item: ICollectionItem): HTMLElement;
         scrollToItem(item: ICollectionItem, isUp?: boolean): void;
         scrollToCurrent(isUp?: boolean): void;
         focus(): void;
-        getDivElementByItem(item: ICollectionItem): HTMLElement;
         toString(): string;
         readonly selectable: ISelectable;
         readonly el: HTMLElement;

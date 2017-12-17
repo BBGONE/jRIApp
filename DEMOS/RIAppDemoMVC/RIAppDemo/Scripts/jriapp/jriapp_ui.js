@@ -1735,7 +1735,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             };
             subscribeMap.set(_this._el, _this);
             var ds = _this._options.dataSource;
-            _this._setDataSource(ds);
+            _this.setDataSource(ds);
             return _this;
         }
         ListBox.prototype.dispose = function () {
@@ -1748,7 +1748,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._stDebounce.dispose();
             this._txtDebounce.dispose();
             this._changeDebounce.dispose();
-            this._fnCheckChanges = null;
+            this._fnCheckSelectedValue = null;
             this._unbindDS();
             dom.events.offNS(this._el, this._objId);
             this._clear();
@@ -1760,184 +1760,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._stateProvider = null;
             this._isDSFilled = false;
             _super.prototype.dispose.call(this);
-        };
-        ListBox.prototype.isSubscribed = function (flag) {
-            return flag === 2;
-        };
-        ListBox.prototype.handle_change = function (e) {
-            if (this._isRefreshing) {
-                return;
-            }
-            this._onChanged();
-        };
-        ListBox.prototype.addOnRefreshed = function (fn, nmspace, context) {
-            this.objEvents.on("refreshed", fn, nmspace, context);
-        };
-        ListBox.prototype.offOnRefreshed = function (nmspace) {
-            this.objEvents.off("refreshed", nmspace);
-        };
-        ListBox.prototype._onChanged = function () {
-            var data = this.getByIndex(this.selectedIndex);
-            if (!data) {
-                this.selectedValue = null;
-                return;
-            }
-            var newVal = this._getValue(data.item);
-            this.selectedValue = newVal;
-        };
-        ListBox.prototype._getValue = function (item) {
-            if (!item) {
-                return null;
-            }
-            if (!!this._options.valuePath) {
-                return sys.resolvePath(item, this._options.valuePath);
-            }
-            else {
-                return null;
-            }
-        };
-        ListBox.prototype._getText = function (item, index) {
-            var res = "";
-            if (!item) {
-                return res;
-            }
-            if (!!this._options.textPath) {
-                var t = sys.resolvePath(item, this._options.textPath);
-                res = fn_Str(t);
-            }
-            else {
-                res = fn_Str(this._getValue(item));
-            }
-            return (!this._textProvider) ? res : this._textProvider.getText(item, index, res);
-        };
-        ListBox.prototype._onDSCollectionChanged = function (sender, args) {
-            var self = this;
-            this.setChanges();
-            try {
-                switch (args.changeType) {
-                    case 2:
-                        {
-                            this._refresh();
-                        }
-                        break;
-                    case 1:
-                        {
-                            args.items.forEach(function (item) {
-                                self._addOption(item, item._aspect.isNew);
-                            });
-                        }
-                        break;
-                    case 0:
-                        {
-                            args.items.forEach(function (item) {
-                                self._removeOption(item);
-                            });
-                            if (!!self._textProvider) {
-                                self._resetText();
-                            }
-                        }
-                        break;
-                    case 3:
-                        {
-                            var data = self._keyMap[args.old_key];
-                            if (!!data) {
-                                delete self._keyMap[args.old_key];
-                                self._keyMap[args.new_key] = data;
-                                data.op.value = args.new_key;
-                            }
-                        }
-                        break;
-                }
-            }
-            finally {
-                this.checkChanges();
-            }
-        };
-        ListBox.prototype._onEdit = function (item, isBegin, isCanceled) {
-            var self = this;
-            if (isBegin) {
-                this.setChanges();
-                this._savedVal = this._getValue(item);
-            }
-            else {
-                try {
-                    if (!isCanceled) {
-                        var oldVal = this._savedVal;
-                        this._savedVal = checks.undefined;
-                        var key = item._key, data = self._keyMap[key];
-                        if (!!data) {
-                            data.op.text = self._getText(item, data.op.index);
-                            var val = this._getValue(item);
-                            if (oldVal !== val) {
-                                if (!checks.isNt(oldVal)) {
-                                    delete self._valMap[fn_Str(oldVal)];
-                                }
-                                if (!checks.isNt(val)) {
-                                    self._valMap[fn_Str(val)] = data;
-                                }
-                            }
-                        }
-                        else {
-                            if (!checks.isNt(oldVal)) {
-                                delete self._valMap[fn_Str(oldVal)];
-                            }
-                        }
-                    }
-                }
-                finally {
-                    this.checkChanges();
-                }
-            }
-        };
-        ListBox.prototype._onStatusChanged = function (item, oldStatus) {
-            var newStatus = item._aspect.status;
-            this.setChanges();
-            if (newStatus === 3) {
-                this._removeOption(item);
-                if (!!this._textProvider) {
-                    this._resetText();
-                }
-            }
-            this.checkChanges();
-        };
-        ListBox.prototype._onCommitChanges = function (item, isBegin, isRejected, status) {
-            var self = this;
-            if (isBegin) {
-                this.setChanges();
-                if (isRejected && status === 1) {
-                    return;
-                }
-                else if (!isRejected && status === 3) {
-                    return;
-                }
-                this._savedVal = this._getValue(item);
-            }
-            else {
-                var oldVal = this._savedVal;
-                this._savedVal = checks.undefined;
-                if (isRejected && status === 3) {
-                    this._addOption(item, true);
-                    this.checkChanges();
-                    return;
-                }
-                try {
-                    var val = this._getValue(item), data = self._keyMap[item._key];
-                    if (oldVal !== val) {
-                        if (!checks.isNt(oldVal)) {
-                            delete self._valMap[fn_Str(oldVal)];
-                        }
-                        if (!!data && !checks.isNt(val)) {
-                            self._valMap[fn_Str(val)] = data;
-                        }
-                    }
-                    if (!!data) {
-                        data.op.text = self._getText(item, data.op.index);
-                    }
-                }
-                finally {
-                    this.checkChanges();
-                }
-            }
         };
         ListBox.prototype._bindDS = function () {
             var self = this, ds = this.dataSource;
@@ -2065,7 +1887,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype._refresh = function () {
             var self = this, ds = this.dataSource;
-            this.setChanges();
+            this.beginTrackSelectedValue();
             this._isRefreshing = true;
             try {
                 this._clear();
@@ -2089,9 +1911,172 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             }
             finally {
                 self._isRefreshing = false;
-                this.checkChanges();
+                this.endTrackSelectedValue();
             }
             this.objEvents.raise("refreshed", {});
+        };
+        ListBox.prototype._onChanged = function () {
+            var data = this.getByIndex(this.selectedIndex);
+            if (!data) {
+                this.selectedValue = null;
+                return;
+            }
+            var newVal = this._getValue(data.item);
+            this.selectedValue = newVal;
+        };
+        ListBox.prototype._getValue = function (item) {
+            if (!item) {
+                return null;
+            }
+            if (!!this._options.valuePath) {
+                return sys.resolvePath(item, this._options.valuePath);
+            }
+            else {
+                return null;
+            }
+        };
+        ListBox.prototype._getText = function (item, index) {
+            var res = "";
+            if (!item) {
+                return res;
+            }
+            if (!!this._options.textPath) {
+                var t = sys.resolvePath(item, this._options.textPath);
+                res = fn_Str(t);
+            }
+            else {
+                res = fn_Str(this._getValue(item));
+            }
+            return (!this._textProvider) ? res : this._textProvider.getText(item, index, res);
+        };
+        ListBox.prototype._onDSCollectionChanged = function (sender, args) {
+            var self = this;
+            this.beginTrackSelectedValue();
+            try {
+                switch (args.changeType) {
+                    case 2:
+                        {
+                            this._refresh();
+                        }
+                        break;
+                    case 1:
+                        {
+                            args.items.forEach(function (item) {
+                                self._addOption(item, item._aspect.isNew);
+                            });
+                        }
+                        break;
+                    case 0:
+                        {
+                            args.items.forEach(function (item) {
+                                self._removeOption(item);
+                            });
+                            if (!!self._textProvider) {
+                                self._resetText();
+                            }
+                        }
+                        break;
+                    case 3:
+                        {
+                            var data = self._keyMap[args.old_key];
+                            if (!!data) {
+                                delete self._keyMap[args.old_key];
+                                self._keyMap[args.new_key] = data;
+                                data.op.value = args.new_key;
+                            }
+                        }
+                        break;
+                }
+            }
+            finally {
+                this.endTrackSelectedValue();
+            }
+        };
+        ListBox.prototype._onEdit = function (item, isBegin, isCanceled) {
+            var self = this;
+            if (isBegin) {
+                this.beginTrackSelectedValue();
+                this._savedVal = this._getValue(item);
+            }
+            else {
+                try {
+                    if (!isCanceled) {
+                        var oldVal = this._savedVal;
+                        this._savedVal = checks.undefined;
+                        var key = item._key, data = self._keyMap[key];
+                        if (!!data) {
+                            data.op.text = self._getText(item, data.op.index);
+                            var val = this._getValue(item);
+                            if (oldVal !== val) {
+                                if (!checks.isNt(oldVal)) {
+                                    delete self._valMap[fn_Str(oldVal)];
+                                }
+                                if (!checks.isNt(val)) {
+                                    self._valMap[fn_Str(val)] = data;
+                                }
+                            }
+                        }
+                        else {
+                            if (!checks.isNt(oldVal)) {
+                                delete self._valMap[fn_Str(oldVal)];
+                            }
+                        }
+                    }
+                }
+                finally {
+                    this.endTrackSelectedValue();
+                }
+            }
+        };
+        ListBox.prototype._onStatusChanged = function (item, oldStatus) {
+            var newStatus = item._aspect.status;
+            this.beginTrackSelectedValue();
+            if (newStatus === 3) {
+                this._removeOption(item);
+                if (!!this._textProvider) {
+                    this._resetText();
+                }
+            }
+            this.endTrackSelectedValue();
+        };
+        ListBox.prototype._onCommitChanges = function (item, isBegin, isRejected, status) {
+            var self = this;
+            if (isBegin) {
+                this.beginTrackSelectedValue();
+                if (isRejected && status === 1) {
+                    return;
+                }
+                else if (!isRejected && status === 3) {
+                    return;
+                }
+                this._savedVal = this._getValue(item);
+            }
+            else {
+                var oldVal = this._savedVal;
+                this._savedVal = checks.undefined;
+                if (isRejected && status === 3) {
+                    this._addOption(item, true);
+                    this.endTrackSelectedValue();
+                    return;
+                }
+                try {
+                    var val = this._getValue(item), data = self._keyMap[item._key];
+                    if (oldVal !== val) {
+                        if (!checks.isNt(oldVal)) {
+                            delete self._valMap[fn_Str(oldVal)];
+                        }
+                        if (!!data && !checks.isNt(val)) {
+                            self._valMap[fn_Str(val)] = data;
+                        }
+                    }
+                    if (!!data) {
+                        data.op.text = self._getText(item, data.op.index);
+                    }
+                }
+                finally {
+                    this.endTrackSelectedValue();
+                }
+            }
         };
         ListBox.prototype.getItemIndex = function (item) {
             if (!item || item.getIsStateDirty()) {
@@ -2126,13 +2111,13 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 this._isRefreshing = oldRefreshing;
             }
         };
-        ListBox.prototype.setChanges = function () {
-            if (!!this._fnCheckChanges) {
+        ListBox.prototype.beginTrackSelectedValue = function () {
+            if (!!this._fnCheckSelectedValue) {
                 return;
             }
             var self = this, prevVal = fn_Str(self.selectedValue), prevItem = self.selectedItem;
-            this._fnCheckChanges = function () {
-                self._fnCheckChanges = null;
+            this._fnCheckSelectedValue = function () {
+                self._fnCheckSelectedValue = null;
                 var newVal = fn_Str(self.selectedValue), newItem = self.selectedItem;
                 if (prevVal !== newVal) {
                     self.objEvents.raiseProp("selectedValue");
@@ -2142,26 +2127,26 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 }
             };
         };
-        ListBox.prototype.checkChanges = function () {
+        ListBox.prototype.endTrackSelectedValue = function () {
             var _this = this;
             this._changeDebounce.enque(function () {
-                var fn = _this._fnCheckChanges;
-                _this._fnCheckChanges = null;
+                var fn = _this._fnCheckSelectedValue;
+                _this._fnCheckSelectedValue = null;
                 if (!!fn) {
                     fn();
                 }
             });
         };
-        ListBox.prototype._setIsEnabled = function (el, v) {
+        ListBox.prototype.setIsEnabled = function (el, v) {
             el.disabled = !v;
         };
-        ListBox.prototype._getIsEnabled = function (el) {
+        ListBox.prototype.getIsEnabled = function (el) {
             return !el.disabled;
         };
-        ListBox.prototype._setDataSource = function (v) {
+        ListBox.prototype.setDataSource = function (v) {
             var _this = this;
             this._isDSFilled = false;
-            this.setChanges();
+            this.beginTrackSelectedValue();
             this._unbindDS();
             this._options.dataSource = v;
             var fn_init = function () {
@@ -2179,7 +2164,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     }
                 }
                 finally {
-                    _this.checkChanges();
+                    _this.endTrackSelectedValue();
                 }
             };
             if (!!this._options.syncSetDatasource) {
@@ -2201,6 +2186,21 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             enumerable: true,
             configurable: true
         });
+        ListBox.prototype.isSubscribed = function (flag) {
+            return flag === 2;
+        };
+        ListBox.prototype.handle_change = function (e) {
+            if (this._isRefreshing) {
+                return;
+            }
+            this._onChanged();
+        };
+        ListBox.prototype.addOnRefreshed = function (fn, nmspace, context) {
+            this.objEvents.on("refreshed", fn, nmspace, context);
+        };
+        ListBox.prototype.offOnRefreshed = function (nmspace) {
+            this.objEvents.off("refreshed", nmspace);
+        };
         ListBox.prototype.getText = function (val) {
             var data = this.getByValue(val);
             return (!data) ? "" : data.op.text;
@@ -2214,7 +2214,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             },
             set: function (v) {
                 if (this.dataSource !== v) {
-                    this._setDataSource(v);
+                    this.setDataSource(v);
                     this.objEvents.raiseProp("dataSource");
                 }
             },
@@ -2230,7 +2230,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     var oldItem = this.selectedItem;
                     this._selectedValue = v;
                     this.updateSelected(v);
-                    this._fnCheckChanges = null;
+                    this._fnCheckSelectedValue = null;
                     this.objEvents.raiseProp("selectedValue");
                     if (oldItem !== this.selectedItem) {
                         this.objEvents.raiseProp("selectedItem");
@@ -2251,7 +2251,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     this._selectedValue = newVal;
                     var item = this.getByValue(newVal);
                     this.selectedIndex = (!item ? 0 : item.op.index);
-                    this._fnCheckChanges = null;
+                    this._fnCheckSelectedValue = null;
                     this.objEvents.raiseProp("selectedValue");
                     if (oldItem !== this.selectedItem) {
                         this.objEvents.raiseProp("selectedItem");
@@ -2298,11 +2298,11 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         });
         Object.defineProperty(ListBox.prototype, "isEnabled", {
             get: function () {
-                return this._getIsEnabled(this.el);
+                return this.getIsEnabled(this.el);
             },
             set: function (v) {
                 if (v !== this.isEnabled) {
-                    this._setIsEnabled(this.el, v);
+                    this.setIsEnabled(this.el, v);
                     this.objEvents.raiseProp("isEnabled");
                 }
             },
@@ -5383,44 +5383,48 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             bootstrap_17.selectableProviderWeakMap.set(table, _this);
             _gridCreated(_this);
             var ds = _this._options.dataSource;
-            _this._setDataSource(ds);
+            _this.setDataSource(ds);
             return _this;
         }
-        DataGrid.prototype.addOnRowExpanded = function (fn, nmspace, context) {
-            this.objEvents.on("row_expanded", fn, nmspace, context);
-        };
-        DataGrid.prototype.offOnRowExpanded = function (nmspace) {
-            this.objEvents.off("row_expanded", nmspace);
-        };
-        DataGrid.prototype.addOnRowSelected = function (fn, nmspace, context) {
-            this.objEvents.on("row_selected", fn, nmspace, context);
-        };
-        DataGrid.prototype.offOnRowSelected = function (nmspace) {
-            this.objEvents.off("row_selected", nmspace);
-        };
-        DataGrid.prototype.addOnPageChanged = function (fn, nmspace, context) {
-            this.objEvents.on("page_changed", fn, nmspace, context);
-        };
-        DataGrid.prototype.offOnPageChanged = function (nmspace) {
-            this.objEvents.off("page_changed", nmspace);
-        };
-        DataGrid.prototype.addOnRowStateChanged = function (fn, nmspace, context) {
-            this.objEvents.on("row_state_changed", fn, nmspace, context);
-        };
-        DataGrid.prototype.offOnRowStateChanged = function (nmspace) {
-            this.objEvents.off("row_state_changed", nmspace);
-        };
-        DataGrid.prototype.addOnCellDblClicked = function (fn, nmspace, context) {
-            this.objEvents.on("cell_dblclicked", fn, nmspace, context);
-        };
-        DataGrid.prototype.offOnCellDblClicked = function (nmspace) {
-            this.objEvents.off("cell_dblclicked", nmspace);
-        };
-        DataGrid.prototype.addOnRowAction = function (fn, nmspace, context) {
-            this.objEvents.on("row_action", fn, nmspace, context);
-        };
-        DataGrid.prototype.offOnRowAction = function (nmspace) {
-            this.objEvents.off("row_action", nmspace);
+        DataGrid.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            bootstrap_17.selectableProviderWeakMap.delete(this._table);
+            this._scrollDebounce.dispose();
+            this._dsDebounce.dispose();
+            this._pageDebounce.dispose();
+            this._updateCurrent = function () { };
+            this._clearGrid();
+            this._unbindDS();
+            _gridDestroyed(this);
+            if (!!this._details) {
+                this._details.dispose();
+                this._details = null;
+            }
+            if (!!this._fillSpace) {
+                this._fillSpace.dispose();
+                this._fillSpace = null;
+            }
+            if (this._options.animation) {
+                this._options.animation.stop();
+                this._options.animation = null;
+            }
+            if (!!this._dialog) {
+                this._dialog.dispose();
+                this._dialog = null;
+            }
+            this._unWrapTable();
+            dom.removeClass([this._table], "ria-data-table");
+            dom.removeClass([this._tHeadRow], "ria-col-info");
+            this._columns.forEach(function (col) { col.dispose(); });
+            this._columns = [];
+            this._table = null;
+            this._options = {};
+            this._selectable = null;
+            this._internal = null;
+            _super.prototype.dispose.call(this);
         };
         DataGrid.prototype._onKeyDown = function (key, event) {
             var ds = this.dataSource, self = this;
@@ -6032,7 +6036,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 this._wrapper.scrollTop = yPos;
             }
         };
-        DataGrid.prototype._setDataSource = function (v) {
+        DataGrid.prototype.setDataSource = function (v) {
             var _this = this;
             this._unbindDS();
             this._options.dataSource = v;
@@ -6196,45 +6200,41 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 ERROR.reThrow(ex, this.handleError(ex, this));
             }
         };
-        DataGrid.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            bootstrap_17.selectableProviderWeakMap.delete(this._table);
-            this._scrollDebounce.dispose();
-            this._dsDebounce.dispose();
-            this._pageDebounce.dispose();
-            this._updateCurrent = function () { };
-            this._clearGrid();
-            this._unbindDS();
-            _gridDestroyed(this);
-            if (!!this._details) {
-                this._details.dispose();
-                this._details = null;
-            }
-            if (!!this._fillSpace) {
-                this._fillSpace.dispose();
-                this._fillSpace = null;
-            }
-            if (this._options.animation) {
-                this._options.animation.stop();
-                this._options.animation = null;
-            }
-            if (!!this._dialog) {
-                this._dialog.dispose();
-                this._dialog = null;
-            }
-            this._unWrapTable();
-            dom.removeClass([this._table], "ria-data-table");
-            dom.removeClass([this._tHeadRow], "ria-col-info");
-            this._columns.forEach(function (col) { col.dispose(); });
-            this._columns = [];
-            this._table = null;
-            this._options = {};
-            this._selectable = null;
-            this._internal = null;
-            _super.prototype.dispose.call(this);
+        DataGrid.prototype.addOnRowExpanded = function (fn, nmspace, context) {
+            this.objEvents.on("row_expanded", fn, nmspace, context);
+        };
+        DataGrid.prototype.offOnRowExpanded = function (nmspace) {
+            this.objEvents.off("row_expanded", nmspace);
+        };
+        DataGrid.prototype.addOnRowSelected = function (fn, nmspace, context) {
+            this.objEvents.on("row_selected", fn, nmspace, context);
+        };
+        DataGrid.prototype.offOnRowSelected = function (nmspace) {
+            this.objEvents.off("row_selected", nmspace);
+        };
+        DataGrid.prototype.addOnPageChanged = function (fn, nmspace, context) {
+            this.objEvents.on("page_changed", fn, nmspace, context);
+        };
+        DataGrid.prototype.offOnPageChanged = function (nmspace) {
+            this.objEvents.off("page_changed", nmspace);
+        };
+        DataGrid.prototype.addOnRowStateChanged = function (fn, nmspace, context) {
+            this.objEvents.on("row_state_changed", fn, nmspace, context);
+        };
+        DataGrid.prototype.offOnRowStateChanged = function (nmspace) {
+            this.objEvents.off("row_state_changed", nmspace);
+        };
+        DataGrid.prototype.addOnCellDblClicked = function (fn, nmspace, context) {
+            this.objEvents.on("cell_dblclicked", fn, nmspace, context);
+        };
+        DataGrid.prototype.offOnCellDblClicked = function (nmspace) {
+            this.objEvents.off("cell_dblclicked", nmspace);
+        };
+        DataGrid.prototype.addOnRowAction = function (fn, nmspace, context) {
+            this.objEvents.on("row_action", fn, nmspace, context);
+        };
+        DataGrid.prototype.offOnRowAction = function (nmspace) {
+            this.objEvents.off("row_action", nmspace);
         };
         Object.defineProperty(DataGrid.prototype, "selectable", {
             get: function () {
@@ -6308,7 +6308,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             },
             set: function (v) {
                 if (v !== this.dataSource) {
-                    this._setDataSource(v);
+                    this.setDataSource(v);
                     this.objEvents.raiseProp("dataSource");
                 }
             },
@@ -6900,7 +6900,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             }
             return tip;
         };
-        Pager.prototype._setDataSource = function (v) {
+        Pager.prototype.setDataSource = function (v) {
             this._unbindDS();
             this._options.dataSource = v;
             this._bindDS();
@@ -6919,7 +6919,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             },
             set: function (v) {
                 if (v !== this.dataSource) {
-                    this._setDataSource(v);
+                    this.setDataSource(v);
                     this.objEvents.raiseProp("dataSource");
                 }
             },
@@ -7191,7 +7191,11 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
         PROP_NAME["panel"] = "panel";
         PROP_NAME["panelEvents"] = "panelEvents";
     })(PROP_NAME || (PROP_NAME = {}));
-    var VERTICAL = "vertical", HORIZONTAL = "horizontal";
+    var ORIENTATION;
+    (function (ORIENTATION) {
+        ORIENTATION["VERTICAL"] = "vertical";
+        ORIENTATION["HORIZONTAL"] = "horizontal";
+    })(ORIENTATION || (ORIENTATION = {}));
     var PNL_EVENTS;
     (function (PNL_EVENTS) {
         PNL_EVENTS["item_clicked"] = "item_clicked";
@@ -7205,7 +7209,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 el: null,
                 dataSource: null,
                 templateID: null,
-                orientation: VERTICAL,
+                orientation: "vertical",
                 syncSetDatasource: false
             }, options);
             if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
@@ -7219,7 +7223,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             dom.addClass([options.el], "ria-stackpanel");
             var eltag = options.el.tagName.toLowerCase();
             _this._itemTag = (eltag === "ul" || eltag === "ol") ? "li" : "div";
-            if (_this.orientation === HORIZONTAL) {
+            if (_this.orientation === "horizontal") {
                 dom.addClass([options.el], "ria-horizontal-panel");
             }
             _this._debounce = new jriapp_shared_32.Debounce();
@@ -7247,21 +7251,34 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             });
             bootstrap_19.selectableProviderWeakMap.set(_this._el, _this);
             var ds = _this._options.dataSource;
-            _this._setDataSource(ds);
+            _this.setDataSource(ds);
             return _this;
         }
-        StackPanel.prototype.addOnItemClicked = function (fn, nmspace, context) {
-            this.objEvents.on("item_clicked", fn, nmspace, context);
-        };
-        StackPanel.prototype.offOnItemClicked = function (nmspace) {
-            this.objEvents.off("item_clicked", nmspace);
+        StackPanel.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            bootstrap_19.selectableProviderWeakMap.delete(this._el);
+            this._debounce.dispose();
+            this._unbindDS();
+            this._clearContent();
+            dom.removeClass([this._el], "ria-stackpanel");
+            if (this.orientation === "horizontal") {
+                dom.removeClass([this.el], "ria-horizontal-panel");
+            }
+            dom.events.offNS(this._el, this.uniqueID);
+            this._currentItem = null;
+            this._itemMap = {};
+            this._options = {};
+            _super.prototype.dispose.call(this);
         };
         StackPanel.prototype._onKeyDown = function (key, event) {
             var ds = this.dataSource, self = this;
             if (!ds) {
                 return;
             }
-            if (this.orientation === HORIZONTAL) {
+            if (this.orientation === "horizontal") {
                 switch (key) {
                     case 37:
                         event.preventDefault();
@@ -7455,7 +7472,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             });
             self.el.appendChild(docFr);
         };
-        StackPanel.prototype._setDataSource = function (v) {
+        StackPanel.prototype.setDataSource = function (v) {
             var _this = this;
             this._unbindDS();
             this._options.dataSource = v;
@@ -7476,24 +7493,15 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 this._debounce.enque(fn_init);
             }
         };
-        StackPanel.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            bootstrap_19.selectableProviderWeakMap.delete(this._el);
-            this._debounce.dispose();
-            this._unbindDS();
-            this._clearContent();
-            dom.removeClass([this._el], "ria-stackpanel");
-            if (this.orientation === HORIZONTAL) {
-                dom.removeClass([this.el], "ria-horizontal-panel");
-            }
-            dom.events.offNS(this._el, this.uniqueID);
-            this._currentItem = null;
-            this._itemMap = {};
-            this._options = {};
-            _super.prototype.dispose.call(this);
+        StackPanel.prototype.addOnItemClicked = function (fn, nmspace, context) {
+            this.objEvents.on("item_clicked", fn, nmspace, context);
+        };
+        StackPanel.prototype.offOnItemClicked = function (nmspace) {
+            this.objEvents.off("item_clicked", nmspace);
+        };
+        StackPanel.prototype.getDivElementByItem = function (item) {
+            var mappedItem = this._itemMap[item._key];
+            return (!mappedItem) ? null : mappedItem.el;
         };
         StackPanel.prototype.scrollToItem = function (item, isUp) {
             if (!item) {
@@ -7503,7 +7511,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             if (!mappedItem) {
                 return;
             }
-            var isVert = this.orientation === VERTICAL, pnl = mappedItem.el, viewport = this._el, viewportRect = viewport.getBoundingClientRect(), pnlRect = pnl.getBoundingClientRect(), viewPortSize = isVert ? viewport.clientHeight : viewport.clientWidth, itemSize = isVert ? pnl.offsetHeight : pnl.offsetWidth, currentPos = isVert ? viewport.scrollTop : viewport.scrollLeft, offsetDiff = isVert ? (currentPos + pnlRect.top - viewportRect.top) : (currentPos + pnlRect.left - viewportRect.left);
+            var isVert = this.orientation === "vertical", pnl = mappedItem.el, viewport = this._el, viewportRect = viewport.getBoundingClientRect(), pnlRect = pnl.getBoundingClientRect(), viewPortSize = isVert ? viewport.clientHeight : viewport.clientWidth, itemSize = isVert ? pnl.offsetHeight : pnl.offsetWidth, currentPos = isVert ? viewport.scrollTop : viewport.scrollLeft, offsetDiff = isVert ? (currentPos + pnlRect.top - viewportRect.top) : (currentPos + pnlRect.left - viewportRect.left);
             var contentSize = Math.min(itemSize, viewPortSize);
             var offset = viewPortSize - contentSize;
             var pos = !isUp ? Math.floor(offsetDiff - offset + 1) : Math.floor(offsetDiff - 1);
@@ -7526,10 +7534,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
         StackPanel.prototype.focus = function () {
             this.scrollToCurrent(true);
             boot.selectedControl = this;
-        };
-        StackPanel.prototype.getDivElementByItem = function (item) {
-            var mappedItem = this._itemMap[item._key];
-            return (!mappedItem) ? null : mappedItem.el;
         };
         StackPanel.prototype.toString = function () {
             return "StackPanel";
@@ -7565,7 +7569,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             get: function () { return this._options.dataSource; },
             set: function (v) {
                 if (v !== this.dataSource) {
-                    this._setDataSource(v);
+                    this.setDataSource(v);
                     this.objEvents.raiseProp("dataSource");
                 }
             },

@@ -436,7 +436,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         }
         return tip;
     }
-    protected _setDataSource(v: ICollection<ICollectionItem>) {
+    protected setDataSource(v: ICollection<ICollectionItem>) {
         this._unbindDS();
         this._options.dataSource = v;
         this._bindDS();
@@ -450,7 +450,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
     }
     set dataSource(v: ICollection<ICollectionItem>) {
         if (v !== this.dataSource) {
-            this._setDataSource(v);
+            this.setDataSource(v);
             this.objEvents.raiseProp(PROP_NAME.dataSource);
         }
     }

@@ -33,7 +33,11 @@ const enum PROP_NAME {
     panelEvents = "panelEvents"
 }
 
-const VERTICAL = "vertical", HORIZONTAL = "horizontal";
+const enum ORIENTATION {
+    VERTICAL = "vertical",
+    HORIZONTAL = "horizontal"
+}
+
 interface IMappedItem { el: HTMLElement; template: ITemplate; item: ICollectionItem; }
 
 export interface IStackPanelOptions {
@@ -71,7 +75,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
                 el: null,
                 dataSource: null,
                 templateID: null,
-                orientation: VERTICAL,
+                orientation: ORIENTATION.VERTICAL,
                 syncSetDatasource: false
             }, options);
 
@@ -87,7 +91,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         const eltag = options.el.tagName.toLowerCase();
         this._itemTag = (eltag === "ul" || eltag === "ol") ? "li" : "div";
 
-        if (this.orientation === HORIZONTAL) {
+        if (this.orientation === ORIENTATION.HORIZONTAL) {
             dom.addClass([options.el], css.horizontal);
         }
         this._debounce = new Debounce();
@@ -119,20 +123,33 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
 
         selectableProviderWeakMap.set(this._el, this);
         const ds = this._options.dataSource;
-        this._setDataSource(ds);
+        this.setDataSource(ds);
     }
-    addOnItemClicked(fn: TEventHandler<StackPanel, { item: ICollectionItem; }>, nmspace?: string, context?: IBaseObject) {
-        this.objEvents.on(PNL_EVENTS.item_clicked, fn, nmspace, context);
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        selectableProviderWeakMap.delete(this._el);
+        this._debounce.dispose();
+        this._unbindDS();
+        this._clearContent();
+        dom.removeClass([this._el], css.stackpanel);
+        if (this.orientation === ORIENTATION.HORIZONTAL) {
+            dom.removeClass([this.el], css.horizontal);
+        }
+        dom.events.offNS(this._el, this.uniqueID);
+        this._currentItem = null;
+        this._itemMap = {};
+        this._options = <any>{};
+        super.dispose();
     }
-    offOnItemClicked(nmspace?: string) {
-        this.objEvents.off(PNL_EVENTS.item_clicked, nmspace);
-    }
-    protected _onKeyDown(key: number, event: Event) {
+    protected _onKeyDown(key: number, event: Event): void {
         const ds = this.dataSource, self = this;
         if (!ds) {
             return;
         }
-        if (this.orientation === HORIZONTAL) {
+        if (this.orientation === ORIENTATION.HORIZONTAL) {
             switch (key) {
                 case KEYS.left:
                     event.preventDefault();
@@ -169,9 +186,9 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         }
         this._isKeyNavigation = false;
     }
-    protected _onKeyUp(key: number, event: Event) {
+    protected _onKeyUp(key: number, event: Event): void {
     }
-    protected _updateCurrent(item: ICollectionItem, withScroll: boolean) {
+    protected _updateCurrent(item: ICollectionItem, withScroll: boolean): void {
         const self = this, old = self._currentItem;
         let mappedItem: IMappedItem;
         if (old !== item) {
@@ -229,7 +246,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
                 throw new Error(strUtils.format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
         }
     }
-    protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS) {
+    protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS): void {
         const newStatus = item._aspect.status, obj = this._itemMap[item._key];
         if (!obj) {
             return;
@@ -240,12 +257,12 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             dom.removeClass([obj.el], css.itemDeleted);
         }
     }
-    protected _createTemplate(item: ICollectionItem) {
+    protected _createTemplate(item: ICollectionItem): ITemplate {
         const template = createTemplate(item, null);
         template.templateID = this.templateID;
         return template;
     }
-    protected _appendItems(newItems: ICollectionItem[]) {
+    protected _appendItems(newItems: ICollectionItem[]): void {
      const self = this, docFr = doc.createDocumentFragment();
         newItems.forEach((item) => {
             // a row for item already exists?
@@ -256,7 +273,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         });
         self.el.appendChild(docFr);
     }
-    protected _appendItem(parent: Node, item: ICollectionItem) {
+    protected _appendItem(parent: Node, item: ICollectionItem): void {
         const self = this, itemElem = doc.createElement(this._itemTag);
         dom.addClass([itemElem], css.item);
         itemElem.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this.uniqueID);
@@ -267,7 +284,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         mappedItem.template = self._createTemplate(item);
         mappedItem.el.appendChild(mappedItem.template.el);
     }
-    protected _bindDS() {
+    protected _bindDS():void {
         const self = this, ds = this.dataSource;
         if (!ds) {
             return;
@@ -278,19 +295,19 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             self._onItemStatusChanged(args.item, args.oldStatus);
         }, self._objId);
     }
-    protected _unbindDS() {
+    protected _unbindDS():void {
         const self = this, ds = this.dataSource;
         if (!ds) {
             return;
         }
         ds.objEvents.offNS(self._objId);
     }
-    protected _onItemClicked(div: HTMLElement, item: ICollectionItem) {
+    protected _onItemClicked(div: HTMLElement, item: ICollectionItem): void {
         this._updateCurrent(item, false);
         this.dataSource.currentItem = item;
         this.objEvents.raise(PNL_EVENTS.item_clicked, { item: item });
     }
-    protected _clearContent() {
+    protected _clearContent(): void {
         const self = this, keys = Object.keys(self._itemMap);
         if (keys.length === 0) {
             return;
@@ -300,7 +317,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             self._removeItemByKey(key);
         });
     }
-    protected _removeItemByKey(key: string) {
+    protected _removeItemByKey(key: string): void {
         const self = this, mappedItem = self._itemMap[key];
         if (!mappedItem) {
             return;
@@ -310,10 +327,10 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         mappedItem.template = null;
         dom.removeNode(mappedItem.el);
     }
-    protected _removeItem(item: ICollectionItem) {
+    protected _removeItem(item: ICollectionItem): void {
         this._removeItemByKey(item._key);
     }
-    protected _refresh() {
+    protected _refresh(): void {
         const ds = this.dataSource, self = this;
         this._clearContent();
         if (!ds) {
@@ -325,7 +342,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         });
         self.el.appendChild(docFr);
     }
-    protected _setDataSource(v: ICollection<ICollectionItem>) {
+    protected setDataSource(v: ICollection<ICollectionItem>) {
         this._unbindDS();
         this._options.dataSource = v;
         const fn_init = () => {
@@ -344,26 +361,17 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             this._debounce.enque(fn_init);
         }
     }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        selectableProviderWeakMap.delete(this._el);
-        this._debounce.dispose();
-        this._unbindDS();
-        this._clearContent();
-        dom.removeClass([this._el], css.stackpanel);
-        if (this.orientation === HORIZONTAL) {
-            dom.removeClass([this.el], css.horizontal);
-        }
-        dom.events.offNS(this._el, this.uniqueID);
-        this._currentItem = null;
-        this._itemMap = {};
-        this._options = <any>{};
-        super.dispose();
+    addOnItemClicked(fn: TEventHandler<StackPanel, { item: ICollectionItem; }>, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.on(PNL_EVENTS.item_clicked, fn, nmspace, context);
     }
-    scrollToItem(item: ICollectionItem, isUp?: boolean) {
+    offOnItemClicked(nmspace?: string): void {
+        this.objEvents.off(PNL_EVENTS.item_clicked, nmspace);
+    }
+    getDivElementByItem(item: ICollectionItem): HTMLElement {
+        const mappedItem = this._itemMap[item._key];
+        return (!mappedItem) ? null : mappedItem.el;
+    }
+    scrollToItem(item: ICollectionItem, isUp?: boolean): void {
         if (!item) {
             return;
         }
@@ -373,7 +381,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         }
         // mappedItem.el.scrollIntoView(false);
 
-        const isVert = this.orientation === VERTICAL, pnl = mappedItem.el, viewport = this._el,
+        const isVert = this.orientation === ORIENTATION.VERTICAL, pnl = mappedItem.el, viewport = this._el,
             viewportRect = viewport.getBoundingClientRect(),  pnlRect = pnl.getBoundingClientRect(),
             viewPortSize = isVert ? viewport.clientHeight : viewport.clientWidth,
             itemSize = isVert ? pnl.offsetHeight : pnl.offsetWidth,
@@ -401,18 +409,14 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             this._el.scrollLeft = pos;
         }
     }
-    scrollToCurrent(isUp?: boolean) {
+    scrollToCurrent(isUp?: boolean): void {
         this.scrollToItem(this._currentItem, isUp);
     }
-    focus() {
+    focus(): void {
         this.scrollToCurrent(true);
         boot.selectedControl = this;
     }
-    getDivElementByItem(item: ICollectionItem) {
-        const mappedItem = this._itemMap[item._key];
-        return (!mappedItem) ? null : mappedItem.el;
-    }
-    toString() {
+    toString(): string {
         return "StackPanel";
     }
     get selectable(): ISelectable {
@@ -425,7 +429,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     get dataSource() { return this._options.dataSource; }
     set dataSource(v) {
         if (v !== this.dataSource) {
-            this._setDataSource(v);
+            this.setDataSource(v);
             this.objEvents.raiseProp(PROP_NAME.dataSource);
         }
     }

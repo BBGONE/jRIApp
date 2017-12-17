@@ -305,43 +305,47 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         _gridCreated(this);
 
         const ds = this._options.dataSource;
-        this._setDataSource(ds);
+        this.setDataSource(ds);
     }
-    addOnRowExpanded(fn: TEventHandler<DataGrid, { collapsedRow: Row; expandedRow: Row; isExpanded: boolean; }>, nmspace?: string, context?: any) {
-        this.objEvents.on(GRID_EVENTS.row_expanded, fn, nmspace, context);
-    }
-    offOnRowExpanded(nmspace?: string) {
-        this.objEvents.off(GRID_EVENTS.row_expanded, nmspace);
-    }
-    addOnRowSelected(fn: TEventHandler<DataGrid, { row: Row; }>, nmspace?: string, context?: any) {
-        this.objEvents.on(GRID_EVENTS.row_selected, fn, nmspace, context);
-    }
-    offOnRowSelected(nmspace?: string) {
-        this.objEvents.off(GRID_EVENTS.row_selected, nmspace);
-    }
-    addOnPageChanged(fn: TEventHandler<DataGrid, any>, nmspace?: string, context?: any) {
-        this.objEvents.on(GRID_EVENTS.page_changed, fn, nmspace, context);
-    }
-    offOnPageChanged(nmspace?: string) {
-        this.objEvents.off(GRID_EVENTS.page_changed, nmspace);
-    }
-    addOnRowStateChanged(fn: TEventHandler<DataGrid, { row: Row; val: any; css: string; }>, nmspace?: string, context?: any) {
-        this.objEvents.on(GRID_EVENTS.row_state_changed, fn, nmspace, context);
-    }
-    offOnRowStateChanged(nmspace?: string) {
-        this.objEvents.off(GRID_EVENTS.row_state_changed, nmspace);
-    }
-    addOnCellDblClicked(fn: TEventHandler<DataGrid, { cell: BaseCell<BaseColumn>; }>, nmspace?: string, context?: any) {
-        this.objEvents.on(GRID_EVENTS.cell_dblclicked, fn, nmspace, context);
-    }
-    offOnCellDblClicked(nmspace?: string) {
-        this.objEvents.off(GRID_EVENTS.cell_dblclicked, nmspace);
-    }
-    addOnRowAction(fn: TEventHandler<DataGrid, { row: Row; action: ROW_ACTION; }>, nmspace?: string, context?: any) {
-        this.objEvents.on(GRID_EVENTS.row_action, fn, nmspace, context);
-    }
-    offOnRowAction(nmspace?: string) {
-        this.objEvents.off(GRID_EVENTS.row_action, nmspace);
+    dispose() {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        selectableProviderWeakMap.delete(this._table);
+        this._scrollDebounce.dispose();
+        this._dsDebounce.dispose();
+        this._pageDebounce.dispose();
+        this._updateCurrent = () => { };
+        this._clearGrid();
+        this._unbindDS();
+        _gridDestroyed(this);
+        if (!!this._details) {
+            this._details.dispose();
+            this._details = null;
+        }
+        if (!!this._fillSpace) {
+            this._fillSpace.dispose();
+            this._fillSpace = null;
+        }
+        if (this._options.animation) {
+            this._options.animation.stop();
+            this._options.animation = null;
+        }
+        if (!!this._dialog) {
+            this._dialog.dispose();
+            this._dialog = null;
+        }
+        this._unWrapTable();
+        dom.removeClass([this._table], css.dataTable);
+        dom.removeClass([this._tHeadRow], css.columnInfo);
+        this._columns.forEach((col) => { col.dispose(); });
+        this._columns = [];
+        this._table = null;
+        this._options = <any>{};
+        this._selectable = null;
+        this._internal = null;
+        super.dispose();
     }
     protected _onKeyDown(key: number, event: Event): void {
         const ds = this.dataSource, self = this;
@@ -961,7 +965,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this._wrapper.scrollTop = yPos;
         }
     }
-    protected _setDataSource(v: ICollection<ICollectionItem>) {
+    protected setDataSource(v: ICollection<ICollectionItem>) {
         this._unbindDS();
         this._options.dataSource = v;
         const fn_init = () => {
@@ -983,7 +987,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     _getInternal(): IInternalDataGridMethods {
         return this._internal;
     }
-    updateColumnsSize() {
+    updateColumnsSize(): void {
         if (this.getIsStateDirty()) {
             return;
         }
@@ -1008,7 +1012,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         const promise = ds.sort(sorts, column.sortOrder);
         return promise;
     }
-    selectRows(isSelect: boolean) {
+    selectRows(isSelect: boolean): void {
         this._rows.forEach((row) => {
             if (row.isDeleted) {
                 return;
@@ -1016,11 +1020,11 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             row.isSelected = isSelect;
         });
     }
-    findRowByItem(item: ICollectionItem) {
+    findRowByItem(item: ICollectionItem): Row {
         const row = this._rowMap[item._key];
         return (!row) ? null : row;
     }
-    collapseDetails() {
+    collapseDetails(): void {
         if (!this._details) {
             return;
         }
@@ -1029,7 +1033,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this._expandDetails(old, false);
         }
     }
-    getSelectedRows() {
+    getSelectedRows(): Row[] {
         const res: Row[] = [];
         this._rows.forEach((row) => {
             if (row.isDeleted) {
@@ -1041,7 +1045,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         });
         return res;
     }
-    showEditDialog() {
+    showEditDialog(): boolean {
         if (!this.isHasEditor || !this._editingRow) {
             return false;
         }
@@ -1063,7 +1067,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._dialog.show();
         return true;
     }
-    scrollToRow(args: { row: Row; animate?: boolean; pos?: ROW_POSITION; }) {
+    scrollToRow(args: { row: Row; animate?: boolean; pos?: ROW_POSITION; }): void {
         if (!args || !args.row) {
             return;
         }
@@ -1124,16 +1128,16 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
 
         this._scrollTo(yPos, animate);
     }
-    scrollToCurrent(pos?: ROW_POSITION, animate?: boolean) {
+    scrollToCurrent(pos?: ROW_POSITION, animate?: boolean): void {
         this._scrollDebounce.enque(() => {
             this.scrollToRow({ row: this.currentRow, animate: animate, pos: pos });
         });
     }
-    focus() {
+    focus(): void {
         this.scrollToCurrent(ROW_POSITION.Up);
         boot.selectedControl = this;
     }
-    addNew() {
+    addNew(): void {
         const ds = this.dataSource;
         try {
             ds.addNew();
@@ -1142,45 +1146,41 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        selectableProviderWeakMap.delete(this._table);
-        this._scrollDebounce.dispose();
-        this._dsDebounce.dispose();
-        this._pageDebounce.dispose();
-        this._updateCurrent = () => { };
-        this._clearGrid();
-        this._unbindDS();
-        _gridDestroyed(this);
-        if (!!this._details) {
-            this._details.dispose();
-            this._details = null;
-        }
-        if (!!this._fillSpace) {
-            this._fillSpace.dispose();
-            this._fillSpace = null;
-        }
-        if (this._options.animation) {
-            this._options.animation.stop();
-            this._options.animation = null;
-        }
-        if (!!this._dialog) {
-            this._dialog.dispose();
-            this._dialog = null;
-        }
-        this._unWrapTable();
-        dom.removeClass([this._table], css.dataTable);
-        dom.removeClass([this._tHeadRow], css.columnInfo);
-        this._columns.forEach((col) => { col.dispose(); });
-        this._columns = [];
-        this._table = null;
-        this._options = <any>{};
-        this._selectable = null;
-        this._internal = null;
-        super.dispose();
+    addOnRowExpanded(fn: TEventHandler<DataGrid, { collapsedRow: Row; expandedRow: Row; isExpanded: boolean; }>, nmspace?: string, context?: any) {
+        this.objEvents.on(GRID_EVENTS.row_expanded, fn, nmspace, context);
+    }
+    offOnRowExpanded(nmspace?: string) {
+        this.objEvents.off(GRID_EVENTS.row_expanded, nmspace);
+    }
+    addOnRowSelected(fn: TEventHandler<DataGrid, { row: Row; }>, nmspace?: string, context?: any) {
+        this.objEvents.on(GRID_EVENTS.row_selected, fn, nmspace, context);
+    }
+    offOnRowSelected(nmspace?: string) {
+        this.objEvents.off(GRID_EVENTS.row_selected, nmspace);
+    }
+    addOnPageChanged(fn: TEventHandler<DataGrid, any>, nmspace?: string, context?: any) {
+        this.objEvents.on(GRID_EVENTS.page_changed, fn, nmspace, context);
+    }
+    offOnPageChanged(nmspace?: string) {
+        this.objEvents.off(GRID_EVENTS.page_changed, nmspace);
+    }
+    addOnRowStateChanged(fn: TEventHandler<DataGrid, { row: Row; val: any; css: string; }>, nmspace?: string, context?: any) {
+        this.objEvents.on(GRID_EVENTS.row_state_changed, fn, nmspace, context);
+    }
+    offOnRowStateChanged(nmspace?: string) {
+        this.objEvents.off(GRID_EVENTS.row_state_changed, nmspace);
+    }
+    addOnCellDblClicked(fn: TEventHandler<DataGrid, { cell: BaseCell<BaseColumn>; }>, nmspace?: string, context?: any) {
+        this.objEvents.on(GRID_EVENTS.cell_dblclicked, fn, nmspace, context);
+    }
+    offOnCellDblClicked(nmspace?: string) {
+        this.objEvents.off(GRID_EVENTS.cell_dblclicked, nmspace);
+    }
+    addOnRowAction(fn: TEventHandler<DataGrid, { row: Row; action: ROW_ACTION; }>, nmspace?: string, context?: any) {
+        this.objEvents.on(GRID_EVENTS.row_action, fn, nmspace, context);
+    }
+    offOnRowAction(nmspace?: string) {
+        this.objEvents.off(GRID_EVENTS.row_action, nmspace);
     }
     get selectable(): ISelectable {
         return this._selectable;
@@ -1213,7 +1213,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     set dataSource(v: ICollection<ICollectionItem>) {
         if (v !== this.dataSource) {
-            this._setDataSource(v);
+            this.setDataSource(v);
             this.objEvents.raiseProp(PROP_NAME.dataSource);
         }
     }
