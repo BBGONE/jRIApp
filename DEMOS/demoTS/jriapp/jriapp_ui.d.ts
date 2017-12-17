@@ -413,7 +413,7 @@ declare module "jriapp_ui/listbox" {
         private _txtDebounce;
         private _stDebounce;
         private _changeDebounce;
-        private _fnCheckSelectedValue;
+        private _fnCheckSelected;
         private _isDSFilled;
         constructor(options: IListBoxConstructorOptions);
         dispose(): void;
@@ -426,7 +426,7 @@ declare module "jriapp_ui/listbox" {
         private _removeOption(item);
         private _clear();
         private _refresh();
-        protected _onChanged(): void;
+        protected _onSelectedChanged(): void;
         protected _getValue(item: ICollectionItem): any;
         protected _getText(item: ICollectionItem, index: number): string;
         protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
@@ -437,8 +437,8 @@ declare module "jriapp_ui/listbox" {
         protected getByValue(val: any): IMappedItem;
         protected getByIndex(index: number): IMappedItem;
         protected updateSelected(v: any): void;
-        protected beginTrackSelectedValue(): void;
-        protected endTrackSelectedValue(): void;
+        protected beginTrackSelected(): void;
+        protected endTrackSelected(): void;
         protected setIsEnabled(el: HTMLSelectElement, v: boolean): void;
         protected getIsEnabled(el: HTMLSelectElement): boolean;
         protected setDataSource(v: ICollection<ICollectionItem>): void;

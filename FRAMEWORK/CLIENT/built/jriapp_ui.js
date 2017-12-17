@@ -1748,7 +1748,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             this._stDebounce.dispose();
             this._txtDebounce.dispose();
             this._changeDebounce.dispose();
-            this._fnCheckSelectedValue = null;
+            this._fnCheckSelected = null;
             this._unbindDS();
             dom.events.offNS(this._el, this._objId);
             this._clear();
@@ -1887,7 +1887,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype._refresh = function () {
             var self = this, ds = this.dataSource;
-            this.beginTrackSelectedValue();
+            this.beginTrackSelected();
             this._isRefreshing = true;
             try {
                 this._clear();
@@ -1911,11 +1911,11 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             }
             finally {
                 self._isRefreshing = false;
-                this.endTrackSelectedValue();
+                this.endTrackSelected();
             }
             this.objEvents.raise("refreshed", {});
         };
-        ListBox.prototype._onChanged = function () {
+        ListBox.prototype._onSelectedChanged = function () {
             var data = this.getByIndex(this.selectedIndex);
             if (!data) {
                 this.selectedValue = null;
@@ -1951,7 +1951,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype._onDSCollectionChanged = function (sender, args) {
             var self = this;
-            this.beginTrackSelectedValue();
+            this.beginTrackSelected();
             try {
                 switch (args.changeType) {
                     case 2:
@@ -1989,13 +1989,13 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 }
             }
             finally {
-                this.endTrackSelectedValue();
+                this.endTrackSelected();
             }
         };
         ListBox.prototype._onEdit = function (item, isBegin, isCanceled) {
             var self = this;
             if (isBegin) {
-                this.beginTrackSelectedValue();
+                this.beginTrackSelected();
                 this._savedVal = this._getValue(item);
             }
             else {
@@ -2024,25 +2024,25 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     }
                 }
                 finally {
-                    this.endTrackSelectedValue();
+                    this.endTrackSelected();
                 }
             }
         };
         ListBox.prototype._onStatusChanged = function (item, oldStatus) {
             var newStatus = item._aspect.status;
-            this.beginTrackSelectedValue();
+            this.beginTrackSelected();
             if (newStatus === 3) {
                 this._removeOption(item);
                 if (!!this._textProvider) {
                     this._resetText();
                 }
             }
-            this.endTrackSelectedValue();
+            this.endTrackSelected();
         };
         ListBox.prototype._onCommitChanges = function (item, isBegin, isRejected, status) {
             var self = this;
             if (isBegin) {
-                this.beginTrackSelectedValue();
+                this.beginTrackSelected();
                 if (isRejected && status === 1) {
                     return;
                 }
@@ -2056,7 +2056,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 this._savedVal = checks.undefined;
                 if (isRejected && status === 3) {
                     this._addOption(item, true);
-                    this.endTrackSelectedValue();
+                    this.endTrackSelected();
                     return;
                 }
                 try {
@@ -2074,7 +2074,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     }
                 }
                 finally {
-                    this.endTrackSelectedValue();
+                    this.endTrackSelected();
                 }
             }
         };
@@ -2111,13 +2111,13 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 this._isRefreshing = oldRefreshing;
             }
         };
-        ListBox.prototype.beginTrackSelectedValue = function () {
-            if (!!this._fnCheckSelectedValue) {
+        ListBox.prototype.beginTrackSelected = function () {
+            if (!!this._fnCheckSelected) {
                 return;
             }
             var self = this, prevVal = fn_Str(self.selectedValue), prevItem = self.selectedItem;
-            this._fnCheckSelectedValue = function () {
-                self._fnCheckSelectedValue = null;
+            this._fnCheckSelected = function () {
+                self._fnCheckSelected = null;
                 var newVal = fn_Str(self.selectedValue), newItem = self.selectedItem;
                 if (prevVal !== newVal) {
                     self.objEvents.raiseProp("selectedValue");
@@ -2127,11 +2127,11 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 }
             };
         };
-        ListBox.prototype.endTrackSelectedValue = function () {
+        ListBox.prototype.endTrackSelected = function () {
             var _this = this;
             this._changeDebounce.enque(function () {
-                var fn = _this._fnCheckSelectedValue;
-                _this._fnCheckSelectedValue = null;
+                var fn = _this._fnCheckSelected;
+                _this._fnCheckSelected = null;
                 if (!!fn) {
                     fn();
                 }
@@ -2146,7 +2146,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         ListBox.prototype.setDataSource = function (v) {
             var _this = this;
             this._isDSFilled = false;
-            this.beginTrackSelectedValue();
+            this.beginTrackSelected();
             this._unbindDS();
             this._options.dataSource = v;
             var fn_init = function () {
@@ -2164,7 +2164,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     }
                 }
                 finally {
-                    _this.endTrackSelectedValue();
+                    _this.endTrackSelected();
                 }
             };
             if (!!this._options.syncSetDatasource) {
@@ -2193,7 +2193,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             if (this._isRefreshing) {
                 return;
             }
-            this._onChanged();
+            this._onSelectedChanged();
         };
         ListBox.prototype.addOnRefreshed = function (fn, nmspace, context) {
             this.objEvents.on("refreshed", fn, nmspace, context);
@@ -2230,7 +2230,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     var oldItem = this.selectedItem;
                     this._selectedValue = v;
                     this.updateSelected(v);
-                    this._fnCheckSelectedValue = null;
+                    this._fnCheckSelected = null;
                     this.objEvents.raiseProp("selectedValue");
                     if (oldItem !== this.selectedItem) {
                         this.objEvents.raiseProp("selectedItem");
@@ -2251,7 +2251,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     this._selectedValue = newVal;
                     var item = this.getByValue(newVal);
                     this.selectedIndex = (!item ? 0 : item.op.index);
-                    this._fnCheckSelectedValue = null;
+                    this._fnCheckSelected = null;
                     this.objEvents.raiseProp("selectedValue");
                     if (oldItem !== this.selectedItem) {
                         this.objEvents.raiseProp("selectedItem");

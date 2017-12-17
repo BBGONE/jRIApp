@@ -79,7 +79,7 @@ export class ListBox extends BaseObject implements ISubscriber {
     private _txtDebounce: Debounce;
     private _stDebounce: Debounce;
     private _changeDebounce: Debounce;
-    private _fnCheckSelectedValue: () => void;
+    private _fnCheckSelected: () => void;
     private _isDSFilled: boolean;
 
     constructor(options: IListBoxConstructorOptions) {
@@ -136,7 +136,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         this._stDebounce.dispose();
         this._txtDebounce.dispose();
         this._changeDebounce.dispose();
-        this._fnCheckSelectedValue = null;
+        this._fnCheckSelected = null;
         this._unbindDS();
         dom.events.offNS(this._el, this._objId);
         this._clear();
@@ -277,7 +277,7 @@ export class ListBox extends BaseObject implements ISubscriber {
     }
     private _refresh(): void {
         const self = this, ds = this.dataSource;
-        this.beginTrackSelectedValue();
+        this.beginTrackSelected();
         this._isRefreshing = true;
         try {
             this._clear();
@@ -302,12 +302,12 @@ export class ListBox extends BaseObject implements ISubscriber {
 
         } finally {
             self._isRefreshing = false;
-            this.endTrackSelectedValue();
+            this.endTrackSelected();
         }
 
         this.objEvents.raise(LISTBOX_EVENTS.refreshed, {});
     }
-    protected _onChanged(): void {
+    protected _onSelectedChanged(): void {
         const data: IMappedItem = this.getByIndex(this.selectedIndex);
         if (!data) {
             this.selectedValue = null;
@@ -345,7 +345,7 @@ export class ListBox extends BaseObject implements ISubscriber {
     }
     protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>) {
         const self = this;
-        this.beginTrackSelectedValue();
+        this.beginTrackSelected();
         try {
             switch (args.changeType) {
                 case COLL_CHANGE_TYPE.Reset:
@@ -382,13 +382,13 @@ export class ListBox extends BaseObject implements ISubscriber {
                     break;
             }
         } finally {
-            this.endTrackSelectedValue();
+            this.endTrackSelected();
         }
     }
     protected _onEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean) {
         const self = this;
         if (isBegin) {
-            this.beginTrackSelectedValue();
+            this.beginTrackSelected();
             this._savedVal = this._getValue(item);
         } else {
             try {
@@ -414,13 +414,13 @@ export class ListBox extends BaseObject implements ISubscriber {
                     }
                 }
             } finally {
-                this.endTrackSelectedValue();
+                this.endTrackSelected();
             }
         }
     }
     protected _onStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS) {
         const newStatus = item._aspect.status;
-        this.beginTrackSelectedValue();
+        this.beginTrackSelected();
         if (newStatus === ITEM_STATUS.Deleted) {
             this._removeOption(item);
             if (!!this._textProvider) {
@@ -428,12 +428,12 @@ export class ListBox extends BaseObject implements ISubscriber {
                 this._resetText();
             }
         }
-        this.endTrackSelectedValue();
+        this.endTrackSelected();
     }
     protected _onCommitChanges(item: ICollectionItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS) {
         const self = this;
         if (isBegin) {
-            this.beginTrackSelectedValue();
+            this.beginTrackSelected();
 
             if (isRejected && status === ITEM_STATUS.Added) {
                 return;
@@ -448,7 +448,7 @@ export class ListBox extends BaseObject implements ISubscriber {
             // delete is rejected
             if (isRejected && status === ITEM_STATUS.Deleted) {
                 this._addOption(item, true);
-                this.endTrackSelectedValue();
+                this.endTrackSelected();
                 return;
             }
 
@@ -468,7 +468,7 @@ export class ListBox extends BaseObject implements ISubscriber {
                     data.op.text = self._getText(item, data.op.index);
                 }
             } finally {
-                this.endTrackSelectedValue();
+                this.endTrackSelected();
             }
         }
     }
@@ -504,15 +504,15 @@ export class ListBox extends BaseObject implements ISubscriber {
             this._isRefreshing = oldRefreshing;
         }
     }
-    protected beginTrackSelectedValue(): void {
+    protected beginTrackSelected(): void {
         // if already set then return
-        if (!!this._fnCheckSelectedValue) {
+        if (!!this._fnCheckSelected) {
             return;
         }
         const self = this, prevVal = fn_Str(self.selectedValue), prevItem = self.selectedItem;
-        this._fnCheckSelectedValue = () => {
+        this._fnCheckSelected = () => {
             // reset function
-            self._fnCheckSelectedValue = null;
+            self._fnCheckSelected = null;
             const newVal = fn_Str(self.selectedValue), newItem = self.selectedItem;
             if (prevVal !== newVal) {
                 self.objEvents.raiseProp(PROP_NAME.selectedValue);
@@ -522,10 +522,10 @@ export class ListBox extends BaseObject implements ISubscriber {
             }
         };
     }
-    protected endTrackSelectedValue(): void {
+    protected endTrackSelected(): void {
         this._changeDebounce.enque(() => {
-            const fn = this._fnCheckSelectedValue;
-            this._fnCheckSelectedValue = null;
+            const fn = this._fnCheckSelected;
+            this._fnCheckSelected = null;
             if (!!fn) {
                 fn();
             }
@@ -539,7 +539,7 @@ export class ListBox extends BaseObject implements ISubscriber {
     }
     protected setDataSource(v: ICollection<ICollectionItem>): void {
         this._isDSFilled = false;
-        this.beginTrackSelectedValue();
+        this.beginTrackSelected();
         this._unbindDS();
         this._options.dataSource = v;
         const fn_init = () => {
@@ -556,7 +556,7 @@ export class ListBox extends BaseObject implements ISubscriber {
                     this._addOption(null, false);
                 }
             } finally {
-                this.endTrackSelectedValue();
+                this.endTrackSelected();
             }
         };
 
@@ -581,7 +581,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         if (this._isRefreshing) {
             return;
         }
-        this._onChanged();
+        this._onSelectedChanged();
     }
     addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void {
         this.objEvents.on(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
@@ -613,7 +613,7 @@ export class ListBox extends BaseObject implements ISubscriber {
             const oldItem = this.selectedItem;
             this._selectedValue = v;
             this.updateSelected(v);
-            this._fnCheckSelectedValue = null;
+            this._fnCheckSelected = null;
             this.objEvents.raiseProp(PROP_NAME.selectedValue);
             if (oldItem !== this.selectedItem) {
                 this.objEvents.raiseProp(PROP_NAME.selectedItem);
@@ -630,7 +630,7 @@ export class ListBox extends BaseObject implements ISubscriber {
             this._selectedValue = newVal;
             const item = this.getByValue(newVal);
             this.selectedIndex = (!item ? 0 : item.op.index);
-            this._fnCheckSelectedValue = null;
+            this._fnCheckSelected = null;
             this.objEvents.raiseProp(PROP_NAME.selectedValue);
             if (oldItem !== this.selectedItem) {
                 this.objEvents.raiseProp(PROP_NAME.selectedItem);
