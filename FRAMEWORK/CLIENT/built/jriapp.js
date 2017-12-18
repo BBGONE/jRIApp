@@ -109,6 +109,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         TOKEN["THIS"] = "this.";
         TOKEN["PARAM"] = "param";
         TOKEN["TARGET_PATH"] = "targetPath";
+        TOKEN["BRACE_PART"] = "BRP";
     })(TOKEN || (TOKEN = {}));
     var PARSE_TYPE;
     (function (PARSE_TYPE) {
@@ -196,6 +197,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                 if (braceParts.length > 0) {
                     bracePart = braceParts[0];
                     kv.val += bracePart;
+                    kv.tag = "BRP";
                     i += bracePart.length - 1;
                 }
                 else {
@@ -322,19 +324,20 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                         }
                         break;
                     default:
-                        throw new Error("Invalid Operation");
+                        res[kv.key] = kv.val;
+                        break;
                 }
             }
-            else if (isString && isInsideBraces(kv.val)) {
-                res[kv.key] = _parseOption(parse_type, kv.val, app, dataContext);
-            }
-            else {
-                if (isString) {
-                    res[kv.key] = strUtils.trimQuotes(kv.val);
+            else if (isString) {
+                if (kv.tag === "BRP") {
+                    res[kv.key] = _parseOption(parse_type, kv.val, app, dataContext);
                 }
                 else {
-                    res[kv.key] = kv.val;
+                    res[kv.key] = strUtils.trimQuotes(kv.val);
                 }
+            }
+            else {
+                res[kv.key] = kv.val;
             }
         });
         return res;

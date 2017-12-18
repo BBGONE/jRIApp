@@ -12,7 +12,8 @@ const enum TOKEN {
     EVAL = "eval",
     THIS = "this.",
     PARAM = "param",
-    TARGET_PATH = "targetPath"
+    TARGET_PATH = "targetPath",
+    BRACE_PART = "BRP"
 }
 
 const enum PARSE_TYPE {
@@ -120,6 +121,7 @@ function _getKeyVals(val: string): IKeyVal[] {
             if (braceParts.length > 0) {
                 bracePart = braceParts[0];
                 kv.val += bracePart;
+                kv.tag = TOKEN.BRACE_PART;
                 i += bracePart.length - 1;
             } else {
                 throw new Error(strUtils.format(ERRS.ERR_EXPR_BRACES_INVALID, bracePart));
@@ -263,16 +265,18 @@ function _parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContex
                     }
                     break;
                 default:
-                    throw new Error("Invalid Operation");
+                    res[kv.key] = kv.val;
+                    break;
             }
-        } else if (isString && isInsideBraces(kv.val)) {
-            res[kv.key] = _parseOption(parse_type, kv.val, app, dataContext);
-        } else {
-            if (isString) {
-                res[kv.key] = strUtils.trimQuotes(kv.val);
+        } else if (isString) {
+            if (kv.tag === TOKEN.BRACE_PART) {
+                res[kv.key] = _parseOption(parse_type, kv.val, app, dataContext);
             } else {
-                res[kv.key] = kv.val;
+                res[kv.key] = strUtils.trimQuotes(kv.val);
             }
+
+        } else {
+            res[kv.key] = kv.val;
         }
     });
 
