@@ -110,6 +110,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         TOKEN["PARAM"] = "param";
         TOKEN["TARGET_PATH"] = "targetPath";
         TOKEN["BRACE_PART"] = "BRP";
+        TOKEN["STR_VAL"] = "STR";
     })(TOKEN || (TOKEN = {}));
     var PARSE_TYPE;
     (function (PARSE_TYPE) {
@@ -170,14 +171,27 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
     }
     function _getKeyVals(val) {
         var i, ch, literal, parts = [], kv = { tag: null, key: "", val: "" }, isKey = true;
-        for (i = 0; i < val.length; i += 1) {
+        var len = val.length;
+        for (i = 0; i < len; i += 1) {
             ch = val.charAt(i);
             if (ch === "'" || ch === '"') {
                 if (!literal) {
                     literal = ch;
+                    if (!!strUtils.fastTrim(kv.val)) {
+                        throw new Error("Invalid quotes in the expression: " + val);
+                    }
+                    continue;
                 }
                 else if (literal === ch) {
-                    literal = null;
+                    var i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
+                    if (next === ch) {
+                        kv.val += ch;
+                        i += 1;
+                    }
+                    else {
+                        literal = null;
+                    }
+                    continue;
                 }
             }
             if (ch === "(" && checks.isString(kv.val)) {
@@ -191,30 +205,39 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                     literal = null;
                 }
             }
-            if (!literal && ch === "{" && !isKey) {
-                var bracePart = val.substr(i);
-                var braceParts = _getBraceParts(bracePart, true);
-                if (braceParts.length > 0) {
-                    bracePart = braceParts[0];
-                    kv.val += bracePart;
-                    kv.tag = "BRP";
-                    i += bracePart.length - 1;
+            if (!literal) {
+                if (ch === "{" && !isKey) {
+                    var bracePart = val.substr(i);
+                    var braceParts = _getBraceParts(bracePart, true);
+                    if (braceParts.length > 0) {
+                        bracePart = braceParts[0];
+                        kv.val += bracePart;
+                        kv.tag = "BRP";
+                        i += bracePart.length - 1;
+                    }
+                    else {
+                        throw new Error(strUtils.format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, bracePart));
+                    }
+                }
+                else if (ch === ",") {
+                    if (!!kv.key) {
+                        _checkKeyVal(kv);
+                        parts.push(kv);
+                        kv = { tag: null, key: "", val: "" };
+                        isKey = true;
+                    }
+                }
+                else if (ch === ":" || ch === "=") {
+                    isKey = false;
                 }
                 else {
-                    throw new Error(strUtils.format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, bracePart));
+                    if (isKey) {
+                        kv.key += ch;
+                    }
+                    else {
+                        kv.val += ch;
+                    }
                 }
-                continue;
-            }
-            if (!literal && ch === ",") {
-                if (!!kv.key) {
-                    _checkKeyVal(kv);
-                    parts.push(kv);
-                    kv = { tag: null, key: "", val: "" };
-                    isKey = true;
-                }
-            }
-            else if (!literal && (ch === ":" || ch === "=")) {
-                isKey = false;
             }
             else {
                 if (isKey) {
@@ -233,6 +256,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             kv.key = strUtils.fastTrim(kv.key);
             if (checks.isString(kv.val)) {
                 kv.val = strUtils.fastTrim(kv.val);
+                if (!kv.tag) {
+                    kv.tag = "STR";
+                }
             }
         });
         parts = parts.filter(function (kv) {
@@ -299,12 +325,12 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         var kvals = _getKeyVals(part);
         kvals.forEach(function (kv) {
             var isEval = false, evalparts;
-            var isString = checks.isString(kv.val), isTryGetEval = parse_type === 2 || parse_type === 1;
+            var isTryGetEval = parse_type === 2 || parse_type === 1;
             if (parse_type === 1 && !kv.val && strUtils.startsWith(kv.key, "this.")) {
                 kv.val = kv.key.substr(len_this);
                 kv.key = "targetPath";
             }
-            if (isTryGetEval && isString && kv.tag === "eval") {
+            if (isTryGetEval && kv.tag === "eval") {
                 evalparts = _getEvalParts(kv.val);
                 isEval = evalparts.length > 0;
             }
@@ -328,13 +354,8 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                         break;
                 }
             }
-            else if (isString) {
-                if (kv.tag === "BRP") {
-                    res[kv.key] = _parseOption(parse_type, kv.val, app, dataContext);
-                }
-                else {
-                    res[kv.key] = strUtils.trimQuotes(kv.val);
-                }
+            else if (kv.tag === "BRP") {
+                res[kv.key] = _parseOption(parse_type, kv.val, app, dataContext);
             }
             else {
                 res[kv.key] = kv.val;
@@ -4411,6 +4432,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.7.3";
+    exports.VERSION = "2.7.4";
     bootstrap_7.Bootstrap._initFramework();
 });

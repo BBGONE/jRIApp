@@ -13,7 +13,8 @@ const enum TOKEN {
     THIS = "this.",
     PARAM = "param",
     TARGET_PATH = "targetPath",
-    BRACE_PART = "BRP"
+    BRACE_PART = "BRP",
+    STR_VAL = "STR"
 }
 
 const enum PARSE_TYPE {
@@ -87,19 +88,33 @@ function _checkKeyVal(kv: IKeyVal): void {
 // extract key - value pairs
 function _getKeyVals(val: string): IKeyVal[] {
     let i: number, ch: string, literal: string,
-        parts: IKeyVal[] = [], kv: IKeyVal = { tag: null, key: "", val: "" }, isKey = true;
+        parts: IKeyVal[] = [], kv: IKeyVal = { tag: null, key: "", val: "" }, isKey = true
+    const len = val.length;
     
 
-    for (i = 0; i < val.length; i += 1) {
+    for (i = 0; i < len; i += 1) {
         ch = val.charAt(i);
         // is this a content inside '' or "" ?
         if (ch === "'" || ch === '"') {
             if (!literal) {
                 literal = ch;
+                if (!!strUtils.fastTrim(kv.val)) {
+                    throw new Error("Invalid quotes in the expression: "+ val);
+                }
+                continue;
             } else if (literal === ch) {
-                literal = null;
+                //check for quotes escape 
+                const i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
+                if (next === ch) {
+                    kv.val += ch;
+                    i += 1;
+                } else {
+                    literal = null;
+                }
+                continue;
             }
         }
+
         // is this a content inside eval( ) ?
         if (ch === "(" && checks.isString(kv.val)) {
             if (!literal && strUtils.fastTrim(kv.val) === TOKEN.EVAL) {
@@ -114,30 +129,34 @@ function _getKeyVals(val: string): IKeyVal[] {
             }
         }
 
-        // value inside braces
-        if (!literal && ch === "{" && !isKey) {
-            let bracePart = val.substr(i);
-            const braceParts = _getBraceParts(bracePart, true);
-            if (braceParts.length > 0) {
-                bracePart = braceParts[0];
-                kv.val += bracePart;
-                kv.tag = TOKEN.BRACE_PART;
-                i += bracePart.length - 1;
+        if (!literal) {
+            if (ch === "{" && !isKey) {
+                let bracePart = val.substr(i);
+                const braceParts = _getBraceParts(bracePart, true);
+                if (braceParts.length > 0) {
+                    bracePart = braceParts[0];
+                    kv.val += bracePart;
+                    kv.tag = TOKEN.BRACE_PART;
+                    i += bracePart.length - 1;
+                } else {
+                    throw new Error(strUtils.format(ERRS.ERR_EXPR_BRACES_INVALID, bracePart));
+                }
+            } else if (ch === TOKEN.COMMA) {
+                if (!!kv.key) {
+                    _checkKeyVal(kv);
+                    parts.push(kv);
+                    kv = { tag: null, key: "", val: "" };
+                    isKey = true; // currently parsing key value
+                }
+            } else if (ch === TOKEN.DELIMETER1 || ch === TOKEN.DELIMETER2) {
+                isKey = false; // begin parsing value
             } else {
-                throw new Error(strUtils.format(ERRS.ERR_EXPR_BRACES_INVALID, bracePart));
+                if (isKey) {
+                    kv.key += ch;
+                } else {
+                    kv.val += ch;
+                }
             }
-            continue;
-        }
-
-        if (!literal && ch === TOKEN.COMMA) {
-            if (!!kv.key) {
-                _checkKeyVal(kv);
-                parts.push(kv);
-                kv = {tag: null, key: "", val: "" };
-                isKey = true; // currently parsing key value
-            }
-        } else if (!literal && (ch === TOKEN.DELIMETER1 || ch === TOKEN.DELIMETER2)) {
-            isKey = false; // begin parsing value
         } else {
             if (isKey) {
                 kv.key += ch;
@@ -145,8 +164,9 @@ function _getKeyVals(val: string): IKeyVal[] {
                 kv.val += ch;
             }
         }
-    }
+    } //for (i = 0; i < val.length; i += 1)
 
+    //check the last value
     if (!!kv.key) {
         _checkKeyVal(kv);
         parts.push(kv);
@@ -156,6 +176,9 @@ function _getKeyVals(val: string): IKeyVal[] {
         kv.key = strUtils.fastTrim(kv.key);
         if (checks.isString(kv.val)) {
             kv.val = strUtils.fastTrim(kv.val);
+            if (!kv.tag) {
+                kv.tag = TOKEN.STR_VAL;
+            }
         }
     });
 
@@ -234,16 +257,15 @@ function _parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContex
     }
     const kvals = _getKeyVals(part);
     kvals.forEach(function (kv) {
-        let isEval = false, evalparts:string[];
-        const isString = checks.isString(kv.val),
-            isTryGetEval = parse_type === PARSE_TYPE.VIEW || parse_type === PARSE_TYPE.BINDING;
+        let isEval = false, evalparts: string[];
+        const isTryGetEval = parse_type === PARSE_TYPE.VIEW || parse_type === PARSE_TYPE.BINDING;
 
         if (parse_type === PARSE_TYPE.BINDING && !kv.val && strUtils.startsWith(kv.key, TOKEN.THIS)) {
             kv.val = kv.key.substr(len_this); // extract property
             kv.key = TOKEN.TARGET_PATH;
         }
 
-        if (isTryGetEval && isString && kv.tag === TOKEN.EVAL) {
+        if (isTryGetEval && kv.tag === TOKEN.EVAL) {
             evalparts = _getEvalParts(kv.val);
             isEval = evalparts.length > 0;
         }
@@ -268,13 +290,8 @@ function _parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContex
                     res[kv.key] = kv.val;
                     break;
             }
-        } else if (isString) {
-            if (kv.tag === TOKEN.BRACE_PART) {
-                res[kv.key] = _parseOption(parse_type, kv.val, app, dataContext);
-            } else {
-                res[kv.key] = strUtils.trimQuotes(kv.val);
-            }
-
+        } else if (kv.tag === TOKEN.BRACE_PART) {
+            res[kv.key] = _parseOption(parse_type, kv.val, app, dataContext);
         } else {
             res[kv.key] = kv.val;
         }
