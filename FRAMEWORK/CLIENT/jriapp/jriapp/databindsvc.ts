@@ -48,10 +48,12 @@ function fn_toBindableElement(el: Element): IBindableElement {
         if (attr.name === DATA_ATTR.DATA_VIEW) {
             dataViewName = attr.value;
         }
+
+        if (attr.name === DATA_ATTR.DATA_VIEW_OPTIONS) {
+            hasOptions = true;
+        }
     }
-    if (el.hasAttribute(DATA_ATTR.DATA_VIEW_OPTIONS)) {
-        hasOptions = true;
-    }
+
     if (dataViewName === ELVIEW_NM.DataForm) {
         res.dataForm = true;
     }

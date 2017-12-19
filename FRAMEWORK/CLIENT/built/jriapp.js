@@ -110,7 +110,6 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         TOKEN["PARAM"] = "param";
         TOKEN["TARGET_PATH"] = "targetPath";
         TOKEN["BRACE_PART"] = "BRP";
-        TOKEN["STR_VAL"] = "STR";
     })(TOKEN || (TOKEN = {}));
     var PARSE_TYPE;
     (function (PARSE_TYPE) {
@@ -125,7 +124,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
     function isInsideBraces(str) {
         return (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}"));
     }
-    function _checkKeyVal(kv) {
+    function convertKeyVal(kv) {
+        kv.key = strUtils.fastTrim(kv.key);
+        kv.val = strUtils.fastTrim(kv.val);
         if (checks.isNumeric(kv.val)) {
             kv.val = Number(kv.val);
         }
@@ -133,7 +134,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             kv.val = coreUtils.parseBool(kv.val);
         }
     }
-    function _getBraceParts(val, firstOnly) {
+    function getBraceParts(val, firstOnly) {
         var i, s = "", ch, literal, cnt = 0;
         var parts = [];
         for (i = 0; i < val.length; i += 1) {
@@ -169,7 +170,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         }
         return parts;
     }
-    function _getKeyVals(val) {
+    function getKeyVals(val) {
         var i, ch, literal, parts = [], kv = { tag: null, key: "", val: "" }, isKey = true;
         var len = val.length;
         for (i = 0; i < len; i += 1) {
@@ -177,9 +178,6 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             if (ch === "'" || ch === '"') {
                 if (!literal) {
                     literal = ch;
-                    if (!!strUtils.fastTrim(kv.val)) {
-                        throw new Error("Invalid quotes in the expression: " + val);
-                    }
                     continue;
                 }
                 else if (literal === ch) {
@@ -208,7 +206,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             if (!literal) {
                 if (ch === "{" && !isKey) {
                     var bracePart = val.substr(i);
-                    var braceParts = _getBraceParts(bracePart, true);
+                    var braceParts = getBraceParts(bracePart, true);
                     if (braceParts.length > 0) {
                         bracePart = braceParts[0];
                         kv.val += bracePart;
@@ -221,7 +219,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                 }
                 else if (ch === ",") {
                     if (!!kv.key) {
-                        _checkKeyVal(kv);
+                        convertKeyVal(kv);
                         parts.push(kv);
                         kv = { tag: null, key: "", val: "" };
                         isKey = true;
@@ -249,24 +247,15 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             }
         }
         if (!!kv.key) {
-            _checkKeyVal(kv);
+            convertKeyVal(kv);
             parts.push(kv);
         }
-        parts.forEach(function (kv) {
-            kv.key = strUtils.fastTrim(kv.key);
-            if (checks.isString(kv.val)) {
-                kv.val = strUtils.fastTrim(kv.val);
-                if (!kv.tag) {
-                    kv.tag = "STR";
-                }
-            }
-        });
         parts = parts.filter(function (kv) {
-            return kv.val !== "";
+            return !!kv.key && kv.val !== "";
         });
         return parts;
     }
-    function _getEvalParts(val) {
+    function getEvalParts(val) {
         var ch, is_expression = false, parts = [], part = "";
         for (var i = 0; i < val.length; i += 1) {
             ch = val.charAt(i);
@@ -306,7 +295,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         }
         return parts;
     }
-    function _parseOption(parse_type, part, app, dataContext) {
+    function parseOption(parse_type, part, app, dataContext) {
         var res = parse_type === 1 ? {
             targetPath: "",
             sourcePath: "",
@@ -322,7 +311,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         if (isInsideBraces(part)) {
             part = trimOuterBraces(part);
         }
-        var kvals = _getKeyVals(part);
+        var kvals = getKeyVals(part);
         kvals.forEach(function (kv) {
             var isEval = false, evalparts;
             var isTryGetEval = parse_type === 2 || parse_type === 1;
@@ -331,7 +320,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                 kv.key = "targetPath";
             }
             if (isTryGetEval && kv.tag === "eval") {
-                evalparts = _getEvalParts(kv.val);
+                evalparts = getEvalParts(kv.val);
                 isEval = evalparts.length > 0;
             }
             if (isEval) {
@@ -355,7 +344,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                 }
             }
             else if (kv.tag === "BRP") {
-                res[kv.key] = _parseOption(parse_type, kv.val, app, dataContext);
+                res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
             }
             else {
                 res[kv.key] = kv.val;
@@ -363,13 +352,13 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         });
         return res;
     }
-    function _parseOptions(parse_type, strs, app, dataContext) {
+    function parseOptions(parse_type, strs, app, dataContext) {
         var res = [];
         var parts = [];
         for (var i = 0; i < strs.length; i += 1) {
             strs[i] = strUtils.fastTrim(strs[i]);
             if (isInsideBraces(strs[i])) {
-                var subparts = _getBraceParts(strs[i], false);
+                var subparts = getBraceParts(strs[i], false);
                 for (var k = 0; k < subparts.length; k += 1) {
                     parts.push(subparts[k]);
                 }
@@ -379,7 +368,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             }
         }
         for (var j = 0; j < parts.length; j += 1) {
-            res.push(_parseOption(parse_type, parts[j], app, dataContext));
+            res.push(parseOption(parse_type, parts[j], app, dataContext));
         }
         return res;
     }
@@ -387,13 +376,13 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         function Parser() {
         }
         Parser.parseOptions = function (options) {
-            return _parseOptions(0, [options], null, null);
+            return parseOptions(0, [options], null, null);
         };
         Parser.parseBindings = function (bindings) {
-            return _parseOptions(1, bindings, null, null);
+            return parseOptions(1, bindings, null, null);
         };
         Parser.parseViewOptions = function (options, app, dataContext) {
-            var res = _parseOptions(2, [options], app, dataContext);
+            var res = parseOptions(2, [options], app, dataContext);
             return (!!res && res.length > 0) ? res[0] : {};
         };
         return Parser;
@@ -3891,9 +3880,9 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
             if (attr.name === "data-view") {
                 dataViewName = attr.value;
             }
-        }
-        if (el.hasAttribute("data-view-options")) {
-            hasOptions = true;
+            if (attr.name === "data-view-options") {
+                hasOptions = true;
+            }
         }
         if (dataViewName === "dataform") {
             res.dataForm = true;
@@ -4432,6 +4421,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.7.4";
+    exports.VERSION = "2.7.5";
     bootstrap_7.Bootstrap._initFramework();
 });

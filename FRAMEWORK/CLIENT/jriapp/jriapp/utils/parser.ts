@@ -13,8 +13,7 @@ const enum TOKEN {
     THIS = "this.",
     PARAM = "param",
     TARGET_PATH = "targetPath",
-    BRACE_PART = "BRP",
-    STR_VAL = "STR"
+    BRACE_PART = "BRP"
 }
 
 const enum PARSE_TYPE {
@@ -38,7 +37,9 @@ function isInsideBraces(str: string): boolean {
     return (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}"));
 }
 
-function _checkKeyVal(kv: IKeyVal): void {
+function convertKeyVal(kv: IKeyVal): void {
+    kv.key = strUtils.fastTrim(kv.key);
+    kv.val = strUtils.fastTrim(kv.val);
     if (checks.isNumeric(kv.val)) {
         kv.val = Number(kv.val);
     } else if (checks.isBoolString(kv.val)) {
@@ -47,7 +48,7 @@ function _checkKeyVal(kv: IKeyVal): void {
 }
 
 // extract top level braces
- function _getBraceParts(val: string, firstOnly: boolean): string[] {
+function getBraceParts(val: string, firstOnly: boolean): string[] {
     let i: number, s = "", ch: string, literal: string, cnt = 0;
     const parts: string[] = [];
 
@@ -86,9 +87,9 @@ function _checkKeyVal(kv: IKeyVal): void {
 }
 
 // extract key - value pairs
-function _getKeyVals(val: string): IKeyVal[] {
+function getKeyVals(val: string): IKeyVal[] {
     let i: number, ch: string, literal: string,
-        parts: IKeyVal[] = [], kv: IKeyVal = { tag: null, key: "", val: "" }, isKey = true
+        parts: IKeyVal[] = [], kv: IKeyVal = { tag: null, key: "", val: "" }, isKey = true;
     const len = val.length;
     
 
@@ -98,9 +99,6 @@ function _getKeyVals(val: string): IKeyVal[] {
         if (ch === "'" || ch === '"') {
             if (!literal) {
                 literal = ch;
-                if (!!strUtils.fastTrim(kv.val)) {
-                    throw new Error("Invalid quotes in the expression: "+ val);
-                }
                 continue;
             } else if (literal === ch) {
                 //check for quotes escape 
@@ -132,7 +130,7 @@ function _getKeyVals(val: string): IKeyVal[] {
         if (!literal) {
             if (ch === "{" && !isKey) {
                 let bracePart = val.substr(i);
-                const braceParts = _getBraceParts(bracePart, true);
+                const braceParts = getBraceParts(bracePart, true);
                 if (braceParts.length > 0) {
                     bracePart = braceParts[0];
                     kv.val += bracePart;
@@ -143,7 +141,7 @@ function _getKeyVals(val: string): IKeyVal[] {
                 }
             } else if (ch === TOKEN.COMMA) {
                 if (!!kv.key) {
-                    _checkKeyVal(kv);
+                    convertKeyVal(kv);
                     parts.push(kv);
                     kv = { tag: null, key: "", val: "" };
                     isKey = true; // currently parsing key value
@@ -168,27 +166,19 @@ function _getKeyVals(val: string): IKeyVal[] {
 
     //check the last value
     if (!!kv.key) {
-        _checkKeyVal(kv);
+        convertKeyVal(kv);
         parts.push(kv);
     }
 
-    parts.forEach(function (kv) {
-        kv.key = strUtils.fastTrim(kv.key);
-        if (checks.isString(kv.val)) {
-            kv.val = strUtils.fastTrim(kv.val);
-            if (!kv.tag) {
-                kv.tag = TOKEN.STR_VAL;
-            }
-        }
+    parts = parts.filter(function (kv) {
+       // when key has value
+        return !!kv.key && kv.val !== ""; 
     });
 
-    parts = parts.filter(function (kv) {
-        return kv.val !== ""; // when key has value
-    });
     return parts;
 }
 
-function _getEvalParts(val: string): string[] {
+function getEvalParts(val: string): string[] {
     let ch: string, is_expression = false,
         parts: string[] = [], part = "";
 
@@ -238,7 +228,7 @@ function _getEvalParts(val: string): string[] {
     return parts;
 }
 
-function _parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext: any): any {
+function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext: any): any {
     const res: any = parse_type === PARSE_TYPE.BINDING ? {
         targetPath: "",
         sourcePath: "",
@@ -255,7 +245,7 @@ function _parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContex
     if (isInsideBraces(part)) {
         part = trimOuterBraces(part);
     }
-    const kvals = _getKeyVals(part);
+    const kvals = getKeyVals(part);
     kvals.forEach(function (kv) {
         let isEval = false, evalparts: string[];
         const isTryGetEval = parse_type === PARSE_TYPE.VIEW || parse_type === PARSE_TYPE.BINDING;
@@ -266,7 +256,7 @@ function _parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContex
         }
 
         if (isTryGetEval && kv.tag === TOKEN.EVAL) {
-            evalparts = _getEvalParts(kv.val);
+            evalparts = getEvalParts(kv.val);
             isEval = evalparts.length > 0;
         }
 
@@ -291,7 +281,7 @@ function _parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContex
                     break;
             }
         } else if (kv.tag === TOKEN.BRACE_PART) {
-            res[kv.key] = _parseOption(parse_type, kv.val, app, dataContext);
+            res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
         } else {
             res[kv.key] = kv.val;
         }
@@ -300,13 +290,13 @@ function _parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContex
     return res;
 }
 
-function _parseOptions(parse_type: PARSE_TYPE, strs: string[], app: any, dataContext: any): any[] {
+function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: any, dataContext: any): any[] {
     const res: any[] = [];
     let parts: string[] = [];
     for (let i = 0; i < strs.length; i += 1) {
         strs[i] = strUtils.fastTrim(strs[i]);
         if (isInsideBraces(strs[i])) {
-            const subparts = _getBraceParts(strs[i], false);
+            const subparts = getBraceParts(strs[i], false);
             for (let k = 0; k < subparts.length; k += 1) {
                 parts.push(subparts[k]);
             }
@@ -316,7 +306,7 @@ function _parseOptions(parse_type: PARSE_TYPE, strs: string[], app: any, dataCon
     }
    
     for (let j = 0; j < parts.length; j += 1) {
-        res.push(_parseOption(parse_type, parts[j], app, dataContext));
+        res.push(parseOption(parse_type, parts[j], app, dataContext));
     }
 
     return res;
@@ -324,13 +314,13 @@ function _parseOptions(parse_type: PARSE_TYPE, strs: string[], app: any, dataCon
 
 export class Parser {
     static parseOptions(options: string): any[] {
-        return _parseOptions(PARSE_TYPE.NONE, [options], null, null);
+        return parseOptions(PARSE_TYPE.NONE, [options], null, null);
     }
     static parseBindings(bindings: string[]): any[] {
-        return _parseOptions(PARSE_TYPE.BINDING, bindings, null, null);
+        return parseOptions(PARSE_TYPE.BINDING, bindings, null, null);
     }
     static parseViewOptions(options: string, app: any, dataContext: any): any {
-        const res = _parseOptions(PARSE_TYPE.VIEW, [options], app, dataContext);
+        const res = parseOptions(PARSE_TYPE.VIEW, [options], app, dataContext);
         return (!!res && res.length > 0) ? res[0] : {};
     }
 }
