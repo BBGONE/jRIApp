@@ -266,10 +266,11 @@ declare module "jriapp_shared/utils/coreutils" {
         static parseBool(a: any): boolean;
         static round(num: number, decimals: number): number;
         static clone(obj: any, target?: any): any;
-        static merge<S, T>(source: S, target?: T): S | T;
-        static extend<T, U>(target: T, ...source: U[]): T | U;
-        static memoize<T>(callback: () => T): () => T;
-        static forEachProp<T>(obj: IIndexer<T>, fn: (name: string, val?: T) => void): void;
+        static merge<S, T>(source: S, target?: T): S & T;
+        static extend<T, U>(target: T, ...source: U[]): T & U;
+        static memoize<T>(fn: () => T): () => T;
+        static forEachProp<T>(map: IIndexer<T>, fn: (name: string, val?: T) => void): void;
+        static toArray<T>(map: IIndexer<T>): T[];
         static assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: U): T;
     }
 }
@@ -522,6 +523,7 @@ declare module "jriapp_shared/object" {
     }
 }
 declare module "jriapp_shared/utils/arrhelper" {
+    import { IIndexer } from "jriapp_shared/int";
     export interface IArrayLikeList<T> {
         length: number;
         [index: number]: T;
@@ -534,6 +536,7 @@ declare module "jriapp_shared/utils/arrhelper" {
         static merge<T>(arrays: Array<Array<T>>): Array<T>;
         static distinct(arr: string[]): string[];
         static distinct(arr: number[]): number[];
+        static toMap<T extends object>(arr: T[], key: (obj: T) => string): IIndexer<T>;
         static remove(array: any[], obj: any): number;
         static removeIndex(array: any[], index: number): boolean;
         static insert(array: any[], obj: any, pos: number): void;

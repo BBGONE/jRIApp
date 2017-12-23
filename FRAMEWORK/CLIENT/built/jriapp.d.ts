@@ -182,9 +182,11 @@ declare module "jriapp/int" {
         new (options: IViewOptions): IElView;
     }
     export interface IElView extends IBaseObject {
-        el: HTMLElement;
-        app: IApplication;
+        readonly el: HTMLElement;
+        readonly app: IApplication;
+        readonly uniqueID: string;
         validationErrors: IValidationInfo[];
+        viewMounted?: () => void;
     }
     export interface IBindArgs {
         readonly scope: Document | Element;
@@ -233,6 +235,8 @@ declare module "jriapp/int" {
         readonly converter: IConverter;
         readonly param: any;
         isDisabled: boolean;
+        updateTarget(): void;
+        updateSource(): void;
     }
     export interface IExternallyCachable {
         addOnObjectCreated(fn: (sender: any, args: {
@@ -798,6 +802,7 @@ declare module "jriapp/binding" {
         private _cntUtgt;
         private _cntUSrc;
         constructor(options: IBindingOptions);
+        dispose(): void;
         private _update();
         private _onSrcErrChanged(errNotif);
         private _getTgtChangedFn(self, obj, prop, restPath, lvl);
@@ -809,11 +814,10 @@ declare module "jriapp/binding" {
         private _parseTgt2(obj, path, lvl);
         private _setPathItem(newObj, bindingTo, lvl, path);
         private _cleanUp(obj);
-        private _updateTarget();
-        private _updateSource();
         protected _setTarget(value: any): boolean;
         protected _setSource(value: any): boolean;
-        dispose(): void;
+        updateTarget(): void;
+        updateSource(): void;
         toString(): string;
         readonly uniqueID: string;
         target: IBaseObject;
@@ -1003,5 +1007,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.7.5";
+    export const VERSION = "2.7.7";
 }

@@ -26,40 +26,51 @@ declare module "jriapp_ui/content/int" {
 declare module "jriapp_ui/content/basic" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
-    import { IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions, IBindingInfo, IBindingOptions, IApplication } from "jriapp/int";
+    import { IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions, IBindingInfo, IBindingOptions, IApplication, IConverter, IElView } from "jriapp/int";
     import { Binding } from "jriapp/binding";
     export interface IContentView extends IBaseObject {
         readonly el: HTMLElement;
     }
+    export function getView(el: HTMLElement, viewInfo: {
+        name: string;
+        options: IViewOptions;
+    }): IElView;
+    export function getBindingOption(isEdit: boolean, bindingInfo: IBindingInfo, target: IBaseObject, dataContext: any, targetPath: string, converter?: IConverter, param?: any): IBindingOptions;
     export class BasicContent extends BaseObject implements IContent {
-        protected _parentEl: HTMLElement;
-        protected _el: HTMLElement;
-        protected _options: IContentOptions;
-        protected _isReadOnly: boolean;
+        private _parentEl;
+        private _options;
+        private _isReadOnly;
         private _isEditing;
-        protected _dataContext: any;
-        protected _lfScope: ILifeTimeScope;
-        protected _target: IContentView;
+        private _dataContext;
+        private _lfScope;
+        private _view;
+        protected _el: HTMLElement;
         constructor(options: IConstructorContentOptions);
+        dispose(): void;
         protected updateCss(): void;
         protected getIsCanBeEdited(): boolean;
-        protected createTargetElement(): IContentView;
-        protected getBindingOption(bindingInfo: IBindingInfo, target: IBaseObject, dataContext: any, targetPath: string): IBindingOptions;
         protected getBindings(): Binding[];
         protected updateBindingSource(): void;
         protected cleanUp(): void;
-        protected getElementView(el: HTMLElement, viewInfo: {
-            name: string;
-            options: IViewOptions;
-        }): IContentView;
         protected getFieldInfo(): IFieldInfo;
+        protected getParam(isEdit: boolean): any;
+        protected getConverter(isEdit: boolean): IConverter;
+        protected getViewName(isEdit: boolean): string;
+        protected createdEditingView(): IContentView;
+        protected createdReadingView(): IContentView;
+        protected beforeCreateView(): boolean;
+        protected createView(): void;
+        protected afterCreateView(): void;
         render(): void;
-        dispose(): void;
         toString(): string;
+        protected readonly lfScope: ILifeTimeScope;
         readonly parentEl: HTMLElement;
-        readonly target: IContentView;
+        readonly el: HTMLElement;
+        readonly view: IContentView;
         isEditing: boolean;
         dataContext: any;
+        readonly isReadOnly: boolean;
+        readonly options: IContentOptions;
         readonly app: IApplication;
     }
 }
@@ -74,11 +85,11 @@ declare module "jriapp_ui/content/template" {
         private _dataContext;
         private _templateID;
         constructor(options: IConstructorContentOptions);
+        dispose(): void;
         private getTemplateID();
         private createTemplate();
         protected cleanUp(): void;
         render(): void;
-        dispose(): void;
         toString(): string;
         readonly parentEl: HTMLElement;
         readonly template: ITemplate;
@@ -216,6 +227,7 @@ declare module "jriapp_ui/baseview" {
         private _display;
         private _css;
         constructor(options: IViewOptions);
+        dispose(): void;
         private _getStore();
         protected _onEventChanged(args: IEventChangedArgs): void;
         protected _onEventAdded(name: string, newVal: ICommand): void;
@@ -227,7 +239,6 @@ declare module "jriapp_ui/baseview" {
         protected _setToolTip(el: Element, tip: string, isError?: boolean): void;
         protected _setIsSubcribed(flag: SubscribeFlags): void;
         isSubscribed(flag: SubscribeFlags): boolean;
-        dispose(): void;
         toString(): string;
         readonly el: HTMLElement;
         readonly uniqueID: string;
@@ -279,8 +290,8 @@ declare module "jriapp_ui/content/string" {
     export class StringContent extends BasicContent {
         static _allowedKeys: number[];
         private readonly allowedKeys;
+        protected createView(): void;
         protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean;
-        render(): void;
         toString(): string;
     }
 }
@@ -303,9 +314,10 @@ declare module "jriapp_ui/content/multyline" {
         static _allowedKeys: number[];
         private readonly allowedKeys;
         constructor(options: IConstructorContentOptions);
-        protected createTargetElement(): IContentView;
+        protected createdEditingView(): IContentView;
+        protected createdReadingView(): IContentView;
+        protected createView(): void;
         protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean;
-        render(): void;
         toString(): string;
     }
 }
@@ -323,49 +335,48 @@ declare module "jriapp_ui/checkbox" {
 }
 declare module "jriapp_ui/content/bool" {
     import { IConstructorContentOptions } from "jriapp/int";
-    import { CheckBoxElView } from "jriapp_ui/checkbox";
     import { BasicContent, IContentView } from "jriapp_ui/content/basic";
     export class BoolContent extends BasicContent {
+        private _label;
         constructor(options: IConstructorContentOptions);
-        protected cleanUp(): void;
-        protected createCheckBoxView(): CheckBoxElView;
-        protected createTargetElement(): IContentView;
-        protected updateCss(): void;
-        render(): void;
         dispose(): void;
+        protected createCheckBoxView(): IContentView;
+        protected createdEditingView(): IContentView;
+        protected createdReadingView(): IContentView;
+        protected beforeCreateView(): boolean;
+        protected afterCreateView(): void;
+        protected updateCss(): void;
         toString(): string;
     }
 }
 declare module "jriapp_ui/content/number" {
-    import { IBaseObject } from "jriapp_shared";
-    import { IBindingOptions, IBindingInfo } from "jriapp/int";
+    import { IConverter } from "jriapp/int";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class NumberContent extends BasicContent {
         static _allowedKeys: number[];
         private readonly allowedKeys;
-        protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions;
+        protected getConverter(isEdit: boolean): IConverter;
+        protected createView(): void;
         protected previewKeyPress(keyCode: number, value: string): boolean;
-        render(): void;
         toString(): string;
     }
 }
 declare module "jriapp_ui/content/date" {
-    import { IBaseObject } from "jriapp_shared";
-    import { IConstructorContentOptions, IBindingInfo, IBindingOptions } from "jriapp/int";
-    import { BasicContent, IContentView } from "jriapp_ui/content/basic";
+    import { IConstructorContentOptions, IConverter } from "jriapp/int";
+    import { BasicContent } from "jriapp_ui/content/basic";
     export class DateContent extends BasicContent {
         constructor(options: IConstructorContentOptions);
-        protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions;
-        protected createTargetElement(): IContentView;
+        protected getConverter(isEdit: boolean): IConverter;
+        protected getViewName(isEdit: boolean): string;
         toString(): string;
     }
 }
 declare module "jriapp_ui/content/datetime" {
-    import { IBaseObject } from "jriapp_shared";
-    import { IBindingInfo, IBindingOptions } from "jriapp/int";
+    import { IConverter } from "jriapp/int";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class DateTimeContent extends BasicContent {
-        protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions;
+        protected getParam(isEdit: boolean): any;
+        protected getConverter(isEdit: boolean): IConverter;
         toString(): string;
     }
 }
@@ -478,20 +489,10 @@ declare module "jriapp_ui/listbox" {
         readonly listBox: ListBox;
     }
 }
-declare module "jriapp_ui/span" {
-    import { BaseElView } from "jriapp_ui/baseview";
-    export class SpanElView extends BaseElView {
-        toString(): string;
-        text: string;
-        value: string;
-        html: string;
-    }
-}
 declare module "jriapp_ui/content/listbox" {
     import { IBaseObject } from "jriapp_shared";
-    import { IExternallyCachable, IBinding, IConstructorContentOptions } from "jriapp/int";
+    import { IExternallyCachable, IBinding, IConstructorContentOptions, IElView } from "jriapp/int";
     import { ListBox } from "jriapp_ui/listbox";
-    import { SpanElView } from "jriapp_ui/span";
     import { BasicContent, IContentView } from "jriapp_ui/content/basic";
     export interface ILookupOptions {
         dataSource: string;
@@ -509,33 +510,28 @@ declare module "jriapp_ui/content/listbox" {
         result: IBaseObject;
     };
     export class LookupContent extends BasicContent implements IExternallyCachable {
-        private _span;
-        private _valBinding;
-        private _listBinding;
+        private _converter;
         private _listBox;
         private _isListBoxCachedExternally;
-        private _value;
+        private _spanBinding;
         private _objId;
         constructor(options: IConstructorContentOptions);
+        dispose(): void;
+        protected getListBox(): ListBox;
+        protected onListRefreshed(): void;
+        protected createListBox(lookUpOptions: ILookupOptions): ListBox;
+        protected cleanUp(): void;
+        protected bindToSpan(span: IElView): IBinding;
+        protected bindToList(listBox: ListBox): IBinding;
+        protected createdReadingView(): IContentView;
+        protected createdEditingView(): IContentView;
+        protected beforeCreateView(): boolean;
         addOnObjectCreated(fn: (sender: LookupContent, args: TObjCreatedArgs) => void, nmspace?: string): void;
         offOnObjectCreated(nmspace?: string): void;
         addOnObjectNeeded(fn: (sender: LookupContent, args: TObjNeededArgs) => void, nmspace?: string): void;
         offOnObjectNeeded(nmspace?: string): void;
-        protected getListBox(): ListBox;
-        protected onListRefreshed(): void;
-        protected createListBox(lookUpOptions: ILookupOptions): ListBox;
-        protected updateTextValue(): void;
-        protected getLookupText(): string;
-        protected getSpan(): SpanElView;
-        protected createTargetElement(): IContentView;
-        protected cleanUp(): void;
-        protected updateBindingSource(): void;
-        protected bindToValue(): IBinding;
-        protected bindToList(listBox: ListBox): IBinding;
-        render(): void;
-        dispose(): void;
+        getLookupText(val: any): string;
         toString(): string;
-        value: any;
         readonly uniqueID: string;
     }
 }
@@ -1679,6 +1675,15 @@ declare module "jriapp_ui/anchor" {
         html: string;
         text: string;
         href: string;
+    }
+}
+declare module "jriapp_ui/span" {
+    import { BaseElView } from "jriapp_ui/baseview";
+    export class SpanElView extends BaseElView {
+        toString(): string;
+        text: string;
+        value: string;
+        html: string;
     }
 }
 declare module "jriapp_ui/block" {

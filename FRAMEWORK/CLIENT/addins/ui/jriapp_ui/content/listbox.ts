@@ -1,28 +1,27 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     IBaseObject, LocaleERRS as ERRS, Utils
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { BINDING_MODE } from "jriapp/const";
-import { IExternallyCachable, IBinding, IBindingOptions, IConstructorContentOptions } from "jriapp/int";
+import { IExternallyCachable, IBinding, IBindingOptions, IConstructorContentOptions, IConverter, IElView } from "jriapp/int";
 import { ListBox } from "../listbox";
-import { SpanElView } from "../span";
 import { BasicContent, IContentView } from "./basic";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, strUtils = utils.str, coreUtils = utils.core,
     sys = utils.sys;
 
 const enum PROP_NAME {
-    dataSource= "dataSource",
-    selectedItem= "selectedItem",
-    selectedValue= "selectedValue",
-    valuePath= "valuePath",
-    textPath= "textPath",
-    isEnabled= "isEnabled",
-    listBox= "listBox",
-    value= "value",
-    textProvider= "textProvider",
-    stateProvider= "stateProvider"
+    dataSource = "dataSource",
+    selectedItem = "selectedItem",
+    selectedValue = "selectedValue",
+    valuePath = "valuePath",
+    textPath = "textPath",
+    isEnabled = "isEnabled",
+    listBox = "listBox",
+    value = "value",
+    textProvider = "textProvider",
+    stateProvider = "stateProvider"
 }
 
 export interface ILookupOptions {
@@ -47,13 +46,28 @@ export type TObjNeededArgs = {
     result: IBaseObject;
 };
 
+class LookupConverter implements IConverter {
+    private _content: LookupContent;
+
+    constructor(content: LookupContent) {
+        this._content = content;
+    }
+    convertToSource(val: any, param: any, dataContext: any): number {
+        return utils.check.undefined;
+    }
+    convertToTarget(val: any, param: any, dataContext: any): string {
+        return this._content.getLookupText(val);
+    }
+    toString() {
+        return "LookupConverter";
+    }
+}
+
 export class LookupContent extends BasicContent implements IExternallyCachable {
-    private _span: SpanElView;
-    private _valBinding: IBinding;
-    private _listBinding: IBinding;
+    private _converter: LookupConverter;
     private _listBox: ListBox;
     private _isListBoxCachedExternally: boolean;
-    private _value: any;
+    private _spanBinding: IBinding;
     private _objId: string;
 
     constructor(options: IConstructorContentOptions) {
@@ -61,35 +75,36 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "contentOptions.name === 'lookup'"));
         }
         super(options);
-        this._span = null;
+        this._converter = new LookupConverter(this);
         this._listBox = null;
+        this._spanBinding = null;
         this._isListBoxCachedExternally = false;
-        this._valBinding = null;
-        this._listBinding = null;
-        this._value = null;
         this._objId = coreUtils.getNewID("lkup");
-        if (!!this._options.initContentFn) {
-            this._options.initContentFn(this);
+        if (!!this.options.initContentFn) {
+            this.options.initContentFn(this);
         }
     }
-    addOnObjectCreated(fn: (sender: LookupContent, args: TObjCreatedArgs) => void, nmspace?: string) {
-        this.objEvents.on(LOOKUP_EVENTS.obj_created, fn, nmspace);
-    }
-    offOnObjectCreated(nmspace?: string) {
-        this.objEvents.off(LOOKUP_EVENTS.obj_created, nmspace);
-    }
-    addOnObjectNeeded(fn: (sender: LookupContent, args: TObjNeededArgs) => void, nmspace?: string) {
-        this.objEvents.on(LOOKUP_EVENTS.obj_needed, fn, nmspace);
-    }
-    offOnObjectNeeded(nmspace?: string) {
-        this.objEvents.off(LOOKUP_EVENTS.obj_needed, nmspace);
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        if (!!this._listBox) {
+            this._listBox.objEvents.offNS(this.uniqueID);
+            if (!this._isListBoxCachedExternally && !this._listBox.getIsStateDirty()) {
+                this._listBox.dispose();
+            }
+            this._listBox = null;
+        }
+        this._converter = null;
+        super.dispose();
     }
     protected getListBox(): ListBox {
         if (!!this._listBox) {
             return this._listBox;
         }
 
-        const lookUpOptions: ILookupOptions = this._options.options,
+        const lookUpOptions: ILookupOptions = this.options.options,
             objectKey = "listBox";
 
         const args1: TObjNeededArgs = {
@@ -121,7 +136,9 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         return this._listBox;
     }
     protected onListRefreshed(): void {
-        this.updateTextValue();
+        if (!!this._spanBinding) {
+            this._spanBinding.updateTarget();
+        }
     }
     protected createListBox(lookUpOptions: ILookupOptions): ListBox {
         const options = {
@@ -135,96 +152,35 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         el.setAttribute("size", "1");
         return new ListBox(options);
     }
-    protected updateTextValue(): void {
-        const span = this.getSpan();
-        span.value = this.getLookupText();
-    }
-    protected getLookupText(): string {
-        const listBox = this.getListBox();
-        return listBox.getText(this.value);
-    }
-    protected getSpan(): SpanElView {
-        if (!!this._span) {
-            return this._span;
-        }
-        const el = doc.createElement("span"), displayInfo = this._options.displayInfo;
-        if (!!displayInfo && !!displayInfo.displayCss) {
-            dom.addClass([el], displayInfo.displayCss);
-        }
-        const spanView = new SpanElView({ el: el });
-        this._span = spanView;
-        return this._span;
-    }
-    protected createTargetElement(): IContentView {
-        let tgt: IContentView, listBox: ListBox, spanView: SpanElView;
-        if (this.isEditing && this.getIsCanBeEdited()) {
-            listBox = this.getListBox();
-            this._listBinding = this.bindToList(listBox);
-            tgt = listBox;
-        } else {
-            spanView = this.getSpan();
-            this._valBinding = this.bindToValue();
-            tgt = spanView;
-        }
-        this._el = tgt.el;
-        this.updateCss();
-        return tgt;
-    }
+    // override
     protected cleanUp() {
-        if (!!this._el) {
-            dom.removeNode(this._el);
-            this._el = null;
-        }
-        if (!!this._listBinding) {
-            this._listBinding.dispose();
-            this._listBinding = null;
-        }
-        if (!!this._valBinding) {
-            this._valBinding.dispose();
-            this._valBinding = null;
-        }
-
+        super.cleanUp();
+        this._spanBinding = null;
         if (!!this._listBox && this._isListBoxCachedExternally) {
             this._listBox.objEvents.offNS(this.uniqueID);
             this._listBox = null;
         }
     }
-    protected updateBindingSource() {
-        if (!!this._valBinding) {
-            this._valBinding.source = this._dataContext;
-        }
-        if (!!this._listBinding) {
-            this._listBinding.source = this._dataContext;
-        }
-    }
-    protected bindToValue() {
-        if (!this._options.fieldName) {
-            return null;
-        }
-
+    protected bindToSpan(span: IElView): IBinding {
         const options: IBindingOptions = {
-            target: this,
-            source: this._dataContext,
+            target: span,
+            source: this.dataContext,
             targetPath: PROP_NAME.value,
-            sourcePath: this._options.fieldName,
+            sourcePath: this.options.fieldName,
             isSourceFixed: false,
             mode: BINDING_MODE.OneWay,
-            converter: null,
+            converter: this._converter,
             param: null,
             isEval: false
         };
         return this.app.bind(options);
     }
-    protected bindToList(listBox: ListBox) {
-        if (!this._options.fieldName) {
-            return null;
-        }
-
+    protected bindToList(listBox: ListBox): IBinding {
         const options: IBindingOptions = {
             target: listBox,
-            source: this._dataContext,
+            source: this.dataContext,
             targetPath: PROP_NAME.selectedValue,
-            sourcePath: this._options.fieldName,
+            sourcePath: this.options.fieldName,
             isSourceFixed: false,
             mode: BINDING_MODE.TwoWay,
             converter: null,
@@ -233,42 +189,42 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         };
         return this.app.bind(options);
     }
-    render(): void {
-        this.cleanUp();
-        this.createTargetElement();
-        this._parentEl.appendChild(this._el);
+    // override
+    protected createdReadingView(): IContentView {
+        const span = <IElView>super.createdReadingView();
+        this.lfScope.addObj(span);
+        this.lfScope.addObj(this.bindToSpan(span));
+        return span;
     }
-    dispose(): void {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
+    // override
+    protected createdEditingView(): IContentView {
+        const listBox = this.getListBox();
+        this.lfScope.addObj(this.bindToList(listBox));
+        return listBox;
+    }
+    // override
+    protected beforeCreateView(): boolean {
         this.cleanUp();
-        if (!!this._listBox) {
-            this._listBox.objEvents.offNS(this.uniqueID);
-            if (!this._isListBoxCachedExternally && !this._listBox.getIsStateDirty()) {
-                this._listBox.dispose();
-            }
-            this._listBox = null;
-        }
-        if (!!this._span) {
-            this._span.dispose();
-            this._span = null;
-        }
-        super.dispose();
+        return !!this.options.fieldName;
+    }
+    addOnObjectCreated(fn: (sender: LookupContent, args: TObjCreatedArgs) => void, nmspace?: string) {
+        this.objEvents.on(LOOKUP_EVENTS.obj_created, fn, nmspace);
+    }
+    offOnObjectCreated(nmspace?: string) {
+        this.objEvents.off(LOOKUP_EVENTS.obj_created, nmspace);
+    }
+    addOnObjectNeeded(fn: (sender: LookupContent, args: TObjNeededArgs) => void, nmspace?: string) {
+        this.objEvents.on(LOOKUP_EVENTS.obj_needed, fn, nmspace);
+    }
+    offOnObjectNeeded(nmspace?: string) {
+        this.objEvents.off(LOOKUP_EVENTS.obj_needed, nmspace);
+    }
+    getLookupText(val: any): string {
+        const listBox = this.getListBox();
+        return listBox.getText(val);
     }
     toString(): string {
         return "LookupContent";
-    }
-    get value(): any {
-        return this._value;
-    }
-    set value(v) {
-        if (this._value !== v) {
-            this._value = v;
-            this.objEvents.raiseProp(PROP_NAME.value);
-        }
-        this.updateTextValue();
     }
     get uniqueID(): string {
         return this._objId;

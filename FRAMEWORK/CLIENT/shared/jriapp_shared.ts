@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 export * from "./jriapp_shared/const";
 export * from "./jriapp_shared/int";
 export * from "./jriapp_shared/errors";

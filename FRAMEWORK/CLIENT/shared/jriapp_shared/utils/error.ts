@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { APP_NAME } from "../const";
 import { DummyError, AbortError } from "../errors";
 import { IIndexer, IErrorHandler } from "../int";

@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     IBaseObject, IIndexer, IErrorNotification, IValidationInfo, LocaleERRS,
     BaseObject, Utils
@@ -250,6 +250,30 @@ export class Binding extends BaseObject implements IBinding {
             this._onSrcErrChanged(errNotif);
         }
     }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        const self = this;
+        coreUtils.forEachProp(this._pathItems, (key, old) => {
+            self._cleanUp(old);
+        });
+        this._pathItems = {};
+        this._setSource(null);
+        this._setTarget(null);
+        this._state = null;
+        this._converter = null;
+        this._param = null;
+        this._srcPath = null;
+        this._tgtPath = null;
+        this._srcEnd = null;
+        this._tgtEnd = null;
+        this._source = null;
+        this._target = null;
+        this._umask = 0;
+        super.dispose();
+    }
     private _update(): void {
         const umask = this._umask, MAX_REC = 3;
         let flag = 0;
@@ -273,7 +297,7 @@ export class Binding extends BaseObject implements IBinding {
                     if (this._cntUSrc < MAX_REC) {
                         this._cntUSrc += 1;
                         try {
-                            this._updateSource();
+                            this.updateSource();
                         } finally {
                             this._cntUSrc -= 1;
                         }
@@ -287,7 +311,7 @@ export class Binding extends BaseObject implements IBinding {
                     if (this._cntUtgt < MAX_REC) {
                         this._cntUtgt += 1;
                         try {
-                            this._updateTarget();
+                            this.updateTarget();
                         } finally {
                             this._cntUtgt -= 1;
                         }
@@ -298,7 +322,7 @@ export class Binding extends BaseObject implements IBinding {
                 break;
         }
     }
-    private _onSrcErrChanged(errNotif: IErrorNotification) {
+    private _onSrcErrChanged(errNotif: IErrorNotification): void {
         let errors: IValidationInfo[] = [];
         const tgt = this._tgtEnd, src = this._srcEnd, srcPath = this._srcPath;
         if (!!tgt && viewChecks.isElView(tgt)) {
@@ -309,7 +333,7 @@ export class Binding extends BaseObject implements IBinding {
             (<IElView>tgt).validationErrors = errors;
         }
     }
-    private _getTgtChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number) {
+    private _getTgtChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number): () => void {
         return () => {
             const val = sys.getProp(obj, prop);
             if (restPath.length > 0) {
@@ -320,7 +344,7 @@ export class Binding extends BaseObject implements IBinding {
             self._update();
         };
     }
-    private _getSrcChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number) {
+    private _getSrcChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number): () => void {
         return () => {
             const val = sys.getProp(obj, prop);
             if (restPath.length > 0) {
@@ -338,7 +362,7 @@ export class Binding extends BaseObject implements IBinding {
             obj.objEvents.onProp("[*]", fn, this._objId);
         }
     }
-    private _parseSrc(obj: any, path: string[], lvl: number) {
+    private _parseSrc(obj: any, path: string[], lvl: number): void {
         const self = this;
         self._srcEnd = null;
 
@@ -362,7 +386,7 @@ export class Binding extends BaseObject implements IBinding {
             }
         }
     }
-    private _parseSrc2(obj: any, path: string[], lvl: number) {
+    private _parseSrc2(obj: any, path: string[], lvl: number): void {
         const self = this, isBaseObj = sys.isBaseObj(obj);
 
         if (isBaseObj) {
@@ -417,7 +441,7 @@ export class Binding extends BaseObject implements IBinding {
             }
         }
     }
-    private _parseTgt(obj: any, path: string[], lvl: number) {
+    private _parseTgt(obj: any, path: string[], lvl: number): void {
         const self = this;
         self._tgtEnd = null;
         if (sys.isBaseObj(obj) && obj.getIsStateDirty()) {
@@ -441,7 +465,7 @@ export class Binding extends BaseObject implements IBinding {
             }
         }
     }
-    private _parseTgt2(obj: any, path: string[], lvl: number) {
+    private _parseTgt2(obj: any, path: string[], lvl: number): void {
         const self = this, isBaseObj = sys.isBaseObj(obj);
 
         if (isBaseObj) {
@@ -491,7 +515,7 @@ export class Binding extends BaseObject implements IBinding {
             }
         }
     }
-    private _setPathItem(newObj: IBaseObject, bindingTo: BindTo, lvl: number, path: string[]) {
+    private _setPathItem(newObj: IBaseObject, bindingTo: BindTo, lvl: number, path: string[]): void {
         const len = lvl + path.length;
         for (let i = lvl; i < len; i += 1) {
             const key = (bindingTo === BindTo.Source) ? ("s" + i) : ((bindingTo === BindTo.Target) ? ("t" + i) : null);
@@ -510,7 +534,7 @@ export class Binding extends BaseObject implements IBinding {
             }
         }
     }
-    private _cleanUp(obj: IBaseObject) {
+    private _cleanUp(obj: IBaseObject): void {
         if (!!obj) {
             obj.objEvents.offNS(this._objId);
             const errNotif = sys.getErrorNotification(obj);
@@ -563,41 +587,6 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     */
-    private _updateTarget() {
-        if (this.getIsStateDirty()) {
-            return;
-        }
-        try {
-            if (!this._converter) {
-                this.targetValue = this.sourceValue;
-            } else {
-                this.targetValue = this._converter.convertToTarget(this.sourceValue, this.param, this.source);
-            }
-        } catch (ex) {
-            utils.err.reThrow(ex, this.handleError(ex, this));
-        }
-    }
-    private _updateSource() {
-        if (this.getIsStateDirty()) {
-            return;
-        }
-        try {
-            if (!this._converter) {
-                this.sourceValue = this.targetValue;
-            } else {
-                this.sourceValue = this._converter.convertToSource(this.targetValue, this.param, this.source);
-            }
-        } catch (ex) {
-            if (!sys.isValidationError(ex) || !viewChecks.isElView(this._tgtEnd)) {
-                // BaseElView is notified about errors in _onSrcErrChanged event handler
-                // err_notif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
-                // we only need to rethrow in other cases:
-                // 1) when target is not BaseElView
-                // 2) when error is not ValidationError
-                utils.err.reThrow(ex, this.handleError(ex, this));
-            }
-        }
-    }
     protected _setTarget(value: any): boolean {
         if (!!this._state) {
             this._state.target = value;
@@ -659,29 +648,40 @@ export class Binding extends BaseObject implements IBinding {
             return false;
         }
     }
-    dispose(): void {
-        if (this.getIsDisposed()) {
+    updateTarget(): void {
+        if (this.getIsStateDirty()) {
             return;
         }
-        this.setDisposing();
-        const self = this;
-        coreUtils.forEachProp(this._pathItems, (key, old) => {
-            self._cleanUp(old);
-        });
-        this._pathItems = {};
-        this._setSource(null);
-        this._setTarget(null);
-        this._state = null;
-        this._converter = null;
-        this._param = null;
-        this._srcPath = null;
-        this._tgtPath = null;
-        this._srcEnd = null;
-        this._tgtEnd = null;
-        this._source = null;
-        this._target = null;
-        this._umask = 0;
-        super.dispose();
+        try {
+            if (!this._converter) {
+                this.targetValue = this.sourceValue;
+            } else {
+                this.targetValue = this._converter.convertToTarget(this.sourceValue, this.param, this.source);
+            }
+        } catch (ex) {
+            utils.err.reThrow(ex, this.handleError(ex, this));
+        }
+    }
+    updateSource(): void {
+        if (this.getIsStateDirty()) {
+            return;
+        }
+        try {
+            if (!this._converter) {
+                this.sourceValue = this.targetValue;
+            } else {
+                this.sourceValue = this._converter.convertToSource(this.targetValue, this.param, this.source);
+            }
+        } catch (ex) {
+            if (!sys.isValidationError(ex) || !viewChecks.isElView(this._tgtEnd)) {
+                // BaseElView is notified about errors in _onSrcErrChanged event handler
+                // err_notif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
+                // we only need to rethrow in other cases:
+                // 1) when target is not BaseElView
+                // 2) when error is not ValidationError
+                utils.err.reThrow(ex, this.handleError(ex, this));
+            }
+        }
     }
     toString(): string {
         return "Binding";

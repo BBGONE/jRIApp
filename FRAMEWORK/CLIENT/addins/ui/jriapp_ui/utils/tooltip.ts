@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { ITooltipService } from "jriapp/int";
 import { $ } from "./jquery";
 import { DomUtils } from "jriapp/utils/dom";

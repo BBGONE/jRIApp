@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     IErrorNotification, IValidationInfo, TEventHandler, BaseObject, IBaseObject,
     LocaleERRS as ERRS, Utils

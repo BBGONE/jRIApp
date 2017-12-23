@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 export const enum PromiseState { Pending, ResolutionInProgress, Resolved, Rejected }
 
 export interface IPromiseState {

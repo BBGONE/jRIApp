@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils, Debounce } from "jriapp_shared";
 import { COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
 import { ICollection } from "jriapp_shared/collection/int";
@@ -26,7 +26,11 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
     constructor(options: IChildDataViewOptions<TItem>) {
         let parentItem: IEntityItem = !options.parentItem ? null : options.parentItem;
         const assoc = options.association,
-            opts = <IDataViewOptions<TItem>>coreUtils.extend({}, options),
+            opts = <IDataViewOptions<TItem>>coreUtils.extend({
+                dataSource: <ICollection<TItem>>null,
+                fn_itemsProvider: <(ds: ICollection<TItem>) => TItem[]>null,
+                fn_filter: <(item: TItem) => boolean>null
+            }, options),
             oldFilter = opts.fn_filter;
 
         opts.dataSource = <ICollection<TItem>><any>assoc.childDS;

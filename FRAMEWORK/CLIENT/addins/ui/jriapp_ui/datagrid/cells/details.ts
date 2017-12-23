@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { BaseObject } from "jriapp_shared";
 import { ITemplate } from "jriapp/int";
 import { createTemplate } from "jriapp/template";

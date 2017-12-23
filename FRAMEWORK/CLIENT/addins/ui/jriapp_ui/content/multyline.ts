@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { KEYS } from "jriapp/const";
@@ -6,7 +6,7 @@ import { IConstructorContentOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { TextAreaElView } from "../textarea";
 
-import { BasicContent, IContentView } from "./basic";
+import { BasicContent, IContentView, getView, getBindingOption } from "./basic";
 
 const utils = Utils, NAME = "multyline", strUtils = utils.str, dom = DomUtils, document = dom.document;
 
@@ -25,35 +25,47 @@ export class MultyLineContent extends BasicContent {
         }
         super(options);
     }
-    protected createTargetElement(): IContentView {
-        let el: HTMLElement;
-        const info: { name: string; options: any; } = { name: null, options: null };
-        if (this.isEditing && this.getIsCanBeEdited()) {
-            el = document.createElement("textarea");
-            info.options = this._options.options;
-            info.name = null;
-        } else {
-            el = document.createElement("div");
+    // override
+    protected createdEditingView(): IContentView {
+        const info: { name: string; options: any; } = { name: this.getViewName(true), options: this.options.options };
+        const el = document.createElement("textarea");
+        const view = getView(el, info);
+        if (!!view) {
+            this.lfScope.addObj(view);
         }
-        this.updateCss();
-        this._el = el;
-        return this.getElementView(this._el, info);
+        const bindingInfo = this.options.bindingInfo;
+        const options = getBindingOption(true, bindingInfo, view, this.dataContext, "value", this.getConverter(true), this.getParam(true));
+        this.lfScope.addObj(this.app.bind(options));
+        return view;
+    }
+    // override
+    protected createdReadingView(): IContentView {
+        const info: { name: string; options: any; } = { name: this.getViewName(false), options: null };
+        const el = document.createElement("div");
+        const view = getView(el, info);
+        if (!!view) {
+            this.lfScope.addObj(view);
+        }
+        const bindingInfo = this.options.bindingInfo;
+        const options = getBindingOption(false, bindingInfo, view, this.dataContext, "value", this.getConverter(false), this.getParam(false));
+        this.lfScope.addObj(this.app.bind(options));
+        return view;
+    }
+    // override
+    protected createView(): void {
+        super.createView();
+        const self = this, fieldInfo = self.getFieldInfo();
+        if (self.view instanceof TextAreaElView) {
+            (<TextAreaElView>self.view).addOnKeyPress(function (sender, args) {
+                args.isCancel = !self.previewKeyPress(fieldInfo, args.keyCode, args.value);
+            });
+        }
     }
     protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean {
         if (this.allowedKeys.indexOf(keyCode) > -1) {
             return true;
         }
         return !(fieldInfo.maxLength > 0 && value.length >= fieldInfo.maxLength);
-    }
-    render(): void {
-        super.render();
-        const self = this, fieldInfo = self.getFieldInfo();
-
-        if (self._target instanceof TextAreaElView) {
-            (<TextAreaElView>self._target).addOnKeyPress(function (sender, args) {
-                args.isCancel = !self.previewKeyPress(fieldInfo, args.keyCode, args.value);
-            });
-        }
     }
     toString() {
         return "MultyLineContent";

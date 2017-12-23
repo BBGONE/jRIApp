@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 export enum DEBUG_LEVEL {
     NONE = 0, NORMAL = 1, HIGH = 2
 }

@@ -1,5 +1,5 @@
 ﻿/// <reference path="../../built/jriapp.d.ts" />
-/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 export {
     IFieldName, IEntityItem, IPermissions, IQueryResult, IDbSetLoadedArgs, IErrorInfo, IMetadata, IDbSetConstuctorOptions,
     IValidationErrorInfo, IPermissionsInfo, IFilterInfo, ISortInfo, IRowData

@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     Utils, BaseObject, IPropertyBag, IValidationInfo, LocaleSTRS as STRS
 } from "jriapp_shared";
@@ -106,75 +106,7 @@ export class BaseElView extends BaseObject implements IElView, ISubscriber {
         this._applyToolTip();
         this._getStore().setElView(el, this);
     }
-    private _getStore(): IElViewStore {
-        return boot.getApp().viewFactory.store;
-    }
-    protected _onEventChanged(args: IEventChangedArgs) {
-        switch (args.changeType) {
-            case EVENT_CHANGE_TYPE.Added:
-                this._onEventAdded(args.name, args.newVal);
-                break;
-            case EVENT_CHANGE_TYPE.Deleted:
-                this._onEventDeleted(args.name, args.oldVal);
-                break;
-        }
-    }
-    protected _onEventAdded(name: string, newVal: ICommand) {
-        const self = this;
-        if (this.getIsStateDirty()) {
-            return;
-        }
-        dom.events.on(this.el, name, (e) => {
-            if (!!self._eventBag) {
-                self._eventBag.trigger(name, e);
-            }
-        }, this.uniqueID);
-    }
-    protected _onEventDeleted(name: string, oldVal: ICommand) {
-        dom.events.off(this.el, name, this.uniqueID);
-    }
-    protected _applyToolTip() {
-        if (!!this._toolTip) {
-            this._setToolTip(this.el, this._toolTip);
-        }
-    }
-    protected _getErrorTipInfo(errors: IValidationInfo[]) {
-        const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<br/>"];
-        errors.forEach((info) => {
-            let res = "";
-            info.errors.forEach((str) => {
-                res = res + " " + str;
-            });
-            tip.push(res);
-            res = "";
-        });
-        return tip.join("");
-    }
-    protected _setFieldError(isError: boolean) {
-        dom.setClass([this.el], css.fieldError, !isError);
-    }
-    protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]) {
-        if (!el) {
-            return;
-        }
-        if (!!errors && errors.length > 0) {
-            fn_addToolTip(el, this._getErrorTipInfo(errors), true);
-            this._setFieldError(true);
-        } else {
-            this._setToolTip(el, this.toolTip);
-            this._setFieldError(false);
-        }
-    }
-    protected _setToolTip(el: Element, tip: string, isError?: boolean) {
-        fn_addToolTip(el, tip, isError);
-    }
-    protected _setIsSubcribed(flag: SubscribeFlags) {
-        this._subscribeFlags |= (1 << flag);
-    }
-    isSubscribed(flag: SubscribeFlags): boolean {
-        return !!(this._subscribeFlags & (1 << flag));
-    }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -206,13 +138,83 @@ export class BaseElView extends BaseObject implements IElView, ISubscriber {
             super.dispose();
         }
     }
+    private _getStore(): IElViewStore {
+        return boot.getApp().viewFactory.store;
+    }
+    protected _onEventChanged(args: IEventChangedArgs): void {
+        switch (args.changeType) {
+            case EVENT_CHANGE_TYPE.Added:
+                this._onEventAdded(args.name, args.newVal);
+                break;
+            case EVENT_CHANGE_TYPE.Deleted:
+                this._onEventDeleted(args.name, args.oldVal);
+                break;
+        }
+    }
+    protected _onEventAdded(name: string, newVal: ICommand): void {
+        const self = this;
+        if (this.getIsStateDirty()) {
+            return;
+        }
+        dom.events.on(this.el, name, (e) => {
+            if (!!self._eventBag) {
+                self._eventBag.trigger(name, e);
+            }
+        }, this.uniqueID);
+    }
+    protected _onEventDeleted(name: string, oldVal: ICommand): void {
+        dom.events.off(this.el, name, this.uniqueID);
+    }
+    protected _applyToolTip(): void {
+        if (!!this._toolTip) {
+            this._setToolTip(this.el, this._toolTip);
+        }
+    }
+    protected _getErrorTipInfo(errors: IValidationInfo[]): string {
+        const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<br/>"];
+        errors.forEach((info) => {
+            let res = "";
+            info.errors.forEach((str) => {
+                res = res + " " + str;
+            });
+            tip.push(res);
+            res = "";
+        });
+        return tip.join("");
+    }
+    protected _setFieldError(isError: boolean): void {
+        dom.setClass([this.el], css.fieldError, !isError);
+    }
+    protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void {
+        if (!el) {
+            return;
+        }
+        if (!!errors && errors.length > 0) {
+            fn_addToolTip(el, this._getErrorTipInfo(errors), true);
+            this._setFieldError(true);
+        } else {
+            this._setToolTip(el, this.toolTip);
+            this._setFieldError(false);
+        }
+    }
+    protected _setToolTip(el: Element, tip: string, isError?: boolean): void {
+        fn_addToolTip(el, tip, isError);
+    }
+    protected _setIsSubcribed(flag: SubscribeFlags): void {
+        this._subscribeFlags |= (1 << flag);
+    }
+    isSubscribed(flag: SubscribeFlags): boolean {
+        return !!(this._subscribeFlags & (1 << flag));
+    }
     toString(): string {
         return "BaseElView";
     }
     get el(): HTMLElement {
         return this._el;
     }
-    get uniqueID(): string { return this._objId; }
+    get uniqueID(): string {
+        return this._objId;
+    }
     get isVisible(): boolean {
         const v = this.el.style.display;
         return !(v === "none");
@@ -291,7 +293,7 @@ export class BaseElView extends BaseObject implements IElView, ISubscriber {
     get isDelegationOn(): boolean {
         return !!(this._subscribeFlags & (1 << SubscribeFlags.delegationOn));
     }
-    get css() {
+    get css(): string {
         return this._css;
     }
     set css(v: string) {

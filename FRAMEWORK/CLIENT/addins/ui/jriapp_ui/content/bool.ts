@@ -1,79 +1,76 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DomUtils } from "jriapp/utils/dom";
-import { BINDING_MODE } from "jriapp/const";
 import { IConstructorContentOptions } from "jriapp/int";
-import { LifeTimeScope } from "jriapp/utils/lifetime";
 import { CheckBoxElView } from "../checkbox";
 
 import { css } from "./int";
-import { BasicContent, IContentView } from "./basic";
+import { BasicContent, IContentView, getBindingOption } from "./basic";
 
 const dom = DomUtils, doc = dom.document;
 
 export class BoolContent extends BasicContent {
+    private _label: HTMLElement;
+
     constructor(options: IConstructorContentOptions) {
         super(options);
-        this._target = this.createTargetElement();
-        const bindingInfo = this._options.bindingInfo;
-        if (!!bindingInfo) {
-            this.updateCss();
-            this._lfScope = new LifeTimeScope();
-            const options = this.getBindingOption(bindingInfo, this._target, this._dataContext, "checked");
-            options.mode = BINDING_MODE.TwoWay;
-            this._lfScope.addObj(this.app.bind(options));
+        this._label = null;
+    }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
         }
+        this.setDisposing();
+        if (!!this._label) {
+            dom.removeNode(this._label);
+            this._label = null;
+        }
+        super.dispose();
     }
-    // override
-    protected cleanUp(): void {
-        // noop
-    }
-    protected createCheckBoxView() {
+    protected createCheckBoxView(): IContentView {
         const chk = document.createElement("input");
         chk.setAttribute("type", "checkbox");
         dom.addClass([chk], css.checkbox);
-        const chbxView = new CheckBoxElView({ el: chk });
-        return chbxView;
-    }
-    protected createTargetElement(): IContentView {
-        let tgt = this._target;
-        if (!tgt) {
-            tgt = this.createCheckBoxView();
-            this._el = tgt.el;
-        }
+        const view = new CheckBoxElView({ el: chk });
         const label = doc.createElement("label");
         dom.addClass([label], css.checkbox);
-        label.appendChild(this._el);
+        label.appendChild(view.el);
         label.appendChild(doc.createElement("span"));
-        this._parentEl.appendChild(label);
-        return tgt;
+        this._label = label;
+
+        const bindingInfo = this.options.bindingInfo;
+        const options = getBindingOption(true, bindingInfo, view, this.dataContext, "checked");
+        this.lfScope.addObj(this.app.bind(options));
+        return view;
     }
+    // override
+    protected createdEditingView(): IContentView {
+        return this.createCheckBoxView();
+    }
+    // overrride
+    protected createdReadingView(): IContentView {
+        return this.createCheckBoxView();
+    }
+    // override
+    protected beforeCreateView(): boolean {
+        const res = !this.view && !!this.options.bindingInfo;
+        if (!!this.view) {
+            this.updateCss();
+        }
+        return res;
+    }
+    // override
+    protected afterCreateView(): void {
+        this.parentEl.appendChild(this._label);
+    }
+    // override
     protected updateCss() {
         super.updateCss();
-        const el = <HTMLInputElement>this._el;
+        const el = <HTMLInputElement>this.el;
         if (this.isEditing && this.getIsCanBeEdited()) {
              el.disabled = false;
         } else {
              el.disabled = true;
         }
-    }
-    render() {
-        this.cleanUp();
-        this.updateCss();
-    }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        if (!!this._lfScope) {
-            this._lfScope.dispose();
-            this._lfScope = null;
-        }
-        if (!!this._target) {
-            this._target.dispose();
-            this._target = null;
-        }
-        super.dispose();
     }
     toString() {
         return "BoolContent";

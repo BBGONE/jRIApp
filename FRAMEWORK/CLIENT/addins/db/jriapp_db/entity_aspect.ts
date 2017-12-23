@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     FIELD_TYPE, DATA_TYPE, ITEM_STATUS
 } from "jriapp_shared/collection/const";

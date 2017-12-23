@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IValidationInfo, TEventHandler, IPropertyBag } from "../int";
 import { BaseObject } from "../object";
 import { JsonBag, IFieldValidateArgs, IBagValidateArgs } from "./jsonbag";

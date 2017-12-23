@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { BINDING_MODE, BindTo, SubscribeFlags } from "./const";
 import {
     IBaseObject, IDisposable, IIndexer, IPromise,
@@ -154,9 +154,11 @@ export interface IViewType {
 }
 
 export interface IElView extends IBaseObject {
-    el: HTMLElement;
-    app: IApplication;
+    readonly el: HTMLElement;
+    readonly app: IApplication;
+    readonly uniqueID: string;
     validationErrors: IValidationInfo[];
+    viewMounted?: () => void;
 }
 
 export interface IBindArgs  {
@@ -213,6 +215,8 @@ export interface IBinding extends IBaseObject {
     readonly converter: IConverter;
     readonly param: any;
     isDisabled: boolean;
+    updateTarget(): void;
+    updateSource(): void;
 }
 
 // --Content interfaces

@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     LocaleERRS, Utils, IIndexer, IErrorHandler, IPromise, IVoidPromise, DummyError,
     BaseObject
@@ -164,11 +164,11 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
 
             // select all dataforms inside the scope
             const forms = fn_getDataFormElements(bindElems);
-            const needBinding = bindElems.filter((bindElem) => {
+            const needsBinding = bindElems.filter((bindElem) => {
                     return !viewChecks.isInNestedForm(templateEl, forms, bindElem.el);
                 });
 
-            needBinding.forEach((bindElem) => {
+            const viewsArr = needsBinding.map((bindElem) => {
                 const elView = self._elViewFactory.getOrCreateElView(bindElem.el, dataContext);
                 self._bindElView({
                     elView: elView,
@@ -177,7 +177,11 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
                     isTemplate: true,
                     dataContext: dataContext
                 });
-            });
+                return elView;
+            }).filter((v) => !!v.viewMounted);
+
+            const viewMap = utils.arr.toMap(viewsArr, (v) => v.uniqueID);
+            utils.core.forEachProp(viewMap, (n, v) => { v.viewMounted(); });
 
             defer.resolve(lftm);
         } catch (err) {
@@ -219,7 +223,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
                     return !viewChecks.isInNestedForm(scope, forms, bindElem.el);
                 });
 
-            needsBinding.forEach((bindElem) => {
+            const viewsArr = needsBinding.map((bindElem) => {
                 const elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
                 self._bindElView({
                     elView: elView,
@@ -228,7 +232,11 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
                     isTemplate: args.isTemplate,
                     dataContext: args.dataContext
                 });
-            });
+                return elView;
+            }).filter((v) => !!v.viewMounted);
+
+            const viewMap = utils.arr.toMap(viewsArr, (v) => v.uniqueID);
+            utils.core.forEachProp(viewMap, (n, v) => { v.viewMounted(); });
 
             defer.resolve(lftm);
         } catch (err) {

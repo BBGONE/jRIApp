@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils, LocaleERRS as ERRS } from "jriapp_shared";
 const checks = Utils.check, strUtils = Utils.str, coreUtils = Utils.core,
     sys = Utils.sys;

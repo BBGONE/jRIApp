@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { KEYS } from "jriapp/const";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { TextBoxElView } from "../textbox";
@@ -14,20 +14,21 @@ export class StringContent extends BasicContent {
         }
         return StringContent._allowedKeys;
     }
+    // override
+    protected createView(): void {
+        super.createView();
+        const self = this, fieldInfo = self.getFieldInfo();
+        if (self.view instanceof TextBoxElView) {
+            (<TextBoxElView>self.view).addOnKeyPress(function (sender, args) {
+                args.isCancel = !self.previewKeyPress(fieldInfo, args.keyCode, args.value);
+            });
+        }
+    }
     protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string) {
         if (this.allowedKeys.indexOf(keyCode) > -1) {
             return true;
         }
         return !(fieldInfo.maxLength > 0 && value.length >= fieldInfo.maxLength);
-    }
-    render() {
-        super.render();
-        const self = this, fieldInfo = self.getFieldInfo();
-        if (self._target instanceof TextBoxElView) {
-            (<TextBoxElView>self._target).addOnKeyPress(function (sender, args) {
-                args.isCancel = !self.previewKeyPress(fieldInfo, args.keyCode, args.value);
-            });
-        }
     }
     toString() {
         return "StringContent";

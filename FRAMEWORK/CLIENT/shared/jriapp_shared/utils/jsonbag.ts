@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IEditable, IValidationInfo, IErrorNotification, TEventHandler, IPropertyBag } from "../int";
 import { BaseObject } from "../object";
 import { CoreUtils } from "./coreutils";

@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { BaseObject, LocaleERRS as ERRS, Utils, Lazy, IIndexer } from "jriapp_shared";
 import { PROP_NAME } from "./const";
 import { IEntityItem } from "./int";

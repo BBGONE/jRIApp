@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { BaseObject, Utils, LocaleERRS, IPromise } from "jriapp_shared";
 import { DATA_ATTR } from "./const";
 import {

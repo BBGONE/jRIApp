@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IIndexer } from "../int";
 import { StringUtils } from "./strutils";
 import { Checks } from "./checks";
@@ -140,16 +140,16 @@ export class CoreUtils {
 
         return res;
     }
-    static merge<S, T>(source: S, target?: T): S | T {
+    static merge<S, T>(source: S, target?: T): S & T {
         if (!target) {
             target = <any>{};
         }
         if (!source) {
-            return target;
+            return <any>target;
         }
         return CoreUtils.extend(target, source);
     }
-    static extend<T, U>(target: T, ...source: U[]): T | U {
+    static extend<T, U>(target: T, ...source: U[]): T & U {
         if (checks.isNt(target)) {
             throw new TypeError("extend: Cannot convert first argument to object");
         }
@@ -172,24 +172,36 @@ export class CoreUtils {
         return to;
     }
     // caches the result of function invocation
-    static memoize<T>(callback: () => T): () => T {
-        let value: T;
+    static memoize<T>(fn: () => T): () => T {
+        let res: T;
         return () => {
-            if (!!callback) {
-                value = callback();
-                callback = checks.undefined;
+            if (!fn) {
+                return res;
             }
-            return value;
+            res = fn();
+            fn = null;
+            return res;
         };
     }
-    static forEachProp<T>(obj: IIndexer<T>, fn: (name: string, val?: T) => void) {
-        if (!obj) {
+    static forEachProp<T>(map: IIndexer<T>, fn: (name: string, val?: T) => void): void {
+        if (!map) {
             return;
         }
-        const names = Object.keys(obj), len = names.length;
+        const names = Object.keys(map), len = names.length;
         for (let i = 0; i < len; i += 1) {
-            fn(names[i], obj[names[i]]);
+            fn(names[i], map[names[i]]);
         }
+    }
+    static toArray<T>(map: IIndexer<T>): T[] {
+        const r: T[] = [];
+        if (!map) {
+            return r;
+        }
+        const keys = Object.keys(map), len = keys.length;
+        for (let i = 0; i < len; i += 1) {
+            r.push(map[keys[i]]);
+        }
+        return r;
     }
     static assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: U): T {
         if (checks.isNt(target)) {

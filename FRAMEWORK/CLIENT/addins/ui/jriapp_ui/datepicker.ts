@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IDatepicker } from "jriapp/int";
 import { DATEPICKER_SVC } from "jriapp/const";
 import { bootstrap } from "jriapp/bootstrap";

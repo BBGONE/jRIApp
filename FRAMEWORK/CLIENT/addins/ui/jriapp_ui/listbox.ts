@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     Utils, BaseObject, LocaleERRS as ERRS, TEventHandler, Debounce
 } from "jriapp_shared";
@@ -723,7 +723,7 @@ export class ListBoxElView extends BaseElView {
             }
         }, self.uniqueID);
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -733,10 +733,12 @@ export class ListBoxElView extends BaseElView {
         }
         super.dispose();
     }
-    toString() {
+    toString(): string {
         return "ListBoxElView";
     }
-    get isEnabled() { return !(<HTMLSelectElement>this.el).disabled; }
+    get isEnabled(): boolean {
+        return !(<HTMLSelectElement>this.el).disabled;
+    }
     set isEnabled(v: boolean) {
         v = !v;
         if (v !== !this.isEnabled) {
@@ -753,7 +755,7 @@ export class ListBoxElView extends BaseElView {
             self._listBox.dataSource = v;
         }
     }
-    get selectedValue() {
+    get selectedValue(): any {
         return (this.getIsStateDirty()) ? checks.undefined : this._listBox.selectedValue;
     }
     set selectedValue(v) {
@@ -761,29 +763,39 @@ export class ListBoxElView extends BaseElView {
             this._listBox.selectedValue = v;
         }
     }
-    get selectedItem() {
+    get selectedItem(): ICollectionItem {
         return (this.getIsStateDirty()) ? checks.undefined : this._listBox.selectedItem;
     }
     set selectedItem(v: ICollectionItem) {
         this._listBox.selectedItem = v;
     }
-    get valuePath() { return this._listBox.valuePath; }
+    get valuePath(): string {
+        return this._listBox.valuePath;
+    }
     set valuePath(v: string) {
         this._listBox.valuePath = v;
     }
-    get textPath() { return this._listBox.textPath; }
+    get textPath(): string {
+        return this._listBox.textPath;
+    }
     set textPath(v: string) {
         this._listBox.textPath = v;
     }
-    get textProvider() { return this._listBox.textProvider; }
+    get textProvider(): IOptionTextProvider {
+        return this._listBox.textProvider;
+    }
     set textProvider(v: IOptionTextProvider) {
         this._listBox.textProvider = v;
     }
-    get stateProvider() { return this._listBox.stateProvider; }
+    get stateProvider(): IOptionStateProvider {
+        return this._listBox.stateProvider;
+    }
     set stateProvider(v: IOptionStateProvider) {
         this._listBox.stateProvider = v;
     }
-    get listBox() { return this._listBox; }
+    get listBox(): ListBox {
+        return this._listBox;
+    }
 }
 
 

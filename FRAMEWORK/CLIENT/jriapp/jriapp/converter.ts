@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     LocaleERRS, Utils
 } from "jriapp_shared";
@@ -19,7 +19,7 @@ export class BaseConverter implements IConverter {
     convertToTarget(val: any, param: any, dataContext: any): any {
         return (checks.isNt(val)) ? null : val;
    }
-};
+}
 export let baseConverter = new BaseConverter();
 
 export class DateConverter implements IConverter {
@@ -40,7 +40,7 @@ export class DateConverter implements IConverter {
     toString() {
         return "DateConverter";
    }
-};
+}
 const dateConverter = new DateConverter();
 
 export class DateTimeConverter implements IConverter {
@@ -64,7 +64,7 @@ export class DateTimeConverter implements IConverter {
     toString() {
         return "DateTimeConverter";
    }
-};
+}
 const dateTimeConverter = new DateTimeConverter();
 
 export class NumberConverter implements IConverter {
@@ -131,7 +131,7 @@ export class NumberConverter implements IConverter {
     toString() {
         return "NumberConverter";
    }
-};
+}
 const numberConverter = new NumberConverter();
 
 export class IntegerConverter implements IConverter {
@@ -144,7 +144,7 @@ export class IntegerConverter implements IConverter {
     toString() {
         return "IntegerConverter";
    }
-};
+}
 const integerConverter = new IntegerConverter();
 
 export class SmallIntConverter implements IConverter {
@@ -157,7 +157,7 @@ export class SmallIntConverter implements IConverter {
     toString() {
         return "SmallIntConverter";
    }
-};
+}
 const smallIntConverter = new SmallIntConverter();
 
 export class DecimalConverter implements IConverter {
@@ -170,7 +170,7 @@ export class DecimalConverter implements IConverter {
     toString() {
         return "DecimalConverter";
    }
-};
+}
 const decimalConverter = new DecimalConverter();
 
 export class FloatConverter implements IConverter {
@@ -183,7 +183,7 @@ export class FloatConverter implements IConverter {
     toString() {
         return "FloatConverter";
    }
-};
+}
 const floatConverter = new FloatConverter();
 
 export class NotConverter implements IConverter {

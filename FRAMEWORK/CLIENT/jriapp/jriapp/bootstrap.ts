@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     DUMY_ERROR, IIndexer, IBaseObject, IPromise, TErrorHandler,
     TEventHandler, TPriority, LocaleERRS, BaseObject, Utils, ObjectEvents,

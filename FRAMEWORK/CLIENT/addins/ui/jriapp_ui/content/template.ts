@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { BaseObject, LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import {
     IContent, IApplication, ITemplate, ITemplateInfo, IConstructorContentOptions
@@ -37,7 +37,19 @@ export class TemplateContent extends BaseObject implements IContent {
         this._template = null;
         dom.addClass([this._parentEl], css.content);
     }
-    private getTemplateID() {
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        dom.removeClass([this._parentEl], css.content);
+        this.cleanUp();
+        this._parentEl = null;
+        this._dataContext = null;
+        this._templateInfo = null;
+        super.dispose();
+    }
+    private getTemplateID(): string {
         if (!this._templateInfo) {
             throw new Error(ERRS.ERR_TEMPLATE_ID_INVALID);
         }
@@ -61,14 +73,14 @@ export class TemplateContent extends BaseObject implements IContent {
         template.templateID = this._templateID;
         return template;
     }
-    protected cleanUp() {
+    protected cleanUp(): void {
         if (!!this._template) {
             this._template.dispose();
             this._template = null;
             this._templateID = null;
         }
     }
-    render() {
+    render(): void {
         try {
             const id = this.getTemplateID();
             if (this._templateID !== id) {
@@ -81,31 +93,27 @@ export class TemplateContent extends BaseObject implements IContent {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        dom.removeClass([this._parentEl], css.content);
-        this.cleanUp();
-        this._parentEl = null;
-        this._dataContext = null;
-        this._templateInfo = null;
-        super.dispose();
-    }
-    toString() {
+    toString(): string {
         return "TemplateContent";
     }
-    get parentEl() { return this._parentEl; }
-    get template() { return this._template; }
-    get isEditing() { return this._isEditing; }
+    get parentEl(): HTMLElement {
+        return this._parentEl;
+    }
+    get template(): ITemplate {
+        return this._template;
+    }
+    get isEditing(): boolean {
+        return this._isEditing;
+    }
     set isEditing(v) {
         if (this._isEditing !== v) {
             this._isEditing = v;
             this.render();
         }
     }
-    get dataContext() { return this._dataContext; }
+    get dataContext(): any {
+        return this._dataContext;
+    }
     set dataContext(v) {
         if (this._dataContext !== v) {
             this._dataContext = v;
@@ -114,5 +122,7 @@ export class TemplateContent extends BaseObject implements IContent {
             }
         }
     }
-    get app(): IApplication { return boot.getApp(); }
+    get app(): IApplication {
+        return boot.getApp();
+    }
 }

@@ -1,7 +1,7 @@
 ﻿/// <reference path="../thirdparty/moment.d.ts" />
 /// <reference path="../built/jriapp_shared.d.ts" />
 
-/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Bootstrap } from "./jriapp/bootstrap";
 
 export * from "jriapp_shared";
@@ -31,6 +31,6 @@ export {
 
 export { Application } from "./jriapp/app";
 
-export const VERSION = "2.7.5";
+export const VERSION = "2.7.7";
 
 Bootstrap._initFramework();

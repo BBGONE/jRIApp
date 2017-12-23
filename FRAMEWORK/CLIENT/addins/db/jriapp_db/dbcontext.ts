@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DATA_TYPE, COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
 import {
     IIndexer, IVoidPromise, IBaseObject, TEventHandler, TErrorHandler, LocaleERRS as ERRS,

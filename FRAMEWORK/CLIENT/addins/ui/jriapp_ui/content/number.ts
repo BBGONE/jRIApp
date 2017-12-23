@@ -1,8 +1,7 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DATA_TYPE } from "jriapp_shared/collection/const";
-import { IBaseObject } from "jriapp_shared";
 import { KEYS } from "jriapp/const";
-import { IBindingOptions, IBindingInfo }  from "jriapp/int";
+import { IConverter } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { TextBoxElView } from "../textbox";
 
@@ -16,20 +15,27 @@ export class NumberContent extends BasicContent {
         }
         return NumberContent._allowedKeys;
     }
-    protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string): IBindingOptions {
-        const options = super.getBindingOption(bindingInfo, tgt, dctx, targetPath), finf = this.getFieldInfo();
+    // override
+    protected getConverter(isEdit: boolean): IConverter {
+        const  finf = this.getFieldInfo();
         switch (finf.dataType) {
             case DATA_TYPE.Integer:
-                options.converter = this.app.getConverter("integerConverter");
-                break;
+                return this.app.getConverter("integerConverter");
             case DATA_TYPE.Decimal:
-                options.converter = this.app.getConverter("decimalConverter");
-                break;
+                return this.app.getConverter("decimalConverter");
             default:
-                options.converter = this.app.getConverter("floatConverter");
-                break;
+                return this.app.getConverter("floatConverter");
         }
-        return options;
+    }
+    // override
+    protected createView(): void {
+        super.createView();
+        const self = this;
+        if (self.view instanceof TextBoxElView) {
+            (<TextBoxElView>self.view).addOnKeyPress(function (sender, args) {
+                args.isCancel = !self.previewKeyPress(args.keyCode, args.value);
+            });
+        }
     }
     protected previewKeyPress(keyCode: number, value: string) {
         const ch = String.fromCharCode(keyCode), digits = "1234567890", defaults = bootstrap.defaults, notAllowedChars = "~@#$%^&*()+=_";
@@ -47,15 +53,6 @@ export class NumberContent extends BasicContent {
         }
 
         return (ch === defaults.thousandSep) ? true : digits.indexOf(ch) > -1;
-    }
-    render() {
-        super.render();
-        const self = this;
-        if (self._target instanceof TextBoxElView) {
-            (<TextBoxElView>self._target).addOnKeyPress(function (sender, args) {
-                args.isCancel = !self.previewKeyPress(args.keyCode, args.value);
-            });
-        }
     }
     toString() {
         return "NumberContent";

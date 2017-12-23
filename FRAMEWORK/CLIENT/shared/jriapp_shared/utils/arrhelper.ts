@@ -1,5 +1,6 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IIndexer } from "../int";
+import { CoreUtils } from "./coreutils";
 
 export interface IArrayLikeList<T> {
     length: number;
@@ -30,17 +31,19 @@ export class ArrayHelper {
     public static distinct(arr: string[]): string[];
     public static distinct(arr: number[]): number[];
     public static distinct(arr: any[]): any[] {
-        const o = <IIndexer<any>>{}, r: any[] = [], l1 = arr.length;
-        for (let i = 0; i < l1; i += 1) {
-            o["" + arr[i]] = arr[i];
+        const map = <IIndexer<any>>{}, len = arr.length;
+        for (let i = 0; i < len; i += 1) {
+            map["" + arr[i]] = arr[i];
         }
-        const k = Object.keys(o), l2 = k.length;
-        for (let i = 0; i < l2; i += 1) {
-            r.push(o[k[i]]);
-        }
-        return r;
+        return CoreUtils.toArray(map);
     }
-
+    public static toMap<T extends object>(arr: T[], key: (obj: T) => string): IIndexer<T> {
+        const map = <IIndexer<any>>{}, len = arr.length;
+        for (let i = 0; i < len; i += 1) {
+            map[key(arr[i])] = arr[i];
+        }
+        return map;
+    }
     public static remove(array: any[], obj: any): number {
         const i = array.indexOf(obj);
         if (i > -1) {

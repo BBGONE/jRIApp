@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { FILTER_TYPE, SORT_ORDER, DATE_CONVERSION, DATA_TYPE } from "jriapp_shared/collection/const";
 import { IStatefulPromise, BaseObject, Utils, LocaleERRS as ERRS } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
