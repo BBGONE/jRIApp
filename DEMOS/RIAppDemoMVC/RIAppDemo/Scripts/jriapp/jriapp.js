@@ -2260,7 +2260,6 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
         return BaseConverter;
     }());
     exports.BaseConverter = BaseConverter;
-    ;
     exports.baseConverter = new BaseConverter();
     var DateConverter = (function () {
         function DateConverter() {
@@ -2285,7 +2284,6 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
         return DateConverter;
     }());
     exports.DateConverter = DateConverter;
-    ;
     var dateConverter = new DateConverter();
     var DateTimeConverter = (function () {
         function DateTimeConverter() {
@@ -2313,7 +2311,6 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
         return DateTimeConverter;
     }());
     exports.DateTimeConverter = DateTimeConverter;
-    ;
     var dateTimeConverter = new DateTimeConverter();
     var NumberConverter = (function () {
         function NumberConverter() {
@@ -2382,7 +2379,6 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
         return NumberConverter;
     }());
     exports.NumberConverter = NumberConverter;
-    ;
     var numberConverter = new NumberConverter();
     var IntegerConverter = (function () {
         function IntegerConverter() {
@@ -2399,7 +2395,6 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
         return IntegerConverter;
     }());
     exports.IntegerConverter = IntegerConverter;
-    ;
     var integerConverter = new IntegerConverter();
     var SmallIntConverter = (function () {
         function SmallIntConverter() {
@@ -2416,7 +2411,6 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
         return SmallIntConverter;
     }());
     exports.SmallIntConverter = SmallIntConverter;
-    ;
     var smallIntConverter = new SmallIntConverter();
     var DecimalConverter = (function () {
         function DecimalConverter() {
@@ -2433,7 +2427,6 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
         return DecimalConverter;
     }());
     exports.DecimalConverter = DecimalConverter;
-    ;
     var decimalConverter = new DecimalConverter();
     var FloatConverter = (function () {
         function FloatConverter() {
@@ -2450,7 +2443,6 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
         return FloatConverter;
     }());
     exports.FloatConverter = FloatConverter;
-    ;
     var floatConverter = new FloatConverter();
     var NotConverter = (function () {
         function NotConverter() {
@@ -2649,6 +2641,30 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             }
             return _this;
         }
+        Binding.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            var self = this;
+            coreUtils.forEachProp(this._pathItems, function (key, old) {
+                self._cleanUp(old);
+            });
+            this._pathItems = {};
+            this._setSource(null);
+            this._setTarget(null);
+            this._state = null;
+            this._converter = null;
+            this._param = null;
+            this._srcPath = null;
+            this._tgtPath = null;
+            this._srcEnd = null;
+            this._tgtEnd = null;
+            this._source = null;
+            this._target = null;
+            this._umask = 0;
+            _super.prototype.dispose.call(this);
+        };
         Binding.prototype._update = function () {
             var umask = this._umask, MAX_REC = 3;
             var flag = 0;
@@ -2672,7 +2688,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                         if (this._cntUSrc < MAX_REC) {
                             this._cntUSrc += 1;
                             try {
-                                this._updateSource();
+                                this.updateSource();
                             }
                             finally {
                                 this._cntUSrc -= 1;
@@ -2688,7 +2704,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                         if (this._cntUtgt < MAX_REC) {
                             this._cntUtgt += 1;
                             try {
-                                this._updateTarget();
+                                this.updateTarget();
                             }
                             finally {
                                 this._cntUtgt -= 1;
@@ -2902,40 +2918,6 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 }
             }
         };
-        Binding.prototype._updateTarget = function () {
-            if (this.getIsStateDirty()) {
-                return;
-            }
-            try {
-                if (!this._converter) {
-                    this.targetValue = this.sourceValue;
-                }
-                else {
-                    this.targetValue = this._converter.convertToTarget(this.sourceValue, this.param, this.source);
-                }
-            }
-            catch (ex) {
-                utils.err.reThrow(ex, this.handleError(ex, this));
-            }
-        };
-        Binding.prototype._updateSource = function () {
-            if (this.getIsStateDirty()) {
-                return;
-            }
-            try {
-                if (!this._converter) {
-                    this.sourceValue = this.targetValue;
-                }
-                else {
-                    this.sourceValue = this._converter.convertToSource(this.targetValue, this.param, this.source);
-                }
-            }
-            catch (ex) {
-                if (!sys.isValidationError(ex) || !viewChecks.isElView(this._tgtEnd)) {
-                    utils.err.reThrow(ex, this.handleError(ex, this));
-                }
-            }
-        };
         Binding.prototype._setTarget = function (value) {
             if (!!this._state) {
                 this._state.target = value;
@@ -2996,29 +2978,39 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 return false;
             }
         };
-        Binding.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
+        Binding.prototype.updateTarget = function () {
+            if (this.getIsStateDirty()) {
                 return;
             }
-            this.setDisposing();
-            var self = this;
-            coreUtils.forEachProp(this._pathItems, function (key, old) {
-                self._cleanUp(old);
-            });
-            this._pathItems = {};
-            this._setSource(null);
-            this._setTarget(null);
-            this._state = null;
-            this._converter = null;
-            this._param = null;
-            this._srcPath = null;
-            this._tgtPath = null;
-            this._srcEnd = null;
-            this._tgtEnd = null;
-            this._source = null;
-            this._target = null;
-            this._umask = 0;
-            _super.prototype.dispose.call(this);
+            try {
+                if (!this._converter) {
+                    this.targetValue = this.sourceValue;
+                }
+                else {
+                    this.targetValue = this._converter.convertToTarget(this.sourceValue, this.param, this.source);
+                }
+            }
+            catch (ex) {
+                utils.err.reThrow(ex, this.handleError(ex, this));
+            }
+        };
+        Binding.prototype.updateSource = function () {
+            if (this.getIsStateDirty()) {
+                return;
+            }
+            try {
+                if (!this._converter) {
+                    this.sourceValue = this.targetValue;
+                }
+                else {
+                    this.sourceValue = this._converter.convertToSource(this.targetValue, this.param, this.source);
+                }
+            }
+            catch (ex) {
+                if (!sys.isValidationError(ex) || !viewChecks.isElView(this._tgtEnd)) {
+                    utils.err.reThrow(ex, this.handleError(ex, this));
+                }
+            }
         };
         Binding.prototype.toString = function () {
             return "Binding";
@@ -3971,10 +3963,10 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
                     }
                 }
                 var forms_1 = fn_getDataFormElements(bindElems);
-                var needBinding = bindElems.filter(function (bindElem) {
+                var needsBinding = bindElems.filter(function (bindElem) {
                     return !viewChecks.isInNestedForm(templateEl, forms_1, bindElem.el);
                 });
-                needBinding.forEach(function (bindElem) {
+                var viewsArr = needsBinding.map(function (bindElem) {
                     var elView = self._elViewFactory.getOrCreateElView(bindElem.el, dataContext);
                     self._bindElView({
                         elView: elView,
@@ -3983,7 +3975,10 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
                         isTemplate: true,
                         dataContext: dataContext
                     });
-                });
+                    return elView;
+                }).filter(function (v) { return !!v.viewMounted; });
+                var viewMap = utils.arr.toMap(viewsArr, function (v) { return v.uniqueID; });
+                utils.core.forEachProp(viewMap, function (n, v) { v.viewMounted(); });
                 defer.resolve(lftm_1);
             }
             catch (err) {
@@ -4021,7 +4016,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
                 var needsBinding = bindElems.filter(function (bindElem) {
                     return !viewChecks.isInNestedForm(scope, forms_2, bindElem.el);
                 });
-                needsBinding.forEach(function (bindElem) {
+                var viewsArr = needsBinding.map(function (bindElem) {
                     var elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
                     self._bindElView({
                         elView: elView,
@@ -4030,7 +4025,10 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
                         isTemplate: args.isTemplate,
                         dataContext: args.dataContext
                     });
-                });
+                    return elView;
+                }).filter(function (v) { return !!v.viewMounted; });
+                var viewMap = utils.arr.toMap(viewsArr, function (v) { return v.uniqueID; });
+                utils.core.forEachProp(viewMap, function (n, v) { v.viewMounted(); });
                 defer.resolve(lftm_2);
             }
             catch (err) {
@@ -4421,6 +4419,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.Command = mvvm_1.Command;
     exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.7.5";
+    exports.VERSION = "2.7.7";
     bootstrap_7.Bootstrap._initFramework();
 });

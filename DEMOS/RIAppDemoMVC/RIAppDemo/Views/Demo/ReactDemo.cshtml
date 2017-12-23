@@ -1,0 +1,58 @@
+﻿@using RIAPP.DataService.Mvc.Utils
+@{
+    Layout = "~/Views/Shared/_LayoutReact.cshtml";
+}
+@{
+    ViewBag.Title = "React Demo";
+}
+
+@section CssImport
+{
+    <style type="text/css">
+        #demoContent {
+            height: 600px;
+            overflow: visible;
+            position: relative;
+            vertical-align: top;
+        }
+
+        label {
+            color: blue;
+        }
+    </style>
+}
+
+<script src="@Url.Content("~/Scripts/demo/reactapp/reactdemo.js", true)" type="text/javascript"></script>
+
+<script type="text/javascript">
+    require(["main", "jriapp", "jriapp_ui"],
+        function (DEMO, RIAPP, UI) {
+            var mainOptions = {
+                modulesInits: {}
+            };
+
+            DEMO.start(mainOptions).then(function () {
+                $("#demoContent").animate({ opacity: 1 }, 1000);
+                $("#loading").fadeOut(1000);
+            }, function (err) {
+                $("#loading").fadeOut(1000);
+            });
+        
+           
+        });
+</script>
+
+<h2 class="ex8">@ViewBag.Title</h2>
+
+<div id="demoContent" style="opacity:0;">
+    <div data-view="react" data-bind="{this.value,to=temperature,mode=TwoWay,source=testObj}"></div>
+
+    <fieldset>
+        <legend>This a simple databound text input</legend>
+        <input type="text" data-bind="{this.value,to=temperature,mode=TwoWay,source=testObj}"
+               data-view-options="updateOnKeyUp=true"
+               style="width: 250px" />
+    </fieldset>
+</div>
+
+@Html.Partial("_WaitLoad")

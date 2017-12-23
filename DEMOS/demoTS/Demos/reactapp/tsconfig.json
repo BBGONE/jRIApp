@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "outFile": "../../built/demo/reactapp/reactdemo.js",
+        "noImplicitAny": false,
+        "noEmitOnError": true,
+        "removeComments": true,
+        "sourceMap": false,
+        "target": "es5",
+        "module": "amd",
+        "jsx": "react",
+        "lib": [ "es2016", "dom" ]
+    },
+  "exclude": [
+    "node_modules",
+    "wwwroot"
+  ]
+}

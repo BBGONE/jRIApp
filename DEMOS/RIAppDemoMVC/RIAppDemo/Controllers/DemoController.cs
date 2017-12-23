@@ -55,5 +55,10 @@ namespace RIAppDemo.Controllers
         {
             return View();
         }
+
+        public ActionResult ReactDemo()
+        {
+            return View();
+        }
     }
 }

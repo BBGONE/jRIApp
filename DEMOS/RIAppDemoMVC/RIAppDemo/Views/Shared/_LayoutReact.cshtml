@@ -41,6 +41,10 @@
 
         var config = {
             baseUrl: "@Url.Asset("/Scripts/demo/", true)",
+            paths: {
+                'react': '@Url.Asset("/Scripts/react/react.development", false)',
+                'react-dom': '@Url.Asset("/Scripts/react/react-dom.development", false)'
+            },
             waitSeconds: 10
         };
         requirejs.config(config);

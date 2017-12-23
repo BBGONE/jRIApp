@@ -4107,7 +4107,11 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
         function ChildDataView(options) {
             var _this = this;
             var parentItem = !options.parentItem ? null : options.parentItem;
-            var assoc = options.association, opts = coreUtils.extend({}, options), oldFilter = opts.fn_filter;
+            var assoc = options.association, opts = coreUtils.extend({
+                dataSource: null,
+                fn_itemsProvider: null,
+                fn_filter: null
+            }, options), oldFilter = opts.fn_filter;
             opts.dataSource = assoc.childDS;
             opts.fn_itemsProvider = function () {
                 if (!parentItem) {

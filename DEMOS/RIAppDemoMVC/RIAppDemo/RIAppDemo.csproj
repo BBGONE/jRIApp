@@ -173,6 +173,7 @@
     <Content Include="Scripts\demo\jsondbDemo.js" />
     <Content Include="Scripts\demo\manToManDemo\main.js" />
     <Content Include="Scripts\demo\mastDetDemo\main.js" />
+    <Content Include="Scripts\demo\reactapp\reactdemo.js" />
     <Content Include="Scripts\demo\shared\shared.js" />
     <Content Include="Scripts\demo\spaDemo\main.js" />
     <Content Include="Scripts\demo\test1.js" />
@@ -253,6 +254,10 @@
     <Content Include="Scripts\qtip\jquery.qtip.js" />
     <Content Include="Scripts\qtip\jquery.qtip.min.css" />
     <Content Include="Scripts\qtip\jquery.qtip.min.js" />
+    <Content Include="Scripts\react\react-dom.development.js" />
+    <Content Include="Scripts\react\react-dom.production.min.js" />
+    <Content Include="Scripts\react\react.development.js" />
+    <Content Include="Scripts\react\react.production.min.js" />
     <Content Include="Scripts\require.js" />
     <Content Include="Scripts\require.min.js" />
     <Content Include="Scripts\toastr\toastr.css" />
@@ -357,6 +362,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Demo\JsonDBDemo.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Demo\ReactDemo.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\_LayoutReact.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

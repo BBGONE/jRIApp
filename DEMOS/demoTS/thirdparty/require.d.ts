@@ -1,6 +1,6 @@
 // Type definitions for RequireJS 2.1.20
 // Project: http://requirejs.org/
-// Definitions by: Josh Baldwin <https://github.com/jbaldwin/>
+// Definitions by: Josh Baldwin <https://github.com/jbaldwin>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
 /*
@@ -48,7 +48,7 @@ interface RequireError extends Error {
 	/**
 	* Required modules.
 	**/
-	requireModules: string[];
+	requireModules: string[] | null;
 
 	/**
 	* The original error, if there is one (might be null).
@@ -81,17 +81,23 @@ interface RequireShim {
 
 interface RequireConfig {
 
-	// The root path to use for all module lookups.
+	/**
+	* The root path to use for all module lookups.
+	*/
 	baseUrl?: string;
 
-	// Path mappings for module names not found directly under
-	// baseUrl.
+	/**
+	* Path mappings for module names not found directly under
+	* baseUrl.
+	*/
 	paths?: { [key: string]: any; };
 
 
-	// Dictionary of Shim's.
-	// does not cover case of key->string[]
-	shim?: { [key: string]: RequireShim; };
+	/**
+	* Dictionary of Shim's.
+	* Can be of type RequireShim or string[] of dependencies
+	*/
+	shim?: { [key: string]: RequireShim | string[]; };
 
 	/**
 	* For the given module prefix, instead of loading the
@@ -278,10 +284,6 @@ interface RequireMap {
 	fullName: string;
 }
 
-interface IRequireError {
-    requireModules: string[];
-}
-
 interface Require {
 
 	/**
@@ -314,7 +316,7 @@ interface Require {
 	* @see http://requirejs.org/docs/api.html#errbacks
 	* @param ready Called when required modules are ready.
 	**/
-    (modules: string[], ready: Function, errback: (err: IRequireError) => void): void;
+	(modules: string[], ready: Function, errback: Function): void;
 
 	/**
 	* Generate URLs from require module
