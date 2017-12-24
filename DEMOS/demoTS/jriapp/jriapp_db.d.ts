@@ -796,7 +796,7 @@ declare module "jriapp_db/int" {
 }
 declare module "jriapp_db/dataview" {
     import { SORT_ORDER, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_shared/collection/const";
-    import { IPromise, TEventHandler, IIndexer } from "jriapp_shared";
+    import { IPromise, TEventHandler, Debounce, IIndexer } from "jriapp_shared";
     import { ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IFieldInfo, IPermissions } from "jriapp_shared/collection/int";
     import { BaseCollection, Errors } from "jriapp_shared/collection/base";
     export interface IDataViewOptions<TItem extends ICollectionItem> {
@@ -812,7 +812,7 @@ declare module "jriapp_db/dataview" {
         private _fn_itemsProvider;
         private _isAddingNew;
         private _refreshDebounce;
-        constructor(options: IDataViewOptions<TItem>);
+        constructor(options: IDataViewOptions<TItem>, refreshDebounce?: Debounce);
         protected _clearItems(items: TItem[]): void;
         protected _filterForPaging(items: TItem[]): TItem[];
         protected _onViewRefreshed(args: {}): void;
@@ -859,7 +859,6 @@ declare module "jriapp_db/dataview" {
     export type TDataView = DataView<ICollectionItem>;
 }
 declare module "jriapp_db/child_dataview" {
-    import { Debounce } from "jriapp_shared";
     import { IEntityItem } from "jriapp_db/int";
     import { Association } from "jriapp_db/association";
     import { DataView } from "jriapp_db/dataview";
@@ -874,7 +873,6 @@ declare module "jriapp_db/child_dataview" {
         private _setParent;
         private _getParent;
         private _association;
-        protected _parentDebounce: Debounce;
         constructor(options: IChildDataViewOptions<TItem>);
         dispose(): void;
         toString(): string;

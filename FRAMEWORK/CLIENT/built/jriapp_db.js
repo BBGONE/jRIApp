@@ -3680,7 +3680,8 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
     })(VIEW_EVENTS || (VIEW_EVENTS = {}));
     var DataView = (function (_super) {
         __extends(DataView, _super);
-        function DataView(options) {
+        function DataView(options, refreshDebounce) {
+            if (refreshDebounce === void 0) { refreshDebounce = null; }
             var _this = _super.call(this) || this;
             var opts = coreUtils.extend({
                 dataSource: null,
@@ -3694,7 +3695,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter)) {
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_DATAVIEW_FILTER_INVALID);
             }
-            _this._refreshDebounce = new jriapp_shared_9.Debounce();
+            _this._refreshDebounce = refreshDebounce || new jriapp_shared_9.Debounce();
             _this._dataSource = opts.dataSource;
             _this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
             _this._fn_sort = opts.fn_sort;
@@ -4162,9 +4163,8 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
                 var isPC = assoc.isParentChild(parentItem, item);
                 return isPC && (!oldFilter ? true : oldFilter(item));
             };
-            _this = _super.call(this, opts) || this;
+            _this = _super.call(this, opts, new jriapp_shared_10.Debounce(350)) || this;
             var self = _this;
-            _this._parentDebounce = new jriapp_shared_10.Debounce(350);
             _this._getParent = function () {
                 if (self.getIsStateDirty()) {
                     return null;
@@ -4181,9 +4181,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
                         self.clear();
                         self._onViewRefreshed({});
                     }
-                    self._parentDebounce.enque(function () {
-                        return self._refresh(0);
-                    });
+                    self._refresh(3);
                     self.objEvents.raiseProp("parentItem");
                 }
             };
@@ -4191,7 +4189,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             if (!!parentItem && !options.explicitRefresh) {
                 var queue = utils.defer.getTaskQueue();
                 queue.enque(function () {
-                    self._refresh(0);
+                    self._refreshSync(0);
                 });
             }
             return _this;
@@ -4203,7 +4201,6 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             this.setDisposing();
             this._setParent(null);
             this._association = null;
-            this._parentDebounce.dispose();
             _super.prototype.dispose.call(this);
         };
         ChildDataView.prototype.toString = function () {

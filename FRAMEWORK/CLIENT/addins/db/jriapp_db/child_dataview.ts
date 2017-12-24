@@ -21,7 +21,6 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
     private _setParent: (parent: IEntityItem) => void;
     private _getParent: () => IEntityItem;
     private _association: Association;
-    protected _parentDebounce: Debounce;
 
     constructor(options: IChildDataViewOptions<TItem>) {
         let parentItem: IEntityItem = !options.parentItem ? null : options.parentItem;
@@ -44,9 +43,9 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
             const isPC = assoc.isParentChild(parentItem, item);
             return isPC && (!oldFilter ? true : oldFilter(item));
         };
-        super(opts);
+        super(opts, new Debounce(350));
         const self = this;
-        this._parentDebounce = new Debounce(350);
+        
         this._getParent = () => {
             if (self.getIsStateDirty()) {
                 return null;
@@ -65,9 +64,7 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
                     self._onViewRefreshed({});
                 }
 
-                self._parentDebounce.enque(() => {
-                    return self._refresh(COLL_CHANGE_REASON.None);
-                });
+                self._refresh(COLL_CHANGE_REASON.Refresh);
                 self.objEvents.raiseProp(PROP_NAME.parentItem);
             }
         };
@@ -75,7 +72,7 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
         if (!!parentItem && !options.explicitRefresh) {
             const queue = utils.defer.getTaskQueue();
             queue.enque(() => {
-                self._refresh(COLL_CHANGE_REASON.None);
+                self._refreshSync(COLL_CHANGE_REASON.None);
             });
         }
     }
@@ -86,7 +83,6 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
         this.setDisposing();
         this._setParent(null);
         this._association = null;
-        this._parentDebounce.dispose();
         super.dispose();
     }
     toString() {

@@ -33,7 +33,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     private _isAddingNew: boolean;
     private _refreshDebounce: Debounce;
 
-    constructor(options: IDataViewOptions<TItem>) {
+    constructor(options: IDataViewOptions<TItem>, refreshDebounce: Debounce = null) {
         super();
         const opts = coreUtils.extend({
             dataSource: null,
@@ -48,7 +48,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter)) {
             throw new Error(ERRS.ERR_DATAVIEW_FILTER_INVALID);
         }
-        this._refreshDebounce = new Debounce();
+        this._refreshDebounce = refreshDebounce || new Debounce();
         this._dataSource = opts.dataSource;
         this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
         this._fn_sort = opts.fn_sort;
