@@ -796,7 +796,7 @@ declare module "jriapp_db/int" {
 }
 declare module "jriapp_db/dataview" {
     import { SORT_ORDER, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_shared/collection/const";
-    import { IPromise, TEventHandler, Debounce, IIndexer } from "jriapp_shared";
+    import { IPromise, TEventHandler, IIndexer } from "jriapp_shared";
     import { ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IFieldInfo, IPermissions } from "jriapp_shared/collection/int";
     import { BaseCollection, Errors } from "jriapp_shared/collection/base";
     export interface IDataViewOptions<TItem extends ICollectionItem> {
@@ -804,7 +804,7 @@ declare module "jriapp_db/dataview" {
         fn_filter?: (item: TItem) => boolean;
         fn_sort?: (item1: TItem, item2: TItem) => number;
         fn_itemsProvider?: (ds: ICollection<TItem>) => TItem[];
-        refreshDebounce?: Debounce;
+        refreshTimeout?: number;
     }
     export class DataView<TItem extends ICollectionItem> extends BaseCollection<TItem> {
         private _dataSource;

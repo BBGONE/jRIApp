@@ -23,7 +23,7 @@ export interface IDataViewOptions<TItem extends ICollectionItem> {
     fn_filter?: (item: TItem) => boolean;
     fn_sort?: (item1: TItem, item2: TItem) => number;
     fn_itemsProvider?: (ds: ICollection<TItem>) => TItem[];
-    refreshDebounce?: Debounce
+    refreshTimeout?: number
 }
 
 export class DataView<TItem extends ICollectionItem> extends BaseCollection<TItem> {
@@ -42,7 +42,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         if (!!options.fn_filter && !checks.isFunc(options.fn_filter)) {
             throw new Error(ERRS.ERR_DATAVIEW_FILTER_INVALID);
         }
-        this._refreshDebounce = options.refreshDebounce || new Debounce();
+        this._refreshDebounce = new Debounce(options.refreshTimeout || 0);
         this._dataSource = options.dataSource;
         this._fn_filter = !options.fn_filter ? null : options.fn_filter;
         this._fn_sort = !options.fn_sort ? null : options.fn_sort;

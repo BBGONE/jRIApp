@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { Utils, Debounce } from "jriapp_shared";
+import { Utils } from "jriapp_shared";
 import { COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
 import { ICollection } from "jriapp_shared/collection/int";
 import { PROP_NAME } from "./const";
@@ -43,7 +43,7 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
             const isPC = assoc.isParentChild(parentItem, item);
             return isPC && (!oldFilter ? true : oldFilter(item));
         };
-        opts.refreshDebounce = new Debounce(350);
+        opts.refreshTimeout = 350;
         super(opts);
         const self = this;
         

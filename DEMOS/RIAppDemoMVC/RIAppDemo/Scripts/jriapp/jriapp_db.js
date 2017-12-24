@@ -3688,7 +3688,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             if (!!options.fn_filter && !checks.isFunc(options.fn_filter)) {
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_DATAVIEW_FILTER_INVALID);
             }
-            _this._refreshDebounce = options.refreshDebounce || new jriapp_shared_9.Debounce();
+            _this._refreshDebounce = new jriapp_shared_9.Debounce(options.refreshTimeout || 0);
             _this._dataSource = options.dataSource;
             _this._fn_filter = !options.fn_filter ? null : options.fn_filter;
             _this._fn_sort = !options.fn_sort ? null : options.fn_sort;
@@ -4157,7 +4157,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
                 var isPC = assoc.isParentChild(parentItem, item);
                 return isPC && (!oldFilter ? true : oldFilter(item));
             };
-            opts.refreshDebounce = new jriapp_shared_10.Debounce(350);
+            opts.refreshTimeout = 350;
             _this = _super.call(this, opts) || this;
             var self = _this;
             _this._getParent = function () {
