@@ -543,9 +543,11 @@ declare module "jriapp_shared/utils/arrhelper" {
     }
 }
 declare module "jriapp_shared/utils/queue" {
+    import { IPromise } from "jriapp_shared/utils/ideferred";
     export interface IQueue {
         cancel: (taskId: number) => void;
-        enque: (func: () => void) => number;
+        enque: (func: () => any) => number;
+        execAsync: (func: () => any) => IPromise<any>;
     }
     export function createQueue(interval?: number): IQueue;
 }

@@ -1,13 +1,16 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IIndexer } from "../int";
 import { ERROR } from "./error";
+import { IPromise } from "./ideferred";
+import { createDefer } from "./deferred";
 
 const error = ERROR;
 const MAX_NUM = 99999900000, win = window;
 
 export interface IQueue {
     cancel: (taskId: number) => void;
-    enque: (func: () => void) => number;
+    enque: (func: () => any) => number;
+    execAsync: (func: () => any) => IPromise<any>;
 }
 
 interface ITask {
@@ -20,14 +23,14 @@ export function createQueue(interval: number = 0): IQueue {
         _timer: number = null, _newTaskId = 1;
 
     const res: IQueue = {
-        cancel: function (taskId: number) {
+        cancel: function (taskId: number): void {
             const task = _taskMap[taskId];
             if (!!task) {
                 // cancel task by setting its func to null!!!
                 task.func = null;
             }
         },
-        enque: function (func: () => void): number {
+        enque: function (func: () => any): number {
             const taskId = _newTaskId;
             _newTaskId += 1;
             const task: ITask = { taskId: taskId, func: func };
@@ -67,6 +70,18 @@ export function createQueue(interval: number = 0): IQueue {
             }
 
             return taskId;
+        },
+        execAsync: function (func: () => any): IPromise<any> {
+            const deferred = createDefer<any>(true);
+            const fn = () => {
+                try {
+                    deferred.resolve(func());
+                } catch (err) {
+                    deferred.reject(err);
+                }
+            };
+            res.enque(fn);
+            return deferred.promise();
         }
     };
 

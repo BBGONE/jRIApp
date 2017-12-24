@@ -36,19 +36,22 @@ export class Debounce implements IDisposable {
 
         if (!this._timer) {
             const callback = () => {
-                const fn = this._fn;
-                const deferred = this._deferred;
+                const fn = this._fn, deferred = this._deferred;
                 this._timer = null;
                 this._fn = null;
                 this._deferred = null;
                 try {
-                    if (!!fn) {
+                    if (!!fn && !!deferred) {
                         deferred.resolve(fn());
                     } else {
-                        deferred.reject(new Error("no function"));
+                        if (!!deferred) {
+                            deferred.reject(new Error("cancelled"));
+                        }
                     }
                 } catch (err) {
-                    deferred.reject(err);
+                    if (!!deferred) {
+                        deferred.reject(err);
+                    }
                 }
             };
 
@@ -63,10 +66,14 @@ export class Debounce implements IDisposable {
     cancel() {
         // just set to null
         this._fn = null;
+        const deferred = this._deferred;
+        if (!!deferred) {
+            this._deferred = null;
+            deferred.reject(new Error("cancelled"));
+        }
     }
     dispose(): void {
         const deferred = this._deferred;
-
         if (!!this._timer) {
             if (!this._interval) {
                 getTaskQueue().cancel(this._timer);
@@ -74,6 +81,7 @@ export class Debounce implements IDisposable {
                 clearTimeout(this._timer);
             }
         }
+        this.cancel();
         this._timer = void 0;
         this._fn = null;
         this._deferred = null;
