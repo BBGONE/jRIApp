@@ -23,6 +23,7 @@ export interface IDataViewOptions<TItem extends ICollectionItem> {
     fn_filter?: (item: TItem) => boolean;
     fn_sort?: (item1: TItem, item2: TItem) => number;
     fn_itemsProvider?: (ds: ICollection<TItem>) => TItem[];
+    refreshDebounce?: Debounce
 }
 
 export class DataView<TItem extends ICollectionItem> extends BaseCollection<TItem> {
@@ -33,26 +34,19 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     private _isAddingNew: boolean;
     private _refreshDebounce: Debounce;
 
-    constructor(options: IDataViewOptions<TItem>, refreshDebounce: Debounce = null) {
+    constructor(options: IDataViewOptions<TItem>) {
         super();
-        const opts = coreUtils.extend({
-            dataSource: null,
-            fn_filter: null,
-            fn_sort: null,
-            fn_itemsProvider: null
-        }, options);
-
-        if (!sys.isCollection(opts.dataSource)) {
+        if (!sys.isCollection(options.dataSource)) {
             throw new Error(ERRS.ERR_DATAVIEW_DATASRC_INVALID);
         }
-        if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter)) {
+        if (!!options.fn_filter && !checks.isFunc(options.fn_filter)) {
             throw new Error(ERRS.ERR_DATAVIEW_FILTER_INVALID);
         }
-        this._refreshDebounce = refreshDebounce || new Debounce();
-        this._dataSource = opts.dataSource;
-        this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
-        this._fn_sort = opts.fn_sort;
-        this._fn_itemsProvider = opts.fn_itemsProvider;
+        this._refreshDebounce = options.refreshDebounce || new Debounce();
+        this._dataSource = options.dataSource;
+        this._fn_filter = !options.fn_filter ? null : options.fn_filter;
+        this._fn_sort = !options.fn_sort ? null : options.fn_sort;
+        this._fn_itemsProvider = !options.fn_itemsProvider ? null : options.fn_itemsProvider;
         this._isAddingNew = false;
         this._bindDS();
     }
@@ -336,6 +330,9 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     protected _createNew(): TItem {
         throw new Error("Not implemented");
     }
+    _getStrValue(val: any, fieldInfo: IFieldInfo): string {
+        return (<BaseCollection<TItem>>this._dataSource)._getInternal().getStrValue(val, fieldInfo);
+    }
     // override
     getFieldNames(): string[] {
         return this._dataSource.getFieldNames();
@@ -352,22 +349,19 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     getFieldMap(): IIndexer<IFieldInfo> {
         return this._dataSource.getFieldMap();
     }
-    _getStrValue(val: any, fieldInfo: IFieldInfo): string {
-        return (<BaseCollection<TItem>>this._dataSource)._getInternal().getStrValue(val, fieldInfo);
-    }
-    addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string) {
+    addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string): void {
         this.objEvents.on(VIEW_EVENTS.refreshed, fn, nmspace);
     }
-    offOnViewRefreshed(nmspace?: string) {
+    offOnViewRefreshed(nmspace?: string): void {
         this.objEvents.off(VIEW_EVENTS.refreshed, nmspace);
     }
-    appendItems(items: TItem[]) {
+    appendItems(items: TItem[]): TItem[] {
         if (this.getIsStateDirty()) {
             return [];
         }
         return this._fillItems({ items: items, reason: COLL_CHANGE_REASON.None, clear: false, isAppend: true });
     }
-    addNew() {
+    addNew(): TItem {
         let item: TItem = null;
         this._isAddingNew = true;
         try {
@@ -377,7 +371,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         }
         return item;
     }
-    removeItem(item: TItem) {
+    removeItem(item: TItem): void {
         if (!this._itemsByKey[item._key]) {
             return;
         }
@@ -405,18 +399,18 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     }
     sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
         this._fn_sort = this._getSortFn(fieldNames, sortOrder);
-        return this._refresh(COLL_CHANGE_REASON.Sorting);
+        return utils.defer.delay(() => this._refreshSync(COLL_CHANGE_REASON.Sorting));
     }
-    clear() {
+    clear(): void {
         this._clear(COLL_CHANGE_REASON.Refresh, COLL_CHANGE_OPER.None);
     }
-    refresh(): void {
-        this._refresh(COLL_CHANGE_REASON.Refresh);
+    refresh(): IPromise<any> {
+        return this._refresh(COLL_CHANGE_REASON.Refresh);
     }
     syncRefresh(): void {
         this._refreshSync(COLL_CHANGE_REASON.Refresh);
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }

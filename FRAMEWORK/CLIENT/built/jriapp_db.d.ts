@@ -804,6 +804,7 @@ declare module "jriapp_db/dataview" {
         fn_filter?: (item: TItem) => boolean;
         fn_sort?: (item1: TItem, item2: TItem) => number;
         fn_itemsProvider?: (ds: ICollection<TItem>) => TItem[];
+        refreshDebounce?: Debounce;
     }
     export class DataView<TItem extends ICollectionItem> extends BaseCollection<TItem> {
         private _dataSource;
@@ -812,7 +813,7 @@ declare module "jriapp_db/dataview" {
         private _fn_itemsProvider;
         private _isAddingNew;
         private _refreshDebounce;
-        constructor(options: IDataViewOptions<TItem>, refreshDebounce?: Debounce);
+        constructor(options: IDataViewOptions<TItem>);
         protected _clearItems(items: TItem[]): void;
         protected _filterForPaging(items: TItem[]): TItem[];
         protected _onViewRefreshed(args: {}): void;
@@ -832,11 +833,11 @@ declare module "jriapp_db/dataview" {
         protected _onPageChanged(): void;
         protected _clear(reason: COLL_CHANGE_REASON, oper?: COLL_CHANGE_OPER): void;
         protected _createNew(): TItem;
+        _getStrValue(val: any, fieldInfo: IFieldInfo): string;
         getFieldNames(): string[];
         getFieldInfo(fieldName: string): IFieldInfo;
         getFieldInfos(): IFieldInfo[];
         getFieldMap(): IIndexer<IFieldInfo>;
-        _getStrValue(val: any, fieldInfo: IFieldInfo): string;
         addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string): void;
         offOnViewRefreshed(nmspace?: string): void;
         appendItems(items: TItem[]): TItem[];
@@ -844,7 +845,7 @@ declare module "jriapp_db/dataview" {
         removeItem(item: TItem): void;
         sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
         clear(): void;
-        refresh(): void;
+        refresh(): IPromise<any>;
         syncRefresh(): void;
         dispose(): void;
         readonly errors: Errors<TItem>;

@@ -43,7 +43,8 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
             const isPC = assoc.isParentChild(parentItem, item);
             return isPC && (!oldFilter ? true : oldFilter(item));
         };
-        super(opts, new Debounce(350));
+        opts.refreshDebounce = new Debounce(350);
+        super(opts);
         const self = this;
         
         this._getParent = () => {

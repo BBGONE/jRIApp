@@ -3680,26 +3680,19 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
     })(VIEW_EVENTS || (VIEW_EVENTS = {}));
     var DataView = (function (_super) {
         __extends(DataView, _super);
-        function DataView(options, refreshDebounce) {
-            if (refreshDebounce === void 0) { refreshDebounce = null; }
+        function DataView(options) {
             var _this = _super.call(this) || this;
-            var opts = coreUtils.extend({
-                dataSource: null,
-                fn_filter: null,
-                fn_sort: null,
-                fn_itemsProvider: null
-            }, options);
-            if (!sys.isCollection(opts.dataSource)) {
+            if (!sys.isCollection(options.dataSource)) {
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_DATAVIEW_DATASRC_INVALID);
             }
-            if (!!opts.fn_filter && !checks.isFunc(opts.fn_filter)) {
+            if (!!options.fn_filter && !checks.isFunc(options.fn_filter)) {
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_DATAVIEW_FILTER_INVALID);
             }
-            _this._refreshDebounce = refreshDebounce || new jriapp_shared_9.Debounce();
-            _this._dataSource = opts.dataSource;
-            _this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
-            _this._fn_sort = opts.fn_sort;
-            _this._fn_itemsProvider = opts.fn_itemsProvider;
+            _this._refreshDebounce = options.refreshDebounce || new jriapp_shared_9.Debounce();
+            _this._dataSource = options.dataSource;
+            _this._fn_filter = !options.fn_filter ? null : options.fn_filter;
+            _this._fn_sort = !options.fn_sort ? null : options.fn_sort;
+            _this._fn_itemsProvider = !options.fn_itemsProvider ? null : options.fn_itemsProvider;
             _this._isAddingNew = false;
             _this._bindDS();
             return _this;
@@ -3970,6 +3963,9 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
         DataView.prototype._createNew = function () {
             throw new Error("Not implemented");
         };
+        DataView.prototype._getStrValue = function (val, fieldInfo) {
+            return this._dataSource._getInternal().getStrValue(val, fieldInfo);
+        };
         DataView.prototype.getFieldNames = function () {
             return this._dataSource.getFieldNames();
         };
@@ -3981,9 +3977,6 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
         };
         DataView.prototype.getFieldMap = function () {
             return this._dataSource.getFieldMap();
-        };
-        DataView.prototype._getStrValue = function (val, fieldInfo) {
-            return this._dataSource._getInternal().getStrValue(val, fieldInfo);
         };
         DataView.prototype.addOnViewRefreshed = function (fn, nmspace) {
             this.objEvents.on("view_refreshed", fn, nmspace);
@@ -4033,14 +4026,15 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }
         };
         DataView.prototype.sortLocal = function (fieldNames, sortOrder) {
+            var _this = this;
             this._fn_sort = this._getSortFn(fieldNames, sortOrder);
-            return this._refresh(2);
+            return utils.defer.delay(function () { return _this._refreshSync(2); });
         };
         DataView.prototype.clear = function () {
             this._clear(3, 0);
         };
         DataView.prototype.refresh = function () {
-            this._refresh(3);
+            return this._refresh(3);
         };
         DataView.prototype.syncRefresh = function () {
             this._refreshSync(3);
@@ -4163,7 +4157,8 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
                 var isPC = assoc.isParentChild(parentItem, item);
                 return isPC && (!oldFilter ? true : oldFilter(item));
             };
-            _this = _super.call(this, opts, new jriapp_shared_10.Debounce(350)) || this;
+            opts.refreshDebounce = new jriapp_shared_10.Debounce(350);
+            _this = _super.call(this, opts) || this;
             var self = _this;
             _this._getParent = function () {
                 if (self.getIsStateDirty()) {
