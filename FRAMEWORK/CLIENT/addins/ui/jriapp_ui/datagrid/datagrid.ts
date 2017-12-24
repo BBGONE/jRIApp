@@ -347,6 +347,11 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._internal = null;
         super.dispose();
     }
+    protected _updateContentOptions(): void {
+        this.columns.filter((column) => column instanceof DataColumn).forEach((column: DataColumn) => {
+            column.updateContentOptions();
+        });
+    }
     protected _onKeyDown(key: number, event: Event): void {
         const ds = this.dataSource, self = this;
         if (!ds) {
@@ -971,6 +976,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         const fn_init = () => {
             const ds = this._options.dataSource;
             if (!!ds && !ds.getIsStateDirty()) {
+                this._updateContentOptions();
                 this._bindDS();
                 this._refresh(false);
             } else {

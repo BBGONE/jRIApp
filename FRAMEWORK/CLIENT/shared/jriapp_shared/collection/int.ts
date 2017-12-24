@@ -6,7 +6,7 @@ import {
 import { IPromise } from "../utils/ideferred";
 import {
     IBaseObject, IErrorNotification, IEditable, ISubmittable, TEventHandler, TPropChangedHandler,
-    IValidationInfo, TPriority
+    IValidationInfo, TPriority, IIndexer
 } from "../int";
 
 export const PROP_NAME = {
@@ -174,9 +174,10 @@ export interface IEditableCollection<TItem extends ICollectionItem> {
 }
 
 export interface ISimpleCollection<TItem extends ICollectionItem> extends IBaseObject {
-    getFieldInfo(fieldName: string): IFieldInfo;
     getFieldNames(): string[];
+    getFieldInfo(fieldName: string): IFieldInfo;
     getFieldInfos(): IFieldInfo[];
+    getFieldMap(): IIndexer<IFieldInfo>;
     getItemByPos(pos: number): TItem;
     getItemByKey(key: string): TItem;
     findByPK(...vals: any[]): TItem;

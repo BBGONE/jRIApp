@@ -26,7 +26,7 @@ declare module "jriapp_ui/content/int" {
 declare module "jriapp_ui/content/basic" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
-    import { IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions, IBindingInfo, IBindingOptions, IApplication, IConverter, IElView } from "jriapp/int";
+    import { IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions, IBindingOptions, IApplication, IConverter, IElView } from "jriapp/int";
     import { Binding } from "jriapp/binding";
     export interface IContentView extends IBaseObject {
         readonly el: HTMLElement;
@@ -35,7 +35,7 @@ declare module "jriapp_ui/content/basic" {
         name: string;
         options: IViewOptions;
     }): IElView;
-    export function getBindingOption(isEdit: boolean, bindingInfo: IBindingInfo, target: IBaseObject, dataContext: any, targetPath: string, converter?: IConverter, param?: any): IBindingOptions;
+    export function getBindingOption(isEdit: boolean, fieldName: string, target: IBaseObject, dataContext: any, targetPath: string, converter?: IConverter, param?: any): IBindingOptions;
     export class BasicContent extends BaseObject implements IContent {
         private _parentEl;
         private _options;
@@ -835,19 +835,22 @@ declare module "jriapp_ui/datagrid/cells/expander" {
 declare module "jriapp_ui/datagrid/columns/data" {
     import { IBaseObject } from "jriapp_shared";
     import { SORT_ORDER } from "jriapp_shared/collection/const";
-    import { IExternallyCachable } from "jriapp/int";
+    import { IExternallyCachable, IContentConstructor } from "jriapp/int";
     import { BaseColumn, ICellInfo } from "jriapp_ui/datagrid/columns/base";
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export class DataColumn extends BaseColumn {
         private _sortOrder;
         private _objCache;
+        private _contentType;
         constructor(grid: DataGrid, options: ICellInfo);
         protected _onColumnClicked(): void;
         protected _cacheObject(key: string, obj: IBaseObject): void;
         protected _getCachedObject(key: string): IBaseObject;
-        _getInitContentFn(): (content: IExternallyCachable) => void;
+        protected _getInitContentFn(): (content: IExternallyCachable) => void;
+        updateContentOptions(): void;
         dispose(): void;
         toString(): string;
+        readonly contentType: IContentConstructor;
         readonly isSortable: boolean;
         readonly sortMemberName: string;
         sortOrder: SORT_ORDER;
@@ -1221,6 +1224,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _updateCurrent;
         constructor(options: IDataGridConstructorOptions);
         dispose(): void;
+        protected _updateContentOptions(): void;
         protected _onKeyDown(key: number, event: Event): void;
         protected _onKeyUp(key: number, event: Event): void;
         protected _isRowExpanded(row: Row): boolean;

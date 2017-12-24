@@ -37,8 +37,7 @@ export class BoolContent extends BasicContent {
         label.appendChild(doc.createElement("span"));
         this._label = label;
 
-        const bindingInfo = this.options.bindingInfo;
-        const options = getBindingOption(true, bindingInfo, view, this.dataContext, "checked");
+        const options = getBindingOption(true, this.options.fieldName, view, this.dataContext, "checked");
         this.lfScope.addObj(this.app.bind(options));
         return view;
     }
@@ -52,7 +51,7 @@ export class BoolContent extends BasicContent {
     }
     // override
     protected beforeCreateView(): boolean {
-        const res = !this.view && !!this.options.bindingInfo;
+        const res = !this.view && !!this.options.fieldName;
         if (!!this.view) {
             this.updateCss();
         }

@@ -1890,16 +1890,20 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
             this._timer = null;
             this._interval = interval;
             this._fn = null;
+            this._deferred = null;
         }
         Debounce.prototype.enque = function (fn) {
             var _this = this;
             if (this.getIsStateDirty()) {
-                return;
+                return deferred_1.Promise.reject(new Error("disposed"), false);
             }
             if (!fn) {
                 throw new Error("Debounce: Invalid operation");
             }
             this._fn = fn;
+            if (!this._deferred) {
+                this._deferred = deferred_1.createDefer();
+            }
             if (!!this._interval && !!this._timer) {
                 clearTimeout(this._timer);
                 this._timer = null;
@@ -1907,10 +1911,20 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
             if (!this._timer) {
                 var callback = function () {
                     var fn = _this._fn;
+                    var deferred = _this._deferred;
                     _this._timer = null;
                     _this._fn = null;
-                    if (!!fn) {
-                        fn();
+                    _this._deferred = null;
+                    try {
+                        if (!!fn) {
+                            deferred.resolve(fn());
+                        }
+                        else {
+                            deferred.reject(new Error("no function"));
+                        }
+                    }
+                    catch (err) {
+                        deferred.reject(err);
                     }
                 };
                 if (!this._interval) {
@@ -1920,11 +1934,13 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
                     this._timer = setTimeout(callback, this._interval);
                 }
             }
+            return this._deferred.promise();
         };
         Debounce.prototype.cancel = function () {
             this._fn = null;
         };
         Debounce.prototype.dispose = function () {
+            var deferred = this._deferred;
             if (!!this._timer) {
                 if (!this._interval) {
                     deferred_1.getTaskQueue().cancel(this._timer);
@@ -1935,6 +1951,10 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
             }
             this._timer = void 0;
             this._fn = null;
+            this._deferred = null;
+            if (!!deferred) {
+                deferred.reject(new Error("disposed"));
+            }
         };
         Object.defineProperty(Debounce.prototype, "interval", {
             get: function () {
@@ -2304,6 +2324,7 @@ define("jriapp_shared/collection/const", ["require", "exports"], function (requi
         COLL_CHANGE_REASON[COLL_CHANGE_REASON["None"] = 0] = "None";
         COLL_CHANGE_REASON[COLL_CHANGE_REASON["PageChange"] = 1] = "PageChange";
         COLL_CHANGE_REASON[COLL_CHANGE_REASON["Sorting"] = 2] = "Sorting";
+        COLL_CHANGE_REASON[COLL_CHANGE_REASON["Refresh"] = 3] = "Refresh";
     })(COLL_CHANGE_REASON = exports.COLL_CHANGE_REASON || (exports.COLL_CHANGE_REASON = {}));
     var COLL_CHANGE_OPER;
     (function (COLL_CHANGE_OPER) {
@@ -3056,8 +3077,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             _this._itemsByKey = {};
             _this._currentPos = -1;
             _this._newKey = 0;
-            _this._fieldMap = {};
-            _this._fieldInfos = [];
             _this._errors = new Errors(_this);
             _this._pkInfo = null;
             _this._waitQueue = new waitqueue_1.WaitQueue(_this);
@@ -3242,7 +3261,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             if (!!this._pkInfo) {
                 return this._pkInfo;
             }
-            var fldMap = this._fieldMap, pk = [];
+            var fldMap = this.getFieldMap(), pk = [];
             coreUtils.forEachProp(fldMap, function (fldName) {
                 if (fldMap[fldName].isPrimaryKey > 0) {
                     pk.push(fldMap[fldName]);
@@ -3294,9 +3313,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         BaseCollection.prototype._onItemAdded = function (item) {
             var args = { item: item, isAddNewHandled: false };
             this.objEvents.raise("item_added", args);
-        };
-        BaseCollection.prototype._createNew = function () {
-            throw new Error("_createNew Not implemented");
         };
         BaseCollection.prototype._attach = function (item, itemPos) {
             if (!!this._itemsByKey[item._key]) {
@@ -3399,13 +3415,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 item._aspect._setIsAttached(false);
                 item.dispose();
             });
-        };
-        BaseCollection.prototype.isHasProp = function (prop) {
-            if (strUtils.startsWith(prop, "[")) {
-                var res = sys.getProp(this, prop);
-                return !checks.isUndefined(res);
-            }
-            return _super.prototype.isHasProp.call(this, prop);
         };
         BaseCollection.prototype._getEditingItem = function () {
             return this._EditingItem;
@@ -3543,9 +3552,16 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 return res;
             };
         };
+        BaseCollection.prototype.isHasProp = function (prop) {
+            if (strUtils.startsWith(prop, "[")) {
+                var res = sys.getProp(this, prop);
+                return !checks.isUndefined(res);
+            }
+            return _super.prototype.isHasProp.call(this, prop);
+        };
         BaseCollection.prototype.getFieldInfo = function (fieldName) {
-            var parts = fieldName.split(".");
-            var fld = this._fieldMap[parts[0]];
+            var parts = fieldName.split("."), fieldMap = this.getFieldMap();
+            var fld = fieldMap[parts[0]];
             if (parts.length === 1) {
                 return fld;
             }
@@ -3561,9 +3577,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             return this.getFieldInfos().map(function (f) {
                 return f.fieldName;
             });
-        };
-        BaseCollection.prototype.getFieldInfos = function () {
-            return this._fieldInfos;
         };
         BaseCollection.prototype.cancelEdit = function () {
             if (this.isEditing) {
@@ -3810,8 +3823,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._waitQueue.dispose();
             this._waitQueue = null;
             this.clear();
-            this._fieldMap = {};
-            this._fieldInfos = [];
             _super.prototype.dispose.call(this);
         };
         BaseCollection.prototype.waitForNotLoading = function (callback, groupName) {
@@ -3825,7 +3836,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             });
         };
         BaseCollection.prototype.toString = function () {
-            return "Collection";
+            return "BaseCollection";
         };
         Object.defineProperty(BaseCollection.prototype, "errors", {
             get: function () { return this._errors; },
@@ -4752,6 +4763,8 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         __extends(BaseList, _super);
         function BaseList(props) {
             var _this = _super.call(this) || this;
+            _this._fieldMap = {};
+            _this._fieldInfos = [];
             if (!!props) {
                 _this._updateFieldMap(props);
             }
@@ -4784,9 +4797,6 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             }
             return _super.prototype._attach.call(this, item);
         };
-        BaseList.prototype._createNew = function () {
-            return this.createItem(null);
-        };
         BaseList.prototype.createItem = function (obj) {
             var isNew = !obj, vals = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj, key = this._getNewKey();
             var aspect = new ListItemAspect(this, vals, key, isNew);
@@ -4796,6 +4806,15 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             var key = "clkey_" + this._newKey;
             this._newKey += 1;
             return key;
+        };
+        BaseList.prototype._createNew = function () {
+            return this.createItem(null);
+        };
+        BaseList.prototype.getFieldMap = function () {
+            return this._fieldMap;
+        };
+        BaseList.prototype.getFieldInfos = function () {
+            return this._fieldInfos;
         };
         BaseList.prototype.fillItems = function (objArray, clearAll) {
             var self = this, newItems = [], positions = [], items = [];

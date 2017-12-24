@@ -1,24 +1,27 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { IIndexer, IBaseObject, Utils } from "jriapp_shared";
+import { IIndexer, IBaseObject, LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { SORT_ORDER } from "jriapp_shared/collection/const";
-import { IExternallyCachable } from "jriapp/int";
+import { IExternallyCachable, IContentConstructor } from "jriapp/int";
+import { bootstrap } from "jriapp/bootstrap";
 
 import { css, PROP_NAME } from "../const";
 import { BaseColumn, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 
-const utils = Utils, dom = DomUtils;
+const utils = Utils, dom = DomUtils, boot = bootstrap;
 
 export class DataColumn extends BaseColumn {
     private _sortOrder: SORT_ORDER;
     private _objCache: IIndexer<IBaseObject>;
-
+    private _contentType: IContentConstructor;
+ 
     constructor(grid: DataGrid, options: ICellInfo) {
         super(grid, options);
         // the DataCell caches here listbox (for the LookupContent)
         // so not to create it for every cell - it is only one per column!
         this._objCache = {};
+        this._contentType = null;
         let colClass: string = css.dataColumn;
         this._sortOrder = null;
         if (this.isSortable) {
@@ -41,7 +44,7 @@ export class DataColumn extends BaseColumn {
     protected _getCachedObject(key: string) {
         return this._objCache[key];
     }
-    _getInitContentFn(): (content: IExternallyCachable) => void {
+    protected _getInitContentFn(): (content: IExternallyCachable) => void {
         const self = this;
         return (content: IExternallyCachable) => {
             content.addOnObjectCreated((sender, args) => {
@@ -53,12 +56,30 @@ export class DataColumn extends BaseColumn {
             });
         };
     }
+    updateContentOptions(): void {
+        const contentOptions = this.options.content;
+        if (!!contentOptions.fieldName) {
+            contentOptions.fieldInfo = this.grid.dataSource.getFieldInfo(contentOptions.fieldName);
+            if (!contentOptions.fieldInfo) {
+                throw new Error(utils.str.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, "", contentOptions.fieldName));
+            }
+        }
+        this._contentType = boot.contentFactory.getContentType(contentOptions);
+        if (boot.contentFactory.isExternallyCachable(this._contentType)) {
+            contentOptions.initContentFn = this._getInitContentFn();
+        }
+        if (this.grid.isHasEditor) {
+            // disable inrow editing if the grid has an editor
+            contentOptions.readOnly = true;
+        }
+    }
     dispose() {
         if (this.getIsDisposed()) {
             return;
         }
         this.setDisposing();
         const self = this;
+        this._contentType = null;
         utils.core.forEachProp(self._objCache, (key) => {
             self._objCache[key].dispose();
         });
@@ -67,6 +88,9 @@ export class DataColumn extends BaseColumn {
     }
     toString() {
         return "DataColumn";
+    }
+    get contentType(): IContentConstructor {
+        return this._contentType;
     }
     get isSortable() { return !!(this.options.sortable); }
     get sortMemberName() { return this.options.sortMemberName; }

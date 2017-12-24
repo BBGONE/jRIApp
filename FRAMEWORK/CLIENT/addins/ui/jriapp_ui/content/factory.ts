@@ -30,8 +30,8 @@ class ContentFactory implements IContentFactory {
         if (!!options.templateInfo) {
             return TemplateContent;
         }
-        if (!options.bindingInfo) {
-            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "options", "bindingInfo"));
+        if (!options.fieldName) {
+            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "options", "fieldName"));
         }
 
         if (options.name === "lookup") {

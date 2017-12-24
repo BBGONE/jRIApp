@@ -608,12 +608,14 @@ declare module "jriapp_shared/utils/deferred" {
 }
 declare module "jriapp_shared/utils/debounce" {
     import { IDisposable, TFunc } from "jriapp_shared/int";
+    import { IPromise } from "jriapp_shared/utils/ideferred";
     export class Debounce implements IDisposable {
         private _timer;
         private _interval;
         private _fn;
+        private _deferred;
         constructor(interval?: number);
-        enque(fn: TFunc): void;
+        enque(fn: TFunc): IPromise<any>;
         cancel(): void;
         dispose(): void;
         readonly interval: number;
@@ -732,6 +734,7 @@ declare module "jriapp_shared/collection/const" {
         None = 0,
         PageChange = 1,
         Sorting = 2,
+        Refresh = 3,
     }
     export const enum COLL_CHANGE_OPER {
         None = 0,
@@ -751,7 +754,7 @@ declare module "jriapp_shared/collection/const" {
 declare module "jriapp_shared/collection/int" {
     import { DATE_CONVERSION, DATA_TYPE, SORT_ORDER, FIELD_TYPE, COLL_CHANGE_OPER, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, ITEM_STATUS } from "jriapp_shared/collection/const";
     import { IPromise } from "jriapp_shared/utils/ideferred";
-    import { IBaseObject, IErrorNotification, IEditable, ISubmittable, TEventHandler, TPropChangedHandler, IValidationInfo, TPriority } from "jriapp_shared/int";
+    import { IBaseObject, IErrorNotification, IEditable, ISubmittable, TEventHandler, TPropChangedHandler, IValidationInfo, TPriority, IIndexer } from "jriapp_shared/int";
     export const PROP_NAME: {
         isEditing: string;
         currentItem: string;
@@ -932,9 +935,10 @@ declare module "jriapp_shared/collection/int" {
         permissions: IPermissions;
     }
     export interface ISimpleCollection<TItem extends ICollectionItem> extends IBaseObject {
-        getFieldInfo(fieldName: string): IFieldInfo;
         getFieldNames(): string[];
+        getFieldInfo(fieldName: string): IFieldInfo;
         getFieldInfos(): IFieldInfo[];
+        getFieldMap(): IIndexer<IFieldInfo>;
         getItemByPos(pos: number): TItem;
         getItemByKey(key: string): TItem;
         findByPK(...vals: any[]): TItem;
@@ -1126,8 +1130,6 @@ declare module "jriapp_shared/collection/base" {
         protected _itemsByKey: IIndexer<TItem>;
         protected _currentPos: number;
         protected _newKey: number;
-        protected _fieldMap: IIndexer<IFieldInfo>;
-        protected _fieldInfos: IFieldInfo[];
         protected _errors: Errors<TItem>;
         protected _pkInfo: IFieldInfo[];
         protected _isUpdating: boolean;
@@ -1191,7 +1193,6 @@ declare module "jriapp_shared/collection/base" {
         protected _onFillEnd(args: ICollFillArgs<TItem>): void;
         protected _onItemAdding(item: TItem): void;
         protected _onItemAdded(item: TItem): void;
-        protected _createNew(): TItem;
         protected _attach(item: TItem, itemPos?: number): number;
         protected _onRemoved(item: TItem, pos: number): void;
         protected _onPageSizeChanged(): void;
@@ -1199,7 +1200,6 @@ declare module "jriapp_shared/collection/base" {
         protected _onPageChanged(): void;
         protected _setCurrentItem(v: TItem): void;
         protected _clearItems(items: TItem[]): void;
-        isHasProp(prop: string): boolean;
         protected _getEditingItem(): TItem;
         protected _getStrValue(val: any, fieldInfo: IFieldInfo): string;
         protected _onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
@@ -1209,12 +1209,15 @@ declare module "jriapp_shared/collection/base" {
         protected _validateItemField(item: TItem, fieldName: string): IValidationInfo;
         protected _onItemDeleting(args: ICancellableArgs<TItem>): boolean;
         protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
+        protected abstract _createNew(): TItem;
         _setIsLoading(v: boolean): void;
         _getInternal(): IInternalCollMethods<TItem>;
         _getSortFn(fieldNames: string[], sortOrder: SORT_ORDER): (a: any, b: any) => number;
+        isHasProp(prop: string): boolean;
         getFieldInfo(fieldName: string): IFieldInfo;
         getFieldNames(): string[];
-        getFieldInfos(): IFieldInfo[];
+        abstract getFieldMap(): IIndexer<IFieldInfo>;
+        abstract getFieldInfos(): IFieldInfo[];
         cancelEdit(): void;
         endEdit(): void;
         getItemsWithErrors(): TItem[];
@@ -1352,7 +1355,8 @@ declare module "jriapp_shared/collection/item" {
     }
 }
 declare module "jriapp_shared/collection/list" {
-    import { ICollectionItem, IPropInfo } from "jriapp_shared/collection/int";
+    import { IIndexer } from "jriapp_shared/int";
+    import { ICollectionItem, IPropInfo, IFieldInfo } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
     import { ItemAspect } from "jriapp_shared/collection/aspect";
     export interface IListItem extends ICollectionItem {
@@ -1370,13 +1374,17 @@ declare module "jriapp_shared/collection/list" {
         readonly list: BaseList<TItem, TObj>;
     }
     export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
+        private _fieldMap;
+        private _fieldInfos;
         constructor(props: IPropInfo[]);
         abstract itemFactory(aspect: ListItemAspect<TItem, TObj>): TItem;
         private _updateFieldMap(props);
         protected _attach(item: TItem): number;
-        protected _createNew(): TItem;
         protected createItem(obj?: TObj): TItem;
         protected _getNewKey(): string;
+        protected _createNew(): TItem;
+        getFieldMap(): IIndexer<IFieldInfo>;
+        getFieldInfos(): IFieldInfo[];
         fillItems(objArray: TObj[], clearAll?: boolean): void;
         getNewItems(): TItem[];
         resetStatus(): void;

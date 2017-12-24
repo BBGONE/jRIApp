@@ -33,8 +33,7 @@ export class MultyLineContent extends BasicContent {
         if (!!view) {
             this.lfScope.addObj(view);
         }
-        const bindingInfo = this.options.bindingInfo;
-        const options = getBindingOption(true, bindingInfo, view, this.dataContext, "value", this.getConverter(true), this.getParam(true));
+        const options = getBindingOption(true, this.options.fieldName, view, this.dataContext, "value", this.getConverter(true), this.getParam(true));
         this.lfScope.addObj(this.app.bind(options));
         return view;
     }
@@ -46,8 +45,7 @@ export class MultyLineContent extends BasicContent {
         if (!!view) {
             this.lfScope.addObj(view);
         }
-        const bindingInfo = this.options.bindingInfo;
-        const options = getBindingOption(false, bindingInfo, view, this.dataContext, "value", this.getConverter(false), this.getParam(false));
+        const options = getBindingOption(false, this.options.fieldName, view, this.dataContext, "value", this.getConverter(false), this.getParam(false));
         this.lfScope.addObj(this.app.bind(options));
         return view;
     }

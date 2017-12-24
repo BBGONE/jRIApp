@@ -3,7 +3,7 @@ import {
     Utils
 } from "jriapp_shared";
 import {
-    IContentOptions, ITemplateInfo, IBindingInfo
+    IContentOptions, ITemplateInfo
 } from "jriapp/int";
 import {
     Parser
@@ -31,7 +31,6 @@ export function parseContentAttr(contentAttr: string): IContentOptions {
     const contentOptions: IContentOptions = {
         name: null,
         templateInfo: null,
-        bindingInfo: null,
         displayInfo: null,
         fieldName: null,
         options: null
@@ -45,18 +44,6 @@ export function parseContentAttr(contentAttr: string): IContentOptions {
     }
     const attr: IDataContentAttr = tempOpts[0];
     if (!attr.template && !!attr.fieldName) {
-        const bindInfo: IBindingInfo = {
-            target: null,
-            source: null,
-            targetPath: null,
-            sourcePath: attr.fieldName,
-            mode: "OneWay",
-            converter: null,
-            param: null,
-            isEval: false
-        };
-
-        contentOptions.bindingInfo = bindInfo;
         contentOptions.displayInfo = attr.css;
         contentOptions.fieldName = attr.fieldName;
         if (!!attr.name) {

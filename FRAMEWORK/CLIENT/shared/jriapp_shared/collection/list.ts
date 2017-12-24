@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils } from "../utils/utils";
 import { ERRS } from "../lang";
-
+import { IIndexer } from "../int";
 import {
     COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER, ITEM_STATUS
 } from "./const";
 import {
-    ICollectionItem, IPropInfo, PROP_NAME
+    ICollectionItem, IPropInfo, PROP_NAME, IFieldInfo
 } from "./int";
 import { CollUtils } from "./utils";
 import { BaseCollection } from "./base";
@@ -82,8 +82,14 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
 }
 
 export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
+    private _fieldMap: IIndexer<IFieldInfo>;
+    private _fieldInfos: IFieldInfo[];
+
     constructor(props: IPropInfo[]) {
         super();
+        this._fieldMap = {};
+        this._fieldInfos = [];
+
         if (!!props) {
             this._updateFieldMap(props);
         }
@@ -116,10 +122,6 @@ export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollec
         }
         return super._attach(item);
     }
-    // override
-    protected _createNew(): TItem {
-        return this.createItem(null);
-    }
     protected createItem(obj?: TObj): TItem {
         const isNew = !obj, vals: any = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj,
         key = this._getNewKey();
@@ -131,6 +133,18 @@ export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollec
         const key = "clkey_" + this._newKey;
         this._newKey += 1;
         return key;
+    }
+    // override
+    protected _createNew(): TItem {
+        return this.createItem(null);
+    }
+    // override
+    getFieldMap(): IIndexer<IFieldInfo> {
+        return this._fieldMap;
+    }
+    // override
+    getFieldInfos(): IFieldInfo[] {
+        return this._fieldInfos;
     }
     fillItems(objArray: TObj[], clearAll?: boolean) {
         const self = this, newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];

@@ -46,7 +46,7 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
         };
         super(opts);
         const self = this;
-
+        this._parentDebounce = new Debounce(350);
         this._getParent = () => {
             if (self.getIsStateDirty()) {
                 return null;
@@ -54,23 +54,23 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
             return parentItem;
         };
         this._setParent = (v: IEntityItem) => {
-            if (parentItem !== v) {
-                parentItem = v;
-                self.objEvents.raiseProp(PROP_NAME.parentItem);
-            }
             if (self.getIsStateDirty()) {
                 return;
             }
-            if (self.items.length > 0) {
-                self.clear();
-                self._onViewRefreshed({});
-            }
+            if (parentItem !== v) {
+                parentItem = v;
 
-            self._parentDebounce.enque(() => {
-                self._refresh(COLL_CHANGE_REASON.None);
-            });
+                if (self.items.length > 0) {
+                    self.clear();
+                    self._onViewRefreshed({});
+                }
+
+                self._parentDebounce.enque(() => {
+                    return self._refresh(COLL_CHANGE_REASON.None);
+                });
+                self.objEvents.raiseProp(PROP_NAME.parentItem);
+            }
         };
-        this._parentDebounce = new Debounce(350);
         this._association = assoc;
         if (!!parentItem && !options.explicitRefresh) {
             const queue = utils.defer.getTaskQueue();
@@ -85,13 +85,12 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
         }
         this.setDisposing();
         this._setParent(null);
-        this._parentDebounce.dispose();
-        this._parentDebounce = null;
         this._association = null;
+        this._parentDebounce.dispose();
         super.dispose();
     }
     toString() {
-        return (!!this._association) ? ("ChildDataView for " + this._association.toString()) : "ChildDataView";
+        return !this._association ? "ChildDataView" : ("ChildDataView for " + this._association.toString());
     }
     get parentItem() {
         return this._getParent();

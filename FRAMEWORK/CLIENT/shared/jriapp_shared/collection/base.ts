@@ -6,8 +6,7 @@ import {
 import { IFieldInfo } from "./int";
 import { IPromise } from "../utils/ideferred";
 import {
-    IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler,
-    IBaseObject, TPriority
+    IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject, TPriority
 } from "../int";
 import { BaseObject }  from "../object";
 import { ERRS } from "../lang";
@@ -149,8 +148,6 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     protected _itemsByKey: IIndexer<TItem>;
     protected _currentPos: number;
     protected _newKey: number;
-    protected _fieldMap: IIndexer<IFieldInfo>;
-    protected _fieldInfos: IFieldInfo[];
     protected _errors: Errors<TItem>;
     protected _pkInfo: IFieldInfo[];
     protected _isUpdating: boolean;
@@ -174,8 +171,6 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this._itemsByKey = {};
         this._currentPos = -1;
         this._newKey = 0;
-        this._fieldMap = {};
-        this._fieldInfos = [];
         this._errors = new Errors(this);
         this._pkInfo = null;
         this._waitQueue = new WaitQueue(this);
@@ -359,7 +354,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         if (!!this._pkInfo) {
             return this._pkInfo;
         }
-        const fldMap = this._fieldMap, pk: IFieldInfo[] = [];
+        const fldMap = this.getFieldMap(), pk: IFieldInfo[] = [];
         coreUtils.forEachProp(fldMap, (fldName) => {
             if (fldMap[fldName].isPrimaryKey > 0) {
                 pk.push(fldMap[fldName]);
@@ -413,9 +408,6 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     protected _onItemAdded(item: TItem) {
         const args: IItemAddedArgs<TItem> = { item: item, isAddNewHandled: false };
         this.objEvents.raise(COLL_EVENTS.item_added, args);
-    }
-    protected _createNew(): TItem {
-        throw new Error("_createNew Not implemented");
     }
     protected _attach(item: TItem, itemPos?: number) {
         if (!!this._itemsByKey[item._key]) {
@@ -516,15 +508,6 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             item.dispose();
         });
     }
-    // override
-    isHasProp(prop: string) {
-        // first check for indexed property name
-        if (strUtils.startsWith(prop, "[")) {
-            const res = sys.getProp(this, prop);
-            return !checks.isUndefined(res);
-        }
-        return super.isHasProp(prop);
-    }
     protected _getEditingItem() {
         return this._EditingItem;
     }
@@ -609,6 +592,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             });
         }
     }
+    protected abstract _createNew(): TItem;
     _setIsLoading(v: boolean) {
         if (this._isLoading !== v) {
             this._isLoading = v;
@@ -656,9 +640,18 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             return res;
         };
     }
+    // override
+    isHasProp(prop: string) {
+        // first check for indexed property name
+        if (strUtils.startsWith(prop, "[")) {
+            const res = sys.getProp(this, prop);
+            return !checks.isUndefined(res);
+        }
+        return super.isHasProp(prop);
+    }
     getFieldInfo(fieldName: string): IFieldInfo {
-        const parts = fieldName.split(".");
-        let fld = this._fieldMap[parts[0]];
+        const parts = fieldName.split("."), fieldMap = this.getFieldMap();
+        let fld = fieldMap[parts[0]];
         if (parts.length === 1) {
             return fld;
         }
@@ -677,9 +670,8 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             return f.fieldName;
         });
     }
-    getFieldInfos(): IFieldInfo[] {
-        return this._fieldInfos;
-    }
+    abstract getFieldMap(): IIndexer<IFieldInfo>;
+    abstract getFieldInfos(): IFieldInfo[];
     cancelEdit() {
         if (this.isEditing) {
             this._EditingItem._aspect.cancelEdit();
@@ -923,8 +915,6 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this._waitQueue.dispose();
         this._waitQueue = null;
         this.clear();
-        this._fieldMap = {};
-        this._fieldInfos = [];
         super.dispose();
     }
     waitForNotLoading(callback: () => void, groupName: string) {
@@ -938,7 +928,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         });
     }
     toString() {
-        return "Collection";
+        return "BaseCollection";
     }
     get errors() { return this._errors; }
     get options() { return this._options; }

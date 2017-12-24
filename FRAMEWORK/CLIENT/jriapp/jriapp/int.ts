@@ -253,7 +253,6 @@ export interface IContentOptions {
     readOnly?: boolean;
     initContentFn?: (content: IExternallyCachable) => void;
     fieldInfo?: IFieldInfo;
-    bindingInfo?: IBindingInfo;
     displayInfo?: { displayCss?: string; editCss?: string; };
     templateInfo?: ITemplateInfo;
     fieldName?: string;

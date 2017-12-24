@@ -5,7 +5,6 @@ import {
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { BINDING_MODE } from "jriapp/const";
 import {
     IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions,
     IBindingInfo, IBindingOptions, IApplication, IConverter, IElView
@@ -32,15 +31,19 @@ export function getView(el: HTMLElement, viewInfo: { name: string; options: IVie
     return factory.createElView(viewInfo);
 }
 
-export function getBindingOption(isEdit: boolean, bindingInfo: IBindingInfo, target: IBaseObject, dataContext: any,
-    targetPath: string, converter: IConverter = null, param: any= null): IBindingOptions {
-    const options: IBindingOptions = getBindingOptions(bindingInfo, target, dataContext);
-    if (isEdit) {
-        options.mode = BINDING_MODE.TwoWay;
-    } else {
-        options.mode = BINDING_MODE.OneWay;
-    }
-
+export function getBindingOption(isEdit: boolean, fieldName: string, target: IBaseObject, dataContext: any,
+    targetPath: string, converter: IConverter = null, param: any = null): IBindingOptions {
+    const bindInfo: IBindingInfo = {
+        target: null,
+        source: null,
+        targetPath: null,
+        sourcePath: fieldName,
+        mode: isEdit ? "TwoWay" : "OneWay",
+        converter: null,
+        param: null,
+        isEval: false
+    };
+    const options: IBindingOptions = getBindingOptions(bindInfo, target, dataContext);
     if (!!targetPath) {
         options.targetPath = targetPath;
     }
@@ -196,8 +199,7 @@ export class BasicContent extends BaseObject implements IContent {
         if (!!view) {
             this.lfScope.addObj(view);
         }
-        const bindingInfo = this.options.bindingInfo;
-        const options = getBindingOption(true, bindingInfo, view, this.dataContext, "value", this.getConverter(true), this.getParam(true));
+        const options = getBindingOption(true, this.options.fieldName, view, this.dataContext, "value", this.getConverter(true), this.getParam(true));
         this._lfScope.addObj(this.app.bind(options));
         return view;
     }
@@ -208,14 +210,13 @@ export class BasicContent extends BaseObject implements IContent {
         if (!!view) {
             this.lfScope.addObj(view);
         }
-        const bindingInfo = this.options.bindingInfo;
-        const options = getBindingOption(false, bindingInfo, view, this.dataContext, "value", this.getConverter(false), this.getParam(false));
+        const options = getBindingOption(false, this.options.fieldName, view, this.dataContext, "value", this.getConverter(false), this.getParam(false));
         this._lfScope.addObj(this.app.bind(options));
         return view;
     }
     protected beforeCreateView(): boolean {
-        this.cleanUp();      
-        return !!this._options.bindingInfo;
+        this.cleanUp();
+        return !!this._options.fieldName;
     }
     protected createView(): void {
         let view: IContentView = null;

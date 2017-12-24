@@ -266,7 +266,6 @@ declare module "jriapp/int" {
         readOnly?: boolean;
         initContentFn?: (content: IExternallyCachable) => void;
         fieldInfo?: IFieldInfo;
-        bindingInfo?: IBindingInfo;
         displayInfo?: {
             displayCss?: string;
             editCss?: string;
@@ -1007,5 +1006,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.7.7";
+    export const VERSION = "2.7.8";
 }

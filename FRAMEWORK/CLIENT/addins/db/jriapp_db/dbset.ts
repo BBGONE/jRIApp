@@ -87,6 +87,8 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     private _dbContext: TDbContext;
     private _isSubmitOnDelete: boolean;
     private _trackAssoc: { [name: string]: IAssociationInfo; };
+    private _fieldMap: IIndexer<IFieldInfo>;
+    private _fieldInfos: IFieldInfo[];
     private _trackAssocMap: { [childFieldName: string]: string[]; };
     private _childAssocMap: { [fieldName: string]: IAssociationInfo; };
     private _parentAssocMap: { [fieldName: string]: IAssociationInfo; };
@@ -104,8 +106,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
 
     constructor(opts: IDbSetConstuctorOptions) {
         super();
-        const self = this, dbContext = opts.dbContext, dbSetInfo = opts.dbSetInfo,
-            fieldInfos = dbSetInfo.fieldInfos;
+        const self = this, dbContext = opts.dbContext, dbSetInfo = opts.dbSetInfo, fieldInfos = dbSetInfo.fieldInfos;
         this._dbContext = <TDbContext>dbContext;
         this._dbSetName = dbSetInfo.dbSetName;
         this.options.enablePaging = dbSetInfo.enablePaging;
@@ -114,6 +115,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         this._isSubmitOnDelete = false;
         this._navfldMap = {};
         this._calcfldMap = {};
+        this._fieldMap = {};
         this._fieldInfos = fieldInfos;
         this._pkFields = colUtils.getPKFields(fieldInfos);
         this._isPageFilled = false;
@@ -776,6 +778,14 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             }
         }, names);
         return names;
+    }
+    // override
+    getFieldMap(): IIndexer<IFieldInfo> {
+        return this._fieldMap;
+    }
+    // override
+    getFieldInfos(): IFieldInfo[] {
+        return this._fieldInfos;
     }
     createEntityFromObj(obj: TObj, key?: string): TItem {
         const isNew = !obj, vals: any = colUtils.objToVals(this.getFieldInfos(), obj),

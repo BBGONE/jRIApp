@@ -602,6 +602,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             _this._isSubmitOnDelete = false;
             _this._navfldMap = {};
             _this._calcfldMap = {};
+            _this._fieldMap = {};
             _this._fieldInfos = fieldInfos;
             _this._pkFields = colUtils.getPKFields(fieldInfos);
             _this._isPageFilled = false;
@@ -1205,6 +1206,12 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 }
             }, names);
             return names;
+        };
+        DbSet.prototype.getFieldMap = function () {
+            return this._fieldMap;
+        };
+        DbSet.prototype.getFieldInfos = function () {
+            return this._fieldInfos;
         };
         DbSet.prototype.createEntityFromObj = function (obj, key) {
             var isNew = !obj, vals = colUtils.objToVals(this.getFieldInfos(), obj), _key = isNew ? this._getNewKey() : (!key ? this._getKeyValue(vals) : key);
@@ -3666,7 +3673,7 @@ define("jriapp_db/int", ["require", "exports"], function (require, exports) {
 define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base"], function (require, exports, jriapp_shared_9, base_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_9.Utils, _async = utils.defer, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr, ERROR = utils.err, sys = utils.sys;
+    var utils = jriapp_shared_9.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr, ERROR = utils.err, sys = utils.sys;
     var VIEW_EVENTS;
     (function (VIEW_EVENTS) {
         VIEW_EVENTS["refreshed"] = "view_refreshed";
@@ -3689,24 +3696,14 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }
             _this._refreshDebounce = new jriapp_shared_9.Debounce();
             _this._dataSource = opts.dataSource;
-            _this._fnFilter = !opts.fn_filter ? null : opts.fn_filter;
-            _this._fnSort = opts.fn_sort;
-            _this._fnItemsProvider = opts.fn_itemsProvider;
+            _this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
+            _this._fn_sort = opts.fn_sort;
+            _this._fn_itemsProvider = opts.fn_itemsProvider;
             _this._isAddingNew = false;
-            var self = _this, ds = _this._dataSource;
-            ds.getFieldNames().forEach(function (name) {
-                self._fieldMap[name] = ds.getFieldInfo(name);
-            });
             _this._bindDS();
             return _this;
         }
         DataView.prototype._clearItems = function (items) {
-        };
-        DataView.prototype.addOnViewRefreshed = function (fn, nmspace) {
-            this.objEvents.on("view_refreshed", fn, nmspace);
-        };
-        DataView.prototype.offOnViewRefreshed = function (nmspace) {
-            this.objEvents.off("view_refreshed", nmspace);
         };
         DataView.prototype._filterForPaging = function (items) {
             var skip = 0, take = 0, pos = -1, cnt = -1;
@@ -3729,6 +3726,12 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             this.objEvents.raise("view_refreshed", args);
         };
         DataView.prototype._refresh = function (reason) {
+            var _this = this;
+            return this._refreshDebounce.enque(function () {
+                _this._refreshSync(reason);
+            });
+        };
+        DataView.prototype._refreshSync = function (reason) {
             if (this.getIsStateDirty()) {
                 return;
             }
@@ -3740,17 +3743,17 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                     this._onViewRefreshed({});
                     return;
                 }
-                if (!!this._fnItemsProvider) {
-                    items = this._fnItemsProvider(ds);
+                if (!!this._fn_itemsProvider) {
+                    items = this._fn_itemsProvider(ds);
                 }
                 else {
                     items = ds.items;
                 }
-                if (!!this._fnFilter) {
-                    items = items.filter(this._fnFilter);
+                if (!!this._fn_filter) {
+                    items = items.filter(this._fn_filter);
                 }
-                if (!!this._fnSort) {
-                    items = items.sort(this._fnSort);
+                if (!!this._fn_sort) {
+                    items = items.sort(this._fn_sort);
                 }
                 this._fillItems({ items: items, reason: reason, clear: true, isAppend: false });
                 this._onViewRefreshed({});
@@ -3762,7 +3765,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
         DataView.prototype._fillItems = function (data) {
             data = coreUtils.extend({
                 items: [],
-                reason: 0,
+                reason: 3,
                 clear: true,
                 isAppend: false
             }, data);
@@ -3814,12 +3817,12 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             var self = this;
             switch (args.changeType) {
                 case 2:
-                    this._refresh(0);
+                    this._refresh(3);
                     break;
                 case 1:
                     {
                         if (!this._isAddingNew) {
-                            var items = (!self._fnFilter) ? args.items : args.items.filter(self._fnFilter);
+                            var items = (!self._fn_filter) ? args.items : args.items.filter(self._fn_filter);
                             if (items.length > 0) {
                                 self.appendItems(items);
                             }
@@ -3852,11 +3855,11 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }
         };
         DataView.prototype._onDSStatusChanged = function (sender, args) {
-            var self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, canFilter = !!self._fnFilter;
+            var self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, canFilter = !!self._fn_filter;
             if (!!self._itemsByKey[key]) {
                 self._onItemStatusChanged(item, oldStatus);
                 if (canFilter) {
-                    var isOk = self._fnFilter(item);
+                    var isOk = self._fn_filter(item);
                     if (!isOk) {
                         self.removeItem(item);
                     }
@@ -3864,7 +3867,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }
             else {
                 if (canFilter) {
-                    var isOk = self._fnFilter(item);
+                    var isOk = self._fn_filter(item);
                     if (isOk) {
                         self.appendItems([item]);
                     }
@@ -3884,11 +3887,11 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }, self.uniqueID, null, 1);
             ds.addOnEndEdit(function (sender, args) {
                 var isOk;
-                var item = args.item, canFilter = !!self._fnFilter;
+                var item = args.item, canFilter = !!self._fn_filter;
                 if (!!self._itemsByKey[item._key]) {
                     self._onEditing(item, false, args.isCanceled);
                     if (!args.isCanceled && canFilter) {
-                        isOk = self._fnFilter(item);
+                        isOk = self._fn_filter(item);
                         if (!isOk) {
                             self.removeItem(item);
                         }
@@ -3896,7 +3899,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 }
                 else {
                     if (!args.isCanceled && canFilter) {
-                        isOk = self._fnFilter(item);
+                        isOk = self._fn_filter(item);
                         if (isOk) {
                             self.appendItems([item]);
                         }
@@ -3954,13 +3957,38 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             this._refresh(1);
         };
         DataView.prototype._clear = function (reason, oper) {
+            if (oper === void 0) { oper = 0; }
             _super.prototype._clear.call(this, reason, oper);
             if (reason !== 1) {
                 this.pageIndex = 0;
             }
+            if (reason !== 1 && reason !== 2) {
+                this.totalCount = 0;
+            }
+        };
+        DataView.prototype._createNew = function () {
+            throw new Error("Not implemented");
+        };
+        DataView.prototype.getFieldNames = function () {
+            return this._dataSource.getFieldNames();
+        };
+        DataView.prototype.getFieldInfo = function (fieldName) {
+            return this._dataSource.getFieldInfo(fieldName);
+        };
+        DataView.prototype.getFieldInfos = function () {
+            return this._dataSource.getFieldInfos();
+        };
+        DataView.prototype.getFieldMap = function () {
+            return this._dataSource.getFieldMap();
         };
         DataView.prototype._getStrValue = function (val, fieldInfo) {
             return this._dataSource._getInternal().getStrValue(val, fieldInfo);
+        };
+        DataView.prototype.addOnViewRefreshed = function (fn, nmspace) {
+            this.objEvents.on("view_refreshed", fn, nmspace);
+        };
+        DataView.prototype.offOnViewRefreshed = function (nmspace) {
+            this.objEvents.off("view_refreshed", nmspace);
         };
         DataView.prototype.appendItems = function (items) {
             if (this.getIsStateDirty()) {
@@ -4004,21 +4032,17 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }
         };
         DataView.prototype.sortLocal = function (fieldNames, sortOrder) {
-            var _this = this;
-            return _async.delay(function () { _this.fn_sort = _this._getSortFn(fieldNames, sortOrder); });
+            this._fn_sort = this._getSortFn(fieldNames, sortOrder);
+            return this._refresh(2);
         };
         DataView.prototype.clear = function () {
-            this._clear(0, 0);
-            this.totalCount = 0;
+            this._clear(3, 0);
         };
         DataView.prototype.refresh = function () {
-            var _this = this;
-            this._refreshDebounce.enque(function () {
-                _this._refresh(0);
-            });
+            this._refresh(3);
         };
         DataView.prototype.syncRefresh = function () {
-            this._refresh(0);
+            this._refreshSync(3);
         };
         DataView.prototype.dispose = function () {
             if (this.getIsDisposed()) {
@@ -4028,8 +4052,8 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             this._refreshDebounce.dispose();
             this._unbindDS();
             this._dataSource = null;
-            this._fnFilter = null;
-            this._fnSort = null;
+            this._fn_filter = null;
+            this._fn_sort = null;
             _super.prototype.dispose.call(this);
         };
         Object.defineProperty(DataView.prototype, "errors", {
@@ -4040,12 +4064,16 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "dataSource", {
-            get: function () { return this._dataSource; },
+            get: function () {
+                return this._dataSource;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "isPagingEnabled", {
-            get: function () { return this.options.enablePaging; },
+            get: function () {
+                return this.options.enablePaging;
+            },
             set: function (v) {
                 if (this.options.enablePaging !== v) {
                     this.options.enablePaging = v;
@@ -4057,15 +4085,19 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "permissions", {
-            get: function () { return this._dataSource.permissions; },
+            get: function () {
+                return this._dataSource.permissions;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "fn_filter", {
-            get: function () { return this._fnFilter; },
+            get: function () {
+                return this._fn_filter;
+            },
             set: function (v) {
-                if (this._fnFilter !== v) {
-                    this._fnFilter = v;
+                if (this._fn_filter !== v) {
+                    this._fn_filter = v;
                     this._refresh(0);
                 }
             },
@@ -4073,10 +4105,12 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "fn_sort", {
-            get: function () { return this._fnSort; },
+            get: function () {
+                return this._fn_sort;
+            },
             set: function (v) {
-                if (this._fnSort !== v) {
-                    this._fnSort = v;
+                if (this._fn_sort !== v) {
+                    this._fn_sort = v;
                     this._refresh(2);
                 }
             },
@@ -4084,16 +4118,21 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "fn_itemsProvider", {
-            get: function () { return this._fnItemsProvider; },
+            get: function () {
+                return this._fn_itemsProvider;
+            },
             set: function (v) {
-                if (this._fnItemsProvider !== v) {
-                    this._fnItemsProvider = v;
-                    this._refresh(0);
+                if (this._fn_itemsProvider !== v) {
+                    this._fn_itemsProvider = v;
+                    this._refresh(3);
                 }
             },
             enumerable: true,
             configurable: true
         });
+        DataView.prototype.toString = function () {
+            return !this.dataSource ? "DataView" : ("DataView For " + this.dataSource.toString());
+        };
         return DataView;
     }(base_2.BaseCollection));
     exports.DataView = DataView;
@@ -4125,6 +4164,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             };
             _this = _super.call(this, opts) || this;
             var self = _this;
+            _this._parentDebounce = new jriapp_shared_10.Debounce(350);
             _this._getParent = function () {
                 if (self.getIsStateDirty()) {
                     return null;
@@ -4132,22 +4172,21 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
                 return parentItem;
             };
             _this._setParent = function (v) {
-                if (parentItem !== v) {
-                    parentItem = v;
-                    self.objEvents.raiseProp("parentItem");
-                }
                 if (self.getIsStateDirty()) {
                     return;
                 }
-                if (self.items.length > 0) {
-                    self.clear();
-                    self._onViewRefreshed({});
+                if (parentItem !== v) {
+                    parentItem = v;
+                    if (self.items.length > 0) {
+                        self.clear();
+                        self._onViewRefreshed({});
+                    }
+                    self._parentDebounce.enque(function () {
+                        return self._refresh(0);
+                    });
+                    self.objEvents.raiseProp("parentItem");
                 }
-                self._parentDebounce.enque(function () {
-                    self._refresh(0);
-                });
             };
-            _this._parentDebounce = new jriapp_shared_10.Debounce(350);
             _this._association = assoc;
             if (!!parentItem && !options.explicitRefresh) {
                 var queue = utils.defer.getTaskQueue();
@@ -4163,13 +4202,12 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             }
             this.setDisposing();
             this._setParent(null);
-            this._parentDebounce.dispose();
-            this._parentDebounce = null;
             this._association = null;
+            this._parentDebounce.dispose();
             _super.prototype.dispose.call(this);
         };
         ChildDataView.prototype.toString = function () {
-            return (!!this._association) ? ("ChildDataView for " + this._association.toString()) : "ChildDataView";
+            return !this._association ? "ChildDataView" : ("ChildDataView for " + this._association.toString());
         };
         Object.defineProperty(ChildDataView.prototype, "parentItem", {
             get: function () {

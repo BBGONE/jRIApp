@@ -3,7 +3,7 @@ import {
     SORT_ORDER, COLL_CHANGE_TYPE, COLL_CHANGE_REASON, COLL_CHANGE_OPER
 } from "jriapp_shared/collection/const";
 import {
-    IPromise, TEventHandler, TPriority, LocaleERRS as ERRS, Debounce, Utils
+    IPromise, TEventHandler, TPriority, LocaleERRS as ERRS, Debounce, Utils, IIndexer
 } from "jriapp_shared";
 import {
     ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IFieldInfo, IPermissions
@@ -11,8 +11,7 @@ import {
 import { BaseCollection, Errors } from "jriapp_shared/collection/base";
 import { PROP_NAME } from "./const";
 
-const utils = Utils, _async = utils.defer, checks = utils.check,
-    strUtils = utils.str, coreUtils = utils.core,
+const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     arrHelper = utils.arr, ERROR = utils.err, sys = utils.sys;
 
 const enum VIEW_EVENTS {
@@ -28,9 +27,9 @@ export interface IDataViewOptions<TItem extends ICollectionItem> {
 
 export class DataView<TItem extends ICollectionItem> extends BaseCollection<TItem> {
     private _dataSource: ICollection<TItem>;
-    private _fnFilter: (item: TItem) => boolean;
-    private _fnSort: (item1: TItem, item2: TItem) => number;
-    private _fnItemsProvider: (ds: ICollection<TItem>) => TItem[];
+    private _fn_filter: (item: TItem) => boolean;
+    private _fn_sort: (item1: TItem, item2: TItem) => number;
+    private _fn_itemsProvider: (ds: ICollection<TItem>) => TItem[];
     private _isAddingNew: boolean;
     private _refreshDebounce: Debounce;
 
@@ -51,25 +50,15 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         }
         this._refreshDebounce = new Debounce();
         this._dataSource = opts.dataSource;
-        this._fnFilter = !opts.fn_filter ? null : opts.fn_filter;
-        this._fnSort = opts.fn_sort;
-        this._fnItemsProvider = opts.fn_itemsProvider;
+        this._fn_filter = !opts.fn_filter ? null : opts.fn_filter;
+        this._fn_sort = opts.fn_sort;
+        this._fn_itemsProvider = opts.fn_itemsProvider;
         this._isAddingNew = false;
-        const self = this, ds = this._dataSource;
-        ds.getFieldNames().forEach((name) => {
-            self._fieldMap[name] = ds.getFieldInfo(name);
-        });
         this._bindDS();
     }
     // override
     protected _clearItems(items: TItem[]) {
         // noop
-    }
-    addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string) {
-        this.objEvents.on(VIEW_EVENTS.refreshed, fn, nmspace);
-    }
-    offOnViewRefreshed(nmspace?: string) {
-        this.objEvents.off(VIEW_EVENTS.refreshed, nmspace);
     }
     protected _filterForPaging(items: TItem[]) {
         let skip = 0, take = 0, pos = -1, cnt = -1;
@@ -91,7 +80,12 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     protected _onViewRefreshed(args: {}) {
         this.objEvents.raise(VIEW_EVENTS.refreshed, args);
     }
-    protected _refresh(reason: COLL_CHANGE_REASON): void {
+    protected _refresh(reason: COLL_CHANGE_REASON): IPromise<any> {
+        return this._refreshDebounce.enque(() => {
+            this._refreshSync(reason);
+        });
+    }
+    protected _refreshSync(reason: COLL_CHANGE_REASON): void {
         if (this.getIsStateDirty()) {
             return;
         }
@@ -104,17 +98,18 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                 return;
             }
 
-            if (!!this._fnItemsProvider) {
-                items = this._fnItemsProvider(ds);
+            if (!!this._fn_itemsProvider) {
+                items = this._fn_itemsProvider(ds);
             } else {
                 items = ds.items;
             }
 
-            if (!!this._fnFilter) {
-                items = items.filter(this._fnFilter);
+            if (!!this._fn_filter) {
+                items = items.filter(this._fn_filter);
             }
-            if (!!this._fnSort) {
-                items = items.sort(this._fnSort);
+
+            if (!!this._fn_sort) {
+                items = items.sort(this._fn_sort);
             }
             this._fillItems({ items: items, reason: reason, clear: true, isAppend: false });
             this._onViewRefreshed({});
@@ -130,7 +125,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     }): TItem[] {
         data = coreUtils.extend({
             items: [],
-            reason: COLL_CHANGE_REASON.None,
+            reason: COLL_CHANGE_REASON.Refresh,
             clear: true,
             isAppend: false
         }, data);
@@ -190,12 +185,12 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         const self = this;
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
-                this._refresh(COLL_CHANGE_REASON.None);
+                this._refresh(COLL_CHANGE_REASON.Refresh);
                 break;
             case COLL_CHANGE_TYPE.Add:
                 {
                     if (!this._isAddingNew) {
-                        const items: TItem[] = (!self._fnFilter) ? args.items : args.items.filter(self._fnFilter);
+                        const items: TItem[] = (!self._fn_filter) ? args.items : args.items.filter(self._fn_filter);
                         if (items.length > 0) {
                             self.appendItems(items);
                         }
@@ -228,19 +223,19 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         }
     }
     protected _onDSStatusChanged(sender: any, args: ICollItemStatusArgs<TItem>) {
-        const self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, canFilter = !!self._fnFilter;
+        const self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, canFilter = !!self._fn_filter;
 
         if (!!self._itemsByKey[key]) {
             self._onItemStatusChanged(item, oldStatus);
             if (canFilter) {
-                const isOk = self._fnFilter(item);
+                const isOk = self._fn_filter(item);
                 if (!isOk) {
                     self.removeItem(item);
                 }
             }
         } else {
             if (canFilter) {
-                const isOk = self._fnFilter(item);
+                const isOk = self._fn_filter(item);
                 if (isOk) {
                     self.appendItems([item]);
                 }
@@ -260,18 +255,18 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         }, self.uniqueID, null, TPriority.AboveNormal);
         ds.addOnEndEdit((sender, args) => {
             let isOk: boolean;
-            const item = args.item, canFilter = !!self._fnFilter;
+            const item = args.item, canFilter = !!self._fn_filter;
             if (!!self._itemsByKey[item._key]) {
                 self._onEditing(item, false, args.isCanceled);
                 if (!args.isCanceled && canFilter) {
-                    isOk = self._fnFilter(item);
+                    isOk = self._fn_filter(item);
                     if (!isOk) {
                         self.removeItem(item);
                     }
                 }
             } else {
                 if (!args.isCanceled && canFilter) {
-                    isOk = self._fnFilter(item);
+                    isOk = self._fn_filter(item);
                     if (isOk) {
                         self.appendItems([item]);
                     }
@@ -328,14 +323,43 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     protected _onPageChanged() {
         this._refresh(COLL_CHANGE_REASON.PageChange);
     }
-    protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
+    protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER = COLL_CHANGE_OPER.None) {
         super._clear(reason, oper);
         if (reason !== COLL_CHANGE_REASON.PageChange) {
             this.pageIndex = 0;
         }
+        if (reason !== COLL_CHANGE_REASON.PageChange && reason !== COLL_CHANGE_REASON.Sorting) {
+            this.totalCount = 0;
+        }
+    }
+    // override
+    protected _createNew(): TItem {
+        throw new Error("Not implemented");
+    }
+    // override
+    getFieldNames(): string[] {
+        return this._dataSource.getFieldNames();
+    }
+    // override
+    getFieldInfo(fieldName: string): IFieldInfo {
+        return this._dataSource.getFieldInfo(fieldName);
+    }
+    // override
+    getFieldInfos(): IFieldInfo[] {
+        return this._dataSource.getFieldInfos();
+    }
+    // override
+    getFieldMap(): IIndexer<IFieldInfo> {
+        return this._dataSource.getFieldMap();
     }
     _getStrValue(val: any, fieldInfo: IFieldInfo): string {
         return (<BaseCollection<TItem>>this._dataSource)._getInternal().getStrValue(val, fieldInfo);
+    }
+    addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string) {
+        this.objEvents.on(VIEW_EVENTS.refreshed, fn, nmspace);
+    }
+    offOnViewRefreshed(nmspace?: string) {
+        this.objEvents.off(VIEW_EVENTS.refreshed, nmspace);
     }
     appendItems(items: TItem[]) {
         if (this.getIsStateDirty()) {
@@ -380,19 +404,17 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         }
     }
     sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
-        return _async.delay(() => { this.fn_sort = this._getSortFn(fieldNames, sortOrder); });
+        this._fn_sort = this._getSortFn(fieldNames, sortOrder);
+        return this._refresh(COLL_CHANGE_REASON.Sorting);
     }
     clear() {
-        this._clear(COLL_CHANGE_REASON.None, COLL_CHANGE_OPER.None);
-        this.totalCount = 0;
+        this._clear(COLL_CHANGE_REASON.Refresh, COLL_CHANGE_OPER.None);
     }
     refresh(): void {
-        this._refreshDebounce.enque(() => {
-            this._refresh(COLL_CHANGE_REASON.None);
-        });
+        this._refresh(COLL_CHANGE_REASON.Refresh);
     }
     syncRefresh(): void {
-        this._refresh(COLL_CHANGE_REASON.None);
+        this._refreshSync(COLL_CHANGE_REASON.Refresh);
     }
     dispose() {
         if (this.getIsDisposed()) {
@@ -402,15 +424,19 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         this._refreshDebounce.dispose();
         this._unbindDS();
         this._dataSource = null;
-        this._fnFilter = null;
-        this._fnSort = null;
+        this._fn_filter = null;
+        this._fn_sort = null;
         super.dispose();
     }
     get errors(): Errors<TItem> {
         return (<BaseCollection<TItem>>this._dataSource).errors;
     }
-    get dataSource(): ICollection<TItem> { return this._dataSource; }
-    get isPagingEnabled(): boolean { return this.options.enablePaging; }
+    get dataSource(): ICollection<TItem> {
+        return this._dataSource;
+    }
+    get isPagingEnabled(): boolean {
+        return this.options.enablePaging;
+    }
     set isPagingEnabled(v) {
         if (this.options.enablePaging !== v) {
             this.options.enablePaging = v;
@@ -418,27 +444,38 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             this._refresh(COLL_CHANGE_REASON.None);
         }
     }
-    get permissions(): IPermissions { return this._dataSource.permissions; }
-    get fn_filter() { return this._fnFilter; }
-    set fn_filter(v: (item: TItem) => boolean) {
-        if (this._fnFilter !== v) {
-            this._fnFilter = v;
+    get permissions(): IPermissions {
+        return this._dataSource.permissions;
+    }
+    get fn_filter(): (item: TItem) => boolean {
+        return this._fn_filter;
+    }
+    set fn_filter(v) {
+        if (this._fn_filter !== v) {
+            this._fn_filter = v;
             this._refresh(COLL_CHANGE_REASON.None);
         }
     }
-    get fn_sort() { return this._fnSort; }
-    set fn_sort(v: (item1: TItem, item2: TItem) => number) {
-        if (this._fnSort !== v) {
-            this._fnSort = v;
+    get fn_sort(): (item1: TItem, item2: TItem) => number {
+        return this._fn_sort;
+    }
+    set fn_sort(v) {
+        if (this._fn_sort !== v) {
+            this._fn_sort = v;
             this._refresh(COLL_CHANGE_REASON.Sorting);
         }
     }
-    get fn_itemsProvider() { return this._fnItemsProvider; }
-    set fn_itemsProvider(v: (ds: BaseCollection<TItem>) => TItem[]) {
-        if (this._fnItemsProvider !== v) {
-            this._fnItemsProvider = v;
-            this._refresh(COLL_CHANGE_REASON.None);
+    get fn_itemsProvider(): (ds: ICollection<TItem>) => TItem[] {
+        return this._fn_itemsProvider;
+    }
+    set fn_itemsProvider(v) {
+        if (this._fn_itemsProvider !== v) {
+            this._fn_itemsProvider = v;
+            this._refresh(COLL_CHANGE_REASON.Refresh);
         }
+    }
+    toString() {
+        return !this.dataSource ? "DataView" : ("DataView For " + this.dataSource.toString()); 
     }
 }
 

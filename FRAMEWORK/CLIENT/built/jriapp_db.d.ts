@@ -149,7 +149,7 @@ declare module "jriapp_db/dataquery" {
 }
 declare module "jriapp_db/dbset" {
     import { SORT_ORDER, COLL_CHANGE_REASON, COLL_CHANGE_OPER, ITEM_STATUS } from "jriapp_shared/collection/const";
-    import { TEventHandler, IBaseObject, IPromise, TPriority } from "jriapp_shared";
+    import { IIndexer, TEventHandler, IBaseObject, IPromise, TPriority } from "jriapp_shared";
     import { IInternalCollMethods, IFieldInfo } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
     import { IFieldName, IEntityItem, IRowInfo, ITrackAssoc, IQueryResponse, IPermissions, IDbSetConstuctorOptions, ICalcFieldImpl, INavFieldImpl, IQueryResult, IRowData, IDbSetLoadedArgs } from "jriapp_db/int";
@@ -191,6 +191,8 @@ declare module "jriapp_db/dbset" {
         private _dbContext;
         private _isSubmitOnDelete;
         private _trackAssoc;
+        private _fieldMap;
+        private _fieldInfos;
         private _trackAssocMap;
         private _childAssocMap;
         private _parentAssocMap;
@@ -247,6 +249,8 @@ declare module "jriapp_db/dbset" {
         protected _onLoaded(items: TItem[]): void;
         protected _destroyQuery(): void;
         protected _getNames(): IFieldName[];
+        getFieldMap(): IIndexer<IFieldInfo>;
+        getFieldInfos(): IFieldInfo[];
         createEntityFromObj(obj: TObj, key?: string): TItem;
         createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem;
         _getInternal(): IInternalDbSetMethods<TItem, TObj>;
@@ -792,7 +796,7 @@ declare module "jriapp_db/int" {
 }
 declare module "jriapp_db/dataview" {
     import { SORT_ORDER, COLL_CHANGE_REASON, COLL_CHANGE_OPER } from "jriapp_shared/collection/const";
-    import { IPromise, TEventHandler } from "jriapp_shared";
+    import { IPromise, TEventHandler, IIndexer } from "jriapp_shared";
     import { ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IFieldInfo, IPermissions } from "jriapp_shared/collection/int";
     import { BaseCollection, Errors } from "jriapp_shared/collection/base";
     export interface IDataViewOptions<TItem extends ICollectionItem> {
@@ -803,18 +807,17 @@ declare module "jriapp_db/dataview" {
     }
     export class DataView<TItem extends ICollectionItem> extends BaseCollection<TItem> {
         private _dataSource;
-        private _fnFilter;
-        private _fnSort;
-        private _fnItemsProvider;
+        private _fn_filter;
+        private _fn_sort;
+        private _fn_itemsProvider;
         private _isAddingNew;
         private _refreshDebounce;
         constructor(options: IDataViewOptions<TItem>);
         protected _clearItems(items: TItem[]): void;
-        addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string): void;
-        offOnViewRefreshed(nmspace?: string): void;
         protected _filterForPaging(items: TItem[]): TItem[];
         protected _onViewRefreshed(args: {}): void;
-        protected _refresh(reason: COLL_CHANGE_REASON): void;
+        protected _refresh(reason: COLL_CHANGE_REASON): IPromise<any>;
+        protected _refreshSync(reason: COLL_CHANGE_REASON): void;
         protected _fillItems(data: {
             items: TItem[];
             reason: COLL_CHANGE_REASON;
@@ -827,8 +830,15 @@ declare module "jriapp_db/dataview" {
         protected _unbindDS(): void;
         protected _checkCurrentChanging(newCurrent: TItem): void;
         protected _onPageChanged(): void;
-        protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
+        protected _clear(reason: COLL_CHANGE_REASON, oper?: COLL_CHANGE_OPER): void;
+        protected _createNew(): TItem;
+        getFieldNames(): string[];
+        getFieldInfo(fieldName: string): IFieldInfo;
+        getFieldInfos(): IFieldInfo[];
+        getFieldMap(): IIndexer<IFieldInfo>;
         _getStrValue(val: any, fieldInfo: IFieldInfo): string;
+        addOnViewRefreshed(fn: TEventHandler<DataView<TItem>, any>, nmspace?: string): void;
+        offOnViewRefreshed(nmspace?: string): void;
         appendItems(items: TItem[]): TItem[];
         addNew(): TItem;
         removeItem(item: TItem): void;
@@ -843,7 +853,8 @@ declare module "jriapp_db/dataview" {
         readonly permissions: IPermissions;
         fn_filter: (item: TItem) => boolean;
         fn_sort: (item1: TItem, item2: TItem) => number;
-        fn_itemsProvider: (ds: BaseCollection<TItem>) => TItem[];
+        fn_itemsProvider: (ds: ICollection<TItem>) => TItem[];
+        toString(): string;
     }
     export type TDataView = DataView<ICollectionItem>;
 }

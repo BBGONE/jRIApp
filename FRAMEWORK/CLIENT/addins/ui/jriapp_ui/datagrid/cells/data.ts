@@ -1,14 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { IContent } from "jriapp/int";
-import { bootstrap } from "jriapp/bootstrap";
 
 import { css } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { DataColumn } from "../columns/data";
 
-const utils = Utils, dom = DomUtils, boot = bootstrap;
+const dom = DomUtils;
 
 export class DataCell extends BaseCell<DataColumn> {
     private _content: IContent;
@@ -29,35 +27,14 @@ export class DataCell extends BaseCell<DataColumn> {
     }
     // init cell's content
     protected _initContent() {
-        const contentOptions = this.column.options.content;
-        if (!contentOptions.fieldInfo && !!contentOptions.fieldName) {
-            contentOptions.fieldInfo = this.item._aspect.getFieldInfo(contentOptions.fieldName);
-            if (!contentOptions.fieldInfo) {
-                throw new Error(utils.str.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, "", contentOptions.fieldName));
-            }
-        }
-        contentOptions.initContentFn = null;
-        try {
-            const contentType = boot.contentFactory.getContentType(contentOptions);
-            if (boot.contentFactory.isExternallyCachable(contentType)) {
-                contentOptions.initContentFn = this.column._getInitContentFn();
-            }
-
-            if (this.grid.isHasEditor) {
-                // disable inrow editing if the grid has an editor
-                contentOptions.readOnly = true;
-            }
-
-            this._content = new contentType({
-                parentEl: this.td,
-                contentOptions: contentOptions,
-                dataContext: this.item,
-                isEditing: this.item._aspect.isEditing
-            });
-            this._content.render();
-        } finally {
-            delete contentOptions.initContentFn;
-        }
+        const contentType = this.column.contentType;
+        this._content = new contentType({
+            parentEl: this.td,
+            contentOptions: this.column.options.content,
+            dataContext: this.item,
+            isEditing: this.item._aspect.isEditing
+        });
+        this._content.render();
     }
     _beginEdit() {
         if (!this._content.isEditing) {
