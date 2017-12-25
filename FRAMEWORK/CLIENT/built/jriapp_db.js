@@ -3721,7 +3721,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
         };
         DataView.prototype._refresh = function (reason) {
             var _this = this;
-            return this._refreshDebounce.enque(function () {
+            this._refreshDebounce.enque(function () {
                 _this._refreshSync(reason);
             });
         };
@@ -4034,7 +4034,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             this._clear(3, 0);
         };
         DataView.prototype.refresh = function () {
-            return this._refresh(3);
+            this._refresh(3);
         };
         DataView.prototype.syncRefresh = function () {
             this._refreshSync(3);

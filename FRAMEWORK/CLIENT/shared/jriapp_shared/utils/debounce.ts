@@ -1,34 +1,28 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IDisposable, TFunc } from "../int";
-import { IPromise, IDeferred } from "./ideferred";
-import { getTaskQueue, createDefer, Promise } from "./deferred";
-import { AbortError } from "../errors";
+import { getTaskQueue } from "./deferred";
 
 export class Debounce implements IDisposable {
     private _timer: number;
     private _interval: number;
     private _fn: TFunc;
-    private _deferred: IDeferred<any>;
 
     constructor(interval: number = 0) {
         this._timer = null;
         this._interval = interval;
         this._fn = null;
-        this._deferred = null;
     }
-    enque(fn: TFunc): IPromise<any> {
+    enque(fn: TFunc): void {
         // important, no error (just return with no action)!!!
         if (this.getIsStateDirty()) {
-            return Promise.reject(new AbortError("cancelled"), false);
+            return;
         }
         if (!fn) {
             throw new Error("Debounce: Invalid Operation");
         }
         // the last wins
         this._fn = fn;
-        if (!this._deferred) {
-            this._deferred = createDefer<any>();
-        }
+
 
         if (!!this._interval && !!this._timer) {
             clearTimeout(this._timer);
@@ -37,22 +31,12 @@ export class Debounce implements IDisposable {
 
         if (!this._timer) {
             const callback = () => {
-                const fn = this._fn, deferred = this._deferred;
+                const fn = this._fn;
                 this._timer = null;
                 this._fn = null;
-                this._deferred = null;
-                try {
-                    if (!!fn && !!deferred) {
-                        deferred.resolve(fn());
-                    } else {
-                        if (!!deferred) {
-                            deferred.reject(new AbortError("cancelled"));
-                        }
-                    }
-                } catch (err) {
-                    if (!!deferred) {
-                        deferred.reject(err);
-                    }
+
+                if (!!fn) {
+                    fn();
                 }
             };
 
@@ -62,19 +46,12 @@ export class Debounce implements IDisposable {
                 this._timer = setTimeout(callback, this._interval);
             }
         }
-        return this._deferred.promise();
     }
-    cancel() {
+    cancel(): void {
         // just set to null
         this._fn = null;
-        const deferred = this._deferred;
-        if (!!deferred) {
-            this._deferred = null;
-            deferred.reject(new AbortError("cancelled"));
-        }
     }
     dispose(): void {
-        this.cancel();
         if (!!this._timer) {
             if (!this._interval) {
                 getTaskQueue().cancel(this._timer);
@@ -84,9 +61,8 @@ export class Debounce implements IDisposable {
         }
         this._timer = void 0;
         this._fn = null;
-        this._deferred = null;
     }
-    get interval() {
+    get interval(): number {
         return this._interval;
     }
     getIsDisposed(): boolean {

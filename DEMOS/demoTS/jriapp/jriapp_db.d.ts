@@ -817,7 +817,7 @@ declare module "jriapp_db/dataview" {
         protected _clearItems(items: TItem[]): void;
         protected _filterForPaging(items: TItem[]): TItem[];
         protected _onViewRefreshed(args: {}): void;
-        protected _refresh(reason: COLL_CHANGE_REASON): IPromise<any>;
+        protected _refresh(reason: COLL_CHANGE_REASON): void;
         protected _refreshSync(reason: COLL_CHANGE_REASON): void;
         protected _fillItems(data: {
             items: TItem[];
@@ -845,7 +845,7 @@ declare module "jriapp_db/dataview" {
         removeItem(item: TItem): void;
         sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
         clear(): void;
-        refresh(): IPromise<any>;
+        refresh(): void;
         syncRefresh(): void;
         dispose(): void;
         readonly errors: Errors<TItem>;

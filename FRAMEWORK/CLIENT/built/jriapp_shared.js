@@ -1894,7 +1894,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     }());
     exports.AbortablePromise = AbortablePromise;
 });
-define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/errors"], function (require, exports, deferred_2, errors_3) {
+define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/utils/deferred"], function (require, exports, deferred_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Debounce = (function () {
@@ -1903,44 +1903,27 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
             this._timer = null;
             this._interval = interval;
             this._fn = null;
-            this._deferred = null;
         }
         Debounce.prototype.enque = function (fn) {
             var _this = this;
             if (this.getIsStateDirty()) {
-                return deferred_2.Promise.reject(new errors_3.AbortError("cancelled"), false);
+                return;
             }
             if (!fn) {
                 throw new Error("Debounce: Invalid Operation");
             }
             this._fn = fn;
-            if (!this._deferred) {
-                this._deferred = deferred_2.createDefer();
-            }
             if (!!this._interval && !!this._timer) {
                 clearTimeout(this._timer);
                 this._timer = null;
             }
             if (!this._timer) {
                 var callback = function () {
-                    var fn = _this._fn, deferred = _this._deferred;
+                    var fn = _this._fn;
                     _this._timer = null;
                     _this._fn = null;
-                    _this._deferred = null;
-                    try {
-                        if (!!fn && !!deferred) {
-                            deferred.resolve(fn());
-                        }
-                        else {
-                            if (!!deferred) {
-                                deferred.reject(new errors_3.AbortError("cancelled"));
-                            }
-                        }
-                    }
-                    catch (err) {
-                        if (!!deferred) {
-                            deferred.reject(err);
-                        }
+                    if (!!fn) {
+                        fn();
                     }
                 };
                 if (!this._interval) {
@@ -1950,18 +1933,11 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
                     this._timer = setTimeout(callback, this._interval);
                 }
             }
-            return this._deferred.promise();
         };
         Debounce.prototype.cancel = function () {
             this._fn = null;
-            var deferred = this._deferred;
-            if (!!deferred) {
-                this._deferred = null;
-                deferred.reject(new errors_3.AbortError("cancelled"));
-            }
         };
         Debounce.prototype.dispose = function () {
-            this.cancel();
             if (!!this._timer) {
                 if (!this._interval) {
                     deferred_2.getTaskQueue().cancel(this._timer);
@@ -1972,7 +1948,6 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
             }
             this._timer = void 0;
             this._fn = null;
-            this._deferred = null;
         };
         Object.defineProperty(Debounce.prototype, "interval", {
             get: function () {
@@ -1991,7 +1966,7 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
     }());
     exports.Debounce = Debounce;
 });
-define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/debounce", "jriapp_shared/errors"], function (require, exports, object_1, coreutils_3, strutils_3, sysutils_3, checks_6, debounce_1, errors_4) {
+define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/debounce", "jriapp_shared/errors"], function (require, exports, object_1, coreutils_3, strutils_3, sysutils_3, checks_6, debounce_1, errors_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var coreUtils = coreutils_3.CoreUtils, strUtils = strutils_3.StringUtils, checks = checks_6.Checks, sys = sysutils_3.SysUtils;
@@ -2233,7 +2208,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
                     this._removeError(name);
                     var validationInfo = this._validateField(name);
                     if (!!validationInfo && validationInfo.errors.length > 0) {
-                        throw new errors_4.ValidationError([validationInfo], this);
+                        throw new errors_3.ValidationError([validationInfo], this);
                     }
                 }
                 catch (ex) {
@@ -2242,7 +2217,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
                         error = ex;
                     }
                     else {
-                        error = new errors_4.ValidationError([
+                        error = new errors_3.ValidationError([
                             { fieldName: name, errors: [ex.message] }
                         ], this);
                     }
@@ -2450,7 +2425,7 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
     }());
     exports.AsyncUtils = AsyncUtils;
 });
-define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/strUtils", "jriapp_shared/errors", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/deferred", "jriapp_shared/utils/async"], function (require, exports, strUtils_2, errors_5, coreutils_4, deferred_4, async_1) {
+define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/strUtils", "jriapp_shared/errors", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/deferred", "jriapp_shared/utils/async"], function (require, exports, strUtils_2, errors_4, coreutils_4, deferred_4, async_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var coreUtils = coreutils_4.CoreUtils, strUtils = strUtils_2.StringUtils, _async = async_1.AsyncUtils;
@@ -2473,7 +2448,7 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
                 }
                 else {
                     if (HttpUtils.isStatusOK(status)) {
-                        deferred.reject(new errors_5.DummyError(new Error(strUtils.format('Status: "{0}" loading from URL: "{1}"', status, url))));
+                        deferred.reject(new errors_4.DummyError(new Error(strUtils.format('Status: "{0}" loading from URL: "{1}"', status, url))));
                     }
                     else {
                         deferred.reject(new Error(strUtils.format('Error: "{0}" to load from URL: "{1}"', status, url)));
@@ -2965,7 +2940,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
         }
     };
 });
-define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/errors"], function (require, exports, object_3, lang_5, waitqueue_1, utils_2, int_2, utils_3, errors_6) {
+define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/errors"], function (require, exports, object_3, lang_5, waitqueue_1, utils_2, int_2, utils_3, errors_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = utils_2.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys, valUtils = utils_3.ValueUtils, collUtils = utils_3.CollUtils;
@@ -3606,7 +3581,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             if (this.isEditing) {
                 EditingItem = this._EditingItem;
                 if (!EditingItem._aspect.endEdit() && EditingItem._aspect.getIsHasErrors()) {
-                    this.handleError(new errors_6.ValidationError(EditingItem._aspect.getAllErrors(), EditingItem), EditingItem);
+                    this.handleError(new errors_5.ValidationError(EditingItem._aspect.getAllErrors(), EditingItem), EditingItem);
                     this.cancelEdit();
                 }
             }
@@ -4131,7 +4106,7 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
     }());
     exports.Validations = Validations;
 });
-define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/errors", "jriapp_shared/collection/validation"], function (require, exports, object_4, utils_5, int_3, utils_6, errors_7, validation_1) {
+define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/errors", "jriapp_shared/collection/validation"], function (require, exports, object_4, utils_5, int_3, utils_6, errors_6, validation_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = utils_5.Utils, coreUtils = utils.core, checks = utils.check, sys = utils.sys, ERROR = utils.err, collUtils = utils_6.CollUtils;
@@ -4209,7 +4184,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 try {
                     item._aspect.endEdit();
                     if (item._aspect.getIsHasErrors()) {
-                        this.handleError(new errors_7.ValidationError(item._aspect.getAllErrors(), item), item);
+                        this.handleError(new errors_6.ValidationError(item._aspect.getAllErrors(), item), item);
                         item._aspect.cancelEdit();
                     }
                 }
@@ -4707,7 +4682,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
     }(object_5.BaseObject));
     exports.CollectionItem = CollectionItem;
 });
-define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_7, int_4, utils_8, base_1, aspect_1, errors_8) {
+define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_7, int_4, utils_8, base_1, aspect_1, errors_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err, collUtils = utils_8.CollUtils;
@@ -4740,7 +4715,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     errors.removeError(item, name);
                     var validationInfo = this._validateField(name);
                     if (!!validationInfo && validationInfo.errors.length > 0) {
-                        throw new errors_8.ValidationError([validationInfo], this);
+                        throw new errors_7.ValidationError([validationInfo], this);
                     }
                 }
                 catch (ex) {
@@ -4748,7 +4723,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                         error = ex;
                     }
                     else {
-                        error = new errors_8.ValidationError([
+                        error = new errors_7.ValidationError([
                             { fieldName: name, errors: [ex.message] }
                         ], this);
                     }
@@ -4899,7 +4874,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
     }(base_1.BaseCollection));
     exports.BaseList = BaseList;
 });
-define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/validation", "jriapp_shared/collection/list", "jriapp_shared/errors"], function (require, exports, coreutils_7, sysutils_5, strutils_5, debounce_2, item_1, validation_2, list_1, errors_9) {
+define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/validation", "jriapp_shared/collection/list", "jriapp_shared/errors"], function (require, exports, coreutils_7, sysutils_5, strutils_5, debounce_2, item_1, validation_2, list_1, errors_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var coreUtils = coreutils_7.CoreUtils, strUtils = strutils_5.StringUtils, sys = sysutils_5.SysUtils;
@@ -4957,7 +4932,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                     errors.removeError(this, name);
                     var validation = this._aspect._validateField(name);
                     if (!!validation && validation.errors.length > 0) {
-                        throw new errors_9.ValidationError([validation], this);
+                        throw new errors_8.ValidationError([validation], this);
                     }
                 }
                 catch (ex) {
@@ -4966,7 +4941,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                         error = ex;
                     }
                     else {
-                        error = new errors_9.ValidationError([
+                        error = new errors_8.ValidationError([
                             { fieldName: name, errors: [ex.message] }
                         ], this);
                     }
@@ -5466,7 +5441,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/utils/mixobj", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_5, errors_10, object_8, jsonbag_1, jsonarray_1, weakmap_2, mixobj_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, errors_11, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/utils/mixobj", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_5, errors_9, object_8, jsonbag_1, jsonarray_1, weakmap_2, mixobj_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5474,7 +5449,7 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     Object.defineProperty(exports, "__esModule", { value: true });
     __export(const_5);
     __export(int_5);
-    __export(errors_10);
+    __export(errors_9);
     __export(object_8);
     __export(jsonbag_1);
     __export(jsonarray_1);
@@ -5488,7 +5463,7 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_sh
     exports.ListItemAspect = list_3.ListItemAspect;
     exports.BaseList = list_3.BaseList;
     exports.BaseDictionary = dictionary_1.BaseDictionary;
-    exports.ValidationError = errors_11.ValidationError;
+    exports.ValidationError = errors_10.ValidationError;
     __export(ideferred_1);
     exports.Utils = utils_11.Utils;
     exports.WaitQueue = waitqueue_2.WaitQueue;

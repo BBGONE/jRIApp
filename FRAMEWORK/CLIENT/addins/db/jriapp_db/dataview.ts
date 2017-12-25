@@ -51,10 +51,10 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         this._bindDS();
     }
     // override
-    protected _clearItems(items: TItem[]) {
+    protected _clearItems(items: TItem[]): void {
         // noop
     }
-    protected _filterForPaging(items: TItem[]) {
+    protected _filterForPaging(items: TItem[]): TItem[] {
         let skip = 0, take = 0, pos = -1, cnt = -1;
         const result: TItem[] = [];
         skip = this.pageSize * this.pageIndex;
@@ -71,11 +71,11 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         });
         return result;
     }
-    protected _onViewRefreshed(args: {}) {
+    protected _onViewRefreshed(args: {}): void {
         this.objEvents.raise(VIEW_EVENTS.refreshed, args);
     }
-    protected _refresh(reason: COLL_CHANGE_REASON): IPromise<any> {
-        return this._refreshDebounce.enque(() => {
+    protected _refresh(reason: COLL_CHANGE_REASON): void {
+        this._refreshDebounce.enque(() => {
             this._refreshSync(reason);
         });
     }
@@ -175,7 +175,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
 
         return newItems;
     }
-    protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<TItem>) {
+    protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<TItem>): void {
         const self = this;
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
@@ -216,7 +216,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                 throw new Error(strUtils.format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
         }
     }
-    protected _onDSStatusChanged(sender: any, args: ICollItemStatusArgs<TItem>) {
+    protected _onDSStatusChanged(sender: any, args: ICollItemStatusArgs<TItem>): void {
         const self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, canFilter = !!self._fn_filter;
 
         if (!!self._itemsByKey[key]) {
@@ -236,7 +236,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             }
         }
     }
-    protected _bindDS() {
+    protected _bindDS(): void {
         const self = this, ds = this._dataSource;
         if (!ds) {
             return;
@@ -295,14 +295,14 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             }
         }, self.uniqueID, null, TPriority.AboveNormal);
     }
-    protected _unbindDS() {
+    protected _unbindDS(): void {
         const self = this, ds = this._dataSource;
         if (!ds) {
             return;
         }
         ds.objEvents.offNS(self.uniqueID);
     }
-    protected _checkCurrentChanging(newCurrent: TItem) {
+    protected _checkCurrentChanging(newCurrent: TItem): void {
         const ds = this._dataSource;
         try {
             const item = (<BaseCollection<TItem>>ds)._getInternal().getEditingItem();
@@ -314,10 +314,10 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
-    protected _onPageChanged() {
+    protected _onPageChanged(): void {
         this._refresh(COLL_CHANGE_REASON.PageChange);
     }
-    protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER = COLL_CHANGE_OPER.None) {
+    protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER = COLL_CHANGE_OPER.None): void {
         super._clear(reason, oper);
         if (reason !== COLL_CHANGE_REASON.PageChange) {
             this.pageIndex = 0;
@@ -404,8 +404,8 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     clear(): void {
         this._clear(COLL_CHANGE_REASON.Refresh, COLL_CHANGE_OPER.None);
     }
-    refresh(): IPromise<any> {
-        return this._refresh(COLL_CHANGE_REASON.Refresh);
+    refresh(): void {
+        this._refresh(COLL_CHANGE_REASON.Refresh);
     }
     syncRefresh(): void {
         this._refreshSync(COLL_CHANGE_REASON.Refresh);

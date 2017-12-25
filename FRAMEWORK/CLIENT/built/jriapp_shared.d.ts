@@ -610,14 +610,12 @@ declare module "jriapp_shared/utils/deferred" {
 }
 declare module "jriapp_shared/utils/debounce" {
     import { IDisposable, TFunc } from "jriapp_shared/int";
-    import { IPromise } from "jriapp_shared/utils/ideferred";
     export class Debounce implements IDisposable {
         private _timer;
         private _interval;
         private _fn;
-        private _deferred;
         constructor(interval?: number);
-        enque(fn: TFunc): IPromise<any>;
+        enque(fn: TFunc): void;
         cancel(): void;
         dispose(): void;
         readonly interval: number;
