@@ -1,6 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IDisposable, TFunc } from "../int";
 import { getTaskQueue } from "./deferred";
+import { ERROR } from "./error";
+
+const error = ERROR, win = window;
 
 export class Debounce implements IDisposable {
     private _timer: number;
@@ -36,7 +39,11 @@ export class Debounce implements IDisposable {
                 this._fn = null;
 
                 if (!!fn) {
-                    fn();
+                    try {
+                        fn();
+                    } catch (err) {
+                        error.handleError(win, err, win);
+                    }
                 }
             };
 
@@ -48,10 +55,6 @@ export class Debounce implements IDisposable {
         }
     }
     cancel(): void {
-        // just set to null
-        this._fn = null;
-    }
-    dispose(): void {
         if (!!this._timer) {
             if (!this._interval) {
                 getTaskQueue().cancel(this._timer);
@@ -61,6 +64,9 @@ export class Debounce implements IDisposable {
         }
         this._timer = void 0;
         this._fn = null;
+    }
+    dispose(): void {
+        this.cancel();
     }
     get interval(): number {
         return this._interval;

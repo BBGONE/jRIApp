@@ -1539,8 +1539,7 @@ define("jriapp_shared/utils/arrhelper", ["require", "exports", "jriapp_shared/ut
 define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/error", "jriapp_shared/utils/deferred"], function (require, exports, error_2, deferred_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var error = error_2.ERROR;
-    var MAX_NUM = 99999900000, win = window;
+    var error = error_2.ERROR, MAX_NUM = 99999900000, win = window;
     function createQueue(interval) {
         if (interval === void 0) { interval = 0; }
         var _tasks = [], _taskMap = {}, _timer = null, _newTaskId = 1;
@@ -1894,9 +1893,10 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     }());
     exports.AbortablePromise = AbortablePromise;
 });
-define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/utils/deferred"], function (require, exports, deferred_2) {
+define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/error"], function (require, exports, deferred_2, error_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var error = error_3.ERROR, win = window;
     var Debounce = (function () {
         function Debounce(interval) {
             if (interval === void 0) { interval = 0; }
@@ -1923,7 +1923,12 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
                     _this._timer = null;
                     _this._fn = null;
                     if (!!fn) {
-                        fn();
+                        try {
+                            fn();
+                        }
+                        catch (err) {
+                            error.handleError(win, err, win);
+                        }
                     }
                 };
                 if (!this._interval) {
@@ -1935,9 +1940,6 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
             }
         };
         Debounce.prototype.cancel = function () {
-            this._fn = null;
-        };
-        Debounce.prototype.dispose = function () {
             if (!!this._timer) {
                 if (!this._interval) {
                     deferred_2.getTaskQueue().cancel(this._timer);
@@ -1948,6 +1950,9 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
             }
             this._timer = void 0;
             this._fn = null;
+        };
+        Debounce.prototype.dispose = function () {
+            this.cancel();
         };
         Object.defineProperty(Debounce.prototype, "interval", {
             get: function () {
@@ -2489,7 +2494,7 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
     }());
     exports.HttpUtils = HttpUtils;
 });
-define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_5, debug_2, error_3, logger_1, sysutils_4, async_2, http_1, strutils_4, checks_8, arrhelper_2, deferred_5) {
+define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_5, debug_2, error_4, logger_1, sysutils_4, async_2, http_1, strutils_4, checks_8, arrhelper_2, deferred_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Utils = (function () {
@@ -2501,7 +2506,7 @@ define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/
         Utils.http = http_1.HttpUtils;
         Utils.core = coreutils_5.CoreUtils;
         Utils.defer = async_2.AsyncUtils;
-        Utils.err = error_3.ERROR;
+        Utils.err = error_4.ERROR;
         Utils.log = logger_1.LOGGER;
         Utils.debug = debug_2.DEBUG;
         Utils.sys = sysutils_4.SysUtils;
@@ -5220,7 +5225,7 @@ define("jriapp_shared/utils/weakmap", ["require", "exports"], function (require,
         return WeakMap;
     }());
 });
-define("jriapp_shared/utils/mixobj", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/error", "jriapp_shared/utils/weakmap", "jriapp_shared/object"], function (require, exports, checks_9, error_4, weakmap_1, object_7) {
+define("jriapp_shared/utils/mixobj", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/error", "jriapp_shared/utils/weakmap", "jriapp_shared/object"], function (require, exports, checks_9, error_5, weakmap_1, object_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var checks = checks_9.Checks, signature = object_7.objSignature, weakmap = weakmap_1.createWeakMap();
@@ -5240,7 +5245,7 @@ define("jriapp_shared/utils/mixobj", ["require", "exports", "jriapp_shared/utils
                 return checks.isHasProp(this, prop);
             };
             class_1.prototype.handleError = function (error, source) {
-                if (error_4.ERROR.checkIsDummy(error)) {
+                if (error_5.ERROR.checkIsDummy(error)) {
                     return true;
                 }
                 if (!error.message) {
@@ -5250,7 +5255,7 @@ define("jriapp_shared/utils/mixobj", ["require", "exports", "jriapp_shared/utils
                 this.objEvents.raise("error", args);
                 var isHandled = args.isHandled;
                 if (!isHandled) {
-                    isHandled = error_4.ERROR.handleError(this, error, source);
+                    isHandled = error_5.ERROR.handleError(this, error, source);
                 }
                 return isHandled;
             };

@@ -4,8 +4,7 @@ import { ERROR } from "./error";
 import { IPromise } from "./ideferred";
 import { createDefer } from "./deferred";
 
-const error = ERROR;
-const MAX_NUM = 99999900000, win = window;
+const error = ERROR, MAX_NUM = 99999900000, win = window;
 
 export interface IQueue {
     cancel: (taskId: number) => void;
