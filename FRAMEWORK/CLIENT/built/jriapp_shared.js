@@ -1948,11 +1948,12 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
                     clearTimeout(this._timer);
                 }
             }
-            this._timer = void 0;
+            this._timer = null;
             this._fn = null;
         };
         Debounce.prototype.dispose = function () {
             this.cancel();
+            this._timer = void 0;
         };
         Object.defineProperty(Debounce.prototype, "interval", {
             get: function () {

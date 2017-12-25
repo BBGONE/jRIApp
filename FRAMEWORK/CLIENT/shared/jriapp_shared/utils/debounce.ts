@@ -62,11 +62,12 @@ export class Debounce implements IDisposable {
                 clearTimeout(this._timer);
             }
         }
-        this._timer = void 0;
+        this._timer = null;
         this._fn = null;
     }
     dispose(): void {
         this.cancel();
+        this._timer = void 0;
     }
     get interval(): number {
         return this._interval;
