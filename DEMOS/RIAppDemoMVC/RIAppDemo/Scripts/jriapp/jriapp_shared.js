@@ -1908,7 +1908,7 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
         Debounce.prototype.enque = function (fn) {
             var _this = this;
             if (this.getIsStateDirty()) {
-                return deferred_2.Promise.reject(new Error("disposed"), false);
+                return deferred_2.Promise.reject(new errors_3.AbortError("cancelled"), false);
             }
             if (!fn) {
                 throw new Error("Debounce: Invalid Operation");

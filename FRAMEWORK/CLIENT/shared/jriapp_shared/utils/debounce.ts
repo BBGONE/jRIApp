@@ -19,7 +19,7 @@ export class Debounce implements IDisposable {
     enque(fn: TFunc): IPromise<any> {
         // important, no error (just return with no action)!!!
         if (this.getIsStateDirty()) {
-            return Promise.reject(new Error("disposed"), false);
+            return Promise.reject(new AbortError("cancelled"), false);
         }
         if (!fn) {
             throw new Error("Debounce: Invalid Operation");
