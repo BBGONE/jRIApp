@@ -76,14 +76,14 @@ export class BaseElView extends BaseObject implements IElView, ISubscriber {
     private _objId: string;
     private _el: HTMLElement;
     private _subscribeFlags: SubscribeFlags;
-    protected _errors: IValidationInfo[];
-    protected _toolTip: string;
     private _eventBag: EventBag;
     private _propBag: IPropertyBag;
     private _classBag: IPropertyBag;
     // saves old display before making display: none
     private _display: string;
     private _css: string;
+    private _toolTip: string;
+    private _errors: IValidationInfo[];
 
     constructor(options: IViewOptions) {
         super();

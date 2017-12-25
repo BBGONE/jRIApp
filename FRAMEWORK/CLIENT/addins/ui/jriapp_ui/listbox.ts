@@ -31,6 +31,7 @@ export interface IListBoxOptions {
     statePath?: string;
     emptyOptionText?: string;
     syncSetDatasource?: boolean;
+    nodelegate?: boolean;
 }
 
 export interface IListBoxConstructorOptions extends IListBoxOptions {
@@ -92,7 +93,8 @@ export class ListBox extends BaseObject implements ISubscriber {
                 valuePath: null,
                 textPath: null,
                 statePath: null,
-                syncSetDatasource: false
+                syncSetDatasource: false,
+                nodelegate: false
             }, options);
         if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
             throw new Error(ERRS.ERR_LISTBOX_DATASRC_INVALID);
@@ -120,9 +122,11 @@ export class ListBox extends BaseObject implements ISubscriber {
                 val = !path ? null : sys.resolvePath(item, path), spr = self._stateProvider;
             data.op.className = !spr ? "" : spr.getCSS(item, data.op.index, val);
         };
-
-        subscribeMap.set(this._el, this);
-
+        if (!this._options.nodelegate) {
+            subscribeMap.set(this._el, this);
+        } else {
+            dom.events.on(this.el, "change", (e) => this.handle_change(e), this._objId);            
+        }
         const ds = this._options.dataSource;
         this.setDataSource(ds);
     }
@@ -131,14 +135,16 @@ export class ListBox extends BaseObject implements ISubscriber {
             return;
         }
         this.setDisposing();
-        subscribeMap.delete(this._el);
+        if (!this._options.nodelegate) {
+            subscribeMap.delete(this._el);
+        }
+        dom.events.offNS(this._el, this._objId);
         this._dsDebounce.dispose();
         this._stDebounce.dispose();
         this._txtDebounce.dispose();
         this._changeDebounce.dispose();
         this._fnCheckSelected = null;
         this._unbindDS();
-        dom.events.offNS(this._el, this._objId);
         this._clear();
         this._el = null;
         this._selectedValue = checks.undefined;
@@ -575,7 +581,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         }
     }
     isSubscribed(flag: SubscribeFlags): boolean {
-        return flag === SubscribeFlags.change;
+        return !this._options.nodelegate && flag === SubscribeFlags.change;
     }
     handle_change(e: Event): void {
         if (this._isRefreshing) {

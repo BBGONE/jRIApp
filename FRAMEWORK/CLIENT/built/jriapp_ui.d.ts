@@ -219,13 +219,13 @@ declare module "jriapp_ui/baseview" {
         private _objId;
         private _el;
         private _subscribeFlags;
-        protected _errors: IValidationInfo[];
-        protected _toolTip: string;
         private _eventBag;
         private _propBag;
         private _classBag;
         private _display;
         private _css;
+        private _toolTip;
+        private _errors;
         constructor(options: IViewOptions);
         dispose(): void;
         private _getStore();
@@ -399,6 +399,7 @@ declare module "jriapp_ui/listbox" {
         statePath?: string;
         emptyOptionText?: string;
         syncSetDatasource?: boolean;
+        nodelegate?: boolean;
     }
     export interface IListBoxConstructorOptions extends IListBoxOptions {
         el: HTMLSelectElement;

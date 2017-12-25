@@ -2,6 +2,7 @@
 import { IDisposable, TFunc } from "../int";
 import { IPromise, IDeferred } from "./ideferred";
 import { getTaskQueue, createDefer, Promise } from "./deferred";
+import { AbortError } from "../errors";
 
 export class Debounce implements IDisposable {
     private _timer: number;
@@ -21,7 +22,7 @@ export class Debounce implements IDisposable {
             return Promise.reject(new Error("disposed"), false);
         }
         if (!fn) {
-            throw new Error("Debounce: Invalid operation");
+            throw new Error("Debounce: Invalid Operation");
         }
         // the last wins
         this._fn = fn;
@@ -45,7 +46,7 @@ export class Debounce implements IDisposable {
                         deferred.resolve(fn());
                     } else {
                         if (!!deferred) {
-                            deferred.reject(new Error("cancelled"));
+                            deferred.reject(new AbortError("cancelled"));
                         }
                     }
                 } catch (err) {
@@ -69,11 +70,11 @@ export class Debounce implements IDisposable {
         const deferred = this._deferred;
         if (!!deferred) {
             this._deferred = null;
-            deferred.reject(new Error("cancelled"));
+            deferred.reject(new AbortError("cancelled"));
         }
     }
     dispose(): void {
-        const deferred = this._deferred;
+        this.cancel();
         if (!!this._timer) {
             if (!this._interval) {
                 getTaskQueue().cancel(this._timer);
@@ -81,13 +82,9 @@ export class Debounce implements IDisposable {
                 clearTimeout(this._timer);
             }
         }
-        this.cancel();
         this._timer = void 0;
         this._fn = null;
         this._deferred = null;
-        if (!!deferred) {
-            deferred.reject(new Error("disposed"));
-       }
     }
     get interval() {
         return this._interval;
