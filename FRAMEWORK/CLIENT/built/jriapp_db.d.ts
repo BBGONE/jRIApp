@@ -544,7 +544,7 @@ declare module "jriapp_db/entity_aspect" {
         private _savedStatus;
         private _ownedObjs;
         constructor(dbSet: DbSet<TItem, TObj, TDbContext>, vals: TObj, key: string, isNew: boolean);
-        protected _onFieldChanged(fieldName: string, fieldInfo: IFieldInfo): void;
+        protected _onFieldChanged(fieldName: string, fieldInfo?: IFieldInfo): void;
         protected _getValueChange(fullName: string, fieldInfo: IFieldInfo, changedOnly: boolean): IValueChange;
         protected _getValueChanges(changedOnly: boolean): IValueChange[];
         protected _fldChanging(fieldName: string, fieldInfo: IFieldInfo, oldV: any, newV: any): boolean;

@@ -14,7 +14,7 @@ import { ItemAspect } from "./aspect";
 import { ValidationError } from "../errors";
 
 const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err,
-    collUtils = CollUtils;
+    collUtils = CollUtils, sys = utils.sys;
 
 export interface IListItem extends ICollectionItem {
     readonly _aspect: ListItemAspect<IListItem, any>;
@@ -47,7 +47,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
                     throw new Error(ERRS.ERR_FIELD_READONLY);
                 }
                 coreUtils.setValue(this._vals, name, val, false);
-                item.objEvents.raiseProp(name);
+                sys.raiseProp(this.item, name);
                 errors.removeError(item, name);
                 const validationInfo = this._validateField(name);
                 if (!!validationInfo && validationInfo.errors.length > 0) {

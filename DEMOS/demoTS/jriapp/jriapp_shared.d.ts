@@ -98,14 +98,14 @@ declare module "jriapp_shared/int" {
     }
     export const Config: IConfig;
     export let DebugLevel: DEBUG_LEVEL;
-    export type TEventHandler<T, U> = (sender: T, args: U) => void;
+    export type TEventHandler<T = any, U = any> = (sender: T, args: U) => void;
     export type TErrorArgs = {
         error: any;
         source: any;
         isHandled: boolean;
     };
-    export type TErrorHandler<T> = (sender: T, args: TErrorArgs) => void;
-    export type TPropChangedHandler = (sender: any, args: {
+    export type TErrorHandler<T = any> = (sender: T, args: TErrorArgs) => void;
+    export type TPropChangedHandler<T = any> = (sender: T, args: {
         property: string;
     }) => void;
     export type TFunc = {
@@ -132,27 +132,27 @@ declare module "jriapp_shared/int" {
         AboveNormal = 1,
         High = 2,
     }
-    export interface IEvents {
+    export interface IEvents<T = any> {
         canRaise(name: string): boolean;
-        on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+        on(name: string, handler: TEventHandler<T, any>, nmspace?: string, context?: object, priority?: TPriority): void;
         off(name?: string, nmspace?: string): void;
         offNS(nmspace?: string): void;
         raise(name: string, args: any): void;
-        raiseProp(name: string): void;
-        onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void;
-        offProp(prop?: string, nmspace?: string): void;
+        raiseProp(name: keyof T): void;
+        onProp(prop: keyof T, handler: TPropChangedHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
+        offProp(prop?: keyof T, nmspace?: string): void;
     }
     export interface IBaseObject extends IErrorHandler, IDisposable {
         getIsStateDirty(): boolean;
         isHasProp(prop: string): boolean;
-        readonly objEvents: IObjectEvents;
+        readonly objEvents: IObjectEvents<any>;
     }
-    export interface IObjectEvents extends IEvents {
-        addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void;
+    export interface IObjectEvents<T = any> extends IEvents<T> {
+        addOnError(handler: TErrorHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
         offOnError(nmspace?: string): void;
-        addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+        addOnDisposed(handler: TEventHandler<T, any>, nmspace?: string, context?: object, priority?: TPriority): void;
         offOnDisposed(nmspace?: string): void;
-        readonly owner: IBaseObject;
+        readonly owner: T;
     }
     export interface IEditable extends IBaseObject {
         beginEdit(): boolean;
@@ -171,7 +171,7 @@ declare module "jriapp_shared/int" {
     }
     export interface IErrorNotification extends IBaseObject {
         getIsHasErrors(): boolean;
-        addOnErrorsChanged(fn: TEventHandler<any, any>, nmspace?: string, context?: any): void;
+        addOnErrorsChanged(fn: TEventHandler, nmspace?: string, context?: any): void;
         offOnErrorsChanged(nmspace?: string): void;
         getFieldErrors(fieldName: string): IValidationInfo[];
         getAllErrors(): IValidationInfo[];
@@ -249,6 +249,7 @@ declare module "jriapp_shared/utils/sysutils" {
         static resolveOwner(root: any, path: string, separator?: string): any;
         static resolvePath(root: any, path: string): any;
         static resolvePath2(root: any, srcParts: string[]): any;
+        static raiseProp(obj: IBaseObject, path: string): void;
     }
 }
 declare module "jriapp_shared/utils/coreutils" {
@@ -457,7 +458,7 @@ declare module "jriapp_shared/utils/eventhelper" {
     import { TPriority, IIndexer, TEventHandler } from "jriapp_shared/int";
     export type TEventNode = {
         context: any;
-        fn: TEventHandler<any, any>;
+        fn: TEventHandler;
     };
     export type TEventNodeArray = TEventNode[];
     export interface INamespaceMap {
@@ -468,7 +469,7 @@ declare module "jriapp_shared/utils/eventhelper" {
     }
     export class EventHelper {
         static removeNS(ev: IIndexer<IEventList>, ns?: string): void;
-        static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+        static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler, nmspace?: string, context?: object, priority?: TPriority): void;
         static remove(ev: IIndexer<IEventList>, name?: string, nmspace?: string): void;
         static count(ev: IIndexer<IEventList>, name: string): number;
         static raise(sender: any, ev: IIndexer<IEventList>, name: string, args: any): void;
@@ -493,14 +494,14 @@ declare module "jriapp_shared/object" {
         private _owner;
         constructor(owner: IBaseObject);
         canRaise(name: string): boolean;
-        on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+        on(name: string, handler: TEventHandler, nmspace?: string, context?: object, priority?: TPriority): void;
         off(name?: string, nmspace?: string): void;
         offNS(nmspace?: string): void;
         raise(name: string, args: any): void;
         raiseProp(name: string): void;
         onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void;
         offProp(prop?: string, nmspace?: string): void;
-        addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+        addOnDisposed(handler: TEventHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void;
         offOnDisposed(nmspace?: string): void;
         addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void;
         offOnError(nmspace?: string): void;
@@ -1406,8 +1407,8 @@ declare module "jriapp_shared/utils/anylist" {
     export class AnyItemAspect extends ListItemAspect<IAnyValItem, IAnyVal> {
         _validateField(name: string): IValidationInfo;
         protected _validateFields(): IValidationInfo[];
-        _setProp(name: string, val: any): void;
         _getProp(name: string): any;
+        _setProp(name: string, val: any): void;
     }
     export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAnyValItem {
         val: any;
@@ -1469,7 +1470,7 @@ declare module "jriapp_shared/utils/mixobj" {
             getIsDisposed(): boolean;
             getIsStateDirty(): boolean;
             dispose(): void;
-            readonly objEvents: IObjectEvents;
+            readonly objEvents: IObjectEvents<any>;
             readonly __objSig: object;
         };
     } & T;

@@ -33,7 +33,7 @@ class DummyEvents implements IObjectEvents {
     canRaise(name: string): boolean {
         return false;
     }
-    on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void {
+    on(name: string, handler: TEventHandler, nmspace?: string, context?: object, priority?: TPriority): void {
         throw new Error("Object disposed");
     }
     off(name?: string, nmspace?: string): void {
@@ -51,7 +51,7 @@ class DummyEvents implements IObjectEvents {
     }
     offProp(prop?: string, nmspace?: string): void {
     }
-    addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void {
+    addOnDisposed(handler: TEventHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void {
         this.on(OBJ_EVENTS.disposed, handler, nmspace, context, priority);
     }
     offOnDisposed(nmspace?: string): void {
@@ -79,7 +79,7 @@ export class ObjectEvents implements IObjectEvents {
     canRaise(name: string): boolean {
         return !!this._events && evHelper.count(this._events, name) > 0;
     }
-    on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void {
+    on(name: string, handler: TEventHandler, nmspace?: string, context?: object, priority?: TPriority): void {
         if (!this._events) {
             this._events = {};
         }
@@ -105,17 +105,7 @@ export class ObjectEvents implements IObjectEvents {
         if (!name) {
             throw new Error(ERRS.ERR_PROP_NAME_EMPTY);
         }
-        // in case of complex name like: prop1.prop2.prop3
-        const data = { property: name }, parts = name.split("."),
-            lastProp = parts[parts.length - 1];
-        if (parts.length > 1) {
-            const owner = sys.resolveOwner(this._owner, name);
-            if (!!owner && !!sys.isBaseObj(owner)) {
-                owner.objEvents.raiseProp(lastProp);
-            }
-        } else {
-            evHelper.raiseProp(this._owner, this._events, lastProp, data);
-        }
+        evHelper.raiseProp(this._owner, this._events, name, { property: name });
     }
     // to subscribe for changes on all properties, pass in the prop parameter: '*'
     onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void {
@@ -137,7 +127,7 @@ export class ObjectEvents implements IObjectEvents {
             evHelper.removeNS(this._events, nmspace);
         }
     }
-    addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void {
+    addOnDisposed(handler: TEventHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void {
         this.on(OBJ_EVENTS.disposed, handler, nmspace, context, priority);
     }
     offOnDisposed(nmspace?: string): void {

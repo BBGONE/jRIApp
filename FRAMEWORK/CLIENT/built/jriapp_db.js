@@ -3188,10 +3188,11 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         }
         EntityAspect.prototype._onFieldChanged = function (fieldName, fieldInfo) {
             var _this = this;
-            this.item.objEvents.raiseProp(fieldName);
-            if (!!fieldInfo.dependents && fieldInfo.dependents.length > 0) {
-                fieldInfo.dependents.forEach(function (d) {
-                    _this.item.objEvents.raiseProp(d);
+            sys.raiseProp(this.item, fieldName);
+            var info = fieldInfo || this.collection.getFieldInfo(fieldName);
+            if (!!info.dependents && info.dependents.length > 0) {
+                info.dependents.forEach(function (d) {
+                    sys.raiseProp(_this.item, d);
                 });
             }
         };

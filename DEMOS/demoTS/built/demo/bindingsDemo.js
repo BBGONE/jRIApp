@@ -95,7 +95,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
             }, self, function (sender, args) {
                 return self.isEnabled;
             });
-            _this._paramCommand = new RIAPP.TCommand(function (sender, args) {
+            _this._paramCommand = new RIAPP.Command(function (sender, args) {
                 alert(args.color + ": #" + RGBToHex(args.r, args.g, args.b));
             }, self);
             _this._month = new Date().getMonth() + 1;

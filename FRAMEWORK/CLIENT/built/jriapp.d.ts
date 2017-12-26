@@ -876,27 +876,24 @@ declare module "jriapp/utils/propwatcher" {
 declare module "jriapp/mvvm" {
     import { BaseObject, IBaseObject, TEventHandler, TErrorHandler } from "jriapp_shared";
     import { IApplication } from "jriapp/int";
-    export interface ITCommand<TParam> {
+    export interface ICommand<TParam = any> {
         canExecute: (sender: any, param: TParam) => boolean;
         execute: (sender: any, param: TParam) => void;
         raiseCanExecuteChanged: () => void;
-        addOnCanExecuteChanged(fn: (sender: ITCommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
+        addOnCanExecuteChanged(fn: (sender: ICommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
         offOnCanExecuteChanged(nmspace?: string): void;
     }
-    export type ICommand = ITCommand<any>;
-    export type TAction<TParam, TThis> = (this: TThis, sender: any, param: TParam) => void;
-    export type Action = TAction<any, any>;
-    export type TPredicate<TParam, TThis> = (this: TThis, sender: any, param: TParam) => boolean;
-    export type Predicate = TPredicate<any, any>;
-    export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TParam> {
-        protected _action: TAction<TParam, TThis>;
+    export type Action<TParam = any, TThis = any> = (this: TThis, sender: any, param: TParam) => void;
+    export type Predicate<TParam = any, TThis = any> = (this: TThis, sender: any, param: TParam) => boolean;
+    export class Command<TParam = any, TThis = any> extends BaseObject implements ICommand<TParam> {
+        protected _action: Action<TParam, TThis>;
         protected _thisObj: TThis;
-        protected _predicate: TPredicate<TParam, TThis>;
+        protected _predicate: Predicate<TParam, TThis>;
         private _objId;
-        constructor(fnAction: TAction<TParam, TThis>, thisObj?: TThis, fnCanExecute?: TPredicate<TParam, TThis>);
+        constructor(fnAction: Action<TParam, TThis>, thisObj?: TThis, fnCanExecute?: Predicate<TParam, TThis>);
         protected _canExecute(sender: any, param: TParam, context: any): boolean;
         protected _execute(sender: any, param: TParam, context: any): void;
-        addOnCanExecuteChanged(fn: (sender: ITCommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
+        addOnCanExecuteChanged(fn: (sender: ICommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
         offOnCanExecuteChanged(nmspace?: string): void;
         canExecute(sender: any, param: TParam): boolean;
         execute(sender: any, param: TParam): void;
@@ -905,16 +902,14 @@ declare module "jriapp/mvvm" {
         toString(): string;
         readonly uniqueID: string;
     }
-    export abstract class BaseCommand<TParam, TOwner> extends TCommand<TParam, any> {
+    export abstract class BaseCommand<TParam = any, TOwner = any> extends Command<TParam, any> {
         private _owner;
         constructor(owner: TOwner);
         protected abstract action(sender: any, param: TParam): void;
         protected abstract isCanExecute(sender: any, param: TParam): boolean;
         readonly owner: TOwner;
     }
-    export type Command = TCommand<any, any>;
-    export const Command: new (fnAction: Action, thisObj?: any, fnCanExecute?: Predicate) => Command;
-    export class ViewModel<TApp extends IApplication> extends BaseObject {
+    export class ViewModel<TApp extends IApplication = IApplication> extends BaseObject {
         private _objId;
         private _app;
         constructor(app: TApp);
@@ -1004,7 +999,7 @@ declare module "jriapp" {
     export { createTemplate, ITemplateOptions } from "jriapp/template";
     export { LifeTimeScope } from "jriapp/utils/lifetime";
     export { PropWatcher } from "jriapp/utils/propwatcher";
-    export { ViewModel, BaseCommand, Command, ICommand, TCommand, ITCommand } from "jriapp/mvvm";
+    export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.7.17";
+    export const VERSION = "2.8.0";
 }

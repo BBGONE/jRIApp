@@ -93,7 +93,7 @@ export const enum BootstrapState {
 
 class _ObjectEvents extends ObjectEvents {
     // override
-    on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
+    on(name: string, handler: TEventHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
         const owner = <Bootstrap>this.owner;
         const self = this, isReady = owner.state === BootstrapState.Ready;
         const isIntialized = (owner.state === BootstrapState.Initialized || owner.state === BootstrapState.Ready);

@@ -24,7 +24,7 @@ export class HeaderVM extends RIAPP.ViewModel<RIAPP.IApplication> {
             this._contentPanelHeight = this._$contentPanel.height();
 
         //uses strongly typed "this"
-        this._expanderCommand = new RIAPP.TCommand<any, HeaderVM>(function (sender: uiMOD.ExpanderElView, param) {
+        this._expanderCommand = new RIAPP.Command<any, HeaderVM>(function (sender: uiMOD.ExpanderElView, param) {
             if (sender.isExpanded) {
                 this.expand();
             } else {

@@ -11,10 +11,10 @@ export interface IConfig {
 export const Config: IConfig = (<any>window).jriapp_config || {};
 export let DebugLevel = (!Config.debugLevel) ? DEBUG_LEVEL.NONE : Config.debugLevel;
 
-export type TEventHandler<T, U> = (sender: T, args: U) => void;
+export type TEventHandler<T = any, U = any> = (sender: T, args: U) => void;
 export type TErrorArgs = { error: any; source: any; isHandled: boolean; };
-export type TErrorHandler<T> = (sender: T, args: TErrorArgs) => void;
-export type TPropChangedHandler = (sender: any, args: { property: string; }) => void;
+export type TErrorHandler<T = any> = (sender: T, args: TErrorArgs) => void;
+export type TPropChangedHandler<T = any> = (sender: T, args: { property: string; }) => void;
 export type TFunc = { (...args: any[]): void; };
 export type TAnyConstructor<T> = new (...args: any[]) => T;
 
@@ -41,31 +41,31 @@ export const enum TPriority {
     Normal = 0, AboveNormal = 1, High = 2
 }
 
-export interface IEvents {
+export interface IEvents<T = any> {
     canRaise(name: string): boolean;
-    on(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+    on(name: string, handler: TEventHandler<T, any>, nmspace?: string, context?: object, priority?: TPriority): void;
     off(name?: string, nmspace?: string): void;
     // remove event handlers by their namespace
     offNS(nmspace?: string): void;
     raise(name: string, args: any): void;
-    raiseProp(name: string): void;
+    raiseProp(name: keyof T): void;
     // to subscribe for changes on all properties, pass in the prop parameter: '*'
-    onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void;
-    offProp(prop?: string, nmspace?: string): void;
+    onProp(prop: keyof T, handler: TPropChangedHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
+    offProp(prop?: keyof T, nmspace?: string): void;
 }
 
 export interface IBaseObject extends IErrorHandler, IDisposable {
     getIsStateDirty(): boolean;
     isHasProp(prop: string): boolean;
-    readonly objEvents: IObjectEvents;
+    readonly objEvents: IObjectEvents<any>;
 }
 
-export interface IObjectEvents extends IEvents {
-    addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void;
+export interface IObjectEvents<T = any> extends IEvents<T> {
+    addOnError(handler: TErrorHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
     offOnError(nmspace?: string): void;
-    addOnDisposed(handler: TEventHandler<IBaseObject, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+    addOnDisposed(handler: TEventHandler<T, any>, nmspace?: string, context?: object, priority?: TPriority): void;
     offOnDisposed(nmspace?: string): void;
-    readonly owner: IBaseObject;
+    readonly owner: T;
 }
 
 export interface IEditable extends IBaseObject {
@@ -88,7 +88,7 @@ export interface IValidationInfo {
 
 export interface IErrorNotification extends IBaseObject {
     getIsHasErrors(): boolean;
-    addOnErrorsChanged(fn: TEventHandler<any, any>, nmspace?: string, context?: any): void;
+    addOnErrorsChanged(fn: TEventHandler, nmspace?: string, context?: any): void;
     offOnErrorsChanged(nmspace?: string): void;
     getFieldErrors(fieldName: string): IValidationInfo[];
     getAllErrors(): IValidationInfo[];

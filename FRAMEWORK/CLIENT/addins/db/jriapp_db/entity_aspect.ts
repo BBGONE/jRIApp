@@ -79,11 +79,12 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             this._setKey(key);
         }
     }
-    protected _onFieldChanged(fieldName: string, fieldInfo: IFieldInfo) {
-        this.item.objEvents.raiseProp(fieldName);
-        if (!!fieldInfo.dependents && fieldInfo.dependents.length > 0) {
-            fieldInfo.dependents.forEach((d) => {
-                this.item.objEvents.raiseProp(d);
+    protected _onFieldChanged(fieldName: string, fieldInfo?: IFieldInfo): void {
+        sys.raiseProp(this.item, fieldName);
+        const info = fieldInfo || this.collection.getFieldInfo(fieldName);
+        if (!!info.dependents && info.dependents.length > 0) {
+            info.dependents.forEach((d) => {
+                sys.raiseProp(this.item, d);
             });
         }
     }

@@ -131,7 +131,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         }, self.uniqueID);
 
         //adds new product - uses dialog to enter the data
-        this._addNewCommand = new RIAPP.TCommand<any, ProductViewModel>(function (sender, param) {
+        this._addNewCommand = new RIAPP.Command<any, ProductViewModel>(function (sender, param) {
             //grid will show the edit dialog, because we set grid options isHandleAddNew:true
             //see the options for the grid on the HTML demo page
             self._dbSet.addNew();
@@ -140,7 +140,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         });
 
         //loads data from the server for the products
-        this._loadCommand = new RIAPP.TCommand<any, ProductViewModel>(function (sender, data) {
+        this._loadCommand = new RIAPP.Command<any, ProductViewModel>(function (sender, data) {
             this.load();
         }, self);
 
@@ -150,7 +150,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
 
 
         //for testing templates in datagrid columns
-        this._columnCommand = new RIAPP.TCommand<DEMODB.Product, ProductViewModel>(function (sender, cmdParam) {
+        this._columnCommand = new RIAPP.Command<DEMODB.Product, ProductViewModel>(function (sender, cmdParam) {
             let dataName = "";
             if (sender instanceof uiMOD.BaseElView) {
                 dataName = (<uiMOD.BaseElView>sender).dataName;

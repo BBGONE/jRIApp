@@ -642,7 +642,7 @@ define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (requir
             _this._contentPanelHeight = 0;
             if (!!_this._$contentPanel)
                 _this._contentPanelHeight = _this._$contentPanel.height();
-            _this._expanderCommand = new RIAPP.TCommand(function (sender, param) {
+            _this._expanderCommand = new RIAPP.Command(function (sender, param) {
                 if (sender.isExpanded) {
                     this.expand();
                 }
@@ -746,14 +746,14 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
             _this._url = _this._baseUrl + "?id=" + clientID;
             _this._closeClientUrl = _this._baseUrl + "/CloseClient?id=" + clientID;
             _this._postMsgUrl = _this._baseUrl + "/PostMessage";
-            _this._openESCommand = new RIAPP.TCommand(function (sender, data) {
+            _this._openESCommand = new RIAPP.Command(function (sender, data) {
                 this.open().catch(function (res) {
                     self.handleError(res, self);
                 });
             }, self, function () {
                 return !_this._es;
             });
-            _this._closeESCommand = new RIAPP.TCommand(function (sender, data) {
+            _this._closeESCommand = new RIAPP.Command(function (sender, data) {
                 this.close();
             }, self, function () {
                 return !!_this._es;
@@ -990,14 +990,14 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
             _this._clientID = null;
             _this._deffered = null;
             _this._url = url;
-            _this._openWsCommand = new RIAPP.TCommand(function (sender, data) {
+            _this._openWsCommand = new RIAPP.Command(function (sender, data) {
                 this.open().catch(function (res) {
                     self.handleError(res, self);
                 });
             }, self, function () {
                 return !self._ws;
             });
-            _this._closeWsCommand = new RIAPP.TCommand(function (sender, data) {
+            _this._closeWsCommand = new RIAPP.Command(function (sender, data) {
                 this.close();
             }, self, function () {
                 return !!_this._ws;

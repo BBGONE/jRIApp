@@ -10,7 +10,7 @@ import { Validations } from "../collection/validation";
 import { IListItem, ListItemAspect, BaseList } from "../collection/list";
 import { ValidationError } from "../errors";
 
-export {  ICollValidateFieldArgs } from "../collection/int";
+export { ICollValidateFieldArgs } from "../collection/int";
 
 const coreUtils = CoreUtils, strUtils = StringUtils, sys = SysUtils;
 
@@ -32,15 +32,15 @@ export class AnyItemAspect extends ListItemAspect<IAnyValItem, IAnyVal> {
         return Validations.distinct(this._validateItem());
     }
     // override List's methods
+    _getProp(name: string) {
+        return coreUtils.getValue(this._vals, name);
+    }
+     // override
     _setProp(name: string, val: any) {
         if (this._getProp(name) !== val) {
             coreUtils.setValue(this._vals, name, val, false);
-            this.item.objEvents.raiseProp(name);
+            sys.raiseProp(this.item, name);
         }
-    }
-    // override
-    _getProp(name: string) {
-        return coreUtils.getValue(this._vals, name);
     }
 }
 
@@ -66,7 +66,7 @@ export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAn
             try {
                 const fieldName = strUtils.trimBrackets(name);
                 coreUtils.setValue(this.val, fieldName, val, false, "->");
-                this.objEvents.raiseProp(name);
+                sys.raiseProp(this, name);
                 errors.removeError(this, name);
                 const validation: IValidationInfo = this._aspect._validateField(name);
                 if (!!validation && validation.errors.length > 0) {

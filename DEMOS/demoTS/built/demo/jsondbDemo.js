@@ -164,11 +164,11 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                     args.isCancel = true;
             }, self.uniqueID);
             _this._dbSet.isSubmitOnDelete = true;
-            _this._addNewCommand = new RIAPP.TCommand(function (sender, param) {
+            _this._addNewCommand = new RIAPP.Command(function (sender, param) {
                 var item = self._dbSet.addNew();
                 item.Data = JSON.stringify({});
             });
-            _this._addNewAddrCommand = new RIAPP.TCommand(function (sender, param) {
+            _this._addNewAddrCommand = new RIAPP.Command(function (sender, param) {
                 var curCustomer = self.currentItem.Customer;
                 curCustomer.Addresses.addNew();
             }, self, function (s, p) {
@@ -179,7 +179,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             }, self, function (s, p) {
                 return self.dbContext.isHasChanges;
             });
-            _this._undoCommand = new RIAPP.TCommand(function (sender, param) {
+            _this._undoCommand = new RIAPP.Command(function (sender, param) {
                 this.dbContext.rejectChanges();
             }, self, function (s, p) {
                 return this.dbContext.isHasChanges;
@@ -188,7 +188,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                 self._saveCommand.raiseCanExecuteChanged();
                 self._undoCommand.raiseCanExecuteChanged();
             });
-            _this._loadCommand = new RIAPP.TCommand(function (sender, data) {
+            _this._loadCommand = new RIAPP.Command(function (sender, data) {
                 this.load();
             }, self);
             _this._dbSet.defineCustomerField(function (item) {

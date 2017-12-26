@@ -12,7 +12,7 @@ const checks = Checks, strUtils = StringUtils, debug = DEBUG;
 
 export type TEventNode = {
     context: any
-    fn: TEventHandler<any, any>;
+    fn: TEventHandler;
 };
 
 export type TEventNodeArray = TEventNode[];
@@ -29,7 +29,7 @@ class EventList {
     static Create(): IEventList {
         return {};
     }
-    static Node(handler: TEventHandler<any, any>, context?: any): TEventNode {
+    static Node(handler: TEventHandler, context?: any): TEventNode {
         return { fn: handler, context: !context ? null : context };
     }
     static count(list: IEventList): number {
@@ -126,7 +126,7 @@ export class EventHelper {
             }
         }
     }
-    static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: object, priority?: TPriority): void {
+    static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler, nmspace?: string, context?: object, priority?: TPriority): void {
         if (!ev) {
             debug.checkStartDebugger();
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "ev is a valid object"));

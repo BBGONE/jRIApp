@@ -7930,7 +7930,7 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/mvv
             return _super !== null && _super.apply(this, arguments) || this;
         }
         return TemplateCommand;
-    }(mvvm_2.TCommand));
+    }(mvvm_2.Command));
     exports.TemplateCommand = TemplateCommand;
     var TemplateElView = (function (_super) {
         __extends(TemplateElView, _super);

@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
 import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
-import { TCommand } from "jriapp/mvvm";
+import { Command } from "jriapp/mvvm";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { bootstrap } from "jriapp/bootstrap";
 import { CommandElView } from "./command";
@@ -24,7 +24,7 @@ export interface ITemplateOptions {
 
 // for strongly typed parameters
 export type TemplateCommandParam = { template: ITemplate; isLoaded: boolean; };
-export class TemplateCommand<TThis> extends TCommand<TemplateCommandParam, TThis>
+export class TemplateCommand<TThis> extends Command<TemplateCommandParam, TThis>
 {
 }
 

@@ -3580,9 +3580,9 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
     (function (CMD_EVENTS) {
         CMD_EVENTS["can_execute_changed"] = "canExecute_changed";
     })(CMD_EVENTS || (CMD_EVENTS = {}));
-    var TCommand = (function (_super) {
-        __extends(TCommand, _super);
-        function TCommand(fnAction, thisObj, fnCanExecute) {
+    var Command = (function (_super) {
+        __extends(Command, _super);
+        function Command(fnAction, thisObj, fnCanExecute) {
             var _this = _super.call(this) || this;
             _this._objId = coreUtils.getNewID("cmd");
             _this._action = fnAction;
@@ -3590,30 +3590,30 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             _this._predicate = fnCanExecute;
             return _this;
         }
-        TCommand.prototype._canExecute = function (sender, param, context) {
+        Command.prototype._canExecute = function (sender, param, context) {
             if (!this._predicate) {
                 return true;
             }
             return this._predicate.apply(context, [sender, param]);
         };
-        TCommand.prototype._execute = function (sender, param, context) {
+        Command.prototype._execute = function (sender, param, context) {
             if (!!this._action) {
                 this._action.apply(context, [sender, param]);
             }
         };
-        TCommand.prototype.addOnCanExecuteChanged = function (fn, nmspace, context) {
+        Command.prototype.addOnCanExecuteChanged = function (fn, nmspace, context) {
             this.objEvents.on("canExecute_changed", fn, nmspace, context);
         };
-        TCommand.prototype.offOnCanExecuteChanged = function (nmspace) {
+        Command.prototype.offOnCanExecuteChanged = function (nmspace) {
             this.objEvents.off("canExecute_changed", nmspace);
         };
-        TCommand.prototype.canExecute = function (sender, param) {
+        Command.prototype.canExecute = function (sender, param) {
             return this._canExecute(sender, param, this._thisObj);
         };
-        TCommand.prototype.execute = function (sender, param) {
+        Command.prototype.execute = function (sender, param) {
             this._execute(sender, param, this._thisObj);
         };
-        TCommand.prototype.dispose = function () {
+        Command.prototype.dispose = function () {
             if (this.getIsDisposed()) {
                 return;
             }
@@ -3623,22 +3623,22 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             this._predicate = null;
             _super.prototype.dispose.call(this);
         };
-        TCommand.prototype.raiseCanExecuteChanged = function () {
+        Command.prototype.raiseCanExecuteChanged = function () {
             this.objEvents.raise("canExecute_changed", {});
         };
-        TCommand.prototype.toString = function () {
+        Command.prototype.toString = function () {
             return "Command";
         };
-        Object.defineProperty(TCommand.prototype, "uniqueID", {
+        Object.defineProperty(Command.prototype, "uniqueID", {
             get: function () {
                 return this._objId;
             },
             enumerable: true,
             configurable: true
         });
-        return TCommand;
+        return Command;
     }(jriapp_shared_16.BaseObject));
-    exports.TCommand = TCommand;
+    exports.Command = Command;
     var BaseCommand = (function (_super) {
         __extends(BaseCommand, _super);
         function BaseCommand(owner) {
@@ -3657,9 +3657,8 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             configurable: true
         });
         return BaseCommand;
-    }(TCommand));
+    }(Command));
     exports.BaseCommand = BaseCommand;
-    exports.Command = TCommand;
     var ViewModel = (function (_super) {
         __extends(ViewModel, _super);
         function ViewModel(app) {
@@ -4417,8 +4416,7 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.ViewModel = mvvm_1.ViewModel;
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
-    exports.TCommand = mvvm_1.TCommand;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.7.17";
+    exports.VERSION = "2.8.0";
     bootstrap_7.Bootstrap._initFramework();
 });

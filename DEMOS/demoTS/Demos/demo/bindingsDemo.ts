@@ -87,7 +87,7 @@ export class TestObject extends RIAPP.BaseObject {
         });
 
         //strongly typed command parameter and strongly typed "this" - generic command 
-        this._paramCommand = new RIAPP.TCommand<{ color: string; r: number; g: number; b: number; }, TestObject>(function (sender, args) {
+        this._paramCommand = new RIAPP.Command<{ color: string; r: number; g: number; b: number; }, TestObject>(function (sender, args) {
             alert(`${args.color}: #${RGBToHex(args.r, args.g, args.b)}`);
         }, self);
 

@@ -1912,14 +1912,14 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                     }
                 });
             }, self.uniqueID);
-            _this._addNewCommand = new RIAPP.TCommand(function (sender, param) {
+            _this._addNewCommand = new RIAPP.Command(function (sender, param) {
                 self._dbSet.addNew();
             });
-            _this._loadCommand = new RIAPP.TCommand(function (sender, data) {
+            _this._loadCommand = new RIAPP.Command(function (sender, data) {
                 this.load();
             }, self);
             _this._testInvokeCommand = new commands_2.TestInvokeCommand(_this);
-            _this._columnCommand = new RIAPP.TCommand(function (sender, cmdParam) {
+            _this._columnCommand = new RIAPP.Command(function (sender, cmdParam) {
                 var dataName = "";
                 if (sender instanceof uiMOD.BaseElView) {
                     dataName = sender.dataName;

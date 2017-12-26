@@ -269,7 +269,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
             try {
                 const fieldName = strUtils.trimBrackets(name);
                 coreUtils.setValue(this._val, fieldName, val, false, "->");
-                this.objEvents.raiseProp(name);
+                sys.raiseProp(this, name);
                 this._removeError(name);
                 const validationInfo = this._validateField(name);
                 if (!!validationInfo && validationInfo.errors.length > 0) {

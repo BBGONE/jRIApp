@@ -1567,7 +1567,7 @@ declare module "jriapp_ui/command" {
 }
 declare module "jriapp_ui/template" {
     import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
-    import { TCommand } from "jriapp/mvvm";
+    import { Command } from "jriapp/mvvm";
     import { CommandElView } from "jriapp_ui/command";
     export interface ITemplateOptions {
         dataContext?: any;
@@ -1577,7 +1577,7 @@ declare module "jriapp_ui/template" {
         template: ITemplate;
         isLoaded: boolean;
     };
-    export class TemplateCommand<TThis> extends TCommand<TemplateCommandParam, TThis> {
+    export class TemplateCommand<TThis> extends Command<TemplateCommandParam, TThis> {
     }
     export class TemplateElView extends CommandElView implements ITemplateEvents {
         private _template;

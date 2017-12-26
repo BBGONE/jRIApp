@@ -181,7 +181,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         this._dbSet.isSubmitOnDelete = true;
 
         //adds new product - uses dialog to enter the data
-        this._addNewCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, param) {
+        this._addNewCommand = new RIAPP.Command<any, CustomerViewModel>(function (sender, param) {
             //grid will show the edit dialog, because we set grid options isHandleAddNew:true
             //see the options for the grid on the HTML demo page
             let item = self._dbSet.addNew();
@@ -190,7 +190,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
             //on clicking OK button all changes are submitted to the service
         });
 
-        this._addNewAddrCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, param) {
+        this._addNewAddrCommand = new RIAPP.Command<any, CustomerViewModel>(function (sender, param) {
             const curCustomer = <CustomerBag>self.currentItem.Customer;
             curCustomer.Addresses.addNew();
         }, self, function (s, p) {
@@ -205,7 +205,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         });
 
         //with typed "this" inside the callbacks
-        this._undoCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, param) {
+        this._undoCommand = new RIAPP.Command<any, CustomerViewModel>(function (sender, param) {
             this.dbContext.rejectChanges();
         }, self, function (s, p) {
             //the command is enabled when there are pending changes
@@ -220,7 +220,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         });
 
         //loads data from the server for the products (with typed "this" inside the callback)
-        this._loadCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, data) {
+        this._loadCommand = new RIAPP.Command<any, CustomerViewModel>(function (sender, data) {
             this.load();
         }, self);
 

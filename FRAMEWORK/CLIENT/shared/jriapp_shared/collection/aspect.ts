@@ -73,7 +73,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         this._flags = 0;
         this._valueBag = null;
     }
-    protected _onErrorsChanged() {
+    protected _onErrorsChanged(): void {
         this.objEvents.raise(ITEM_EVENTS.errors_changed, {});
     }
     private _getFlag(flag: AspectFlags): boolean {
@@ -148,7 +148,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         // refresh User interface when values restored
         coll.getFieldNames().forEach((name) => {
             if (changes[name] !== self._vals[name]) {
-                item.objEvents.raiseProp(name);
+                sys.raiseProp(this.item, name);
             }
         });
 

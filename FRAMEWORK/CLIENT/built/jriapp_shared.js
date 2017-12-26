@@ -454,6 +454,18 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             }
             return obj;
         };
+        SysUtils.raiseProp = function (obj, path) {
+            var sys = SysUtils, parts = sys.getPathParts(path), lastName = parts[parts.length - 1];
+            if (parts.length > 1) {
+                var owner = sys.resolveOwner(obj, path);
+                if (!!sys.isBaseObj(owner)) {
+                    owner.objEvents.raiseProp(lastName);
+                }
+            }
+            else {
+                obj.objEvents.raiseProp(lastName);
+            }
+        };
         SysUtils._isBaseObj = function () { return false; };
         SysUtils.isBinding = function () { return false; };
         SysUtils.isPropBag = function (obj) {
@@ -1355,16 +1367,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
             if (!name) {
                 throw new Error(lang_3.ERRS.ERR_PROP_NAME_EMPTY);
             }
-            var data = { property: name }, parts = name.split("."), lastProp = parts[parts.length - 1];
-            if (parts.length > 1) {
-                var owner = sys.resolveOwner(this._owner, name);
-                if (!!owner && !!sys.isBaseObj(owner)) {
-                    owner.objEvents.raiseProp(lastProp);
-                }
-            }
-            else {
-                evHelper.raiseProp(this._owner, this._events, lastProp, data);
-            }
+            evHelper.raiseProp(this._owner, this._events, name, { property: name });
         };
         ObjectEvents.prototype.onProp = function (prop, handler, nmspace, context, priority) {
             if (!prop) {
@@ -2210,7 +2213,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
                 try {
                     var fieldName = strUtils.trimBrackets(name);
                     coreUtils.setValue(this._val, fieldName, val, false, "->");
-                    this.objEvents.raiseProp(name);
+                    sys.raiseProp(this, name);
                     this._removeError(name);
                     var validationInfo = this._validateField(name);
                     if (!!validationInfo && validationInfo.errors.length > 0) {
@@ -4222,6 +4225,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return true;
         };
         ItemAspect.prototype._cancelEdit = function () {
+            var _this = this;
             if (!this.isEditing) {
                 return false;
             }
@@ -4232,7 +4236,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             coll.errors.removeAllErrors(item);
             coll.getFieldNames().forEach(function (name) {
                 if (changes[name] !== self._vals[name]) {
-                    item.objEvents.raiseProp(name);
+                    sys.raiseProp(_this.item, name);
                 }
             });
             return true;
@@ -4691,7 +4695,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
 define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_7, int_4, utils_8, base_1, aspect_1, errors_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err, collUtils = utils_8.CollUtils;
+    var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err, collUtils = utils_8.CollUtils, sys = utils.sys;
     var ListItemAspect = (function (_super) {
         __extends(ListItemAspect, _super);
         function ListItemAspect(coll, vals, key, isNew) {
@@ -4717,7 +4721,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                         throw new Error(lang_7.ERRS.ERR_FIELD_READONLY);
                     }
                     coreUtils.setValue(this._vals, name, val, false);
-                    item.objEvents.raiseProp(name);
+                    sys.raiseProp(this.item, name);
                     errors.removeError(item, name);
                     var validationInfo = this._validateField(name);
                     if (!!validationInfo && validationInfo.errors.length > 0) {
@@ -4895,14 +4899,14 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
         AnyItemAspect.prototype._validateFields = function () {
             return validation_2.Validations.distinct(this._validateItem());
         };
+        AnyItemAspect.prototype._getProp = function (name) {
+            return coreUtils.getValue(this._vals, name);
+        };
         AnyItemAspect.prototype._setProp = function (name, val) {
             if (this._getProp(name) !== val) {
                 coreUtils.setValue(this._vals, name, val, false);
-                this.item.objEvents.raiseProp(name);
+                sys.raiseProp(this.item, name);
             }
-        };
-        AnyItemAspect.prototype._getProp = function (name) {
-            return coreUtils.getValue(this._vals, name);
         };
         return AnyItemAspect;
     }(list_1.ListItemAspect));
@@ -4934,7 +4938,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                 try {
                     var fieldName = strUtils.trimBrackets(name);
                     coreUtils.setValue(this.val, fieldName, val, false, "->");
-                    this.objEvents.raiseProp(name);
+                    sys.raiseProp(this, name);
                     errors.removeError(this, name);
                     var validation = this._aspect._validateField(name);
                     if (!!validation && validation.errors.length > 0) {

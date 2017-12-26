@@ -6,31 +6,28 @@ import { IApplication } from "./int";
 
 const coreUtils = Utils.core;
 
-export interface ITCommand<TParam> {
+export interface ICommand<TParam = any> {
     canExecute: (sender: any, param: TParam) => boolean;
     execute: (sender: any, param: TParam) => void;
     raiseCanExecuteChanged: () => void;
-    addOnCanExecuteChanged(fn: (sender: ITCommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
+    addOnCanExecuteChanged(fn: (sender: ICommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
     offOnCanExecuteChanged(nmspace?: string): void;
 }
-export type ICommand = ITCommand<any>;
 
 const enum CMD_EVENTS {
     can_execute_changed = "canExecute_changed"
 }
 
-export type TAction<TParam, TThis> = (this: TThis, sender: any, param: TParam) => void;
-export type Action = TAction<any, any>;
-export type TPredicate<TParam, TThis> = (this: TThis, sender: any, param: TParam) => boolean;
-export type Predicate = TPredicate<any, any>;
+export type Action<TParam = any, TThis = any> = (this: TThis, sender: any, param: TParam) => void;
+export type Predicate<TParam = any, TThis = any> = (this: TThis, sender: any, param: TParam) => boolean;
 
-export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TParam> {
-    protected _action: TAction<TParam, TThis>;
+export class Command<TParam = any, TThis = any> extends BaseObject implements ICommand<TParam> {
+    protected _action: Action<TParam, TThis>;
     protected _thisObj: TThis;
-    protected _predicate: TPredicate<TParam, TThis>;
+    protected _predicate: Predicate<TParam, TThis>;
     private _objId: string;
 
-    constructor(fnAction: TAction<TParam, TThis>, thisObj?: TThis, fnCanExecute?: TPredicate<TParam, TThis>) {
+    constructor(fnAction: Action<TParam, TThis>, thisObj?: TThis, fnCanExecute?: Predicate<TParam, TThis>) {
         super();
         this._objId = coreUtils.getNewID("cmd");
         this._action = fnAction;
@@ -48,7 +45,7 @@ export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TPa
             this._action.apply(context, [sender, param]);
         }
     }
-    addOnCanExecuteChanged(fn: (sender: ITCommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject) {
+    addOnCanExecuteChanged(fn: (sender: ICommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject) {
         this.objEvents.on(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
     }
     offOnCanExecuteChanged(nmspace?: string) {
@@ -81,7 +78,7 @@ export class TCommand<TParam, TThis> extends BaseObject implements ITCommand<TPa
     }
 }
 
-export abstract class BaseCommand<TParam, TOwner> extends TCommand<TParam, any> {
+export abstract class BaseCommand<TParam = any, TOwner = any> extends Command<TParam, any> {
     private _owner: TOwner;
  
     constructor(owner: TOwner) {
@@ -98,10 +95,7 @@ export abstract class BaseCommand<TParam, TOwner> extends TCommand<TParam, any> 
     }
 }
 
-export type Command = TCommand<any, any>;
-export const Command: new (fnAction: Action, thisObj?: any, fnCanExecute?: Predicate) => Command = TCommand;
-
-export class ViewModel<TApp extends IApplication> extends BaseObject {
+export class ViewModel<TApp extends IApplication = IApplication> extends BaseObject {
     private _objId: string;
     private _app: TApp;
 

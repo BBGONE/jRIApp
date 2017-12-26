@@ -216,4 +216,17 @@ export class SysUtils {
 
         return obj;
     }
+    static raiseProp(obj: IBaseObject, path: string): void {
+        // in case of complex name like: prop1.prop2.prop3
+        const sys = SysUtils, parts = sys.getPathParts(path),
+            lastName = parts[parts.length - 1];
+        if (parts.length > 1) {
+            const owner = sys.resolveOwner(obj, path);
+            if (!!sys.isBaseObj(owner)) {
+                owner.objEvents.raiseProp(lastName);
+            }
+        } else {
+            obj.objEvents.raiseProp(lastName);
+        }
+    }
 }
