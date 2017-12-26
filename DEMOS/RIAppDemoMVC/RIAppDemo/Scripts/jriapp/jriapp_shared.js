@@ -4721,7 +4721,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                         throw new Error(lang_7.ERRS.ERR_FIELD_READONLY);
                     }
                     coreUtils.setValue(this._vals, name, val, false);
-                    sys.raiseProp(this.item, name);
+                    sys.raiseProp(item, name);
                     errors.removeError(item, name);
                     var validationInfo = this._validateField(name);
                     if (!!validationInfo && validationInfo.errors.length > 0) {

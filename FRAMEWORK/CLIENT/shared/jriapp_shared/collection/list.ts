@@ -47,7 +47,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
                     throw new Error(ERRS.ERR_FIELD_READONLY);
                 }
                 coreUtils.setValue(this._vals, name, val, false);
-                sys.raiseProp(this.item, name);
+                sys.raiseProp(item, name);
                 errors.removeError(item, name);
                 const validationInfo = this._validateField(name);
                 if (!!validationInfo && validationInfo.errors.length > 0) {
