@@ -200,7 +200,7 @@ export class BaseObject implements IBaseObject {
             this._objState = ObjState.Disposed;
         }
     }
-    get objEvents(): IObjectEvents {
+    get objEvents(): IObjectEvents<this> {
         if (this._objState === ObjState.Disposed) {
             return dummyEvents;
         }

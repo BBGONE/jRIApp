@@ -48,16 +48,16 @@ export interface IEvents<T = any> {
     // remove event handlers by their namespace
     offNS(nmspace?: string): void;
     raise(name: string, args: any): void;
-    raiseProp(name: keyof T): void;
+    raiseProp(name: keyof T | "*" | "[*]"): void;
     // to subscribe for changes on all properties, pass in the prop parameter: '*'
-    onProp(prop: keyof T, handler: TPropChangedHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
-    offProp(prop?: keyof T, nmspace?: string): void;
+    onProp(prop: keyof T | "*" | "[*]", handler: TPropChangedHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
+    offProp(prop?: keyof T | "*" | "[*]", nmspace?: string): void;
 }
 
 export interface IBaseObject extends IErrorHandler, IDisposable {
     getIsStateDirty(): boolean;
     isHasProp(prop: string): boolean;
-    readonly objEvents: IObjectEvents<any>;
+    readonly objEvents: IObjectEvents;
 }
 
 export interface IObjectEvents<T = any> extends IEvents<T> {

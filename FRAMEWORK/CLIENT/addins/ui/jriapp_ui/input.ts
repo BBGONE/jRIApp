@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { BaseElView, PROP_NAME } from "./baseview";
+import { BaseElView } from "./baseview";
 
 export class InputElView extends BaseElView {
     toString() {
@@ -13,7 +13,7 @@ export class InputElView extends BaseElView {
         const el = <HTMLInputElement | HTMLTextAreaElement>this.el;
         if (v !== !this.isEnabled) {
             el.disabled = v;
-            this.objEvents.raiseProp(PROP_NAME.isEnabled);
+            this.objEvents.raiseProp("isEnabled");
         }
     }
     get value(): string {
@@ -24,7 +24,7 @@ export class InputElView extends BaseElView {
         v = (!v) ? "" : str;
         if (x !== v) {
             (<HTMLInputElement | HTMLTextAreaElement>this.el).value = v;
-            this.objEvents.raiseProp(PROP_NAME.value);
+            this.objEvents.raiseProp("value");
         }
     }
 }

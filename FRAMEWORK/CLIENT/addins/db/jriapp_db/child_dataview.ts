@@ -2,7 +2,6 @@
 import { Utils } from "jriapp_shared";
 import { COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
 import { ICollection } from "jriapp_shared/collection/int";
-import { PROP_NAME } from "./const";
 import { IEntityItem } from "./int";
 import { Association } from "./association";
 import { DataView, IDataViewOptions } from "./dataview";
@@ -66,7 +65,7 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
                 }
 
                 self._refresh(COLL_CHANGE_REASON.Refresh);
-                self.objEvents.raiseProp(PROP_NAME.parentItem);
+                self.objEvents.raiseProp("parentItem");
             }
         };
         this._association = assoc;

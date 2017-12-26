@@ -117,13 +117,6 @@ function getFieldInfo(obj: any, fieldName: string): IFieldInfo {
     }
 }
 
-const enum PROP_NAME {
-    dataContext = "dataContext",
-    isEditing = "isEditing",
-    validationErrors = "validationErrors",
-    form = "form"
-}
-
 export class DataForm extends BaseObject {
     private static _DATA_FORM_SELECTOR = ["*[", DATA_ATTR.DATA_VIEW, "='", ELVIEW_NM.DataForm, "']"].join("");
     private static _DATA_CONTENT_SELECTOR = ["*[", DATA_ATTR.DATA_CONTENT, "]:not([", DATA_ATTR.DATA_COLUMN, "])"].join("");
@@ -303,7 +296,7 @@ export class DataForm extends BaseObject {
         }, self._objId);
 
         if (!!this._editable) {
-            this._editable.objEvents.onProp(PROP_NAME.isEditing, self._onIsEditingChanged, self._objId, self);
+            this._editable.objEvents.onProp("isEditing", self._onIsEditingChanged, self._objId, self);
         }
 
         if (!!this._errNotification) {
@@ -384,7 +377,7 @@ export class DataForm extends BaseObject {
             }
         }
 
-        this.objEvents.raiseProp(PROP_NAME.dataContext);
+        this.objEvents.raiseProp("dataContext");
     }
     get isEditing(): boolean {
         return this._isEditing;
@@ -404,7 +397,7 @@ export class DataForm extends BaseObject {
         if (!editable && v !== isEditing) {
             this._isEditing = v;
             this._updateContent();
-            this.objEvents.raiseProp(PROP_NAME.isEditing);
+            this.objEvents.raiseProp("isEditing");
             return;
         }
 
@@ -424,14 +417,14 @@ export class DataForm extends BaseObject {
         if (!!editable && editable.isEditing !== isEditing) {
             this._isEditing = editable.isEditing;
             this._updateContent();
-            this.objEvents.raiseProp(PROP_NAME.isEditing);
+            this.objEvents.raiseProp("isEditing");
         }
     }
     get validationErrors(): IValidationInfo[] { return this._errors; }
     set validationErrors(v) {
         if (v !== this._errors) {
             this._errors = v;
-            this.objEvents.raiseProp(PROP_NAME.validationErrors);
+            this.objEvents.raiseProp("validationErrors");
         }
     }
     get isInsideTemplate(): boolean { return this._isInsideTemplate; }
@@ -451,10 +444,10 @@ export class DataFormElView extends BaseElView {
         this._errorGliph = null;
         this._form.objEvents.onProp("*", (form, args) => {
             switch (args.property) {
-                case PROP_NAME.validationErrors:
+                case "validationErrors":
                     self.validationErrors = form.validationErrors;
                     break;
-                case PROP_NAME.dataContext:
+                case "dataContext":
                     self.objEvents.raiseProp(args.property);
                     break;
             }

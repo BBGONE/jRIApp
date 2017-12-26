@@ -54,16 +54,6 @@ const enum DLG_EVENTS {
     refresh = "refresh"
 }
 
-const enum PROP_NAME {
-    dataContext = "dataContext",
-    isSubmitOnOK = "isSubmitOnOK",
-    width = "width",
-    height = "height",
-    title = "title",
-    canRefresh = "canRefresh",
-    canCancel = "canCancel"
-}
-
 class SubmitInfo
 {
     private _submitError: boolean;
@@ -443,7 +433,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         if (v !== this._dataContext) {
             this._dataContext = v;
             this._submitInfo = new SubmitInfo(this._dataContext);
-            this.objEvents.raiseProp(PROP_NAME.dataContext);
+            this.objEvents.raiseProp("dataContext");
         }
     }
     get result() { return this._result; }
@@ -452,7 +442,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     set isSubmitOnOK(v) {
         if (this._submitOnOK !== v) {
             this._submitOnOK = v;
-            this.objEvents.raiseProp(PROP_NAME.isSubmitOnOK);
+            this.objEvents.raiseProp("isSubmitOnOK");
         }
     }
     get width() { return this.getOption("width"); }
@@ -460,7 +450,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         const x = this.getOption("width");
         if (v !== x) {
             this.setOption("width", v);
-            this.objEvents.raiseProp(PROP_NAME.width);
+            this.objEvents.raiseProp("width");
         }
     }
     get height() { return this.getOption("height"); }
@@ -468,7 +458,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         const x = this.getOption("height");
         if (v !== x) {
             this.setOption("height", v);
-            this.objEvents.raiseProp(PROP_NAME.height);
+            this.objEvents.raiseProp("height");
         }
     }
     get title() { return this.getOption("title"); }
@@ -476,7 +466,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         const x = this.getOption("title");
         if (v !== x) {
             this.setOption("title", v);
-            this.objEvents.raiseProp(PROP_NAME.title);
+            this.objEvents.raiseProp("title");
         }
     }
     get canRefresh() { return this._canRefresh; }
@@ -484,7 +474,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         const x = this._canRefresh;
         if (v !== x) {
             this._canRefresh = v;
-            this.objEvents.raiseProp(PROP_NAME.canRefresh);
+            this.objEvents.raiseProp("canRefresh");
         }
     }
     get canCancel() { return this._canCancel; }
@@ -492,7 +482,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         const x = this._canCancel;
         if (v !== x) {
             this._canCancel = v;
-            this.objEvents.raiseProp(PROP_NAME.canCancel);
+            this.objEvents.raiseProp("canCancel");
         }
     }
 }

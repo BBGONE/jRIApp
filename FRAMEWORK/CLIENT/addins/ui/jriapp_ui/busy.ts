@@ -7,7 +7,7 @@ import { bootstrap } from "jriapp/bootstrap";
 import { DomUtils } from "jriapp/utils/dom";
 
 
-import { BaseElView, PROP_NAME } from "./baseview";
+import { BaseElView } from "./baseview";
 
 const checks = Utils.check, boot = bootstrap, dom = DomUtils;
 
@@ -89,14 +89,14 @@ export class BusyElView extends BaseElView {
                     self._img.style.display = "none";
                 }
             }
-            self.objEvents.raiseProp(PROP_NAME.isBusy);
+            self.objEvents.raiseProp("isBusy");
         }
     }
     get delay() { return this._delay; }
     set delay(v) {
         if (v !== this._delay) {
             this._delay = v;
-            this.objEvents.raiseProp(PROP_NAME.delay);
+            this.objEvents.raiseProp("delay");
         }
     }
 }

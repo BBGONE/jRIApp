@@ -25,22 +25,6 @@ declare module "jriapp_db/const" {
         Refresh = 4,
         Init = 5,
     }
-    export const enum PROP_NAME {
-        isHasChanges = "isHasChanges",
-        isSubmitOnDelete = "isSubmitOnDelete",
-        isInitialized = "isInitialized",
-        isBusy = "isBusy",
-        isSubmiting = "isSubmiting",
-        isPagingEnabled = "isPagingEnabled",
-        parentItem = "parentItem",
-        totalCount = "totalCount",
-        loadPageCount = "loadPageCount",
-        isClearCacheOnEveryLoad = "isClearCacheOnEveryLoad",
-        isForAppend = "isForAppend",
-        isRefreshing = "isRefreshing",
-        requestCount = "requestCount",
-        isLoading = "isLoading",
-    }
 }
 declare module "jriapp_db/datacache" {
     import { BaseObject } from "jriapp_shared";

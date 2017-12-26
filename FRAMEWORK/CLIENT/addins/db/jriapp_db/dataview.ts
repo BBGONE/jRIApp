@@ -9,7 +9,6 @@ import {
     ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IFieldInfo, IPermissions
 } from "jriapp_shared/collection/int";
 import { BaseCollection, Errors } from "jriapp_shared/collection/base";
-import { PROP_NAME } from "./const";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     arrHelper = utils.arr, ERROR = utils.err, sys = utils.sys;
@@ -434,7 +433,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     set isPagingEnabled(v) {
         if (this.options.enablePaging !== v) {
             this.options.enablePaging = v;
-            this.objEvents.raiseProp(PROP_NAME.isPagingEnabled);
+            this.objEvents.raiseProp("isPagingEnabled");
             this._refresh(COLL_CHANGE_REASON.None);
         }
     }

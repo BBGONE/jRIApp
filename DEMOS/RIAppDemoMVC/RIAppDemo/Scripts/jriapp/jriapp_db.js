@@ -40,23 +40,6 @@ define("jriapp_db/const", ["require", "exports"], function (require, exports) {
         DATA_OPER[DATA_OPER["Refresh"] = 4] = "Refresh";
         DATA_OPER[DATA_OPER["Init"] = 5] = "Init";
     })(DATA_OPER = exports.DATA_OPER || (exports.DATA_OPER = {}));
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["isHasChanges"] = "isHasChanges";
-        PROP_NAME["isSubmitOnDelete"] = "isSubmitOnDelete";
-        PROP_NAME["isInitialized"] = "isInitialized";
-        PROP_NAME["isBusy"] = "isBusy";
-        PROP_NAME["isSubmiting"] = "isSubmiting";
-        PROP_NAME["isPagingEnabled"] = "isPagingEnabled";
-        PROP_NAME["parentItem"] = "parentItem";
-        PROP_NAME["totalCount"] = "totalCount";
-        PROP_NAME["loadPageCount"] = "loadPageCount";
-        PROP_NAME["isClearCacheOnEveryLoad"] = "isClearCacheOnEveryLoad";
-        PROP_NAME["isForAppend"] = "isForAppend";
-        PROP_NAME["isRefreshing"] = "isRefreshing";
-        PROP_NAME["requestCount"] = "requestCount";
-        PROP_NAME["isLoading"] = "isLoading";
-    })(PROP_NAME = exports.PROP_NAME || (exports.PROP_NAME = {}));
 });
 define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_1) {
     "use strict";

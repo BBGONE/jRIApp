@@ -768,11 +768,6 @@ define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jr
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ERRS = jriapp_shared_8.LocaleERRS;
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["dateFormat"] = "dateFormat";
-        PROP_NAME["datepickerRegion"] = "datepickerRegion";
-    })(PROP_NAME || (PROP_NAME = {}));
     function createDatepickerSvc() {
         return new Datepicker();
     }
@@ -1729,19 +1724,6 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_13.Utils, dom = dom_10.DomUtils, doc = dom.document, sys = utils.sys, checks = utils.check, coreUtils = utils.core, boot = bootstrap_9.bootstrap, subscribeMap = bootstrap_9.subscribeWeakMap;
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["dataSource"] = "dataSource";
-        PROP_NAME["selectedItem"] = "selectedItem";
-        PROP_NAME["selectedValue"] = "selectedValue";
-        PROP_NAME["valuePath"] = "valuePath";
-        PROP_NAME["textPath"] = "textPath";
-        PROP_NAME["isEnabled"] = "isEnabled";
-        PROP_NAME["listBox"] = "listBox";
-        PROP_NAME["value"] = "value";
-        PROP_NAME["textProvider"] = "textProvider";
-        PROP_NAME["stateProvider"] = "stateProvider";
-    })(PROP_NAME || (PROP_NAME = {}));
     var LISTBOX_EVENTS;
     (function (LISTBOX_EVENTS) {
         LISTBOX_EVENTS["refreshed"] = "refreshed";
@@ -2555,19 +2537,6 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_14.Utils, dom = dom_11.DomUtils, doc = dom.document, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys;
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["dataSource"] = "dataSource";
-        PROP_NAME["selectedItem"] = "selectedItem";
-        PROP_NAME["selectedValue"] = "selectedValue";
-        PROP_NAME["valuePath"] = "valuePath";
-        PROP_NAME["textPath"] = "textPath";
-        PROP_NAME["isEnabled"] = "isEnabled";
-        PROP_NAME["listBox"] = "listBox";
-        PROP_NAME["value"] = "value";
-        PROP_NAME["textProvider"] = "textProvider";
-        PROP_NAME["stateProvider"] = "stateProvider";
-    })(PROP_NAME || (PROP_NAME = {}));
     var LOOKUP_EVENTS;
     (function (LOOKUP_EVENTS) {
         LOOKUP_EVENTS["obj_created"] = "object_created";
@@ -2849,16 +2818,6 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         DLG_EVENTS["close"] = "close";
         DLG_EVENTS["refresh"] = "refresh";
     })(DLG_EVENTS || (DLG_EVENTS = {}));
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["dataContext"] = "dataContext";
-        PROP_NAME["isSubmitOnOK"] = "isSubmitOnOK";
-        PROP_NAME["width"] = "width";
-        PROP_NAME["height"] = "height";
-        PROP_NAME["title"] = "title";
-        PROP_NAME["canRefresh"] = "canRefresh";
-        PROP_NAME["canCancel"] = "canCancel";
-    })(PROP_NAME || (PROP_NAME = {}));
     var SubmitInfo = (function () {
         function SubmitInfo(dataContext) {
             this._dataContext = dataContext;
@@ -3371,13 +3330,6 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_17.Utils, sys = utils.sys, dom = dom_13.DomUtils;
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["template"] = "template";
-        PROP_NAME["templateID"] = "templateID";
-        PROP_NAME["dataContext"] = "dataContext";
-        PROP_NAME["animation"] = "animation";
-    })(PROP_NAME || (PROP_NAME = {}));
     var DynaContentElView = (function (_super) {
         __extends(DynaContentElView, _super);
         function DynaContentElView(options) {
@@ -6529,15 +6481,6 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
         css["currentPage"] = "ria-pager-current-page";
         css["otherPage"] = "ria-pager-other-page";
     })(css || (css = {}));
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["dataSource"] = "dataSource";
-        PROP_NAME["rowCount"] = "rowCount";
-        PROP_NAME["currentPage"] = "currentPage";
-        PROP_NAME["pager"] = "pager";
-        PROP_NAME["parentControl"] = "parentControl";
-        PROP_NAME["isVisible"] = "isVisible";
-    })(PROP_NAME || (PROP_NAME = {}));
     function _removeToolTips(toolTips) {
         toolTips.forEach(function (el) {
             baseview_7.fn_addToolTip(el, null);
@@ -7168,13 +7111,6 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
         css["currentItem"] = "ria-current-item";
         css["itemDeleted"] = "ria-item-deleted";
     })(css || (css = {}));
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["dataSource"] = "dataSource";
-        PROP_NAME["currentItem"] = "currentItem";
-        PROP_NAME["panel"] = "panel";
-        PROP_NAME["panelEvents"] = "panelEvents";
-    })(PROP_NAME || (PROP_NAME = {}));
     var ORIENTATION;
     (function (ORIENTATION) {
         ORIENTATION["VERTICAL"] = "vertical";
@@ -7652,11 +7588,6 @@ define("jriapp_ui/tabs", ["require", "exports", "jriapp_shared", "jriapp_ui/util
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_32.Utils, coreUtils = utils.core;
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["tabIndex"] = "tabIndex";
-        PROP_NAME["tabsEvents"] = "tabsEvents";
-    })(PROP_NAME || (PROP_NAME = {}));
     var TabsElView = (function (_super) {
         __extends(TabsElView, _super);
         function TabsElView(options) {
@@ -7919,11 +7850,6 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/mvv
     viewChecks.isTemplateElView = function (obj) {
         return !!obj && obj instanceof TemplateElView;
     };
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["template"] = "template";
-        PROP_NAME["isEnabled"] = "isEnabled";
-    })(PROP_NAME || (PROP_NAME = {}));
     var TemplateCommand = (function (_super) {
         __extends(TemplateCommand, _super);
         function TemplateCommand() {
@@ -8085,13 +8011,6 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             return null;
         }
     }
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["dataContext"] = "dataContext";
-        PROP_NAME["isEditing"] = "isEditing";
-        PROP_NAME["validationErrors"] = "validationErrors";
-        PROP_NAME["form"] = "form";
-    })(PROP_NAME || (PROP_NAME = {}));
     var DataForm = (function (_super) {
         __extends(DataForm, _super);
         function DataForm(options) {

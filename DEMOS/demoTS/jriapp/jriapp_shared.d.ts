@@ -138,14 +138,14 @@ declare module "jriapp_shared/int" {
         off(name?: string, nmspace?: string): void;
         offNS(nmspace?: string): void;
         raise(name: string, args: any): void;
-        raiseProp(name: keyof T): void;
-        onProp(prop: keyof T, handler: TPropChangedHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
-        offProp(prop?: keyof T, nmspace?: string): void;
+        raiseProp(name: keyof T | "*" | "[*]"): void;
+        onProp(prop: keyof T | "*" | "[*]", handler: TPropChangedHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
+        offProp(prop?: keyof T | "*" | "[*]", nmspace?: string): void;
     }
     export interface IBaseObject extends IErrorHandler, IDisposable {
         getIsStateDirty(): boolean;
         isHasProp(prop: string): boolean;
-        readonly objEvents: IObjectEvents<any>;
+        readonly objEvents: IObjectEvents;
     }
     export interface IObjectEvents<T = any> extends IEvents<T> {
         addOnError(handler: TErrorHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
@@ -519,7 +519,7 @@ declare module "jriapp_shared/object" {
         getIsDisposed(): boolean;
         getIsStateDirty(): boolean;
         dispose(): void;
-        readonly objEvents: IObjectEvents;
+        readonly objEvents: IObjectEvents<this>;
         readonly __objSig: object;
     }
 }
@@ -1445,9 +1445,9 @@ declare module "jriapp_shared/utils/jsonarray" {
         constructor(owner: JsonBag, pathToArray: string);
         dispose(): void;
         protected updateArray(arr: any[]): void;
-        addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
+        addOnValidateBag(fn: TEventHandler<this, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
         offOnValidateBag(nmspace?: string): void;
-        addOnValidateField(fn: TEventHandler<IPropertyBag, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
+        addOnValidateField(fn: TEventHandler<this, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any): void;
         offOnValidateField(nmspace?: string): void;
         protected _validateBag(bag: IAnyValItem): IValidationInfo[];
         protected _validateField(bag: IAnyValItem, fieldName: string): IValidationInfo;
@@ -1460,20 +1460,6 @@ declare module "jriapp_shared/utils/jsonarray" {
 declare module "jriapp_shared/utils/weakmap" {
     import { IWeakMap } from "jriapp_shared/int";
     export function createWeakMap(): IWeakMap;
-}
-declare module "jriapp_shared/utils/mixobj" {
-    import { IObjectEvents, TAnyConstructor } from "jriapp_shared/int";
-    export function MixObject<T extends TAnyConstructor<{}>>(Base: T): {
-        new (...args: any[]): {
-            isHasProp(prop: string): boolean;
-            handleError(error: any, source: any): boolean;
-            getIsDisposed(): boolean;
-            getIsStateDirty(): boolean;
-            dispose(): void;
-            readonly objEvents: IObjectEvents<any>;
-            readonly __objSig: object;
-        };
-    } & T;
 }
 declare module "jriapp_shared/collection/dictionary" {
     import { IPropInfo } from "jriapp_shared/collection/int";
@@ -1509,7 +1495,6 @@ declare module "jriapp_shared" {
     export * from "jriapp_shared/utils/jsonbag";
     export * from "jriapp_shared/utils/jsonarray";
     export { createWeakMap } from "jriapp_shared/utils/weakmap";
-    export { MixObject } from "jriapp_shared/utils/mixobj";
     export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "jriapp_shared/lang";
     export { BaseCollection } from "jriapp_shared/collection/base";
     export { CollectionItem } from "jriapp_shared/collection/item";

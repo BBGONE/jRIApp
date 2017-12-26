@@ -5,7 +5,7 @@ import { SORT_ORDER } from "jriapp_shared/collection/const";
 import { IExternallyCachable, IContentConstructor } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 
-import { css, PROP_NAME } from "../const";
+import { css } from "../const";
 import { BaseColumn, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 
@@ -100,7 +100,7 @@ export class DataColumn extends BaseColumn {
             this._sortOrder = v;
             const styles = [(v === SORT_ORDER.ASC ? "+" : "-") + css.colSortAsc, (v === SORT_ORDER.DESC ? "+" : "-") + css.colSortDesc];
             dom.setClasses([this.col], styles);
-            this.objEvents.raiseProp(PROP_NAME.sortOrder);
+            this.objEvents.raiseProp("sortOrder");
         }
     }
 }

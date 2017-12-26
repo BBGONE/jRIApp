@@ -16,7 +16,7 @@ import { Utils } from "../utils/utils";
 import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs,
     ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemArgs, ICollItemStatusArgs,
     ICollValidateFieldArgs, ICollValidateItemArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs,
-    IErrorsList, IErrors, PROP_NAME
+    IErrorsList, IErrors
 } from "./int";
 import { ValueUtils, CollUtils } from "./utils";
 import { ValidationError } from "../errors";
@@ -336,16 +336,16 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this.objEvents.off(COLL_EVENTS.status_changed, nmspace);
     }
     addOnPageIndexChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
-        this.objEvents.onProp(PROP_NAME.pageIndex, handler, nmspace, context);
+        this.objEvents.onProp("pageIndex", handler, nmspace, context);
     }
     addOnPageSizeChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
-        this.objEvents.onProp(PROP_NAME.pageSize, handler, nmspace, context);
+        this.objEvents.onProp("pageSize", handler, nmspace, context);
     }
     addOnTotalCountChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
-        this.objEvents.onProp(PROP_NAME.totalCount, handler, nmspace, context);
+        this.objEvents.onProp("totalCount", handler, nmspace, context);
     }
     addOnCurrentChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
-        this.objEvents.onProp(PROP_NAME.currentItem, handler, nmspace, context);
+        this.objEvents.onProp("currentItem", handler, nmspace, context);
     }
     protected _updatePermissions(perms: IPermissions): void {
         this._perms = perms;
@@ -378,13 +378,13 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this.objEvents.raise(COLL_EVENTS.current_changing, <ICurrentChangingArgs<TItem>>{ newCurrent: newCurrent });
     }
     protected _onCurrentChanged() {
-        this.objEvents.raiseProp(PROP_NAME.currentItem);
+        this.objEvents.raiseProp("currentItem");
     }
     protected _onCountChanged() {
-        this.objEvents.raiseProp(PROP_NAME.count);
+        this.objEvents.raiseProp("count");
     }
     protected _onEditingChanged() {
-        this.objEvents.raiseProp(PROP_NAME.isEditing);
+        this.objEvents.raiseProp("isEditing");
     }
     // occurs when item status Changed (not used in simple collections)
     protected _onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS) {
@@ -437,7 +437,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             new_key: item._key
         });
         item._aspect._onAttach();
-        this.objEvents.raiseProp(PROP_NAME.count);
+        this.objEvents.raiseProp("count");
         this._onCurrentChanging(item);
         this._currentPos = pos;
         this._onCurrentChanged();
@@ -454,7 +454,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
                 old_key: item._key
             });
         } finally {
-            this.objEvents.raiseProp(PROP_NAME.count);
+            this.objEvents.raiseProp("count");
         }
     }
     protected _onPageSizeChanged() {
@@ -534,7 +534,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             this.objEvents.raise(COLL_EVENTS.begin_edit, <ICollItemArgs<TItem>>{ item: item });
             this._onEditingChanged();
             if (!!item) {
-                item._aspect.objEvents.raiseProp(PROP_NAME.isEditing);
+                item._aspect.objEvents.raiseProp("isEditing");
             }
         } else {
             const oldItem = this._EditingItem;
@@ -542,7 +542,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             this.objEvents.raise(COLL_EVENTS.end_edit, { item: item, isCanceled: isCanceled });
             this._onEditingChanged();
             if (!!oldItem) {
-                oldItem._aspect.objEvents.raiseProp(PROP_NAME.isEditing);
+                oldItem._aspect.objEvents.raiseProp("isEditing");
             }
         }
     }
@@ -596,7 +596,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     _setIsLoading(v: boolean) {
         if (this._isLoading !== v) {
             this._isLoading = v;
-            this.objEvents.raiseProp(PROP_NAME.isLoading);
+            this.objEvents.raiseProp("isLoading");
         }
     }
     _getInternal(): IInternalCollMethods<TItem> {
@@ -919,7 +919,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     }
     waitForNotLoading(callback: () => void, groupName: string) {
         this._waitQueue.enQueue({
-            prop: PROP_NAME.isLoading,
+            prop: "isLoading",
             groupName: groupName,
             predicate: (val: any) => !val,
             action: callback,
@@ -940,15 +940,15 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     set totalCount(v: number) {
         if (v !== this._totalCount) {
             this._totalCount = v;
-            this.objEvents.raiseProp(PROP_NAME.totalCount);
-            this.objEvents.raiseProp(PROP_NAME.pageCount);
+            this.objEvents.raiseProp("totalCount");
+            this.objEvents.raiseProp("pageCount");
         }
     }
     get pageSize() { return this._options.pageSize; }
     set pageSize(v: number) {
         if (this._options.pageSize !== v) {
             this._options.pageSize = v;
-            this.objEvents.raiseProp(PROP_NAME.pageSize);
+            this.objEvents.raiseProp("pageSize");
             this._onPageSizeChanged();
         }
     }
@@ -963,7 +963,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             }
             this._pageIndex = v;
             this._onPageChanged();
-            this.objEvents.raiseProp(PROP_NAME.pageIndex);
+            this.objEvents.raiseProp("pageIndex");
         }
     }
     get pageCount() {
@@ -989,7 +989,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     set isUpdating(v: boolean) {
         if (this._isUpdating !== v) {
             this._isUpdating = v;
-            this.objEvents.raiseProp(PROP_NAME.isUpdating);
+            this.objEvents.raiseProp("isUpdating");
         }
     }
     get permissions(): IPermissions { return this._perms; }

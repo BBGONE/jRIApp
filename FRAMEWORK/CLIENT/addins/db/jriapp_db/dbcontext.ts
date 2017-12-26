@@ -10,7 +10,7 @@ import {
     IPermissionsInfo, IInvokeRequest, IInvokeResponse, IQueryRequest, IQueryResponse, ITrackAssoc,
     IChangeSet, IRowInfo, IQueryParamInfo
 } from "./int";
-import { PROP_NAME, DATA_OPER, REFRESH_MODE } from "./const";
+import { DATA_OPER, REFRESH_MODE } from "./const";
 import { TDbSet } from "./dbset";
 import { DbSets } from "./dbsets";
 import { Association } from "./association";
@@ -124,8 +124,8 @@ export class DbContext extends BaseObject {
                 return self._load(query, reason);
             }
         };
-        this.objEvents.onProp(PROP_NAME.isSubmiting, () => {
-            self.objEvents.raiseProp(PROP_NAME.isBusy);
+        this.objEvents.onProp("isSubmiting", () => {
+            self.objEvents.raiseProp("isBusy");
         });
     }
     protected _checkDestroy() {
@@ -210,16 +210,16 @@ export class DbContext extends BaseObject {
                 return;
             const oldBusy = self.isBusy;
             utils.arr.remove(self._requests, item);
-            self.objEvents.raiseProp(PROP_NAME.requestCount);
+            self.objEvents.raiseProp("requestCount");
             if (oldBusy !== self.isBusy) {
-                self.objEvents.raiseProp(PROP_NAME.isBusy);
+                self.objEvents.raiseProp("isBusy");
             }
         });
         if (cnt !== self._requests.length) {
-            self.objEvents.raiseProp(PROP_NAME.requestCount);
+            self.objEvents.raiseProp("requestCount");
         }
         if (oldBusy !== self.isBusy) {
-            self.objEvents.raiseProp(PROP_NAME.isBusy);
+            self.objEvents.raiseProp("isBusy");
         }
     }
     protected _tryAbortRequest(operType: DATA_OPER, name: string) {
@@ -399,7 +399,7 @@ export class DbContext extends BaseObject {
     }
     protected waitForNotBusy(callback: () => void): void {
         this._waitQueue.enQueue({
-            prop: PROP_NAME.isBusy,
+            prop: "isBusy",
             groupName: null,
             predicate: (val: any) => {
                 return !val;
@@ -410,7 +410,7 @@ export class DbContext extends BaseObject {
     }
     protected waitForNotSubmiting(callback: () => void): void {
         this._waitQueue.enQueue({
-            prop: PROP_NAME.isSubmiting,
+            prop: "isSubmiting",
             predicate: (val: any) => {
                 return !val;
             },
@@ -598,7 +598,7 @@ export class DbContext extends BaseObject {
             }
         }
         if (this._isHasChanges !== old) {
-            this.objEvents.raiseProp(PROP_NAME.isHasChanges);
+            this.objEvents.raiseProp("isHasChanges");
         }
     }
     protected _load(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
@@ -725,7 +725,7 @@ export class DbContext extends BaseObject {
         }).then((res: IPermissionsInfo) => {
             self._checkDestroy();
             self._updatePermissions(res);
-            self.objEvents.raiseProp(PROP_NAME.isInitialized);
+            self.objEvents.raiseProp("isInitialized");
         }).catch((err) => {
             self._onDataOperError(err, DATA_OPER.Init);
             ERROR.throwDummy(err);
@@ -779,7 +779,7 @@ export class DbContext extends BaseObject {
             fn_onStart: () => {
                 if (!self._isSubmiting) {
                     self._isSubmiting = true;
-                    self.objEvents.raiseProp(PROP_NAME.isSubmiting);
+                    self.objEvents.raiseProp("isSubmiting");
                 }
                 // allow to post new submit
                 self._pendingSubmit = null;
@@ -787,7 +787,7 @@ export class DbContext extends BaseObject {
             fn_onEnd: () => {
                 if (self._isSubmiting) {
                     self._isSubmiting = false;
-                    self.objEvents.raiseProp(PROP_NAME.isSubmiting);
+                    self.objEvents.raiseProp("isSubmiting");
                 }
             },
             fn_onErr: (ex: any) => {

@@ -232,7 +232,7 @@ export class BaseElView extends BaseObject implements IElView, ISubscriber {
             } else {
                 this.el.style.display = (!this._display ? "" : this._display);
             }
-            this.objEvents.raiseProp(PROP_NAME.isVisible);
+            this.objEvents.raiseProp("isVisible");
         }
     }
     get validationErrors(): IValidationInfo[] {
@@ -241,7 +241,7 @@ export class BaseElView extends BaseObject implements IElView, ISubscriber {
     set validationErrors(v: IValidationInfo[]) {
         if (v !== this._errors) {
             this._errors = v;
-            this.objEvents.raiseProp(PROP_NAME.validationErrors);
+            this.objEvents.raiseProp("validationErrors");
             this._updateErrorUI(this.el, this._errors);
         }
     }
@@ -255,7 +255,7 @@ export class BaseElView extends BaseObject implements IElView, ISubscriber {
         if (this._toolTip !== v) {
             this._toolTip = v;
             this._setToolTip(this.el, v);
-            this.objEvents.raiseProp(PROP_NAME.toolTip);
+            this.objEvents.raiseProp("toolTip");
         }
     }
     // stores commands for data binding to the HtmlElement's events
@@ -308,7 +308,7 @@ export class BaseElView extends BaseObject implements IElView, ISubscriber {
             }
 
             dom.setClasses([this._el], arr);
-            this.objEvents.raiseProp(PROP_NAME.css);
+            this.objEvents.raiseProp("css");
         }
     }
     get app(): IApplication {

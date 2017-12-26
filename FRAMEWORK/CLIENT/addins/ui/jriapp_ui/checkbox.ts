@@ -4,7 +4,7 @@ import { Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { SubscribeFlags } from "jriapp/const";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
-import { css, PROP_NAME } from "./baseview";
+import { css } from "./baseview";
 import { InputElView } from "./input";
 
 const dom = DomUtils, checks = Utils.check, boot = bootstrap, subscribeMap = subscribeWeakMap;
@@ -50,7 +50,7 @@ export class CheckBoxElView extends InputElView {
             const chk = <HTMLInputElement>this.el;
             chk.checked = !!v;
             this._updateState();
-            this.objEvents.raiseProp(PROP_NAME.checked);
+            this.objEvents.raiseProp("checked");
         }
     }
 }

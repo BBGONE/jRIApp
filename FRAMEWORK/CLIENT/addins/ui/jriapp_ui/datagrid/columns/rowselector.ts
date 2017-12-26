@@ -3,7 +3,7 @@ import { Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR } from "jriapp/const";
 
-import { css, PROP_NAME } from "../const";
+import { css } from "../const";
 import { BaseColumn, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 import { RowSelectorCell } from "../cells/rowselector";
@@ -29,7 +29,7 @@ export class RowSelectorColumn extends BaseColumn {
         this._chk = chk;
         dom.events.on(chk, "change", (e) => {
             e.stopPropagation();
-            self.objEvents.raiseProp(PROP_NAME.checked);
+            self.objEvents.raiseProp("checked");
             self.grid.selectRows(chk.checked);
         }, this.uniqueID);
 
@@ -63,7 +63,7 @@ export class RowSelectorColumn extends BaseColumn {
         const bv = !!v, chk = this._chk;
         if (bv !== chk.checked) {
             chk.checked = bv;
-            this.objEvents.raiseProp(PROP_NAME.checked);
+            this.objEvents.raiseProp("checked");
         }
     }
     dispose() {

@@ -2,7 +2,6 @@
 import { DomUtils } from "jriapp/utils/dom";
 import { SubscribeFlags } from "jriapp/const";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
-import { PROP_NAME } from "./baseview";
 import { CommandElView, ICommandViewOptions } from "./command";
 
 const boot = bootstrap, dom = DomUtils, subscribeMap = subscribeWeakMap;
@@ -51,7 +50,7 @@ export class ButtonElView extends CommandElView {
                 (<HTMLInputElement>this.el).value = v;
             }
 
-            this.objEvents.raiseProp(PROP_NAME.value);
+            this.objEvents.raiseProp("value");
         }
     }
     get text(): string {
@@ -62,7 +61,7 @@ export class ButtonElView extends CommandElView {
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             this.el.textContent = v;
-            this.objEvents.raiseProp(PROP_NAME.text);
+            this.objEvents.raiseProp("text");
         }
     }
     get html(): string {
@@ -77,7 +76,7 @@ export class ButtonElView extends CommandElView {
             } else {
                 (<HTMLInputElement>this.el).value = v;
             }
-            this.objEvents.raiseProp(PROP_NAME.html);
+            this.objEvents.raiseProp("html");
         }
     }
 }

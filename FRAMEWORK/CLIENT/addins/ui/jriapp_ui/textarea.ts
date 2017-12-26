@@ -1,7 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { bootstrap } from "jriapp/bootstrap";
 import { TextBoxElView, ITextBoxOptions } from "./textbox";
-import { PROP_NAME } from "./baseview";
 
 
 export interface ITextAreaOptions extends ITextBoxOptions {
@@ -25,7 +24,7 @@ export class TextAreaElView extends TextBoxElView {
         const x = this.wrap;
         if (x !== v) {
             (<HTMLTextAreaElement>this.el).wrap = v;
-            this.objEvents.raiseProp(PROP_NAME.wrap);
+            this.objEvents.raiseProp("wrap");
         }
     }
 }

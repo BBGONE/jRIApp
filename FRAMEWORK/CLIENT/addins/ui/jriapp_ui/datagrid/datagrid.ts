@@ -22,7 +22,7 @@ import { BaseElView } from "../baseview";
 import { parseContentAttr } from "../content/int";
 import { IDialogConstructorOptions, DataEditDialog } from "../dialog";
 
-import { css, ROW_POSITION, COLUMN_TYPE, ROW_ACTION, PROP_NAME } from "./const";
+import { css, ROW_POSITION, COLUMN_TYPE, ROW_ACTION } from "./const";
 import { IDataGridAnimation, DefaultAnimation } from "./animation";
 
 import { BaseCell } from "./cells/base";
@@ -611,11 +611,11 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             const oldRow = !prevCurrent ? null : this._rowMap[prevCurrent._key];
             const newRow = !newCurrent ? null : this._rowMap[newCurrent._key];
             if (!!oldRow) {
-                oldRow.objEvents.raiseProp(PROP_NAME.isCurrent);
+                oldRow.objEvents.raiseProp("isCurrent");
                 dom.removeClass([oldRow.tr], css.rowHighlight);
             }
             if (!!newRow) {
-                newRow.objEvents.raiseProp(PROP_NAME.isCurrent);
+                newRow.objEvents.raiseProp("isCurrent");
                 dom.addClass([newRow.tr], css.rowHighlight);
             }
         }
@@ -700,7 +700,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             row._onEndEdit(isCanceled);
             this._editingRow = null;
         }
-        this.objEvents.raiseProp(PROP_NAME.editingRow);
+        this.objEvents.raiseProp("editingRow");
     }
     protected _onItemAdded(sender: any, args: ICollItemAddedArgs<ICollectionItem>) {
         const item = args.item, row = this._rowMap[item._key];
@@ -1220,7 +1220,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     set dataSource(v: ICollection<ICollectionItem>) {
         if (v !== this.dataSource) {
             this.setDataSource(v);
-            this.objEvents.raiseProp(PROP_NAME.dataSource);
+            this.objEvents.raiseProp("dataSource");
         }
     }
     get rows() { return this._rows; }
@@ -1329,7 +1329,7 @@ export class DataGridElView extends BaseElView implements ISelectableProvider {
         }, this.uniqueID);
         self._grid.objEvents.onProp("*", (sender, args) => {
             switch (args.property) {
-                case PROP_NAME.dataSource:
+                case "dataSource":
                     self.objEvents.raiseProp(args.property);
                     break;
             }
@@ -1358,7 +1358,7 @@ export class DataGridElView extends BaseElView implements ISelectableProvider {
                     row.updateUIState();
                 });
             });
-            this.objEvents.raiseProp(PROP_NAME.stateProvider);
+            this.objEvents.raiseProp("stateProvider");
         }
     }
     get animation(): IDataGridAnimation {
@@ -1367,7 +1367,7 @@ export class DataGridElView extends BaseElView implements ISelectableProvider {
     set animation(v) {
         if (this.animation !== v) {
             this._grid.options.animation = v;
-            this.objEvents.raiseProp(PROP_NAME.animation);
+            this.objEvents.raiseProp("animation");
         }
     }
     get selectable(): ISelectable {

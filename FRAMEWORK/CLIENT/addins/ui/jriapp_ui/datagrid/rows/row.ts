@@ -2,7 +2,7 @@
 import { BaseObject, Utils } from "jriapp_shared";
 import { ICollectionItem } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { css, ROW_POSITION, PROP_NAME } from "../const";
+import { css, ROW_POSITION } from "../const";
 import { BaseCell } from "../cells/base";
 import { ExpanderCell } from "../cells/expander";
 import { DataCell } from "../cells/data";
@@ -207,7 +207,7 @@ export class Row extends BaseObject {
             if (!!this._rowSelectorCell) {
                 this._rowSelectorCell.checked = this._isSelected;
             }
-            this.objEvents.raiseProp(PROP_NAME.isSelected);
+            this.objEvents.raiseProp("isSelected");
             this.grid._getInternal().onRowSelectionChanged(this);
         }
     }

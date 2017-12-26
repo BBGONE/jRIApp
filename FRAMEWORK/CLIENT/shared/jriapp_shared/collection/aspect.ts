@@ -5,7 +5,7 @@ import { IVoidPromise } from "../utils/ideferred";
 import { IIndexer, IValidationInfo, TEventHandler, IErrorNotification } from "../int";
 import { BaseObject } from "../object";
 import { Utils } from "../utils/utils";
-import { ICollectionItem, IItemAspect, ICancellableArgs, PROP_NAME, ITEM_EVENTS } from "./int";
+import { ICollectionItem, IItemAspect, ICancellableArgs, ITEM_EVENTS } from "./int";
 import { BaseCollection } from "./base";
 import { CollUtils } from "./utils";
 import { ValidationError } from "../errors";
@@ -215,7 +215,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
     _setIsRefreshing(v: boolean) {
         if (this.isRefreshing !== v) {
             this._setFlag(v, AspectFlags.IsRefreshing);
-            this.objEvents.raiseProp(PROP_NAME.isRefreshing);
+            this.objEvents.raiseProp("isRefreshing");
         }
     }
     _onAttaching(): void {

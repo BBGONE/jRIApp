@@ -1,6 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { BaseObject, Utils, IIndexer } from "jriapp_shared";
-import { PROP_NAME } from "./const";
 import { TDataQuery } from "./dataquery";
 import { IEntityItem, ICachedPage, IKV } from "./int";
 
@@ -176,7 +175,7 @@ export class DataCache extends BaseObject {
         }
         if (v !== this._totalCount) {
             this._totalCount = v;
-            this.objEvents.raiseProp(PROP_NAME.totalCount);
+            this.objEvents.raiseProp("totalCount");
         }
     }
     get cacheSize() {

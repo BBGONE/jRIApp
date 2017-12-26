@@ -2,7 +2,7 @@
 import { DomUtils } from "jriapp/utils/dom";
 import { SubscribeFlags } from "jriapp/const";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
-import { css, PROP_NAME } from "./baseview";
+import { css } from "./baseview";
 import { CommandElView, ICommandViewOptions } from "./command";
 
 const dom = DomUtils, boot = bootstrap, subscribeMap = subscribeWeakMap;
@@ -124,7 +124,7 @@ export class AnchorElView extends CommandElView {
         const x = this._imageSrc;
         if (x !== v) {
             this._updateImage(v);
-            this.objEvents.raiseProp(PROP_NAME.imageSrc);
+            this.objEvents.raiseProp("imageSrc");
         }
     }
     get glyph(): string { return this._glyph; }
@@ -132,7 +132,7 @@ export class AnchorElView extends CommandElView {
         const x = this._glyph;
         if (x !== v) {
             this._updateGlyph(v);
-            this.objEvents.raiseProp(PROP_NAME.glyph);
+            this.objEvents.raiseProp("glyph");
         }
     }
     get html(): string {
@@ -143,7 +143,7 @@ export class AnchorElView extends CommandElView {
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             this.el.innerHTML = v;
-            this.objEvents.raiseProp(PROP_NAME.html);
+            this.objEvents.raiseProp("html");
         }
     }
     get text(): string {
@@ -154,7 +154,7 @@ export class AnchorElView extends CommandElView {
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             this.el.textContent = v;
-            this.objEvents.raiseProp(PROP_NAME.text);
+            this.objEvents.raiseProp("text");
         }
     }
     get href(): string {
@@ -165,7 +165,7 @@ export class AnchorElView extends CommandElView {
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             (<HTMLAnchorElement>this.el).href = v;
-            this.objEvents.raiseProp(PROP_NAME.href);
+            this.objEvents.raiseProp("href");
         }
     }
 }

@@ -3,7 +3,6 @@ import { IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { SubscribeFlags } from "jriapp/const";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
-import { PROP_NAME } from "./baseview";
 import { InputElView } from "./input";
 
 const dom = DomUtils, subscribeMap = subscribeWeakMap;
@@ -49,7 +48,7 @@ export class TextBoxElView extends InputElView {
         }
     }
     handle_change(e: Event): void {
-        this.objEvents.raiseProp(PROP_NAME.value);
+        this.objEvents.raiseProp("value");
     }
     handle_keypress(e: KeyboardEvent): void {
         const args: TKeyPressArgs = {
@@ -63,7 +62,7 @@ export class TextBoxElView extends InputElView {
         }
     }
     handle_keyup(e: KeyboardEvent): void {
-        this.objEvents.raiseProp(PROP_NAME.value);
+        this.objEvents.raiseProp("value");
     }
     addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string) {
         this.objEvents.on(TXTBOX_EVENTS.keypress, fn, nmspace);
@@ -81,7 +80,7 @@ export class TextBoxElView extends InputElView {
         const x = this.el.style.color;
         if (v !== x) {
             this.el.style.color = v;
-            this.objEvents.raiseProp(PROP_NAME.color);
+            this.objEvents.raiseProp("color");
         }
     }
 }

@@ -28,7 +28,7 @@ export class PropertyBag extends BaseObject implements IPropertyBag {
         const old = this._el[propName];
         if (old !== val) {
             this._el[propName] = val;
-            this.objEvents.raiseProp(name);
+            this.objEvents.raiseProp(<any>name);
         }
     }
     get isPropertyBag() {

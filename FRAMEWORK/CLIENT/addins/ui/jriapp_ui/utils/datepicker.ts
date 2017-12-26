@@ -8,11 +8,6 @@ import { JQueryUtils, $ } from "./jquery";
 
 const ERRS = LocaleERRS;
 
-const enum PROP_NAME {
-    dateFormat = "dateFormat",
-    datepickerRegion = "datepickerRegion"
-}
-
 export function createDatepickerSvc(): IDatepicker {
     return new Datepicker();
 }
@@ -73,7 +68,7 @@ class Datepicker extends BaseObject implements IDatepicker {
                 regional.dateFormat = this._dateFormat;
                 this.datePickerFn.setDefaults(regional);
             }
-            this.objEvents.raiseProp(PROP_NAME.dateFormat);
+            this.objEvents.raiseProp("dateFormat");
         }
     }
     get datepickerRegion() { return this._datepickerRegion; }
@@ -88,7 +83,7 @@ class Datepicker extends BaseObject implements IDatepicker {
                 this._datepickerRegion = v;
                 regional.dateFormat = oldDateFormat;
                 this.datePickerFn.setDefaults(regional);
-                this.objEvents.raiseProp(PROP_NAME.datepickerRegion);
+                this.objEvents.raiseProp("datepickerRegion");
             }
         }
     }

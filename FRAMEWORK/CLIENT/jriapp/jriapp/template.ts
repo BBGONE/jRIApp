@@ -18,13 +18,6 @@ export const enum css {
     templateError = "ria-template-error"
 }
 
-const enum PROP_NAME {
-    dataContext = "dataContext",
-    templateID = "templateID",
-    template = "template",
-    isEnabled = "isEnabled"
-}
-
 export interface ITemplateOptions {
     dataContext?: any;
     templEvents?: ITemplateEvents;
@@ -284,7 +277,7 @@ class Template extends BaseObject implements ITemplate {
         if (this._dataContext !== v) {
             this._dataContext = v;
             this._updateBindingSource();
-            this.objEvents.raiseProp(PROP_NAME.dataContext);
+            this.objEvents.raiseProp("dataContext");
         }
     }
     get templateID(): string {
@@ -294,7 +287,7 @@ class Template extends BaseObject implements ITemplate {
         if (this._templateID !== v) {
             this._templateID = v;
             this._loadTemplate();
-            this.objEvents.raiseProp(PROP_NAME.templateID);
+            this.objEvents.raiseProp("templateID");
         }
     }
     get el(): HTMLElement {

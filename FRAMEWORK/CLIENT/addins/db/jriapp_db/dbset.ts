@@ -18,7 +18,7 @@ import {
     IPermissions, IDbSetConstuctorOptions, IAssociationInfo, ICalcFieldImpl, INavFieldImpl,
     IQueryResult, IRowData, IDbSetLoadedArgs
 } from "./int";
-import { PROP_NAME, REFRESH_MODE } from "./const";
+import { REFRESH_MODE } from "./const";
 import { DataQuery, TDataQuery } from "./dataquery";
 import { DbContext } from "./dbcontext";
 import { EntityAspect } from "./entity_aspect";
@@ -200,11 +200,11 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             }
         };
         coreUtils.merge(internalObj, this._internal);
-        this.dbContext.objEvents.onProp(PROP_NAME.isSubmiting, (s, a) => {
-            self.objEvents.raiseProp(PROP_NAME.isBusy);
+        this.dbContext.objEvents.onProp("isSubmiting", (s, a) => {
+            self.objEvents.raiseProp("isBusy");
         }, this.dbSetName);
-        this.objEvents.onProp(PROP_NAME.isLoading, (s, a) => {
-            self.objEvents.raiseProp(PROP_NAME.isBusy);
+        this.objEvents.onProp("isLoading", (s, a) => {
+            self.objEvents.raiseProp("isBusy");
         });
     }
     abstract itemFactory(aspect: EntityAspect<TItem, TObj, TDbContext>): TItem;
@@ -365,7 +365,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         this._changeCache = {};
         this._changeCount = 0;
         if (old !== this._changeCount)
-            this.objEvents.raiseProp(PROP_NAME.isHasChanges);
+            this.objEvents.raiseProp("isHasChanges");
     }
     */
     protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
@@ -715,7 +715,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             this._changeCache[item._key] = item;
             this._changeCount += 1;
             if (this._changeCount === 1) {
-                this.objEvents.raiseProp(PROP_NAME.isHasChanges);
+                this.objEvents.raiseProp("isHasChanges");
             }
         }
     }
@@ -727,7 +727,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             delete this._changeCache[key];
             this._changeCount -= 1;
             if (this._changeCount === 0) {
-                this.objEvents.raiseProp(PROP_NAME.isHasChanges);
+                this.objEvents.raiseProp("isHasChanges");
             }
         }
     }
@@ -923,7 +923,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     }
     waitForNotBusy(callback: () => void, groupName: string) {
         this._waitQueue.enQueue({
-            prop: PROP_NAME.isBusy,
+            prop: "isBusy",
             groupName: groupName,
             predicate: (val: any) => {
                 return !val;
@@ -1046,7 +1046,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     set isSubmitOnDelete(v: boolean) {
         if (this._isSubmitOnDelete !== v) {
             this._isSubmitOnDelete = !!v;
-            this.objEvents.raiseProp(PROP_NAME.isSubmitOnDelete);
+            this.objEvents.raiseProp("isSubmitOnDelete");
         }
     }
     get isBusy(): boolean { return this.isLoading || this.dbContext.isSubmiting; }

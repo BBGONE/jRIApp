@@ -2949,7 +2949,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
         }
     };
 });
-define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/errors"], function (require, exports, object_3, lang_5, waitqueue_1, utils_2, int_2, utils_3, errors_5) {
+define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/utils", "jriapp_shared/errors"], function (require, exports, object_3, lang_5, waitqueue_1, utils_2, utils_3, errors_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = utils_2.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys, valUtils = utils_3.ValueUtils, collUtils = utils_3.CollUtils;
@@ -3245,16 +3245,16 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this.objEvents.off("status_changed", nmspace);
         };
         BaseCollection.prototype.addOnPageIndexChanged = function (handler, nmspace, context) {
-            this.objEvents.onProp(int_2.PROP_NAME.pageIndex, handler, nmspace, context);
+            this.objEvents.onProp("pageIndex", handler, nmspace, context);
         };
         BaseCollection.prototype.addOnPageSizeChanged = function (handler, nmspace, context) {
-            this.objEvents.onProp(int_2.PROP_NAME.pageSize, handler, nmspace, context);
+            this.objEvents.onProp("pageSize", handler, nmspace, context);
         };
         BaseCollection.prototype.addOnTotalCountChanged = function (handler, nmspace, context) {
-            this.objEvents.onProp(int_2.PROP_NAME.totalCount, handler, nmspace, context);
+            this.objEvents.onProp("totalCount", handler, nmspace, context);
         };
         BaseCollection.prototype.addOnCurrentChanged = function (handler, nmspace, context) {
-            this.objEvents.onProp(int_2.PROP_NAME.currentItem, handler, nmspace, context);
+            this.objEvents.onProp("currentItem", handler, nmspace, context);
         };
         BaseCollection.prototype._updatePermissions = function (perms) {
             this._perms = perms;
@@ -3288,13 +3288,13 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this.objEvents.raise("current_changing", { newCurrent: newCurrent });
         };
         BaseCollection.prototype._onCurrentChanged = function () {
-            this.objEvents.raiseProp(int_2.PROP_NAME.currentItem);
+            this.objEvents.raiseProp("currentItem");
         };
         BaseCollection.prototype._onCountChanged = function () {
-            this.objEvents.raiseProp(int_2.PROP_NAME.count);
+            this.objEvents.raiseProp("count");
         };
         BaseCollection.prototype._onEditingChanged = function () {
-            this.objEvents.raiseProp(int_2.PROP_NAME.isEditing);
+            this.objEvents.raiseProp("isEditing");
         };
         BaseCollection.prototype._onItemStatusChanged = function (item, oldStatus) {
             this.objEvents.raise("status_changed", { item: item, oldStatus: oldStatus, key: item._key });
@@ -3346,7 +3346,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 new_key: item._key
             });
             item._aspect._onAttach();
-            this.objEvents.raiseProp(int_2.PROP_NAME.count);
+            this.objEvents.raiseProp("count");
             this._onCurrentChanging(item);
             this._currentPos = pos;
             this._onCurrentChanged();
@@ -3364,7 +3364,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 });
             }
             finally {
-                this.objEvents.raiseProp(int_2.PROP_NAME.count);
+                this.objEvents.raiseProp("count");
             }
         };
         BaseCollection.prototype._onPageSizeChanged = function () {
@@ -3445,7 +3445,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 this.objEvents.raise("beg_edit", { item: item });
                 this._onEditingChanged();
                 if (!!item) {
-                    item._aspect.objEvents.raiseProp(int_2.PROP_NAME.isEditing);
+                    item._aspect.objEvents.raiseProp("isEditing");
                 }
             }
             else {
@@ -3454,7 +3454,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 this.objEvents.raise("end_edit", { item: item, isCanceled: isCanceled });
                 this._onEditingChanged();
                 if (!!oldItem) {
-                    oldItem._aspect.objEvents.raiseProp(int_2.PROP_NAME.isEditing);
+                    oldItem._aspect.objEvents.raiseProp("isEditing");
                 }
             }
         };
@@ -3508,7 +3508,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         BaseCollection.prototype._setIsLoading = function (v) {
             if (this._isLoading !== v) {
                 this._isLoading = v;
-                this.objEvents.raiseProp(int_2.PROP_NAME.isLoading);
+                this.objEvents.raiseProp("isLoading");
             }
         };
         BaseCollection.prototype._getInternal = function () {
@@ -3829,7 +3829,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype.waitForNotLoading = function (callback, groupName) {
             this._waitQueue.enQueue({
-                prop: int_2.PROP_NAME.isLoading,
+                prop: "isLoading",
                 groupName: groupName,
                 predicate: function (val) { return !val; },
                 action: callback,
@@ -3871,8 +3871,8 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             set: function (v) {
                 if (v !== this._totalCount) {
                     this._totalCount = v;
-                    this.objEvents.raiseProp(int_2.PROP_NAME.totalCount);
-                    this.objEvents.raiseProp(int_2.PROP_NAME.pageCount);
+                    this.objEvents.raiseProp("totalCount");
+                    this.objEvents.raiseProp("pageCount");
                 }
             },
             enumerable: true,
@@ -3883,7 +3883,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             set: function (v) {
                 if (this._options.pageSize !== v) {
                     this._options.pageSize = v;
-                    this.objEvents.raiseProp(int_2.PROP_NAME.pageSize);
+                    this.objEvents.raiseProp("pageSize");
                     this._onPageSizeChanged();
                 }
             },
@@ -3902,7 +3902,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                     }
                     this._pageIndex = v;
                     this._onPageChanged();
-                    this.objEvents.raiseProp(int_2.PROP_NAME.pageIndex);
+                    this.objEvents.raiseProp("pageIndex");
                 }
             },
             enumerable: true,
@@ -3947,7 +3947,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             set: function (v) {
                 if (this._isUpdating !== v) {
                     this._isUpdating = v;
-                    this.objEvents.raiseProp(int_2.PROP_NAME.isUpdating);
+                    this.objEvents.raiseProp("isUpdating");
                 }
             },
             enumerable: true,
@@ -4115,7 +4115,7 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
     }());
     exports.Validations = Validations;
 });
-define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/utils", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/errors", "jriapp_shared/collection/validation"], function (require, exports, object_4, utils_5, int_3, utils_6, errors_6, validation_1) {
+define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/utils", "jriapp_shared/collection/utils", "jriapp_shared/errors", "jriapp_shared/collection/validation"], function (require, exports, object_4, utils_5, utils_6, errors_6, validation_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = utils_5.Utils, coreUtils = utils.core, checks = utils.check, sys = utils.sys, ERROR = utils.err, collUtils = utils_6.CollUtils;
@@ -4294,7 +4294,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype._setIsRefreshing = function (v) {
             if (this.isRefreshing !== v) {
                 this._setFlag(v, 2);
-                this.objEvents.raiseProp(int_3.PROP_NAME.isRefreshing);
+                this.objEvents.raiseProp("isRefreshing");
             }
         };
         ItemAspect.prototype._onAttaching = function () {
@@ -4692,7 +4692,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
     }(object_5.BaseObject));
     exports.CollectionItem = CollectionItem;
 });
-define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/int", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_7, int_4, utils_8, base_1, aspect_1, errors_7) {
+define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_7, utils_8, base_1, aspect_1, errors_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err, collUtils = utils_8.CollUtils, sys = utils.sys;
@@ -4843,7 +4843,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     }
                 });
                 if (newItems.length > 0) {
-                    this.objEvents.raiseProp(int_4.PROP_NAME.count);
+                    this.objEvents.raiseProp("count");
                 }
             }
             finally {
@@ -5230,91 +5230,6 @@ define("jriapp_shared/utils/weakmap", ["require", "exports"], function (require,
         return WeakMap;
     }());
 });
-define("jriapp_shared/utils/mixobj", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/error", "jriapp_shared/utils/weakmap", "jriapp_shared/object"], function (require, exports, checks_9, error_5, weakmap_1, object_7) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var checks = checks_9.Checks, signature = object_7.objSignature, weakmap = weakmap_1.createWeakMap();
-    function MixObject(Base) {
-        return (function (_super) {
-            __extends(class_1, _super);
-            function class_1() {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                var _this = _super.apply(this, args) || this;
-                weakmap.set(_this, { objState: 0, events: null });
-                return _this;
-            }
-            class_1.prototype.isHasProp = function (prop) {
-                return checks.isHasProp(this, prop);
-            };
-            class_1.prototype.handleError = function (error, source) {
-                if (error_5.ERROR.checkIsDummy(error)) {
-                    return true;
-                }
-                if (!error.message) {
-                    error = new Error("Error: " + error);
-                }
-                var args = { error: error, source: source, isHandled: false };
-                this.objEvents.raise("error", args);
-                var isHandled = args.isHandled;
-                if (!isHandled) {
-                    isHandled = error_5.ERROR.handleError(this, error, source);
-                }
-                return isHandled;
-            };
-            class_1.prototype.getIsDisposed = function () {
-                var state = weakmap.get(this);
-                return !state || state.objState === 2;
-            };
-            class_1.prototype.getIsStateDirty = function () {
-                var state = weakmap.get(this);
-                return !state || state.objState !== 0;
-            };
-            class_1.prototype.dispose = function () {
-                var state = weakmap.get(this);
-                if (!state || state.objState === 2) {
-                    return;
-                }
-                try {
-                    if (!!state.events) {
-                        state.events.raise("disposed", {});
-                        state.events.off();
-                        state.events = null;
-                    }
-                }
-                finally {
-                    state.objState = 2;
-                    weakmap.delete(this);
-                }
-            };
-            Object.defineProperty(class_1.prototype, "objEvents", {
-                get: function () {
-                    var state = weakmap.get(this);
-                    if (!state || state.objState === 2) {
-                        return object_7.dummyEvents;
-                    }
-                    if (!state.events) {
-                        state.events = object_7.createObjectEvents(this);
-                    }
-                    return state.events;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(class_1.prototype, "__objSig", {
-                get: function () {
-                    return signature;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return class_1;
-        }(Base));
-    }
-    exports.MixObject = MixObject;
-});
 define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/list"], function (require, exports, utils_9, lang_8, utils_10, base_2, list_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -5402,10 +5317,10 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
     }(list_2.BaseList));
     exports.BaseDictionary = BaseDictionary;
 });
-define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/checks"], function (require, exports, checks_10) {
+define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/checks"], function (require, exports, checks_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var checks = checks_10.Checks;
+    var checks = checks_9.Checks;
     var Lazy = (function () {
         function Lazy(factory) {
             this._val = null;
@@ -5451,20 +5366,19 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/utils/mixobj", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_5, errors_9, object_8, jsonbag_1, jsonarray_1, weakmap_2, mixobj_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_5, int_2, errors_9, object_7, jsonbag_1, jsonarray_1, weakmap_1, lang_9, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
     }
     Object.defineProperty(exports, "__esModule", { value: true });
     __export(const_5);
-    __export(int_5);
+    __export(int_2);
     __export(errors_9);
-    __export(object_8);
+    __export(object_7);
     __export(jsonbag_1);
     __export(jsonarray_1);
-    exports.createWeakMap = weakmap_2.createWeakMap;
-    exports.MixObject = mixobj_1.MixObject;
+    exports.createWeakMap = weakmap_1.createWeakMap;
     exports.LocaleSTRS = lang_9.STRS;
     exports.LocaleERRS = lang_9.ERRS;
     exports.BaseCollection = base_3.BaseCollection;

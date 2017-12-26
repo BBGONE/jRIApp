@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { bootstrap } from "jriapp/bootstrap";
-import { BaseElView, PROP_NAME } from "./baseview";
+import { BaseElView } from "./baseview";
 
 export class SpanElView extends BaseElView {
     toString() {
@@ -12,8 +12,8 @@ export class SpanElView extends BaseElView {
         v = (v === null ? "" : str);
         if (x !== v) {
             el.textContent = v;
-            this.objEvents.raiseProp(PROP_NAME.text);
-            this.objEvents.raiseProp(PROP_NAME.value);
+            this.objEvents.raiseProp("text");
+            this.objEvents.raiseProp("value");
         }
     }
     get value() {
@@ -28,7 +28,7 @@ export class SpanElView extends BaseElView {
         v = v === null ? "" : str;
         if (x !== v) {
             el.innerHTML = v;
-            this.objEvents.raiseProp(PROP_NAME.html);
+            this.objEvents.raiseProp("html");
         }
     }
 }

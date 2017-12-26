@@ -74,13 +74,13 @@ export abstract class BaseDictionary<TItem extends IListItem, TObj> extends Base
                 new_key: newkey
             });
         }
-        this.objEvents.raiseProp(`[${item._key}]`);
+        this.objEvents.raiseProp(<any>`[${item._key}]`);
     }
     // override
     protected _onRemoved(item: TItem, pos: number) {
         const key = (<any>item)[this._keyName];
         super._onRemoved(item, pos);
-        this.objEvents.raiseProp(`[${key}]`);
+        this.objEvents.raiseProp(<any>`[${key}]`);
     }
     get keyName() {
         return this._keyName;

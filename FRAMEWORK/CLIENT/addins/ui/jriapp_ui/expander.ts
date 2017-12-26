@@ -57,7 +57,7 @@ export class ExpanderElView extends AnchorElView {
         if (this._isExpanded !== v) {
             this._isExpanded = v;
             this.invokeCommand();
-            this.objEvents.raiseProp(PROP_NAME.isExpanded);
+            this.objEvents.raiseProp("isExpanded");
         }
     }
 }

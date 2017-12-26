@@ -21,13 +21,6 @@ export interface IDynaContentOptions extends IViewOptions {
     animate?: string;
 }
 
-const enum PROP_NAME {
-    template = "template",
-    templateID = "templateID",
-    dataContext = "dataContext",
-    animation = "animation"
-}
-
 export class DynaContentElView extends BaseElView implements ITemplateEvents {
     private _dataContext: any;
     private _prevTemplateID: string;
@@ -87,13 +80,13 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
                         }
                         self._template.dispose();
                         self._template = null;
-                        self.objEvents.raiseProp(PROP_NAME.template);
+                        self.objEvents.raiseProp("template");
 
                     });
                 } else {
                     self._template.dispose();
                     self._template = null;
-                    self.objEvents.raiseProp(PROP_NAME.template);
+                    self.objEvents.raiseProp("template");
                 }
                 return;
             }
@@ -101,7 +94,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
             if (!self._template) {
                 self._template = createTemplate(self._dataContext, self);
                 self._template.templateID = newName;
-                self.objEvents.raiseProp(PROP_NAME.template);
+                self.objEvents.raiseProp("template");
                 return;
             }
             if (!!self._animation && !!self._template.loadedElem) {
@@ -153,7 +146,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
             this._tDebounce.enque(() => {
                 self._templateChanging(old, v);
             });
-            this.objEvents.raiseProp(PROP_NAME.templateID);
+            this.objEvents.raiseProp("templateID");
         }
     }
     get dataContext() { return this._dataContext; }
@@ -166,14 +159,14 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
                     this._template.dataContext = ds;
                 }
             });
-            this.objEvents.raiseProp(PROP_NAME.dataContext);
+            this.objEvents.raiseProp("dataContext");
         }
     }
     get animation() { return this._animation; }
     set animation(v) {
         if (this._animation !== v) {
             this._animation = v;
-            this.objEvents.raiseProp(PROP_NAME.animation);
+            this.objEvents.raiseProp("animation");
         }
     }
 }

@@ -587,17 +587,6 @@ define("jriapp/defaults", ["require", "exports", "jriapp_shared", "jriapp/int"],
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_4.Utils, strUtils = utils.str;
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["dateFormat"] = "dateFormat";
-        PROP_NAME["timeFormat"] = "timeFormat";
-        PROP_NAME["dateTimeFormat"] = "dateTimeFormat";
-        PROP_NAME["datepicker"] = "datepicker";
-        PROP_NAME["imagesPath"] = "imagesPath";
-        PROP_NAME["decimalPoint"] = "decimalPoint";
-        PROP_NAME["thousandSep"] = "thousandSep";
-        PROP_NAME["decPrecision"] = "decPrecision";
-    })(PROP_NAME || (PROP_NAME = {}));
     var Defaults = (function (_super) {
         __extends(Defaults, _super);
         function Defaults() {
@@ -714,10 +703,6 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_5.Utils, checks = utils.check, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer, ERRS = jriapp_shared_5.LocaleERRS, DEBUG = utils.debug, LOG = utils.log, http = utils.http;
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["isLoading"] = "isLoading";
-    })(PROP_NAME || (PROP_NAME = {}));
     var LOADER_EVENTS;
     (function (LOADER_EVENTS) {
         LOADER_EVENTS["loaded"] = "loaded";
@@ -1750,11 +1735,6 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
         GLOB_EVENTS["unload"] = "unload";
         GLOB_EVENTS["initialized"] = "initialize";
     })(GLOB_EVENTS || (GLOB_EVENTS = {}));
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["selectedControl"] = "selectedControl";
-        PROP_NAME["isReady"] = "isReady";
-    })(PROP_NAME || (PROP_NAME = {}));
     var BootstrapState;
     (function (BootstrapState) {
         BootstrapState[BootstrapState["None"] = 0] = "None";
@@ -3172,13 +3152,6 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
         css["templateContainer"] = "ria-template-container";
         css["templateError"] = "ria-template-error";
     })(css = exports.css || (exports.css = {}));
-    var PROP_NAME;
-    (function (PROP_NAME) {
-        PROP_NAME["dataContext"] = "dataContext";
-        PROP_NAME["templateID"] = "templateID";
-        PROP_NAME["template"] = "template";
-        PROP_NAME["isEnabled"] = "isEnabled";
-    })(PROP_NAME || (PROP_NAME = {}));
     function createTemplate(dataContext, templEvents) {
         var options = {
             dataContext: dataContext,
@@ -4417,6 +4390,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.8.0";
+    exports.VERSION = "2.8.1";
     bootstrap_7.Bootstrap._initFramework();
 });

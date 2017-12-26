@@ -39,15 +39,6 @@ export interface IPagerConstructorOptions extends IPagerOptions {
     dataSource: ICollection<ICollectionItem>;
 }
 
-const enum PROP_NAME {
-    dataSource = "dataSource",
-    rowCount = "rowCount",
-    currentPage = "currentPage",
-    pager = "pager",
-    parentControl = "parentControl",
-    isVisible = "isVisible"
-}
-
 function _removeToolTips(toolTips: Element[]): void {
     toolTips.forEach((el) => {
         fn_addToolTip(el, null);
@@ -451,7 +442,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
     set dataSource(v: ICollection<ICollectionItem>) {
         if (v !== this.dataSource) {
             this.setDataSource(v);
-            this.objEvents.raiseProp(PROP_NAME.dataSource);
+            this.objEvents.raiseProp("dataSource");
         }
     }
     get pageCount(): number {
@@ -475,7 +466,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         if (this._rowCount !== v) {
             this._rowCount = v;
             this.render();
-            this.objEvents.raiseProp(PROP_NAME.rowCount);
+            this.objEvents.raiseProp("rowCount");
         }
     }
     get rowsPerPage() { return this._rowsPerPage; }
@@ -490,7 +481,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         if (this._currentPage !== v) {
             this._currentPage = v;
             this.render();
-            this.objEvents.raiseProp(PROP_NAME.currentPage);
+            this.objEvents.raiseProp("currentPage");
         }
     }
     get useSlider() { return this._options.useSlider; }
@@ -559,7 +550,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
             } else {
                 this.el.style.display = (!this._display ? "" : this._display);
             }
-            this.objEvents.raiseProp(PROP_NAME.isVisible);
+            this.objEvents.raiseProp("isVisible");
         }
     }
     get selectable(): ISelectable {
@@ -571,7 +562,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
     set parentControl(v) {
         if (this._parentControl !== v) {
             this._parentControl = v;
-            this.objEvents.raiseProp(PROP_NAME.parentControl);
+            this.objEvents.raiseProp("parentControl");
         }
     }
 }
@@ -588,8 +579,8 @@ export class PagerElView extends BaseElView implements ISelectableProvider {
         this._pager = new Pager(<IPagerConstructorOptions>options);
         self._pager.objEvents.onProp("*", (sender, args) => {
             switch (args.property) {
-                case PROP_NAME.dataSource:
-                case PROP_NAME.parentControl:
+                case "dataSource":
+                case "parentControl":
                     self.objEvents.raiseProp(args.property);
                     break;
             }

@@ -54,7 +54,7 @@ export class EventBag extends BaseObject implements IPropertyBag {
                     oldVal: old,
                     newVal: null
                 });
-                this.objEvents.raiseProp(name);
+                this.objEvents.raiseProp(<any>name);
             }
             return;
         }
@@ -76,7 +76,7 @@ export class EventBag extends BaseObject implements IPropertyBag {
                 });
             }
 
-            this.objEvents.raiseProp(name);
+            this.objEvents.raiseProp(<any>name);
         }
     }
     get isPropertyBag(): boolean {

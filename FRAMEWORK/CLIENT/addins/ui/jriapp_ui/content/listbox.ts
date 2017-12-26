@@ -11,19 +11,6 @@ import { BasicContent, IContentView } from "./basic";
 const utils = Utils, dom = DomUtils, doc = dom.document, strUtils = utils.str, coreUtils = utils.core,
     sys = utils.sys;
 
-const enum PROP_NAME {
-    dataSource = "dataSource",
-    selectedItem = "selectedItem",
-    selectedValue = "selectedValue",
-    valuePath = "valuePath",
-    textPath = "textPath",
-    isEnabled = "isEnabled",
-    listBox = "listBox",
-    value = "value",
-    textProvider = "textProvider",
-    stateProvider = "stateProvider"
-}
-
 export interface ILookupOptions {
     dataSource: string;
     valuePath: string;
@@ -165,7 +152,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         const options: IBindingOptions = {
             target: span,
             source: this.dataContext,
-            targetPath: PROP_NAME.value,
+            targetPath: "value",
             sourcePath: this.options.fieldName,
             isSourceFixed: false,
             mode: BINDING_MODE.OneWay,
@@ -179,7 +166,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         const options: IBindingOptions = {
             target: listBox,
             source: this.dataContext,
-            targetPath: PROP_NAME.selectedValue,
+            targetPath: "selectedValue",
             sourcePath: this.options.fieldName,
             isSourceFixed: false,
             mode: BINDING_MODE.TwoWay,

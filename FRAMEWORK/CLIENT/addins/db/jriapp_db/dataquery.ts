@@ -3,7 +3,6 @@ import { FILTER_TYPE, SORT_ORDER, DATE_CONVERSION, DATA_TYPE } from "jriapp_shar
 import { IStatefulPromise, BaseObject, Utils, LocaleERRS as ERRS } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { ValueUtils } from "jriapp_shared/collection/utils";
-import { PROP_NAME } from "./const";
 import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult } from "./int";
 import { DataCache } from "./datacache";
 import { DbSet } from "./dbset";
@@ -253,21 +252,21 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
             if (v === 1 || this.isForAppend) {
                 this._clearCache();
             }
-            this.objEvents.raiseProp(PROP_NAME.loadPageCount);
+            this.objEvents.raiseProp("loadPageCount");
         }
     }
     get isClearCacheOnEveryLoad() { return this._isClearCacheOnEveryLoad || this.isForAppend; }
     set isClearCacheOnEveryLoad(v) {
         if (this._isClearCacheOnEveryLoad !== v) {
             this._isClearCacheOnEveryLoad = v;
-            this.objEvents.raiseProp(PROP_NAME.isClearCacheOnEveryLoad);
+            this.objEvents.raiseProp("isClearCacheOnEveryLoad");
         }
     }
     get isForAppend() { return this._isForAppend; }
     set isForAppend(v) {
         if (this._isForAppend !== v) {
             this._isForAppend = v;
-            this.objEvents.raiseProp(PROP_NAME.isForAppend);
+            this.objEvents.raiseProp("isForAppend");
         }
     }
     get isCacheValid() { return !!this._dataCache && !this._cacheInvalidated && !this.isForAppend; }

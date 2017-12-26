@@ -6,10 +6,6 @@ const utils = Utils, checks = utils.check, coreUtils = utils.core,
     strUtils = utils.str, defer = utils.defer, ERRS = LocaleERRS, DEBUG = utils.debug,
     LOG = utils.log, http = utils.http;
 
-const enum PROP_NAME {
-    isLoading = "isLoading"
-}
-
 const enum LOADER_EVENTS {
     loaded = "loaded"
 }
@@ -51,7 +47,7 @@ export class TemplateLoader extends BaseObject {
     }
     public waitForNotLoading(callback: (...args: any[]) => any, callbackArgs: any): void {
         this._waitQueue.enQueue({
-            prop: PROP_NAME.isLoading,
+            prop: "isLoading",
             groupName: null,
             predicate: (val: any) => !val,
             action: callback,
@@ -74,7 +70,7 @@ export class TemplateLoader extends BaseObject {
         const self = this, promise = fnLoader(), old = self.isLoading;
         self._promises.push(promise);
         if (self.isLoading !== old) {
-            self.objEvents.raiseProp(PROP_NAME.isLoading);
+            self.objEvents.raiseProp("isLoading");
         }
         const res = promise.then((html: string) => {
             self._onLoaded(html, app);
@@ -83,7 +79,7 @@ export class TemplateLoader extends BaseObject {
         res.always(() => {
             utils.arr.remove(self._promises, promise);
             if (!self.isLoading) {
-                self.objEvents.raiseProp(PROP_NAME.isLoading);
+                self.objEvents.raiseProp("isLoading");
             }
         });
         return res;

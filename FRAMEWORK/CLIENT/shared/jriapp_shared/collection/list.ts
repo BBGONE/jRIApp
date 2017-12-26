@@ -6,7 +6,7 @@ import {
     COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER, ITEM_STATUS
 } from "./const";
 import {
-    ICollectionItem, IPropInfo, PROP_NAME, IFieldInfo
+    ICollectionItem, IPropInfo, IFieldInfo
 } from "./int";
 import { CollUtils } from "./utils";
 import { BaseCollection } from "./base";
@@ -170,7 +170,7 @@ export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollec
             });
 
             if (newItems.length > 0) {
-                this.objEvents.raiseProp(PROP_NAME.count);
+                this.objEvents.raiseProp("count");
             }
         } finally {
             this._onCollectionChanged({

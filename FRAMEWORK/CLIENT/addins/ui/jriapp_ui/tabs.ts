@@ -7,11 +7,6 @@ import { BaseElView } from "./baseview";
 
 const utils = Utils, coreUtils = utils.core;
 
-const enum PROP_NAME {
-    tabIndex = "tabIndex",
-    tabsEvents = "tabsEvents"
-}
-
 export interface ITabs {
     readonly uniqueID: string;
     readonly el: HTMLElement;
@@ -46,7 +41,7 @@ export class TabsElView extends BaseElView implements ITabs {
                 if (!!self._tabsEvents) {
                     self._tabsEvents.onTabSelected(self);
                 }
-                self.objEvents.raiseProp(PROP_NAME.tabIndex);
+                self.objEvents.raiseProp("tabIndex");
             }
         };
         tabOpts = coreUtils.extend(tabOpts, self._tabOpts);
@@ -57,7 +52,7 @@ export class TabsElView extends BaseElView implements ITabs {
             }
             self._tabsCreated = true;
             self._onTabsCreated();
-            self.objEvents.raiseProp(PROP_NAME.tabIndex);
+            self.objEvents.raiseProp("tabIndex");
         });
     }
     protected _destroyTabs() {
@@ -98,7 +93,7 @@ export class TabsElView extends BaseElView implements ITabs {
                 old.removeTabs();
             }
             this._tabsEvents = v;
-            this.objEvents.raiseProp(PROP_NAME.tabsEvents);
+            this.objEvents.raiseProp("tabsEvents");
             if (this._tabsCreated) {
                 this._onTabsCreated();
             }

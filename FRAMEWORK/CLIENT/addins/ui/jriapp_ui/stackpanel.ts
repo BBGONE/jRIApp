@@ -26,13 +26,6 @@ const enum css {
     itemDeleted = "ria-item-deleted"
 }
 
-const enum PROP_NAME {
-    dataSource = "dataSource",
-    currentItem = "currentItem",
-    panel = "panel",
-    panelEvents = "panelEvents"
-}
-
 const enum ORIENTATION {
     VERTICAL = "vertical",
     HORIZONTAL = "horizontal"
@@ -208,7 +201,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
                     }
                 }
             }
-            this.objEvents.raiseProp(PROP_NAME.currentItem);
+            this.objEvents.raiseProp("currentItem");
         }
     }
     protected _onDSCurrentChanged(): void {
@@ -430,7 +423,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     set dataSource(v) {
         if (v !== this.dataSource) {
             this.setDataSource(v);
-            this.objEvents.raiseProp(PROP_NAME.dataSource);
+            this.objEvents.raiseProp("dataSource");
         }
     }
     get currentItem() { return this._currentItem; }
@@ -459,7 +452,7 @@ export class StackPanelElView extends BaseElView implements ISelectableProvider 
         }, this.uniqueID);
         this._panel.objEvents.onProp("*", (sender, args) => {
             switch (args.property) {
-                case PROP_NAME.dataSource:
+                case "dataSource":
                     self.objEvents.raiseProp(args.property);
                     break;
             }
@@ -492,7 +485,7 @@ export class StackPanelElView extends BaseElView implements ISelectableProvider 
         const old = this._panelEvents;
         if (v !== old) {
             this._panelEvents = v;
-            this.objEvents.raiseProp(PROP_NAME.panelEvents);
+            this.objEvents.raiseProp("panelEvents");
         }
     }
     get panel() {

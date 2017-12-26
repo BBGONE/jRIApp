@@ -43,19 +43,6 @@ export interface IMappedItem {
     op: HTMLOptionElement;
 }
 
-const enum PROP_NAME {
-    dataSource = "dataSource",
-    selectedItem = "selectedItem",
-    selectedValue = "selectedValue",
-    valuePath = "valuePath",
-    textPath = "textPath",
-    isEnabled = "isEnabled",
-    listBox = "listBox",
-    value = "value",
-    textProvider = "textProvider",
-    stateProvider = "stateProvider"
-}
-
 const enum LISTBOX_EVENTS {
     refreshed = "refreshed"
 }
@@ -521,10 +508,10 @@ export class ListBox extends BaseObject implements ISubscriber {
             self._fnCheckSelected = null;
             const newVal = fn_Str(self.selectedValue), newItem = self.selectedItem;
             if (prevVal !== newVal) {
-                self.objEvents.raiseProp(PROP_NAME.selectedValue);
+                self.objEvents.raiseProp("selectedValue");
             }
             if (prevItem !== newItem) {
-                self.objEvents.raiseProp(PROP_NAME.selectedItem);
+                self.objEvents.raiseProp("selectedItem");
             }
         };
     }
@@ -608,7 +595,7 @@ export class ListBox extends BaseObject implements ISubscriber {
     set dataSource(v) {
         if (this.dataSource !== v) {
             this.setDataSource(v);
-            this.objEvents.raiseProp(PROP_NAME.dataSource);
+            this.objEvents.raiseProp("dataSource");
         }
     }
     get selectedValue(): any {
@@ -620,9 +607,9 @@ export class ListBox extends BaseObject implements ISubscriber {
             this._selectedValue = v;
             this.updateSelected(v);
             this._fnCheckSelected = null;
-            this.objEvents.raiseProp(PROP_NAME.selectedValue);
+            this.objEvents.raiseProp("selectedValue");
             if (oldItem !== this.selectedItem) {
-                this.objEvents.raiseProp(PROP_NAME.selectedItem);
+                this.objEvents.raiseProp("selectedItem");
             }
         }
     }
@@ -637,9 +624,9 @@ export class ListBox extends BaseObject implements ISubscriber {
             const item = this.getByValue(newVal);
             this.selectedIndex = (!item ? 0 : item.op.index);
             this._fnCheckSelected = null;
-            this.objEvents.raiseProp(PROP_NAME.selectedValue);
+            this.objEvents.raiseProp("selectedValue");
             if (oldItem !== this.selectedItem) {
-                this.objEvents.raiseProp(PROP_NAME.selectedItem);
+                this.objEvents.raiseProp("selectedItem");
             }
         }
     }
@@ -650,7 +637,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         if (v !== this.valuePath) {
             this._options.valuePath = v;
             this._mapByValue();
-            this.objEvents.raiseProp(PROP_NAME.valuePath);
+            this.objEvents.raiseProp("valuePath");
         }
     }
     get textPath(): string {
@@ -660,7 +647,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         if (v !== this.textPath) {
             this._options.textPath = v;
             this._resetText();
-            this.objEvents.raiseProp(PROP_NAME.textPath);
+            this.objEvents.raiseProp("textPath");
         }
     }
     get statePath(): string {
@@ -672,7 +659,7 @@ export class ListBox extends BaseObject implements ISubscriber {
     set isEnabled(v) {
         if (v !== this.isEnabled) {
             this.setIsEnabled(this.el, v);
-            this.objEvents.raiseProp(PROP_NAME.isEnabled);
+            this.objEvents.raiseProp("isEnabled");
         }
     }
     get textProvider(): IOptionTextProvider {
@@ -684,7 +671,7 @@ export class ListBox extends BaseObject implements ISubscriber {
             this._txtDebounce.enque(() => {
                 this._resetText();
             });
-            this.objEvents.raiseProp(PROP_NAME.textProvider);
+            this.objEvents.raiseProp("textProvider");
         }
     }
     get stateProvider(): IOptionStateProvider {
@@ -696,7 +683,7 @@ export class ListBox extends BaseObject implements ISubscriber {
             this._stDebounce.enque(() => {
                 this._resetState();
             });
-            this.objEvents.raiseProp(PROP_NAME.stateProvider);
+            this.objEvents.raiseProp("stateProvider");
         }
     }
     get el(): HTMLSelectElement {
@@ -716,14 +703,14 @@ export class ListBoxElView extends BaseElView {
         self._listBox = new ListBox(<IListBoxConstructorOptions>options);
         self._listBox.objEvents.onProp("*", (sender, args) => {
             switch (args.property) {
-                case PROP_NAME.dataSource:
-                case PROP_NAME.isEnabled:
-                case PROP_NAME.selectedValue:
-                case PROP_NAME.selectedItem:
-                case PROP_NAME.valuePath:
-                case PROP_NAME.textPath:
-                case PROP_NAME.textProvider:
-                case PROP_NAME.stateProvider:
+                case "dataSource":
+                case "isEnabled":
+                case "selectedValue":
+                case "selectedItem":
+                case "valuePath":
+                case "textPath":
+                case "textProvider":
+                case "stateProvider":
                     self.objEvents.raiseProp(args.property);
                     break;
             }
@@ -749,7 +736,7 @@ export class ListBoxElView extends BaseElView {
         v = !v;
         if (v !== !this.isEnabled) {
             (<HTMLSelectElement>this.el).disabled = v;
-            this.objEvents.raiseProp(PROP_NAME.isEnabled);
+            this.objEvents.raiseProp("isEnabled");
         }
     }
     get dataSource(): ICollection<ICollectionItem> {

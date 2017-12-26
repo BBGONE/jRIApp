@@ -57,7 +57,6 @@
     <TypeScriptCompile Include="jriapp_shared\utils\jsonbag.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\lazy.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\logger.ts" />
-    <TypeScriptCompile Include="jriapp_shared\utils\mixobj.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\queue.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\strutils.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\sysutils.ts" />

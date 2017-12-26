@@ -1,6 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { bootstrap } from "jriapp/bootstrap";
-import { PROP_NAME } from "./baseview";
 import { SpanElView } from "./span";
 
 const boot = bootstrap;
@@ -16,7 +15,7 @@ export class BlockElView extends SpanElView {
         const x = this.width;
         if (v !== x) {
             this.el.style.width = v + "px";
-            this.objEvents.raiseProp(PROP_NAME.width);
+            this.objEvents.raiseProp("width");
         }
     }
     get height() {
@@ -26,7 +25,7 @@ export class BlockElView extends SpanElView {
         const x = this.height;
         if (v !== x) {
             this.el.style.height = v + "px";
-            this.objEvents.raiseProp(PROP_NAME.height);
+            this.objEvents.raiseProp("height");
         }
     }
 }

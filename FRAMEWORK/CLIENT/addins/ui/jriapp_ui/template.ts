@@ -12,11 +12,6 @@ viewChecks.isTemplateElView = (obj: any) => {
     return !!obj && obj instanceof TemplateElView;
 };
 
-const enum PROP_NAME {
-    template = "template",
-    isEnabled = "isEnabled"
-}
-
 export interface ITemplateOptions {
     dataContext?: any;
     templEvents?: ITemplateEvents;
@@ -50,7 +45,7 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
             self._template = template;
             const args: TemplateCommandParam = { template: template, isLoaded: true };
             self.invokeCommand(args, false);
-            this.objEvents.raiseProp(PROP_NAME.template);
+            this.objEvents.raiseProp("template");
         } catch (ex) {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
@@ -65,7 +60,7 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
         } finally {
             self._template = null;
         }
-        this.objEvents.raiseProp(PROP_NAME.template);
+        this.objEvents.raiseProp("template");
     }
     toString(): string {
         return "TemplateElView";
@@ -74,7 +69,7 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
     set isEnabled(v: boolean) {
         if (this._isEnabled !== v) {
             this._isEnabled = v;
-            this.objEvents.raiseProp(PROP_NAME.isEnabled);
+            this.objEvents.raiseProp("isEnabled");
         }
     }
     get template(): ITemplate {

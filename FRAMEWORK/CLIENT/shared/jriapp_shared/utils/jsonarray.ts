@@ -45,13 +45,13 @@ export class JsonArray extends BaseObject {
         coreUtils.setValue(this._owner.val, this._pathToArray, arr, false, "->");
         this._owner.updateJson();
     }
-    addOnValidateBag(fn: TEventHandler<IPropertyBag, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
+    addOnValidateBag(fn: TEventHandler<this, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
         this.objEvents.on(BAG_EVENTS.validate_bag, fn, nmspace, context);
     }
     offOnValidateBag(nmspace?: string) {
         this.objEvents.off(BAG_EVENTS.validate_bag, nmspace);
     }
-    addOnValidateField(fn: TEventHandler<IPropertyBag, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
+    addOnValidateField(fn: TEventHandler<this, IFieldValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
         this.objEvents.on(BAG_EVENTS.validate_field, fn, nmspace, context);
     }
     offOnValidateField(nmspace?: string) {

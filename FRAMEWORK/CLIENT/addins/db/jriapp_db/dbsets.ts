@@ -1,6 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { BaseObject, LocaleERRS as ERRS, Utils, Lazy, IIndexer } from "jriapp_shared";
-import { PROP_NAME } from "./const";
 import { IEntityItem } from "./int";
 import { DbContext } from "./dbcontext";
 import { IDbSetConstructor, TDbSet } from "./dbset";
@@ -21,7 +20,7 @@ export class DbSets extends BaseObject {
     protected _dbSetCreated(dbSet: TDbSet) {
         const self = this;
         this._arrDbSets.push(dbSet);
-        dbSet.objEvents.onProp(PROP_NAME.isHasChanges, (sender, args) => {
+        dbSet.objEvents.onProp("isHasChanges", (sender, args) => {
             self._dbContext._getInternal().onDbSetHasChangesChanged(sender);
         });
     }

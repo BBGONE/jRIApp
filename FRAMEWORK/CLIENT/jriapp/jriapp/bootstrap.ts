@@ -72,11 +72,6 @@ const enum GLOB_EVENTS {
     initialized = "initialize"
 }
 
-const enum PROP_NAME {
-    selectedControl = "selectedControl",
-    isReady = "isReady"
-}
-
 export interface IInternalBootstrapMethods {
     initialize(): IPromise<Bootstrap>;
     registerApp(app: IApplication): void;
@@ -315,7 +310,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
                 }
                 self._processHTMLTemplates();
                 self._bootState = BootstrapState.Ready;
-                self.objEvents.raiseProp(PROP_NAME.isReady);
+                self.objEvents.raiseProp("isReady");
                 return self;
             });
         });
@@ -548,7 +543,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     set selectedControl(v: ISelectableProvider) {
         if (this._selectedControl !== v) {
             this._selectedControl = v;
-            this.objEvents.raiseProp(PROP_NAME.selectedControl);
+            this.objEvents.raiseProp("selectedControl");
         }
     }
     get defaults() {

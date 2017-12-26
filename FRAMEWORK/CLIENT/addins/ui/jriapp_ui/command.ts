@@ -3,7 +3,7 @@ import { Utils } from "jriapp_shared";
 import { IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { ICommand } from "jriapp/mvvm";
-import { BaseElView, PROP_NAME, css } from "./baseview";
+import { BaseElView, css } from "./baseview";
 
 const utils = Utils, dom = DomUtils, sys = utils.sys;
 
@@ -50,7 +50,7 @@ export class CommandElView extends BaseElView {
         this.isEnabled = cmd.canExecute(this, this._commandParam);
     }
     protected _onCommandChanged(): void {
-        this.objEvents.raiseProp(PROP_NAME.command);
+        this.objEvents.raiseProp("command");
     }
     protected invokeCommand(args: any, isAsync: boolean): void {
         const self = this;
@@ -111,7 +111,7 @@ export class CommandElView extends BaseElView {
     set commandParam(v: any) {
         if (v !== this._commandParam) {
             this._commandParam = v;
-            this.objEvents.raiseProp(PROP_NAME.commandParam);
+            this.objEvents.raiseProp("commandParam");
         }
     }
     get isEnabled(): boolean {
@@ -132,7 +132,7 @@ export class CommandElView extends BaseElView {
                 this._setFlag(!v, CommandFlags.Disabled);
             }
             dom.setClass([this.el], css.disabled, !!v);
-            this.objEvents.raiseProp(PROP_NAME.isEnabled);
+            this.objEvents.raiseProp("isEnabled");
         }
     }
     get preventDefault(): boolean {

@@ -4,17 +4,6 @@ import { ButtonCss } from "./int";
 
 const utils = Utils, strUtils = utils.str;
 
-const enum PROP_NAME {
-    dateFormat = "dateFormat",
-    timeFormat = "timeFormat",
-    dateTimeFormat = "dateTimeFormat",
-    datepicker = "datepicker",
-    imagesPath = "imagesPath",
-    decimalPoint = "decimalPoint",
-    thousandSep = "thousandSep",
-    decPrecision = "decPrecision"
-}
-
 export class Defaults extends BaseObject {
     private _imagesPath: string;
     private _dateFormat: string;
@@ -42,7 +31,7 @@ export class Defaults extends BaseObject {
     set dateFormat(v) {
         if (this._dateFormat !== v) {
             this._dateFormat = v;
-            this.objEvents.raiseProp(PROP_NAME.dateFormat);
+            this.objEvents.raiseProp("dateFormat");
        }
    }
     // uses moment.js format
@@ -50,14 +39,14 @@ export class Defaults extends BaseObject {
     set timeFormat(v) {
         if (this._timeFormat !== v) {
             this._timeFormat = v;
-            this.objEvents.raiseProp(PROP_NAME.timeFormat);
+            this.objEvents.raiseProp("timeFormat");
        }
    }
     get dateTimeFormat() { return this._dateTimeFormat; }
     set dateTimeFormat(v) {
         if (this._dateTimeFormat !== v) {
             this._dateTimeFormat = v;
-            this.objEvents.raiseProp(PROP_NAME.dateTimeFormat);
+            this.objEvents.raiseProp("dateTimeFormat");
        }
    }
     // path to where application images are stored
@@ -72,21 +61,21 @@ export class Defaults extends BaseObject {
            } else {
                 this._imagesPath = v;
            }
-           this.objEvents.raiseProp(PROP_NAME.imagesPath);
+           this.objEvents.raiseProp("imagesPath");
        }
    }
     get decimalPoint() { return this._decimalPoint; }
     set decimalPoint(v) {
         if (this._decimalPoint !== v) {
             this._decimalPoint = v;
-            this.objEvents.raiseProp(PROP_NAME.decimalPoint);
+            this.objEvents.raiseProp("decimalPoint");
        }
    }
     get thousandSep() { return this._thousandSep; }
     set thousandSep(v) {
         if (this._thousandSep !== v) {
             this._thousandSep = v;
-            this.objEvents.raiseProp(PROP_NAME.thousandSep);
+            this.objEvents.raiseProp("thousandSep");
        }
    }
     // money decimal presision: defaults to 2
@@ -94,7 +83,7 @@ export class Defaults extends BaseObject {
     set decPrecision(v) {
         if (this._decPrecision !== v) {
             this._decPrecision = v;
-            this.objEvents.raiseProp(PROP_NAME.decPrecision);
+            this.objEvents.raiseProp("decPrecision");
        }
    }
 
