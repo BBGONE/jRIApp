@@ -45,11 +45,11 @@
 <h2 class="ex8">@ViewBag.Title</h2>
 
 <div id="demoContent" style="opacity:0;">
-    <div data-view="react" data-bind="{this.value,to=temperature,mode=TwoWay,source=testObj}"></div>
+    <div data-view="react" data-bind="this.value,to=temperature,mode=TwoWay,source=testObj"></div>
 
     <fieldset>
         <legend>This a simple databound text input</legend>
-        <input type="text" data-bind="{this.value,to=temperature,mode=TwoWay,source=testObj}"
+        <input type="text" data-bind="this.value,to=temperature,mode=TwoWay,source=testObj"
                data-view-options="updateOnKeyUp=true"
                style="width: 250px" />
     </fieldset>

@@ -4,16 +4,18 @@
 }
 
 <script id="customerInfo" type="text/html" data-role="template">
-    <div style="max-width: 800px;" data-bind="{this.dataContext,to=currentItem}" data-view="dataform" data-require="test1,test3,css!css/test1.css">
+    <div style="max-width: 800px;" data-bind="this.dataContext,to=currentItem" data-view="dataform" data-require="test1,test3,css!css/test1.css">
         <fieldset>
-            <legend><span style="color: Blue; font-weight: bold;" data-bind="{this.value,to=ComplexProp.Name}"></span></legend>
+            <legend><span style="color: Blue; font-weight: bold;" data-bind="this.value,to=ComplexProp.Name"></span></legend>
             <nav>
                 <ul class="nav nav-pills">
                     <li>
-                        <a data-bind="{this.command,to=switchViewCommand,source=customerVM}{this.commandParam,to=uiMainRoute.custTemplName,source=customerVM}"><i class="icon-list"></i>&nbsp;Back to all customers</a>
+                        <a data-bind-1="this.command,to=switchViewCommand,source=customerVM"
+                           data-bind-2="this.commandParam,to=uiMainRoute.custTemplName,source=customerVM"><i class="icon-list"></i>&nbsp;Back to all customers</a>
                     </li>
                     <li>
-                        <a data-bind="{this.command,to=switchDetViewCommand,source=customerVM}{this.commandParam,to=uiCustDetRoute.adrTemplName,source=customerVM}"><i class="icon-envelope"></i>&nbsp;Customer's addresses</a>
+                        <a data-bind-1="this.command,to=switchDetViewCommand,source=customerVM"
+                           data-bind-2="this.commandParam,to=uiCustDetRoute.adrTemplName,source=customerVM"><i class="icon-envelope"></i>&nbsp;Customer's addresses</a>
                     </li>
                 </ul>
             </nav>
@@ -87,24 +89,32 @@
                 </tbody>
             </table>
             <!--this nested dataform is only to test how the dataform nesting is working!!! it is not needed here, really.-->
-            <div style="float: right; margin-right: 60px;" data-bind="{this.dataContext}" data-view="dataform" data-name="test1">
-                <button class="btn btn-info btn-small" style="margin: 5px;" data-bind="{this.command,to=editCommand,source=customerVM}{this.isVisible,to=_aspect.isEditing,converter=notConverter}"><i class="icon-plus"></i>&nbsp;Edit Customer</button>
-                <button class="btn btn-info btn-small" style="margin: 5px; width: 100px;" data-bind="{this.command,to=endEditCommand,source=customerVM}{this.isVisible,to=_aspect.isEditing}">OK</button>
-                <button class="btn btn-info btn-small" style="margin: 5px; width: 100px;" data-bind="{this.command,to=cancelEditCommand,source=customerVM}{this.isVisible,to=_aspect.isEditing}">Cancel</button>
+            <div style="float: right; margin-right: 60px;" data-bind="this.dataContext" data-view="dataform" data-name="test1">
+                <button class="btn btn-info btn-small" style="margin: 5px;" 
+                        data-bind-1="this.command,to=editCommand,source=customerVM"
+                        data-bind-2="this.isVisible,to=_aspect.isEditing,converter=notConverter"><i class="icon-plus"></i>&nbsp;Edit Customer</button>
+                <button class="btn btn-info btn-small" style="margin: 5px; width: 100px;" 
+                        data-bind-1="this.command,to=endEditCommand,source=customerVM"
+                        data-bind-2="this.isVisible,to=_aspect.isEditing">OK</button>
+                <button class="btn btn-info btn-small" style="margin: 5px; width: 100px;" 
+                        data-bind-1="this.command,to=cancelEditCommand,source=customerVM"
+                        data-bind-2="this.isVisible,to=_aspect.isEditing">Cancel</button>
             </div>
         </fieldset>
     </div>
 </script>
 
 <script id="salespersonTemplate1" type="text/html" data-role="template">
-    <span data-bind="{this.value,to=SalesPerson}"></span>
+    <span data-bind="this.value,to=SalesPerson"></span>
 </script>
 
 <script  id="salespersonTemplate2" type="text/html" data-role="template">
     <span>
-        <input type="text" style="margin-left: 0px; width: 200px;" data-bind="{this.value,to=SalesPerson,mode=TwoWay}{this.dataContext}"
+        <input type="text" style="margin-left: 0px; width: 200px;" 
+               data-bind-1="this.value,to=SalesPerson,mode=TwoWay"
+               data-bind-2="this.dataContext"
                data-view="autocomplete" 
-               data-view-options="{dbContext:dbContext,fieldName:SalesPerson,dbSetName:SalesInfo,queryName:ReadSalesInfo,templateId:salePerAutocompleteTemplate,width:200px,height:200px}" />
+               data-view-options="dbContext:dbContext,fieldName:SalesPerson,dbSetName:SalesInfo,queryName:ReadSalesInfo,templateId:salePerAutocompleteTemplate,width:200px,height:200px" />
         &nbsp;<span style="color: Gray;">&lt;--autocomplete here</span>
     </span>
 </script>
@@ -113,9 +123,9 @@
     @*example of autocomplete implementation*@
     <div style="height: 97%; margin: 0px; padding: 2px; position: relative;">
         <div style="margin-left: 1px; position: relative; vertical-align: top;"
-             data-bind="{this.isBusy,to=isLoading}" data-view="busy">
-            <table data-name="lookupGrid" data-bind="{this.dataSource,to=gridDataSource}"
-                   data-view-options="{wrapCss:autocompleteSalePTableWrap,headerCss:autocompleteTableHeader}">
+             data-bind="this.isBusy,to=isLoading" data-view="busy">
+            <table data-name="lookupGrid" data-bind="this.dataSource,to=gridDataSource"
+                   data-view-options="wrapCss:autocompleteSalePTableWrap,headerCss:autocompleteTableHeader">
                 <thead>
                     <tr>
                         <th data-column="width:100%,sortable:true,title:Name" data-content="fieldName:SalesPerson"></th>
@@ -126,20 +136,20 @@
         </div>
         <div style="text-align: left;position: relative;">
             <!--pager-->
-            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" 
+            <div style="float: left;" data-bind="this.dataSource,to=gridDataSource" 
                  data-view="pager" 
-                 data-view-options="{sliderSize:5,hideOnSinglePage=true}">
+                 data-view-options="sliderSize:5,hideOnSinglePage=true">
             </div>
             <div style="float: left; padding: 5px;">
-                <span>Total rows:</span>&nbsp;<span data-bind="{this.value,to=gridDataSource.totalCount}"></span>
+                <span>Total rows:</span>&nbsp;<span data-bind="this.value,to=gridDataSource.totalCount"></span>
             </div>
         </div>
         <br style="clear: both;" />
         <div style="margin-left: auto;margin-right:auto;left: 0;right: 0;bottom:5px;text-align:center;position:absolute;">
-            <a class="btn btn-info btn-small" style="width: 70px;" data-name="btnOk" data-bind="{this.text,to=txtOk,source=TEXT}">
+            <a class="btn btn-info btn-small" style="width: 70px;" data-name="btnOk" data-bind="this.text,to=txtOk,source=TEXT">
                 <i class="icon-ok"></i>
             </a><span class="space"></span>
-            <a class="btn btn-info btn-small" style="width: 70px;" data-name="btnCancel" data-bind="{this.text,to=txtCancel,source=TEXT}">
+            <a class="btn btn-info btn-small" style="width: 70px;" data-name="btnCancel" data-bind="this.text,to=txtCancel,source=TEXT">
                 <i class="icon-remove"></i>
             </a>
         </div>

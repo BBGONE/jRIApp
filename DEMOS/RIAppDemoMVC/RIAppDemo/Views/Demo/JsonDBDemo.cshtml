@@ -69,10 +69,10 @@
 
 <h2 class="ex8">@ViewBag.Title</h2>
 
-<div id="demoContent" style="opacity:0;" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="busy">
+<div id="demoContent" style="opacity:0;" data-bind="this.isBusy,to=dbContext.isBusy" data-view="busy">
     <div style="height: 85%; vertical-align: top;">
-        <table data-name="gridCustomers" data-bind="{this.dataSource,to=dbSet,source=customerVM}"
-                data-view-options="{wrapCss:customerTableWrap,isHandleAddNew:true,editor:{templateID:customerEditTemplate,width:550,height:650,submitOnOK:false,title:'Customer editing'},details:{templateID:custDetTemplate}}">
+        <table data-name="gridCustomers" data-bind="this.dataSource,to=dbSet,source=customerVM"
+                data-view-options="wrapCss:customerTableWrap,isHandleAddNew:true,editor:{templateID:customerEditTemplate,width:550,height:650,submitOnOK:false,title:'Customer editing'},details:{templateID:custDetTemplate}">
             <thead>
             <tr>
                 <th data-column="width:35px,type:row_expander"></th>
@@ -90,17 +90,17 @@
     <div style="border: none; height: 15%; margin-top: 40px; text-align: left; width: 100%;">
         <!--pager-->
         <div style="float: left;" 
-             data-bind="{this.dataSource,to=dbSet,source=customerVM}" 
+             data-bind="this.dataSource,to=dbSet,source=customerVM" 
              data-view="pager" 
-             data-view-options="{sliderSize:10}"></div>
+             data-view-options="sliderSize:10"></div>
         <div style="float: left; padding-left: 10px; padding-top: 10px;">
-            <span>Total rows:</span>&nbsp;<span data-bind="{this.value,to=dbSet.totalCount,source=customerVM}"></span>
+            <span>Total rows:</span>&nbsp;<span data-bind="this.value,to=dbSet.totalCount,source=customerVM"></span>
         </div>
 
         <div style="float: right;">
-            <button class="btn btn-info btn-small" data-bind="{this.command,to=addNewCommand,mode=OneWay,source=customerVM}"><i class="icon-plus"></i>&nbsp;New Customer</button>
-            <button class="btn btn-info btn-small" data-bind="{this.command,to=saveCommand,mode=OneWay,source=customerVM}"><i class="icon-ok-circle"></i>&nbsp;Save changes</button>
-            <button class="btn btn-info btn-small" data-bind="{this.command,to=undoCommand,mode=OneWay,source=customerVM}"><i class="icon-remove"></i>&nbsp;Undo changes</button>
+            <button class="btn btn-info btn-small" data-bind="this.command,to=addNewCommand,mode=OneWay,source=customerVM"><i class="icon-plus"></i>&nbsp;New Customer</button>
+            <button class="btn btn-info btn-small" data-bind="this.command,to=saveCommand,mode=OneWay,source=customerVM"><i class="icon-ok-circle"></i>&nbsp;Save changes</button>
+            <button class="btn btn-info btn-small" data-bind="this.command,to=undoCommand,mode=OneWay,source=customerVM"><i class="icon-remove"></i>&nbsp;Undo changes</button>
         </div>
     </div>
 </div>
@@ -108,7 +108,7 @@
 @Html.Partial("_WaitLoad")
 
 <script id="customerEditTemplate" type="text/html" data-role="template">
-    <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="dataform">
+    <div style="width: 100%" data-bind="this.dataContext,mode=OneWay" data-view="dataform">
         <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
             <colgroup>
                 <col style="border: none; text-align: left; width: 125px;" />
@@ -128,7 +128,7 @@
                         Title:
                     </td>
                     <td>
-                        <input type="text" style="width:100px;" data-bind="{this.value,to=Customer[Title],mode=TwoWay}" />
+                        <input type="text" style="width:100px;" data-bind="this.value,to=Customer[Title],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -136,7 +136,7 @@
                         FirstName:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="{this.value,to=Customer[Level1->FirstName],mode=TwoWay}" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1->FirstName],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -144,7 +144,7 @@
                         MiddleName:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="{this.value,to=Customer[Level1->MiddleName],mode=TwoWay}" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1->MiddleName],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -152,7 +152,7 @@
                         LastName:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="{this.value,to=Customer[Level1->LastName],mode=TwoWay}" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1->LastName],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -160,7 +160,7 @@
                         CompanyName:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="{this.value,to=Customer[CompanyName],mode=TwoWay}" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[CompanyName],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -168,7 +168,7 @@
                         SalesPerson:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="{this.value,to=Customer[SalesPerson],mode=TwoWay}" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[SalesPerson],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -176,7 +176,7 @@
                         Email:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="{this.value,to=Customer[Level1->Level2->EmailAddress],mode=TwoWay}" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1->Level2->EmailAddress],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -184,7 +184,7 @@
                         Phone:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="{this.value,to=Customer[Level1->Level2->Phone],mode=TwoWay}" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1->Level2->Phone],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -193,7 +193,7 @@
                     </td>
                     <td>
                         <input type="text" style="width:180px;" 
-                         data-bind="{this.value,to=Customer[ModifiedDate],converter=dateTimeConverter,param='DD.MM.YYYY HH:mm:ss',mode=TwoWay}" />
+                         data-bind="this.value,to=Customer[ModifiedDate],converter=dateTimeConverter,param='DD.MM.YYYY HH:mm:ss',mode=TwoWay" />
                     </td>
                 </tr>
             </tbody>
@@ -209,32 +209,32 @@
 
 <script id="nameTemplate" type="text/html" data-role="template">
     <div style="margin: 0px; width: 100%;">
-        <span data-bind="{this.value,to=Customer[Level1->FirstName]}"></span>&nbsp;
-        <span data-bind="{this.value,to=Customer[Level1->MiddleName]}"></span>&nbsp;
-        <span data-bind="{this.value,to=Customer[Level1->LastName]}"></span>
+        <span data-bind="this.value,to=Customer[Level1->FirstName]"></span>&nbsp;
+        <span data-bind="this.value,to=Customer[Level1->MiddleName]"></span>&nbsp;
+        <span data-bind="this.value,to=Customer[Level1->LastName]"></span>
     </div>
 </script>
 
 <script id="emailTemplate" type="text/html" data-role="template">
-    <span data-bind="{this.value,to=Customer[Level1->Level2->EmailAddress]}"></span>
+    <span data-bind="this.value,to=Customer[Level1->Level2->EmailAddress]"></span>
 </script>
 
 <script id="phoneTemplate" type="text/html" data-role="template">
-    <span data-bind="{this.value,to=Customer[Level1->Level2->Phone]}"></span>
+    <span data-bind="this.value,to=Customer[Level1->Level2->Phone]"></span>
 </script>
 
 <script id="dateTemplate" type="text/html" data-role="template">
     @*testing eval expression for the param value*@
     @*get value exposed from the datacontext: eval(Customer.dateFormat)*@
     @*get value exposed as the app property: eval(dateFormat,app)*@
-    <span data-bind="{this.value,to=Customer[ModifiedDate],converter=dateTimeConverter,param=eval(Customer.dateFormat)}"></span>
+    <span data-bind="this.value,to=Customer[ModifiedDate],converter=dateTimeConverter,param=eval(Customer.dateFormat)"></span>
 </script>
 
 <script id="custDetTemplate" type="text/html" data-role="template">
     <div style="margin: 0px; min-height: 400px; width: 100%;">
         <table style="font-size: 9pt; margin-bottom: 3px;"
-               data-bind="{this.dataSource,to=Customer.Addresses}" 
-               data-view-options="{isHandleAddNew:true,editor:{templateID:addressEditTemplate,width:550,height:400,submitOnOK:false,title:'Address editing'}}">
+               data-bind="this.dataSource,to=Customer.Addresses" 
+               data-view-options="isHandleAddNew:true,editor:{templateID:addressEditTemplate,width:550,height:400,submitOnOK:false,title:'Address editing'}">
             <thead>
                 <tr>
                     <th data-column="width:50px,type:row_actions"></th>
@@ -244,23 +244,23 @@
             <tbody></tbody>
         </table>
         <div style="height:45px; border: none; margin-top:10px; text-align:center;">
-            <button class="btn btn-info btn-small" data-bind="{this.command,to=addNewAddrCommand,mode=OneWay,source=customerVM}"><i class="icon-plus"></i>&nbsp;New Address</button>
+            <button class="btn btn-info btn-small" data-bind="this.command,to=addNewAddrCommand,mode=OneWay,source=customerVM"><i class="icon-plus"></i>&nbsp;New Address</button>
         </div>
     </div>
 </script>
 
 <script id="addrTemplate" type="text/html" data-role="template">
     <div style="margin: 0px; width: 100%;">
-        <span data-bind="{this.value,to=[Line1]}"></span>&nbsp;
-        <span data-bind="{this.value,to=[Line2]}"></span>&nbsp;
-        <span data-bind="{this.value,to=[City]}"></span>&nbsp;
-        <span data-bind="{this.value,to=[Region]}"></span>
+        <span data-bind="this.value,to=[Line1]"></span>&nbsp;
+        <span data-bind="this.value,to=[Line2]"></span>&nbsp;
+        <span data-bind="this.value,to=[City]"></span>&nbsp;
+        <span data-bind="this.value,to=[Region]"></span>
     </div>
 </script>
 
 
 <script id="addressEditTemplate" type="text/html" data-role="template">
-    <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="dataform">
+    <div style="width: 100%" data-bind="this.dataContext,mode=OneWay" data-view="dataform">
         <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
             <colgroup>
                 <col style="border: none; text-align: left; width: 125px;" />
@@ -272,7 +272,7 @@
                         Line1:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="{this.value,to=[Line1],mode=TwoWay}" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=[Line1],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -280,7 +280,7 @@
                         Line2:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="{this.value,to=[Line2],mode=TwoWay}" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=[Line2],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -288,7 +288,7 @@
                         City:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="{this.value,to=[City],mode=TwoWay}" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=[City],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -296,7 +296,7 @@
                         Region:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="{this.value,to=[Region],mode=TwoWay}" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=[Region],mode=TwoWay" />
                     </td>
                 </tr>
             </tbody>

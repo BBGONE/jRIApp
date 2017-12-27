@@ -7,17 +7,17 @@
 }
 @{ 
     string BindGridCustomers = "{this.dataSource,to=dbSet,source=customerVM}{this.grid,to=grid,mode=BackWay,source=customerVM}";
-    string OptionsGridCustomers = @"{wrapCss:customerTableWrap,
+    string OptionsGridCustomers = @"wrapCss:customerTableWrap,
 isHandleAddNew:true,
 editor:{templateID:customerEditTemplate,width:500,height:550,title:'Customer editing'},
-details:{templateID:customerDetailsTemplate}}";
+details:{templateID:customerDetailsTemplate}";
     string BindTableCustOrders = "{this.dataSource,to=dbSet,source=customerVM.ordersVM}{this.grid,to=grid,mode=BackWay,source=customerVM.ordersVM}";
-    string OptionsTableCustOrders = @"{isUseScrollIntoDetails:false,
+    string OptionsTableCustOrders = @"isUseScrollIntoDetails:false,
 isHandleAddNew:true,
 editor:{templateID:orderEditTemplate,width:650,height:550,title:'Order editing'},
-details:{templateID:orderDetailsTemplate}}";
-    string BindAddNewOrder = "{this.command,to=addNewCommand,source=customerVM.ordersVM}";
-    string OptionsAddNewOrder = "{tip:This is not a Real World example how to add an order!!!}";
+details:{templateID:orderDetailsTemplate}";
+    string BindAddNewOrder ="this.command,to=addNewCommand,source=customerVM.ordersVM";
+    string OptionsAddNewOrder ="tip:This is not a Real World example how to add an order!!!";
 }
 
 <style type="text/css">
@@ -112,7 +112,7 @@ details:{templateID:orderDetailsTemplate}}";
 
 <h2 class="ex8">@ViewBag.Title</h2>
 
-<div id="demoContent" style="opacity:0;" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="busy">
+<div id="demoContent" style="opacity:0;" data-bind="this.isBusy,to=dbContext.isBusy" data-view="busy">
     <div style="height: 85%; vertical-align: top;">
         <table data-name="gridCustomers" data-bind="@BindGridCustomers" data-view-options="@OptionsGridCustomers">
             <thead>
@@ -133,19 +133,19 @@ details:{templateID:orderDetailsTemplate}}";
     </div>
     <div style="border: none; padding-top: 20px; text-align: left; width: 100%;">
         <!--pager-->
-        <div style="float: left;" data-bind-1="{this.dataSource,to=dbSet,source=customerVM}" 
+        <div style="float: left;" data-bind-1="this.dataSource,to=dbSet,source=customerVM" 
              @*when the pager is selected than the datagrid gets keydown and keyup events*@
-             data-bind-2="{this.parentControl,to=grid,source=customerVM}" 
+             data-bind-2="this.parentControl,to=grid,source=customerVM" 
              data-view="pager" 
-             data-view-options="{sliderSize:10}"></div>
+             data-view-options="sliderSize:10"></div>
         <div style="float: left; padding-left: 10px; padding-top: 10px;padding-bottom: 10px;">
-            <span>Total rows:</span>&nbsp;<span data-bind="{this.value,to=dbSet.totalCount,source=customerVM}"></span>
+            <span>Total rows:</span>&nbsp;<span data-bind="this.value,to=dbSet.totalCount,source=customerVM"></span>
         </div>
 
         <div style="float: right;">
-            <button class="btn btn-info btn-small" data-bind="{this.command,to=addNewCommand,mode=OneWay,source=customerVM}"><i class="icon-plus"></i>&nbsp;New Customer</button>
-            <button class="btn btn-info btn-small" data-bind="{this.command,to=saveCommand,mode=OneWay,source=customerVM}"><i class="icon-ok-circle"></i>&nbsp;Save changes</button>
-            <button class="btn btn-info btn-small" data-bind="{this.command,to=undoCommand,mode=OneWay,source=customerVM}"><i class="icon-remove"></i>&nbsp;Undo changes</button>
+            <button class="btn btn-info btn-small" data-bind="this.command,to=addNewCommand,mode=OneWay,source=customerVM"><i class="icon-plus"></i>&nbsp;New Customer</button>
+            <button class="btn btn-info btn-small" data-bind="this.command,to=saveCommand,mode=OneWay,source=customerVM"><i class="icon-ok-circle"></i>&nbsp;Save changes</button>
+            <button class="btn btn-info btn-small" data-bind="this.command,to=undoCommand,mode=OneWay,source=customerVM"><i class="icon-remove"></i>&nbsp;Undo changes</button>
         </div>
     </div>
 </div>
@@ -154,7 +154,7 @@ details:{templateID:orderDetailsTemplate}}";
 
 <script id="customerEditTemplate" type="text/html" data-role="template">
     <div style="margin: 0px; width: 100%;">
-        <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="dataform">
+        <div style="width: 100%" data-bind="this.dataContext,mode=OneWay" data-view="dataform">
             <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
                 <colgroup>
                     <col style="border: none; text-align: left; width: 125px;"/>
@@ -249,11 +249,11 @@ details:{templateID:orderDetailsTemplate}}";
 <script id="customerDetailsTemplate" type="text/html" data-role="template">
     @*Grid details template for customer's orders*@
     <div style="margin: 0px; min-height: 400px; width: 100%;">
-        <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-view="tabs" data-view-options="{hide:{effect:clip,duration:500},show:{effect:clip,duration:500}}">
+        <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-view="tabs" data-view-options="hide:{effect:clip,duration:500},show:{effect:clip,duration:500}">
             <div id="detailsTabs">
                 <ul>
                     <li>
-                        <a href="#custDetails">Details on&nbsp;<span data-bind="{this.value,to=ComplexProp.Name}"></span></a>
+                        <a href="#custDetails">Details on&nbsp;<span data-bind="this.value,to=ComplexProp.Name"></span></a>
                     </li>
                     <li>
                         <a href="#custOrders">Customer's Orders</a>
@@ -266,7 +266,7 @@ details:{templateID:orderDetailsTemplate}}";
                                 ID:
                             </label>
                             <div class="controls">
-                                <input type="text" class="value" data-bind="{this.value,to=CustomerID}" readonly="readonly"/>
+                                <input type="text" class="value" data-bind="this.value,to=CustomerID" readonly="readonly"/>
                             </div>
                         </div>
                         <div class="control-group">
@@ -274,7 +274,7 @@ details:{templateID:orderDetailsTemplate}}";
                                 Title:
                             </label>
                             <div class="controls">
-                                <input type="text" class="value" data-bind="{this.value,to=Title}" readonly="readonly"/>
+                                <input type="text" class="value" data-bind="this.value,to=Title" readonly="readonly"/>
                             </div>
                         </div>
                         <div class="control-group">
@@ -282,7 +282,7 @@ details:{templateID:orderDetailsTemplate}}";
                                 Suffix:
                             </label>
                             <div class="controls">
-                                <input type="text" class="value" data-bind="{this.value,to=Suffix}" readonly="readonly"/>
+                                <input type="text" class="value" data-bind="this.value,to=Suffix" readonly="readonly"/>
                             </div>
                         </div>
                         <div class="control-group">
@@ -290,7 +290,7 @@ details:{templateID:orderDetailsTemplate}}";
                                 CompanyName:
                             </label>
                             <div class="controls">
-                                <input type="text" class="value" data-bind="{this.value,to=CompanyName}" readonly="readonly"/>
+                                <input type="text" class="value" data-bind="this.value,to=CompanyName" readonly="readonly"/>
                             </div>
                         </div>
                         <div class="control-group">
@@ -298,7 +298,7 @@ details:{templateID:orderDetailsTemplate}}";
                                 EmailAddress:
                             </label>
                             <div class="controls">
-                                <input type="text" class="value" data-bind="{this.value,to=ComplexProp.ComplexProp.EmailAddress}" readonly="readonly"/>
+                                <input type="text" class="value" data-bind="this.value,to=ComplexProp.ComplexProp.EmailAddress" readonly="readonly"/>
                             </div>
                         </div>
                         <div class="control-group">
@@ -306,7 +306,7 @@ details:{templateID:orderDetailsTemplate}}";
                                 Phone:
                             </label>
                             <div class="controls">
-                                <input type="text" class="value" data-bind="{this.value,to=ComplexProp.ComplexProp.Phone}" readonly="readonly"/>
+                                <input type="text" class="value" data-bind="this.value,to=ComplexProp.ComplexProp.Phone" readonly="readonly"/>
                             </div>
                         </div>
                     </form>
@@ -342,7 +342,7 @@ details:{templateID:orderDetailsTemplate}}";
 </script>
 <script id="orderEditTemplate" type="text/html" data-role="template">
     <div style="margin: 0px; width: 100%;">
-        <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="dataform">
+        <div style="width: 100%" data-bind="this.dataContext,mode=OneWay" data-view="dataform">
             <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
                 <colgroup>
                     <col style="border: none; text-align: left; width: 225px;"/>
@@ -488,7 +488,7 @@ details:{templateID:orderDetailsTemplate}}";
 
 <script id="orderDetEditTemplate" type="text/html" data-role="template">
     <div style="margin: 0px; width: 100%;">
-        <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="dataform">
+        <div style="width: 100%" data-bind="this.dataContext,mode=OneWay" data-view="dataform">
             <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
                 <colgroup>
                     <col style="border: none; text-align: left; width: 225px;"/>
@@ -553,7 +553,7 @@ details:{templateID:orderDetailsTemplate}}";
     @*Grid details template for order Details*@
     <div style="margin: 0px; width: 100%;">
         <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-bind="this.tabsEvents,to=tabsEvents,source=customerVM.ordersVM" data-view="tabs"
-             data-view-options="{hide:{effect:clip,duration:500},show:{effect:clip,duration:500}}">
+             data-view-options="hide:{effect:clip,duration:500},show:{effect:clip,duration:500}">
             <div id="odeTabs">
                 <ul>
                     <li>
@@ -567,7 +567,7 @@ details:{templateID:orderDetailsTemplate}}";
                     </li>
                 </ul>
                 <div id="sta">
-                    <form action="#" style="padding: 15px; width: 100%;" data-bind="{this.dataContext,to=Address}"
+                    <form action="#" style="padding: 15px; width: 100%;" data-bind="this.dataContext,to=Address"
                           data-view="dataform">
                         <dl class="dl-horizontal">
                             <dt>
@@ -605,7 +605,7 @@ details:{templateID:orderDetailsTemplate}}";
                     </form>
                 </div>
                 <div id="bta">
-                    <form action="#" style="padding: 15px; width: 100%;" data-bind="{this.dataContext,to=Address1}"
+                    <form action="#" style="padding: 15px; width: 100%;" data-bind="this.dataContext,to=Address1"
                           data-view="dataform">
                         <dl class="dl-horizontal">
                             <dt>
@@ -643,8 +643,8 @@ details:{templateID:orderDetailsTemplate}}";
                     </form>
                 </div>
                 <div id="ode">
-                    <table style="font-size: 9pt;" data-name="tblOrderDetails" data-bind="{this.dataSource,to=dbSet,source=customerVM.ordersVM.orderDetailsVM}"
-                           data-view-options="{wrapCss:orderDetailTableWrap,isHandleAddNew:true,editor:{templateID:orderDetEditTemplate,width:650,height:550,title:'Order Detail editing'}}">
+                    <table style="font-size: 9pt;" data-name="tblOrderDetails" data-bind="this.dataSource,to=dbSet,source=customerVM.ordersVM.orderDetailsVM"
+                           data-view-options="wrapCss:orderDetailTableWrap,isHandleAddNew:true,editor:{templateID:orderDetEditTemplate,width:650,height:550,title:'Order Detail editing'}">
                         <thead>
                         <tr>
                             <th data-column="width:50px,type:row_actions"></th>
@@ -666,16 +666,16 @@ details:{templateID:orderDetailsTemplate}}";
 
 <script id="productTemplate1" type="text/html" data-role="template">
     <div>
-        <span data-bind="{this.value,to=Product.Name}"></span>
+        <span data-bind="this.value,to=Product.Name"></span>
     </div>
 </script>
 
 <script id="productTemplate2" type="text/html" data-role="template">
     <span>
         autocomplete here-->
-        <input type="text" style="margin-left: 0px; width: 300px;" data-bind="{this.dataContext}"
+        <input type="text" style="margin-left: 0px; width: 300px;" data-bind="this.dataContext"
                data-view="productAutocomplete"
-               data-view-options="{dbContext:dbContext,fieldName:Name,dbSetName:LookUpProduct,queryName:ReadProductLookUp,templateId:prodAutocompleteTemplate,width:300px}"/>&nbsp;<b>*</b>
+               data-view-options="dbContext:dbContext,fieldName:Name,dbSetName:LookUpProduct,queryName:ReadProductLookUp,templateId:prodAutocompleteTemplate,width:300px"/>&nbsp;<b>*</b>
     </span>
 </script>
 
@@ -683,9 +683,9 @@ details:{templateID:orderDetailsTemplate}}";
     @*example of autocomplete implementation*@
     <div style="height: 98%; margin: 0px; padding: 2px; position: relative;">
         <div style="margin-left: 1px; position: relative; vertical-align: top;"
-             data-bind="{this.isBusy,to=isLoading}" data-view="busy">
-            <table data-name="lookupGrid" data-bind="{this.dataSource,to=gridDataSource}"
-                   data-view-options="{wrapCss:autocompleteTableWrap,headerCss:autocompleteTableHeader}">
+             data-bind="this.isBusy,to=isLoading" data-view="busy">
+            <table data-name="lookupGrid" data-bind="this.dataSource,to=gridDataSource"
+                   data-view-options="wrapCss:autocompleteTableWrap,headerCss:autocompleteTableHeader">
                 <thead>
                 <tr>
                     <th data-column="width:100%,sortable:true,title:Name" data-content="fieldName:Name"></th>
@@ -696,20 +696,20 @@ details:{templateID:orderDetailsTemplate}}";
         </div>
         <div style="position: relative; text-align: left;">
             <!--pager-->
-            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" 
+            <div style="float: left;" data-bind="this.dataSource,to=gridDataSource" 
                  data-view="pager" 
-                 data-view-options="{sliderSize:5,hideOnSinglePage=true}">
+                 data-view-options="sliderSize:5,hideOnSinglePage=true">
             </div>
             <div style="float: left; padding: 5px;">
-                <span>Total rows:</span>&nbsp;<span data-bind="{this.value,to=gridDataSource.totalCount}"></span>
+                <span>Total rows:</span>&nbsp;<span data-bind="this.value,to=gridDataSource.totalCount"></span>
             </div>
         </div>
         <br style="clear: both;" />
         <div style="margin-left: auto;margin-right:auto;left: 0;right: 0;bottom:5px;text-align:center;position:absolute;">
-            <a class="btn btn-info btn-small" style="width: 70px;" data-name="btnOk" data-bind="{this.text,to=txtOk,source=TEXT}">
+            <a class="btn btn-info btn-small" style="width: 70px;" data-name="btnOk" data-bind="this.text,to=txtOk,source=TEXT">
                 <i class="icon-ok"></i>
             </a><span class="space"></span>
-            <a class="btn btn-info btn-small" style="width: 70px;" data-name="btnCancel" data-bind="{this.text,to=txtCancel,source=TEXT}">
+            <a class="btn btn-info btn-small" style="width: 70px;" data-name="btnCancel" data-bind="this.text,to=txtCancel,source=TEXT">
                 <i class="icon-remove"></i>
             </a>
         </div>
