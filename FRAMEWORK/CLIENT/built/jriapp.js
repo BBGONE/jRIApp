@@ -109,8 +109,13 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
         TOKEN["THIS"] = "this.";
         TOKEN["PARAM"] = "param";
         TOKEN["TARGET_PATH"] = "targetPath";
-        TOKEN["BRACE_PART"] = "BRP";
     })(TOKEN || (TOKEN = {}));
+    var TAG;
+    (function (TAG) {
+        TAG["EVAL"] = "1";
+        TAG["BRACE_PART"] = "2";
+        TAG["LITERAL"] = "3";
+    })(TAG || (TAG = {}));
     var PARSE_TYPE;
     (function (PARSE_TYPE) {
         PARSE_TYPE[PARSE_TYPE["NONE"] = 0] = "NONE";
@@ -124,9 +129,11 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
     function isInsideBraces(str) {
         return (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}"));
     }
-    function convertKeyVal(kv) {
+    function trimKV(kv) {
         kv.key = strUtils.fastTrim(kv.key);
         kv.val = strUtils.fastTrim(kv.val);
+        if (kv.tag === "3")
+            return;
         if (checks.isNumeric(kv.val)) {
             kv.val = Number(kv.val);
         }
@@ -195,7 +202,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             if (ch === "(" && checks.isString(kv.val)) {
                 if (!literal && strUtils.fastTrim(kv.val) === "eval") {
                     literal = ch;
-                    kv.tag = "eval";
+                    kv.tag = "1";
                 }
             }
             if (ch === ")") {
@@ -210,7 +217,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                     if (braceParts.length > 0) {
                         bracePart = braceParts[0];
                         kv.val += bracePart;
-                        kv.tag = "BRP";
+                        kv.tag = "2";
                         i += bracePart.length - 1;
                     }
                     else {
@@ -219,7 +226,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                 }
                 else if (ch === ",") {
                     if (!!kv.key) {
-                        convertKeyVal(kv);
+                        trimKV(kv);
                         parts.push(kv);
                         kv = { tag: null, key: "", val: "" };
                         isKey = true;
@@ -243,11 +250,14 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                 }
                 else {
                     kv.val += ch;
+                    if (!kv.tag) {
+                        kv.tag = "3";
+                    }
                 }
             }
         }
         if (!!kv.key) {
-            convertKeyVal(kv);
+            trimKV(kv);
             parts.push(kv);
         }
         parts = parts.filter(function (kv) {
@@ -261,7 +271,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
             ch = val.charAt(i);
             if (ch === "(" && checks.isString(part)) {
                 if (is_expression) {
-                    throw new Error("Invalid expression: " + val);
+                    throw new Error("Invalid Expression: " + val);
                 }
                 if (!is_expression && strUtils.fastTrim(part) === "eval") {
                     part = "";
@@ -275,7 +285,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                     parts.push(part);
                     part = "";
                     if (parts.length > 2) {
-                        throw new Error("Invalid expression: " + val);
+                        throw new Error("Invalid Expression: " + val);
                     }
                     break;
                 }
@@ -319,7 +329,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                 kv.val = kv.key.substr(len_this);
                 kv.key = "targetPath";
             }
-            if (isTryGetEval && kv.tag === "eval") {
+            if (isTryGetEval && kv.tag === "1") {
                 evalparts = getEvalParts(kv.val);
                 isEval = evalparts.length > 0;
             }
@@ -343,7 +353,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared"], function 
                         break;
                 }
             }
-            else if (kv.tag === "BRP") {
+            else if (kv.tag === "2") {
                 res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
             }
             else {
@@ -4390,6 +4400,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.8.1";
+    exports.VERSION = "2.8.2";
     bootstrap_7.Bootstrap._initFramework();
 });

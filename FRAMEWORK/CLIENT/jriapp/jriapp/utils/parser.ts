@@ -12,8 +12,13 @@ const enum TOKEN {
     EVAL = "eval",
     THIS = "this.",
     PARAM = "param",
-    TARGET_PATH = "targetPath",
-    BRACE_PART = "BRP"
+    TARGET_PATH = "targetPath"
+}
+
+const enum TAG {
+    EVAL = "1",
+    BRACE_PART = "2",
+    LITERAL = "3"
 }
 
 const enum PARSE_TYPE {
@@ -37,9 +42,11 @@ function isInsideBraces(str: string): boolean {
     return (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}"));
 }
 
-function convertKeyVal(kv: IKeyVal): void {
+function trimKV(kv: IKeyVal): void {
     kv.key = strUtils.fastTrim(kv.key);
     kv.val = strUtils.fastTrim(kv.val);
+    if (kv.tag === TAG.LITERAL)
+        return;
     if (checks.isNumeric(kv.val)) {
         kv.val = Number(kv.val);
     } else if (checks.isBoolString(kv.val)) {
@@ -117,7 +124,7 @@ function getKeyVals(val: string): IKeyVal[] {
         if (ch === "(" && checks.isString(kv.val)) {
             if (!literal && strUtils.fastTrim(kv.val) === TOKEN.EVAL) {
                 literal = ch;
-                kv.tag = TOKEN.EVAL;
+                kv.tag = TAG.EVAL;
             }
         }
 
@@ -134,14 +141,14 @@ function getKeyVals(val: string): IKeyVal[] {
                 if (braceParts.length > 0) {
                     bracePart = braceParts[0];
                     kv.val += bracePart;
-                    kv.tag = TOKEN.BRACE_PART;
+                    kv.tag = TAG.BRACE_PART;
                     i += bracePart.length - 1;
                 } else {
                     throw new Error(strUtils.format(ERRS.ERR_EXPR_BRACES_INVALID, bracePart));
                 }
             } else if (ch === TOKEN.COMMA) {
                 if (!!kv.key) {
-                    convertKeyVal(kv);
+                    trimKV(kv);
                     parts.push(kv);
                     kv = { tag: null, key: "", val: "" };
                     isKey = true; // currently parsing key value
@@ -156,17 +163,21 @@ function getKeyVals(val: string): IKeyVal[] {
                 }
             }
         } else {
+            //literal value
             if (isKey) {
                 kv.key += ch;
             } else {
                 kv.val += ch;
+                if (!kv.tag) {
+                    kv.tag = TAG.LITERAL;
+                }
             }
         }
     } //for (i = 0; i < val.length; i += 1)
 
     //check the last value
     if (!!kv.key) {
-        convertKeyVal(kv);
+        trimKV(kv);
         parts.push(kv);
     }
 
@@ -188,7 +199,7 @@ function getEvalParts(val: string): string[] {
         // is this content inside eval( ) ?
         if (ch === "(" && checks.isString(part)) {
             if (is_expression ) {
-                throw new Error("Invalid expression: " + val);
+                throw new Error("Invalid Expression: " + val);
             }
 
             if (!is_expression && strUtils.fastTrim(part) === TOKEN.EVAL) {
@@ -204,7 +215,7 @@ function getEvalParts(val: string): string[] {
                 parts.push(part);
                 part = "";
                 if (parts.length > 2) {
-                    throw new Error("Invalid expression: " + val);
+                    throw new Error("Invalid Expression: " + val);
                 }
                 break;
             } else {
@@ -255,7 +266,7 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
             kv.key = TOKEN.TARGET_PATH;
         }
 
-        if (isTryGetEval && kv.tag === TOKEN.EVAL) {
+        if (isTryGetEval && kv.tag === TAG.EVAL) {
             evalparts = getEvalParts(kv.val);
             isEval = evalparts.length > 0;
         }
@@ -280,7 +291,7 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
                     res[kv.key] = kv.val;
                     break;
             }
-        } else if (kv.tag === TOKEN.BRACE_PART) {
+        } else if (kv.tag === TAG.BRACE_PART) {
             res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
         } else {
             res[kv.key] = kv.val;
