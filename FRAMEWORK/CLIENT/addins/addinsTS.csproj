@@ -84,7 +84,7 @@
     <TypeScriptCompile Include="ui\jriapp_ui\content\all.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\content\factory.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\content\int.ts" />
-    <TypeScriptCompile Include="ui\jriapp_ui\content\listbox.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\content\lookup.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\content\multyline.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\content\number.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\content\string.ts" />

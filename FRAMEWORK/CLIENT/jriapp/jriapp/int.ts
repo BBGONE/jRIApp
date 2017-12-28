@@ -115,9 +115,9 @@ export interface ITemplateEvents {
 
 // --ElView interfaces
 export interface IViewOptions {
+    el: HTMLElement;
     css?: string;
     tip?: string;
-    el: HTMLElement;
     //use event delegation or not
     nodelegate?: boolean;
 }
@@ -141,6 +141,7 @@ export interface IElViewInfo {
 
 export interface IElViewFactory {
     createElView(viewInfo: IElViewInfo): IElView;
+    getElView(el: HTMLElement): IElView;
     getOrCreateElView(el: Element, dataContext: any): IElView;
     getElementViewInfo(el: Element, dataContext: any): IElViewInfo;
     store: IElViewStore;
@@ -169,7 +170,7 @@ export interface IBindArgs  {
 }
 
 export interface IDataBindingService extends IDisposable {
-    bindTemplateElements(templateEl: Element, dataContext: any): IPromise<ILifeTimeScope>;
+    bindTemplate(templateEl: Element, dataContext: any): IPromise<ILifeTimeScope>;
     bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
     setUpBindings(): IVoidPromise;
     bind(opts: IBindingOptions): IBinding;
@@ -295,7 +296,7 @@ export interface IModuleLoader {
 
 // --Application interfaces
 export interface IInternalAppMethods {
-    bindTemplateElements(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
+    bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
     bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
 }
 

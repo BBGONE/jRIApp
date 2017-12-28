@@ -278,8 +278,9 @@ declare module "jriapp_shared/utils/coreutils" {
 declare module "jriapp_shared/lang" {
     import { IIndexer } from "jriapp_shared/int";
     export function assign<T extends U, U extends IIndexer<any>>(target: T, source: U): T;
-    export interface IErrors extends IIndexer<string> {
+    export interface _IErrors extends IIndexer<string> {
         ERR_OBJ_ALREADY_REGISTERED: string;
+        ERR_OPTIONS_ALREADY_REGISTERED: string;
         ERR_APP_NEED_JQUERY: string;
         ERR_ASSERTION_FAILED: string;
         ERR_BINDING_CONTENT_NOT_FOUND: string;
@@ -303,7 +304,9 @@ declare module "jriapp_shared/lang" {
         ERR_TEMPLATE_NOTREGISTERED: string;
         ERR_TEMPLATE_GROUP_NOTREGISTERED: string;
         ERR_TEMPLATE_HAS_NO_ID: string;
+        ERR_OPTIONS_HAS_NO_ID: string;
         ERR_CONVERTER_NOTREGISTERED: string;
+        ERR_OPTIONS_NOTREGISTERED: string;
         ERR_JQUERY_DATEPICKER_NOTFOUND: string;
         ERR_PARAM_INVALID: string;
         ERR_PARAM_INVALID_TYPE: string;
@@ -358,7 +361,8 @@ declare module "jriapp_shared/lang" {
         ERR_DATAVIEW_DATASRC_INVALID: string;
         ERR_DATAVIEW_FILTER_INVALID: string;
     }
-    export interface IPagerText extends IIndexer<string> {
+    export type IErrors = Partial<_IErrors>;
+    export interface _IPagerText extends IIndexer<string> {
         firstText: string;
         lastText: string;
         previousText: string;
@@ -371,11 +375,13 @@ declare module "jriapp_shared/lang" {
         showingTip: string;
         showTip: string;
     }
-    export interface IValidateText extends IIndexer<string> {
+    export type IPagerText = Partial<_IPagerText>;
+    export interface _IValidateText extends IIndexer<string> {
         errorInfo: string;
         errorField: string;
     }
-    export interface IText extends IIndexer<string> {
+    export type IValidateText = Partial<_IValidateText>;
+    export interface _IText extends IIndexer<string> {
         txtEdit: string;
         txtAddNew: string;
         txtDelete: string;
@@ -388,6 +394,7 @@ declare module "jriapp_shared/lang" {
         txtClose: string;
         txtField: string;
     }
+    export type IText = Partial<_IText>;
     export interface ILocaleText extends IIndexer<any> {
         PAGER: IPagerText;
         VALIDATE: IValidateText;

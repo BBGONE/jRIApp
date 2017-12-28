@@ -131,6 +131,9 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
         }
         return elView;
     }
+    getElView(el: HTMLElement): IElView {
+        return this.store.getElView(el);
+    }
     // checks if the element already has created and attached an ElView, if no then it creates and attaches ElView for the element
     getOrCreateElView(el: HTMLElement, dataContext: any = null): IElView {
         const elView = this.store.getElView(el);
@@ -149,16 +152,16 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
                 viewName = attr;
             }
         }
-        let options: any;
+        let options: IViewOptions;
         if (el.hasAttribute(DATA_ATTR.DATA_VIEW_OPTIONS)) {
             const attr = el.getAttribute(DATA_ATTR.DATA_VIEW_OPTIONS);
-            options = parser.parseViewOptions(attr, bootstrap.getApp(), dataContext);
+            options = <IViewOptions>parser.parseViewOptions(attr, bootstrap.getApp(), dataContext);
             options.el = el;
         } else {
             options = { el: el };
         }
        
-        return { name: viewName, options: <IViewOptions>options };
+        return { name: viewName, options: options };
     }
     get store() {
         return this._store;

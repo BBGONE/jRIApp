@@ -169,21 +169,26 @@
 
 <h2 class="ex8">@ViewBag.Title</h2>
 
+<script id="gridCustomersOptions" type="text/options">
+    wrapCss: 'customerTableWrap',
+    isPrependAllRows: true,
+    isHandleAddNew: true,
+    isActionsToolTips: true,
+    editor: {
+    templateID: 'customerEditTemplate',
+    width: 550,
+    height: 650,
+    submitOnOK: true,
+    title: 'Customer editing'
+    }
+</script>
+
 <div id="demoContent" style="opacity:0;" data-bind="this.isBusy,to=dbContext.isBusy" data-view="busy">
     <div id="leftPanel">
         <div style="height: 97%; vertical-align: top;">
-            @{
-var gridOptions = @"wrapCss:customerTableWrap,
-isPrependAllRows:true,
-isHandleAddNew:true,
-isActionsToolTips:true,
-editor:{templateID:customerEditTemplate,
-width:550,height:650,submitOnOK:true,
-title:'Customer editing'}";
-            }
             <table data-name="gridCustomers" 
                    data-bind="this.dataSource,to=dbSet,source=customerVM" 
-                   data-view-options="@gridOptions">
+                   data-view-options="get(gridCustomersOptions)">
                 <thead>
                 <tr>
                     <th data-column="width:50px,type:row_actions"/>

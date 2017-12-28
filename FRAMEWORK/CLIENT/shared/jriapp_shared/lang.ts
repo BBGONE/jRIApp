@@ -8,8 +8,9 @@ export function assign<T extends U, U extends IIndexer<any>>(target: T, source: 
     return coreUtils.assignStrings(target, source);
 }
 
-export interface IErrors extends IIndexer<string> {
+export interface _IErrors extends IIndexer<string> {
     ERR_OBJ_ALREADY_REGISTERED: string;
+    ERR_OPTIONS_ALREADY_REGISTERED: string;
     ERR_APP_NEED_JQUERY: string;
     ERR_ASSERTION_FAILED: string;
     ERR_BINDING_CONTENT_NOT_FOUND: string;
@@ -33,7 +34,9 @@ export interface IErrors extends IIndexer<string> {
     ERR_TEMPLATE_NOTREGISTERED: string;
     ERR_TEMPLATE_GROUP_NOTREGISTERED: string;
     ERR_TEMPLATE_HAS_NO_ID: string;
+    ERR_OPTIONS_HAS_NO_ID: string;
     ERR_CONVERTER_NOTREGISTERED: string;
+    ERR_OPTIONS_NOTREGISTERED: string;
     ERR_JQUERY_DATEPICKER_NOTFOUND: string;
     ERR_PARAM_INVALID: string;
     ERR_PARAM_INVALID_TYPE: string;
@@ -89,7 +92,9 @@ export interface IErrors extends IIndexer<string> {
     ERR_DATAVIEW_FILTER_INVALID: string;
 }
 
-export interface IPagerText extends IIndexer<string> {
+export type IErrors = Partial<_IErrors>;
+
+export interface _IPagerText extends IIndexer<string> {
     firstText: string;
     lastText: string;
     previousText: string;
@@ -102,13 +107,16 @@ export interface IPagerText extends IIndexer<string> {
     showingTip: string;
     showTip: string;
 }
+export type IPagerText = Partial<_IPagerText>;
 
-export interface IValidateText extends IIndexer<string> {
+export interface _IValidateText extends IIndexer<string> {
     errorInfo: string;
     errorField: string;
 }
+export type IValidateText = Partial<_IValidateText>;
 
-export interface IText extends IIndexer<string> {
+
+export interface _IText extends IIndexer<string> {
     txtEdit: string;
     txtAddNew: string;
     txtDelete: string;
@@ -121,6 +129,7 @@ export interface IText extends IIndexer<string> {
     txtClose: string;
     txtField: string;
 }
+export type IText = Partial<_IText>;
 
 export interface ILocaleText extends IIndexer<any> {
     PAGER: IPagerText;
@@ -128,9 +137,9 @@ export interface ILocaleText extends IIndexer<any> {
     TEXT: IText;
 }
 
-
-const _ERRS: IErrors = {
-    ERR_OBJ_ALREADY_REGISTERED: "an Object with the name: {0} is already registered and can not be overwritten",
+const _ERRS: _IErrors = {
+    ERR_OBJ_ALREADY_REGISTERED: "Object with the name: {0} is already registered and can not be overwritten",
+    ERR_OPTIONS_ALREADY_REGISTERED: "Options with the name: {0} are already registered and can not be overwritten",
     ERR_APP_NEED_JQUERY: "The project is dependent on JQuery and can not function properly without it",
     ERR_ASSERTION_FAILED: 'The Assertion "{0}" failed',
     ERR_BINDING_CONTENT_NOT_FOUND: "BindingContent is not found",
@@ -154,7 +163,9 @@ const _ERRS: IErrors = {
     ERR_TEMPLATE_NOTREGISTERED: "TEMPLATE with the name: {0} is not registered",
     ERR_TEMPLATE_GROUP_NOTREGISTERED: "TEMPLATE's group: {0} is not registered",
     ERR_TEMPLATE_HAS_NO_ID: "TEMPLATE inside SCRIPT tag must have an ID attribute",
+    ERR_OPTIONS_HAS_NO_ID: "OPTIONS inside SCRIPT tag must have an ID attribute",
     ERR_CONVERTER_NOTREGISTERED: "Converter: {0} is not registered",
+    ERR_OPTIONS_NOTREGISTERED: "Options: {0} is not registered",
     ERR_JQUERY_DATEPICKER_NOTFOUND: "Application is dependent on JQuery.UI.datepicker",
     ERR_PARAM_INVALID: "Parameter: {0} has invalid value: {1}",
     ERR_PARAM_INVALID_TYPE: "Parameter: {0} has invalid type. It must be {1}",
@@ -210,7 +221,7 @@ const _ERRS: IErrors = {
     ERR_DATAVIEW_FILTER_INVALID: "TDataView fn_filter option must be valid function which accepts entity and returns boolean value"
 };
 
-const PAGER: IPagerText = {
+const PAGER: _IPagerText = {
     firstText: "<<",
     lastText: ">>",
     previousText: "<",
@@ -224,12 +235,12 @@ const PAGER: IPagerText = {
     showTip: "show result {0} to {1} of {2}"
 };
 
-const VALIDATE: IValidateText = {
+const VALIDATE: _IValidateText = {
     errorInfo: "Validation errors:",
     errorField: "field:"
 };
 
-const TEXT: IText = {
+const TEXT: _IText = {
     txtEdit: "Edit",
     txtAddNew: "Add new",
     txtDelete: "Delete",
@@ -243,7 +254,11 @@ const TEXT: IText = {
     txtField: "Field"
 };
 
-const _STRS: ILocaleText = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
+const _STRS: ILocaleText = {
+    PAGER: PAGER,
+    VALIDATE: VALIDATE,
+    TEXT: TEXT
+};
 
 export let ERRS: IErrors = _ERRS;
 export let STRS: ILocaleText = _STRS;

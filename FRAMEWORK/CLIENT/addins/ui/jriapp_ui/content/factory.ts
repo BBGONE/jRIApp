@@ -12,7 +12,7 @@ import { BoolContent } from "./bool";
 import { NumberContent } from "./number";
 import { DateContent } from "./date";
 import { DateTimeContent } from "./datetime";
-import { LookupContent } from "./listbox";
+import { LookupContent } from "./lookup";
 
 import { bootstrap } from "jriapp/bootstrap";
 

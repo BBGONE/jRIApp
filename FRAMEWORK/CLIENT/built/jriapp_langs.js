@@ -34,6 +34,7 @@ define("jriapp_ru", ["require", "exports", "jriapp_shared/lang", "jriapp/bootstr
     var _STRS = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
     var _ERRS = {
         ERR_OBJ_ALREADY_REGISTERED: "Объект с именем: {0} уже зарегестрирован и не может быть перезаписан",
+        ERR_OPTIONS_ALREADY_REGISTERED: "Опции с именем: {0} уже зарегестрированы и не могут быть перезаписаны",
         ERR_APP_NEED_JQUERY: "Проект зависит от JQuery и не может без него правильно работать",
         ERR_ASSERTION_FAILED: 'Утверждение "{0}" не сработало',
         ERR_BINDING_CONTENT_NOT_FOUND: "BindingContent не найден",
@@ -57,7 +58,9 @@ define("jriapp_ru", ["require", "exports", "jriapp_shared/lang", "jriapp/bootstr
         ERR_TEMPLATE_NOTREGISTERED: "Шаблон с именем: {0} не зарегистрирован",
         ERR_TEMPLATE_GROUP_NOTREGISTERED: "Группа шаблонов: {0} не зарегистрирована",
         ERR_TEMPLATE_HAS_NO_ID: "Шаблон внутри тэга SCRIPT должен иметь аттрибут ID",
+        ERR_OPTIONS_HAS_NO_ID: "Опции внутри тэга SCRIPT должны иметь аттрибут ID",
         ERR_CONVERTER_NOTREGISTERED: "Конвертор: {0} не зарегистрирован",
+        ERR_OPTIONS_NOTREGISTERED: "Опции: {0} не зарегистрированы",
         ERR_JQUERY_DATEPICKER_NOTFOUND: "Приложение зависит от JQuery.UI.datepicker и не может без него правильно работать",
         ERR_PARAM_INVALID: "Параметр: {0} имеет неправильное значение: {1}",
         ERR_PARAM_INVALID_TYPE: "Параметр: {0} имеет неверный тип. Его тип должен быть {1}",

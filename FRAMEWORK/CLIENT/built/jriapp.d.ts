@@ -7,6 +7,7 @@ declare module "jriapp/const" {
         SVC = "svc.",
         CONVERTER = "cnv.",
         OBJECT = "obj.",
+        OPTION = "opt.",
     }
     export const enum DATA_ATTR {
         DATA_BIND = "data-bind",
@@ -151,9 +152,9 @@ declare module "jriapp/int" {
         templateUnLoading(template: ITemplate): void;
     }
     export interface IViewOptions {
+        el: HTMLElement;
         css?: string;
         tip?: string;
-        el: HTMLElement;
         nodelegate?: boolean;
     }
     export interface IElViewStore {
@@ -172,6 +173,7 @@ declare module "jriapp/int" {
     }
     export interface IElViewFactory {
         createElView(viewInfo: IElViewInfo): IElView;
+        getElView(el: HTMLElement): IElView;
         getOrCreateElView(el: Element, dataContext: any): IElView;
         getElementViewInfo(el: Element, dataContext: any): IElViewInfo;
         store: IElViewStore;
@@ -195,7 +197,7 @@ declare module "jriapp/int" {
         readonly isTemplate: boolean;
     }
     export interface IDataBindingService extends IDisposable {
-        bindTemplateElements(templateEl: Element, dataContext: any): IPromise<ILifeTimeScope>;
+        bindTemplate(templateEl: Element, dataContext: any): IPromise<ILifeTimeScope>;
         bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
         setUpBindings(): IVoidPromise;
         bind(opts: IBindingOptions): IBinding;
@@ -302,7 +304,7 @@ declare module "jriapp/int" {
         whenAllLoaded(): IPromise<void>;
     }
     export interface IInternalAppMethods {
-        bindTemplateElements(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
+        bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
         bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
     }
     export interface IApplication extends IErrorHandler, IExports, IBaseObject {
@@ -664,6 +666,7 @@ declare module "jriapp/bootstrap" {
         constructor();
         private _bindGlobalEvents();
         private _onTemplateLoaded(html, app);
+        private _processOptions(root, app?);
         private _processTemplates(root, app?);
         private _processHTMLTemplates();
         private _processTemplate(name, html, app);
@@ -678,6 +681,7 @@ declare module "jriapp/bootstrap" {
         private _getObject(root, name);
         private _getConverter(name);
         private _waitLoaded(onLoad);
+        private _registerOptions(name, options);
         _getInternal(): IInternalBootstrapMethods;
         addOnDisposed(handler: TEventHandler<Bootstrap, any>, nmspace?: string, context?: object): void;
         offOnDisposed(nmspace?: string): void;
@@ -696,6 +700,7 @@ declare module "jriapp/bootstrap" {
         unregisterSvc(name: string): any;
         getSvc<T>(name: string): T;
         registerConverter(name: string, obj: IConverter): void;
+        getOptions(name: string): string;
         registerElView(name: string, elViewType: any): void;
         getImagePath(imageName: string): string;
         loadOwnStyle(name: string): IPromise<string>;
@@ -712,15 +717,13 @@ declare module "jriapp/bootstrap" {
     export const bootstrap: Bootstrap;
 }
 declare module "jriapp/utils/viewchecks" {
-    import { IElView } from "jriapp/int";
     export class ViewChecks {
         static isElView: (obj: any) => boolean;
         static isTemplateElView: (obj: any) => boolean;
-        static setIsInsideTemplate: (elView: IElView) => void;
         static isDataForm: (el: Element) => boolean;
         static isInsideDataForm: (el: Element) => boolean;
         static isInNestedForm: (root: any, forms: Element[], el: Element) => boolean;
-        static getParentDataForm: (rootForm: Element, el: Element) => Element;
+        static getParentDataForm: (rootForm: HTMLElement, el: HTMLElement) => HTMLElement;
     }
 }
 declare module "jriapp/converter" {
@@ -1001,5 +1004,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.8.2";
+    export const VERSION = "2.8.3";
 }

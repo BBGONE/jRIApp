@@ -1,9 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils, LocaleERRS as ERRS } from "jriapp_shared";
+import { bootstrap } from "../bootstrap";
+
 const checks = Utils.check, strUtils = Utils.str, coreUtils = Utils.core,
     sys = Utils.sys;
 
-const trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g;
+const trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g, getRX = /^get[(].+[)]$/g;
 
 const enum TOKEN {
     DELIMETER1 = ":",
@@ -12,13 +14,15 @@ const enum TOKEN {
     EVAL = "eval",
     THIS = "this.",
     PARAM = "param",
-    TARGET_PATH = "targetPath"
+    TARGET_PATH = "targetPath",
+    GET = "get"
 }
 
 const enum TAG {
     EVAL = "1",
     BRACE_PART = "2",
-    LITERAL = "3"
+    LITERAL = "3",
+    GET = "4"
 }
 
 const enum PARSE_TYPE {
@@ -45,12 +49,12 @@ function isInsideBraces(str: string): boolean {
 function trimKV(kv: IKeyVal): void {
     kv.key = strUtils.fastTrim(kv.key);
     kv.val = strUtils.fastTrim(kv.val);
-    if (kv.tag === TAG.LITERAL)
-        return;
-    if (checks.isNumeric(kv.val)) {
-        kv.val = Number(kv.val);
-    } else if (checks.isBoolString(kv.val)) {
-        kv.val = coreUtils.parseBool(kv.val);
+    if (!kv.tag) {
+        if (checks.isNumeric(kv.val)) {
+            kv.val = Number(kv.val);
+        } else if (checks.isBoolString(kv.val)) {
+            kv.val = coreUtils.parseBool(kv.val);
+        }
     }
 }
 
@@ -120,17 +124,33 @@ function getKeyVals(val: string): IKeyVal[] {
             }
         }
 
-        // is this a content inside eval( ) ?
-        if (ch === "(" && checks.isString(kv.val)) {
-            if (!literal && strUtils.fastTrim(kv.val) === TOKEN.EVAL) {
-                literal = ch;
-                kv.tag = TAG.EVAL;
+        // is this a content inside eval( ) or json() ?
+        if (ch === "(" && !literal) {
+            if (checks.isString(kv.val)) {
+                const token = strUtils.fastTrim(kv.val);
+                switch (token) {
+                    case TOKEN.EVAL:
+                        literal = ch;
+                        kv.tag = TAG.EVAL;
+                        break;
+                    case TOKEN.GET:
+                        literal = ch;
+                        kv.tag = TAG.GET;
+                        break;
+                    default:
+                        throw new Error(`Unknown token: ${token} in expression ${val}`);
+                }
             }
         }
 
         if (ch === ")") {
-            if (literal === "(") {
-                literal = null;
+            if (!literal) {
+                throw new Error(`Invalid: ) in expression ${val}`);
+            }
+            switch (literal) {
+                case "(":
+                    literal = null;
+                    break;
             }
         }
 
@@ -189,6 +209,9 @@ function getKeyVals(val: string): IKeyVal[] {
     return parts;
 }
 
+/**
+    * resolve parts by parsing expression: eval(part1, part2)
+*/
 function getEvalParts(val: string): string[] {
     let ch: string, is_expression = false,
         parts: string[] = [], part = "";
@@ -219,7 +242,7 @@ function getEvalParts(val: string): string[] {
                 }
                 break;
             } else {
-                throw new Error("Invalid expression: " + val);
+                throw new Error("Invalid Expression: " + val);
             }
         }
 
@@ -239,6 +262,50 @@ function getEvalParts(val: string): string[] {
     return parts;
 }
 
+/**
+    * resolve selector by parsing expression: get(id)
+    * where id  is an ID of a script tag which contains options
+    * like: get(gridOptions)
+*/
+function getOptions(parse_type: PARSE_TYPE, val: string, app: any, dataContext: any): any {
+    let ch: string, is_expression = false, part = "";
+    for (let i = 0; i < val.length; i += 1) {
+        ch = val.charAt(i);
+        // is this content inside json( ) ?
+        if (ch === "(" && checks.isString(part)) {
+            if (is_expression) {
+                throw new Error("Invalid Expression: " + val);
+            }
+
+            if (!is_expression && strUtils.fastTrim(part) === TOKEN.GET) {
+                part = "";
+                is_expression = true;
+                continue;
+            }
+        }
+
+        if (ch === ")") {
+            if (is_expression) {
+                is_expression = false;
+                break;
+            } else {
+                throw new Error("Invalid Expression: " + val);
+            }
+        }
+
+        part += ch;
+    }
+    if (!part) {
+        throw new Error("Invalid Expression: " + val);
+    }
+    let options = bootstrap.getOptions(part);
+    return parseOption(parse_type, options, app, dataContext);
+}
+
+function isGetExpression(val: string): boolean {
+    return !!val && getRX.test(val);
+}
+
 function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext: any): any {
     const res: any = parse_type === PARSE_TYPE.BINDING ? {
         targetPath: "",
@@ -256,16 +323,19 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
     if (isInsideBraces(part)) {
         part = trimOuterBraces(part);
     }
+    if (isGetExpression(part)) {
+        return getOptions(parse_type, part, app, dataContext);
+    }
     const kvals = getKeyVals(part);
     kvals.forEach(function (kv) {
         let isEval = false, evalparts: string[];
-        const isTryGetEval = parse_type === PARSE_TYPE.VIEW || parse_type === PARSE_TYPE.BINDING;
 
         if (parse_type === PARSE_TYPE.BINDING && !kv.val && strUtils.startsWith(kv.key, TOKEN.THIS)) {
             kv.val = kv.key.substr(len_this); // extract property
             kv.key = TOKEN.TARGET_PATH;
         }
 
+        const isTryGetEval = parse_type === PARSE_TYPE.VIEW || parse_type === PARSE_TYPE.BINDING;
         if (isTryGetEval && kv.tag === TAG.EVAL) {
             evalparts = getEvalParts(kv.val);
             isEval = evalparts.length > 0;
@@ -293,6 +363,8 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
             }
         } else if (kv.tag === TAG.BRACE_PART) {
             res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
+        } else if (kv.tag === TAG.GET) {
+            res[kv.key] = getOptions(PARSE_TYPE.NONE, kv.val, app, dataContext);
         } else {
             res[kv.key] = kv.val;
         }

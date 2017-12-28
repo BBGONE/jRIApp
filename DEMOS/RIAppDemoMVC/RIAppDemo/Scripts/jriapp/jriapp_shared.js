@@ -706,7 +706,8 @@ define("jriapp_shared/lang", ["require", "exports", "jriapp_shared/utils/coreuti
     }
     exports.assign = assign;
     var _ERRS = {
-        ERR_OBJ_ALREADY_REGISTERED: "an Object with the name: {0} is already registered and can not be overwritten",
+        ERR_OBJ_ALREADY_REGISTERED: "Object with the name: {0} is already registered and can not be overwritten",
+        ERR_OPTIONS_ALREADY_REGISTERED: "Options with the name: {0} are already registered and can not be overwritten",
         ERR_APP_NEED_JQUERY: "The project is dependent on JQuery and can not function properly without it",
         ERR_ASSERTION_FAILED: 'The Assertion "{0}" failed',
         ERR_BINDING_CONTENT_NOT_FOUND: "BindingContent is not found",
@@ -730,7 +731,9 @@ define("jriapp_shared/lang", ["require", "exports", "jriapp_shared/utils/coreuti
         ERR_TEMPLATE_NOTREGISTERED: "TEMPLATE with the name: {0} is not registered",
         ERR_TEMPLATE_GROUP_NOTREGISTERED: "TEMPLATE's group: {0} is not registered",
         ERR_TEMPLATE_HAS_NO_ID: "TEMPLATE inside SCRIPT tag must have an ID attribute",
+        ERR_OPTIONS_HAS_NO_ID: "OPTIONS inside SCRIPT tag must have an ID attribute",
         ERR_CONVERTER_NOTREGISTERED: "Converter: {0} is not registered",
+        ERR_OPTIONS_NOTREGISTERED: "Options: {0} is not registered",
         ERR_JQUERY_DATEPICKER_NOTFOUND: "Application is dependent on JQuery.UI.datepicker",
         ERR_PARAM_INVALID: "Parameter: {0} has invalid value: {1}",
         ERR_PARAM_INVALID_TYPE: "Parameter: {0} has invalid type. It must be {1}",
@@ -815,7 +818,11 @@ define("jriapp_shared/lang", ["require", "exports", "jriapp_shared/utils/coreuti
         txtClose: "Close",
         txtField: "Field"
     };
-    var _STRS = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
+    var _STRS = {
+        PAGER: PAGER,
+        VALIDATE: VALIDATE,
+        TEXT: TEXT
+    };
     exports.ERRS = _ERRS;
     exports.STRS = _STRS;
 });

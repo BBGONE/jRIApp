@@ -36,7 +36,7 @@ export interface IPagerOptions {
 
 export interface IPagerConstructorOptions extends IPagerOptions {
     el: HTMLElement;
-    dataSource: ICollection<ICollectionItem>;
+    dataSource?: ICollection<ICollectionItem>;
 }
 
 function _removeToolTips(toolTips: Element[]): void {

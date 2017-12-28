@@ -22,12 +22,6 @@ export const enum css {
     error = "ria-form-error"
 }
 
-viewChecks.setIsInsideTemplate = (elView: BaseElView) => {
-    if (!!elView && elView instanceof DataFormElView) {
-        (<DataFormElView>elView).form.isInsideTemplate = true;
-    }
-};
-
 viewChecks.isDataForm = (el: Element) => {
     if (!el) {
         return false;
@@ -85,11 +79,11 @@ viewChecks.isInNestedForm = (root: any, forms: Element[], el: Element) => {
        in case of dataforms nesting, element's parent dataform can be nested dataform
        this function returns element dataform
 */
-viewChecks.getParentDataForm = (rootForm: Element, el: Element) => {
+viewChecks.getParentDataForm = (rootForm: HTMLElement, el: HTMLElement) => {
     if (!el) {
         return null;
     }
-    const parent: Element = el.parentElement;
+    const parent = el.parentElement;
     if (!!parent) {
         if (parent === rootForm) {
             return rootForm;
@@ -131,7 +125,6 @@ export class DataForm extends BaseObject {
     private _errNotification: IErrorNotification;
     private _parentDataForm: IElView;
     private _errors: IValidationInfo[];
-    private _isInsideTemplate: boolean;
     private _contentPromise: IVoidPromise;
 
     constructor(options: IViewOptions) {
@@ -155,7 +148,7 @@ export class DataForm extends BaseObject {
         // if this form is nested inside another dataform
         // subscribe for parent's dispose event
         if (!!parent) {
-            self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent, null);
+            self._parentDataForm = this.app.viewFactory.getElView(parent);
             self._parentDataForm.objEvents.addOnDisposed(() => {
                 // dispose itself if parent form is destroyed
                 if (!self.getIsStateDirty()) {
@@ -179,7 +172,7 @@ export class DataForm extends BaseObject {
     private _createContent(): IVoidPromise {
         const dctx: any = this._dataContext, self = this;
         if (!dctx) {
-            return _async.reject<void>("DataForm's datacontext is not set");
+            return _async.reject<void>("DataForm's DataContext is not set");
         }
         const contentElements = utils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_CONTENT_SELECTOR)),
             isEditing = this.isEditing;
@@ -210,10 +203,10 @@ export class DataForm extends BaseObject {
             scope: this._el,
             dataContext: dctx,
             isDataForm: true,
-            isTemplate: this.isInsideTemplate
+            isTemplate: false
         });
 
-        return promise.then((lftm) => {
+        return promise.then((lftm: ILifeTimeScope) => {
             if (self.getIsStateDirty()) {
                 lftm.dispose();
                 return;
@@ -336,7 +329,6 @@ export class DataForm extends BaseObject {
         this.setDisposing();
         this._clearContent();
         dom.removeClass([this.el], css.dataform);
-        this._el = null;
         this._unbindDS();
         const parentDataForm = this._parentDataForm;
         this._parentDataForm = null;
@@ -346,14 +338,21 @@ export class DataForm extends BaseObject {
         this._dataContext = null;
         this._contentCreated = false;
         this._contentPromise = null;
+        this._el = null;
         super.dispose();
     }
     toString(): string {
         return "DataForm";
     }
-    get app(): IApplication { return boot.getApp(); }
-    get el(): HTMLElement { return this._el; }
-    get dataContext(): IBaseObject { return this._dataContext; }
+    get app(): IApplication {
+        return boot.getApp();
+    }
+    get el(): HTMLElement {
+        return this._el;
+    }
+    get dataContext(): IBaseObject {
+        return this._dataContext;
+    }
     set dataContext(v) {
         if (v === this._dataContext) {
             return;
@@ -420,16 +419,14 @@ export class DataForm extends BaseObject {
             this.objEvents.raiseProp("isEditing");
         }
     }
-    get validationErrors(): IValidationInfo[] { return this._errors; }
+    get validationErrors(): IValidationInfo[] {
+        return this._errors;
+    }
     set validationErrors(v) {
         if (v !== this._errors) {
             this._errors = v;
             this.objEvents.raiseProp("validationErrors");
         }
-    }
-    get isInsideTemplate(): boolean { return this._isInsideTemplate; }
-    set isInsideTemplate(v) {
-        this._isInsideTemplate = v;
     }
 }
 

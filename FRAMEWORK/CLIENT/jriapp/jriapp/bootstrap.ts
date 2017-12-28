@@ -56,6 +56,7 @@ export const subscribeWeakMap: IWeakMap = createWeakMap(), selectableProviderWea
 })();
 
 const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
+const _OPTION_SELECTOR = 'script[type="text/options"]';
 const _stylesLoader: IStylesLoader = createCssLoader();
 
 const eventNames: IIndexer<SubscribeFlags> = {
@@ -256,10 +257,22 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     private _onTemplateLoaded(html: string, app: IApplication) {
         const divEl = doc.createElement("div");
         divEl.innerHTML = html;
+        this._processOptions(divEl, app);
         this._processTemplates(divEl, app);
     }
+    private _processOptions(root: HTMLElement | HTMLDocument, app: IApplication = null): void {
+        const self = this, jsons = dom.queryAll<Element>(root, _OPTION_SELECTOR);
+        jsons.forEach((el) => {
+            const name = el.getAttribute("id");
+            if (!name) {
+                throw new Error(ERRS.ERR_OPTIONS_HAS_NO_ID);
+            }
+            const text = el.innerHTML;
+            self._registerOptions(name, text);
+        });
+    }
     private _processTemplates(root: HTMLElement | HTMLDocument, app: IApplication = null): void {
-        const self = this, templates = dom.queryAll<HTMLElement>(root, _TEMPLATE_SELECTOR);
+        const self = this, templates = dom.queryAll<Element>(root, _TEMPLATE_SELECTOR);
         templates.forEach((el) => {
             const name = el.getAttribute("id");
             if (!name) {
@@ -308,6 +321,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
                 if (self.getIsStateDirty()) {
                     throw new Error("Bootstrap is in destroyed state");
                 }
+                self._processOptions(doc);
                 self._processHTMLTemplates();
                 self._bootState = BootstrapState.Ready;
                 self.objEvents.raiseProp("isReady");
@@ -392,6 +406,14 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
                 }, 0);
             });
         });
+    }
+    private _registerOptions(name: string, options: string): void {
+        const name2 = STORE_KEY.OPTION + name;
+        if (!this._getObject(this, name2)) {
+            this._registerObject(this, name2, options);
+        } else {
+            throw new Error(strUtils.format(ERRS.ERR_OPTIONS_ALREADY_REGISTERED, name));
+        }
     }
     _getInternal(): IInternalBootstrapMethods {
         return this._internal;
@@ -509,6 +531,14 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         } else {
             throw new Error(strUtils.format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         }
+    }
+    getOptions(name: string): string {
+        const name2 = STORE_KEY.OPTION + name;
+        let res = this._getObject(this, name2);
+        if (!res) {
+            throw new Error(utils.str.format(ERRS.ERR_OPTIONS_NOTREGISTERED, name));
+        }
+        return res;
     }
     registerElView(name: string, elViewType: any): void {
         this._elViewRegister.registerElView(name, elViewType);

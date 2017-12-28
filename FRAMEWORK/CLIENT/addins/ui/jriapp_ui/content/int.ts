@@ -57,7 +57,7 @@ export function parseContentAttr(contentAttr: string): IContentOptions {
         }
     } else if (!!attr.template) {
         contentOptions.templateInfo = attr.template;
-        delete attr.template;
+        attr.template = null;
     }
     return contentOptions;
 }

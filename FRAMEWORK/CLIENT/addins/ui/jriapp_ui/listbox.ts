@@ -35,8 +35,8 @@ export interface IListBoxOptions {
 }
 
 export interface IListBoxConstructorOptions extends IListBoxOptions {
-    el: HTMLSelectElement;
-    dataSource: ICollection<ICollectionItem>;
+    el: HTMLElement;
+    dataSource?: ICollection<ICollectionItem>;
 }
 export interface IMappedItem {
     item: ICollectionItem;
@@ -86,7 +86,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
             throw new Error(ERRS.ERR_LISTBOX_DATASRC_INVALID);
         }
-        this._el = options.el;
+        this._el = <HTMLSelectElement>options.el;
         this._options = options;
         this._objId = coreUtils.getNewID("lst");
         this._isDSFilled = false;

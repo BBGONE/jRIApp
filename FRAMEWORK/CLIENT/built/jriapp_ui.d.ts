@@ -402,8 +402,8 @@ declare module "jriapp_ui/listbox" {
         nodelegate?: boolean;
     }
     export interface IListBoxConstructorOptions extends IListBoxOptions {
-        el: HTMLSelectElement;
-        dataSource: ICollection<ICollectionItem>;
+        el: HTMLElement;
+        dataSource?: ICollection<ICollectionItem>;
     }
     export interface IMappedItem {
         item: ICollectionItem;
@@ -490,7 +490,7 @@ declare module "jriapp_ui/listbox" {
         readonly listBox: ListBox;
     }
 }
-declare module "jriapp_ui/content/listbox" {
+declare module "jriapp_ui/content/lookup" {
     import { IBaseObject } from "jriapp_shared";
     import { IExternallyCachable, IBinding, IConstructorContentOptions, IElView } from "jriapp/int";
     import { ListBox } from "jriapp_ui/listbox";
@@ -1362,7 +1362,7 @@ declare module "jriapp_ui/pager" {
     }
     export interface IPagerConstructorOptions extends IPagerOptions {
         el: HTMLElement;
-        dataSource: ICollection<ICollectionItem>;
+        dataSource?: ICollection<ICollectionItem>;
     }
     export class Pager extends BaseObject implements ISelectableProvider {
         private _el;
@@ -1443,7 +1443,7 @@ declare module "jriapp_ui/stackpanel" {
     }
     export interface IStackPanelConstructorOptions extends IStackPanelOptions {
         el: HTMLElement;
-        dataSource: ICollection<ICollectionItem>;
+        dataSource?: ICollection<ICollectionItem>;
     }
     export class StackPanel extends BaseObject implements ISelectableProvider {
         private _el;
@@ -1613,7 +1613,6 @@ declare module "jriapp_ui/dataform" {
         private _errNotification;
         private _parentDataForm;
         private _errors;
-        private _isInsideTemplate;
         private _contentPromise;
         constructor(options: IViewOptions);
         private _getBindings();
@@ -1632,7 +1631,6 @@ declare module "jriapp_ui/dataform" {
         dataContext: IBaseObject;
         isEditing: boolean;
         validationErrors: IValidationInfo[];
-        isInsideTemplate: boolean;
     }
     export class DataFormElView extends BaseElView {
         private _form;
@@ -1800,7 +1798,7 @@ declare module "jriapp_ui/content/all" {
     export { NumberContent } from "jriapp_ui/content/number";
     export { DateContent } from "jriapp_ui/content/date";
     export { DateTimeContent } from "jriapp_ui/content/datetime";
-    export { LookupContent } from "jriapp_ui/content/listbox";
+    export { LookupContent } from "jriapp_ui/content/lookup";
 }
 declare module "jriapp_ui" {
     export { DIALOG_ACTION, IDialogConstructorOptions, DataEditDialog, DialogVM } from "jriapp_ui/dialog";

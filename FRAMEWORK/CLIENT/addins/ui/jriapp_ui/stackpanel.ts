@@ -41,7 +41,7 @@ export interface IStackPanelOptions {
 
 export interface IStackPanelConstructorOptions extends IStackPanelOptions {
     el: HTMLElement;
-    dataSource: ICollection<ICollectionItem>;
+    dataSource?: ICollection<ICollectionItem>;
 }
 
 

@@ -5,7 +5,8 @@ export const DATEPICKER_SVC = "IDatepicker";
 export const enum STORE_KEY {
     SVC = "svc.",
     CONVERTER = "cnv.",
-    OBJECT = "obj."
+    OBJECT = "obj.",
+    OPTION = "opt."
 }
 
 export const enum DATA_ATTR {

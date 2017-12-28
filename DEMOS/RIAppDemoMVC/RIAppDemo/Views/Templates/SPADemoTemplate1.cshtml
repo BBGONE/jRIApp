@@ -4,6 +4,11 @@
     Layout = null;
 }
 
+@*just for testing using GET in the options*@
+<script id="customerEditorOptions" type="text/options">
+    templateID:customerEditTemplate,width:500,height:550,title:'Customer editing'
+</script>
+
 <script id="SPAcustTemplate" type="text/html" data-role="template">
 @*first page view of customers*@
 <div>
@@ -12,7 +17,7 @@
                data-bind-1="this.dataSource,to=dbSet,source=customerVM"
                data-bind-2="this.myGridEvents,to=gridEvents,source=customerVM"
                data-view="my_grid"
-               data-view-options="wrapCss:customerTableWrap,isHandleAddNew:true,editor:{templateID:customerEditTemplate,width:500,height:550,title:'Customer editing'},details:{templateID:customerDetailsTemplate}">
+               data-view-options="wrapCss:customerTableWrap,isHandleAddNew:true,editor:get(customerEditorOptions),details:{templateID:customerDetailsTemplate}">
             <thead>
                 <tr>
                     <th data-column="width:35px,type:row_expander"></th>

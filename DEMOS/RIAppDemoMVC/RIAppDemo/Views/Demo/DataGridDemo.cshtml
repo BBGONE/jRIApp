@@ -285,24 +285,25 @@
     </div>
 </form>
 
+<script id="gridProductsOptions" type="text/options">
+    resizeMode:overflow,
+    wrapCss:productTableWrap,
+    containerCss:productTableContainer,
+    headerCss:productTableHeader,
+    rowStateField:IsActive,
+    isHandleAddNew:true,
+    isCanEdit:true,
+    editor:{templateID:productEditTemplate,width:550,height:650,submitOnOK:true,title:'Product editing'},
+    details:{templateID:productDetailsTemplate}
+</script>
+
 <div id="demoContent" style="opacity:0;" data-bind="this.isBusy,to=dbContext.isBusy" data-view="busy">
     <div style="height: 85%; vertical-align: top;">
-        @{
-            string gridProductsOptions = @"resizeMode:overflow,
-                          wrapCss:productTableWrap,
-                          containerCss:productTableContainer,
-                          headerCss:productTableHeader,
-                          rowStateField:IsActive,
-                          isHandleAddNew:true,
-                          isCanEdit:true,
-                          editor:{templateID:productEditTemplate,width:550,height:650,submitOnOK:true,title:'Product editing'},
-                          details:{templateID:productDetailsTemplate}";
-        }
         <table data-name="gridProducts" data-bind1="this.dataSource,to=dbSet,source=productVM"
                data-bind2="this.grid,to=grid,mode=BackWay,source=productVM"
                data-bind3="this.stateProvider,to=rowStateProvider,source=productVM"
                data-view="resizable_grid"
-               data-view-options="@gridProductsOptions">
+               data-view-options="get(gridProductsOptions)">
             <thead>
             <tr>
                 <th data-column="width:35px,type:row_expander,tip='Row expander'"></th>

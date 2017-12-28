@@ -8,4 +8,4 @@ export { BoolContent } from "./bool";
 export { NumberContent } from "./number";
 export { DateContent } from "./date";
 export { DateTimeContent } from "./datetime";
-export { LookupContent } from "./listbox";
+export { LookupContent } from "./lookup";

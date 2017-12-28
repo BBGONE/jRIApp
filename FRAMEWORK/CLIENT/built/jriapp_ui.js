@@ -46,7 +46,7 @@ define("jriapp_ui/content/int", ["require", "exports", "jriapp_shared", "jriapp/
         }
         else if (!!attr.template) {
             contentOptions.templateInfo = attr.template;
-            delete attr.template;
+            attr.template = null;
         }
         return contentOptions;
     }
@@ -2533,7 +2533,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
     exports.ListBoxElView = ListBoxElView;
     boot.registerElView("select", ListBoxElView);
 });
-define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp_ui/listbox", "jriapp_ui/content/basic"], function (require, exports, jriapp_shared_14, dom_11, listbox_1, basic_7) {
+define("jriapp_ui/content/lookup", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp_ui/listbox", "jriapp_ui/content/basic"], function (require, exports, jriapp_shared_14, dom_11, listbox_1, basic_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_14.Utils, dom = dom_11.DomUtils, doc = dom.document, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys;
@@ -2718,7 +2718,7 @@ define("jriapp_ui/content/listbox", ["require", "exports", "jriapp_shared", "jri
     }(basic_7.BasicContent));
     exports.LookupContent = LookupContent;
 });
-define("jriapp_ui/content/factory", ["require", "exports", "jriapp_shared", "jriapp_ui/content/basic", "jriapp_ui/content/template", "jriapp_ui/content/string", "jriapp_ui/content/multyline", "jriapp_ui/content/bool", "jriapp_ui/content/number", "jriapp_ui/content/date", "jriapp_ui/content/datetime", "jriapp_ui/content/listbox", "jriapp/bootstrap"], function (require, exports, jriapp_shared_15, basic_8, template_2, string_1, multyline_1, bool_1, number_1, date_1, datetime_1, listbox_2, bootstrap_10) {
+define("jriapp_ui/content/factory", ["require", "exports", "jriapp_shared", "jriapp_ui/content/basic", "jriapp_ui/content/template", "jriapp_ui/content/string", "jriapp_ui/content/multyline", "jriapp_ui/content/bool", "jriapp_ui/content/number", "jriapp_ui/content/date", "jriapp_ui/content/datetime", "jriapp_ui/content/lookup", "jriapp/bootstrap"], function (require, exports, jriapp_shared_15, basic_8, template_2, string_1, multyline_1, bool_1, number_1, date_1, datetime_1, lookup_1, bootstrap_10) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_15.Utils, strUtils = utils.str;
@@ -2735,7 +2735,7 @@ define("jriapp_ui/content/factory", ["require", "exports", "jriapp_shared", "jri
                 throw new Error(strUtils.format(jriapp_shared_15.LocaleERRS.ERR_PARAM_INVALID, "options", "fieldName"));
             }
             if (options.name === "lookup") {
-                return listbox_2.LookupContent;
+                return lookup_1.LookupContent;
             }
             var fieldInfo = options.fieldInfo;
             var res;
@@ -2783,7 +2783,7 @@ define("jriapp_ui/content/factory", ["require", "exports", "jriapp_shared", "jri
             }
         };
         ContentFactory.prototype.isExternallyCachable = function (contentType) {
-            if (listbox_2.LookupContent === contentType) {
+            if (lookup_1.LookupContent === contentType) {
                 return true;
             }
             if (!this._nextFactory) {
@@ -7933,11 +7933,6 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
         css["dataform"] = "ria-dataform";
         css["error"] = "ria-form-error";
     })(css = exports.css || (exports.css = {}));
-    viewChecks.setIsInsideTemplate = function (elView) {
-        if (!!elView && elView instanceof DataFormElView) {
-            elView.form.isInsideTemplate = true;
-        }
-    };
     viewChecks.isDataForm = function (el) {
         if (!el) {
             return false;
@@ -8031,7 +8026,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             _this._contentPromise = null;
             var parent = viewChecks.getParentDataForm(null, _this._el);
             if (!!parent) {
-                self._parentDataForm = _this.app.viewFactory.getOrCreateElView(parent, null);
+                self._parentDataForm = _this.app.viewFactory.getElView(parent);
                 self._parentDataForm.objEvents.addOnDisposed(function () {
                     if (!self.getIsStateDirty()) {
                         self.dispose();
@@ -8055,7 +8050,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
         DataForm.prototype._createContent = function () {
             var dctx = this._dataContext, self = this;
             if (!dctx) {
-                return _async.reject("DataForm's datacontext is not set");
+                return _async.reject("DataForm's DataContext is not set");
             }
             var contentElements = utils.arr.fromList(this._el.querySelectorAll(DataForm._DATA_CONTENT_SELECTOR)), isEditing = this.isEditing;
             var forms = utils.arr.fromList(this._el.querySelectorAll(DataForm._DATA_FORM_SELECTOR));
@@ -8079,7 +8074,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                 scope: this._el,
                 dataContext: dctx,
                 isDataForm: true,
-                isTemplate: this.isInsideTemplate
+                isTemplate: false
             });
             return promise.then(function (lftm) {
                 if (self.getIsStateDirty()) {
@@ -8203,7 +8198,6 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             this.setDisposing();
             this._clearContent();
             dom.removeClass([this.el], "ria-dataform");
-            this._el = null;
             this._unbindDS();
             var parentDataForm = this._parentDataForm;
             this._parentDataForm = null;
@@ -8213,23 +8207,30 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             this._dataContext = null;
             this._contentCreated = false;
             this._contentPromise = null;
+            this._el = null;
             _super.prototype.dispose.call(this);
         };
         DataForm.prototype.toString = function () {
             return "DataForm";
         };
         Object.defineProperty(DataForm.prototype, "app", {
-            get: function () { return boot.getApp(); },
+            get: function () {
+                return boot.getApp();
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DataForm.prototype, "el", {
-            get: function () { return this._el; },
+            get: function () {
+                return this._el;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DataForm.prototype, "dataContext", {
-            get: function () { return this._dataContext; },
+            get: function () {
+                return this._dataContext;
+            },
             set: function (v) {
                 if (v === this._dataContext) {
                     return;
@@ -8297,20 +8298,14 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             configurable: true
         });
         Object.defineProperty(DataForm.prototype, "validationErrors", {
-            get: function () { return this._errors; },
+            get: function () {
+                return this._errors;
+            },
             set: function (v) {
                 if (v !== this._errors) {
                     this._errors = v;
                     this.objEvents.raiseProp("validationErrors");
                 }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DataForm.prototype, "isInsideTemplate", {
-            get: function () { return this._isInsideTemplate; },
-            set: function (v) {
-                this._isInsideTemplate = v;
             },
             enumerable: true,
             configurable: true
@@ -9125,7 +9120,7 @@ define("jriapp_ui/radio", ["require", "exports", "jriapp_shared", "jriapp/bootst
     exports.RadioElView = RadioElView;
     bootstrap_32.bootstrap.registerElView("input:radio", RadioElView);
 });
-define("jriapp_ui/content/all", ["require", "exports", "jriapp_ui/content/int", "jriapp_ui/content/basic", "jriapp_ui/content/template", "jriapp_ui/content/string", "jriapp_ui/content/multyline", "jriapp_ui/content/bool", "jriapp_ui/content/number", "jriapp_ui/content/date", "jriapp_ui/content/datetime", "jriapp_ui/content/listbox"], function (require, exports, int_4, basic_9, template_8, string_2, multyline_2, bool_2, number_2, date_2, datetime_2, listbox_3) {
+define("jriapp_ui/content/all", ["require", "exports", "jriapp_ui/content/int", "jriapp_ui/content/basic", "jriapp_ui/content/template", "jriapp_ui/content/string", "jriapp_ui/content/multyline", "jriapp_ui/content/bool", "jriapp_ui/content/number", "jriapp_ui/content/date", "jriapp_ui/content/datetime", "jriapp_ui/content/lookup"], function (require, exports, int_4, basic_9, template_8, string_2, multyline_2, bool_2, number_2, date_2, datetime_2, lookup_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.contentCSS = int_4.css;
@@ -9137,9 +9132,9 @@ define("jriapp_ui/content/all", ["require", "exports", "jriapp_ui/content/int", 
     exports.NumberContent = number_2.NumberContent;
     exports.DateContent = date_2.DateContent;
     exports.DateTimeContent = datetime_2.DateTimeContent;
-    exports.LookupContent = listbox_3.LookupContent;
+    exports.LookupContent = lookup_2.LookupContent;
 });
-define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/content/factory", "jriapp_ui/dialog", "jriapp_ui/dynacontent", "jriapp_ui/datagrid/datagrid", "jriapp_ui/pager", "jriapp_ui/listbox", "jriapp_ui/stackpanel", "jriapp_ui/tabs", "jriapp_ui/baseview", "jriapp_ui/template", "jriapp_ui/dataform", "jriapp_ui/datepicker", "jriapp_ui/anchor", "jriapp_ui/block", "jriapp_ui/busy", "jriapp_ui/button", "jriapp_ui/checkbox", "jriapp_ui/checkbox3", "jriapp_ui/command", "jriapp_ui/expander", "jriapp_ui/hidden", "jriapp_ui/img", "jriapp_ui/input", "jriapp_ui/radio", "jriapp_ui/span", "jriapp_ui/textarea", "jriapp_ui/textbox", "jriapp_ui/utils/dblclick", "jriapp_ui/utils/jquery", "jriapp_ui/content/all"], function (require, exports, bootstrap_33, factory_1, dialog_2, dynacontent_1, datagrid_1, pager_1, listbox_4, stackpanel_1, tabs_1, baseview_15, template_9, dataform_1, datepicker_2, anchor_2, block_1, busy_1, button_1, checkbox_3, checkbox3_1, command_4, expander_4, hidden_1, img_1, input_5, radio_1, span_2, textarea_2, textbox_5, dblclick_2, jquery_8, all_1) {
+define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/content/factory", "jriapp_ui/dialog", "jriapp_ui/dynacontent", "jriapp_ui/datagrid/datagrid", "jriapp_ui/pager", "jriapp_ui/listbox", "jriapp_ui/stackpanel", "jriapp_ui/tabs", "jriapp_ui/baseview", "jriapp_ui/template", "jriapp_ui/dataform", "jriapp_ui/datepicker", "jriapp_ui/anchor", "jriapp_ui/block", "jriapp_ui/busy", "jriapp_ui/button", "jriapp_ui/checkbox", "jriapp_ui/checkbox3", "jriapp_ui/command", "jriapp_ui/expander", "jriapp_ui/hidden", "jriapp_ui/img", "jriapp_ui/input", "jriapp_ui/radio", "jriapp_ui/span", "jriapp_ui/textarea", "jriapp_ui/textbox", "jriapp_ui/utils/dblclick", "jriapp_ui/utils/jquery", "jriapp_ui/content/all"], function (require, exports, bootstrap_33, factory_1, dialog_2, dynacontent_1, datagrid_1, pager_1, listbox_2, stackpanel_1, tabs_1, baseview_15, template_9, dataform_1, datepicker_2, anchor_2, block_1, busy_1, button_1, checkbox_3, checkbox3_1, command_4, expander_4, hidden_1, img_1, input_5, radio_1, span_2, textarea_2, textbox_5, dblclick_2, jquery_8, all_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -9157,8 +9152,8 @@ define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/conten
     exports.findDataGrid = datagrid_1.findDataGrid;
     exports.getDataGrids = datagrid_1.getDataGrids;
     __export(pager_1);
-    exports.ListBox = listbox_4.ListBox;
-    exports.ListBoxElView = listbox_4.ListBoxElView;
+    exports.ListBox = listbox_2.ListBox;
+    exports.ListBoxElView = listbox_2.ListBoxElView;
     __export(stackpanel_1);
     __export(tabs_1);
     exports.BaseElView = baseview_15.BaseElView;

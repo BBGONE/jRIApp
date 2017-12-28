@@ -58,8 +58,8 @@ export class Application extends BaseObject implements IApplication {
         this._exports = {};
         this._UC = {};
         this._internal = {
-            bindTemplateElements: (templateEl: HTMLElement, dataContext: any) => {
-                return self._dataBindingService.bindTemplateElements(templateEl, dataContext);
+            bindTemplate: (templateEl: HTMLElement, dataContext: any) => {
+                return self._dataBindingService.bindTemplate(templateEl, dataContext);
             },
             bindElements: (args: IBindArgs) => {
                 return self._dataBindingService.bindElements(args);

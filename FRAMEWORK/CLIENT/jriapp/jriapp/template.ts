@@ -174,7 +174,7 @@ class Template extends BaseObject implements ITemplate {
         self._loadedElem = loadedEl;
         self._onLoading();
         templateEl.appendChild(loadedEl);
-        const promise = self.app._getInternal().bindTemplateElements(loadedEl, this.dataContext);
+        const promise = self.app._getInternal().bindTemplate(loadedEl, this.dataContext);
         return promise.then((lftm) => {
             if (self.getIsStateDirty()) {
                 lftm.dispose();
