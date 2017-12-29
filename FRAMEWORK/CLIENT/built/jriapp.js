@@ -3990,12 +3990,15 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
         });
         return Object.keys(hashMap);
     }
-    function filterBindable(scope, bindElems) {
+    function filterBindables(scope, bindElems) {
         var forms = bindElems.filter(function (bindElem) {
             return !!bindElem.dataForm;
         }).map(function (bindElem) {
             return bindElem.el;
         });
+        if (forms.length === 0) {
+            return bindElems;
+        }
         return bindElems.filter(function (bindElem) {
             return !viewChecks.isInNestedForm(scope, forms, bindElem.el);
         });
@@ -4081,8 +4084,8 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
                     default:
                         throw new Error("Invalid Operation");
                 }
-                var needsBinding = filterBindable(scope, bindElems);
-                var viewsArr = needsBinding.map(function (bindElem) {
+                var bindables = filterBindables(scope, bindElems);
+                var viewsArr = bindables.map(function (bindElem) {
                     var elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
                     self._bindElView({
                         elView: elView,
@@ -4483,6 +4486,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.8.4";
+    exports.VERSION = "2.8.5";
     bootstrap_8.Bootstrap._initFramework();
 });

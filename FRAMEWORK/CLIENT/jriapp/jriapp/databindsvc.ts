@@ -108,14 +108,19 @@ function getRequiredModules(el: Element): string[] {
     return Object.keys(hashMap);
 }
 
-function filterBindable(scope: Document | Element, bindElems: IBindable[]): IBindable[] {
+function filterBindables(scope: Document | Element, bindElems: IBindable[]): IBindable[] {
     // select all dataforms inside the scope
     const forms = bindElems.filter((bindElem) => {
         return !!bindElem.dataForm;
     }).map((bindElem) => {
         return bindElem.el;
-    });
+        });
+
+    if (forms.length === 0) {
+        return bindElems;
+    }
     // skip all the bindings inside dataforms (because a dataform performs databinding itself in its own scope)
+    // check if the element inside of any dataform in the forms array
     return bindElems.filter((bindElem) => {
         return !viewChecks.isInNestedForm(scope, forms, bindElem.el);
     });
@@ -213,9 +218,9 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             }
             
             // skip all the bindings inside dataforms (because a dataform performs databinding itself in its own scope)
-            const needsBinding = filterBindable(scope, bindElems);
+            const bindables = filterBindables(scope, bindElems);
 
-            const viewsArr = needsBinding.map((bindElem) => {
+            const viewsArr = bindables.map((bindElem) => {
                 const elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
                 self._bindElView({
                     elView: elView,
