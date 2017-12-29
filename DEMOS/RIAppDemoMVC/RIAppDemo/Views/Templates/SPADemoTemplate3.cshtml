@@ -4,7 +4,7 @@
     Layout = null;
 }
 
-<script id="customerAddr" type="text/html" data-role="template">
+<script id="customerAddr" type="text/x-template">
     <div style="margin: 4px; padding-top:10px; width: 95%;" data-require="test3,test1,test2,css!css/test2.css">
         <fieldset>
             <legend>Addresses of <span data-name="test2" data-bind="this.value,to=currentItem.ComplexProp.Name"></span></legend>
@@ -46,7 +46,7 @@
     </div>
 </script>
 
-<script id="addressTemplate" type="text/html" data-role="template">
+<script id="addressTemplate" type="text/x-template">
     @*used for display of customer's address*@
     <div class="addressTemplate" style="margin: 4px; width: 95%;">
         <fieldset>
@@ -101,7 +101,7 @@
     </div>
 </script>
 
-<script id="addAddressTemplate" type="text/html" data-role="template">
+<script id="addAddressTemplate" type="text/x-template">
     <!--addressTemplate-->
     @*used for managing of customer's addresses in many to many relationship*@
     <div style="margin: 4px; width: 95%;">
@@ -114,7 +114,7 @@
     </div>
 </script>
 
-<script id="linkAdrTemplate" type="text/html" data-role="template">
+<script id="linkAdrTemplate" type="text/x-template">
     <div data-name="search">
         <div style="margin: 5px 0px 5px 0px;">
             <span class="addressLabel">Search existing Address:</span>
@@ -205,7 +205,7 @@
     </div>
 </script>
 
-<script id="newAdrTemplate" type="text/html" data-role="template">
+<script id="newAdrTemplate" type="text/x-template">
     <div data-name="newAddress" style="margin: 4px; max-width: 500px; width: 95%;">
         <form action="#" style="width: 100%" data-bind="this.dataContext,to=newAddress"
               data-view="dataform">

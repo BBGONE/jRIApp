@@ -55,8 +55,8 @@ export const subscribeWeakMap: IWeakMap = createWeakMap(), selectableProviderWea
     }
 })();
 
-const _TEMPLATE_SELECTOR = 'script[type="text/html"]';
-const _OPTION_SELECTOR = 'script[type="text/options"]';
+const _TEMPLATE_SELECTOR = 'script[type="text/x-template"]';
+const _OPTION_SELECTOR = 'script[type="text/x-options"]';
 const _stylesLoader: IStylesLoader = createCssLoader();
 
 const eventNames: IIndexer<SubscribeFlags> = {

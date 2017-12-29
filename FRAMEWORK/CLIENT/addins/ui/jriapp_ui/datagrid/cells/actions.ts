@@ -91,7 +91,7 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         dom.append(td, btns);
     }
     update(): void {
-        if (this._isEditing !== this.row.isEditing) {
+        if (!this.getIsStateDirty() && this._isEditing !== this.row.isEditing) {
             this._createButtons(this.row.isEditing);
         }
     }

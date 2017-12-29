@@ -1797,8 +1797,8 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             win.cancelAnimationFrame = cancelAnimationFrame_1;
         }
     })();
-    var _TEMPLATE_SELECTOR = 'script[type="text/html"]';
-    var _OPTION_SELECTOR = 'script[type="text/options"]';
+    var _TEMPLATE_SELECTOR = 'script[type="text/x-template"]';
+    var _OPTION_SELECTOR = 'script[type="text/x-options"]';
     var _stylesLoader = sloader_1.createCssLoader();
     var eventNames = {
         click: 1,
@@ -4486,6 +4486,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.8.5";
+    exports.VERSION = "2.9.0";
     bootstrap_8.Bootstrap._initFramework();
 });

@@ -107,7 +107,7 @@
 
 @Html.Partial("_WaitLoad")
 
-<script id="customerEditTemplate" type="text/html" data-role="template">
+<script id="customerEditTemplate" type="text/x-template">
     <div style="width: 100%" data-bind="this.dataContext,mode=OneWay" data-view="dataform">
         <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
             <colgroup>
@@ -207,7 +207,7 @@
     </div>
 </script>
 
-<script id="nameTemplate" type="text/html" data-role="template">
+<script id="nameTemplate" type="text/x-template">
     <div style="margin: 0px; width: 100%;">
         <span data-bind="this.value,to=Customer[Level1->FirstName]"></span>&nbsp;
         <span data-bind="this.value,to=Customer[Level1->MiddleName]"></span>&nbsp;
@@ -215,22 +215,22 @@
     </div>
 </script>
 
-<script id="emailTemplate" type="text/html" data-role="template">
+<script id="emailTemplate" type="text/x-template">
     <span data-bind="this.value,to=Customer[Level1->Level2->EmailAddress]"></span>
 </script>
 
-<script id="phoneTemplate" type="text/html" data-role="template">
+<script id="phoneTemplate" type="text/x-template">
     <span data-bind="this.value,to=Customer[Level1->Level2->Phone]"></span>
 </script>
 
-<script id="dateTemplate" type="text/html" data-role="template">
+<script id="dateTemplate" type="text/x-template">
     @*testing eval expression for the param value*@
     @*get value exposed from the datacontext: eval(Customer.dateFormat)*@
     @*get value exposed as the app property: eval(dateFormat,app)*@
     <span data-bind="this.value,to=Customer[ModifiedDate],converter=dateTimeConverter,param=eval(Customer.dateFormat)"></span>
 </script>
 
-<script id="custDetTemplate" type="text/html" data-role="template">
+<script id="custDetTemplate" type="text/x-template">
     <div style="margin: 0px; min-height: 400px; width: 100%;">
         <table style="font-size: 9pt; margin-bottom: 3px;"
                data-bind="this.dataSource,to=Customer.Addresses" 
@@ -249,7 +249,7 @@
     </div>
 </script>
 
-<script id="addrTemplate" type="text/html" data-role="template">
+<script id="addrTemplate" type="text/x-template">
     <div style="margin: 0px; width: 100%;">
         <span data-bind="this.value,to=[Line1]"></span>&nbsp;
         <span data-bind="this.value,to=[Line2]"></span>&nbsp;
@@ -259,7 +259,7 @@
 </script>
 
 
-<script id="addressEditTemplate" type="text/html" data-role="template">
+<script id="addressEditTemplate" type="text/x-template">
     <div style="width: 100%" data-bind="this.dataContext,mode=OneWay" data-view="dataform">
         <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
             <colgroup>

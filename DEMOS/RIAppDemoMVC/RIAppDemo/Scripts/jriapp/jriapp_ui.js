@@ -4224,7 +4224,7 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
             dom.append(td, btns);
         };
         ActionsCell.prototype.update = function () {
-            if (this._isEditing !== this.row.isEditing) {
+            if (!this.getIsStateDirty() && this._isEditing !== this.row.isEditing) {
                 this._createButtons(this.row.isEditing);
             }
         };
@@ -4717,9 +4717,6 @@ define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_shared", 
                 this._click = null;
             }
             dom.removeData(this._td);
-            this._row = null;
-            this._td = null;
-            this._column = null;
             _super.prototype.dispose.call(this);
         };
         BaseCell.prototype.toString = function () {

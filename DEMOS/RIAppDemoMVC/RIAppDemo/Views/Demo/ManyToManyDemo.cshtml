@@ -169,7 +169,7 @@
 
 <h2 class="ex8">@ViewBag.Title</h2>
 
-<script id="gridCustomersOptions" type="text/options">
+<script id="gridCustomersOptions" type="text/x-options">
     wrapCss: 'customerTableWrap',
     isPrependAllRows: true,
     isHandleAddNew: true,
@@ -313,7 +313,7 @@
 
 @Html.Partial("_WaitLoad")
 
-<script id="customerEditTemplate" type="text/html" data-role="template">
+<script id="customerEditTemplate" type="text/x-template">
     <div style="margin: 0px; width: 100%;">
         <form action="#" style="width: 100%" data-bind="this.dataContext" data-view="dataform">
             <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
@@ -408,11 +408,11 @@
     </div>
 </script>
 
-<script id="salespersonTemplate1" type="text/html" data-role="template">
+<script id="salespersonTemplate1" type="text/x-template">
     <span data-bind="this.value,to=SalesPerson"></span>
 </script>
 
-<script id="salespersonTemplate2" type="text/html" data-role="template">
+<script id="salespersonTemplate2" type="text/x-template">
     <span>
         <input type="text" style="margin-left: 0px; width: 200px;" 
                data-bind-1="this.value,to=SalesPerson,mode=TwoWay"
@@ -423,7 +423,7 @@
     </span>
 </script>
 
-<script id="salePerAutocompleteTemplate" type="text/html" data-role="template">
+<script id="salePerAutocompleteTemplate" type="text/x-template">
     @*example of autocomplete implementation*@
     <div style="height: 97%; margin: 0px; padding: 2px; position: relative;">
         <div style="margin-left: 1px; position: relative; vertical-align: top;"
@@ -460,7 +460,7 @@
     </div>
 </script>
 
-<script id="addressTemplate" type="text/html" data-role="template">
+<script id="addressTemplate" type="text/x-template">
     @*used for display of customer's address on the right panel*@
     <div class="addressTemplate">
         <fieldset>
@@ -510,7 +510,7 @@
     </div>
 </script>
 
-<script id="addAddressTemplate" type="text/html" data-role="template">
+<script id="addAddressTemplate" type="text/x-template">
     <!--addressTemplate-->
     @*used for managing of customer's addresses in many to many relationship*@
     <div style="margin: 4px; width: 95%;">
@@ -647,7 +647,7 @@
     </div>
 </script>
 
-<script id="stackPanelItemTemplate" type="text/html" data-role="template">
+<script id="stackPanelItemTemplate" type="text/x-template">
     <div class="stackPanelItem" style="width: 200px;">
         <fieldset>
             <legend>

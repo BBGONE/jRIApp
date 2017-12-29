@@ -3,7 +3,7 @@
     Layout = null;
 }
 
-<script id="customerInfo" type="text/html" data-role="template">
+<script id="customerInfo" type="text/x-template">
     <div style="max-width: 800px;" data-bind="this.dataContext,to=currentItem" data-view="dataform" data-require="test1,test3,css!css/test1.css">
         <fieldset>
             <legend><span style="color: Blue; font-weight: bold;" data-bind="this.value,to=ComplexProp.Name"></span></legend>
@@ -104,11 +104,11 @@
     </div>
 </script>
 
-<script id="salespersonTemplate1" type="text/html" data-role="template">
+<script id="salespersonTemplate1" type="text/x-template">
     <span data-bind="this.value,to=SalesPerson"></span>
 </script>
 
-<script  id="salespersonTemplate2" type="text/html" data-role="template">
+<script  id="salespersonTemplate2" type="text/x-template">
     <span>
         <input type="text" style="margin-left: 0px; width: 200px;" 
                data-bind-1="this.value,to=SalesPerson,mode=TwoWay"
@@ -119,7 +119,7 @@
     </span>
 </script>
 
-<script id="salePerAutocompleteTemplate" type="text/html" data-role="template">
+<script id="salePerAutocompleteTemplate" type="text/x-template">
     @*example of autocomplete implementation*@
     <div style="height: 97%; margin: 0px; padding: 2px; position: relative;">
         <div style="margin-left: 1px; position: relative; vertical-align: top;"

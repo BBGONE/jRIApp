@@ -77,9 +77,6 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject implements 
             this._click = null;
         }
         dom.removeData(this._td);
-        this._row = null;
-        this._td = null;
-        this._column = null;
         super.dispose();
     }
     toString(): string {

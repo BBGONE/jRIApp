@@ -156,7 +156,7 @@
     </fieldset>
 </div>
 
-<script id="stackPanelItemTemplateV" type="text/html" data-role="template">
+<script id="stackPanelItemTemplateV" type="text/x-template">
     <div class="stackPanelItemV">
         <strong>
             <span style="color: Blue;" data-bind="this.value,to=radioValue"></span>
@@ -165,7 +165,7 @@
         Time:&nbsp;<span data-bind="this.value,to=time,converter=dateTimeConverter,param='HH:mm:ss'"></span>
     </div>
 </script>
-<script id="stackPanelItemTemplateH" type="text/html" data-role="template">
+<script id="stackPanelItemTemplateH" type="text/x-template">
     <div class="stackPanelItemH">
         <strong>
             <span style="color: Blue;" data-bind="this.value,to=radioValue"></span>
@@ -174,7 +174,7 @@
         Time:&nbsp;<span data-bind="this.value,to=time,converter=dateTimeConverter,param='HH:mm:ss'"></span>
     </div>
 </script>
-<script id="ItemListTemplate" type="text/html" data-role="template">
+<script id="ItemListTemplate" type="text/x-template">
     <div style="padding-left: 5px;">
         <span style="color: Blue; margin-right: 10px;" data-bind="this.value,to=radioValue"></span>Time:&nbsp;
         <span data-bind="this.value,to=time,converter=dateTimeConverter,param='HH:mm:ss'"></span>
