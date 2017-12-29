@@ -328,7 +328,7 @@ export class Application extends BaseObject implements IApplication {
     get uniqueID() { return this._objId; }
     get options() { return this._options; }
     get appName() { return this._appName; }
-    get appRoot(): Document | HTMLElement {
+    get appRoot(): Document | Element {
         return (!this._options || !this._options.appRoot) ? doc : this._options.appRoot;
     }
     get viewFactory(): IElViewFactory {

@@ -38,11 +38,24 @@ export const enum KEYS {
     del = 127
 }
 
-export const enum ELVIEW_NM { DataForm = "dataform" };
-export const enum LOADER_GIF { Small = "loader2.gif", Default = "loader.gif" }
+export const enum ELVIEW_NM {
+    DataForm = "dataform"
+}
+
+export const enum LOADER_GIF {
+    Small = "loader2.gif",
+    Default = "loader.gif"
+}
+
+export const enum BindScope {
+    Application = 0,
+    Template = 1,
+    DataForm = 3
+}
 
 export const enum BindTo {
-    Source = 0, Target = 1
+    Source = 0,
+    Target = 1
 }
 
 export const enum BINDING_MODE {

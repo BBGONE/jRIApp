@@ -8072,9 +8072,8 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             });
             var promise = self.app._getInternal().bindElements({
                 scope: this._el,
-                dataContext: dctx,
-                isDataForm: true,
-                isTemplate: false
+                bind: 3,
+                dataContext: dctx
             });
             return promise.then(function (lftm) {
                 if (self.getIsStateDirty()) {

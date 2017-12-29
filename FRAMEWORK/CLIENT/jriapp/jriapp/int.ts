@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { BINDING_MODE, BindTo, SubscribeFlags } from "./const";
+import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "./const";
 import {
     IBaseObject, IDisposable, IIndexer, IPromise,
     IVoidPromise, IValidationInfo, IErrorHandler, TEventHandler, IConfig
@@ -88,14 +88,6 @@ export interface IUnResolvedBindingArgs {
     propName: string;
 }
 
-
-export interface IBindableElement {
-    el: Element;
-    needToBind: boolean;
-    dataForm: boolean;
-    bindings: string[];
-}
-
 // --Template interfaces
 export interface ITemplate extends IBaseObject {
     findElByDataName(name: string): HTMLElement[];
@@ -164,9 +156,8 @@ export interface IElView extends IBaseObject {
 
 export interface IBindArgs  {
     readonly scope: Document | Element;
+    readonly bind: BindScope;
     readonly dataContext: any;
-    readonly isDataForm: boolean;
-    readonly isTemplate: boolean;
 }
 
 export interface IDataBindingService extends IDisposable {
@@ -326,11 +317,11 @@ export interface IApplication extends IErrorHandler, IExports, IBaseObject {
     startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
     readonly uniqueID: string;
     readonly appName: string;
-    readonly appRoot: Document | HTMLElement;
+    readonly appRoot: Document | Element;
     readonly viewFactory: IElViewFactory;
 }
 
 export interface IAppOptions {
     modulesInits?: IIndexer<(app: IApplication) => void>;
-    appRoot?: Document | HTMLElement;
+    appRoot?: Document | Element;
 }

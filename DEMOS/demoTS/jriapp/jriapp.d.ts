@@ -43,6 +43,11 @@ declare module "jriapp/const" {
         Small = "loader2.gif",
         Default = "loader.gif",
     }
+    export const enum BindScope {
+        Application = 0,
+        Template = 1,
+        DataForm = 3,
+    }
     export const enum BindTo {
         Source = 0,
         Target = 1,
@@ -63,7 +68,7 @@ declare module "jriapp/const" {
     }
 }
 declare module "jriapp/int" {
-    import { BINDING_MODE, BindTo, SubscribeFlags } from "jriapp/const";
+    import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "jriapp/const";
     import { IBaseObject, IDisposable, IIndexer, IPromise, IVoidPromise, IValidationInfo, IErrorHandler, TEventHandler, IConfig } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     export interface IJRIAppConfig extends IConfig {
@@ -131,12 +136,6 @@ declare module "jriapp/int" {
         path: string;
         propName: string;
     }
-    export interface IBindableElement {
-        el: Element;
-        needToBind: boolean;
-        dataForm: boolean;
-        bindings: string[];
-    }
     export interface ITemplate extends IBaseObject {
         findElByDataName(name: string): HTMLElement[];
         findElViewsByDataName(name: string): IElView[];
@@ -192,9 +191,8 @@ declare module "jriapp/int" {
     }
     export interface IBindArgs {
         readonly scope: Document | Element;
+        readonly bind: BindScope;
         readonly dataContext: any;
-        readonly isDataForm: boolean;
-        readonly isTemplate: boolean;
     }
     export interface IDataBindingService extends IDisposable {
         bindTemplate(templateEl: Element, dataContext: any): IPromise<ILifeTimeScope>;
@@ -333,12 +331,12 @@ declare module "jriapp/int" {
         startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
         readonly uniqueID: string;
         readonly appName: string;
-        readonly appRoot: Document | HTMLElement;
+        readonly appRoot: Document | Element;
         readonly viewFactory: IElViewFactory;
     }
     export interface IAppOptions {
         modulesInits?: IIndexer<(app: IApplication) => void>;
-        appRoot?: Document | HTMLElement;
+        appRoot?: Document | Element;
     }
 }
 declare module "jriapp/utils/parser" {
@@ -980,7 +978,7 @@ declare module "jriapp/app" {
         readonly uniqueID: string;
         readonly options: IAppOptions;
         readonly appName: string;
-        readonly appRoot: Document | HTMLElement;
+        readonly appRoot: Document | Element;
         readonly viewFactory: IElViewFactory;
         readonly UC: any;
         readonly app: IApplication;
@@ -1004,5 +1002,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.8.3";
+    export const VERSION = "2.8.4";
 }

@@ -6,7 +6,7 @@ import {
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { DATA_ATTR, ELVIEW_NM } from "jriapp/const";
+import { DATA_ATTR, ELVIEW_NM, BindScope } from "jriapp/const";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { IContent, IElView, ILifeTimeScope, IViewOptions, IApplication } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
@@ -201,9 +201,8 @@ export class DataForm extends BaseObject {
         });
         const promise = self.app._getInternal().bindElements({
             scope: this._el,
-            dataContext: dctx,
-            isDataForm: true,
-            isTemplate: false
+            bind: BindScope.DataForm,
+            dataContext: dctx
         });
 
         return promise.then((lftm: ILifeTimeScope) => {
