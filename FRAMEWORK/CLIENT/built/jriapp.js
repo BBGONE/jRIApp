@@ -105,7 +105,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var checks = jriapp_shared_1.Utils.check, strUtils = jriapp_shared_1.Utils.str, coreUtils = jriapp_shared_1.Utils.core, sys = jriapp_shared_1.Utils.sys;
-    var trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g, getRX = /^get[(].+[)]$/g;
+    var getRX = /^get[(].+[)]$/g;
     var TOKEN;
     (function (TOKEN) {
         TOKEN["DELIMETER1"] = ":";
@@ -131,13 +131,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         PARSE_TYPE[PARSE_TYPE["VIEW"] = 2] = "VIEW";
     })(PARSE_TYPE || (PARSE_TYPE = {}));
     var len_this = "this.".length;
-    function trimOuterBraces(val) {
-        return strUtils.fastTrim(val.replace(trimOuterBracesRX, ""));
-    }
-    function isInsideBraces(str) {
-        return (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}"));
-    }
-    function trimKV(kv) {
+    function checkType(kv) {
         kv.key = strUtils.fastTrim(kv.key);
         kv.val = strUtils.fastTrim(kv.val);
         if (!kv.tag) {
@@ -150,9 +144,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
     }
     function getBraceParts(val, firstOnly) {
-        var i, s = "", ch, literal, cnt = 0;
-        var parts = [];
-        for (i = 0; i < val.length; i += 1) {
+        var i, start = 0, cnt = 0, ch, literal, test = 0;
+        var parts = [], len = val.length;
+        for (i = 0; i < len; i += 1) {
             ch = val.charAt(i);
             if (ch === "'" || ch === '"') {
                 if (!literal) {
@@ -163,35 +157,45 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 }
             }
             if (!literal && ch === "{") {
+                if (test === 0) {
+                    start = i;
+                }
+                test += 1;
                 cnt += 1;
-                s += ch;
             }
             else if (!literal && ch === "}") {
-                cnt -= 1;
-                s += ch;
-                if (cnt === 0) {
-                    parts.push(s);
-                    s = "";
+                test -= 1;
+                cnt += 1;
+                if (test === 0) {
+                    if ((cnt - 2) > 0) {
+                        parts.push(val.substr(start + 1, cnt - 2));
+                    }
+                    else {
+                        parts.push("");
+                    }
+                    cnt = 0;
+                    start = 0;
                     if (firstOnly) {
                         return parts;
                     }
                 }
             }
             else {
-                if (cnt > 0) {
-                    s += ch;
+                if (test > 0) {
+                    cnt += 1;
                 }
             }
         }
         return parts;
     }
     function getKeyVals(val) {
-        var i, ch, literal, parts = [], kv = { tag: null, key: "", val: "" }, isKey = true;
+        var i, ch, literal, space = 0, parts = [], kv = { tag: null, key: "", val: "" }, isKey = true;
         var len = val.length;
         for (i = 0; i < len; i += 1) {
             ch = val.charAt(i);
             if (ch === "'" || ch === '"') {
                 if (!literal) {
+                    space = 0;
                     literal = ch;
                     continue;
                 }
@@ -208,8 +212,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 }
             }
             if (ch === "(" && !literal) {
+                space = 0;
                 if (checks.isString(kv.val)) {
-                    var token = strUtils.fastTrim(kv.val);
+                    var token = kv.val;
                     switch (token) {
                         case "eval":
                             literal = ch;
@@ -236,39 +241,67 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             }
             if (!literal) {
                 if (ch === "{" && !isKey) {
+                    space = 0;
                     var bracePart = val.substr(i);
                     var braceParts = getBraceParts(bracePart, true);
-                    if (braceParts.length > 0) {
+                    if (braceParts.length === 1) {
                         bracePart = braceParts[0];
                         kv.val += bracePart;
                         kv.tag = "2";
-                        i += bracePart.length - 1;
+                        i += (bracePart.length + 1);
                     }
                     else {
                         throw new Error(strUtils.format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, bracePart));
                     }
                 }
                 else if (ch === ",") {
+                    space = 0;
                     if (!!kv.key) {
-                        trimKV(kv);
+                        checkType(kv);
                         parts.push(kv);
                         kv = { tag: null, key: "", val: "" };
                         isKey = true;
                     }
                 }
                 else if (ch === ":" || ch === "=") {
+                    space = 0;
                     isKey = false;
                 }
                 else {
                     if (isKey) {
-                        kv.key += ch;
+                        if (!kv.key && (ch === " " || ch.charCodeAt(0) < 14)) {
+                            space += 1;
+                        }
+                        else {
+                            if (!kv.key) {
+                                space = 0;
+                            }
+                            if (!!space) {
+                                kv.key += Array(space).join(" ");
+                                space = 0;
+                            }
+                            kv.key += ch;
+                        }
                     }
                     else {
-                        kv.val += ch;
+                        if (!kv.val && (ch === " " || ch.charCodeAt(0) < 14)) {
+                            space += 1;
+                        }
+                        else {
+                            if (!kv.val) {
+                                space = 0;
+                            }
+                            if (!!space) {
+                                kv.val += Array(space).join(" ");
+                                space = 0;
+                            }
+                            kv.val += ch;
+                        }
                     }
                 }
             }
             else {
+                space = 0;
                 if (isKey) {
                     kv.key += ch;
                 }
@@ -280,8 +313,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 }
             }
         }
+        space = 0;
         if (!!kv.key) {
-            trimKV(kv);
+            checkType(kv);
             parts.push(kv);
         }
         parts = parts.filter(function (kv) {
@@ -375,10 +409,6 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             param: null,
             isEval: false
         } : {};
-        part = strUtils.fastTrim(part);
-        if (isInsideBraces(part)) {
-            part = trimOuterBraces(part);
-        }
         if (isGetExpression(part)) {
             return getOptions(parse_type, part, app, dataContext);
         }
@@ -431,7 +461,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         var parts = [];
         for (var i = 0; i < strs.length; i += 1) {
             strs[i] = strUtils.fastTrim(strs[i]);
-            if (isInsideBraces(strs[i])) {
+            if (strUtils.startsWith(strs[i], "{") && strUtils.endsWith(strs[i], "}")) {
                 var subparts = getBraceParts(strs[i], false);
                 for (var k = 0; k < subparts.length; k += 1) {
                     parts.push(subparts[k]);
@@ -1858,13 +1888,13 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             _this._templateLoader = new tloader_1.TemplateLoader();
             _this._templateLoader.addOnLoaded(function (s, a) {
                 if (!s) {
-                    throw new Error("Invalid operation");
+                    throw new Error("Invalid Operation");
                 }
                 self._onTemplateLoaded(a.html, a.app);
             });
             _this._templateLoader.objEvents.addOnError(function (s, a) {
                 if (!s) {
-                    throw new Error("Invalid operation");
+                    throw new Error("Invalid Operation");
                 }
                 return self.handleError(a.error, a.source);
             });
@@ -3922,13 +3952,13 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
 define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/lifetime", "jriapp/utils/dom", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/utils/parser"], function (require, exports, jriapp_shared_18, bootstrap_6, lifetime_1, dom_5, mloader_1, binding_1, viewchecks_3, parser_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_18.Utils, _async = utils.defer, viewChecks = viewchecks_3.ViewChecks, dom = dom_5.DomUtils, strUtils = utils.str, boot = bootstrap_6.bootstrap, ERRS = jriapp_shared_18.LocaleERRS, parser = parser_2.Parser;
+    var utils = jriapp_shared_18.Utils, _async = utils.defer, viewChecks = viewchecks_3.ViewChecks, dom = dom_5.DomUtils, strUtils = utils.str, boot = bootstrap_6.bootstrap, parser = parser_2.Parser;
     function createDataBindSvc(root, elViewFactory) {
         return new DataBindingService(root, elViewFactory);
     }
     exports.createDataBindSvc = createDataBindSvc;
     function toBindable(el) {
-        var val, attr;
+        var attr;
         var allAttrs = el.attributes, res = {
             el: el,
             needToBind: false,
@@ -3940,14 +3970,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
         for (var i = 0; i < n; i++) {
             attr = allAttrs[i];
             if (strUtils.startsWith(attr.name, "data-bind")) {
-                val = strUtils.fastTrim(attr.value);
-                if (!val) {
-                    throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, attr.name, "empty"));
-                }
-                if (val[0] !== "{" && val[val.length - 1] !== "}") {
-                    val = "{" + val + "}";
-                }
-                res.bindings.push(val);
+                res.bindings.push(attr.value);
             }
             if (attr.name === "data-view") {
                 dataViewName = attr.value;
@@ -4026,7 +4049,8 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
             if (!!bindings && bindings.length > 0) {
                 var bindInfos = parser.parseBindings(bindings), len = bindInfos.length;
                 for (var j = 0; j < len; j += 1) {
-                    var op = binding_1.getBindingOptions(bindInfos[j], args.elView, args.dataContext), binding = self.bind(op);
+                    var op = binding_1.getBindingOptions(bindInfos[j], args.elView, args.dataContext);
+                    var binding = self.bind(op);
                     args.lftm.addObj(binding);
                 }
             }
@@ -4486,6 +4510,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.9.0";
+    exports.VERSION = "2.9.1";
     bootstrap_8.Bootstrap._initFramework();
 });

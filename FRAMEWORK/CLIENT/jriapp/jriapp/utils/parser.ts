@@ -5,7 +5,7 @@ import { bootstrap } from "../bootstrap";
 const checks = Utils.check, strUtils = Utils.str, coreUtils = Utils.core,
     sys = Utils.sys;
 
-const trimOuterBracesRX = /^([{]){0,1}|([}]){0,1}$/g, getRX = /^get[(].+[)]$/g;
+const getRX = /^get[(].+[)]$/g;
 
 const enum TOKEN {
     DELIMETER1 = ":",
@@ -39,14 +39,7 @@ interface IKeyVal {
     val: any;
 }
 
-function trimOuterBraces(val: string): string {
-    return strUtils.fastTrim(val.replace(trimOuterBracesRX, ""));
-}
-function isInsideBraces(str: string): boolean {
-    return (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}"));
-}
-
-function trimKV(kv: IKeyVal): void {
+function checkType(kv: IKeyVal): void {
     kv.key = strUtils.fastTrim(kv.key);
     kv.val = strUtils.fastTrim(kv.val);
     if (!kv.tag) {
@@ -58,12 +51,12 @@ function trimKV(kv: IKeyVal): void {
     }
 }
 
-// extract top level braces
+// extract content from inside of top level braces
 function getBraceParts(val: string, firstOnly: boolean): string[] {
-    let i: number, s = "", ch: string, literal: string, cnt = 0;
-    const parts: string[] = [];
+    let i: number, start=0, cnt = 0, ch: string, literal: string, test = 0;
+    const parts: string[] = [], len = val.length;
 
-    for (i = 0; i < val.length; i += 1) {
+    for (i = 0; i < len; i += 1) {
         ch = val.charAt(i);
         // is this content inside '' or "" ?
         if (ch === "'" || ch === '"') {
@@ -75,40 +68,47 @@ function getBraceParts(val: string, firstOnly: boolean): string[] {
         }
 
         if (!literal && ch === "{") {
+            if (test === 0) {
+                start = i;
+            }
+            test += 1;
             cnt += 1;
-            s += ch;
         } else if (!literal && ch === "}") {
-            cnt -= 1;
-            s += ch;
-            if (cnt === 0) {
-                parts.push(s);
-                s = "";
+            test -= 1;
+            cnt += 1;
+            if (test === 0) {
+                if ((cnt - 2) > 0) {
+                    parts.push(val.substr(start + 1, cnt - 2));
+                } else {
+                    parts.push("");
+                }
+                cnt = 0;
+                start = 0;
                 if (firstOnly) {
                     return parts;
                 }
             }
         } else {
-            if (cnt > 0) {
-                s += ch;
+            if (test > 0) {
+                cnt += 1;
             }
         }
     }
-
     return parts;
 }
 
 // extract key - value pairs
 function getKeyVals(val: string): IKeyVal[] {
-    let i: number, ch: string, literal: string,
+    let i: number, ch: string, literal: string, space: number = 0,
         parts: IKeyVal[] = [], kv: IKeyVal = { tag: null, key: "", val: "" }, isKey = true;
     const len = val.length;
-    
-
+ 
     for (i = 0; i < len; i += 1) {
         ch = val.charAt(i);
         // is this a content inside '' or "" ?
         if (ch === "'" || ch === '"') {
             if (!literal) {
+                space = 0;
                 literal = ch;
                 continue;
             } else if (literal === ch) {
@@ -126,8 +126,9 @@ function getKeyVals(val: string): IKeyVal[] {
 
         // is this a content inside eval( ) or json() ?
         if (ch === "(" && !literal) {
+            space = 0;
             if (checks.isString(kv.val)) {
-                const token = strUtils.fastTrim(kv.val);
+                const token = kv.val;
                 switch (token) {
                     case TOKEN.EVAL:
                         literal = ch;
@@ -156,34 +157,62 @@ function getKeyVals(val: string): IKeyVal[] {
 
         if (!literal) {
             if (ch === "{" && !isKey) {
-                let bracePart = val.substr(i);
+                space = 0;
+                let bracePart = val.substr(i); // all the string starting from {
                 const braceParts = getBraceParts(bracePart, true);
-                if (braceParts.length > 0) {
+                if (braceParts.length === 1) {
                     bracePart = braceParts[0];
                     kv.val += bracePart;
                     kv.tag = TAG.BRACE_PART;
-                    i += bracePart.length - 1;
+                    i += (bracePart.length + 1);
                 } else {
                     throw new Error(strUtils.format(ERRS.ERR_EXPR_BRACES_INVALID, bracePart));
                 }
             } else if (ch === TOKEN.COMMA) {
+                space = 0;
                 if (!!kv.key) {
-                    trimKV(kv);
+                    checkType(kv);
                     parts.push(kv);
                     kv = { tag: null, key: "", val: "" };
-                    isKey = true; // currently parsing key value
+                    // switch to parsing key
+                    isKey = true;
                 }
             } else if (ch === TOKEN.DELIMETER1 || ch === TOKEN.DELIMETER2) {
-                isKey = false; // begin parsing value
+                space = 0;
+                // switch to parsing value
+                isKey = false; 
             } else {
                 if (isKey) {
-                    kv.key += ch;
+                    if (!kv.key && (ch === " " || ch.charCodeAt(0) < 14)) {
+                        space += 1;
+                    } else {
+                        if (!kv.key) {
+                            space = 0;
+                        }
+                        if (!!space) {
+                            kv.key += Array(space).join(" ");
+                            space = 0;
+                        }
+                        kv.key += ch;
+                    }
                 } else {
-                    kv.val += ch;
+                    if (!kv.val && (ch === " " || ch.charCodeAt(0) < 14)) {
+                        space += 1;
+                    } else {
+                        if (!kv.val) {
+                            space = 0;
+                        }
+                        if (!!space) {
+                            kv.val += Array(space).join(" ");
+                            space = 0;
+                        }
+                        kv.val += ch;
+                    }
                 }
             }
         } else {
-            //literal value
+            // parsing literal value here
+            space = 0;
             if (isKey) {
                 kv.key += ch;
             } else {
@@ -195,9 +224,10 @@ function getKeyVals(val: string): IKeyVal[] {
         }
     } //for (i = 0; i < val.length; i += 1)
 
+    space = 0;
     //check the last value
     if (!!kv.key) {
-        trimKV(kv);
+        checkType(kv);
         parts.push(kv);
     }
 
@@ -263,7 +293,7 @@ function getEvalParts(val: string): string[] {
 }
 
 /**
-    * resolve selector by parsing expression: get(id)
+    * resolve options by parsing expression: get(id)
     * where id  is an ID of a script tag which contains options
     * like: get(gridOptions)
 */
@@ -319,10 +349,6 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
         isEval: false
     } : {};
 
-    part = strUtils.fastTrim(part);
-    if (isInsideBraces(part)) {
-        part = trimOuterBraces(part);
-    }
     if (isGetExpression(part)) {
         return getOptions(parse_type, part, app, dataContext);
     }
@@ -378,7 +404,7 @@ function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: any, dataCont
     let parts: string[] = [];
     for (let i = 0; i < strs.length; i += 1) {
         strs[i] = strUtils.fastTrim(strs[i]);
-        if (isInsideBraces(strs[i])) {
+        if (strUtils.startsWith(strs[i], "{") && strUtils.endsWith(strs[i], "}")) {
             const subparts = getBraceParts(strs[i], false);
             for (let k = 0; k < subparts.length; k += 1) {
                 parts.push(subparts[k]);

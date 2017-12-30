@@ -146,13 +146,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._templateLoader = new TemplateLoader();
         this._templateLoader.addOnLoaded((s, a) => {
             if (!s) {
-                throw new Error("Invalid operation");
+                throw new Error("Invalid Operation");
             }
             self._onTemplateLoaded(a.html, a.app);
         });
         this._templateLoader.objEvents.addOnError((s, a) => {
             if (!s) {
-                throw new Error("Invalid operation");
+                throw new Error("Invalid Operation");
             }
             return self.handleError(a.error, a.source);
         });
@@ -289,11 +289,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     private _processTemplate(name: string, html: string, app: IApplication): void {
         const self = this, deferred = _async.createDeferred<string>(true),
             res = strUtils.fastTrim(html);
-
         const loader = {
             fn_loader: () => deferred.promise()
         };
-
         // template already loaded, register function which returns the template immediately
         self.templateLoader.registerTemplateLoader(!app ? name : (app.appName + "." + name), loader);
         deferred.resolve(res);

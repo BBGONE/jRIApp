@@ -193,8 +193,8 @@
             <td>
                 <label for="prodNum">Product Number:</label>
                 <input type="text" id="prodNum" placeholder="Product number" 
-                       data-bind-value="this.value,to=filter.prodNumber,mode=TwoWay" 
-                       data-bind-tooltip="this.toolTip,to=filter.searchTextToolTip"/>
+                       data-bind-1="this.value,to=filter.prodNumber,mode=TwoWay" 
+                       data-bind-2="this.toolTip,to=filter.searchTextToolTip"/>
             </td>
             <td>
                 <div data-bind="this.dataContext,to=filter" data-view="dataform">
@@ -209,9 +209,8 @@
                 
                     <label for="prodMCat">Main Category:</label>
                 <select id="prodMCat" size="1" class="span3"
-                        data-bind-2="this.selectedValue,to=filter.parentCategoryID,mode=TwoWay"
-                        data-bind-3="this.textProvider,to=optionTextProvider"
-                        data-bind-4="this.stateProvider,to=optionStateProvider"
+                        data-bind="{this.selectedValue,to=filter.parentCategoryID,mode=TwoWay}{this.textProvider,to=optionTextProvider}{this.stateProvider,to=optionStateProvider}"
+
                         @*providing the datasource through the options - not using databinding*@
                                         @*
     eval(ParentCategories,productVM.filter) takes two arguments - the first is the path, the second is the source

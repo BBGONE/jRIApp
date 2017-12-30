@@ -1,7 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    LocaleERRS, Utils, IIndexer, IErrorHandler, IPromise, IVoidPromise, DummyError,
-    BaseObject
+    Utils, IIndexer, IErrorHandler, IPromise, IVoidPromise, DummyError, BaseObject
 } from "jriapp_shared";
 import { DATA_ATTR, ELVIEW_NM, BindScope } from "./const";
 import {
@@ -17,7 +16,7 @@ import { ViewChecks } from "./utils/viewchecks";
 import { Parser } from "./utils/parser";
 
 const utils = Utils, _async = utils.defer, viewChecks = ViewChecks, dom = DomUtils,
-    strUtils = utils.str, boot = bootstrap, ERRS = LocaleERRS, parser = Parser;
+    strUtils = utils.str, boot = bootstrap, parser = Parser;
 
 export function createDataBindSvc(root: Document | Element, elViewFactory: IElViewFactory): IDataBindingService {
     return new DataBindingService(root, elViewFactory);
@@ -39,7 +38,7 @@ interface IBindElViewArgs {
 
 
 function toBindable(el: Element): IBindable {
-    let val: string, attr: Attr;
+    let attr: Attr;
     const allAttrs = el.attributes, res: IBindable = {
         el: el,
         needToBind: false,
@@ -51,19 +50,11 @@ function toBindable(el: Element): IBindable {
     for (let i = 0; i < n; i++) {
         attr = allAttrs[i];
         if (strUtils.startsWith(attr.name, DATA_ATTR.DATA_BIND)) {
-            val = strUtils.fastTrim(attr.value);
-            if (!val) {
-                throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, attr.name, "empty"));
-            }
-            if (val[0] !== "{" && val[val.length - 1] !== "}") {
-                val = "{" + val + "}";
-            }
-            res.bindings.push(val);
+            res.bindings.push(attr.value);
         }
         if (attr.name === DATA_ATTR.DATA_VIEW) {
             dataViewName = attr.value;
         }
-
         if (attr.name === DATA_ATTR.DATA_VIEW_OPTIONS) {
             hasOptions = true;
         }
@@ -155,8 +146,8 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             const bindInfos: IBindingInfo[] = parser.parseBindings(bindings),
                 len = bindInfos.length;
             for (let j = 0; j < len; j += 1) {
-                const op = getBindingOptions(bindInfos[j], args.elView, args.dataContext),
-                    binding = self.bind(op);
+                const op = getBindingOptions(bindInfos[j], args.elView, args.dataContext);
+                const binding = self.bind(op);
                 args.lftm.addObj(binding);
             }
         }
