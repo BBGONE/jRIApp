@@ -29,6 +29,14 @@ const enum TAG {
     DATE= "5"
 }
 
+const enum DATES {
+    TODAY = "today",
+    TOMORROW = "tomorrow",
+    YESTERDAY = "yesterday",
+    ENDOFMONTH = "endofmonth"
+}
+
+
 const enum PARSE_TYPE {
     NONE = 0,
     BINDING = 1,
@@ -105,9 +113,25 @@ function setVal(kv: IKeyVal, val: string, isKey: boolean): void {
                     format = parts[1];
                 }
                 if (parts.length > 0) {
-                    kv.val = moment(parts[0], format).toDate();
+                    switch (parts[0]) {
+                        case DATES.TODAY:
+                            kv.val = moment().startOf('day').toDate();
+                            break;
+                        case DATES.TOMORROW:
+                            kv.val = moment().startOf('day').add(1, 'days').toDate();
+                            break;
+                        case DATES.YESTERDAY:
+                            kv.val = moment().startOf('day').subtract(1, 'days').toDate();
+                            break;
+                        case DATES.ENDOFMONTH:
+                            kv.val = moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
+                            break;
+                        default:
+                            kv.val = moment(parts[0], format).toDate();
+                            break;
+                    }
                 } else {
-                    kv.val = new Date();
+                    kv.val = moment().startOf('day').toDate();
                 }
             } else if (!kv.tag) {
                 if (checks.isNumeric(kv.val)) {

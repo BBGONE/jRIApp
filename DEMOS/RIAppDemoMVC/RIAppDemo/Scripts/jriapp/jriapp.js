@@ -126,6 +126,13 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         TAG["GET"] = "4";
         TAG["DATE"] = "5";
     })(TAG || (TAG = {}));
+    var DATES;
+    (function (DATES) {
+        DATES["TODAY"] = "today";
+        DATES["TOMORROW"] = "tomorrow";
+        DATES["YESTERDAY"] = "yesterday";
+        DATES["ENDOFMONTH"] = "endofmonth";
+    })(DATES || (DATES = {}));
     var PARSE_TYPE;
     (function (PARSE_TYPE) {
         PARSE_TYPE[PARSE_TYPE["NONE"] = 0] = "NONE";
@@ -193,10 +200,26 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         format = parts[1];
                     }
                     if (parts.length > 0) {
-                        kv.val = moment(parts[0], format).toDate();
+                        switch (parts[0]) {
+                            case "today":
+                                kv.val = moment().startOf('day').toDate();
+                                break;
+                            case "tomorrow":
+                                kv.val = moment().startOf('day').add(1, 'days').toDate();
+                                break;
+                            case "yesterday":
+                                kv.val = moment().startOf('day').subtract(1, 'days').toDate();
+                                break;
+                            case "endofmonth":
+                                kv.val = moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
+                                break;
+                            default:
+                                kv.val = moment(parts[0], format).toDate();
+                                break;
+                        }
                     }
                     else {
-                        kv.val = new Date();
+                        kv.val = moment().startOf('day').toDate();
                     }
                 }
                 else if (!kv.tag) {
@@ -4499,6 +4522,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.9.5";
+    exports.VERSION = "2.9.6";
     bootstrap_8.Bootstrap._initFramework();
 });
