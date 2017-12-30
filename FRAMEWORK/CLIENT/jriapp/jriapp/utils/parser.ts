@@ -37,23 +37,13 @@ interface IKeyVal {
     tag?: string;
     key: string;
     val: any;
-}
-
-function checkType(kv: IKeyVal): void {
-    kv.key = strUtils.fastTrim(kv.key);
-    kv.val = strUtils.fastTrim(kv.val);
-    if (!kv.tag) {
-        if (checks.isNumeric(kv.val)) {
-            kv.val = Number(kv.val);
-        } else if (checks.isBoolString(kv.val)) {
-            kv.val = coreUtils.parseBool(kv.val);
-        }
-    }
+    k: boolean;
+    v: boolean;
 }
 
 // extract content from inside of top level braces
 function getBraceParts(val: string, firstOnly: boolean): string[] {
-    let i: number, start=0, cnt = 0, ch: string, literal: string, test = 0;
+    let i: number, start = 0, cnt = 0, ch: string, literal: string, test = 0;
     const parts: string[] = [], len = val.length;
 
     for (i = 0; i < len; i += 1) {
@@ -97,50 +87,77 @@ function getBraceParts(val: string, firstOnly: boolean): string[] {
     return parts;
 }
 
+function setVal(kv: IKeyVal, val: string, isKey: boolean): void {
+    if (isKey && !kv.k) {
+        kv.key = strUtils.fastTrim(val);
+        kv.k = true
+    } else if (!isKey && !kv.v) {
+        kv.val = strUtils.fastTrim(val);
+        kv.v = true;
+        if (!kv.tag && !!kv.val) {
+            if (checks.isNumeric(kv.val)) {
+                kv.val = Number(kv.val);
+            } else if (checks.isBoolString(kv.val)) {
+                kv.val = coreUtils.parseBool(kv.val);
+            }
+        }
+    }
+}
+
 // extract key - value pairs
 function getKeyVals(val: string): IKeyVal[] {
-    let i: number, ch: string, literal: string, space: number = 0,
-        parts: IKeyVal[] = [], kv: IKeyVal = { tag: null, key: "", val: "" }, isKey = true;
+    let i: number, ch: string, literal: string, parts: IKeyVal[] = [], str: string,
+        kv: IKeyVal = { tag: null, key: "", val: "", k:false, v:false }, isKey = true, start = 0, escapedQuotes = "";
+
     const len = val.length;
- 
     for (i = 0; i < len; i += 1) {
+        if (start < 0) {
+            start = i;
+        }
+
         ch = val.charAt(i);
         // is this a content inside '' or "" ?
         if (ch === "'" || ch === '"') {
             if (!literal) {
-                space = 0;
                 literal = ch;
+                start = i + 1;
+                escapedQuotes = "";
                 continue;
             } else if (literal === ch) {
                 //check for quotes escape 
                 const i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
                 if (next === ch) {
-                    kv.val += ch;
                     i += 1;
+                    escapedQuotes = ch;
                 } else {
+                    if (start < i) {
+                        str = val.substring(start, i);
+                        if (!!escapedQuotes) {
+                            str = str.replace(escapedQuotes + escapedQuotes, escapedQuotes);
+                        }
+                        setVal(kv, str, isKey);
+                    }
                     literal = null;
+                    start = -1;
                 }
                 continue;
             }
         }
 
-        // is this a content inside eval( ) or json() ?
+        // is this a content inside eval( ) or get() ?
         if (ch === "(" && !literal) {
-            space = 0;
-            if (checks.isString(kv.val)) {
-                const token = kv.val;
-                switch (token) {
-                    case TOKEN.EVAL:
-                        literal = ch;
-                        kv.tag = TAG.EVAL;
-                        break;
-                    case TOKEN.GET:
-                        literal = ch;
-                        kv.tag = TAG.GET;
-                        break;
-                    default:
-                        throw new Error(`Unknown token: ${token} in expression ${val}`);
-                }
+            const token = (start < i) ? strUtils.fastTrim(val.substring(start, i)) : "";
+            switch (token) {
+                case TOKEN.EVAL:
+                    literal = ch;
+                    kv.tag = TAG.EVAL;
+                    break;
+                case TOKEN.GET:
+                    literal = ch;
+                    kv.tag = TAG.GET;
+                    break;
+                default:
+                    throw new Error(`Unknown token: ${token} in expression ${val}`);
             }
         }
 
@@ -148,94 +165,70 @@ function getKeyVals(val: string): IKeyVal[] {
             if (!literal) {
                 throw new Error(`Invalid: ) in expression ${val}`);
             }
-            switch (literal) {
-                case "(":
+            if (literal === "(") {
+                    str = val.substring(start, i + 1);
+                    setVal(kv, str, isKey);
                     literal = null;
-                    break;
+                    start = -1;
+                    continue;
             }
         }
 
         if (!literal) {
             if (ch === "{" && !isKey) {
-                space = 0;
                 let bracePart = val.substr(i); // all the string starting from {
                 const braceParts = getBraceParts(bracePart, true);
                 if (braceParts.length === 1) {
                     bracePart = braceParts[0];
-                    kv.val += bracePart;
+                    setVal(kv, bracePart, false);
                     kv.tag = TAG.BRACE_PART;
+                    start = -1;
                     i += (bracePart.length + 1);
                 } else {
                     throw new Error(strUtils.format(ERRS.ERR_EXPR_BRACES_INVALID, bracePart));
                 }
             } else if (ch === TOKEN.COMMA) {
-                space = 0;
-                if (!!kv.key) {
-                    checkType(kv);
-                    parts.push(kv);
-                    kv = { tag: null, key: "", val: "" };
-                    // switch to parsing key
-                    isKey = true;
+                if (start < i) {
+                    str = val.substring(start, i);
+                    setVal(kv, str, isKey);
                 }
+                start = -1;
+                parts.push(kv);
+                kv = { tag: null, key: "", val: "", k: false, v: false }
+                // switch to parsing the key
+                isKey = true;
             } else if (ch === TOKEN.DELIMETER1 || ch === TOKEN.DELIMETER2) {
-                space = 0;
-                // switch to parsing value
-                isKey = false; 
-            } else {
-                if (isKey) {
-                    if (!kv.key && ch === " ") {
-                        space += 1;
-                    } else {
-                        if (!kv.key) {
-                            space = 0;
-                        }
-                        if (!!space) {
-                            kv.key += Array(space).join(" ");
-                            space = 0;
-                        }
-                        kv.key += ch;
-                    }
-                } else {
-                    if (!kv.val && ch === " ") {
-                        space += 1;
-                    } else {
-                        if (!kv.val) {
-                            space = 0;
-                        }
-                        if (!!space) {
-                            kv.val += Array(space).join(" ");
-                            space = 0;
-                        }
-                        kv.val += ch;
-                    }
+                if (start < i) {
+                    str = val.substring(start, i);
+                    setVal(kv, str, isKey);
                 }
+                start = -1;
+                // switch to parsing the value
+                isKey = false;
             }
         } else {
             // parsing literal value here
-            space = 0;
-            if (isKey) {
-                kv.key += ch;
-            } else {
-                kv.val += ch;
-                if (!kv.tag) {
-                    kv.tag = TAG.LITERAL;
-                }
+            if (!kv.tag) {
+                kv.tag = TAG.LITERAL;
             }
         }
     } //for (i = 0; i < val.length; i += 1)
 
-    space = 0;
-    //check the last value
-    if (!!kv.key) {
-        checkType(kv);
-        parts.push(kv);
+    if (start > -1 && start < i) {
+        str = val.substring(start, i);
+        setVal(kv, str, isKey);
     }
 
+    //the last value
+    parts.push(kv);
+
     parts = parts.filter(function (kv) {
-       // when key has value
-        return !!kv.key && kv.val !== ""; 
+        // if the key was set
+        return kv.k;
     });
 
+    // console.log(val);
+    // parts.forEach((p) => console.log(p));
     return parts;
 }
 
@@ -251,7 +244,7 @@ function getEvalParts(val: string): string[] {
         ch = val.charAt(i);
         // is this content inside eval( ) ?
         if (ch === "(" && checks.isString(part)) {
-            if (is_expression ) {
+            if (is_expression) {
                 throw new Error("Invalid Expression: " + val);
             }
 
@@ -282,7 +275,7 @@ function getEvalParts(val: string): string[] {
             continue;
         }
 
-        part += ch; 
+        part += ch;
     }
 
     for (let j = 0; j < parts.length; j += 1) {
@@ -413,7 +406,7 @@ function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: any, dataCont
             parts.push(strs[i]);
         }
     }
-   
+
     for (let j = 0; j < parts.length; j += 1) {
         res.push(parseOption(parse_type, parts[j], app, dataContext));
     }

@@ -131,18 +131,6 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         PARSE_TYPE[PARSE_TYPE["VIEW"] = 2] = "VIEW";
     })(PARSE_TYPE || (PARSE_TYPE = {}));
     var len_this = "this.".length;
-    function checkType(kv) {
-        kv.key = strUtils.fastTrim(kv.key);
-        kv.val = strUtils.fastTrim(kv.val);
-        if (!kv.tag) {
-            if (checks.isNumeric(kv.val)) {
-                kv.val = Number(kv.val);
-            }
-            else if (checks.isBoolString(kv.val)) {
-                kv.val = coreUtils.parseBool(kv.val);
-            }
-        }
-    }
     function getBraceParts(val, firstOnly) {
         var i, start = 0, cnt = 0, ch, literal, test = 0;
         var parts = [], len = val.length;
@@ -188,66 +176,95 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
         return parts;
     }
+    function setVal(kv, val, isKey) {
+        if (isKey && !kv.k) {
+            kv.key = strUtils.fastTrim(val);
+            kv.k = true;
+        }
+        else if (!isKey && !kv.v) {
+            kv.val = strUtils.fastTrim(val);
+            kv.v = true;
+            if (!kv.tag && !!kv.val) {
+                if (checks.isNumeric(kv.val)) {
+                    kv.val = Number(kv.val);
+                }
+                else if (checks.isBoolString(kv.val)) {
+                    kv.val = coreUtils.parseBool(kv.val);
+                }
+            }
+        }
+    }
     function getKeyVals(val) {
-        var i, ch, literal, space = 0, parts = [], kv = { tag: null, key: "", val: "" }, isKey = true;
+        var i, ch, literal, parts = [], str, kv = { tag: null, key: "", val: "", k: false, v: false }, isKey = true, start = 0, escapedQuotes = "";
         var len = val.length;
         for (i = 0; i < len; i += 1) {
+            if (start < 0) {
+                start = i;
+            }
             ch = val.charAt(i);
             if (ch === "'" || ch === '"') {
                 if (!literal) {
-                    space = 0;
                     literal = ch;
+                    start = i + 1;
+                    escapedQuotes = "";
                     continue;
                 }
                 else if (literal === ch) {
                     var i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
                     if (next === ch) {
-                        kv.val += ch;
                         i += 1;
+                        escapedQuotes = ch;
                     }
                     else {
+                        if (start < i) {
+                            str = val.substring(start, i);
+                            if (!!escapedQuotes) {
+                                str = str.replace(escapedQuotes + escapedQuotes, escapedQuotes);
+                            }
+                            setVal(kv, str, isKey);
+                        }
                         literal = null;
+                        start = -1;
                     }
                     continue;
                 }
             }
             if (ch === "(" && !literal) {
-                space = 0;
-                if (checks.isString(kv.val)) {
-                    var token = kv.val;
-                    switch (token) {
-                        case "eval":
-                            literal = ch;
-                            kv.tag = "1";
-                            break;
-                        case "get":
-                            literal = ch;
-                            kv.tag = "4";
-                            break;
-                        default:
-                            throw new Error("Unknown token: " + token + " in expression " + val);
-                    }
+                var token = (start < i) ? strUtils.fastTrim(val.substring(start, i)) : "";
+                switch (token) {
+                    case "eval":
+                        literal = ch;
+                        kv.tag = "1";
+                        break;
+                    case "get":
+                        literal = ch;
+                        kv.tag = "4";
+                        break;
+                    default:
+                        throw new Error("Unknown token: " + token + " in expression " + val);
                 }
             }
             if (ch === ")") {
                 if (!literal) {
                     throw new Error("Invalid: ) in expression " + val);
                 }
-                switch (literal) {
-                    case "(":
-                        literal = null;
-                        break;
+                if (literal === "(") {
+                    str = val.substring(start, i + 1);
+                    setVal(kv, str, isKey);
+                    literal = null;
+                    start = -1;
+                    continue;
                 }
             }
             if (!literal) {
                 if (ch === "{" && !isKey) {
-                    space = 0;
                     var bracePart = val.substr(i);
                     var braceParts = getBraceParts(bracePart, true);
                     if (braceParts.length === 1) {
                         bracePart = braceParts[0];
-                        kv.val += bracePart;
+                        setVal(kv, bracePart, false);
                         kv.tag = "2";
+                        start = -1;
                         i += (bracePart.length + 1);
                     }
                     else {
@@ -255,71 +272,37 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     }
                 }
                 else if (ch === ",") {
-                    space = 0;
-                    if (!!kv.key) {
-                        checkType(kv);
-                        parts.push(kv);
-                        kv = { tag: null, key: "", val: "" };
-                        isKey = true;
+                    if (start < i) {
+                        str = val.substring(start, i);
+                        setVal(kv, str, isKey);
                     }
+                    start = -1;
+                    parts.push(kv);
+                    kv = { tag: null, key: "", val: "", k: false, v: false };
+                    isKey = true;
                 }
                 else if (ch === ":" || ch === "=") {
-                    space = 0;
+                    if (start < i) {
+                        str = val.substring(start, i);
+                        setVal(kv, str, isKey);
+                    }
+                    start = -1;
                     isKey = false;
-                }
-                else {
-                    if (isKey) {
-                        if (!kv.key && ch === " ") {
-                            space += 1;
-                        }
-                        else {
-                            if (!kv.key) {
-                                space = 0;
-                            }
-                            if (!!space) {
-                                kv.key += Array(space).join(" ");
-                                space = 0;
-                            }
-                            kv.key += ch;
-                        }
-                    }
-                    else {
-                        if (!kv.val && ch === " ") {
-                            space += 1;
-                        }
-                        else {
-                            if (!kv.val) {
-                                space = 0;
-                            }
-                            if (!!space) {
-                                kv.val += Array(space).join(" ");
-                                space = 0;
-                            }
-                            kv.val += ch;
-                        }
-                    }
                 }
             }
             else {
-                space = 0;
-                if (isKey) {
-                    kv.key += ch;
-                }
-                else {
-                    kv.val += ch;
-                    if (!kv.tag) {
-                        kv.tag = "3";
-                    }
+                if (!kv.tag) {
+                    kv.tag = "3";
                 }
             }
         }
-        space = 0;
-        if (!!kv.key) {
-            checkType(kv);
-            parts.push(kv);
+        if (start > -1 && start < i) {
+            str = val.substring(start, i);
+            setVal(kv, str, isKey);
         }
+        parts.push(kv);
         parts = parts.filter(function (kv) {
-            return !!kv.key && kv.val !== "";
+            return kv.k;
         });
         return parts;
     }
@@ -4510,6 +4493,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.9.2";
+    exports.VERSION = "2.9.3";
     bootstrap_8.Bootstrap._initFramework();
 });

@@ -210,7 +210,6 @@
                     <label for="prodMCat">Main Category:</label>
                 <select id="prodMCat" size="1" class="span3"
                         data-bind="{this.selectedValue,to=filter.parentCategoryID,mode=TwoWay}{this.textProvider,to=optionTextProvider}{this.stateProvider,to=optionStateProvider}"
-
                         @*providing the datasource through the options - not using databinding*@
                                         @*
     eval(ParentCategories,productVM.filter) takes two arguments - the first is the path, the second is the source
