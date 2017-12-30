@@ -5,7 +5,7 @@ import {
 import { DATA_ATTR, ELVIEW_NM, BindScope } from "./const";
 import {
     IElViewFactory, IElView, ILifeTimeScope, IBindArgs,
-    IBindingOptions, IBindingInfo, IDataBindingService, IModuleLoader
+    IBindingOptions, IDataBindingService, IModuleLoader
 } from "./int";
 import { bootstrap } from "./bootstrap";
 import { LifeTimeScope } from "./utils/lifetime";
@@ -143,7 +143,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         // then create databinding if element has data-bind attribute
         const bindings = args.bind.bindings;
         if (!!bindings && bindings.length > 0) {
-            const bindInfos: IBindingInfo[] = parser.parseBindings(bindings),
+            const bindInfos = parser.parseBindings(bindings),
                 len = bindInfos.length;
             for (let j = 0; j < len; j += 1) {
                 const op = getBindingOptions(bindInfos[j], args.elView, args.dataContext);

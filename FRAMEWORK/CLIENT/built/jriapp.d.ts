@@ -340,9 +340,10 @@ declare module "jriapp/int" {
     }
 }
 declare module "jriapp/utils/parser" {
+    import { IBindingInfo } from "jriapp/int";
     export class Parser {
         static parseOptions(options: string): any[];
-        static parseBindings(bindings: string[]): any[];
+        static parseBindings(bindings: string[]): IBindingInfo[];
         static parseViewOptions(options: string, app: any, dataContext: any): any;
     }
 }
@@ -1002,5 +1003,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.9.4";
+    export const VERSION = "2.9.5";
 }

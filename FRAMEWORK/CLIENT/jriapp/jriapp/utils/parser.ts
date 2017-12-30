@@ -1,5 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils, LocaleERRS as ERRS } from "jriapp_shared";
+import { IBindingInfo } from "../int";
+
 import { bootstrap } from "../bootstrap";
 
 const checks = Utils.check, strUtils = Utils.str, coreUtils = Utils.core,
@@ -102,7 +104,11 @@ function setVal(kv: IKeyVal, val: string, isKey: boolean): void {
                 if (parts.length > 1) {
                     format = parts[1];
                 }
-                kv.val = moment(kv.val, format).toDate();
+                if (parts.length > 0) {
+                    kv.val = moment(parts[0], format).toDate();
+                } else {
+                    kv.val = new Date();
+                }
             } else if (!kv.tag) {
                 if (checks.isNumeric(kv.val)) {
                     kv.val = Number(kv.val);
@@ -154,9 +160,9 @@ function getKeyVals(val: string): IKeyVal[] {
             }
         }
 
-        // is this a content inside eval( ) or get() ?
-        if (ch === "(" && !literal) {
-            const token = (start < i) ? strUtils.fastTrim(val.substring(start, i)) : "";
+        // is this a content inside eval( ) or get() or date()?
+        if (ch === "(" && !literal && !isKey && start < i) {
+            const token = strUtils.fastTrim(val.substring(start, i));
             switch (token) {
                 case TOKEN.EVAL:
                     literal = ch;
@@ -262,19 +268,19 @@ function getEvalParts(val: string): string[] {
                 throw new Error("Invalid Expression: " + val);
             }
 
-            part = val.substring(start, i);
-            if (!is_expression && (strUtils.fastTrim(part) === TOKEN.EVAL || strUtils.fastTrim(part) === TOKEN.DATE)) {
+            part = strUtils.fastTrim(val.substring(start, i));
+            if (!is_expression && (part === TOKEN.EVAL || part === TOKEN.DATE || part === TOKEN.GET)) {
                 is_expression = true;
                 start = -1;
                 continue;
             }
         }
 
-        if (ch === ")") {
+        if (ch === ")" && start < i) {
             if (is_expression) {
                 is_expression = false;
-                part = val.substring(start, i);
-                parts.push(strUtils.fastTrim(part));
+                part = strUtils.fastTrim(val.substring(start, i));
+                parts.push(part);
                 start = -1;
                 break;
             } else {
@@ -282,19 +288,27 @@ function getEvalParts(val: string): string[] {
             }
         }
 
-        if (ch === TOKEN.COMMA && is_expression) {
-            part = val.substring(start, i);
-            parts.push(strUtils.fastTrim(part));
+        if (ch === TOKEN.COMMA && is_expression && start < i) {
+            part = strUtils.fastTrim(val.substring(start, i));
+            parts.push(part);
             start = -1;
             continue;
         }
     }
 
-    if (parts.length== 0 || parts.length > 2) {
+    if (parts.length > 2) {
         throw new Error("Invalid Expression: " + val);
     }
 
     return parts;
+}
+
+function getOptions(val: string): string {
+    let parts = getEvalParts(val);
+    if (parts.length !== 1) {
+        throw new Error("Invalid Expression: " + val);
+    }
+    return bootstrap.getOptions(parts[0]);
 }
 
 /**
@@ -302,42 +316,13 @@ function getEvalParts(val: string): string[] {
     * where id  is an ID of a script tag which contains options
     * like: get(gridOptions)
 */
-function getOptions(parse_type: PARSE_TYPE, val: string, app: any, dataContext: any): any {
-    let ch: string, is_expression = false, part = "";
-    for (let i = 0; i < val.length; i += 1) {
-        ch = val.charAt(i);
-        // is this content inside json( ) ?
-        if (ch === "(" && checks.isString(part)) {
-            if (is_expression) {
-                throw new Error("Invalid Expression: " + val);
-            }
-
-            if (!is_expression && strUtils.fastTrim(part) === TOKEN.GET) {
-                part = "";
-                is_expression = true;
-                continue;
-            }
-        }
-
-        if (ch === ")") {
-            if (is_expression) {
-                is_expression = false;
-                break;
-            } else {
-                throw new Error("Invalid Expression: " + val);
-            }
-        }
-
-        part += ch;
-    }
-    if (!part) {
-        throw new Error("Invalid Expression: " + val);
-    }
-    let options = bootstrap.getOptions(part);
+function resolveOptions(parse_type: PARSE_TYPE, val: string, app: any, dataContext: any): any {
+    let options = getOptions(val);
     return parseOption(parse_type, options, app, dataContext);
 }
 
-function isGetExpression(val: string): boolean {
+
+function isGet(val: string): boolean {
     return !!val && getRX.test(val);
 }
 
@@ -353,9 +338,9 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
         param: null,
         isEval: false
     } : {};
-
-    if (isGetExpression(part)) {
-        return getOptions(parse_type, part, app, dataContext);
+    part = strUtils.fastTrim(part);
+    if (isGet(part)) {
+        return resolveOptions(parse_type, part, app, dataContext);
     }
     const kvals = getKeyVals(part);
     kvals.forEach(function (kv) {
@@ -395,7 +380,7 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
         } else if (kv.tag === TAG.BRACE_PART) {
             res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
         } else if (kv.tag === TAG.GET) {
-            res[kv.key] = getOptions(PARSE_TYPE.NONE, kv.val, app, dataContext);
+            res[kv.key] = resolveOptions(PARSE_TYPE.NONE, kv.val, app, dataContext);
         } else {
             res[kv.key] = kv.val;
         }
@@ -408,14 +393,17 @@ function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: any, dataCont
     const res: any[] = [];
     let parts: string[] = [];
     for (let i = 0; i < strs.length; i += 1) {
-        strs[i] = strUtils.fastTrim(strs[i]);
-        if (strUtils.startsWith(strs[i], "{") && strUtils.endsWith(strs[i], "}")) {
-            const subparts = getBraceParts(strs[i], false);
+        let str = strUtils.fastTrim(strs[i]);
+        if (isGet(str)) {
+            str = strUtils.fastTrim(getOptions(str));
+        }
+        if (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}")) {
+            const subparts = getBraceParts(str, false);
             for (let k = 0; k < subparts.length; k += 1) {
                 parts.push(subparts[k]);
             }
         } else {
-            parts.push(strs[i]);
+            parts.push(str);
         }
     }
 
@@ -430,7 +418,7 @@ export class Parser {
     static parseOptions(options: string): any[] {
         return parseOptions(PARSE_TYPE.NONE, [options], null, null);
     }
-    static parseBindings(bindings: string[]): any[] {
+    static parseBindings(bindings: string[]): IBindingInfo[] {
         return parseOptions(PARSE_TYPE.BINDING, bindings, null, null);
     }
     static parseViewOptions(options: string, app: any, dataContext: any): any {

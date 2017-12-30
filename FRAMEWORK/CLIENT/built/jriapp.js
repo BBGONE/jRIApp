@@ -192,7 +192,12 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     if (parts.length > 1) {
                         format = parts[1];
                     }
-                    kv.val = moment(kv.val, format).toDate();
+                    if (parts.length > 0) {
+                        kv.val = moment(parts[0], format).toDate();
+                    }
+                    else {
+                        kv.val = new Date();
+                    }
                 }
                 else if (!kv.tag) {
                     if (checks.isNumeric(kv.val)) {
@@ -240,8 +245,8 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     continue;
                 }
             }
-            if (ch === "(" && !literal) {
-                var token = (start < i) ? strUtils.fastTrim(val.substring(start, i)) : "";
+            if (ch === "(" && !literal && !isKey && start < i) {
+                var token = strUtils.fastTrim(val.substring(start, i));
                 switch (token) {
                     case "eval":
                         literal = ch;
@@ -332,18 +337,18 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 if (is_expression) {
                     throw new Error("Invalid Expression: " + val);
                 }
-                part = val.substring(start, i);
-                if (!is_expression && (strUtils.fastTrim(part) === "eval" || strUtils.fastTrim(part) === "date")) {
+                part = strUtils.fastTrim(val.substring(start, i));
+                if (!is_expression && (part === "eval" || part === "date" || part === "get")) {
                     is_expression = true;
                     start = -1;
                     continue;
                 }
             }
-            if (ch === ")") {
+            if (ch === ")" && start < i) {
                 if (is_expression) {
                     is_expression = false;
-                    part = val.substring(start, i);
-                    parts.push(strUtils.fastTrim(part));
+                    part = strUtils.fastTrim(val.substring(start, i));
+                    parts.push(part);
                     start = -1;
                     break;
                 }
@@ -351,50 +356,30 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     throw new Error("Invalid Expression: " + val);
                 }
             }
-            if (ch === "," && is_expression) {
-                part = val.substring(start, i);
-                parts.push(strUtils.fastTrim(part));
+            if (ch === "," && is_expression && start < i) {
+                part = strUtils.fastTrim(val.substring(start, i));
+                parts.push(part);
                 start = -1;
                 continue;
             }
         }
-        if (parts.length == 0 || parts.length > 2) {
+        if (parts.length > 2) {
             throw new Error("Invalid Expression: " + val);
         }
         return parts;
     }
-    function getOptions(parse_type, val, app, dataContext) {
-        var ch, is_expression = false, part = "";
-        for (var i = 0; i < val.length; i += 1) {
-            ch = val.charAt(i);
-            if (ch === "(" && checks.isString(part)) {
-                if (is_expression) {
-                    throw new Error("Invalid Expression: " + val);
-                }
-                if (!is_expression && strUtils.fastTrim(part) === "get") {
-                    part = "";
-                    is_expression = true;
-                    continue;
-                }
-            }
-            if (ch === ")") {
-                if (is_expression) {
-                    is_expression = false;
-                    break;
-                }
-                else {
-                    throw new Error("Invalid Expression: " + val);
-                }
-            }
-            part += ch;
-        }
-        if (!part) {
+    function getOptions(val) {
+        var parts = getEvalParts(val);
+        if (parts.length !== 1) {
             throw new Error("Invalid Expression: " + val);
         }
-        var options = bootstrap_1.bootstrap.getOptions(part);
+        return bootstrap_1.bootstrap.getOptions(parts[0]);
+    }
+    function resolveOptions(parse_type, val, app, dataContext) {
+        var options = getOptions(val);
         return parseOption(parse_type, options, app, dataContext);
     }
-    function isGetExpression(val) {
+    function isGet(val) {
         return !!val && getRX.test(val);
     }
     function parseOption(parse_type, part, app, dataContext) {
@@ -409,8 +394,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             param: null,
             isEval: false
         } : {};
-        if (isGetExpression(part)) {
-            return getOptions(parse_type, part, app, dataContext);
+        part = strUtils.fastTrim(part);
+        if (isGet(part)) {
+            return resolveOptions(parse_type, part, app, dataContext);
         }
         var kvals = getKeyVals(part);
         kvals.forEach(function (kv) {
@@ -448,7 +434,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
             }
             else if (kv.tag === "4") {
-                res[kv.key] = getOptions(0, kv.val, app, dataContext);
+                res[kv.key] = resolveOptions(0, kv.val, app, dataContext);
             }
             else {
                 res[kv.key] = kv.val;
@@ -460,15 +446,18 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         var res = [];
         var parts = [];
         for (var i = 0; i < strs.length; i += 1) {
-            strs[i] = strUtils.fastTrim(strs[i]);
-            if (strUtils.startsWith(strs[i], "{") && strUtils.endsWith(strs[i], "}")) {
-                var subparts = getBraceParts(strs[i], false);
+            var str = strUtils.fastTrim(strs[i]);
+            if (isGet(str)) {
+                str = strUtils.fastTrim(getOptions(str));
+            }
+            if (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}")) {
+                var subparts = getBraceParts(str, false);
                 for (var k = 0; k < subparts.length; k += 1) {
                     parts.push(subparts[k]);
                 }
             }
             else {
-                parts.push(strs[i]);
+                parts.push(str);
             }
         }
         for (var j = 0; j < parts.length; j += 1) {
@@ -4510,6 +4499,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.9.4";
+    exports.VERSION = "2.9.5";
     bootstrap_8.Bootstrap._initFramework();
 });
