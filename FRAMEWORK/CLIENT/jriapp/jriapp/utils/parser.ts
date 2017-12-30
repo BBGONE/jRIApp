@@ -183,7 +183,7 @@ function getKeyVals(val: string): IKeyVal[] {
                 isKey = false; 
             } else {
                 if (isKey) {
-                    if (!kv.key && (ch === " " || ch.charCodeAt(0) < 14)) {
+                    if (!kv.key && ch === " ") {
                         space += 1;
                     } else {
                         if (!kv.key) {
@@ -196,7 +196,7 @@ function getKeyVals(val: string): IKeyVal[] {
                         kv.key += ch;
                     }
                 } else {
-                    if (!kv.val && (ch === " " || ch.charCodeAt(0) < 14)) {
+                    if (!kv.val && ch === " ") {
                         space += 1;
                     } else {
                         if (!kv.val) {

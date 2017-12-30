@@ -269,7 +269,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 }
                 else {
                     if (isKey) {
-                        if (!kv.key && (ch === " " || ch.charCodeAt(0) < 14)) {
+                        if (!kv.key && ch === " ") {
                             space += 1;
                         }
                         else {
@@ -284,7 +284,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         }
                     }
                     else {
-                        if (!kv.val && (ch === " " || ch.charCodeAt(0) < 14)) {
+                        if (!kv.val && ch === " ") {
                             space += 1;
                         }
                         else {
@@ -4510,6 +4510,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.9.1";
+    exports.VERSION = "2.9.2";
     bootstrap_8.Bootstrap._initFramework();
 });
