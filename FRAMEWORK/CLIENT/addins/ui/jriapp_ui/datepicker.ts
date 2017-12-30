@@ -17,7 +17,8 @@ export class DatePickerElView extends TextBoxElView {
         if (!datepicker) {
             throw new Error("IDatepicker service is not registered");
         }
-        datepicker.attachTo(this.el, options.datepicker, () => {
+        datepicker.attachTo(this.el, options.datepicker, (datetext) => {
+            (<HTMLInputElement>this.el).value = datetext;
             this.objEvents.raiseProp("value");
         });
     }

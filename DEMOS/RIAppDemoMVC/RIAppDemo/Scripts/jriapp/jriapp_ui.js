@@ -8424,7 +8424,8 @@ define("jriapp_ui/datepicker", ["require", "exports", "jriapp/const", "jriapp/bo
             if (!datepicker) {
                 throw new Error("IDatepicker service is not registered");
             }
-            datepicker.attachTo(_this.el, options.datepicker, function () {
+            datepicker.attachTo(_this.el, options.datepicker, function (datetext) {
+                _this.el.value = datetext;
                 _this.objEvents.raiseProp("value");
             });
             return _this;

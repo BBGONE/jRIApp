@@ -15,14 +15,16 @@ const enum TOKEN {
     THIS = "this.",
     PARAM = "param",
     TARGET_PATH = "targetPath",
-    GET = "get"
+    GET = "get",
+    DATE = "date"
 }
 
 const enum TAG {
     EVAL = "1",
     BRACE_PART = "2",
     LITERAL = "3",
-    GET = "4"
+    GET = "4",
+    DATE= "5"
 }
 
 const enum PARSE_TYPE {
@@ -94,11 +96,19 @@ function setVal(kv: IKeyVal, val: string, isKey: boolean): void {
     } else if (!isKey && !kv.v) {
         kv.val = strUtils.fastTrim(val);
         kv.v = true;
-        if (!kv.tag && !!kv.val) {
-            if (checks.isNumeric(kv.val)) {
-                kv.val = Number(kv.val);
-            } else if (checks.isBoolString(kv.val)) {
-                kv.val = coreUtils.parseBool(kv.val);
+        if (!!kv.val) {
+            if (kv.tag === TAG.DATE) {
+                let parts = getEvalParts(kv.val), format = "YYYYMMDD";
+                if (parts.length > 1) {
+                    format = parts[1];
+                }
+                kv.val = moment(kv.val, format).toDate();
+            } else if (!kv.tag) {
+                if (checks.isNumeric(kv.val)) {
+                    kv.val = Number(kv.val);
+                } else if (checks.isBoolString(kv.val)) {
+                    kv.val = coreUtils.parseBool(kv.val);
+                }
             }
         }
     }
@@ -155,6 +165,10 @@ function getKeyVals(val: string): IKeyVal[] {
                 case TOKEN.GET:
                     literal = ch;
                     kv.tag = TAG.GET;
+                    break;
+                case TOKEN.DATE:
+                    literal = ch;
+                    kv.tag = TAG.DATE;
                     break;
                 default:
                     throw new Error(`Unknown token: ${token} in expression ${val}`);
@@ -227,30 +241,31 @@ function getKeyVals(val: string): IKeyVal[] {
         return kv.k;
     });
 
-    // console.log(val);
-    // parts.forEach((p) => console.log(p));
     return parts;
 }
 
 /**
-    * resolve parts by parsing expression: eval(part1, part2)
+    * resolve parts by parsing expression: eval(part1, part2?) or date(stringDate,format?)
 */
 function getEvalParts(val: string): string[] {
     let ch: string, is_expression = false,
-        parts: string[] = [], part = "";
-
-
+        parts: string[] = [], start = 0, part: string;
     for (let i = 0; i < val.length; i += 1) {
+        if (start < 0) {
+            start = i;
+        }
+
         ch = val.charAt(i);
-        // is this content inside eval( ) ?
-        if (ch === "(" && checks.isString(part)) {
+        // is this content inside eval( ) or date() ?
+        if (ch === "(" && start < i) {
             if (is_expression) {
                 throw new Error("Invalid Expression: " + val);
             }
 
-            if (!is_expression && strUtils.fastTrim(part) === TOKEN.EVAL) {
-                part = "";
+            part = val.substring(start, i);
+            if (!is_expression && (strUtils.fastTrim(part) === TOKEN.EVAL || strUtils.fastTrim(part) === TOKEN.DATE)) {
                 is_expression = true;
+                start = -1;
                 continue;
             }
         }
@@ -258,11 +273,9 @@ function getEvalParts(val: string): string[] {
         if (ch === ")") {
             if (is_expression) {
                 is_expression = false;
-                parts.push(part);
-                part = "";
-                if (parts.length > 2) {
-                    throw new Error("Invalid Expression: " + val);
-                }
+                part = val.substring(start, i);
+                parts.push(strUtils.fastTrim(part));
+                start = -1;
                 break;
             } else {
                 throw new Error("Invalid Expression: " + val);
@@ -270,16 +283,15 @@ function getEvalParts(val: string): string[] {
         }
 
         if (ch === TOKEN.COMMA && is_expression) {
-            parts.push(part);
-            part = "";
+            part = val.substring(start, i);
+            parts.push(strUtils.fastTrim(part));
+            start = -1;
             continue;
         }
-
-        part += ch;
     }
 
-    for (let j = 0; j < parts.length; j += 1) {
-        parts[j] = strUtils.fastTrim(parts[j]);
+    if (parts.length== 0 || parts.length > 2) {
+        throw new Error("Invalid Expression: " + val);
     }
 
     return parts;

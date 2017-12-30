@@ -116,6 +116,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         TOKEN["PARAM"] = "param";
         TOKEN["TARGET_PATH"] = "targetPath";
         TOKEN["GET"] = "get";
+        TOKEN["DATE"] = "date";
     })(TOKEN || (TOKEN = {}));
     var TAG;
     (function (TAG) {
@@ -123,6 +124,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         TAG["BRACE_PART"] = "2";
         TAG["LITERAL"] = "3";
         TAG["GET"] = "4";
+        TAG["DATE"] = "5";
     })(TAG || (TAG = {}));
     var PARSE_TYPE;
     (function (PARSE_TYPE) {
@@ -184,12 +186,21 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         else if (!isKey && !kv.v) {
             kv.val = strUtils.fastTrim(val);
             kv.v = true;
-            if (!kv.tag && !!kv.val) {
-                if (checks.isNumeric(kv.val)) {
-                    kv.val = Number(kv.val);
+            if (!!kv.val) {
+                if (kv.tag === "5") {
+                    var parts = getEvalParts(kv.val), format = "YYYYMMDD";
+                    if (parts.length > 1) {
+                        format = parts[1];
+                    }
+                    kv.val = moment(kv.val, format).toDate();
                 }
-                else if (checks.isBoolString(kv.val)) {
-                    kv.val = coreUtils.parseBool(kv.val);
+                else if (!kv.tag) {
+                    if (checks.isNumeric(kv.val)) {
+                        kv.val = Number(kv.val);
+                    }
+                    else if (checks.isBoolString(kv.val)) {
+                        kv.val = coreUtils.parseBool(kv.val);
+                    }
                 }
             }
         }
@@ -239,6 +250,10 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     case "get":
                         literal = ch;
                         kv.tag = "4";
+                        break;
+                    case "date":
+                        literal = ch;
+                        kv.tag = "5";
                         break;
                     default:
                         throw new Error("Unknown token: " + token + " in expression " + val);
@@ -307,27 +322,29 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         return parts;
     }
     function getEvalParts(val) {
-        var ch, is_expression = false, parts = [], part = "";
+        var ch, is_expression = false, parts = [], start = 0, part;
         for (var i = 0; i < val.length; i += 1) {
+            if (start < 0) {
+                start = i;
+            }
             ch = val.charAt(i);
-            if (ch === "(" && checks.isString(part)) {
+            if (ch === "(" && start < i) {
                 if (is_expression) {
                     throw new Error("Invalid Expression: " + val);
                 }
-                if (!is_expression && strUtils.fastTrim(part) === "eval") {
-                    part = "";
+                part = val.substring(start, i);
+                if (!is_expression && (strUtils.fastTrim(part) === "eval" || strUtils.fastTrim(part) === "date")) {
                     is_expression = true;
+                    start = -1;
                     continue;
                 }
             }
             if (ch === ")") {
                 if (is_expression) {
                     is_expression = false;
-                    parts.push(part);
-                    part = "";
-                    if (parts.length > 2) {
-                        throw new Error("Invalid Expression: " + val);
-                    }
+                    part = val.substring(start, i);
+                    parts.push(strUtils.fastTrim(part));
+                    start = -1;
                     break;
                 }
                 else {
@@ -335,14 +352,14 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 }
             }
             if (ch === "," && is_expression) {
-                parts.push(part);
-                part = "";
+                part = val.substring(start, i);
+                parts.push(strUtils.fastTrim(part));
+                start = -1;
                 continue;
             }
-            part += ch;
         }
-        for (var j = 0; j < parts.length; j += 1) {
-            parts[j] = strUtils.fastTrim(parts[j]);
+        if (parts.length == 0 || parts.length > 2) {
+            throw new Error("Invalid Expression: " + val);
         }
         return parts;
     }
@@ -4493,6 +4510,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.9.3";
+    exports.VERSION = "2.9.4";
     bootstrap_8.Bootstrap._initFramework();
 });

@@ -206,19 +206,19 @@
                 </div>
             </td>
             <td>
-                
-                    <label for="prodMCat">Main Category:</label>
+
+                <label for="prodMCat">Main Category:</label>
                 <select id="prodMCat" size="1" class="span3"
                         data-bind="{this.selectedValue,to=filter.parentCategoryID,mode=TwoWay}{this.textProvider,to=optionTextProvider}{this.stateProvider,to=optionStateProvider}"
-                        @*providing the datasource through the options - not using databinding*@
-                                        @*
+    @*
+    Providing the datasource through the options - not using databinding
     eval(ParentCategories,productVM.filter) takes two arguments - the first is the path, the second is the source
     the second parameter is optional. Their semantics is the same as in the usual databinding.
     We could write it without the source argument, like that -
     data-view-options="valuePath=ProductCategoryID,textPath=Name,dataSource=eval(filter.ParentCategories)"></select>
-                                        *@
+    *@
                         data-view-options="valuePath=ProductCategoryID,textPath=Name,dataSource=eval(ParentCategories,productVM.filter)"></select>
-               
+
             </td>
             <td>
                 <label for="prodSCat">Sub Category:</label>
@@ -260,14 +260,14 @@
                     <input type="text" id="saleStart1" placeholder="Enter Date" 
                            data-bind="this.value,to=filter.saleStart1,mode=TwoWay,converter=dateConverter" 
                            data-view="datepicker"
-                           data-view-options="datepicker:{ showOn:button,yearRange:'-15:c',changeMonth: true,changeYear: true }"/>
+                           data-view-options="datepicker:{ showOn:button,yearRange:'-15:c',changeMonth: true,changeYear:true,yearRange:'1998:2005',minDate:date(19980601),maxDate:date(2005-07-07,YYYY-MM-DD) }"/>
                 </div>
                 <div style="display: inline-block; margin-left: 5px;">
                     <label for="saleStart2">Sales Start Date End:</label>
                     <input type="text" id="saleStart2" placeholder="Enter Date" 
                            data-bind="this.value,to=filter.saleStart2,mode=TwoWay,converter=dateConverter" 
                            data-view="datepicker"
-                           data-view-options="datepicker:{ showOn:button,yearRange:'-15:c',changeMonth: true,changeYear: true }"/>
+                           data-view-options="datepicker:{ showOn:button,yearRange:'-15:c',changeMonth:true,changeYear: true,yearRange:'1998:2005',minDate:date(19980601),maxDate:date(2005-07-07,YYYY-MM-DD) }"/>
                 </div>
             </td>
         </tr>
