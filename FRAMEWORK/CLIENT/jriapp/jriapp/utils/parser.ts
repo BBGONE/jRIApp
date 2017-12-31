@@ -4,10 +4,9 @@ import { IBindingInfo } from "../int";
 
 import { bootstrap } from "../bootstrap";
 
-const checks = Utils.check, strUtils = Utils.str, coreUtils = Utils.core,
-    sys = Utils.sys;
+const checks = Utils.check, strUtils = Utils.str, coreUtils = Utils.core, sys = Utils.sys;
 
-const getRX = /^get[(].+[)]$/g;
+const trim = strUtils.fastTrim, getRX = /^get[(].+[)]$/g;
 
 const enum TOKEN {
     DELIMETER1 = ":",
@@ -54,7 +53,7 @@ interface IKeyVal {
 }
 
 // extract content from inside of top level braces
-function getBraceParts(val: string, firstOnly: boolean): string[] {
+function getBraceContent(val: string, firstOnly: boolean): string[] {
     let i: number, start = 0, cnt = 0, ch: string, literal: string, test = 0;
     const parts: string[] = [], len = val.length;
 
@@ -101,14 +100,14 @@ function getBraceParts(val: string, firstOnly: boolean): string[] {
 
 function setVal(kv: IKeyVal, val: string, isKey: boolean): void {
     if (isKey && !kv.k) {
-        kv.key = strUtils.fastTrim(val);
+        kv.key = trim(val);
         kv.k = true
     } else if (!isKey && !kv.v) {
-        kv.val = strUtils.fastTrim(val);
+        kv.val = trim(val);
         kv.v = true;
         if (!!kv.val) {
             if (kv.tag === TAG.DATE) {
-                let parts = getEvalParts(kv.val), format = "YYYYMMDD";
+                let parts = getExprArgs(kv.val), format = "YYYYMMDD";
                 if (parts.length > 1) {
                     format = parts[1];
                 }
@@ -186,7 +185,7 @@ function getKeyVals(val: string): IKeyVal[] {
 
         // is this a content inside eval( ) or get() or date()?
         if (ch === "(" && !literal && !isKey && start < i) {
-            const token = strUtils.fastTrim(val.substring(start, i));
+            const token = trim(val.substring(start, i));
             switch (token) {
                 case TOKEN.EVAL:
                     literal = ch;
@@ -221,7 +220,7 @@ function getKeyVals(val: string): IKeyVal[] {
         if (!literal) {
             if (ch === "{" && !isKey) {
                 let bracePart = val.substr(i); // all the string starting from {
-                const braceParts = getBraceParts(bracePart, true);
+                const braceParts = getBraceContent(bracePart, true);
                 if (braceParts.length === 1) {
                     bracePart = braceParts[0];
                     setVal(kv, bracePart, false);
@@ -275,24 +274,24 @@ function getKeyVals(val: string): IKeyVal[] {
 }
 
 /**
-    * resolve parts by parsing expression: eval(part1, part2?) or date(stringDate,format?)
+    * resolve arguments by parsing expression: eval(part1, part2?) or date(stringDate,format?) or get(id)
 */
-function getEvalParts(val: string): string[] {
+function getExprArgs(expr: string): string[] {
     let ch: string, is_expression = false,
         parts: string[] = [], start = 0, part: string;
-    for (let i = 0; i < val.length; i += 1) {
+    for (let i = 0; i < expr.length; i += 1) {
         if (start < 0) {
             start = i;
         }
 
-        ch = val.charAt(i);
-        // is this content inside eval( ) or date() ?
+        ch = expr.charAt(i);
+        // is this content inside eval( ) or date() or get()?
         if (ch === "(" && start < i) {
             if (is_expression) {
-                throw new Error("Invalid Expression: " + val);
+                throw new Error("Invalid Expression: " + expr);
             }
 
-            part = strUtils.fastTrim(val.substring(start, i));
+            part = trim(expr.substring(start, i));
             if (!is_expression && (part === TOKEN.EVAL || part === TOKEN.DATE || part === TOKEN.GET)) {
                 is_expression = true;
                 start = -1;
@@ -303,17 +302,17 @@ function getEvalParts(val: string): string[] {
         if (ch === ")" && start < i) {
             if (is_expression) {
                 is_expression = false;
-                part = strUtils.fastTrim(val.substring(start, i));
+                part = trim(expr.substring(start, i));
                 parts.push(part);
                 start = -1;
                 break;
             } else {
-                throw new Error("Invalid Expression: " + val);
+                throw new Error("Invalid Expression: " + expr);
             }
         }
 
         if (ch === TOKEN.COMMA && is_expression && start < i) {
-            part = strUtils.fastTrim(val.substring(start, i));
+            part = trim(expr.substring(start, i));
             parts.push(part);
             start = -1;
             continue;
@@ -321,14 +320,14 @@ function getEvalParts(val: string): string[] {
     }
 
     if (parts.length > 2) {
-        throw new Error("Invalid Expression: " + val);
+        throw new Error("Invalid Expression: " + expr);
     }
 
     return parts;
 }
 
 function getOptions(val: string): string {
-    let parts = getEvalParts(val);
+    let parts = getExprArgs(val);
     if (parts.length !== 1) {
         throw new Error("Invalid Expression: " + val);
     }
@@ -341,7 +340,7 @@ function getOptions(val: string): string {
     * like: get(gridOptions)
 */
 function resolveOptions(parse_type: PARSE_TYPE, val: string, app: any, dataContext: any): any {
-    let options = getOptions(val);
+    const options = getOptions(val);
     return parseOption(parse_type, options, app, dataContext);
 }
 
@@ -362,7 +361,7 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
         param: null,
         isEval: false
     } : {};
-    part = strUtils.fastTrim(part);
+    part = trim(part);
     if (isGet(part)) {
         return resolveOptions(parse_type, part, app, dataContext);
     }
@@ -377,7 +376,7 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
 
         const isTryGetEval = parse_type === PARSE_TYPE.VIEW || parse_type === PARSE_TYPE.BINDING;
         if (isTryGetEval && kv.tag === TAG.EVAL) {
-            evalparts = getEvalParts(kv.val);
+            evalparts = getExprArgs(kv.val);
             isEval = evalparts.length > 0;
         }
 
@@ -417,12 +416,12 @@ function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: any, dataCont
     const res: any[] = [];
     let parts: string[] = [];
     for (let i = 0; i < strs.length; i += 1) {
-        let str = strUtils.fastTrim(strs[i]);
+        let str = trim(strs[i]);
         if (isGet(str)) {
-            str = strUtils.fastTrim(getOptions(str));
+            str = trim(getOptions(str));
         }
         if (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}")) {
-            const subparts = getBraceParts(str, false);
+            const subparts = getBraceContent(str, false);
             for (let k = 0; k < subparts.length; k += 1) {
                 parts.push(subparts[k]);
             }

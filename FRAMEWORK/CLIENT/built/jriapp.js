@@ -105,7 +105,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var checks = jriapp_shared_1.Utils.check, strUtils = jriapp_shared_1.Utils.str, coreUtils = jriapp_shared_1.Utils.core, sys = jriapp_shared_1.Utils.sys;
-    var getRX = /^get[(].+[)]$/g;
+    var trim = strUtils.fastTrim, getRX = /^get[(].+[)]$/g;
     var TOKEN;
     (function (TOKEN) {
         TOKEN["DELIMETER1"] = ":";
@@ -140,7 +140,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         PARSE_TYPE[PARSE_TYPE["VIEW"] = 2] = "VIEW";
     })(PARSE_TYPE || (PARSE_TYPE = {}));
     var len_this = "this.".length;
-    function getBraceParts(val, firstOnly) {
+    function getBraceContent(val, firstOnly) {
         var i, start = 0, cnt = 0, ch, literal, test = 0;
         var parts = [], len = val.length;
         for (i = 0; i < len; i += 1) {
@@ -187,15 +187,15 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
     }
     function setVal(kv, val, isKey) {
         if (isKey && !kv.k) {
-            kv.key = strUtils.fastTrim(val);
+            kv.key = trim(val);
             kv.k = true;
         }
         else if (!isKey && !kv.v) {
-            kv.val = strUtils.fastTrim(val);
+            kv.val = trim(val);
             kv.v = true;
             if (!!kv.val) {
                 if (kv.tag === "5") {
-                    var parts = getEvalParts(kv.val), format = "YYYYMMDD";
+                    var parts = getExprArgs(kv.val), format = "YYYYMMDD";
                     if (parts.length > 1) {
                         format = parts[1];
                     }
@@ -269,7 +269,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 }
             }
             if (ch === "(" && !literal && !isKey && start < i) {
-                var token = strUtils.fastTrim(val.substring(start, i));
+                var token = trim(val.substring(start, i));
                 switch (token) {
                     case "eval":
                         literal = ch;
@@ -302,7 +302,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             if (!literal) {
                 if (ch === "{" && !isKey) {
                     var bracePart = val.substr(i);
-                    var braceParts = getBraceParts(bracePart, true);
+                    var braceParts = getBraceContent(bracePart, true);
                     if (braceParts.length === 1) {
                         bracePart = braceParts[0];
                         setVal(kv, bracePart, false);
@@ -349,18 +349,18 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         });
         return parts;
     }
-    function getEvalParts(val) {
+    function getExprArgs(expr) {
         var ch, is_expression = false, parts = [], start = 0, part;
-        for (var i = 0; i < val.length; i += 1) {
+        for (var i = 0; i < expr.length; i += 1) {
             if (start < 0) {
                 start = i;
             }
-            ch = val.charAt(i);
+            ch = expr.charAt(i);
             if (ch === "(" && start < i) {
                 if (is_expression) {
-                    throw new Error("Invalid Expression: " + val);
+                    throw new Error("Invalid Expression: " + expr);
                 }
-                part = strUtils.fastTrim(val.substring(start, i));
+                part = trim(expr.substring(start, i));
                 if (!is_expression && (part === "eval" || part === "date" || part === "get")) {
                     is_expression = true;
                     start = -1;
@@ -370,29 +370,29 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             if (ch === ")" && start < i) {
                 if (is_expression) {
                     is_expression = false;
-                    part = strUtils.fastTrim(val.substring(start, i));
+                    part = trim(expr.substring(start, i));
                     parts.push(part);
                     start = -1;
                     break;
                 }
                 else {
-                    throw new Error("Invalid Expression: " + val);
+                    throw new Error("Invalid Expression: " + expr);
                 }
             }
             if (ch === "," && is_expression && start < i) {
-                part = strUtils.fastTrim(val.substring(start, i));
+                part = trim(expr.substring(start, i));
                 parts.push(part);
                 start = -1;
                 continue;
             }
         }
         if (parts.length > 2) {
-            throw new Error("Invalid Expression: " + val);
+            throw new Error("Invalid Expression: " + expr);
         }
         return parts;
     }
     function getOptions(val) {
-        var parts = getEvalParts(val);
+        var parts = getExprArgs(val);
         if (parts.length !== 1) {
             throw new Error("Invalid Expression: " + val);
         }
@@ -417,7 +417,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             param: null,
             isEval: false
         } : {};
-        part = strUtils.fastTrim(part);
+        part = trim(part);
         if (isGet(part)) {
             return resolveOptions(parse_type, part, app, dataContext);
         }
@@ -430,7 +430,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             }
             var isTryGetEval = parse_type === 2 || parse_type === 1;
             if (isTryGetEval && kv.tag === "1") {
-                evalparts = getEvalParts(kv.val);
+                evalparts = getExprArgs(kv.val);
                 isEval = evalparts.length > 0;
             }
             if (isEval) {
@@ -469,12 +469,12 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         var res = [];
         var parts = [];
         for (var i = 0; i < strs.length; i += 1) {
-            var str = strUtils.fastTrim(strs[i]);
+            var str = trim(strs[i]);
             if (isGet(str)) {
-                str = strUtils.fastTrim(getOptions(str));
+                str = trim(getOptions(str));
             }
             if (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}")) {
-                var subparts = getBraceParts(str, false);
+                var subparts = getBraceContent(str, false);
                 for (var k = 0; k < subparts.length; k += 1) {
                     parts.push(subparts[k]);
                 }
