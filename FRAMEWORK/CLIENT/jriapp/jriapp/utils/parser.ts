@@ -48,8 +48,6 @@ interface IKeyVal {
     tag?: string;
     key: string;
     val: any;
-    k: boolean;
-    v: boolean;
 }
 
 // extract content from inside of top level braces
@@ -99,54 +97,65 @@ function getBraceContent(val: string, firstOnly: boolean): string[] {
 }
 
 function setVal(kv: IKeyVal, val: string, isKey: boolean): void {
-    if (isKey && !kv.k) {
-        kv.key = trim(val);
-        kv.k = true
-    } else if (!isKey && !kv.v) {
-        kv.val = trim(val);
-        kv.v = true;
-        if (!!kv.val) {
-            if (kv.tag === TAG.DATE) {
-                let parts = getExprArgs(kv.val), format = "YYYYMMDD";
-                if (parts.length > 1) {
-                    format = parts[1];
+    const v = trim(val);
+    if (!v) {
+        return;
+    }
+    if (isKey) {
+        kv.key += v;
+    } else {
+        kv.val += v;
+    }
+}
+
+
+function checkVal(kv: IKeyVal): boolean {
+    if (!kv.key) {
+        return false;
+    }
+    if (!!kv.val) {
+        if (kv.tag === TAG.DATE) {
+            let parts = getExprArgs(kv.val), format = "YYYYMMDD";
+            if (parts.length > 1) {
+                format = parts[1];
+            }
+            if (parts.length > 0) {
+                switch (parts[0]) {
+                    case DATES.TODAY:
+                        kv.val = moment().startOf('day').toDate();
+                        break;
+                    case DATES.TOMORROW:
+                        kv.val = moment().startOf('day').add(1, 'days').toDate();
+                        break;
+                    case DATES.YESTERDAY:
+                        kv.val = moment().startOf('day').subtract(1, 'days').toDate();
+                        break;
+                    case DATES.ENDOFMONTH:
+                        kv.val = moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
+                        break;
+                    default:
+                        kv.val = moment(parts[0], format).toDate();
+                        break;
                 }
-                if (parts.length > 0) {
-                    switch (parts[0]) {
-                        case DATES.TODAY:
-                            kv.val = moment().startOf('day').toDate();
-                            break;
-                        case DATES.TOMORROW:
-                            kv.val = moment().startOf('day').add(1, 'days').toDate();
-                            break;
-                        case DATES.YESTERDAY:
-                            kv.val = moment().startOf('day').subtract(1, 'days').toDate();
-                            break;
-                        case DATES.ENDOFMONTH:
-                            kv.val = moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
-                            break;
-                        default:
-                            kv.val = moment(parts[0], format).toDate();
-                            break;
-                    }
-                } else {
-                    kv.val = moment().startOf('day').toDate();
-                }
-            } else if (!kv.tag) {
-                if (checks.isNumeric(kv.val)) {
-                    kv.val = Number(kv.val);
-                } else if (checks.isBoolString(kv.val)) {
-                    kv.val = coreUtils.parseBool(kv.val);
-                }
+            } else {
+                kv.val = moment().startOf('day').toDate();
+            }
+        } else if (!kv.tag) {
+            if (checks.isNumeric(kv.val)) {
+                kv.val = Number(kv.val);
+            } else if (checks.isBoolString(kv.val)) {
+                kv.val = coreUtils.parseBool(kv.val);
             }
         }
     }
+
+    return true;
 }
 
 // extract key - value pairs
 function getKeyVals(val: string): IKeyVal[] {
     let i: number, ch: string, literal: string, parts: IKeyVal[] = [], str: string,
-        kv: IKeyVal = { tag: null, key: "", val: "", k:false, v:false }, isKey = true, start = 0, escapedQuotes = "";
+        kv: IKeyVal = { tag: null, key: "", val: "" }, isKey = true, start = 0, escapedQuotes = "";
 
     const len = val.length;
     for (i = 0; i < len; i += 1) {
@@ -158,6 +167,10 @@ function getKeyVals(val: string): IKeyVal[] {
         // is this a content inside '' or "" ?
         if (ch === "'" || ch === '"') {
             if (!literal) {
+                if (start < i) {
+                    str = val.substring(start, i);
+                    setVal(kv, str, isKey);
+                }
                 literal = ch;
                 start = i + 1;
                 escapedQuotes = "";
@@ -237,7 +250,7 @@ function getKeyVals(val: string): IKeyVal[] {
                 }
                 start = -1;
                 parts.push(kv);
-                kv = { tag: null, key: "", val: "", k: false, v: false }
+                kv = { tag: null, key: "", val: "" }
                 // switch to parsing the key
                 isKey = true;
             } else if (ch === TOKEN.DELIMETER1 || ch === TOKEN.DELIMETER2) {
@@ -266,8 +279,7 @@ function getKeyVals(val: string): IKeyVal[] {
     parts.push(kv);
 
     parts = parts.filter(function (kv) {
-        // if the key was set
-        return kv.k;
+        return checkVal(kv);
     });
 
     return parts;

@@ -186,55 +186,63 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         return parts;
     }
     function setVal(kv, val, isKey) {
-        if (isKey && !kv.k) {
-            kv.key = trim(val);
-            kv.k = true;
+        var v = trim(val);
+        if (!v) {
+            return;
         }
-        else if (!isKey && !kv.v) {
-            kv.val = trim(val);
-            kv.v = true;
-            if (!!kv.val) {
-                if (kv.tag === "5") {
-                    var parts = getExprArgs(kv.val), format = "YYYYMMDD";
-                    if (parts.length > 1) {
-                        format = parts[1];
-                    }
-                    if (parts.length > 0) {
-                        switch (parts[0]) {
-                            case "today":
-                                kv.val = moment().startOf('day').toDate();
-                                break;
-                            case "tomorrow":
-                                kv.val = moment().startOf('day').add(1, 'days').toDate();
-                                break;
-                            case "yesterday":
-                                kv.val = moment().startOf('day').subtract(1, 'days').toDate();
-                                break;
-                            case "endofmonth":
-                                kv.val = moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
-                                break;
-                            default:
-                                kv.val = moment(parts[0], format).toDate();
-                                break;
-                        }
-                    }
-                    else {
-                        kv.val = moment().startOf('day').toDate();
+        if (isKey) {
+            kv.key += v;
+        }
+        else {
+            kv.val += v;
+        }
+    }
+    function checkVal(kv) {
+        if (!kv.key) {
+            return false;
+        }
+        if (!!kv.val) {
+            if (kv.tag === "5") {
+                var parts = getExprArgs(kv.val), format = "YYYYMMDD";
+                if (parts.length > 1) {
+                    format = parts[1];
+                }
+                if (parts.length > 0) {
+                    switch (parts[0]) {
+                        case "today":
+                            kv.val = moment().startOf('day').toDate();
+                            break;
+                        case "tomorrow":
+                            kv.val = moment().startOf('day').add(1, 'days').toDate();
+                            break;
+                        case "yesterday":
+                            kv.val = moment().startOf('day').subtract(1, 'days').toDate();
+                            break;
+                        case "endofmonth":
+                            kv.val = moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
+                            break;
+                        default:
+                            kv.val = moment(parts[0], format).toDate();
+                            break;
                     }
                 }
-                else if (!kv.tag) {
-                    if (checks.isNumeric(kv.val)) {
-                        kv.val = Number(kv.val);
-                    }
-                    else if (checks.isBoolString(kv.val)) {
-                        kv.val = coreUtils.parseBool(kv.val);
-                    }
+                else {
+                    kv.val = moment().startOf('day').toDate();
+                }
+            }
+            else if (!kv.tag) {
+                if (checks.isNumeric(kv.val)) {
+                    kv.val = Number(kv.val);
+                }
+                else if (checks.isBoolString(kv.val)) {
+                    kv.val = coreUtils.parseBool(kv.val);
                 }
             }
         }
+        return true;
     }
     function getKeyVals(val) {
-        var i, ch, literal, parts = [], str, kv = { tag: null, key: "", val: "", k: false, v: false }, isKey = true, start = 0, escapedQuotes = "";
+        var i, ch, literal, parts = [], str, kv = { tag: null, key: "", val: "" }, isKey = true, start = 0, escapedQuotes = "";
         var len = val.length;
         for (i = 0; i < len; i += 1) {
             if (start < 0) {
@@ -243,6 +251,10 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             ch = val.charAt(i);
             if (ch === "'" || ch === '"') {
                 if (!literal) {
+                    if (start < i) {
+                        str = val.substring(start, i);
+                        setVal(kv, str, isKey);
+                    }
                     literal = ch;
                     start = i + 1;
                     escapedQuotes = "";
@@ -321,7 +333,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     }
                     start = -1;
                     parts.push(kv);
-                    kv = { tag: null, key: "", val: "", k: false, v: false };
+                    kv = { tag: null, key: "", val: "" };
                     isKey = true;
                 }
                 else if (ch === ":" || ch === "=") {
@@ -345,7 +357,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
         parts.push(kv);
         parts = parts.filter(function (kv) {
-            return kv.k;
+            return checkVal(kv);
         });
         return parts;
     }
@@ -4522,6 +4534,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.9.6";
+    exports.VERSION = "2.9.7";
     bootstrap_8.Bootstrap._initFramework();
 });
