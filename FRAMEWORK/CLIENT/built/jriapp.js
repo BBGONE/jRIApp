@@ -140,7 +140,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         PARSE_TYPE[PARSE_TYPE["VIEW"] = 2] = "VIEW";
     })(PARSE_TYPE || (PARSE_TYPE = {}));
     var len_this = "this.".length;
-    function getBraceContent(val, firstOnly) {
+    function getBraceParts(val) {
         var i, start = 0, cnt = 0, ch, literal, test = 0;
         var parts = [], len = val.length;
         for (i = 0; i < len; i += 1) {
@@ -172,9 +172,6 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     }
                     cnt = 0;
                     start = 0;
-                    if (firstOnly) {
-                        return parts;
-                    }
                 }
             }
             else {
@@ -184,6 +181,41 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             }
         }
         return parts;
+    }
+    function getBraceLen(val) {
+        var i, cnt = 0, ch, literal, test = 0;
+        var len = val.length;
+        for (i = 0; i < len; i += 1) {
+            ch = val.charAt(i);
+            if (ch === "'" || ch === '"') {
+                if (!literal) {
+                    literal = ch;
+                }
+                else if (literal === ch) {
+                    literal = null;
+                }
+            }
+            if (!literal && ch === "{") {
+                test += 1;
+                cnt += 1;
+            }
+            else if (!literal && ch === "}") {
+                test -= 1;
+                cnt += 1;
+                if (test === 0) {
+                    return cnt;
+                }
+            }
+            else {
+                if (test > 0) {
+                    cnt += 1;
+                }
+            }
+        }
+        if (test !== 0) {
+            throw new Error(strUtils.format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, val));
+        }
+        return cnt;
     }
     function setVal(kv, start, end, val, isKey, isLit) {
         if (start > -1 && start < end) {
@@ -329,17 +361,11 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             if (!literal) {
                 if (ch === "{" && !isKey) {
                     var bracePart = val.substr(i);
-                    var braceParts = getBraceContent(bracePart, true);
-                    if (braceParts.length === 1) {
-                        bracePart = braceParts[0];
-                        setVal(kv, i + 1, i + 1 + bracePart.length, val, isKey, false);
-                        kv.tag = "4";
-                        i += (bracePart.length + 1);
-                        start = -1;
-                    }
-                    else {
-                        throw new Error(strUtils.format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, bracePart));
-                    }
+                    var braceLen = getBraceLen(bracePart);
+                    setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
+                    kv.tag = "4";
+                    i += (braceLen - 1);
+                    start = -1;
                 }
                 else if (ch === ",") {
                     setVal(kv, start, i, val, isKey, false);
@@ -487,7 +513,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 str = trim(getOptions(str));
             }
             if (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}")) {
-                var subparts = getBraceContent(str, false);
+                var subparts = getBraceParts(str);
                 for (var k = 0; k < subparts.length; k += 1) {
                     parts.push(subparts[k]);
                 }
@@ -4535,6 +4561,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.9.8";
+    exports.VERSION = "2.9.9";
     bootstrap_8.Bootstrap._initFramework();
 });

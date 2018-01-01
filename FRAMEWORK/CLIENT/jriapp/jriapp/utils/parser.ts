@@ -51,7 +51,7 @@ interface IKeyVal {
 }
 
 // extract content from inside of top level braces
-function getBraceContent(val: string, firstOnly: boolean): string[] {
+function getBraceParts(val: string): string[] {
     let i: number, start = 0, cnt = 0, ch: string, literal: string, test = 0;
     const parts: string[] = [], len = val.length;
 
@@ -83,9 +83,6 @@ function getBraceContent(val: string, firstOnly: boolean): string[] {
                 }
                 cnt = 0;
                 start = 0;
-                if (firstOnly) {
-                    return parts;
-                }
             }
         } else {
             if (test > 0) {
@@ -94,6 +91,42 @@ function getBraceContent(val: string, firstOnly: boolean): string[] {
         }
     }
     return parts;
+}
+
+function getBraceLen(val: string): number {
+    let i: number, cnt = 0, ch: string, literal: string, test = 0;
+    const len = val.length;
+
+    for (i = 0; i < len; i += 1) {
+        ch = val.charAt(i);
+        // is this content inside '' or "" ?
+        if (ch === "'" || ch === '"') {
+            if (!literal) {
+                literal = ch;
+            } else if (literal === ch) {
+                literal = null;
+            }
+        }
+
+        if (!literal && ch === "{") {
+            test += 1;
+            cnt += 1;
+        } else if (!literal && ch === "}") {
+            test -= 1;
+            cnt += 1;
+            if (test === 0) {
+                return cnt;
+            }
+        } else {
+            if (test > 0) {
+                cnt += 1;
+            }
+        }
+    }
+    if (test !== 0) {
+        throw new Error(strUtils.format(ERRS.ERR_EXPR_BRACES_INVALID, val));
+    }
+    return cnt;
 }
 
 function setVal(kv: IKeyVal, start: number, end: number, val: string, isKey: boolean, isLit: boolean): void {
@@ -251,16 +284,11 @@ function getKeyVals(val: string): IKeyVal[] {
         if (!literal) {
             if (ch === "{" && !isKey) {
                 let bracePart = val.substr(i); // get all the string starting from {
-                const braceParts = getBraceContent(bracePart, true);
-                if (braceParts.length === 1) {
-                    bracePart = braceParts[0];
-                    setVal(kv, i + 1, i + 1 + bracePart.length, val, isKey, false);
-                    kv.tag = TAG.BRACE;
-                    i += (bracePart.length + 1);
-                    start = -1;
-                } else {
-                    throw new Error(strUtils.format(ERRS.ERR_EXPR_BRACES_INVALID, bracePart));
-                }
+                const braceLen = getBraceLen(bracePart);
+                setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
+                kv.tag = TAG.BRACE;
+                i += (braceLen - 1);
+                start = -1;
             } else if (ch === TOKEN.COMMA) {
                 setVal(kv, start, i, val, isKey, false);
                 start = -1;
@@ -284,7 +312,6 @@ function getKeyVals(val: string): IKeyVal[] {
     parts = parts.filter(function (kv) {
         return checkVal(kv);
     });
-
     return parts;
 }
 
@@ -436,7 +463,7 @@ function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: any, dataCont
             str = trim(getOptions(str));
         }
         if (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}")) {
-            const subparts = getBraceContent(str, false);
+            const subparts = getBraceParts(str);
             for (let k = 0; k < subparts.length; k += 1) {
                 parts.push(subparts[k]);
             }
