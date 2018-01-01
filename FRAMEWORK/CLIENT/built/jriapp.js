@@ -121,10 +121,10 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
     var TAG;
     (function (TAG) {
         TAG["EVAL"] = "1";
-        TAG["BRACE_PART"] = "2";
-        TAG["LITERAL"] = "3";
-        TAG["GET"] = "4";
-        TAG["DATE"] = "5";
+        TAG["GET"] = "2";
+        TAG["DATE"] = "3";
+        TAG["BRACE"] = "4";
+        TAG["LITERAL"] = "5";
     })(TAG || (TAG = {}));
     var DATES;
     (function (DATES) {
@@ -185,16 +185,19 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
         return parts;
     }
-    function setVal(kv, val, isKey) {
-        var v = trim(val);
-        if (!v) {
-            return;
-        }
-        if (isKey) {
-            kv.key += v;
-        }
-        else {
-            kv.val += v;
+    function setVal(kv, start, end, val, isKey, isLit) {
+        if (start > -1 && start < end) {
+            var str = val.substring(start, end);
+            var v = !isLit ? trim(str) : str;
+            if (!v) {
+                return;
+            }
+            if (isKey) {
+                kv.key += v;
+            }
+            else {
+                kv.val += v;
+            }
         }
     }
     function checkVal(kv) {
@@ -202,7 +205,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             return false;
         }
         if (!!kv.val) {
-            if (kv.tag === "5") {
+            if (kv.tag === "3") {
                 var parts = getExprArgs(kv.val), format = "YYYYMMDD";
                 if (parts.length > 1) {
                     format = parts[1];
@@ -242,7 +245,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         return true;
     }
     function getKeyVals(val) {
-        var i, ch, literal, parts = [], str, kv = { tag: null, key: "", val: "" }, isKey = true, start = 0, escapedQuotes = "";
+        var i, ch, literal, parts = [], kv = { tag: null, key: "", val: "" }, isKey = true, start = -1;
         var len = val.length;
         for (i = 0; i < len; i += 1) {
             if (start < 0) {
@@ -251,29 +254,23 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             ch = val.charAt(i);
             if (ch === "'" || ch === '"') {
                 if (!literal) {
-                    if (start < i) {
-                        str = val.substring(start, i);
-                        setVal(kv, str, isKey);
-                    }
+                    setVal(kv, start, i, val, isKey, false);
                     literal = ch;
                     start = i + 1;
-                    escapedQuotes = "";
+                    if (!kv.tag) {
+                        kv.tag = "5";
+                    }
                     continue;
                 }
                 else if (literal === ch) {
                     var i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
                     if (next === ch) {
+                        setVal(kv, start, i + 1, val, isKey, true);
                         i += 1;
-                        escapedQuotes = ch;
+                        start = -1;
                     }
                     else {
-                        if (start < i) {
-                            str = val.substring(start, i);
-                            if (!!escapedQuotes) {
-                                str = str.replace(escapedQuotes + escapedQuotes, escapedQuotes);
-                            }
-                            setVal(kv, str, isKey);
-                        }
+                        setVal(kv, start, i, val, isKey, true);
                         literal = null;
                         start = -1;
                     }
@@ -284,32 +281,50 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 var token = trim(val.substring(start, i));
                 switch (token) {
                     case "eval":
-                        literal = ch;
                         kv.tag = "1";
                         break;
                     case "get":
-                        literal = ch;
-                        kv.tag = "4";
+                        kv.tag = "2";
                         break;
                     case "date":
-                        literal = ch;
-                        kv.tag = "5";
+                        kv.tag = "3";
                         break;
                     default:
                         throw new Error("Unknown token: " + token + " in expression " + val);
                 }
+                literal = ch;
+                setVal(kv, start, i, val, isKey, false);
+                start = i;
+                setVal(kv, start, i + 1, val, isKey, false);
+                start = -1;
+                continue;
             }
             if (ch === ")") {
                 if (!literal) {
                     throw new Error("Invalid: ) in expression " + val);
                 }
                 if (literal === "(") {
-                    str = val.substring(start, i + 1);
-                    setVal(kv, str, isKey);
                     literal = null;
+                    setVal(kv, start, i, val, isKey, false);
+                    start = i;
+                    setVal(kv, start, i + 1, val, isKey, false);
                     start = -1;
-                    continue;
                 }
+                continue;
+            }
+            if (ch === "[" && !literal) {
+                setVal(kv, start, i, val, isKey, false);
+                start = i;
+                setVal(kv, start, i + 1, val, isKey, false);
+                start = -1;
+                continue;
+            }
+            if (ch === "]" && !literal) {
+                setVal(kv, start, i, val, isKey, false);
+                start = i;
+                setVal(kv, start, i + 1, val, isKey, false);
+                start = -1;
+                continue;
             }
             if (!literal) {
                 if (ch === "{" && !isKey) {
@@ -317,44 +332,30 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     var braceParts = getBraceContent(bracePart, true);
                     if (braceParts.length === 1) {
                         bracePart = braceParts[0];
-                        setVal(kv, bracePart, false);
-                        kv.tag = "2";
-                        start = -1;
+                        setVal(kv, i + 1, i + 1 + bracePart.length, val, isKey, false);
+                        kv.tag = "4";
                         i += (bracePart.length + 1);
+                        start = -1;
                     }
                     else {
                         throw new Error(strUtils.format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, bracePart));
                     }
                 }
                 else if (ch === ",") {
-                    if (start < i) {
-                        str = val.substring(start, i);
-                        setVal(kv, str, isKey);
-                    }
+                    setVal(kv, start, i, val, isKey, false);
                     start = -1;
                     parts.push(kv);
                     kv = { tag: null, key: "", val: "" };
                     isKey = true;
                 }
                 else if (ch === ":" || ch === "=") {
-                    if (start < i) {
-                        str = val.substring(start, i);
-                        setVal(kv, str, isKey);
-                    }
+                    setVal(kv, start, i, val, isKey, false);
                     start = -1;
                     isKey = false;
                 }
             }
-            else {
-                if (!kv.tag) {
-                    kv.tag = "3";
-                }
-            }
         }
-        if (start > -1 && start < i) {
-            str = val.substring(start, i);
-            setVal(kv, str, isKey);
-        }
+        setVal(kv, start, i, val, isKey, false);
         parts.push(kv);
         parts = parts.filter(function (kv) {
             return checkVal(kv);
@@ -465,10 +466,10 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         break;
                 }
             }
-            else if (kv.tag === "2") {
+            else if (kv.tag === "4") {
                 res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
             }
-            else if (kv.tag === "4") {
+            else if (kv.tag === "2") {
                 res[kv.key] = resolveOptions(0, kv.val, app, dataContext);
             }
             else {
@@ -4534,6 +4535,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.9.7";
+    exports.VERSION = "2.9.8";
     bootstrap_8.Bootstrap._initFramework();
 });

@@ -22,10 +22,10 @@ const enum TOKEN {
 
 const enum TAG {
     EVAL = "1",
-    BRACE_PART = "2",
-    LITERAL = "3",
-    GET = "4",
-    DATE= "5"
+    GET = "2",
+    DATE = "3",
+    BRACE = "4",
+    LITERAL = "5"
 }
 
 const enum DATES {
@@ -96,15 +96,18 @@ function getBraceContent(val: string, firstOnly: boolean): string[] {
     return parts;
 }
 
-function setVal(kv: IKeyVal, val: string, isKey: boolean): void {
-    const v = trim(val);
-    if (!v) {
-        return;
-    }
-    if (isKey) {
-        kv.key += v;
-    } else {
-        kv.val += v;
+function setVal(kv: IKeyVal, start: number, end: number, val: string, isKey: boolean, isLit: boolean): void {
+    if (start > -1 && start < end) {
+        const str = val.substring(start, end);
+        const v = !isLit ? trim(str) : str;
+        if (!v) {
+            return;
+        }
+        if (isKey) {
+            kv.key += v;
+        } else {
+            kv.val += v;
+        }
     }
 }
 
@@ -154,8 +157,8 @@ function checkVal(kv: IKeyVal): boolean {
 
 // extract key - value pairs
 function getKeyVals(val: string): IKeyVal[] {
-    let i: number, ch: string, literal: string, parts: IKeyVal[] = [], str: string,
-        kv: IKeyVal = { tag: null, key: "", val: "" }, isKey = true, start = 0, escapedQuotes = "";
+    let i: number, ch: string, literal: string, parts: IKeyVal[] = [],
+        kv: IKeyVal = { tag: null, key: "", val: "" }, isKey = true, start = -1;
 
     const len = val.length;
     for (i = 0; i < len; i += 1) {
@@ -167,28 +170,22 @@ function getKeyVals(val: string): IKeyVal[] {
         // is this a content inside '' or "" ?
         if (ch === "'" || ch === '"') {
             if (!literal) {
-                if (start < i) {
-                    str = val.substring(start, i);
-                    setVal(kv, str, isKey);
-                }
+                setVal(kv, start, i, val, isKey, false);
                 literal = ch;
                 start = i + 1;
-                escapedQuotes = "";
+                if (!kv.tag) {
+                    kv.tag = TAG.LITERAL;
+                }
                 continue;
             } else if (literal === ch) {
                 //check for quotes escape 
                 const i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
                 if (next === ch) {
+                    setVal(kv, start, i + 1, val, isKey, true);
                     i += 1;
-                    escapedQuotes = ch;
+                    start = -1;
                 } else {
-                    if (start < i) {
-                        str = val.substring(start, i);
-                        if (!!escapedQuotes) {
-                            str = str.replace(escapedQuotes + escapedQuotes, escapedQuotes);
-                        }
-                        setVal(kv, str, isKey);
-                    }
+                    setVal(kv, start, i, val, isKey, true);
                     literal = null;
                     start = -1;
                 }
@@ -201,20 +198,23 @@ function getKeyVals(val: string): IKeyVal[] {
             const token = trim(val.substring(start, i));
             switch (token) {
                 case TOKEN.EVAL:
-                    literal = ch;
                     kv.tag = TAG.EVAL;
                     break;
                 case TOKEN.GET:
-                    literal = ch;
                     kv.tag = TAG.GET;
                     break;
                 case TOKEN.DATE:
-                    literal = ch;
                     kv.tag = TAG.DATE;
                     break;
                 default:
                     throw new Error(`Unknown token: ${token} in expression ${val}`);
             }
+            literal = ch;
+            setVal(kv, start, i, val, isKey, false);
+            start = i;
+            setVal(kv, start, i + 1, val, isKey, false);
+            start = -1;
+            continue;
         }
 
         if (ch === ")") {
@@ -222,60 +222,63 @@ function getKeyVals(val: string): IKeyVal[] {
                 throw new Error(`Invalid: ) in expression ${val}`);
             }
             if (literal === "(") {
-                    str = val.substring(start, i + 1);
-                    setVal(kv, str, isKey);
-                    literal = null;
-                    start = -1;
-                    continue;
+                literal = null;
+                setVal(kv, start, i, val, isKey, false);
+                start = i;
+                setVal(kv, start, i + 1, val, isKey, false);
+                start = -1;
             }
+            continue;
+        }
+
+        // is this a content inside []?
+        if (ch === "[" && !literal) {
+            setVal(kv, start, i, val, isKey, false);
+            start = i;
+            setVal(kv, start, i + 1, val, isKey, false);
+            start = -1;
+            continue;
+        }
+
+        if (ch === "]" && !literal) {
+            setVal(kv, start, i, val, isKey, false);
+            start = i;
+            setVal(kv, start, i + 1, val, isKey, false);
+            start = -1;
+            continue;
         }
 
         if (!literal) {
             if (ch === "{" && !isKey) {
-                let bracePart = val.substr(i); // all the string starting from {
+                let bracePart = val.substr(i); // get all the string starting from {
                 const braceParts = getBraceContent(bracePart, true);
                 if (braceParts.length === 1) {
                     bracePart = braceParts[0];
-                    setVal(kv, bracePart, false);
-                    kv.tag = TAG.BRACE_PART;
-                    start = -1;
+                    setVal(kv, i + 1, i + 1 + bracePart.length, val, isKey, false);
+                    kv.tag = TAG.BRACE;
                     i += (bracePart.length + 1);
+                    start = -1;
                 } else {
                     throw new Error(strUtils.format(ERRS.ERR_EXPR_BRACES_INVALID, bracePart));
                 }
             } else if (ch === TOKEN.COMMA) {
-                if (start < i) {
-                    str = val.substring(start, i);
-                    setVal(kv, str, isKey);
-                }
+                setVal(kv, start, i, val, isKey, false);
                 start = -1;
                 parts.push(kv);
                 kv = { tag: null, key: "", val: "" }
                 // switch to parsing the key
                 isKey = true;
             } else if (ch === TOKEN.DELIMETER1 || ch === TOKEN.DELIMETER2) {
-                if (start < i) {
-                    str = val.substring(start, i);
-                    setVal(kv, str, isKey);
-                }
+                setVal(kv, start, i, val, isKey, false);
                 start = -1;
                 // switch to parsing the value
                 isKey = false;
             }
-        } else {
-            // parsing literal value here
-            if (!kv.tag) {
-                kv.tag = TAG.LITERAL;
-            }
         }
-    } //for (i = 0; i < val.length; i += 1)
+    } // for (i = 0; i < val.length; i += 1)
 
-    if (start > -1 && start < i) {
-        str = val.substring(start, i);
-        setVal(kv, str, isKey);
-    }
-
-    //the last value
+    setVal(kv, start, i, val, isKey, false);
+    // push the last
     parts.push(kv);
 
     parts = parts.filter(function (kv) {
@@ -412,7 +415,7 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
                     res[kv.key] = kv.val;
                     break;
             }
-        } else if (kv.tag === TAG.BRACE_PART) {
+        } else if (kv.tag === TAG.BRACE) {
             res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
         } else if (kv.tag === TAG.GET) {
             res[kv.key] = resolveOptions(PARSE_TYPE.NONE, kv.val, app, dataContext);
