@@ -148,9 +148,20 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             if (ch === "'" || ch === '"') {
                 if (!literal) {
                     literal = ch;
+                    cnt += 1;
+                    continue;
                 }
                 else if (literal === ch) {
-                    literal = null;
+                    var i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
+                    if (next === ch) {
+                        i += 1;
+                        cnt += 2;
+                    }
+                    else {
+                        literal = null;
+                        cnt += 1;
+                    }
+                    continue;
                 }
             }
             if (!literal && ch === "{") {
@@ -193,9 +204,20 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             if (ch === "'" || ch === '"') {
                 if (!literal) {
                     literal = ch;
+                    cnt += 1;
+                    continue;
                 }
                 else if (literal === ch) {
-                    literal = null;
+                    var i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
+                    if (next === ch) {
+                        i += 1;
+                        cnt += 2;
+                    }
+                    else {
+                        literal = null;
+                        cnt += 1;
+                    }
+                    continue;
                 }
             }
             if (!literal && ch === "{") {
@@ -4564,6 +4586,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.9.9";
+    exports.VERSION = "2.9.10";
     bootstrap_8.Bootstrap._initFramework();
 });

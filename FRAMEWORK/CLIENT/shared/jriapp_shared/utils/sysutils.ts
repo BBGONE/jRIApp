@@ -5,9 +5,50 @@ import {
 import { Checks } from "./checks";
 import { StringUtils } from "./strUtils";
 
-const checks = Checks, strUtils = StringUtils;
-const INDEX_PROP_RX = /(\b\w+\b)?\s*(\[.*?\])/gi, trimQuotsRX = /^(['"])+|(['"])+$/g,
-    trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g, allTrims = [trimBracketsRX, trimSpaceRX, trimQuotsRX, trimSpaceRX];
+const checks = Checks, strUtils = StringUtils, trim = strUtils.fastTrim;
+
+function getPropParts(prop: string): string[] {
+    let i: number, start = 0, ch: string, test = 0, cnt = 0;
+    const parts: string[] = [], len = prop.length;
+    for (i = 0; i < len; i += 1) {
+        if (start < 0) {
+            start = i;
+        }
+        ch = prop.charAt(i);
+    
+        if (ch === "[") {
+            ++test;
+            ++cnt;
+            if (start < i) {
+                const v = trim(prop.substring(start, i));
+                if (!!v) {
+                    parts.push(v);
+                }
+                start = -1;
+            }
+        } else if (ch === "]") {
+            --test;
+            if (test !== 0) {
+                throw new Error("Invalid Property: " + prop);
+            }
+            if (start < i) {
+                const v = trim(prop.substring(start, i));
+                if (!!v) {
+                    parts.push(`[${trim(v)}]`);
+                }
+                start = -1;
+            }
+        } 
+    }
+
+    if (test !== 0) {
+        throw new Error("Invalid Property: " + prop);
+    }
+    if (cnt === 0) {
+        parts.push(trim(prop));
+    }
+    return parts;
+}
 
 export class SysUtils {
     // DUMMY implementations
@@ -84,45 +125,21 @@ export class SysUtils {
     static getPathParts(path: string) {
         const parts: string[] = (!path) ? [] : path.split("."), parts2: string[] = [];
 
-        parts.forEach(function (part) {
-            part = strUtils.fastTrim(part);
+        for (let k = 0, l1 = parts.length; k < l1; k += 1) {
+            let part = parts[k];
             // if empty part
             if (!part) {
                 throw new Error("Invalid Path: " + path);
             }
-
-            let obj: string = null, matches: any[] = INDEX_PROP_RX.exec(part);
-            if (!!matches) {
-                while (!!matches) {
-                    if (!!matches[1]) {
-                        // if more than one object
-                        if (!!obj) {
-                            throw new Error("Invalid Path: " + path);
-                        }
-
-                        obj = strUtils.fastTrim(matches[1]);
-                        if (!!obj) {
-                            parts2.push(obj);
-                        }
-                    }
-
-                    let val = matches[2];
-                    if (!!val) {
-                        for (let i = 0; i < allTrims.length; i += 1) {
-                            val = val.replace(allTrims[i], "");
-                        }
-                        if (!!val) {
-                            parts2.push("[" + val + "]");
-                        }
-                    }
-
-                    matches = INDEX_PROP_RX.exec(part);
-                }
+            if (part.indexOf("[") < 0) {
+                parts2.push(trim(part));
             } else {
-                parts2.push(part);
+                const arr = getPropParts(part);
+                for (let i = 0, l2 = arr.length; i < l2; i += 1) {
+                    parts2.push(arr[i]);
+                }
             }
-        });
-
+        }
         return parts2;
     }
     static getProp(obj: any, prop: string) {

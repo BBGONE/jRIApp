@@ -274,8 +274,48 @@ define("jriapp_shared/utils/strUtils", ["require", "exports"], function (require
 define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/strUtils"], function (require, exports, checks_1, strUtils_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var checks = checks_1.Checks, strUtils = strUtils_1.StringUtils;
-    var INDEX_PROP_RX = /(\b\w+\b)?\s*(\[.*?\])/gi, trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g, allTrims = [trimBracketsRX, trimSpaceRX, trimQuotsRX, trimSpaceRX];
+    var checks = checks_1.Checks, strUtils = strUtils_1.StringUtils, trim = strUtils.fastTrim;
+    function getPropParts(prop) {
+        var i, start = 0, ch, test = 0, cnt = 0;
+        var parts = [], len = prop.length;
+        for (i = 0; i < len; i += 1) {
+            if (start < 0) {
+                start = i;
+            }
+            ch = prop.charAt(i);
+            if (ch === "[") {
+                ++test;
+                ++cnt;
+                if (start < i) {
+                    var v = trim(prop.substring(start, i));
+                    if (!!v) {
+                        parts.push(v);
+                    }
+                    start = -1;
+                }
+            }
+            else if (ch === "]") {
+                --test;
+                if (test !== 0) {
+                    throw new Error("Invalid Property: " + prop);
+                }
+                if (start < i) {
+                    var v = trim(prop.substring(start, i));
+                    if (!!v) {
+                        parts.push("[" + trim(v) + "]");
+                    }
+                    start = -1;
+                }
+            }
+        }
+        if (test !== 0) {
+            throw new Error("Invalid Property: " + prop);
+        }
+        if (cnt === 0) {
+            parts.push(trim(prop));
+        }
+        return parts;
+    }
     var SysUtils = (function () {
         function SysUtils() {
         }
@@ -338,39 +378,21 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
         };
         SysUtils.getPathParts = function (path) {
             var parts = (!path) ? [] : path.split("."), parts2 = [];
-            parts.forEach(function (part) {
-                part = strUtils.fastTrim(part);
+            for (var k = 0, l1 = parts.length; k < l1; k += 1) {
+                var part = parts[k];
                 if (!part) {
                     throw new Error("Invalid Path: " + path);
                 }
-                var obj = null, matches = INDEX_PROP_RX.exec(part);
-                if (!!matches) {
-                    while (!!matches) {
-                        if (!!matches[1]) {
-                            if (!!obj) {
-                                throw new Error("Invalid Path: " + path);
-                            }
-                            obj = strUtils.fastTrim(matches[1]);
-                            if (!!obj) {
-                                parts2.push(obj);
-                            }
-                        }
-                        var val = matches[2];
-                        if (!!val) {
-                            for (var i = 0; i < allTrims.length; i += 1) {
-                                val = val.replace(allTrims[i], "");
-                            }
-                            if (!!val) {
-                                parts2.push("[" + val + "]");
-                            }
-                        }
-                        matches = INDEX_PROP_RX.exec(part);
-                    }
+                if (part.indexOf("[") < 0) {
+                    parts2.push(trim(part));
                 }
                 else {
-                    parts2.push(part);
+                    var arr = getPropParts(part);
+                    for (var i = 0, l2 = arr.length; i < l2; i += 1) {
+                        parts2.push(arr[i]);
+                    }
                 }
-            });
+            }
             return parts2;
         };
         SysUtils.getProp = function (obj, prop) {

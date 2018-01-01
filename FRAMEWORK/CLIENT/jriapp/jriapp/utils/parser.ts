@@ -61,8 +61,19 @@ function getBraceParts(val: string): string[] {
         if (ch === "'" || ch === '"') {
             if (!literal) {
                 literal = ch;
+                cnt += 1;
+                continue;
             } else if (literal === ch) {
-                literal = null;
+                //check for quotes escape 
+                const i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
+                if (next === ch) {
+                    i += 1;
+                    cnt += 2;
+                } else {
+                    literal = null;
+                    cnt += 1;
+                }
+                continue;
             }
         }
 
@@ -107,8 +118,19 @@ function getBraceLen(val: string): number {
         if (ch === "'" || ch === '"') {
             if (!literal) {
                 literal = ch;
+                cnt += 1;
+                continue;
             } else if (literal === ch) {
-                literal = null;
+                //check for quotes escape 
+                const i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
+                if (next === ch) {
+                    i += 1;
+                    cnt += 2;
+                } else {
+                    literal = null;
+                    cnt += 1;
+                }
+                continue;
             }
         }
 
@@ -202,7 +224,6 @@ function getKeyVals(val: string): IKeyVal[] {
         if (start < 0) {
             start = i;
         }
-
         ch = val.charAt(i);
         // is this a content inside '' or "" ?
         if (ch === "'" || ch === '"') {
