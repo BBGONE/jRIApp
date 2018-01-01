@@ -90,6 +90,10 @@ function getBraceParts(val: string): string[] {
             }
         }
     }
+
+    if (test !== 0) {
+        throw new Error(strUtils.format(ERRS.ERR_EXPR_BRACES_INVALID, val));
+    }
     return parts;
 }
 

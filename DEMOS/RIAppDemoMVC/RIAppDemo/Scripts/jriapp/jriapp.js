@@ -180,6 +180,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 }
             }
         }
+        if (test !== 0) {
+            throw new Error(strUtils.format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, val));
+        }
         return parts;
     }
     function getBraceLen(val) {
