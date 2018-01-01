@@ -62,7 +62,7 @@ define("jriapp/const", ["require", "exports"], function (require, exports) {
     (function (BindScope) {
         BindScope[BindScope["Application"] = 0] = "Application";
         BindScope[BindScope["Template"] = 1] = "Template";
-        BindScope[BindScope["DataForm"] = 3] = "DataForm";
+        BindScope[BindScope["DataForm"] = 2] = "DataForm";
     })(BindScope = exports.BindScope || (exports.BindScope = {}));
     var BindTo;
     (function (BindTo) {
@@ -4156,7 +4156,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
                             }
                         }
                         break;
-                    case 3:
+                    case 2:
                         bindElems = getBindables(scope);
                         break;
                     default:

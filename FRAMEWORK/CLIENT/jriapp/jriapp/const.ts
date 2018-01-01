@@ -50,7 +50,7 @@ export const enum LOADER_GIF {
 export const enum BindScope {
     Application = 0,
     Template = 1,
-    DataForm = 3
+    DataForm = 2
 }
 
 export const enum BindTo {

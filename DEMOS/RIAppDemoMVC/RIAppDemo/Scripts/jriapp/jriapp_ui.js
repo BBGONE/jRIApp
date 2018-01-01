@@ -8069,7 +8069,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             });
             var promise = self.app._getInternal().bindElements({
                 scope: this._el,
-                bind: 3,
+                bind: 2,
                 dataContext: dctx
             });
             return promise.then(function (lftm) {

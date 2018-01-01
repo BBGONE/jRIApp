@@ -46,7 +46,7 @@ declare module "jriapp/const" {
     export const enum BindScope {
         Application = 0,
         Template = 1,
-        DataForm = 3,
+        DataForm = 2,
     }
     export const enum BindTo {
         Source = 0,
