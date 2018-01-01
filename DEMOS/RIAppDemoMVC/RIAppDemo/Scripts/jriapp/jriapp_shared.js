@@ -301,10 +301,14 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
                 }
                 if (start < i) {
                     var v = trim(prop.substring(start, i));
-                    if (!!v) {
-                        parts.push("[" + trim(v) + "]");
+                    if (!v) {
+                        throw new Error("Invalid Property: " + prop);
                     }
+                    parts.push("[" + v + "]");
                     start = -1;
+                }
+                else {
+                    throw new Error("Invalid Property: " + prop);
                 }
             }
         }
