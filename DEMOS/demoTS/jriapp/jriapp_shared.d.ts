@@ -991,6 +991,7 @@ declare module "jriapp_shared/collection/int" {
         [itemKey: string]: IErrors;
     }
     export interface IInternalCollMethods<TItem extends ICollectionItem> {
+        setIsLoading(v: boolean): void;
         getEditingItem(): TItem;
         getStrValue(val: any, fieldInfo: IFieldInfo): string;
         onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
@@ -1179,10 +1180,10 @@ declare module "jriapp_shared/collection/base" {
         protected _removeItem(item: TItem): number;
         protected _resetCurrent(oldPos: number): void;
         protected _waitForProp(prop: string, callback: () => void, groupName: string): void;
+        protected _setIsLoading(v: boolean): void;
         protected abstract _createNew(): TItem;
         abstract getFieldMap(): IIndexer<IFieldInfo>;
         abstract getFieldInfos(): IFieldInfo[];
-        _setIsLoading(v: boolean): void;
         _getInternal(): IInternalCollMethods<TItem>;
         _getSortFn(fieldNames: string[], sortOrder: SORT_ORDER): (a: any, b: any) => number;
         isHasProp(prop: string): boolean;

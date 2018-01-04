@@ -2731,10 +2731,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 dbSet: item._aspect.dbSet,
                 fn_onStart: function () {
                     context.item._aspect._setIsRefreshing(true);
-                    context.dbSet._setIsLoading(true);
+                    context.dbSet._getInternal().setIsLoading(true);
                 },
                 fn_onEnd: function () {
-                    context.dbSet._setIsLoading(false);
+                    context.dbSet._getInternal().setIsLoading(false);
                     context.item._aspect._setIsRefreshing(false);
                 },
                 fn_onErr: function (ex) {
@@ -2804,10 +2804,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 dbSetName: query.dbSetName,
                 dbSet: self.getDbSet(query.dbSetName),
                 fn_onStart: function () {
-                    context.dbSet._setIsLoading(true);
+                    context.dbSet._getInternal().setIsLoading(true);
                 },
                 fn_onEnd: function () {
-                    context.dbSet._setIsLoading(false);
+                    context.dbSet._getInternal().setIsLoading(false);
                 },
                 fn_onOK: function (res) {
                     try {

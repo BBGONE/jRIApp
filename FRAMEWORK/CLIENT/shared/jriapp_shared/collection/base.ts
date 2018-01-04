@@ -171,8 +171,10 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this._errors = new Errors(this);
         this._pkInfo = null;
         this._waitQueue = new WaitQueue(this);
-        this._internal = null;
-        const internal = {
+        this._internal = {
+            setIsLoading: (v: boolean) => {
+                self._setIsLoading(v);
+            },
             getEditingItem: () => {
                 return self._getEditingItem();
             },
@@ -203,7 +205,6 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
                 return (!!args.result && args.result.length > 0) ? args.result : <IValidationInfo[]>[];
             }
         };
-        this._setInternal(internal);
     }
     dispose() {
         if (this.getIsDisposed()) {
@@ -215,7 +216,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this.clear();
         super.dispose();
     }
-    static getEmptyFieldInfo(fieldName: string) {
+    static getEmptyFieldInfo(fieldName: string): IFieldInfo {
         const fieldInfo: IFieldInfo = {
             fieldName: fieldName,
             isPrimaryKey: 0,
@@ -537,15 +538,15 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             lastWins: !!groupName
         });
     }
-    protected abstract _createNew(): TItem;
-    abstract getFieldMap(): IIndexer<IFieldInfo>;
-    abstract getFieldInfos(): IFieldInfo[];
-    _setIsLoading(v: boolean): void {
+    protected _setIsLoading(v: boolean): void {
         if (this._isLoading !== v) {
             this._isLoading = v;
             this.objEvents.raiseProp("isLoading");
         }
     }
+    protected abstract _createNew(): TItem;
+    abstract getFieldMap(): IIndexer<IFieldInfo>;
+    abstract getFieldInfos(): IFieldInfo[];
     _getInternal(): IInternalCollMethods<TItem> {
         return this._internal;
     }
@@ -834,14 +835,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this.totalCount = 0;
     }
     waitForNotLoading(callback: () => void, groupName: string) {
-        this._waitQueue.enQueue({
-            prop: "isLoading",
-            groupName: groupName,
-            predicate: (val: any) => !val,
-            action: callback,
-            actionArgs: [],
-            lastWins: !!groupName
-        });
+        this._waitForProp("isLoading", callback, groupName);
     }
     toString() {
         return "BaseCollection";

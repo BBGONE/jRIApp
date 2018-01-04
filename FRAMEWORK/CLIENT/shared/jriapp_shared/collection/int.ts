@@ -228,6 +228,7 @@ export interface IErrorsList {
 }
 
 export interface IInternalCollMethods<TItem extends ICollectionItem> {
+    setIsLoading(v: boolean): void;
     getEditingItem(): TItem;
     getStrValue(val: any, fieldInfo: IFieldInfo): string;
     onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;

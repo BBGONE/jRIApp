@@ -545,10 +545,10 @@ export class DbContext extends BaseObject {
             dbSet: item._aspect.dbSet,
             fn_onStart: () => {
                 context.item._aspect._setIsRefreshing(true);
-                context.dbSet._setIsLoading(true);
+                context.dbSet._getInternal().setIsLoading(true);
             },
             fn_onEnd: () => {
-                context.dbSet._setIsLoading(false);
+                context.dbSet._getInternal().setIsLoading(false);
                 context.item._aspect._setIsRefreshing(false);
             },
             fn_onErr: (ex: any) => {
@@ -617,10 +617,10 @@ export class DbContext extends BaseObject {
             dbSetName: query.dbSetName,
             dbSet: self.getDbSet(query.dbSetName),
             fn_onStart: () => {
-                context.dbSet._setIsLoading(true);
+                context.dbSet._getInternal().setIsLoading(true);
             },
             fn_onEnd: () => {
-                context.dbSet._setIsLoading(false);
+                context.dbSet._getInternal().setIsLoading(false);
             },
             fn_onOK: (res: IQueryResult<IEntityItem>) => {
                 try {

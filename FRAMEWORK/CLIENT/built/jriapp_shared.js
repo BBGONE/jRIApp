@@ -3114,8 +3114,10 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             _this._errors = new Errors(_this);
             _this._pkInfo = null;
             _this._waitQueue = new waitqueue_1.WaitQueue(_this);
-            _this._internal = null;
-            var internal = {
+            _this._internal = {
+                setIsLoading: function (v) {
+                    self._setIsLoading(v);
+                },
                 getEditingItem: function () {
                     return self._getEditingItem();
                 },
@@ -3146,7 +3148,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                     return (!!args.result && args.result.length > 0) ? args.result : [];
                 }
             };
-            _this._setInternal(internal);
             return _this;
         }
         BaseCollection.prototype.dispose = function () {
@@ -3780,14 +3781,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this.totalCount = 0;
         };
         BaseCollection.prototype.waitForNotLoading = function (callback, groupName) {
-            this._waitQueue.enQueue({
-                prop: "isLoading",
-                groupName: groupName,
-                predicate: function (val) { return !val; },
-                action: callback,
-                actionArgs: [],
-                lastWins: !!groupName
-            });
+            this._waitForProp("isLoading", callback, groupName);
         };
         BaseCollection.prototype.toString = function () {
             return "BaseCollection";
