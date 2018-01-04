@@ -196,10 +196,10 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
         return parts;
     }
-    function getBraceLen(val) {
+    function getBraceLen(val, start) {
         var i, cnt = 0, ch, literal, test = 0;
         var len = val.length;
-        for (i = 0; i < len; i += 1) {
+        for (i = start; i < len; i += 1) {
             ch = val.charAt(i);
             if (ch === "'" || ch === '"') {
                 if (!literal) {
@@ -385,8 +385,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             }
             if (!literal) {
                 if (ch === "{" && !isKey) {
-                    var bracePart = val.substr(i);
-                    var braceLen = getBraceLen(bracePart);
+                    var braceLen = getBraceLen(val, i);
                     setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
                     kv.tag = "4";
                     i += (braceLen - 1);

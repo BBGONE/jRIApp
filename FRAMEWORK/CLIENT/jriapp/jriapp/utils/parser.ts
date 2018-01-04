@@ -108,11 +108,11 @@ function getBraceParts(val: string): string[] {
     return parts;
 }
 
-function getBraceLen(val: string): number {
+function getBraceLen(val: string, start: number): number {
     let i: number, cnt = 0, ch: string, literal: string, test = 0;
     const len = val.length;
 
-    for (i = 0; i < len; i += 1) {
+    for (i = start; i < len; i += 1) {
         ch = val.charAt(i);
         // is this content inside '' or "" ?
         if (ch === "'" || ch === '"') {
@@ -308,8 +308,7 @@ function getKeyVals(val: string): IKeyVal[] {
 
         if (!literal) {
             if (ch === "{" && !isKey) {
-                let bracePart = val.substr(i); // get all the string starting from {
-                const braceLen = getBraceLen(bracePart);
+                const braceLen = getBraceLen(val, i);
                 setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
                 kv.tag = TAG.BRACE;
                 i += (braceLen - 1);
