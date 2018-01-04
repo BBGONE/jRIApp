@@ -12,7 +12,6 @@ import { BaseObject }  from "../object";
 import { ERRS } from "../lang";
 import { WaitQueue } from "../utils/waitqueue";
 import { Utils } from "../utils/utils";
-
 import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs,
     ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemArgs, ICollItemStatusArgs,
     ICollValidateFieldArgs, ICollValidateItemArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs,
@@ -140,19 +139,18 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     private _objId: string;
     private _perms: IPermissions;
     private _options: ICollectionOptions;
-    protected _isLoading: boolean;
-    protected _EditingItem: TItem;
-    protected _totalCount: number;
-    protected _pageIndex: number;
-    protected _items: TItem[];
-    protected _itemsByKey: IIndexer<TItem>;
-    protected _currentPos: number;
-    protected _newKey: number;
-    protected _errors: Errors<TItem>;
-    protected _pkInfo: IFieldInfo[];
-    protected _isUpdating: boolean;
-    protected _waitQueue: WaitQueue;
-    protected _internal: IInternalCollMethods<TItem>;
+    private _errors: Errors<TItem>;
+    private _pkInfo: IFieldInfo[];
+    private _isLoading: boolean;
+    private _EditingItem: TItem;
+    private _totalCount: number;
+    private _pageIndex: number;
+    private _items: TItem[];
+    private _itemsByKey: IIndexer<TItem>;
+    private _currentPos: number;
+    private _isUpdating: boolean;
+    private _waitQueue: WaitQueue;
+    private _internal: IInternalCollMethods<TItem>;
 
     constructor() {
         super();
@@ -170,11 +168,11 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this._items = [];
         this._itemsByKey = {};
         this._currentPos = -1;
-        this._newKey = 0;
         this._errors = new Errors(this);
         this._pkInfo = null;
         this._waitQueue = new WaitQueue(this);
-        this._internal = {
+        this._internal = null;
+        const internal = {
             getEditingItem: () => {
                 return self._getEditingItem();
             },
@@ -205,6 +203,17 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
                 return (!!args.result && args.result.length > 0) ? args.result : <IValidationInfo[]>[];
             }
         };
+        this._setInternal(internal);
+    }
+    dispose() {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this._waitQueue.dispose();
+        this._waitQueue = null;
+        this.clear();
+        super.dispose();
     }
     static getEmptyFieldInfo(fieldName: string) {
         const fieldInfo: IFieldInfo = {
@@ -227,125 +236,8 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         };
         return fieldInfo;
     }
-    addOnClearing(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.clearing, fn, nmspace, context, priority);
-    }
-    offOnClearing(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.clearing, nmspace);
-    }
-    addOnCleared(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.cleared, fn, nmspace, context, priority);
-    }
-    offOnCleared(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.cleared, nmspace);
-    }
-    addOnCollChanged(fn: TEventHandler<ICollection<TItem>, ICollChangedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.collection_changed, fn, nmspace, context, priority);
-    }
-    offOnCollChanged(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.collection_changed, nmspace);
-    }
-    addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.fill, fn, nmspace, context, priority);
-    }
-    offOnFill(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.fill, nmspace);
-    }
-    addOnValidateField(fn: TEventHandler<ICollection<TItem>, ICollValidateFieldArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.validate_field, fn, nmspace, context, priority);
-    }
-    offOnValidateField(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.validate_field, nmspace);
-    }
-    addOnValidateItem(fn: TEventHandler<ICollection<TItem>, ICollValidateItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.validate_item, fn, nmspace, context, priority);
-    }
-    offOnValidateItem(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.validate_item, nmspace);
-    }
-    addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.item_deleting, fn, nmspace, context, priority);
-    }
-    offOnItemDeleting(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.item_deleting, nmspace);
-    }
-    addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.item_adding, fn, nmspace, context, priority);
-    }
-    offOnItemAdding(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.item_adding, nmspace);
-    }
-    addOnItemAdded(fn: TEventHandler<ICollection<TItem>, IItemAddedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.item_added, fn, nmspace, context, priority);
-    }
-    offOnItemAdded(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.item_added, nmspace);
-    }
-    addOnCurrentChanging(fn: TEventHandler<ICollection<TItem>, ICurrentChangingArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.current_changing, fn, nmspace, context, priority);
-    }
-    offOnCurrentChanging(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.current_changing, nmspace);
-    }
-    addOnPageChanging(fn: TEventHandler<ICollection<TItem>, IPageChangingArgs>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.page_changing, fn, nmspace, context, priority);
-    }
-    offOnPageChanging(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.page_changing, nmspace);
-    }
-    addOnErrorsChanged(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.errors_changed, fn, nmspace, context, priority);
-    }
-    offOnErrorsChanged(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.errors_changed, nmspace);
-    }
-    addOnBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.begin_edit, fn, nmspace, context, priority);
-    }
-    offOnBeginEdit(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.begin_edit, nmspace);
-    }
-    addOnEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.end_edit, fn, nmspace, context, priority);
-    }
-    offOnEndEdit(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.end_edit, nmspace);
-    }
-    addOnBeforeBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.before_begin_edit, fn, nmspace, context, priority);
-    }
-    offOnBeforeBeginEdit(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.before_begin_edit, nmspace);
-    }
-    addOnBeforeEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.before_end_edit, fn, nmspace, context, priority);
-    }
-    removeBeforeOnEndEdit(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.before_end_edit, nmspace);
-    }
-    addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.commit_changes, fn, nmspace, context, priority);
-    }
-    offOnCommitChanges(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.commit_changes, nmspace);
-    }
-    addOnStatusChanged(fn: TEventHandler<ICollection<TItem>, ICollItemStatusArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this.objEvents.on(COLL_EVENTS.status_changed, fn, nmspace, context, priority);
-    }
-    offOnStatusChanged(nmspace?: string) {
-        this.objEvents.off(COLL_EVENTS.status_changed, nmspace);
-    }
-    addOnPageIndexChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
-        this.objEvents.onProp("pageIndex", handler, nmspace, context);
-    }
-    addOnPageSizeChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
-        this.objEvents.onProp("pageSize", handler, nmspace, context);
-    }
-    addOnTotalCountChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
-        this.objEvents.onProp("totalCount", handler, nmspace, context);
-    }
-    addOnCurrentChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
-        this.objEvents.onProp("currentItem", handler, nmspace, context);
+    protected _setInternal<T extends IInternalCollMethods<TItem>>(internal: T) {
+        this._internal = internal;
     }
     protected _updatePermissions(perms: IPermissions): void {
         this._perms = perms;
@@ -409,7 +301,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         const args: IItemAddedArgs<TItem> = { item: item, isAddNewHandled: false };
         this.objEvents.raise(COLL_EVENTS.item_added, args);
     }
-    protected _attach(item: TItem, itemPos?: number) {
+    protected _attach(item: TItem) {
         if (!!this._itemsByKey[item._key]) {
             throw new Error(ERRS.ERR_ITEM_IS_ATTACHED);
         }
@@ -418,16 +310,8 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         } catch (ex) {
             utils.err.reThrow(ex, this.handleError(ex, this));
         }
-        let pos: number;
         item._aspect._onAttaching();
-        if (checks.isNt(itemPos)) {
-            pos = this._items.length;
-            this._items.push(item);
-        } else {
-            pos = itemPos;
-            utils.arr.insert(this._items, item, pos);
-        }
-        this._itemsByKey[item._key] = item;
+        const pos = this._appendItem(item);
         this._onCollectionChanged({
             changeType: COLL_CHANGE_TYPE.Add,
             reason: COLL_CHANGE_REASON.None,
@@ -568,7 +452,6 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this.objEvents.raise(COLL_EVENTS.clearing, { reason: reason });
         this.cancelEdit();
         this._EditingItem = null;
-        this._newKey = 0;
         this.currentItem = null;
         const oldItems = this._items;
         try {
@@ -592,8 +475,72 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             });
         }
     }
+    protected _replaceItems(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER, items: TItem[]): void {
+        this._clear(reason, oper);
+        this._items = items;
+        items.forEach((item, index) => {
+            this._itemsByKey[item._key] = item;
+            item._aspect._setIsAttached(true);
+        });
+    }
+    protected _appendItem(item: TItem): number {
+        this._items.push(item);
+        this._itemsByKey[item._key] = item;
+        return (this._items.length - 1);
+    }
+    protected _remapItem(oldkey: string, newkey: string, item: TItem): void {
+        if (!newkey) {
+            throw new Error(ERRS.ERR_KEY_IS_EMPTY);
+        }
+        delete this._itemsByKey[oldkey];
+        item._aspect._setKey(newkey);
+        this._itemsByKey[newkey] = item;
+    }
+    protected _removeItem(item: TItem): number {
+        const key = item._key;
+        if (!this.getItemByKey(key)) {
+            return -1;
+        }
+        const oldPos = utils.arr.remove(this._items, item);
+        if (oldPos < 0) {
+            throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
+        }
+        this._onRemoved(item, oldPos);
+        delete this._itemsByKey[key];
+        return oldPos;
+    }
+    protected _resetCurrent(oldPos: number): void {
+        const test = this.getItemByPos(oldPos), curPos = this._currentPos;
+
+        // if detached item was current item
+        if (curPos === oldPos) {
+            if (!test) { // it was the last item
+                this._currentPos = curPos - 1;
+            }
+            this._onCurrentChanged();
+        }
+
+        if (curPos > oldPos) {
+            this._currentPos = curPos - 1;
+            this._onCurrentChanged();
+        }
+    }
+    protected _waitForProp(prop: string, callback: () => void, groupName: string): void {
+        this._waitQueue.enQueue({
+            prop: prop,
+            groupName: groupName,
+            predicate: (val: any) => {
+                return !val;
+            },
+            action: callback,
+            actionArgs: [],
+            lastWins: !!groupName
+        });
+    }
     protected abstract _createNew(): TItem;
-    _setIsLoading(v: boolean) {
+    abstract getFieldMap(): IIndexer<IFieldInfo>;
+    abstract getFieldInfos(): IFieldInfo[];
+    _setIsLoading(v: boolean): void {
         if (this._isLoading !== v) {
             this._isLoading = v;
             this.objEvents.raiseProp("isLoading");
@@ -641,7 +588,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         };
     }
     // override
-    isHasProp(prop: string) {
+    isHasProp(prop: string): boolean {
         // first check for indexed property name
         if (strUtils.startsWith(prop, "[")) {
             const res = sys.getProp(this, prop);
@@ -670,14 +617,12 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             return f.fieldName;
         });
     }
-    abstract getFieldMap(): IIndexer<IFieldInfo>;
-    abstract getFieldInfos(): IFieldInfo[];
-    cancelEdit() {
+    cancelEdit(): void {
         if (this.isEditing) {
             this._EditingItem._aspect.cancelEdit();
         }
     }
-    endEdit() {
+    endEdit(): void {
         let EditingItem: TItem;
         if (this.isEditing) {
             EditingItem = this._EditingItem;
@@ -690,11 +635,11 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     getItemsWithErrors(): TItem[] {
         return this._errors.getItemsWithErrors();
     }
-    addNew() {
+    addNew(): TItem {
         let item: TItem, isHandled: boolean;
         item = this._createNew();
         this._onItemAdding(item);
-        this._attach(item, null);
+        this._attach(item);
         try {
             this.currentItem = item;
             item._aspect.beginEdit();
@@ -716,7 +661,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         if (!key) {
             throw new Error(ERRS.ERR_KEY_IS_EMPTY);
         }
-        return this._itemsByKey["" + key];
+        return this._itemsByKey[key];
     }
     findByPK(...vals: any[]): TItem {
         if (arguments.length === 0) {
@@ -841,34 +786,15 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     forEach(callback: (item: TItem) => void, thisObj?: any) {
         this._items.forEach(callback, thisObj);
     }
-    removeItem(item: TItem) {
+    removeItem(item: TItem): void {
         if (item._aspect.isDetached || !this._itemsByKey[item._key]) {
             return;
         }
         try {
-            const oldPos = utils.arr.remove(this._items, item), key = item._key;
-            if (oldPos < 0) {
-                throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
-            }
-            this._onRemoved(item, oldPos);
-            delete this._itemsByKey[key];
+            const oldPos = this._removeItem(item);
             this._errors.removeAllErrors(item);
             item._aspect._setIsAttached(false);
-
-            const test = this.getItemByPos(oldPos), curPos = this._currentPos;
-
-            // if detached item was current item
-            if (curPos === oldPos) {
-                if (!test) { // it was the last item
-                    this._currentPos = curPos - 1;
-                }
-                this._onCurrentChanged();
-            }
-
-            if (curPos > oldPos) {
-                this._currentPos = curPos - 1;
-                this._onCurrentChanged();
-            }
+            this._resetCurrent(oldPos);
         } finally {
             if (!item.getIsStateDirty()) {
                 item.dispose();
@@ -907,16 +833,6 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this._clear(COLL_CHANGE_REASON.None, COLL_CHANGE_OPER.None);
         this.totalCount = 0;
     }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        this._waitQueue.dispose();
-        this._waitQueue = null;
-        this.clear();
-        super.dispose();
-    }
     waitForNotLoading(callback: () => void, groupName: string) {
         this._waitQueue.enQueue({
             prop: "isLoading",
@@ -930,13 +846,147 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     toString() {
         return "BaseCollection";
     }
-    get errors() { return this._errors; }
-    get options() { return this._options; }
-    get items() { return this._items; }
-    get currentItem() { return this.getItemByPos(this._currentPos); }
-    set currentItem(v: TItem) { this._setCurrentItem(v); }
-    get count() { return this._items.length; }
-    get totalCount() { return this._totalCount; }
+    addOnClearing(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.clearing, fn, nmspace, context, priority);
+    }
+    offOnClearing(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.clearing, nmspace);
+    }
+    addOnCleared(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.cleared, fn, nmspace, context, priority);
+    }
+    offOnCleared(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.cleared, nmspace);
+    }
+    addOnCollChanged(fn: TEventHandler<ICollection<TItem>, ICollChangedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.collection_changed, fn, nmspace, context, priority);
+    }
+    offOnCollChanged(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.collection_changed, nmspace);
+    }
+    addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.fill, fn, nmspace, context, priority);
+    }
+    offOnFill(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.fill, nmspace);
+    }
+    addOnValidateField(fn: TEventHandler<ICollection<TItem>, ICollValidateFieldArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.validate_field, fn, nmspace, context, priority);
+    }
+    offOnValidateField(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.validate_field, nmspace);
+    }
+    addOnValidateItem(fn: TEventHandler<ICollection<TItem>, ICollValidateItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.validate_item, fn, nmspace, context, priority);
+    }
+    offOnValidateItem(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.validate_item, nmspace);
+    }
+    addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.item_deleting, fn, nmspace, context, priority);
+    }
+    offOnItemDeleting(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.item_deleting, nmspace);
+    }
+    addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.item_adding, fn, nmspace, context, priority);
+    }
+    offOnItemAdding(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.item_adding, nmspace);
+    }
+    addOnItemAdded(fn: TEventHandler<ICollection<TItem>, IItemAddedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.item_added, fn, nmspace, context, priority);
+    }
+    offOnItemAdded(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.item_added, nmspace);
+    }
+    addOnCurrentChanging(fn: TEventHandler<ICollection<TItem>, ICurrentChangingArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.current_changing, fn, nmspace, context, priority);
+    }
+    offOnCurrentChanging(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.current_changing, nmspace);
+    }
+    addOnPageChanging(fn: TEventHandler<ICollection<TItem>, IPageChangingArgs>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.page_changing, fn, nmspace, context, priority);
+    }
+    offOnPageChanging(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.page_changing, nmspace);
+    }
+    addOnErrorsChanged(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.errors_changed, fn, nmspace, context, priority);
+    }
+    offOnErrorsChanged(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.errors_changed, nmspace);
+    }
+    addOnBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.begin_edit, fn, nmspace, context, priority);
+    }
+    offOnBeginEdit(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.begin_edit, nmspace);
+    }
+    addOnEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.end_edit, fn, nmspace, context, priority);
+    }
+    offOnEndEdit(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.end_edit, nmspace);
+    }
+    addOnBeforeBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.before_begin_edit, fn, nmspace, context, priority);
+    }
+    offOnBeforeBeginEdit(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.before_begin_edit, nmspace);
+    }
+    addOnBeforeEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.before_end_edit, fn, nmspace, context, priority);
+    }
+    removeBeforeOnEndEdit(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.before_end_edit, nmspace);
+    }
+    addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.commit_changes, fn, nmspace, context, priority);
+    }
+    offOnCommitChanges(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.commit_changes, nmspace);
+    }
+    addOnStatusChanged(fn: TEventHandler<ICollection<TItem>, ICollItemStatusArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+        this.objEvents.on(COLL_EVENTS.status_changed, fn, nmspace, context, priority);
+    }
+    offOnStatusChanged(nmspace?: string) {
+        this.objEvents.off(COLL_EVENTS.status_changed, nmspace);
+    }
+    addOnPageIndexChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.onProp("pageIndex", handler, nmspace, context);
+    }
+    addOnPageSizeChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.onProp("pageSize", handler, nmspace, context);
+    }
+    addOnTotalCountChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.onProp("totalCount", handler, nmspace, context);
+    }
+    addOnCurrentChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.onProp("currentItem", handler, nmspace, context);
+    }
+    get errors(): Errors<TItem> {
+        return this._errors;
+    }
+    get options(): ICollectionOptions {
+        return this._options;
+    }
+    get items(): TItem[] {
+        return this._items;
+    }
+    get currentItem(): TItem {
+        return this.getItemByPos(this._currentPos);
+    }
+    set currentItem(v: TItem) {
+        this._setCurrentItem(v);
+    }
+    get count(): number {
+        return this._items.length;
+    }
+    get totalCount(): number {
+        return this._totalCount;
+    }
     set totalCount(v: number) {
         if (v !== this._totalCount) {
             this._totalCount = v;
@@ -944,7 +994,9 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             this.objEvents.raiseProp("pageCount");
         }
     }
-    get pageSize() { return this._options.pageSize; }
+    get pageSize(): number {
+        return this._options.pageSize;
+    }
     set pageSize(v: number) {
         if (this._options.pageSize !== v) {
             this._options.pageSize = v;
@@ -952,7 +1004,9 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             this._onPageSizeChanged();
         }
     }
-    get pageIndex() { return this._pageIndex; }
+    get pageIndex(): number {
+        return this._pageIndex;
+    }
     set pageIndex(v: number) {
         if (v !== this._pageIndex && this.isPagingEnabled) {
             if (v < 0) {
@@ -966,7 +1020,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             this.objEvents.raiseProp("pageIndex");
         }
     }
-    get pageCount() {
+    get pageCount(): number {
         const rowCount = this.totalCount, rowPerPage = this.pageSize;
         let result: number;
 
@@ -982,18 +1036,28 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         }
         return result;
     }
-    get isPagingEnabled() { return this._options.enablePaging; }
-    get isEditing() { return !!this._EditingItem; }
-    get isLoading() { return this._isLoading; }
-    get isUpdating() { return this._isUpdating; }
+    get isPagingEnabled(): boolean {
+        return this._options.enablePaging;
+    }
+    get isEditing(): boolean {
+        return !!this._EditingItem;
+    }
+    get isLoading(): boolean {
+        return this._isLoading;
+    }
+    get isUpdating(): boolean {
+        return this._isUpdating;
+    }
     set isUpdating(v: boolean) {
         if (this._isUpdating !== v) {
             this._isUpdating = v;
             this.objEvents.raiseProp("isUpdating");
         }
     }
-    get permissions(): IPermissions { return this._perms; }
-    get uniqueID() {
+    get permissions(): IPermissions {
+        return this._perms;
+    }
+    get uniqueID(): string {
         return this._objId;
     }
 }

@@ -96,13 +96,13 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     private _changeCache: { [key: string]: TItem; };
     protected _navfldMap: { [fieldName: string]: INavFieldImpl<TItem>; };
     protected _calcfldMap: { [fieldName: string]: ICalcFieldImpl<TItem>; };
-    protected _itemsByKey: { [key: string]: TItem; };
     protected _ignorePageChanged: boolean;
     protected _query: DataQuery<TItem, TObj>;
     private _pageDebounce: Debounce;
     private _dbSetName: string;
     private _pkFields: IFieldInfo[];
     private _isPageFilled: boolean;
+    private _newKey: number;
 
     constructor(opts: IDbSetConstuctorOptions) {
         super();
@@ -119,6 +119,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         this._fieldInfos = fieldInfos;
         this._pkFields = colUtils.getPKFields(fieldInfos);
         this._isPageFilled = false;
+        this._newKey = 0;
         // used when page index is changed
         this._pageDebounce = new Debounce(400);
         // association infos maped by name
@@ -152,7 +153,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         });
 
         self._mapAssocFields();
-        const internalObj = {
+        const extraInternal = {
             getCalcFieldVal: (fieldName: string, item: TItem) => {
                 return self._getCalcFieldVal(fieldName, item);
             },
@@ -199,13 +200,31 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
                 self._onItemStatusChanged(item, oldStatus);
             }
         };
-        coreUtils.merge(internalObj, this._internal);
+        let internal = this._getInternal();
+        this._setInternal(coreUtils.merge(extraInternal, internal));
         this.dbContext.objEvents.onProp("isSubmiting", (s, a) => {
             self.objEvents.raiseProp("isBusy");
         }, this.dbSetName);
         this.objEvents.onProp("isLoading", (s, a) => {
             self.objEvents.raiseProp("isBusy");
         });
+    }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this._pageDebounce.dispose();
+        this._pageDebounce = null;
+        this.clear();
+        const dbContext = this.dbContext;
+        this._dbContext = null;
+        if (!!dbContext) {
+            dbContext.objEvents.offNS(this.dbSetName);
+        }
+        this._navfldMap = {};
+        this._calcfldMap = {};
+        super.dispose();
     }
     abstract itemFactory(aspect: EntityAspect<TItem, TObj, TDbContext>): TItem;
     public handleError(error: any, source: any): boolean {
@@ -370,6 +389,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     */
     protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
         super._clear(reason, oper);
+        this._newKey = 0;
         this._isPageFilled = false;
     }
     protected _onPageChanging() {
@@ -383,7 +403,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
 
         const query = this.query;
         if (!!query && query.loadPageCount > 1 && this._isPageFilled) {
-            query._getInternal().updateCache(this.pageIndex, this._items);
+            query._getInternal().updateCache(this.pageIndex, this.items);
         }
         return res;
     }
@@ -541,7 +561,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
                 throw new Error(ERRS.ERR_KEY_IS_EMPTY);
             }
 
-            let item = self._itemsByKey[key];
+            let item = self.getItemByKey(key);
             if (!item) {
                 item = self.createEntityFromData(row, fieldNames);
             } else {
@@ -570,11 +590,9 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
 
         const newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
         arr.forEach((item) => {
-            const oldItem = self._itemsByKey[item._key];
+            const oldItem = self.getItemByKey(item._key);
             if (!oldItem) {
-                self._items.push(item);
-                positions.push(self._items.length - 1);
-                self._itemsByKey[item._key] = item;
+                positions.push(self._appendItem(item));
                 newItems.push(item);
                 items.push(item);
                 item._aspect._setIsAttached(true);
@@ -603,25 +621,21 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         return result;
     }
     protected _fillFromCache(args: IFillFromCacheArgs): IQueryResult<TItem> {
-        const self = this, query = args.query;
+        const query = args.query;
         if (!query) {
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query is not null"));
         }
         if (query.getIsStateDirty()) {
             throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
         }
-        const dataCache = query._getInternal().getCache(),
-            arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
+        const dataCache = query._getInternal().getCache(), arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
 
-        this._clear(args.reason, COLL_CHANGE_OPER.Fill);
-        this._items = arr;
+        this._replaceItems(args.reason, COLL_CHANGE_OPER.Fill, arr);
 
         const positions: number[] = [], items: TItem[] = [];
         arr.forEach((item, index) => {
-            self._itemsByKey[item._key] = item;
             positions.push(index);
             items.push(item);
-            item._aspect._setIsAttached(true);
         });
 
         if (items.length > 0) {
@@ -645,31 +659,29 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     protected _commitChanges(rows: IRowInfo[]): void {
         const self = this;
         rows.forEach((rowInfo) => {
-            const key = rowInfo.clientKey, item: TItem = self._itemsByKey[key];
+            const oldKey = rowInfo.clientKey, item: TItem = self.getItemByKey(oldKey);
             if (!item) {
-                throw new Error(strUtils.format(ERRS.ERR_KEY_IS_NOTFOUND, key));
+                throw new Error(strUtils.format(ERRS.ERR_KEY_IS_NOTFOUND, oldKey));
             }
             const itemStatus = item._aspect.status;
             item._aspect._acceptChanges(rowInfo);
             if (itemStatus === ITEM_STATUS.Added) {
                 // on insert
-                delete self._itemsByKey[key];
                 item._aspect._updateKeys(rowInfo.serverKey);
-                self._itemsByKey[item._key] = item;
+                self._remapItem(oldKey, item._key, item);
                 self._onCollectionChanged({
                     changeType: COLL_CHANGE_TYPE.Remap,
                     reason: COLL_CHANGE_REASON.None,
                     oper: COLL_CHANGE_OPER.Commit,
                     items: [item],
-                    old_key: key,
+                    old_key: oldKey,
                     new_key: item._key
                 });
             }
         });
     }
     protected _setItemInvalid(row: IRowInfo): TItem {
-        const keyMap = this._itemsByKey, item = keyMap[row.clientKey],
-            errors: IIndexer<string[]> = {};
+        const item = this.getItemByKey(row.clientKey), errors: IIndexer<string[]> = {};
         row.invalid.forEach((err) => {
             if (!err.fieldName) {
                 err.fieldName = "*";
@@ -802,7 +814,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         return aspect.item;
     }
     _getInternal(): IInternalDbSetMethods<TItem, TObj> {
-        return <IInternalDbSetMethods<TItem, TObj>>this._internal;
+        return <IInternalDbSetMethods<TItem, TObj>>super._getInternal();
     }
     // fill items from row data (in wire format)
     fillData(data: {
@@ -823,7 +835,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
                 throw new Error(ERRS.ERR_KEY_IS_EMPTY);
             }
 
-            let item = self._itemsByKey[key];
+            let item = self.getItemByKey(key);
             if (!item) {
                 item = self.createEntityFromData(row, data.names);
             } else {
@@ -834,11 +846,9 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
 
         const newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
         fetchedItems.forEach((item) => {
-            const oldItem = self._itemsByKey[item._key];
+            const oldItem = self.getItemByKey(item._key);
             if (!oldItem) {
-                self._items.push(item);
-                positions.push(self._items.length - 1);
-                self._itemsByKey[item._key] = item;
+                positions.push(self._appendItem(item));
                 newItems.push(item);
                 items.push(item);
                 item._aspect._setIsAttached(true);
@@ -882,11 +892,9 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
 
         const newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
         fetchedItems.forEach((item) => {
-            const oldItem = self._itemsByKey[item._key];
+            const oldItem = self.getItemByKey(item._key);
             if (!oldItem) {
-                self._items.push(item);
-                positions.push(self._items.length - 1);
-                self._itemsByKey[item._key] = item;
+                positions.push(self._appendItem(item));
                 newItems.push(item);
                 items.push(item);
                 item._aspect._setIsAttached(true);
@@ -915,23 +923,14 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         this._afterFill(result, isClearAll);
         return result;
     }
-    addOnLoaded(fn: TEventHandler<DbSet<TItem, TObj, TDbContext>, IDbSetLoadedArgs<TObj>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
+    addOnLoaded(fn: TEventHandler<DbSet<TItem, TObj, TDbContext>, IDbSetLoadedArgs<TObj>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
         this.objEvents.on(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
     }
-    offOnLoaded(nmspace?: string) {
+    offOnLoaded(nmspace?: string): void {
         this.objEvents.off(DBSET_EVENTS.loaded, nmspace);
     }
-    waitForNotBusy(callback: () => void, groupName: string) {
-        this._waitQueue.enQueue({
-            prop: "isBusy",
-            groupName: groupName,
-            predicate: (val: any) => {
-                return !val;
-            },
-            action: callback,
-            actionArgs: [],
-            lastWins: !!groupName
-        });
+    waitForNotBusy(callback: () => void, groupName: string): void {
+        this._waitForProp("isBusy", callback, groupName);
     }
     getFieldInfo(fieldName: string): IFieldInfo {
         const parts = fieldName.split(".");
@@ -978,7 +977,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             return super.sort(fieldNames, sortOrder);
         }
     }
-    acceptChanges() {
+    acceptChanges(): void {
         const csh = this._changeCache;
         coreUtils.forEachProp(csh, (key) => {
             const item = csh[key];
@@ -986,17 +985,17 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         });
         this._changeCount = 0;
     }
-    rejectChanges() {
+    rejectChanges(): void {
         const csh = this._changeCache;
         coreUtils.forEachProp(csh, (key) => {
             const item = csh[key];
             item._aspect.rejectChanges();
         });
     }
-    deleteOnSubmit(item: TItem) {
+    deleteOnSubmit(item: TItem): void {
         item._aspect.deleteOnSubmit();
     }
-    clear() {
+    clear(): void {
         this._destroyQuery();
         super.clear();
     }
@@ -1007,33 +1006,21 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         }
         return new DataQuery<TItem, TObj>(this, queryInfo);
     }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        this._pageDebounce.dispose();
-        this._pageDebounce = null;
-        this.clear();
-        const dbContext = this.dbContext;
-        this._dbContext = null;
-        if (!!dbContext) {
-            dbContext.objEvents.offNS(this.dbSetName);
-        }
-        this._navfldMap = {};
-        this._calcfldMap = {};
-        super.dispose();
-    }
-    toString() {
+    toString(): string {
         return this.dbSetName;
     }
-    get items(): TItem[] { return this._items; }
     get dbContext(): TDbContext {
         return this._dbContext;
     }
-    get dbSetName(): string { return this._dbSetName; }
-    get query(): DataQuery<TItem, TObj> { return this._query; }
-    get isHasChanges(): boolean { return this._changeCount > 0; }
+    get dbSetName(): string {
+        return this._dbSetName;
+    }
+    get query(): DataQuery<TItem, TObj> {
+        return this._query;
+    }
+    get isHasChanges(): boolean {
+        return this._changeCount > 0;
+    }
     get cacheSize(): number {
         const query = this._query;
         if (!!query && query.isCacheValid) {

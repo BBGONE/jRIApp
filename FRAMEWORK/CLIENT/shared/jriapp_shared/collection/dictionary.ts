@@ -1,9 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER } from "./const";
 import { Utils } from "../utils/utils";
 import { ERRS } from "../lang";
-import {
-    COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER
-} from "./const";
 import { IPropInfo, ICollectionItem } from "./int";
 import { CollUtils } from "./utils";
 import { BaseCollection } from "./base";
@@ -59,13 +57,10 @@ export abstract class BaseDictionary<TItem extends IListItem, TObj> extends Base
         if (checks.isNt(key)) {
             throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
         }
-
         const oldkey = item._key, newkey = "" + key;
         if (oldkey !== newkey) {
-            delete self._itemsByKey[oldkey];
-            item._aspect._setKey(newkey);
-            self._itemsByKey[item._key] = item;
-            self._onCollectionChanged({
+            self._remapItem(oldkey, newkey, item);
+            this._onCollectionChanged({
                 changeType: COLL_CHANGE_TYPE.Remap,
                 reason: COLL_CHANGE_REASON.None,
                 oper: COLL_CHANGE_OPER.Commit,

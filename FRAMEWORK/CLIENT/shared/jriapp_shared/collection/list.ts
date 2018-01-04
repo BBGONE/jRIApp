@@ -84,11 +84,13 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
 export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
     private _fieldMap: IIndexer<IFieldInfo>;
     private _fieldInfos: IFieldInfo[];
+    private _newKey: number;
 
     constructor(props: IPropInfo[]) {
         super();
         this._fieldMap = {};
         this._fieldInfos = [];
+        this._newKey = 0;
 
         if (!!props) {
             this._updateFieldMap(props);
@@ -113,6 +115,10 @@ export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollec
                 fld.fullName = fullName;
             });
         });
+    }
+    protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
+        super._clear(reason, oper);
+        this._newKey = 0;
     }
     protected _attach(item: TItem) {
         try {
@@ -156,12 +162,10 @@ export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollec
                 this.clear();
             }
             objArray.forEach(function (obj) {
-                const item = self.createItem(obj), oldItem = self._itemsByKey[item._key];
+                const item = self.createItem(obj), oldItem = self.getItemByKey(item._key);
                 if (!oldItem) {
-                    self._items.push(item);
-                    self._itemsByKey[item._key] = item;
+                    positions.push(self._appendItem(item));
                     newItems.push(item);
-                    positions.push(self._items.length - 1);
                     items.push(item);
                     item._aspect._setIsAttached(true);
                 } else {
@@ -189,12 +193,12 @@ export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollec
         this.moveFirst();
     }
     getNewItems(): TItem[] {
-        return this._items.filter(function (item) {
+        return this.items.filter(function (item) {
             return item._aspect.isNew;
         });
     }
     resetStatus(): void {
-        this._items.forEach(function (item) {
+        this.items.forEach(function (item) {
             item._aspect._resetStatus();
         });
     }
