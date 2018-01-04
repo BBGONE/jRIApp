@@ -3245,7 +3245,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this.objEvents.raise("item_added", args);
         };
         BaseCollection.prototype._attach = function (item) {
-            if (!!this._itemsByKey[item._key]) {
+            if (!!this.getItemByKey(item._key)) {
                 throw new Error(lang_5.ERRS.ERR_ITEM_IS_ATTACHED);
             }
             try {
@@ -3265,7 +3265,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 new_key: item._key
             });
             item._aspect._onAttach();
-            this.objEvents.raiseProp("count");
+            this._onCountChanged();
             this._onCurrentChanging(item);
             this._currentPos = pos;
             this._onCurrentChanged();
@@ -3283,7 +3283,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 });
             }
             finally {
-                this.objEvents.raiseProp("count");
+                this._onCountChanged();
             }
         };
         BaseCollection.prototype._onPageSizeChanged = function () {
@@ -3331,7 +3331,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 self._onCurrentChanged();
             }
         };
-        BaseCollection.prototype._clearItems = function (items) {
+        BaseCollection.prototype._disposeItems = function (items) {
             items.forEach(function (item) {
                 item._aspect._setIsAttached(false);
                 item.dispose();
@@ -3419,7 +3419,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             }
             finally {
                 utils.defer.getTaskQueue().enque(function () {
-                    _this._clearItems(oldItems);
+                    _this._disposeItems(oldItems);
                 });
             }
         };
@@ -3733,7 +3733,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._items.forEach(callback, thisObj);
         };
         BaseCollection.prototype.removeItem = function (item) {
-            if (item._aspect.isDetached || !this._itemsByKey[item._key]) {
+            if (item._aspect.isDetached || !this.getItemByKey(item._key)) {
                 return;
             }
             try {

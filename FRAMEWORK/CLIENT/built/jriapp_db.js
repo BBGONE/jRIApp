@@ -3666,7 +3666,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             _this._bindDS();
             return _this;
         }
-        DataView.prototype._clearItems = function (items) {
+        DataView.prototype._disposeItems = function (items) {
         };
         DataView.prototype._filterForPaging = function (items) {
             var skip = 0, take = 0, pos = -1, cnt = -1;

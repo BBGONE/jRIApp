@@ -50,8 +50,9 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         this._bindDS();
     }
     // override
-    protected _clearItems(items: TItem[]): void {
+    protected _disposeItems(items: TItem[]): void {
         // noop
+        // don't dispose items, because they belong to the other collection
     }
     protected _filterForPaging(items: TItem[]): TItem[] {
         let skip = 0, take = 0, pos = -1, cnt = -1;

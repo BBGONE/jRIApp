@@ -795,7 +795,7 @@ declare module "jriapp_db/dataview" {
         private _isAddingNew;
         private _refreshDebounce;
         constructor(options: IDataViewOptions<TItem>);
-        protected _clearItems(items: TItem[]): void;
+        protected _disposeItems(items: TItem[]): void;
         protected _filterForPaging(items: TItem[]): TItem[];
         protected _onViewRefreshed(args: {}): void;
         protected _refresh(reason: COLL_CHANGE_REASON): void;

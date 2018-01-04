@@ -1164,7 +1164,7 @@ declare module "jriapp_shared/collection/base" {
         protected _onPageChanging(): boolean;
         protected _onPageChanged(): void;
         protected _setCurrentItem(v: TItem): void;
-        protected _clearItems(items: TItem[]): void;
+        protected _disposeItems(items: TItem[]): void;
         protected _getEditingItem(): TItem;
         protected _getStrValue(val: any, fieldInfo: IFieldInfo): string;
         protected _onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;

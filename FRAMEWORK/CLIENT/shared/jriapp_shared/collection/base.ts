@@ -259,38 +259,38 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this._pkInfo = pk;
         return this._pkInfo;
     }
-    protected _checkCurrentChanging(newCurrent: TItem) {
+    protected _checkCurrentChanging(newCurrent: TItem): void {
         try {
             this.endEdit();
         } catch (ex) {
             utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
-    protected _onCurrentChanging(newCurrent: TItem) {
+    protected _onCurrentChanging(newCurrent: TItem): void {
         this._checkCurrentChanging(newCurrent);
         this.objEvents.raise(COLL_EVENTS.current_changing, <ICurrentChangingArgs<TItem>>{ newCurrent: newCurrent });
     }
-    protected _onCurrentChanged() {
+    protected _onCurrentChanged(): void {
         this.objEvents.raiseProp("currentItem");
     }
-    protected _onCountChanged() {
+    protected _onCountChanged(): void {
         this.objEvents.raiseProp("count");
     }
-    protected _onEditingChanged() {
+    protected _onEditingChanged(): void {
         this.objEvents.raiseProp("isEditing");
     }
     // occurs when item status Changed (not used in simple collections)
-    protected _onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS) {
+    protected _onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS): void {
         this.objEvents.raise(COLL_EVENTS.status_changed, <ICollItemStatusArgs<TItem>>{ item: item, oldStatus: oldStatus, key: item._key });
     }
-    protected _onCollectionChanged(args: ICollChangedArgs<TItem>) {
+    protected _onCollectionChanged(args: ICollChangedArgs<TItem>): void {
         this.objEvents.raise(COLL_EVENTS.collection_changed, args);
     }
-    protected _onFillEnd(args: ICollFillArgs<TItem>) {
+    protected _onFillEnd(args: ICollFillArgs<TItem>): void {
         this.objEvents.raise(COLL_EVENTS.fill, args);
     }
     // new item is being added, but is not in the collection now
-    protected _onItemAdding(item: TItem) {
+    protected _onItemAdding(item: TItem): void {
         const args: ICancellableArgs<TItem> = { item: item, isCancel: false };
         this.objEvents.raise(COLL_EVENTS.item_adding, args);
         if (args.isCancel) {
@@ -298,12 +298,12 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         }
     }
     // new item has been added and now is in editing state and is currentItem
-    protected _onItemAdded(item: TItem) {
+    protected _onItemAdded(item: TItem): void {
         const args: IItemAddedArgs<TItem> = { item: item, isAddNewHandled: false };
         this.objEvents.raise(COLL_EVENTS.item_added, args);
     }
-    protected _attach(item: TItem) {
-        if (!!this._itemsByKey[item._key]) {
+    protected _attach(item: TItem): number {
+        if (!!this.getItemByKey(item._key)) {
             throw new Error(ERRS.ERR_ITEM_IS_ATTACHED);
         }
         try {
@@ -322,13 +322,13 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             new_key: item._key
         });
         item._aspect._onAttach();
-        this.objEvents.raiseProp("count");
+        this._onCountChanged();
         this._onCurrentChanging(item);
         this._currentPos = pos;
         this._onCurrentChanged();
         return pos;
     }
-    protected _onRemoved(item: TItem, pos: number) {
+    protected _onRemoved(item: TItem, pos: number): void {
         try {
             this._onCollectionChanged({
                 changeType: COLL_CHANGE_TYPE.Remove,
@@ -339,12 +339,13 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
                 old_key: item._key
             });
         } finally {
-            this.objEvents.raiseProp("count");
+            this._onCountChanged();
         }
     }
-    protected _onPageSizeChanged() {
+    protected _onPageSizeChanged(): void {
+        // noop
     }
-    protected _onPageChanging() {
+    protected _onPageChanging(): boolean {
         const args: IPageChangingArgs = { page: this.pageIndex, isCancel: false };
         this.objEvents.raise(COLL_EVENTS.page_changing, args);
         if (!args.isCancel) {
@@ -356,9 +357,10 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         }
         return !args.isCancel;
     }
-    protected _onPageChanged() {
+    protected _onPageChanged(): void {
+        // noop
     }
-    protected _setCurrentItem(v: TItem) {
+    protected _setCurrentItem(v: TItem): void {
         const self = this, oldPos = self._currentPos;
         if (!v) {
             if (oldPos !== -1) {
@@ -387,13 +389,13 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         }
     }
     // it is overriden in DataView class!!!
-    protected _clearItems(items: TItem[]) {
+    protected _disposeItems(items: TItem[]): void {
         items.forEach((item) => {
             item._aspect._setIsAttached(false);
             item.dispose();
         });
     }
-    protected _getEditingItem() {
+    protected _getEditingItem(): TItem {
         return this._EditingItem;
     }
     protected _getStrValue(val: any, fieldInfo: IFieldInfo): string {
@@ -472,7 +474,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             this._onCountChanged();
         } finally {
             utils.defer.getTaskQueue().enque(() => {
-                this._clearItems(oldItems);
+                this._disposeItems(oldItems);
             });
         }
     }
@@ -788,7 +790,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this._items.forEach(callback, thisObj);
     }
     removeItem(item: TItem): void {
-        if (item._aspect.isDetached || !this._itemsByKey[item._key]) {
+        if (item._aspect.isDetached || !this.getItemByKey(item._key)) {
             return;
         }
         try {
