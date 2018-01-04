@@ -3111,11 +3111,11 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             _this._items = [];
             _this._itemsByKey = {};
             _this._currentPos = -1;
-            _this._newKey = 0;
             _this._errors = new Errors(_this);
             _this._pkInfo = null;
             _this._waitQueue = new waitqueue_1.WaitQueue(_this);
-            _this._internal = {
+            _this._internal = null;
+            var internal = {
                 getEditingItem: function () {
                     return self._getEditingItem();
                 },
@@ -3146,8 +3146,19 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                     return (!!args.result && args.result.length > 0) ? args.result : [];
                 }
             };
+            _this._setInternal(internal);
             return _this;
         }
+        BaseCollection.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            this._waitQueue.dispose();
+            this._waitQueue = null;
+            this.clear();
+            _super.prototype.dispose.call(this);
+        };
         BaseCollection.getEmptyFieldInfo = function (fieldName) {
             var fieldInfo = {
                 fieldName: fieldName,
@@ -3169,125 +3180,8 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             };
             return fieldInfo;
         };
-        BaseCollection.prototype.addOnClearing = function (fn, nmspace, context, priority) {
-            this.objEvents.on("clearing", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnClearing = function (nmspace) {
-            this.objEvents.off("clearing", nmspace);
-        };
-        BaseCollection.prototype.addOnCleared = function (fn, nmspace, context, priority) {
-            this.objEvents.on("cleared", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnCleared = function (nmspace) {
-            this.objEvents.off("cleared", nmspace);
-        };
-        BaseCollection.prototype.addOnCollChanged = function (fn, nmspace, context, priority) {
-            this.objEvents.on("coll_changed", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnCollChanged = function (nmspace) {
-            this.objEvents.off("coll_changed", nmspace);
-        };
-        BaseCollection.prototype.addOnFill = function (fn, nmspace, context, priority) {
-            this.objEvents.on("fill", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnFill = function (nmspace) {
-            this.objEvents.off("fill", nmspace);
-        };
-        BaseCollection.prototype.addOnValidateField = function (fn, nmspace, context, priority) {
-            this.objEvents.on("validate_field", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnValidateField = function (nmspace) {
-            this.objEvents.off("validate_field", nmspace);
-        };
-        BaseCollection.prototype.addOnValidateItem = function (fn, nmspace, context, priority) {
-            this.objEvents.on("validate_item", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnValidateItem = function (nmspace) {
-            this.objEvents.off("validate_item", nmspace);
-        };
-        BaseCollection.prototype.addOnItemDeleting = function (fn, nmspace, context, priority) {
-            this.objEvents.on("item_deleting", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnItemDeleting = function (nmspace) {
-            this.objEvents.off("item_deleting", nmspace);
-        };
-        BaseCollection.prototype.addOnItemAdding = function (fn, nmspace, context, priority) {
-            this.objEvents.on("item_adding", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnItemAdding = function (nmspace) {
-            this.objEvents.off("item_adding", nmspace);
-        };
-        BaseCollection.prototype.addOnItemAdded = function (fn, nmspace, context, priority) {
-            this.objEvents.on("item_added", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnItemAdded = function (nmspace) {
-            this.objEvents.off("item_added", nmspace);
-        };
-        BaseCollection.prototype.addOnCurrentChanging = function (fn, nmspace, context, priority) {
-            this.objEvents.on("current_changing", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnCurrentChanging = function (nmspace) {
-            this.objEvents.off("current_changing", nmspace);
-        };
-        BaseCollection.prototype.addOnPageChanging = function (fn, nmspace, context, priority) {
-            this.objEvents.on("page_changing", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnPageChanging = function (nmspace) {
-            this.objEvents.off("page_changing", nmspace);
-        };
-        BaseCollection.prototype.addOnErrorsChanged = function (fn, nmspace, context, priority) {
-            this.objEvents.on("errors_changed", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnErrorsChanged = function (nmspace) {
-            this.objEvents.off("errors_changed", nmspace);
-        };
-        BaseCollection.prototype.addOnBeginEdit = function (fn, nmspace, context, priority) {
-            this.objEvents.on("beg_edit", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnBeginEdit = function (nmspace) {
-            this.objEvents.off("beg_edit", nmspace);
-        };
-        BaseCollection.prototype.addOnEndEdit = function (fn, nmspace, context, priority) {
-            this.objEvents.on("end_edit", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnEndEdit = function (nmspace) {
-            this.objEvents.off("end_edit", nmspace);
-        };
-        BaseCollection.prototype.addOnBeforeBeginEdit = function (fn, nmspace, context, priority) {
-            this.objEvents.on("before_be", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnBeforeBeginEdit = function (nmspace) {
-            this.objEvents.off("before_be", nmspace);
-        };
-        BaseCollection.prototype.addOnBeforeEndEdit = function (fn, nmspace, context, priority) {
-            this.objEvents.on("before_ee", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.removeBeforeOnEndEdit = function (nmspace) {
-            this.objEvents.off("before_ee", nmspace);
-        };
-        BaseCollection.prototype.addOnCommitChanges = function (fn, nmspace, context, priority) {
-            this.objEvents.on("commit_changes", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnCommitChanges = function (nmspace) {
-            this.objEvents.off("commit_changes", nmspace);
-        };
-        BaseCollection.prototype.addOnStatusChanged = function (fn, nmspace, context, priority) {
-            this.objEvents.on("status_changed", fn, nmspace, context, priority);
-        };
-        BaseCollection.prototype.offOnStatusChanged = function (nmspace) {
-            this.objEvents.off("status_changed", nmspace);
-        };
-        BaseCollection.prototype.addOnPageIndexChanged = function (handler, nmspace, context) {
-            this.objEvents.onProp("pageIndex", handler, nmspace, context);
-        };
-        BaseCollection.prototype.addOnPageSizeChanged = function (handler, nmspace, context) {
-            this.objEvents.onProp("pageSize", handler, nmspace, context);
-        };
-        BaseCollection.prototype.addOnTotalCountChanged = function (handler, nmspace, context) {
-            this.objEvents.onProp("totalCount", handler, nmspace, context);
-        };
-        BaseCollection.prototype.addOnCurrentChanged = function (handler, nmspace, context) {
-            this.objEvents.onProp("currentItem", handler, nmspace, context);
+        BaseCollection.prototype._setInternal = function (internal) {
+            this._internal = internal;
         };
         BaseCollection.prototype._updatePermissions = function (perms) {
             this._perms = perms;
@@ -3349,7 +3243,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             var args = { item: item, isAddNewHandled: false };
             this.objEvents.raise("item_added", args);
         };
-        BaseCollection.prototype._attach = function (item, itemPos) {
+        BaseCollection.prototype._attach = function (item) {
             if (!!this._itemsByKey[item._key]) {
                 throw new Error(lang_5.ERRS.ERR_ITEM_IS_ATTACHED);
             }
@@ -3359,17 +3253,8 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             catch (ex) {
                 utils.err.reThrow(ex, this.handleError(ex, this));
             }
-            var pos;
             item._aspect._onAttaching();
-            if (checks.isNt(itemPos)) {
-                pos = this._items.length;
-                this._items.push(item);
-            }
-            else {
-                pos = itemPos;
-                utils.arr.insert(this._items, item, pos);
-            }
-            this._itemsByKey[item._key] = item;
+            var pos = this._appendItem(item);
             this._onCollectionChanged({
                 changeType: 1,
                 reason: 0,
@@ -3513,7 +3398,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this.objEvents.raise("clearing", { reason: reason });
             this.cancelEdit();
             this._EditingItem = null;
-            this._newKey = 0;
             this.currentItem = null;
             var oldItems = this._items;
             try {
@@ -3537,6 +3421,66 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                     _this._clearItems(oldItems);
                 });
             }
+        };
+        BaseCollection.prototype._replaceItems = function (reason, oper, items) {
+            var _this = this;
+            this._clear(reason, oper);
+            this._items = items;
+            items.forEach(function (item, index) {
+                _this._itemsByKey[item._key] = item;
+                item._aspect._setIsAttached(true);
+            });
+        };
+        BaseCollection.prototype._appendItem = function (item) {
+            this._items.push(item);
+            this._itemsByKey[item._key] = item;
+            return (this._items.length - 1);
+        };
+        BaseCollection.prototype._remapItem = function (oldkey, newkey, item) {
+            if (!newkey) {
+                throw new Error(lang_5.ERRS.ERR_KEY_IS_EMPTY);
+            }
+            delete this._itemsByKey[oldkey];
+            item._aspect._setKey(newkey);
+            this._itemsByKey[newkey] = item;
+        };
+        BaseCollection.prototype._removeItem = function (item) {
+            var key = item._key;
+            if (!this.getItemByKey(key)) {
+                return -1;
+            }
+            var oldPos = utils.arr.remove(this._items, item);
+            if (oldPos < 0) {
+                throw new Error(lang_5.ERRS.ERR_ITEM_IS_NOTFOUND);
+            }
+            this._onRemoved(item, oldPos);
+            delete this._itemsByKey[key];
+            return oldPos;
+        };
+        BaseCollection.prototype._resetCurrent = function (oldPos) {
+            var test = this.getItemByPos(oldPos), curPos = this._currentPos;
+            if (curPos === oldPos) {
+                if (!test) {
+                    this._currentPos = curPos - 1;
+                }
+                this._onCurrentChanged();
+            }
+            if (curPos > oldPos) {
+                this._currentPos = curPos - 1;
+                this._onCurrentChanged();
+            }
+        };
+        BaseCollection.prototype._waitForProp = function (prop, callback, groupName) {
+            this._waitQueue.enQueue({
+                prop: prop,
+                groupName: groupName,
+                predicate: function (val) {
+                    return !val;
+                },
+                action: callback,
+                actionArgs: [],
+                lastWins: !!groupName
+            });
         };
         BaseCollection.prototype._setIsLoading = function (v) {
             if (this._isLoading !== v) {
@@ -3635,7 +3579,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             var item, isHandled;
             item = this._createNew();
             this._onItemAdding(item);
-            this._attach(item, null);
+            this._attach(item);
             try {
                 this.currentItem = item;
                 item._aspect.beginEdit();
@@ -3658,7 +3602,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             if (!key) {
                 throw new Error(lang_5.ERRS.ERR_KEY_IS_EMPTY);
             }
-            return this._itemsByKey["" + key];
+            return this._itemsByKey[key];
         };
         BaseCollection.prototype.findByPK = function () {
             var vals = [];
@@ -3792,25 +3736,10 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 return;
             }
             try {
-                var oldPos = utils.arr.remove(this._items, item), key = item._key;
-                if (oldPos < 0) {
-                    throw new Error(lang_5.ERRS.ERR_ITEM_IS_NOTFOUND);
-                }
-                this._onRemoved(item, oldPos);
-                delete this._itemsByKey[key];
+                var oldPos = this._removeItem(item);
                 this._errors.removeAllErrors(item);
                 item._aspect._setIsAttached(false);
-                var test = this.getItemByPos(oldPos), curPos = this._currentPos;
-                if (curPos === oldPos) {
-                    if (!test) {
-                        this._currentPos = curPos - 1;
-                    }
-                    this._onCurrentChanged();
-                }
-                if (curPos > oldPos) {
-                    this._currentPos = curPos - 1;
-                    this._onCurrentChanged();
-                }
+                this._resetCurrent(oldPos);
             }
             finally {
                 if (!item.getIsStateDirty()) {
@@ -3850,16 +3779,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._clear(0, 0);
             this.totalCount = 0;
         };
-        BaseCollection.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            this._waitQueue.dispose();
-            this._waitQueue = null;
-            this.clear();
-            _super.prototype.dispose.call(this);
-        };
         BaseCollection.prototype.waitForNotLoading = function (callback, groupName) {
             this._waitQueue.enQueue({
                 prop: "isLoading",
@@ -3873,34 +3792,168 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         BaseCollection.prototype.toString = function () {
             return "BaseCollection";
         };
+        BaseCollection.prototype.addOnClearing = function (fn, nmspace, context, priority) {
+            this.objEvents.on("clearing", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnClearing = function (nmspace) {
+            this.objEvents.off("clearing", nmspace);
+        };
+        BaseCollection.prototype.addOnCleared = function (fn, nmspace, context, priority) {
+            this.objEvents.on("cleared", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnCleared = function (nmspace) {
+            this.objEvents.off("cleared", nmspace);
+        };
+        BaseCollection.prototype.addOnCollChanged = function (fn, nmspace, context, priority) {
+            this.objEvents.on("coll_changed", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnCollChanged = function (nmspace) {
+            this.objEvents.off("coll_changed", nmspace);
+        };
+        BaseCollection.prototype.addOnFill = function (fn, nmspace, context, priority) {
+            this.objEvents.on("fill", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnFill = function (nmspace) {
+            this.objEvents.off("fill", nmspace);
+        };
+        BaseCollection.prototype.addOnValidateField = function (fn, nmspace, context, priority) {
+            this.objEvents.on("validate_field", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnValidateField = function (nmspace) {
+            this.objEvents.off("validate_field", nmspace);
+        };
+        BaseCollection.prototype.addOnValidateItem = function (fn, nmspace, context, priority) {
+            this.objEvents.on("validate_item", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnValidateItem = function (nmspace) {
+            this.objEvents.off("validate_item", nmspace);
+        };
+        BaseCollection.prototype.addOnItemDeleting = function (fn, nmspace, context, priority) {
+            this.objEvents.on("item_deleting", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnItemDeleting = function (nmspace) {
+            this.objEvents.off("item_deleting", nmspace);
+        };
+        BaseCollection.prototype.addOnItemAdding = function (fn, nmspace, context, priority) {
+            this.objEvents.on("item_adding", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnItemAdding = function (nmspace) {
+            this.objEvents.off("item_adding", nmspace);
+        };
+        BaseCollection.prototype.addOnItemAdded = function (fn, nmspace, context, priority) {
+            this.objEvents.on("item_added", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnItemAdded = function (nmspace) {
+            this.objEvents.off("item_added", nmspace);
+        };
+        BaseCollection.prototype.addOnCurrentChanging = function (fn, nmspace, context, priority) {
+            this.objEvents.on("current_changing", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnCurrentChanging = function (nmspace) {
+            this.objEvents.off("current_changing", nmspace);
+        };
+        BaseCollection.prototype.addOnPageChanging = function (fn, nmspace, context, priority) {
+            this.objEvents.on("page_changing", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnPageChanging = function (nmspace) {
+            this.objEvents.off("page_changing", nmspace);
+        };
+        BaseCollection.prototype.addOnErrorsChanged = function (fn, nmspace, context, priority) {
+            this.objEvents.on("errors_changed", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnErrorsChanged = function (nmspace) {
+            this.objEvents.off("errors_changed", nmspace);
+        };
+        BaseCollection.prototype.addOnBeginEdit = function (fn, nmspace, context, priority) {
+            this.objEvents.on("beg_edit", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnBeginEdit = function (nmspace) {
+            this.objEvents.off("beg_edit", nmspace);
+        };
+        BaseCollection.prototype.addOnEndEdit = function (fn, nmspace, context, priority) {
+            this.objEvents.on("end_edit", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnEndEdit = function (nmspace) {
+            this.objEvents.off("end_edit", nmspace);
+        };
+        BaseCollection.prototype.addOnBeforeBeginEdit = function (fn, nmspace, context, priority) {
+            this.objEvents.on("before_be", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnBeforeBeginEdit = function (nmspace) {
+            this.objEvents.off("before_be", nmspace);
+        };
+        BaseCollection.prototype.addOnBeforeEndEdit = function (fn, nmspace, context, priority) {
+            this.objEvents.on("before_ee", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.removeBeforeOnEndEdit = function (nmspace) {
+            this.objEvents.off("before_ee", nmspace);
+        };
+        BaseCollection.prototype.addOnCommitChanges = function (fn, nmspace, context, priority) {
+            this.objEvents.on("commit_changes", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnCommitChanges = function (nmspace) {
+            this.objEvents.off("commit_changes", nmspace);
+        };
+        BaseCollection.prototype.addOnStatusChanged = function (fn, nmspace, context, priority) {
+            this.objEvents.on("status_changed", fn, nmspace, context, priority);
+        };
+        BaseCollection.prototype.offOnStatusChanged = function (nmspace) {
+            this.objEvents.off("status_changed", nmspace);
+        };
+        BaseCollection.prototype.addOnPageIndexChanged = function (handler, nmspace, context) {
+            this.objEvents.onProp("pageIndex", handler, nmspace, context);
+        };
+        BaseCollection.prototype.addOnPageSizeChanged = function (handler, nmspace, context) {
+            this.objEvents.onProp("pageSize", handler, nmspace, context);
+        };
+        BaseCollection.prototype.addOnTotalCountChanged = function (handler, nmspace, context) {
+            this.objEvents.onProp("totalCount", handler, nmspace, context);
+        };
+        BaseCollection.prototype.addOnCurrentChanged = function (handler, nmspace, context) {
+            this.objEvents.onProp("currentItem", handler, nmspace, context);
+        };
         Object.defineProperty(BaseCollection.prototype, "errors", {
-            get: function () { return this._errors; },
+            get: function () {
+                return this._errors;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BaseCollection.prototype, "options", {
-            get: function () { return this._options; },
+            get: function () {
+                return this._options;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BaseCollection.prototype, "items", {
-            get: function () { return this._items; },
+            get: function () {
+                return this._items;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BaseCollection.prototype, "currentItem", {
-            get: function () { return this.getItemByPos(this._currentPos); },
-            set: function (v) { this._setCurrentItem(v); },
+            get: function () {
+                return this.getItemByPos(this._currentPos);
+            },
+            set: function (v) {
+                this._setCurrentItem(v);
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BaseCollection.prototype, "count", {
-            get: function () { return this._items.length; },
+            get: function () {
+                return this._items.length;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BaseCollection.prototype, "totalCount", {
-            get: function () { return this._totalCount; },
+            get: function () {
+                return this._totalCount;
+            },
             set: function (v) {
                 if (v !== this._totalCount) {
                     this._totalCount = v;
@@ -3912,7 +3965,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             configurable: true
         });
         Object.defineProperty(BaseCollection.prototype, "pageSize", {
-            get: function () { return this._options.pageSize; },
+            get: function () {
+                return this._options.pageSize;
+            },
             set: function (v) {
                 if (this._options.pageSize !== v) {
                     this._options.pageSize = v;
@@ -3924,7 +3979,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             configurable: true
         });
         Object.defineProperty(BaseCollection.prototype, "pageIndex", {
-            get: function () { return this._pageIndex; },
+            get: function () {
+                return this._pageIndex;
+            },
             set: function (v) {
                 if (v !== this._pageIndex && this.isPagingEnabled) {
                     if (v < 0) {
@@ -3961,22 +4018,30 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             configurable: true
         });
         Object.defineProperty(BaseCollection.prototype, "isPagingEnabled", {
-            get: function () { return this._options.enablePaging; },
+            get: function () {
+                return this._options.enablePaging;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BaseCollection.prototype, "isEditing", {
-            get: function () { return !!this._EditingItem; },
+            get: function () {
+                return !!this._EditingItem;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BaseCollection.prototype, "isLoading", {
-            get: function () { return this._isLoading; },
+            get: function () {
+                return this._isLoading;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BaseCollection.prototype, "isUpdating", {
-            get: function () { return this._isUpdating; },
+            get: function () {
+                return this._isUpdating;
+            },
             set: function (v) {
                 if (this._isUpdating !== v) {
                     this._isUpdating = v;
@@ -3987,7 +4052,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             configurable: true
         });
         Object.defineProperty(BaseCollection.prototype, "permissions", {
-            get: function () { return this._perms; },
+            get: function () {
+                return this._perms;
+            },
             enumerable: true,
             configurable: true
         });
@@ -4801,6 +4868,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             var _this = _super.call(this) || this;
             _this._fieldMap = {};
             _this._fieldInfos = [];
+            _this._newKey = 0;
             if (!!props) {
                 _this._updateFieldMap(props);
             }
@@ -4823,6 +4891,10 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     fld.fullName = fullName;
                 });
             });
+        };
+        BaseList.prototype._clear = function (reason, oper) {
+            _super.prototype._clear.call(this, reason, oper);
+            this._newKey = 0;
         };
         BaseList.prototype._attach = function (item) {
             try {
@@ -4862,12 +4934,10 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     this.clear();
                 }
                 objArray.forEach(function (obj) {
-                    var item = self.createItem(obj), oldItem = self._itemsByKey[item._key];
+                    var item = self.createItem(obj), oldItem = self.getItemByKey(item._key);
                     if (!oldItem) {
-                        self._items.push(item);
-                        self._itemsByKey[item._key] = item;
+                        positions.push(self._appendItem(item));
                         newItems.push(item);
-                        positions.push(self._items.length - 1);
                         items.push(item);
                         item._aspect._setIsAttached(true);
                     }
@@ -4896,12 +4966,12 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             this.moveFirst();
         };
         BaseList.prototype.getNewItems = function () {
-            return this._items.filter(function (item) {
+            return this.items.filter(function (item) {
                 return item._aspect.isNew;
             });
         };
         BaseList.prototype.resetStatus = function () {
-            this._items.forEach(function (item) {
+            this.items.forEach(function (item) {
                 item._aspect._resetStatus();
             });
         };
@@ -5317,10 +5387,8 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
             }
             var oldkey = item._key, newkey = "" + key;
             if (oldkey !== newkey) {
-                delete self._itemsByKey[oldkey];
-                item._aspect._setKey(newkey);
-                self._itemsByKey[item._key] = item;
-                self._onCollectionChanged({
+                self._remapItem(oldkey, newkey, item);
+                this._onCollectionChanged({
                     changeType: 3,
                     reason: 0,
                     oper: 4,

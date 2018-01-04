@@ -188,16 +188,15 @@ declare module "jriapp_db/dbset" {
         protected _calcfldMap: {
             [fieldName: string]: ICalcFieldImpl<TItem>;
         };
-        protected _itemsByKey: {
-            [key: string]: TItem;
-        };
         protected _ignorePageChanged: boolean;
         protected _query: DataQuery<TItem, TObj>;
         private _pageDebounce;
         private _dbSetName;
         private _pkFields;
         private _isPageFilled;
+        private _newKey;
         constructor(opts: IDbSetConstuctorOptions);
+        dispose(): void;
         abstract itemFactory(aspect: EntityAspect<TItem, TObj, TDbContext>): TItem;
         handleError(error: any, source: any): boolean;
         protected _mapAssocFields(): void;
@@ -253,9 +252,7 @@ declare module "jriapp_db/dbset" {
         deleteOnSubmit(item: TItem): void;
         clear(): void;
         createQuery(name: string): DataQuery<TItem, TObj>;
-        dispose(): void;
         toString(): string;
-        readonly items: TItem[];
         readonly dbContext: TDbContext;
         readonly dbSetName: string;
         readonly query: DataQuery<TItem, TObj>;
