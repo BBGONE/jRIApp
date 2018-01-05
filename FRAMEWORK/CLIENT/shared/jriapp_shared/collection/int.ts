@@ -71,7 +71,7 @@ export interface IItemAspect<TItem extends ICollectionItem, TObj> extends IBaseO
     readonly vals: TObj;
     readonly item: TItem;
     readonly key: string;
-    readonly collection: ICollection<TItem>;
+    readonly coll: ICollection<TItem>;
     readonly status: ITEM_STATUS;
     readonly isUpdating: boolean;
     readonly isEditing: boolean;

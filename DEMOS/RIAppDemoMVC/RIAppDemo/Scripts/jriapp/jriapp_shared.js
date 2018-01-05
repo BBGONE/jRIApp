@@ -4248,16 +4248,37 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         __extends(ItemAspect, _super);
         function ItemAspect(collection, vals, key, isNew) {
             var _this = _super.call(this) || this;
-            _this._collection = collection;
+            _this._coll = collection;
             _this._vals = vals;
             _this._key = key;
             _this._status = isNew ? 1 : 0;
             _this._saveVals = null;
             _this._flags = 0;
             _this._valueBag = null;
-            _this._item = collection.itemFactory(_this);
+            _this._item = null;
             return _this;
         }
+        ItemAspect.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            var coll = this._coll, item = this._item;
+            if (!!item) {
+                this.cancelEdit();
+                if (!this.isDetached) {
+                    coll.removeItem(item);
+                }
+            }
+            var bag = this._valueBag;
+            if (!!bag) {
+                coreUtils.forEachProp(bag, function (name, val) {
+                    fn_destroyVal(val, coll.uniqueID);
+                });
+            }
+            this._flags = 0;
+            _super.prototype.dispose.call(this);
+        };
         ItemAspect.prototype._onErrorsChanged = function () {
             this.objEvents.raise("errors_changed", {});
         };
@@ -4280,7 +4301,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype._beginEdit = function () {
             fn_checkDetached(this);
-            var coll = this.collection;
+            var coll = this.coll;
             var isHandled = false;
             if (coll.isEditing) {
                 var item = coll._getInternal().getEditingItem();
@@ -4300,8 +4321,8 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                     ERROR.reThrow(ex, isHandled);
                 }
             }
-            this._saveVals = collUtils.cloneVals(this.collection.getFieldInfos(), this._vals);
-            this.collection.currentItem = this.item;
+            this._saveVals = collUtils.cloneVals(this.coll.getFieldInfos(), this._vals);
+            this.coll.currentItem = this.item;
             return true;
         };
         ItemAspect.prototype._endEdit = function () {
@@ -4309,7 +4330,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 return false;
             }
             fn_checkDetached(this);
-            var coll = this.collection, self = this, errors = coll.errors;
+            var coll = this.coll, self = this, errors = coll.errors;
             errors.removeAllErrors(this.item);
             var validations = this._validateFields();
             if (validations.length > 0) {
@@ -4327,7 +4348,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 return false;
             }
             fn_checkDetached(this);
-            var coll = this.collection, self = this, item = self.item, changes = this._saveVals;
+            var coll = this.coll, self = this, item = self.item, changes = this._saveVals;
             this._vals = this._saveVals;
             this._saveVals = null;
             coll.errors.removeAllErrors(item);
@@ -4342,10 +4363,10 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return false;
         };
         ItemAspect.prototype._validateItem = function () {
-            return this.collection.errors.validateItem(this.item);
+            return this.coll.errors.validateItem(this.item);
         };
         ItemAspect.prototype._validateField = function (fieldName) {
-            var fieldInfo = this.getFieldInfo(fieldName), errors = this.collection.errors;
+            var fieldInfo = this.getFieldInfo(fieldName), errors = this.coll.errors;
             var value = coreUtils.getValue(this._vals, fieldName);
             if (this._skipValidate(fieldInfo, value)) {
                 return null;
@@ -4362,7 +4383,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return (result.errors.length > 0) ? result : null;
         };
         ItemAspect.prototype._validateFields = function () {
-            var self = this, fieldInfos = this.collection.getFieldInfos(), res = [];
+            var self = this, fieldInfos = this.coll.getFieldInfos(), res = [];
             collUtils.walkFields(fieldInfos, function (fld, fullName) {
                 if (fld.fieldType !== 5) {
                     var fieldValidation = self._validateField(fullName);
@@ -4377,7 +4398,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype._resetStatus = function () {
         };
         ItemAspect.prototype.handleError = function (error, source) {
-            return this.collection.handleError(error, source);
+            return this.coll.handleError(error, source);
         };
         ItemAspect.prototype._setKey = function (v) {
             this._key = v;
@@ -4395,13 +4416,13 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             this._onErrorsChanged();
         };
         ItemAspect.prototype.getFieldInfo = function (fieldName) {
-            return this.collection.getFieldInfo(fieldName);
+            return this.coll.getFieldInfo(fieldName);
         };
         ItemAspect.prototype.getFieldNames = function () {
-            return this.collection.getFieldNames();
+            return this.coll.getFieldNames();
         };
         ItemAspect.prototype.getErrorString = function () {
-            var itemErrors = this.collection.errors.getErrors(this.item);
+            var itemErrors = this.coll.errors.getErrors(this.item);
             if (!itemErrors) {
                 return "";
             }
@@ -4423,7 +4444,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (this.isEditing) {
                 return false;
             }
-            var coll = this.collection, internal = coll._getInternal(), item = this.item;
+            var coll = this.coll, internal = coll._getInternal(), item = this.item;
             internal.onBeforeEditing(item, true, false);
             if (!this._beginEdit()) {
                 return false;
@@ -4443,7 +4464,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 return false;
             }
             fn_checkDetached(this);
-            var coll = this.collection, internal = coll._getInternal(), item = this.item;
+            var coll = this.coll, internal = coll._getInternal(), item = this.item;
             internal.onBeforeEditing(item, false, false);
             var customEndEdit = true;
             if (!!this._valueBag) {
@@ -4469,7 +4490,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             fn_checkDetached(this);
             this._setIsCancelling(true);
             try {
-                var coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
+                var coll = this.coll, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
                 internal.onBeforeEditing(item, false, true);
                 if (!!this._valueBag) {
                     coreUtils.forEachProp(this._valueBag, function (name, obj) {
@@ -4492,7 +4513,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return true;
         };
         ItemAspect.prototype.deleteItem = function () {
-            var coll = this.collection;
+            var coll = this.coll;
             if (this.isDetached) {
                 return false;
             }
@@ -4505,7 +4526,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return true;
         };
         ItemAspect.prototype.getIsHasErrors = function () {
-            var res = !!this.collection.errors.getErrors(this.item);
+            var res = !!this.coll.errors.getErrors(this.item);
             if (!res && !!this._valueBag) {
                 coreUtils.forEachProp(this._valueBag, function (name, obj) {
                     if (!!obj) {
@@ -4525,7 +4546,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             this.objEvents.off("errors_changed", nmspace);
         };
         ItemAspect.prototype.getFieldErrors = function (fieldName) {
-            var res = [], itemErrors = this.collection.errors.getErrors(this.item);
+            var res = [], itemErrors = this.coll.errors.getErrors(this.item);
             if (!itemErrors) {
                 return res;
             }
@@ -4552,7 +4573,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                     }
                 });
             }
-            var itemErrors = this.collection.errors.getErrors(this.item);
+            var itemErrors = this.coll.errors.getErrors(this.item);
             if (!itemErrors) {
                 return res;
             }
@@ -4577,7 +4598,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 }
                 this._valueBag = {};
             }
-            var oldEntry = this._valueBag[name], coll = this.collection;
+            var oldEntry = this._valueBag[name], coll = this.coll;
             if (!!oldEntry && oldEntry.val !== val) {
                 fn_destroyVal(oldEntry, coll.uniqueID);
             }
@@ -4605,39 +4626,21 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             var obj = this._valueBag[name];
             return (!obj) ? null : obj.val;
         };
-        ItemAspect.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            var coll = this._collection, item = this._item;
-            if (!!item) {
-                this.cancelEdit();
-                var bag = this._valueBag;
-                if (!!bag) {
-                    coreUtils.forEachProp(bag, function (name, val) {
-                        fn_destroyVal(val, coll.uniqueID);
-                    });
-                }
-                if (!this.isDetached) {
-                    coll.removeItem(item);
-                }
-            }
-            this._flags = 0;
-            _super.prototype.dispose.call(this);
-        };
         ItemAspect.prototype.toString = function () {
             return "ItemAspect";
         };
         Object.defineProperty(ItemAspect.prototype, "vals", {
             get: function () {
-                return collUtils.copyVals(this.collection.getFieldInfos(), this._vals, {});
+                return collUtils.copyVals(this.coll.getFieldInfos(), this._vals, {});
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "item", {
             get: function () {
+                if (!this._item) {
+                    this._item = this._coll.itemFactory(this);
+                }
                 return this._item;
             },
             enumerable: true,
@@ -4650,9 +4653,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ItemAspect.prototype, "collection", {
+        Object.defineProperty(ItemAspect.prototype, "coll", {
             get: function () {
-                return this._collection;
+                return this._coll;
             },
             enumerable: true,
             configurable: true
@@ -4666,14 +4669,14 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         });
         Object.defineProperty(ItemAspect.prototype, "isUpdating", {
             get: function () {
-                return this.collection.isUpdating;
+                return this.coll.isUpdating;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ItemAspect.prototype, "isEditing", {
             get: function () {
-                var editingItem = this.collection._getInternal().getEditingItem();
+                var editingItem = this.coll._getInternal().getEditingItem();
                 return !!editingItem && editingItem._aspect === this;
             },
             enumerable: true,
@@ -4795,7 +4798,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                 return;
             }
             var error;
-            var coll = this.collection, item = this.item, fieldInfo = this.getFieldInfo(name), errors = coll.errors;
+            var coll = this.coll, item = this.item, fieldInfo = this.getFieldInfo(name), errors = coll.errors;
             if (this._getProp(name) !== val) {
                 try {
                     if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
@@ -4836,7 +4839,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             return this.item.toString() + "Aspect";
         };
         Object.defineProperty(ListItemAspect.prototype, "list", {
-            get: function () { return this.collection; },
+            get: function () { return this.coll; },
             enumerable: true,
             configurable: true
         });
@@ -4969,7 +4972,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             return _super !== null && _super.apply(this, arguments) || this;
         }
         AnyItemAspect.prototype._validateField = function (name) {
-            return this.collection.errors.validateItemField(this.item, name);
+            return this.coll.errors.validateItemField(this.item, name);
         };
         AnyItemAspect.prototype._validateFields = function () {
             return validation_2.Validations.distinct(this._validateItem());
@@ -5008,7 +5011,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             return coreUtils.getValue(this.val, fieldName, "->");
         };
         AnyValListItem.prototype.setProp = function (name, val) {
-            var coll = this._aspect.collection, errors = coll.errors, old = this.getProp(name);
+            var coll = this._aspect.coll, errors = coll.errors, old = this.getProp(name);
             if (old !== val) {
                 try {
                     var fieldName = strUtils.trimBrackets(name);

@@ -67,7 +67,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     }
     protected _onFieldChanged(fieldName: string, fieldInfo?: IFieldInfo): void {
         sys.raiseProp(this.item, fieldName);
-        const info = fieldInfo || this.collection.getFieldInfo(fieldName);
+        const info = fieldInfo || this.coll.getFieldInfo(fieldName);
         if (!!info.dependents && info.dependents.length > 0) {
             info.dependents.forEach((d) => {
                 sys.raiseProp(this.item, d);
@@ -522,6 +522,6 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         return this.dbSet.dbContext.serverTimezone;
     }
     get dbSet(): DbSet<TItem, TObj, TDbContext> {
-        return <any>this.collection;
+        return <any>this.coll;
     }
 }

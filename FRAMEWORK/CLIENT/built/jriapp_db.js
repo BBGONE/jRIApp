@@ -3150,7 +3150,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         EntityAspect.prototype._onFieldChanged = function (fieldName, fieldInfo) {
             var _this = this;
             sys.raiseProp(this.item, fieldName);
-            var info = fieldInfo || this.collection.getFieldInfo(fieldName);
+            var info = fieldInfo || this.coll.getFieldInfo(fieldName);
             if (!!info.dependents && info.dependents.length > 0) {
                 info.dependents.forEach(function (d) {
                     sys.raiseProp(_this.item, d);
@@ -3618,7 +3618,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         });
         Object.defineProperty(EntityAspect.prototype, "dbSet", {
             get: function () {
-                return this.collection;
+                return this.coll;
             },
             enumerable: true,
             configurable: true

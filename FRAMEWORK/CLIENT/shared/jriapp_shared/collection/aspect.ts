@@ -55,7 +55,7 @@ function fn_checkDetached<TItem extends ICollectionItem, TObj>(aspect: IItemAspe
 export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject implements IItemAspect<TItem, TObj> {
     private _key: string;
     private _item: TItem;
-    private _collection: BaseCollection<TItem>;
+    private _coll: BaseCollection<TItem>;
     private _flags: number;
     private _valueBag: IIndexer<ICustomVal>;
     protected _status: ITEM_STATUS;
@@ -64,14 +64,36 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
 
     constructor(collection: BaseCollection<TItem>, vals: any, key: string, isNew: boolean) {
         super();
-        this._collection = collection;
+        this._coll = collection;
         this._vals = vals;
         this._key = key;
         this._status = isNew ? ITEM_STATUS.Added : ITEM_STATUS.None;
         this._saveVals = null;
         this._flags = 0;
         this._valueBag = null;
-        this._item = collection.itemFactory(this);
+        this._item = null;
+    }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        const coll = this._coll, item = this._item;
+        if (!!item) {
+            this.cancelEdit();
+
+            if (!this.isDetached) {
+                coll.removeItem(item);
+            }
+        }
+        const bag = this._valueBag;
+        if (!!bag) {
+            coreUtils.forEachProp(bag, (name, val) => {
+                fn_destroyVal(val, coll.uniqueID);
+            });
+        }
+        this._flags = 0;
+        super.dispose();
     }
     protected _onErrorsChanged(): void {
         this.objEvents.raise(ITEM_EVENTS.errors_changed, {});
@@ -94,7 +116,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
     }
     protected _beginEdit(): boolean {
         fn_checkDetached(this);
-        const coll = this.collection;
+        const coll = this.coll;
         let isHandled: boolean = false;
         if (coll.isEditing) {
             const item = coll._getInternal().getEditingItem();
@@ -113,8 +135,8 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
                 ERROR.reThrow(ex, isHandled);
             }
         }
-        this._saveVals = collUtils.cloneVals(this.collection.getFieldInfos(), this._vals);
-        this.collection.currentItem = this.item;
+        this._saveVals = collUtils.cloneVals(this.coll.getFieldInfos(), this._vals);
+        this.coll.currentItem = this.item;
         return true;
     }
     protected _endEdit(): boolean {
@@ -122,7 +144,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
             return false;
         }
         fn_checkDetached(this);
-        const coll = this.collection, self = this, errors = coll.errors;
+        const coll = this.coll, self = this, errors = coll.errors;
         // revalidate all
         errors.removeAllErrors(this.item);
         const validations: IValidationInfo[] = this._validateFields();
@@ -140,7 +162,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
             return false;
         }
         fn_checkDetached(this);
-        const coll = this.collection, self = this,
+        const coll = this.coll, self = this,
             item = self.item, changes = this._saveVals;
         this._vals = this._saveVals;
         this._saveVals = null;
@@ -158,10 +180,10 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         return false;
     }
     protected _validateItem(): IValidationInfo[] {
-        return this.collection.errors.validateItem(this.item);
+        return this.coll.errors.validateItem(this.item);
     }
     protected _validateField(fieldName: string): IValidationInfo {
-        const fieldInfo = this.getFieldInfo(fieldName), errors = this.collection.errors;
+        const fieldInfo = this.getFieldInfo(fieldName), errors = this.coll.errors;
         const value = coreUtils.getValue(this._vals, fieldName);
         if (this._skipValidate(fieldInfo, value)) {
             return null;
@@ -180,7 +202,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         return (result.errors.length > 0) ? result : null;
     }
     protected _validateFields(): IValidationInfo[] {
-        const self = this, fieldInfos = this.collection.getFieldInfos(),
+        const self = this, fieldInfos = this.coll.getFieldInfos(),
             res: IValidationInfo[] = [];
         // revalidate all fields one by one
         collUtils.walkFields(fieldInfos, (fld, fullName) => {
@@ -201,7 +223,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         // the list descendant does it
     }
     handleError(error: any, source: any): boolean {
-        return this.collection.handleError(error, source);
+        return this.coll.handleError(error, source);
     }
     _setKey(v: string) {
         this._key = v;
@@ -219,13 +241,13 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         this._onErrorsChanged();
     }
     getFieldInfo(fieldName: string) {
-        return this.collection.getFieldInfo(fieldName);
+        return this.coll.getFieldInfo(fieldName);
     }
     getFieldNames() {
-        return this.collection.getFieldNames();
+        return this.coll.getFieldNames();
     }
     getErrorString(): string {
-        const itemErrors = this.collection.errors.getErrors(this.item);
+        const itemErrors = this.coll.errors.getErrors(this.item);
         if (!itemErrors) {
             return "";
         }
@@ -247,7 +269,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         if (this.isEditing) {
             return false;
         }
-        const coll = this.collection, internal = coll._getInternal(), item = this.item;
+        const coll = this.coll, internal = coll._getInternal(), item = this.item;
         internal.onBeforeEditing(item, true, false);
         if (!this._beginEdit()) {
             return false;
@@ -267,7 +289,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
             return false;
         }
         fn_checkDetached(this);
-        const coll = this.collection, internal = coll._getInternal(), item = this.item;
+        const coll = this.coll, internal = coll._getInternal(), item = this.item;
         internal.onBeforeEditing(item, false, false);
         let customEndEdit = true;
         if (!!this._valueBag) {
@@ -293,7 +315,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         fn_checkDetached(this);
         this._setIsCancelling(true);
         try {
-            const coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
+            const coll = this.coll, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
             internal.onBeforeEditing(item, false, true);
             if (!!this._valueBag) {
                 coreUtils.forEachProp(this._valueBag, (name, obj) => {
@@ -315,7 +337,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         return true;
     }
     deleteItem(): boolean {
-        const coll = this.collection;
+        const coll = this.coll;
         if (this.isDetached) {
             return false;
         }
@@ -328,7 +350,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         return true;
     }
     getIsHasErrors() {
-        let res = !!this.collection.errors.getErrors(this.item);
+        let res = !!this.coll.errors.getErrors(this.item);
         if (!res && !!this._valueBag) {
             coreUtils.forEachProp(this._valueBag, (name, obj) => {
                 if (!!obj) {
@@ -348,7 +370,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         this.objEvents.off(ITEM_EVENTS.errors_changed, nmspace);
     }
     getFieldErrors(fieldName: string): IValidationInfo[] {
-        const res: IValidationInfo[] = [], itemErrors = this.collection.errors.getErrors(this.item);
+        const res: IValidationInfo[] = [], itemErrors = this.coll.errors.getErrors(this.item);
         if (!itemErrors) {
             return res;
         }
@@ -376,7 +398,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
             });
         }
 
-        const itemErrors = this.collection.errors.getErrors(this.item);
+        const itemErrors = this.coll.errors.getErrors(this.item);
         if (!itemErrors) {
             return res;
         }
@@ -401,7 +423,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
             this._valueBag = {};
         }
 
-        const oldEntry = this._valueBag[name],  coll = this.collection;
+        const oldEntry = this._valueBag[name],  coll = this.coll;
 
         if (!!oldEntry && oldEntry.val !== val) {
             fn_destroyVal(oldEntry, coll.uniqueID);
@@ -431,52 +453,33 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         const obj = this._valueBag[name];
         return (!obj) ? null: obj.val;
     }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        const coll = this._collection, item = this._item;
-        if (!!item) {
-            this.cancelEdit();
-            const bag = this._valueBag;
-            if (!!bag) {
-                coreUtils.forEachProp(bag, (name, val) => {
-                    fn_destroyVal(val, coll.uniqueID);
-                });
-            }
-
-            if (!this.isDetached) {
-                coll.removeItem(item);
-            }
-        }
-        this._flags = 0;
-        super.dispose();
-    }
-    toString() {
+    toString(): string {
         return "ItemAspect";
     }
     // cloned values of this item
     get vals(): TObj {
-        return collUtils.copyVals(this.collection.getFieldInfos(), this._vals, {});
+        return collUtils.copyVals(this.coll.getFieldInfos(), this._vals, {});
     }
     get item(): TItem {
+        if (!this._item) {
+            this._item = this._coll.itemFactory(this);
+        }
         return this._item;
     }
     get key(): string {
         return this._key;
     }
-    get collection(): BaseCollection<TItem> {
-        return this._collection;
+    get coll(): BaseCollection<TItem> {
+        return this._coll;
     }
     get status(): ITEM_STATUS {
         return this._status;
     }
     get isUpdating(): boolean {
-        return this.collection.isUpdating;
+        return this.coll.isUpdating;
     }
     get isEditing(): boolean {
-        const editingItem = this.collection._getInternal().getEditingItem();
+        const editingItem = this.coll._getInternal().getEditingItem();
         return !!editingItem && editingItem._aspect === this;
     }
     get isCanSubmit(): boolean {

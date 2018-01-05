@@ -25,7 +25,7 @@ export interface IAnyValItem extends IAnyVal, IListItem, IPropertyBag {
 export class AnyItemAspect extends ListItemAspect<IAnyValItem, IAnyVal> {
     // override and made public
     _validateField(name: string): IValidationInfo {
-        return this.collection.errors.validateItemField(this.item, name);
+        return this.coll.errors.validateItemField(this.item, name);
     }
     // override
     protected _validateFields(): IValidationInfo[] {
@@ -61,7 +61,7 @@ export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAn
         return coreUtils.getValue(this.val, fieldName, "->");
     }
     setProp(name: string, val: any): void {
-        const coll = this._aspect.collection, errors = coll.errors, old = this.getProp(name);
+        const coll = this._aspect.coll, errors = coll.errors, old = this.getProp(name);
         if (old !== val) {
             try {
                 const fieldName = strUtils.trimBrackets(name);
@@ -139,7 +139,7 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
             }
         });
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }

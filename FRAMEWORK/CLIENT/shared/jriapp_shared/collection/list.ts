@@ -25,7 +25,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
             return;
         }
         let error: ValidationError;
-        const coll = this.collection, item = this.item, fieldInfo = this.getFieldInfo(name),
+        const coll = this.coll, item = this.item, fieldInfo = this.getFieldInfo(name),
             errors = coll.errors;
         if (this._getProp(name) !== val) {
             try {
@@ -64,7 +64,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
         }
         return this.item.toString() + "Aspect";
     }
-    get list(): BaseList<TItem, TObj> { return <BaseList<TItem, TObj>>this.collection; }
+    get list(): BaseList<TItem, TObj> { return <BaseList<TItem, TObj>>this.coll; }
 }
 
 export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {

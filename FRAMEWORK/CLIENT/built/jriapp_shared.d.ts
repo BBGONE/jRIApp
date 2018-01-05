@@ -819,7 +819,7 @@ declare module "jriapp_shared/collection/int" {
         readonly vals: TObj;
         readonly item: TItem;
         readonly key: string;
-        readonly collection: ICollection<TItem>;
+        readonly coll: ICollection<TItem>;
         readonly status: ITEM_STATUS;
         readonly isUpdating: boolean;
         readonly isEditing: boolean;
@@ -1291,13 +1291,14 @@ declare module "jriapp_shared/collection/aspect" {
     export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject implements IItemAspect<TItem, TObj> {
         private _key;
         private _item;
-        private _collection;
+        private _coll;
         private _flags;
         private _valueBag;
         protected _status: ITEM_STATUS;
         protected _saveVals: IIndexer<any>;
         protected _vals: IIndexer<any>;
         constructor(collection: BaseCollection<TItem>, vals: any, key: string, isNew: boolean);
+        dispose(): void;
         protected _onErrorsChanged(): void;
         private _getFlag(flag);
         private _setFlag(v, flag);
@@ -1333,12 +1334,11 @@ declare module "jriapp_shared/collection/aspect" {
         getIErrorNotification(): IErrorNotification;
         setCustomVal(name: string, val: any, isOwnVal?: boolean): void;
         getCustomVal(name: string): any;
-        dispose(): void;
         toString(): string;
         readonly vals: TObj;
         readonly item: TItem;
         readonly key: string;
-        readonly collection: BaseCollection<TItem>;
+        readonly coll: BaseCollection<TItem>;
         readonly status: ITEM_STATUS;
         readonly isUpdating: boolean;
         readonly isEditing: boolean;
