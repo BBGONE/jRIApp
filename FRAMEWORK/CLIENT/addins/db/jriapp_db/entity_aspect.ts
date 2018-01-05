@@ -11,7 +11,7 @@ import { ValueUtils, CollUtils } from "jriapp_shared/collection/utils";
 import { ItemAspect } from "jriapp_shared/collection/aspect";
 import { FLAGS, REFRESH_MODE } from "./const";
 import { DbContext } from "./dbcontext";
-import { IEntityItem, IRowData, IFieldName, IValueChange, IRowInfo } from "./int";
+import { IEntityItem, IValueChange, IRowInfo } from "./int";
 import { DbSet } from "./dbset";
 import { SubmitError } from "./error";
 
@@ -50,10 +50,6 @@ function _fn_walkChanges(name: string, val: IValueChange, fn: (name: string, val
 
 function fn_walkChanges(val: IValueChange, fn: (name: string, val: IValueChange) => void): void {
     _fn_walkChanges(val.fieldName, val, fn);
-}
-
-export interface IEntityAspectConstructor<TItem extends IEntityItem, TObj, TDbContext extends DbContext> {
-    new (dbSet: DbSet<TItem, TObj, TDbContext>, row: IRowData, names: IFieldName[]): EntityAspect<TItem, TObj, TDbContext>;
 }
 
 export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends DbContext> extends ItemAspect<TItem, TObj> {

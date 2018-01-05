@@ -515,11 +515,8 @@ declare module "jriapp_db/entity_aspect" {
     import { ItemAspect } from "jriapp_shared/collection/aspect";
     import { REFRESH_MODE } from "jriapp_db/const";
     import { DbContext } from "jriapp_db/dbcontext";
-    import { IEntityItem, IRowData, IFieldName, IValueChange, IRowInfo } from "jriapp_db/int";
+    import { IEntityItem, IValueChange, IRowInfo } from "jriapp_db/int";
     import { DbSet } from "jriapp_db/dbset";
-    export interface IEntityAspectConstructor<TItem extends IEntityItem, TObj, TDbContext extends DbContext> {
-        new (dbSet: DbSet<TItem, TObj, TDbContext>, row: IRowData, names: IFieldName[]): EntityAspect<TItem, TObj, TDbContext>;
-    }
     export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends DbContext> extends ItemAspect<TItem, TObj> {
         private _srvKey;
         private _origVals;

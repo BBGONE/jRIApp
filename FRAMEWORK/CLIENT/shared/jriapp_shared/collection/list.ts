@@ -18,9 +18,6 @@ const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = util
 export interface IListItem extends ICollectionItem {
     readonly _aspect: ListItemAspect<IListItem, any>;
 }
-export interface IListItemAspectConstructor<TItem extends IListItem, TObj> {
-    new (coll: BaseList<TItem, TObj>, obj?: TObj): ListItemAspect<TItem, TObj>;
-}
 
 export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem, TObj> {
     _setProp(name: string, val: any) {

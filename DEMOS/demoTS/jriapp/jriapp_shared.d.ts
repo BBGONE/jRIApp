@@ -1374,9 +1374,6 @@ declare module "jriapp_shared/collection/list" {
     export interface IListItem extends ICollectionItem {
         readonly _aspect: ListItemAspect<IListItem, any>;
     }
-    export interface IListItemAspectConstructor<TItem extends IListItem, TObj> {
-        new (coll: BaseList<TItem, TObj>, obj?: TObj): ListItemAspect<TItem, TObj>;
-    }
     export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem, TObj> {
         _setProp(name: string, val: any): void;
         _getProp(name: string): any;
@@ -1509,7 +1506,7 @@ declare module "jriapp_shared" {
     export { BaseCollection } from "jriapp_shared/collection/base";
     export { CollectionItem } from "jriapp_shared/collection/item";
     export { ItemAspect } from "jriapp_shared/collection/aspect";
-    export { ListItemAspect, IListItem, BaseList, IListItemAspectConstructor } from "jriapp_shared/collection/list";
+    export { ListItemAspect, IListItem, BaseList } from "jriapp_shared/collection/list";
     export { BaseDictionary } from "jriapp_shared/collection/dictionary";
     export { ValidationError } from "jriapp_shared/errors";
     export * from "jriapp_shared/utils/ideferred";
