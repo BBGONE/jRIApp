@@ -23,16 +23,6 @@ export interface IListItemAspectConstructor<TItem extends IListItem, TObj> {
 }
 
 export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem, TObj> {
-    constructor(coll: BaseList<TItem, TObj>, vals: TObj, key: string, isNew: boolean) {
-        super(coll);
-        if (isNew) {
-            this._status = ITEM_STATUS.Added;
-        }
-        this._vals = <any>vals;
-        const item = coll.itemFactory(this);
-        this._setItem(item);
-        this._setKey(key);
-    }
     _setProp(name: string, val: any) {
         if (this.isCancelling) {
             return;
@@ -95,7 +85,6 @@ export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollec
             this._updateFieldMap(props);
         }
     }
-    abstract itemFactory(aspect: ListItemAspect<TItem, TObj>): TItem;
     private _updateFieldMap(props: IPropInfo[]) {
         const self = this;
         if (!checks.isArray(props) || props.length === 0) {

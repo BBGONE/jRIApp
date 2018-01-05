@@ -56,22 +56,22 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
     private _key: string;
     private _item: TItem;
     private _collection: BaseCollection<TItem>;
+    private _flags: number;
+    private _valueBag: IIndexer<ICustomVal>;
     protected _status: ITEM_STATUS;
     protected _saveVals: IIndexer<any>;
     protected _vals: IIndexer<any>;
-    private _flags: number;
-    private _valueBag: IIndexer<ICustomVal>;
-  
-    constructor(collection: BaseCollection<TItem>) {
+
+    constructor(collection: BaseCollection<TItem>, vals: any, key: string, isNew: boolean) {
         super();
         this._collection = collection;
-        this._key = null;
-        this._item = null;
-        this._status = ITEM_STATUS.None;
+        this._vals = vals;
+        this._key = key;
+        this._status = isNew ? ITEM_STATUS.Added : ITEM_STATUS.None;
         this._saveVals = null;
-        this._vals = null;
         this._flags = 0;
         this._valueBag = null;
+        this._item = collection.itemFactory(this);
     }
     protected _onErrorsChanged(): void {
         this.objEvents.raise(ITEM_EVENTS.errors_changed, {});
@@ -202,9 +202,6 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
     }
     handleError(error: any, source: any): boolean {
         return this.collection.handleError(error, source);
-    }
-    _setItem(v: TItem) {
-        this._item = v;
     }
     _setKey(v: string) {
         this._key = v;

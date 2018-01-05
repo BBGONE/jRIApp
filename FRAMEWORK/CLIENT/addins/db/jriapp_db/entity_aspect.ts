@@ -63,21 +63,11 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     private _ownedObjs: Array<IBaseObject>;
 
     constructor(dbSet: DbSet<TItem, TObj, TDbContext>, vals: TObj, key: string, isNew: boolean) {
-        super(dbSet);
-        this._srvKey = null;
+        super(dbSet, vals, key, isNew);
+        this._srvKey = !isNew ? key : null;
         this._origVals = null;
         this._ownedObjs = null;
         this._savedStatus = null;
-        this._vals = vals;
-        const item = dbSet.itemFactory(this);
-        this._setItem(item);
-        if (isNew) {
-            this._setKey(key);
-            this._status = ITEM_STATUS.Added;
-        } else {
-            this._setSrvKey(key);
-            this._setKey(key);
-        }
     }
     protected _onFieldChanged(fieldName: string, fieldInfo?: IFieldInfo): void {
         sys.raiseProp(this.item, fieldName);
@@ -149,12 +139,12 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     }
     protected _getValueChanges(changedOnly: boolean): IValueChange[] {
         const self = this, flds = this.dbSet.getFieldInfos();
-        const res = flds.map((fld) => {
+        const res = flds.map((fld: IFieldInfo) => {
             return self._getValueChange(fld.fieldName, fld, changedOnly);
         });
 
         // remove nulls
-        const res2 = res.filter((vc) => {
+        const res2 = res.filter((vc: IValueChange) => {
             return !!vc;
         });
         return res2;
@@ -421,9 +411,6 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             internal.onCommitChanges(this.item, false, false, oldStatus);
         }
     }
-    _onAdding(): void {
-        this._status = ITEM_STATUS.Added;
-    }
     deleteItem(): boolean {
         return this.deleteOnSubmit();
     }
@@ -502,7 +489,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         const dbxt = this.dbSet.dbContext;
         return <IStatefulPromise<TItem>>dbxt._getInternal().refreshItem(this.item);
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -523,12 +510,22 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             super.dispose();
         }
     }
-    toString() {
+    toString(): string {
         return this.dbSetName + "EntityAspect";
     }
-    get srvKey(): string { return this._srvKey; }
-    get isCanSubmit(): boolean { return true; }
-    get dbSetName() { return this.dbSet.dbSetName; }
-    get serverTimezone() { return this.dbSet.dbContext.serverTimezone; }
-    get dbSet() { return <DbSet<TItem, TObj, TDbContext>>this.collection; }
+    get srvKey(): string {
+        return this._srvKey;
+    }
+    get isCanSubmit(): boolean {
+        return true;
+    }
+    get dbSetName(): string {
+        return this.dbSet.dbSetName;
+    }
+    get serverTimezone(): number {
+        return this.dbSet.dbContext.serverTimezone;
+    }
+    get dbSet(): DbSet<TItem, TObj, TDbContext> {
+        return <any>this.collection;
+    }
 }

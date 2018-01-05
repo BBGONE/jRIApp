@@ -205,7 +205,6 @@ declare module "jriapp_db/dbset" {
         protected _refreshValues(path: string, item: IEntityItem, values: any[], names: IFieldName[], rm: REFRESH_MODE): void;
         protected _applyFieldVals(vals: any, path: string, values: any[], names: IFieldName[]): void;
         protected _getNewKey(): string;
-        protected _onItemAdding(item: TItem): void;
         protected _onItemAdded(item: TItem): void;
         protected _createNew(): TItem;
         protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
@@ -550,7 +549,6 @@ declare module "jriapp_db/entity_aspect" {
         _setFieldVal(fieldName: string, val: any): boolean;
         _setSrvKey(v: string): void;
         _acceptChanges(rowInfo?: IRowInfo): void;
-        _onAdding(): void;
         deleteItem(): boolean;
         deleteOnSubmit(): boolean;
         acceptChanges(): void;
@@ -781,6 +779,7 @@ declare module "jriapp_db/dataview" {
     import { IPromise, TEventHandler, IIndexer } from "jriapp_shared";
     import { ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IFieldInfo, IPermissions } from "jriapp_shared/collection/int";
     import { BaseCollection, Errors } from "jriapp_shared/collection/base";
+    import { ItemAspect } from "jriapp_shared/collection/aspect";
     export interface IDataViewOptions<TItem extends ICollectionItem> {
         dataSource: ICollection<TItem>;
         fn_filter?: (item: TItem) => boolean;
@@ -815,6 +814,7 @@ declare module "jriapp_db/dataview" {
         protected _checkCurrentChanging(newCurrent: TItem): void;
         protected _onPageChanged(): void;
         protected _clear(reason: COLL_CHANGE_REASON, oper?: COLL_CHANGE_OPER): void;
+        itemFactory(aspect: ItemAspect<TItem, any>): TItem;
         protected _createNew(): TItem;
         _getStrValue(val: any, fieldInfo: IFieldInfo): string;
         getFieldNames(): string[];

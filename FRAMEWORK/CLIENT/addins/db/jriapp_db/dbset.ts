@@ -374,11 +374,6 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         return key;
     }
     // override
-    protected _onItemAdding(item: TItem): void {
-        super._onItemAdding(item);
-        item._aspect._onAdding();
-    }
-    // override
     protected _onItemAdded(item: TItem): void {
         super._onItemAdded(item);
         this._addToChanged(item);
@@ -816,11 +811,11 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         return aspect.item;
     }
     createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem {
-        const vals: any = colUtils.initVals(this.getFieldInfos(), {});
+        const vals: any = colUtils.initVals(this.getFieldInfos(), {}), isNew = !row;
         if (!!row) {
             this._applyFieldVals(vals, "", row.v, fieldNames);
         }
-        const aspect = new EntityAspect<TItem, TObj, TDbContext>(this, vals, !row ? this._getNewKey() : row.k, !row);
+        const aspect = new EntityAspect<TItem, TObj, TDbContext>(this, vals, isNew ? this._getNewKey() : row.k, isNew);
         return aspect.item;
     }
     _getInternal(): IInternalDbSetMethods<TItem, TObj> {

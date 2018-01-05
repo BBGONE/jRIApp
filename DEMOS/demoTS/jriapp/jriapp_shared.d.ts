@@ -813,7 +813,6 @@ declare module "jriapp_shared/collection/int" {
         getFieldNames(): string[];
         getErrorString(): string;
         deleteItem(): boolean;
-        _setItem(v: TItem): void;
         _setKey(v: string): void;
         _setIsAttached(v: boolean): void;
         raiseErrorsChanged(): void;
@@ -1109,6 +1108,7 @@ declare module "jriapp_shared/collection/base" {
     import { IIndexer, IValidationInfo, TEventHandler, TPropChangedHandler, IBaseObject, TPriority } from "jriapp_shared/int";
     import { BaseObject } from "jriapp_shared/object";
     import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IInternalCollMethods, ICollChangedArgs, ICancellableArgs, ICollFillArgs, ICollEndEditArgs, ICollItemArgs, ICollItemStatusArgs, ICollValidateFieldArgs, ICollValidateItemArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs, IErrors } from "jriapp_shared/collection/int";
+    import { ItemAspect } from "jriapp_shared/collection/aspect";
     export class Errors<TItem extends ICollectionItem> {
         private _errors;
         private _owner;
@@ -1181,6 +1181,7 @@ declare module "jriapp_shared/collection/base" {
         protected _waitForProp(prop: string, callback: () => void, groupName: string): void;
         protected _setIsLoading(v: boolean): void;
         protected abstract _createNew(): TItem;
+        abstract itemFactory(aspect: ItemAspect<TItem, any>): TItem;
         abstract getFieldMap(): IIndexer<IFieldInfo>;
         abstract getFieldInfos(): IFieldInfo[];
         _getInternal(): IInternalCollMethods<TItem>;
@@ -1291,12 +1292,12 @@ declare module "jriapp_shared/collection/aspect" {
         private _key;
         private _item;
         private _collection;
+        private _flags;
+        private _valueBag;
         protected _status: ITEM_STATUS;
         protected _saveVals: IIndexer<any>;
         protected _vals: IIndexer<any>;
-        private _flags;
-        private _valueBag;
-        constructor(collection: BaseCollection<TItem>);
+        constructor(collection: BaseCollection<TItem>, vals: any, key: string, isNew: boolean);
         protected _onErrorsChanged(): void;
         private _getFlag(flag);
         private _setFlag(v, flag);
@@ -1311,7 +1312,6 @@ declare module "jriapp_shared/collection/aspect" {
         protected _validateFields(): IValidationInfo[];
         protected _resetStatus(): void;
         handleError(error: any, source: any): boolean;
-        _setItem(v: TItem): void;
         _setKey(v: string): void;
         _setIsAttached(v: boolean): void;
         _setIsRefreshing(v: boolean): void;
@@ -1378,7 +1378,6 @@ declare module "jriapp_shared/collection/list" {
         new (coll: BaseList<TItem, TObj>, obj?: TObj): ListItemAspect<TItem, TObj>;
     }
     export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem, TObj> {
-        constructor(coll: BaseList<TItem, TObj>, vals: TObj, key: string, isNew: boolean);
         _setProp(name: string, val: any): void;
         _getProp(name: string): any;
         _resetStatus(): void;
@@ -1390,7 +1389,6 @@ declare module "jriapp_shared/collection/list" {
         private _fieldInfos;
         private _newKey;
         constructor(props: IPropInfo[]);
-        abstract itemFactory(aspect: ListItemAspect<TItem, TObj>): TItem;
         private _updateFieldMap(props);
         protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
         protected createItem(obj?: TObj): TItem;

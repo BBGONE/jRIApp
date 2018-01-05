@@ -4246,16 +4246,16 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
     }
     var ItemAspect = (function (_super) {
         __extends(ItemAspect, _super);
-        function ItemAspect(collection) {
+        function ItemAspect(collection, vals, key, isNew) {
             var _this = _super.call(this) || this;
             _this._collection = collection;
-            _this._key = null;
-            _this._item = null;
-            _this._status = 0;
+            _this._vals = vals;
+            _this._key = key;
+            _this._status = isNew ? 1 : 0;
             _this._saveVals = null;
-            _this._vals = null;
             _this._flags = 0;
             _this._valueBag = null;
+            _this._item = collection.itemFactory(_this);
             return _this;
         }
         ItemAspect.prototype._onErrorsChanged = function () {
@@ -4378,9 +4378,6 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype.handleError = function (error, source) {
             return this.collection.handleError(error, source);
-        };
-        ItemAspect.prototype._setItem = function (v) {
-            this._item = v;
         };
         ItemAspect.prototype._setKey = function (v) {
             this._key = v;
@@ -4790,16 +4787,8 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
     var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, collUtils = utils_8.CollUtils, sys = utils.sys;
     var ListItemAspect = (function (_super) {
         __extends(ListItemAspect, _super);
-        function ListItemAspect(coll, vals, key, isNew) {
-            var _this = _super.call(this, coll) || this;
-            if (isNew) {
-                _this._status = 1;
-            }
-            _this._vals = vals;
-            var item = coll.itemFactory(_this);
-            _this._setItem(item);
-            _this._setKey(key);
-            return _this;
+        function ListItemAspect() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         ListItemAspect.prototype._setProp = function (name, val) {
             if (this.isCancelling) {

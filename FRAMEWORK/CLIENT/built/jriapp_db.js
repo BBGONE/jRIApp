@@ -824,10 +824,6 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             this._newKey += 1;
             return key;
         };
-        DbSet.prototype._onItemAdding = function (item) {
-            _super.prototype._onItemAdding.call(this, item);
-            item._aspect._onAdding();
-        };
         DbSet.prototype._onItemAdded = function (item) {
             _super.prototype._onItemAdded.call(this, item);
             this._addToChanged(item);
@@ -1224,11 +1220,11 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return aspect.item;
         };
         DbSet.prototype.createEntityFromData = function (row, fieldNames) {
-            var vals = colUtils.initVals(this.getFieldInfos(), {});
+            var vals = colUtils.initVals(this.getFieldInfos(), {}), isNew = !row;
             if (!!row) {
                 this._applyFieldVals(vals, "", row.v, fieldNames);
             }
-            var aspect = new entity_aspect_1.EntityAspect(this, vals, !row ? this._getNewKey() : row.k, !row);
+            var aspect = new entity_aspect_1.EntityAspect(this, vals, isNew ? this._getNewKey() : row.k, isNew);
             return aspect.item;
         };
         DbSet.prototype._getInternal = function () {
@@ -3144,22 +3140,11 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
     var EntityAspect = (function (_super) {
         __extends(EntityAspect, _super);
         function EntityAspect(dbSet, vals, key, isNew) {
-            var _this = _super.call(this, dbSet) || this;
-            _this._srvKey = null;
+            var _this = _super.call(this, dbSet, vals, key, isNew) || this;
+            _this._srvKey = !isNew ? key : null;
             _this._origVals = null;
             _this._ownedObjs = null;
             _this._savedStatus = null;
-            _this._vals = vals;
-            var item = dbSet.itemFactory(_this);
-            _this._setItem(item);
-            if (isNew) {
-                _this._setKey(key);
-                _this._status = 1;
-            }
-            else {
-                _this._setSrvKey(key);
-                _this._setKey(key);
-            }
             return _this;
         }
         EntityAspect.prototype._onFieldChanged = function (fieldName, fieldInfo) {
@@ -3503,9 +3488,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 internal.onCommitChanges(this.item, false, false, oldStatus);
             }
         };
-        EntityAspect.prototype._onAdding = function () {
-            this._status = 1;
-        };
         EntityAspect.prototype.deleteItem = function () {
             return this.deleteOnSubmit();
         };
@@ -3607,27 +3589,37 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             return this.dbSetName + "EntityAspect";
         };
         Object.defineProperty(EntityAspect.prototype, "srvKey", {
-            get: function () { return this._srvKey; },
+            get: function () {
+                return this._srvKey;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(EntityAspect.prototype, "isCanSubmit", {
-            get: function () { return true; },
+            get: function () {
+                return true;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(EntityAspect.prototype, "dbSetName", {
-            get: function () { return this.dbSet.dbSetName; },
+            get: function () {
+                return this.dbSet.dbSetName;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(EntityAspect.prototype, "serverTimezone", {
-            get: function () { return this.dbSet.dbContext.serverTimezone; },
+            get: function () {
+                return this.dbSet.dbContext.serverTimezone;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(EntityAspect.prototype, "dbSet", {
-            get: function () { return this.collection; },
+            get: function () {
+                return this.collection;
+            },
             enumerable: true,
             configurable: true
         });
@@ -3936,6 +3928,9 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             if (reason !== 1 && reason !== 2) {
                 this.totalCount = 0;
             }
+        };
+        DataView.prototype.itemFactory = function (aspect) {
+            throw new Error("Not implemented");
         };
         DataView.prototype._createNew = function () {
             throw new Error("Not implemented");

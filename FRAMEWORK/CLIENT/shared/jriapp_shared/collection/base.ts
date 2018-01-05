@@ -17,6 +17,8 @@ import { ICollectionItem, ICollection, ICollectionOptions, IPermissions, IIntern
     ICollValidateFieldArgs, ICollValidateItemArgs, ICurrentChangingArgs, ICommitChangesArgs, IItemAddedArgs, IPageChangingArgs,
     IErrorsList, IErrors
 } from "./int";
+import { ItemAspect } from "./aspect";
+
 import { ValueUtils, CollUtils } from "./utils";
 import { ValidationError } from "../errors";
 
@@ -550,6 +552,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         }
     }
     protected abstract _createNew(): TItem;
+    abstract itemFactory(aspect: ItemAspect<TItem, any>): TItem;
     abstract getFieldMap(): IIndexer<IFieldInfo>;
     abstract getFieldInfos(): IFieldInfo[];
     _getInternal(): IInternalCollMethods<TItem> {

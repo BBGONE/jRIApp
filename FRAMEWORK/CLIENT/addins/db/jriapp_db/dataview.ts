@@ -9,6 +9,7 @@ import {
     ICollection, ICollectionItem, ICollChangedArgs, ICollItemStatusArgs, IFieldInfo, IPermissions
 } from "jriapp_shared/collection/int";
 import { BaseCollection, Errors } from "jriapp_shared/collection/base";
+import { ItemAspect } from "jriapp_shared/collection/aspect";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
     ERROR = utils.err, sys = utils.sys;
@@ -333,6 +334,10 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         if (reason !== COLL_CHANGE_REASON.PageChange && reason !== COLL_CHANGE_REASON.Sorting) {
             this.totalCount = 0;
         }
+    }
+    // override
+    itemFactory(aspect: ItemAspect<TItem, any>): TItem {
+        throw new Error("Not implemented");
     }
     // override
     protected _createNew(): TItem {
