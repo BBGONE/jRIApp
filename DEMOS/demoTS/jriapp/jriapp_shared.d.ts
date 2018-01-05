@@ -747,7 +747,7 @@ declare module "jriapp_shared/collection/const" {
     export const enum COLL_CHANGE_OPER {
         None = 0,
         Fill = 1,
-        Attach = 2,
+        AddNew = 2,
         Remove = 3,
         Commit = 4,
         Sort = 5,
@@ -813,8 +813,6 @@ declare module "jriapp_shared/collection/int" {
         getFieldNames(): string[];
         getErrorString(): string;
         deleteItem(): boolean;
-        _onAttaching(): void;
-        _onAttach(): void;
         _setItem(v: TItem): void;
         _setKey(v: string): void;
         _setIsAttached(v: boolean): void;
@@ -1158,7 +1156,8 @@ declare module "jriapp_shared/collection/base" {
         protected _onFillEnd(args: ICollFillArgs<TItem>): void;
         protected _onItemAdding(item: TItem): void;
         protected _onItemAdded(item: TItem): void;
-        protected _attach(item: TItem): number;
+        protected _addNew(item: TItem): number;
+        protected _onAddNew(item: TItem, pos: number): void;
         protected _onRemoved(item: TItem, pos: number): void;
         protected _onPageSizeChanged(): void;
         protected _onPageChanging(): boolean;
@@ -1316,8 +1315,6 @@ declare module "jriapp_shared/collection/aspect" {
         _setKey(v: string): void;
         _setIsAttached(v: boolean): void;
         _setIsRefreshing(v: boolean): void;
-        _onAttaching(): void;
-        _onAttach(): void;
         raiseErrorsChanged(): void;
         getFieldInfo(fieldName: string): IFieldInfo;
         getFieldNames(): string[];
@@ -1396,7 +1393,6 @@ declare module "jriapp_shared/collection/list" {
         abstract itemFactory(aspect: ListItemAspect<TItem, TObj>): TItem;
         private _updateFieldMap(props);
         protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
-        protected _attach(item: TItem): number;
         protected createItem(obj?: TObj): TItem;
         protected _getNewKey(): string;
         protected _createNew(): TItem;

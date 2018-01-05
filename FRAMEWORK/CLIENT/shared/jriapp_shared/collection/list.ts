@@ -13,8 +13,7 @@ import { BaseCollection } from "./base";
 import { ItemAspect } from "./aspect";
 import { ValidationError } from "../errors";
 
-const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err,
-    collUtils = CollUtils, sys = utils.sys;
+const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, collUtils = CollUtils, sys = utils.sys;
 
 export interface IListItem extends ICollectionItem {
     readonly _aspect: ListItemAspect<IListItem, any>;
@@ -119,14 +118,6 @@ export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollec
     protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
         super._clear(reason, oper);
         this._newKey = 0;
-    }
-    protected _attach(item: TItem) {
-        try {
-            this.endEdit();
-        } catch (ex) {
-            ERROR.reThrow(ex, this.handleError(ex, this));
-        }
-        return super._attach(item);
     }
     protected createItem(obj?: TObj): TItem {
         const isNew = !obj, vals: any = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj,

@@ -2365,7 +2365,7 @@ define("jriapp_shared/collection/const", ["require", "exports"], function (requi
     (function (COLL_CHANGE_OPER) {
         COLL_CHANGE_OPER[COLL_CHANGE_OPER["None"] = 0] = "None";
         COLL_CHANGE_OPER[COLL_CHANGE_OPER["Fill"] = 1] = "Fill";
-        COLL_CHANGE_OPER[COLL_CHANGE_OPER["Attach"] = 2] = "Attach";
+        COLL_CHANGE_OPER[COLL_CHANGE_OPER["AddNew"] = 2] = "AddNew";
         COLL_CHANGE_OPER[COLL_CHANGE_OPER["Remove"] = 3] = "Remove";
         COLL_CHANGE_OPER[COLL_CHANGE_OPER["Commit"] = 4] = "Commit";
         COLL_CHANGE_OPER[COLL_CHANGE_OPER["Sort"] = 5] = "Sort";
@@ -3244,32 +3244,35 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             var args = { item: item, isAddNewHandled: false };
             this.objEvents.raise("item_added", args);
         };
-        BaseCollection.prototype._attach = function (item) {
-            if (!!this.getItemByKey(item._key)) {
-                throw new Error(lang_5.ERRS.ERR_ITEM_IS_ATTACHED);
-            }
+        BaseCollection.prototype._addNew = function (item) {
             try {
                 this.endEdit();
             }
             catch (ex) {
                 utils.err.reThrow(ex, this.handleError(ex, this));
             }
-            item._aspect._onAttaching();
+            if (!!this.getItemByKey(item._key)) {
+                throw new Error(lang_5.ERRS.ERR_ITEM_IS_ATTACHED);
+            }
             var pos = this._appendItem(item);
-            this._onCollectionChanged({
+            this._onAddNew(item, pos);
+            this._onCountChanged();
+            this._onCurrentChanging(item);
+            this._currentPos = pos;
+            this._onCurrentChanged();
+            return pos;
+        };
+        BaseCollection.prototype._onAddNew = function (item, pos) {
+            item._aspect._setIsAttached(true);
+            var args = {
                 changeType: 1,
                 reason: 0,
                 oper: 2,
                 items: [item],
                 pos: [pos],
                 new_key: item._key
-            });
-            item._aspect._onAttach();
-            this._onCountChanged();
-            this._onCurrentChanging(item);
-            this._currentPos = pos;
-            this._onCurrentChanged();
-            return pos;
+            };
+            this._onCollectionChanged(args);
         };
         BaseCollection.prototype._onRemoved = function (item, pos) {
             try {
@@ -3580,7 +3583,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             var item, isHandled;
             item = this._createNew();
             this._onItemAdding(item);
-            this._attach(item);
+            this._addNew(item);
             try {
                 this.currentItem = item;
                 item._aspect.beginEdit();
@@ -4391,11 +4394,6 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 this.objEvents.raiseProp("isRefreshing");
             }
         };
-        ItemAspect.prototype._onAttaching = function () {
-        };
-        ItemAspect.prototype._onAttach = function () {
-            this._setIsAttached(true);
-        };
         ItemAspect.prototype.raiseErrorsChanged = function () {
             this._onErrorsChanged();
         };
@@ -4789,7 +4787,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
 define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_7, utils_8, base_1, aspect_1, errors_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, ERROR = utils.err, collUtils = utils_8.CollUtils, sys = utils.sys;
+    var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, collUtils = utils_8.CollUtils, sys = utils.sys;
     var ListItemAspect = (function (_super) {
         __extends(ListItemAspect, _super);
         function ListItemAspect(coll, vals, key, isNew) {
@@ -4889,15 +4887,6 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         BaseList.prototype._clear = function (reason, oper) {
             _super.prototype._clear.call(this, reason, oper);
             this._newKey = 0;
-        };
-        BaseList.prototype._attach = function (item) {
-            try {
-                this.endEdit();
-            }
-            catch (ex) {
-                ERROR.reThrow(ex, this.handleError(ex, this));
-            }
-            return _super.prototype._attach.call(this, item);
         };
         BaseList.prototype.createItem = function (obj) {
             var isNew = !obj, vals = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj, key = this._getNewKey();

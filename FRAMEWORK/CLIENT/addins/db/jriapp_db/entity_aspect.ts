@@ -421,16 +421,8 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             internal.onCommitChanges(this.item, false, false, oldStatus);
         }
     }
-    _onAttaching(): void {
-        super._onAttaching();
+    _onAdding(): void {
         this._status = ITEM_STATUS.Added;
-    }
-    _onAttach(): void {
-        super._onAttach();
-        if (!this.key) {
-            throw new Error(ERRS.ERR_ITEM_IS_DETACHED);
-        }
-        this.dbSet._getInternal().addToChanged(this.item);
     }
     deleteItem(): boolean {
         return this.deleteOnSubmit();

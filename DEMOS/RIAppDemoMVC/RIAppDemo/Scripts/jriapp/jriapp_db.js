@@ -824,6 +824,14 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             this._newKey += 1;
             return key;
         };
+        DbSet.prototype._onItemAdding = function (item) {
+            _super.prototype._onItemAdding.call(this, item);
+            item._aspect._onAdding();
+        };
+        DbSet.prototype._onItemAdded = function (item) {
+            _super.prototype._onItemAdded.call(this, item);
+            this._addToChanged(item);
+        };
         DbSet.prototype._createNew = function () {
             return this.createEntityFromData(null, null);
         };
@@ -3495,16 +3503,8 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 internal.onCommitChanges(this.item, false, false, oldStatus);
             }
         };
-        EntityAspect.prototype._onAttaching = function () {
-            _super.prototype._onAttaching.call(this);
+        EntityAspect.prototype._onAdding = function () {
             this._status = 1;
-        };
-        EntityAspect.prototype._onAttach = function () {
-            _super.prototype._onAttach.call(this);
-            if (!this.key) {
-                throw new Error(jriapp_shared_8.LocaleERRS.ERR_ITEM_IS_DETACHED);
-            }
-            this.dbSet._getInternal().addToChanged(this.item);
         };
         EntityAspect.prototype.deleteItem = function () {
             return this.deleteOnSubmit();
@@ -3666,6 +3666,17 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             _this._bindDS();
             return _this;
         }
+        DataView.prototype._onAddNew = function (item, pos) {
+            var args = {
+                changeType: 1,
+                reason: 0,
+                oper: 2,
+                items: [item],
+                pos: [pos],
+                new_key: item._key
+            };
+            this._onCollectionChanged(args);
+        };
         DataView.prototype._disposeItems = function (items) {
         };
         DataView.prototype._filterForPaging = function (items) {
@@ -3880,7 +3891,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             ds.addOnItemAdded(function (sender, args) {
                 if (self._isAddingNew) {
                     if (!self.getItemByKey(args.item._key)) {
-                        self._attach(args.item);
+                        self._addNew(args.item);
                     }
                     self.currentItem = args.item;
                     self._onEditing(args.item, true, false);

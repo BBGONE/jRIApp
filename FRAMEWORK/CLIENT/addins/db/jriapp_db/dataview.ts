@@ -50,8 +50,19 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         this._bindDS();
     }
     // override
+    protected _onAddNew(item: TItem, pos: number): void {
+        const args = {
+            changeType: COLL_CHANGE_TYPE.Add,
+            reason: COLL_CHANGE_REASON.None,
+            oper: COLL_CHANGE_OPER.AddNew,
+            items: [item],
+            pos: [pos],
+            new_key: item._key
+        };
+        this._onCollectionChanged(args);
+    }
+    // override
     protected _disposeItems(items: TItem[]): void {
-        // noop
         // don't dispose items, because they belong to the other collection
     }
     protected _filterForPaging(items: TItem[]): TItem[] {
@@ -279,7 +290,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         ds.addOnItemAdded((sender, args) => {
             if (self._isAddingNew) {
                 if (!self.getItemByKey(args.item._key)) {
-                    self._attach(args.item);
+                    self._addNew(args.item);
                 }
                 self.currentItem = args.item;
                 self._onEditing(args.item, true, false);

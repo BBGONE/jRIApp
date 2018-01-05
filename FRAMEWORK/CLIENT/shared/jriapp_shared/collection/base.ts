@@ -302,31 +302,34 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         const args: IItemAddedArgs<TItem> = { item: item, isAddNewHandled: false };
         this.objEvents.raise(COLL_EVENTS.item_added, args);
     }
-    protected _attach(item: TItem): number {
-        if (!!this.getItemByKey(item._key)) {
-            throw new Error(ERRS.ERR_ITEM_IS_ATTACHED);
-        }
+    protected _addNew(item: TItem): number {
         try {
             this.endEdit();
         } catch (ex) {
             utils.err.reThrow(ex, this.handleError(ex, this));
         }
-        item._aspect._onAttaching();
+        if (!!this.getItemByKey(item._key)) {
+            throw new Error(ERRS.ERR_ITEM_IS_ATTACHED);
+        }
         const pos = this._appendItem(item);
-        this._onCollectionChanged({
-            changeType: COLL_CHANGE_TYPE.Add,
-            reason: COLL_CHANGE_REASON.None,
-            oper: COLL_CHANGE_OPER.Attach,
-            items: [item],
-            pos: [pos],
-            new_key: item._key
-        });
-        item._aspect._onAttach();
+        this._onAddNew(item, pos);
         this._onCountChanged();
         this._onCurrentChanging(item);
         this._currentPos = pos;
         this._onCurrentChanged();
         return pos;
+    }
+    protected _onAddNew(item: TItem, pos: number): void {
+        item._aspect._setIsAttached(true);
+        const args = {
+            changeType: COLL_CHANGE_TYPE.Add,
+            reason: COLL_CHANGE_REASON.None,
+            oper: COLL_CHANGE_OPER.AddNew,
+            items: [item],
+            pos: [pos],
+            new_key: item._key
+        };
+        this._onCollectionChanged(args);
     }
     protected _onRemoved(item: TItem, pos: number): void {
         try {
@@ -642,7 +645,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         let item: TItem, isHandled: boolean;
         item = this._createNew();
         this._onItemAdding(item);
-        this._attach(item);
+        this._addNew(item);
         try {
             this.currentItem = item;
             item._aspect.beginEdit();

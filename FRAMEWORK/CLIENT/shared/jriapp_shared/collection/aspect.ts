@@ -218,11 +218,6 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
             this.objEvents.raiseProp("isRefreshing");
         }
     }
-    _onAttaching(): void {
-    }
-    _onAttach(): void {
-        this._setIsAttached(true);
-    }
     raiseErrorsChanged(): void {
         this._onErrorsChanged();
     }

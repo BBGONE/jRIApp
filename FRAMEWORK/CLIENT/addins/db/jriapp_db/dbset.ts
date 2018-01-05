@@ -374,6 +374,16 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         return key;
     }
     // override
+    protected _onItemAdding(item: TItem): void {
+        super._onItemAdding(item);
+        item._aspect._onAdding();
+    }
+    // override
+    protected _onItemAdded(item: TItem): void {
+        super._onItemAdded(item);
+        this._addToChanged(item);
+    }
+    // override
     protected _createNew(): TItem {
         return this.createEntityFromData(null, null);
     }

@@ -65,8 +65,6 @@ export interface IItemAspect<TItem extends ICollectionItem, TObj> extends IBaseO
     getFieldNames(): string[];
     getErrorString(): string;
     deleteItem(): boolean;
-    _onAttaching(): void;
-    _onAttach(): void;
     _setItem(v: TItem): void;
     _setKey(v: string): void;
     _setIsAttached(v: boolean): void;

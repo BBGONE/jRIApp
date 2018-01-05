@@ -205,6 +205,8 @@ declare module "jriapp_db/dbset" {
         protected _refreshValues(path: string, item: IEntityItem, values: any[], names: IFieldName[], rm: REFRESH_MODE): void;
         protected _applyFieldVals(vals: any, path: string, values: any[], names: IFieldName[]): void;
         protected _getNewKey(): string;
+        protected _onItemAdding(item: TItem): void;
+        protected _onItemAdded(item: TItem): void;
         protected _createNew(): TItem;
         protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
         protected _onPageChanging(): boolean;
@@ -548,8 +550,7 @@ declare module "jriapp_db/entity_aspect" {
         _setFieldVal(fieldName: string, val: any): boolean;
         _setSrvKey(v: string): void;
         _acceptChanges(rowInfo?: IRowInfo): void;
-        _onAttaching(): void;
-        _onAttach(): void;
+        _onAdding(): void;
         deleteItem(): boolean;
         deleteOnSubmit(): boolean;
         acceptChanges(): void;
@@ -795,6 +796,7 @@ declare module "jriapp_db/dataview" {
         private _isAddingNew;
         private _refreshDebounce;
         constructor(options: IDataViewOptions<TItem>);
+        protected _onAddNew(item: TItem, pos: number): void;
         protected _disposeItems(items: TItem[]): void;
         protected _filterForPaging(items: TItem[]): TItem[];
         protected _onViewRefreshed(args: {}): void;
