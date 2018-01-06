@@ -42,6 +42,11 @@ const enum PARSE_TYPE {
     VIEW = 2
 }
 
+const enum BRACE_TYPE {
+    SIMPLE = 0,
+    FIGURE = 1
+}
+
 const len_this = TOKEN.THIS.length;
 
 interface IKeyVal {
@@ -50,7 +55,7 @@ interface IKeyVal {
     val: any;
 }
 
-// extract content from inside of top level braces
+// extract content from inside of top level figure braces
 function getBraceParts(val: string): string[] {
     let i: number, start = 0, cnt = 0, ch: string, literal: string, test = 0;
     const parts: string[] = [], len = val.length;
@@ -108,9 +113,10 @@ function getBraceParts(val: string): string[] {
     return parts;
 }
 
-function getBraceLen(val: string, start: number): number {
+function getBraceLen(val: string, start: number, brace: BRACE_TYPE): number {
     let i: number, cnt = 0, ch: string, literal: string, test = 0;
-    const len = val.length;
+    const len = val.length, br1 = brace === BRACE_TYPE.SIMPLE ? "(" : "{",
+    br2 = brace === BRACE_TYPE.SIMPLE ? ")" : "}";
 
     for (i = start; i < len; i += 1) {
         ch = val.charAt(i);
@@ -134,10 +140,10 @@ function getBraceLen(val: string, start: number): number {
             }
         }
 
-        if (!literal && ch === "{") {
+        if (!literal && ch === br1) {
             test += 1;
             cnt += 1;
-        } else if (!literal && ch === "}") {
+        } else if (!literal && ch === br2) {
             test -= 1;
             cnt += 1;
             if (test === 0) {
@@ -155,6 +161,25 @@ function getBraceLen(val: string, start: number): number {
     return cnt;
 }
 
+function getBraceContent(val: string, brace: BRACE_TYPE): string {
+    let ch: string, start: number = 0;
+
+    const len = val.length, br1 = brace === BRACE_TYPE.SIMPLE ? "(" : "{";
+
+    for (let i = 0; i < len; i += 1) {
+        if (start < 0) {
+            start = i;
+        }
+        ch = val.charAt(i);
+        if (ch === br1) {
+            const braceLen = getBraceLen(val, i, brace);
+            return trim(val.substr(i + 1, braceLen - 2));
+        }
+    }
+
+    throw new Error("Invalid Expression: " + val);
+}
+
 function setVal(kv: IKeyVal, start: number, end: number, val: string, isKey: boolean, isLit: boolean): void {
     if (start > -1 && start < end) {
         const str = val.substring(start, end);
@@ -169,7 +194,6 @@ function setVal(kv: IKeyVal, start: number, end: number, val: string, isKey: boo
         }
     }
 }
-
 
 function checkVal(kv: IKeyVal): boolean {
     if (!kv.key) {
@@ -267,10 +291,9 @@ function getKeyVals(val: string): IKeyVal[] {
                 default:
                     throw new Error(`Unknown token: ${token} in expression ${val}`);
             }
-            literal = ch;
-            setVal(kv, start, i, val, isKey, false);
-            start = i;
-            setVal(kv, start, i + 1, val, isKey, false);
+            const braceLen = getBraceLen(val, i, BRACE_TYPE.SIMPLE);
+            setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
+            i += (braceLen - 1);
             start = -1;
             continue;
         }
@@ -278,13 +301,6 @@ function getKeyVals(val: string): IKeyVal[] {
         if (ch === ")") {
             if (!literal) {
                 throw new Error(`Invalid: ) in expression ${val}`);
-            }
-            if (literal === "(") {
-                literal = null;
-                setVal(kv, start, i, val, isKey, false);
-                start = i;
-                setVal(kv, start, i + 1, val, isKey, false);
-                start = -1;
             }
             continue;
         }
@@ -308,7 +324,7 @@ function getKeyVals(val: string): IKeyVal[] {
 
         if (!literal) {
             if (ch === "{" && !isKey) {
-                const braceLen = getBraceLen(val, i);
+                const braceLen = getBraceLen(val, i, BRACE_TYPE.FIGURE);
                 setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
                 kv.tag = TAG.BRACE;
                 i += (braceLen - 1);
@@ -340,62 +356,20 @@ function getKeyVals(val: string): IKeyVal[] {
 }
 
 /**
-    * resolve arguments by parsing expression: eval(part1, part2?) or date(stringDate,format?) or get(id)
+    * resolve arguments by parsing content of expression: part1, part2 or stringDate,format? or id
 */
 function getExprArgs(expr: string): string[] {
-    let ch: string, is_expression = false,
-        parts: string[] = [], start = 0, part: string;
-    for (let i = 0; i < expr.length; i += 1) {
-        if (start < 0) {
-            start = i;
-        }
-
-        ch = expr.charAt(i);
-        // is this content inside eval( ) or date() or get()?
-        if (ch === "(" && start < i) {
-            if (is_expression) {
-                throw new Error("Invalid Expression: " + expr);
-            }
-
-            part = trim(expr.substring(start, i));
-            if (!is_expression && (part === TOKEN.EVAL || part === TOKEN.DATE || part === TOKEN.GET)) {
-                is_expression = true;
-                start = -1;
-                continue;
-            }
-        }
-
-        if (ch === ")" && start < i) {
-            if (is_expression) {
-                is_expression = false;
-                part = trim(expr.substring(start, i));
-                parts.push(part);
-                start = -1;
-                break;
-            } else {
-                throw new Error("Invalid Expression: " + expr);
-            }
-        }
-
-        if (ch === TOKEN.COMMA && is_expression && start < i) {
-            part = trim(expr.substring(start, i));
-            parts.push(part);
-            start = -1;
-            continue;
-        }
-    }
-
+    const parts = expr.split(",");
     if (parts.length > 2) {
         throw new Error("Invalid Expression: " + expr);
     }
-
-    return parts;
+    return parts.map((p) => trim(p));
 }
 
-function getOptions(val: string): string {
-    let parts = getExprArgs(val);
+function getOptions(expr: string): string {
+    let parts = getExprArgs(expr);
     if (parts.length !== 1) {
-        throw new Error("Invalid Expression: " + val);
+        throw new Error("Invalid Expression: " + expr);
     }
     return bootstrap.getOptions(parts[0]);
 }
@@ -405,13 +379,12 @@ function getOptions(val: string): string {
     * where id  is an ID of a script tag which contains options
     * like: get(gridOptions)
 */
-function resolveOptions(parse_type: PARSE_TYPE, val: string, app: any, dataContext: any): any {
+function resolveGet(parse_type: PARSE_TYPE, val: string, app: any, dataContext: any): any {
     const options = getOptions(val);
     return parseOption(parse_type, options, app, dataContext);
 }
 
-
-function isGet(val: string): boolean {
+function isGetExpr(val: string): boolean {
     return !!val && getRX.test(val);
 }
 
@@ -428,8 +401,9 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
         isEval: false
     } : {};
     part = trim(part);
-    if (isGet(part)) {
-        return resolveOptions(parse_type, part, app, dataContext);
+    if (isGetExpr(part)) {
+        part = getBraceContent(part, BRACE_TYPE.SIMPLE);
+        return resolveGet(parse_type,  part, app, dataContext);
     }
     const kvals = getKeyVals(part);
     kvals.forEach(function (kv) {
@@ -469,7 +443,7 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
         } else if (kv.tag === TAG.BRACE) {
             res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
         } else if (kv.tag === TAG.GET) {
-            res[kv.key] = resolveOptions(PARSE_TYPE.NONE, kv.val, app, dataContext);
+            res[kv.key] = resolveGet(PARSE_TYPE.NONE, kv.val, app, dataContext);
         } else {
             res[kv.key] = kv.val;
         }
@@ -483,7 +457,8 @@ function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: any, dataCont
     let parts: string[] = [];
     for (let i = 0; i < strs.length; i += 1) {
         let str = trim(strs[i]);
-        if (isGet(str)) {
+        if (isGetExpr(str)) {
+            str = getBraceContent(str, BRACE_TYPE.SIMPLE);
             str = trim(getOptions(str));
         }
         if (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}")) {

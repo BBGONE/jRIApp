@@ -18,10 +18,12 @@ export type TEventList = INamespaceMap;
 export class EventWrap {
     private _ev: Event;
     private _target: TDomElement;
+    private _cancelBubble: boolean;
 
     constructor(ev: Event, target: TDomElement) {
         this._ev = ev;
         this._target = target;
+        this._cancelBubble = false;
     }
     get type() {
         return this._ev.type;
@@ -54,10 +56,13 @@ export class EventWrap {
         return this._ev.eventPhase;
     }
     get cancelBubble() {
-        return this._ev.cancelBubble;
+        return this._cancelBubble;
     }
     set cancelBubble(v: boolean) {
-        this._ev.cancelBubble = v;
+        if (!!v) {
+            this._cancelBubble = v;
+            this._ev.stopPropagation();
+        }
     }
     get timeStamp() {
         return this._ev.timeStamp;
@@ -78,9 +83,16 @@ export class EventWrap {
         return this._ev.CAPTURING_PHASE;
     }
 
-    preventDefault() { this._ev.preventDefault(); }
-    stopPropagation() { this._ev.stopPropagation(); }
-    stopImmediatePropagation() { this._ev.stopImmediatePropagation(); }
+    preventDefault() {
+        this._ev.preventDefault();
+    }
+    stopPropagation() {
+        this._ev.stopPropagation();
+        this._cancelBubble = true;
+    }
+    stopImmediatePropagation() {
+        this._ev.stopImmediatePropagation();
+    }
 }
 
 class EventHelper {
@@ -192,7 +204,9 @@ class EventHelper {
                 if (isMatch(target)) {
                     const eventCopy = new EventWrap(event, target);
                     listener.apply(target, [eventCopy]);
-                    return;
+                    if (!!event.cancelBubble) {
+                        return;
+                    }
                 }
                 target = (<Element><any>target).parentElement;
             }

@@ -139,6 +139,11 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         PARSE_TYPE[PARSE_TYPE["BINDING"] = 1] = "BINDING";
         PARSE_TYPE[PARSE_TYPE["VIEW"] = 2] = "VIEW";
     })(PARSE_TYPE || (PARSE_TYPE = {}));
+    var BRACE_TYPE;
+    (function (BRACE_TYPE) {
+        BRACE_TYPE[BRACE_TYPE["SIMPLE"] = 0] = "SIMPLE";
+        BRACE_TYPE[BRACE_TYPE["FIGURE"] = 1] = "FIGURE";
+    })(BRACE_TYPE || (BRACE_TYPE = {}));
     var len_this = "this.".length;
     function getBraceParts(val) {
         var i, start = 0, cnt = 0, ch, literal, test = 0;
@@ -196,9 +201,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
         return parts;
     }
-    function getBraceLen(val, start) {
+    function getBraceLen(val, start, brace) {
         var i, cnt = 0, ch, literal, test = 0;
-        var len = val.length;
+        var len = val.length, br1 = brace === 0 ? "(" : "{", br2 = brace === 0 ? ")" : "}";
         for (i = start; i < len; i += 1) {
             ch = val.charAt(i);
             if (ch === "'" || ch === '"') {
@@ -220,11 +225,11 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     continue;
                 }
             }
-            if (!literal && ch === "{") {
+            if (!literal && ch === br1) {
                 test += 1;
                 cnt += 1;
             }
-            else if (!literal && ch === "}") {
+            else if (!literal && ch === br2) {
                 test -= 1;
                 cnt += 1;
                 if (test === 0) {
@@ -241,6 +246,21 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             throw new Error(strUtils.format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, val));
         }
         return cnt;
+    }
+    function getBraceContent(val, brace) {
+        var ch, start = 0;
+        var len = val.length, br1 = brace === 0 ? "(" : "{";
+        for (var i = 0; i < len; i += 1) {
+            if (start < 0) {
+                start = i;
+            }
+            ch = val.charAt(i);
+            if (ch === br1) {
+                var braceLen = getBraceLen(val, i, brace);
+                return trim(val.substr(i + 1, braceLen - 2));
+            }
+        }
+        throw new Error("Invalid Expression: " + val);
     }
     function setVal(kv, start, end, val, isKey, isLit) {
         if (start > -1 && start < end) {
@@ -349,23 +369,15 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     default:
                         throw new Error("Unknown token: " + token + " in expression " + val);
                 }
-                literal = ch;
-                setVal(kv, start, i, val, isKey, false);
-                start = i;
-                setVal(kv, start, i + 1, val, isKey, false);
+                var braceLen = getBraceLen(val, i, 0);
+                setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
+                i += (braceLen - 1);
                 start = -1;
                 continue;
             }
             if (ch === ")") {
                 if (!literal) {
                     throw new Error("Invalid: ) in expression " + val);
-                }
-                if (literal === "(") {
-                    literal = null;
-                    setVal(kv, start, i, val, isKey, false);
-                    start = i;
-                    setVal(kv, start, i + 1, val, isKey, false);
-                    start = -1;
                 }
                 continue;
             }
@@ -385,7 +397,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             }
             if (!literal) {
                 if (ch === "{" && !isKey) {
-                    var braceLen = getBraceLen(val, i);
+                    var braceLen = getBraceLen(val, i, 1);
                     setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
                     kv.tag = "4";
                     i += (braceLen - 1);
@@ -413,59 +425,24 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         return parts;
     }
     function getExprArgs(expr) {
-        var ch, is_expression = false, parts = [], start = 0, part;
-        for (var i = 0; i < expr.length; i += 1) {
-            if (start < 0) {
-                start = i;
-            }
-            ch = expr.charAt(i);
-            if (ch === "(" && start < i) {
-                if (is_expression) {
-                    throw new Error("Invalid Expression: " + expr);
-                }
-                part = trim(expr.substring(start, i));
-                if (!is_expression && (part === "eval" || part === "date" || part === "get")) {
-                    is_expression = true;
-                    start = -1;
-                    continue;
-                }
-            }
-            if (ch === ")" && start < i) {
-                if (is_expression) {
-                    is_expression = false;
-                    part = trim(expr.substring(start, i));
-                    parts.push(part);
-                    start = -1;
-                    break;
-                }
-                else {
-                    throw new Error("Invalid Expression: " + expr);
-                }
-            }
-            if (ch === "," && is_expression && start < i) {
-                part = trim(expr.substring(start, i));
-                parts.push(part);
-                start = -1;
-                continue;
-            }
-        }
+        var parts = expr.split(",");
         if (parts.length > 2) {
             throw new Error("Invalid Expression: " + expr);
         }
-        return parts;
+        return parts.map(function (p) { return trim(p); });
     }
-    function getOptions(val) {
-        var parts = getExprArgs(val);
+    function getOptions(expr) {
+        var parts = getExprArgs(expr);
         if (parts.length !== 1) {
-            throw new Error("Invalid Expression: " + val);
+            throw new Error("Invalid Expression: " + expr);
         }
         return bootstrap_1.bootstrap.getOptions(parts[0]);
     }
-    function resolveOptions(parse_type, val, app, dataContext) {
+    function resolveGet(parse_type, val, app, dataContext) {
         var options = getOptions(val);
         return parseOption(parse_type, options, app, dataContext);
     }
-    function isGet(val) {
+    function isGetExpr(val) {
         return !!val && getRX.test(val);
     }
     function parseOption(parse_type, part, app, dataContext) {
@@ -481,8 +458,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             isEval: false
         } : {};
         part = trim(part);
-        if (isGet(part)) {
-            return resolveOptions(parse_type, part, app, dataContext);
+        if (isGetExpr(part)) {
+            part = getBraceContent(part, 0);
+            return resolveGet(parse_type, part, app, dataContext);
         }
         var kvals = getKeyVals(part);
         kvals.forEach(function (kv) {
@@ -520,7 +498,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
             }
             else if (kv.tag === "2") {
-                res[kv.key] = resolveOptions(0, kv.val, app, dataContext);
+                res[kv.key] = resolveGet(0, kv.val, app, dataContext);
             }
             else {
                 res[kv.key] = kv.val;
@@ -533,7 +511,8 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         var parts = [];
         for (var i = 0; i < strs.length; i += 1) {
             var str = trim(strs[i]);
-            if (isGet(str)) {
+            if (isGetExpr(str)) {
+                str = getBraceContent(str, 0);
                 str = trim(getOptions(str));
             }
             if (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}")) {
@@ -1085,6 +1064,7 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
         function EventWrap(ev, target) {
             this._ev = ev;
             this._target = target;
+            this._cancelBubble = false;
         }
         Object.defineProperty(EventWrap.prototype, "type", {
             get: function () {
@@ -1154,10 +1134,13 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
         });
         Object.defineProperty(EventWrap.prototype, "cancelBubble", {
             get: function () {
-                return this._ev.cancelBubble;
+                return this._cancelBubble;
             },
             set: function (v) {
-                this._ev.cancelBubble = v;
+                if (!!v) {
+                    this._cancelBubble = v;
+                    this._ev.stopPropagation();
+                }
             },
             enumerable: true,
             configurable: true
@@ -1204,9 +1187,16 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
             enumerable: true,
             configurable: true
         });
-        EventWrap.prototype.preventDefault = function () { this._ev.preventDefault(); };
-        EventWrap.prototype.stopPropagation = function () { this._ev.stopPropagation(); };
-        EventWrap.prototype.stopImmediatePropagation = function () { this._ev.stopImmediatePropagation(); };
+        EventWrap.prototype.preventDefault = function () {
+            this._ev.preventDefault();
+        };
+        EventWrap.prototype.stopPropagation = function () {
+            this._ev.stopPropagation();
+            this._cancelBubble = true;
+        };
+        EventWrap.prototype.stopImmediatePropagation = function () {
+            this._ev.stopImmediatePropagation();
+        };
         return EventWrap;
     }());
     exports.EventWrap = EventWrap;
@@ -1310,7 +1300,9 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
                     if (isMatch(target)) {
                         var eventCopy = new EventWrap(event, target);
                         listener.apply(target, [eventCopy]);
-                        return;
+                        if (!!event.cancelBubble) {
+                            return;
+                        }
                     }
                     target = target.parentElement;
                 }
@@ -4586,6 +4578,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.9.17";
+    exports.VERSION = "2.9.18";
     bootstrap_8.Bootstrap._initFramework();
 });
