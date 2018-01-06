@@ -37,23 +37,25 @@ export class ExpanderElView extends AnchorElView {
         this.imageSrc = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
         // this.glyph = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
     }
-    protected _onCommandChanged() {
+    protected _onCommandChanged(): void {
         super._onCommandChanged();
         this.invokeCommand();
     }
-    protected onClick() {
+    protected onClick(): void {
         this.isExpanded = !this.isExpanded;
     }
     // override
-    invokeCommand() {
+    invokeCommand(): void {
         this.refresh();
         super.invokeCommand(null, true);
     }
-    toString() {
+    toString(): string {
         return "ExpanderElView";
     }
-    get isExpanded() { return this._isExpanded; }
-    set isExpanded(v) {
+    get isExpanded(): boolean {
+        return this._isExpanded;
+    }
+    set isExpanded(v: boolean) {
         if (this._isExpanded !== v) {
             this._isExpanded = v;
             this.invokeCommand();

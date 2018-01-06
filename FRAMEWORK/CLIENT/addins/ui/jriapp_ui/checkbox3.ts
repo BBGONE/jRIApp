@@ -30,17 +30,19 @@ export class CheckBoxThreeStateElView extends InputElView {
         }
         this._updateState();
     }
-    handle_change(e: Event) {
+    handle_change(e: Event): boolean {
         if (this.checked === null) {
             this.checked = true;
         } else {
             this.checked = !this.checked ? null : false;
         }
+        // stop propagation
+        return true;
     }
-    protected _updateState() {
+    protected _updateState(): void {
         dom.setClass([this.el], css.checkedNull, !checks.isNt(this.checked));
     }
-    toString() {
+    toString(): string {
         return "CheckBoxThreeStateElView";
     }
     get checked(): boolean {

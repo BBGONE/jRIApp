@@ -213,7 +213,8 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             dom.events.on(doc, name, (e) => {
                 const obj: any = subscribeMap.get(e.target);
                 if (checks.isFunc(obj[fn_name])) {
-                    obj[fn_name](e.originalEvent);
+                    // stop propagation if the handler returns true
+                    e.cancelBubble = !!(obj[fn_name](e.originalEvent));
                 }
             }, {
                     nmspace: this._objId,

@@ -44,7 +44,7 @@ export class AnchorElView extends CommandElView {
             }, this.uniqueID);
         }
     }
-    handle_click(e: Event): void {
+    handle_click(e: Event): boolean {
         if (this.stopPropagation) {
             e.stopPropagation();
         }
@@ -52,6 +52,7 @@ export class AnchorElView extends CommandElView {
             e.preventDefault();
         }
         this.onClick();
+        return this.stopPropagation;
     }
     protected onClick(): void {
         this.invokeCommand(null, true);

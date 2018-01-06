@@ -275,8 +275,8 @@ declare module "jriapp_ui/textbox" {
     };
     export class TextBoxElView extends InputElView {
         constructor(options: ITextBoxOptions);
-        handle_change(e: Event): void;
-        handle_keypress(e: KeyboardEvent): void;
+        handle_change(e: Event): boolean;
+        handle_keypress(e: KeyboardEvent): boolean;
         handle_keyup(e: KeyboardEvent): void;
         addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string): void;
         offOnKeyPress(nmspace?: string): void;
@@ -327,7 +327,7 @@ declare module "jriapp_ui/checkbox" {
     export class CheckBoxElView extends InputElView {
         private _checked;
         constructor(options: IViewOptions);
-        handle_change(e: Event): void;
+        handle_change(e: Event): boolean;
         protected _updateState(): void;
         toString(): string;
         checked: boolean;
@@ -456,7 +456,7 @@ declare module "jriapp_ui/listbox" {
         protected setDataSource(v: ICollection<ICollectionItem>): void;
         protected selectedIndex: number;
         isSubscribed(flag: SubscribeFlags): boolean;
-        handle_change(e: Event): void;
+        handle_change(e: Event): boolean;
         addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
         offOnRefreshed(nmspace?: string): void;
         getText(val: any): string;
@@ -1667,7 +1667,7 @@ declare module "jriapp_ui/anchor" {
         private _image;
         private _span;
         constructor(options: IAncorOptions);
-        handle_click(e: Event): void;
+        handle_click(e: Event): boolean;
         protected onClick(): void;
         protected _updateImage(src: string): void;
         protected _updateGlyph(glyph: string): void;
@@ -1722,7 +1722,7 @@ declare module "jriapp_ui/button" {
     export class ButtonElView extends CommandElView {
         private _isButton;
         constructor(options: ICommandViewOptions);
-        handle_click(e: Event): void;
+        handle_click(e: Event): boolean;
         onClick(): void;
         toString(): string;
         value: string;
@@ -1736,7 +1736,7 @@ declare module "jriapp_ui/checkbox3" {
     export class CheckBoxThreeStateElView extends InputElView {
         private _checked;
         constructor(options: IViewOptions);
-        handle_change(e: Event): void;
+        handle_change(e: Event): boolean;
         protected _updateState(): void;
         toString(): string;
         checked: boolean;

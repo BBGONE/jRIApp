@@ -7,10 +7,12 @@ export class ImgElView extends BaseElView {
     constructor(options: IViewOptions) {
         super(options);
     }
-    toString() {
+    toString(): string {
         return "ImgElView";
     }
-    get src(): string { return (<HTMLImageElement>this.el).src; }
+    get src(): string {
+        return (<HTMLImageElement>this.el).src;
+    }
     set src(v: string) {
         const x = this.src;
         if (x !== v) {

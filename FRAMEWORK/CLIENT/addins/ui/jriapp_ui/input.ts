@@ -2,10 +2,10 @@
 import { BaseElView } from "./baseview";
 
 export class InputElView extends BaseElView {
-    toString() {
+    toString(): string {
         return "InputElView";
     }
-    get isEnabled() {
+    get isEnabled(): boolean {
         return (<HTMLInputElement | HTMLTextAreaElement>this.el).disabled;
     }
     set isEnabled(v: boolean) {
@@ -19,7 +19,7 @@ export class InputElView extends BaseElView {
     get value(): string {
         return (<HTMLInputElement | HTMLTextAreaElement>this.el).value;
     }
-    set value(v) {
+    set value(v: string) {
         const x = this.value, str = "" + v;
         v = (!v) ? "" : str;
         if (x !== v) {

@@ -22,7 +22,7 @@ export class ButtonElView extends CommandElView {
             }, this.uniqueID);
         }
     }
-    handle_click(e: Event): void {
+    handle_click(e: Event): boolean {
         if (this.stopPropagation) {
             e.stopPropagation();
         }
@@ -30,6 +30,8 @@ export class ButtonElView extends CommandElView {
             e.preventDefault();
         }
         this.onClick();
+
+        return this.stopPropagation;
     }
     onClick(): void {
         this.invokeCommand(null, true);

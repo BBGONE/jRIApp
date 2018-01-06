@@ -14,13 +14,13 @@ export class TextAreaElView extends TextBoxElView {
             this.wrap = options.wrap;
         }
     }
-    toString() {
+    toString(): string {
         return "TextAreaElView";
     }
-    get wrap() {
+    get wrap(): string {
         return (<HTMLTextAreaElement>this.el).wrap;
     }
-    set wrap(v) {
+    set wrap(v: string) {
         const x = this.wrap;
         if (x !== v) {
             (<HTMLTextAreaElement>this.el).wrap = v;

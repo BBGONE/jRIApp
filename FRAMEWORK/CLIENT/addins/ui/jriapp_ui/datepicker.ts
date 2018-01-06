@@ -22,7 +22,7 @@ export class DatePickerElView extends TextBoxElView {
             this.objEvents.raiseProp("value");
         });
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -34,7 +34,7 @@ export class DatePickerElView extends TextBoxElView {
         datepicker.detachFrom(this.el);
         super.dispose();
     }
-    toString() {
+    toString(): string {
         return "DatePickerElView";
     }
 }

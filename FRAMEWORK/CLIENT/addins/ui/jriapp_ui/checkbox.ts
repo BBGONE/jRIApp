@@ -29,16 +29,18 @@ export class CheckBoxElView extends InputElView {
         }
         this._updateState();
     }
-    handle_change(e: Event) {
+    handle_change(e: Event): boolean {
         const chk = <HTMLInputElement>this.el;
         if (this.checked !== chk.checked) {
             this.checked = chk.checked;
         }
+        // stop propagation
+        return true;
     }
-    protected _updateState() {
+    protected _updateState(): void {
         dom.setClass([this.el], css.checkedNull, !checks.isNt(this.checked));
     }
-    toString() {
+    toString(): string {
         return "CheckBoxElView";
     }
     get checked(): boolean {

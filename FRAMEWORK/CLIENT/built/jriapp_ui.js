@@ -1285,6 +1285,7 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
         }
         TextBoxElView.prototype.handle_change = function (e) {
             this.objEvents.raiseProp("value");
+            return true;
         };
         TextBoxElView.prototype.handle_keypress = function (e) {
             var args = {
@@ -1296,6 +1297,7 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
             if (args.isCancel) {
                 e.preventDefault();
             }
+            return true;
         };
         TextBoxElView.prototype.handle_keyup = function (e) {
             this.objEvents.raiseProp("value");
@@ -1501,6 +1503,7 @@ define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/uti
             if (this.checked !== chk.checked) {
                 this.checked = chk.checked;
             }
+            return true;
         };
         CheckBoxElView.prototype._updateState = function () {
             dom.setClass([this.el], "ria-checked-null", !checks.isNt(this.checked));
@@ -2235,9 +2238,10 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype.handle_change = function (e) {
             if (this._isRefreshing) {
-                return;
+                return true;
             }
             this._onSelectedChanged();
+            return true;
         };
         ListBox.prototype.addOnRefreshed = function (fn, nmspace, context) {
             this.objEvents.on("refreshed", fn, nmspace, context);
@@ -8489,6 +8493,7 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                 e.preventDefault();
             }
             this.onClick();
+            return this.stopPropagation;
         };
         AnchorElView.prototype.onClick = function () {
             this.invokeCommand(null, true);
@@ -8849,6 +8854,7 @@ define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                 e.preventDefault();
             }
             this.onClick();
+            return this.stopPropagation;
         };
         ButtonElView.prototype.onClick = function () {
             this.invokeCommand(null, true);
@@ -8950,6 +8956,7 @@ define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/ut
             else {
                 this.checked = !this.checked ? null : false;
             }
+            return true;
         };
         CheckBoxThreeStateElView.prototype._updateState = function () {
             dom.setClass([this.el], "ria-checked-null", !checks.isNt(this.checked));
@@ -9023,7 +9030,9 @@ define("jriapp_ui/expander", ["require", "exports", "jriapp/bootstrap", "jriapp_
             return "ExpanderElView";
         };
         Object.defineProperty(ExpanderElView.prototype, "isExpanded", {
-            get: function () { return this._isExpanded; },
+            get: function () {
+                return this._isExpanded;
+            },
             set: function (v) {
                 if (this._isExpanded !== v) {
                     this._isExpanded = v;
@@ -9067,7 +9076,9 @@ define("jriapp_ui/img", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/ba
             return "ImgElView";
         };
         Object.defineProperty(ImgElView.prototype, "src", {
-            get: function () { return this.el.src; },
+            get: function () {
+                return this.el.src;
+            },
             set: function (v) {
                 var x = this.src;
                 if (x !== v) {
@@ -9096,7 +9107,9 @@ define("jriapp_ui/radio", ["require", "exports", "jriapp_shared", "jriapp/bootst
             return "RadioElView";
         };
         Object.defineProperty(RadioElView.prototype, "value", {
-            get: function () { return this.el.value; },
+            get: function () {
+                return this.el.value;
+            },
             set: function (v) {
                 var strv = checks.isNt(v) ? "" : ("" + v);
                 if (strv !== this.value) {
@@ -9108,7 +9121,9 @@ define("jriapp_ui/radio", ["require", "exports", "jriapp_shared", "jriapp/bootst
             configurable: true
         });
         Object.defineProperty(RadioElView.prototype, "name", {
-            get: function () { return this.el.name; },
+            get: function () {
+                return this.el.name;
+            },
             enumerable: true,
             configurable: true
         });

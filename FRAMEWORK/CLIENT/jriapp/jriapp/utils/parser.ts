@@ -366,21 +366,17 @@ function getExprArgs(expr: string): string[] {
     return parts.map((p) => trim(p));
 }
 
-function getOptions(expr: string): string {
-    let parts = getExprArgs(expr);
-    if (parts.length !== 1) {
-        throw new Error("Invalid Expression: " + expr);
-    }
-    return bootstrap.getOptions(parts[0]);
+function getOptions(id: string): string {
+    return bootstrap.getOptions(id);
 }
 
 /**
-    * resolve options by parsing expression: get(id)
+    * resolve options by getting options by their id, and then parses them to the object
     * where id  is an ID of a script tag which contains options
-    * like: get(gridOptions)
+    * as in: get(gridOptions)
 */
-function resolveGet(parse_type: PARSE_TYPE, val: string, app: any, dataContext: any): any {
-    const options = getOptions(val);
+function parseById(parse_type: PARSE_TYPE, id: string, app: any, dataContext: any): any {
+    const options = getOptions(id);
     return parseOption(parse_type, options, app, dataContext);
 }
 
@@ -402,8 +398,8 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
     } : {};
     part = trim(part);
     if (isGetExpr(part)) {
-        part = getBraceContent(part, BRACE_TYPE.SIMPLE);
-        return resolveGet(parse_type,  part, app, dataContext);
+        const id = getBraceContent(part, BRACE_TYPE.SIMPLE);
+        return parseById(parse_type,trim(id), app, dataContext);
     }
     const kvals = getKeyVals(part);
     kvals.forEach(function (kv) {
@@ -443,7 +439,7 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
         } else if (kv.tag === TAG.BRACE) {
             res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
         } else if (kv.tag === TAG.GET) {
-            res[kv.key] = resolveGet(PARSE_TYPE.NONE, kv.val, app, dataContext);
+            res[kv.key] = parseById(PARSE_TYPE.NONE, kv.val, app, dataContext);
         } else {
             res[kv.key] = kv.val;
         }
@@ -458,8 +454,8 @@ function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: any, dataCont
     for (let i = 0; i < strs.length; i += 1) {
         let str = trim(strs[i]);
         if (isGetExpr(str)) {
-            str = getBraceContent(str, BRACE_TYPE.SIMPLE);
-            str = trim(getOptions(str));
+            const id = getBraceContent(str, BRACE_TYPE.SIMPLE);
+            str = trim(getOptions(trim(id)));
         }
         if (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}")) {
             const subparts = getBraceParts(str);

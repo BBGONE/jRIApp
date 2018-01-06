@@ -47,10 +47,12 @@ export class TextBoxElView extends InputElView {
             }
         }
     }
-    handle_change(e: Event): void {
+    handle_change(e: Event): boolean {
         this.objEvents.raiseProp("value");
+        // stop propagation
+        return true;
     }
-    handle_keypress(e: KeyboardEvent): void {
+    handle_keypress(e: KeyboardEvent): boolean {
         const args: TKeyPressArgs = {
             keyCode: e.which,
             value: (<HTMLInputElement | HTMLTextAreaElement>e.target).value,
@@ -60,6 +62,8 @@ export class TextBoxElView extends InputElView {
         if (args.isCancel) {
             e.preventDefault();
         }
+        // stop propagation
+        return true;
     }
     handle_keyup(e: KeyboardEvent): void {
         this.objEvents.raiseProp("value");

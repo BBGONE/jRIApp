@@ -202,9 +202,10 @@ class EventHelper {
             // go up to the parent node
             while (!!target && target !== root) {
                 if (isMatch(target)) {
-                    const eventCopy = new EventWrap(event, target);
-                    listener.apply(target, [eventCopy]);
-                    if (!!event.cancelBubble) {
+                    const eventWrap = new EventWrap(event, target);
+                    listener.apply(target, [eventWrap]);
+                    //check for stopping propagation
+                    if (eventWrap.cancelBubble) {
                         return;
                     }
                 }

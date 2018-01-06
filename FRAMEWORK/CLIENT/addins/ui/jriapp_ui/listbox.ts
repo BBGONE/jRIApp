@@ -570,11 +570,12 @@ export class ListBox extends BaseObject implements ISubscriber {
     isSubscribed(flag: SubscribeFlags): boolean {
         return !this._options.nodelegate && flag === SubscribeFlags.change;
     }
-    handle_change(e: Event): void {
+    handle_change(e: Event): boolean {
         if (this._isRefreshing) {
-            return;
+            return true;
         }
         this._onSelectedChanged();
+        return true;
     }
     addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void {
         this.objEvents.on(LISTBOX_EVENTS.refreshed, fn, nmspace, context);

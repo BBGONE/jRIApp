@@ -431,15 +431,11 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
         return parts.map(function (p) { return trim(p); });
     }
-    function getOptions(expr) {
-        var parts = getExprArgs(expr);
-        if (parts.length !== 1) {
-            throw new Error("Invalid Expression: " + expr);
-        }
-        return bootstrap_1.bootstrap.getOptions(parts[0]);
+    function getOptions(id) {
+        return bootstrap_1.bootstrap.getOptions(id);
     }
-    function resolveGet(parse_type, val, app, dataContext) {
-        var options = getOptions(val);
+    function parseById(parse_type, id, app, dataContext) {
+        var options = getOptions(id);
         return parseOption(parse_type, options, app, dataContext);
     }
     function isGetExpr(val) {
@@ -459,8 +455,8 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         } : {};
         part = trim(part);
         if (isGetExpr(part)) {
-            part = getBraceContent(part, 0);
-            return resolveGet(parse_type, part, app, dataContext);
+            var id = getBraceContent(part, 0);
+            return parseById(parse_type, trim(id), app, dataContext);
         }
         var kvals = getKeyVals(part);
         kvals.forEach(function (kv) {
@@ -498,7 +494,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
             }
             else if (kv.tag === "2") {
-                res[kv.key] = resolveGet(0, kv.val, app, dataContext);
+                res[kv.key] = parseById(0, kv.val, app, dataContext);
             }
             else {
                 res[kv.key] = kv.val;
@@ -512,8 +508,8 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         for (var i = 0; i < strs.length; i += 1) {
             var str = trim(strs[i]);
             if (isGetExpr(str)) {
-                str = getBraceContent(str, 0);
-                str = trim(getOptions(str));
+                var id = getBraceContent(str, 0);
+                str = trim(getOptions(trim(id)));
             }
             if (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}")) {
                 var subparts = getBraceParts(str);
@@ -1298,9 +1294,9 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
                 var target = event.target;
                 while (!!target && target !== root) {
                     if (isMatch(target)) {
-                        var eventCopy = new EventWrap(event, target);
-                        listener.apply(target, [eventCopy]);
-                        if (!!event.cancelBubble) {
+                        var eventWrap = new EventWrap(event, target);
+                        listener.apply(target, [eventWrap]);
+                        if (eventWrap.cancelBubble) {
                             return;
                         }
                     }
@@ -2021,7 +2017,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                 dom.events.on(doc, name, function (e) {
                     var obj = subscribeMap.get(e.target);
                     if (checks.isFunc(obj[fn_name])) {
-                        obj[fn_name](e.originalEvent);
+                        e.cancelBubble = !!(obj[fn_name](e.originalEvent));
                     }
                 }, {
                     nmspace: _this._objId,
@@ -4578,6 +4574,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.9.18";
+    exports.VERSION = "2.9.19";
     bootstrap_8.Bootstrap._initFramework();
 });
