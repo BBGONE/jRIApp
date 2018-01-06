@@ -13,7 +13,7 @@ import { BaseCollection } from "./base";
 import { ItemAspect } from "./aspect";
 import { ValidationError } from "../errors";
 
-const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, collUtils = CollUtils, sys = utils.sys;
+const utils = Utils, { getValue, setValue } = utils.core, strUtils = utils.str, checks = utils.check, { walkField, initVals } = CollUtils, sys = utils.sys;
 
 export interface IListItem extends ICollectionItem {
     readonly _aspect: ListItemAspect<IListItem, any>;
@@ -32,7 +32,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
                 if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
                     throw new Error(ERRS.ERR_FIELD_READONLY);
                 }
-                coreUtils.setValue(this._vals, name, val, false);
+                setValue(this._vals, name, val, false);
                 sys.raiseProp(item, name);
                 errors.removeError(item, name);
                 const validationInfo = this._validateField(name);
@@ -53,7 +53,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
         }
     }
     _getProp(name: string): any {
-        return coreUtils.getValue(this._vals, name);
+        return getValue(this._vals, name);
     }
     _resetStatus(): void {
         this._status = ITEM_STATUS.None;
@@ -95,7 +95,7 @@ export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollec
             fldInfo.dataType = prop.dtype;
             self._fieldMap[prop.name] = fldInfo;
             self._fieldInfos.push(fldInfo);
-            collUtils.walkField(fldInfo, (fld, fullName) => {
+            walkField(fldInfo, (fld, fullName) => {
                 fld.dependents = null;
                 fld.fullName = fullName;
             });
@@ -106,7 +106,7 @@ export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollec
         this._newKey = 0;
     }
     protected createItem(obj?: TObj): TItem {
-        const isNew = !obj, vals: any = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj,
+        const isNew = !obj, vals: any = isNew ? initVals(this.getFieldInfos(), {}) : obj,
         key = this._getNewKey();
         const aspect = new ListItemAspect<TItem, TObj>(this, vals, key, isNew);
         return aspect.item;

@@ -2011,7 +2011,7 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
 define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/debounce", "jriapp_shared/errors"], function (require, exports, object_1, coreutils_3, strutils_3, sysutils_3, checks_6, debounce_1, errors_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var coreUtils = coreutils_3.CoreUtils, strUtils = strutils_3.StringUtils, checks = checks_6.Checks, sys = sysutils_3.SysUtils;
+    var forEachProp = coreutils_3.CoreUtils.forEachProp, getValue = coreutils_3.CoreUtils.getValue, setValue = coreutils_3.CoreUtils.setValue, strUtils = strutils_3.StringUtils, checks = checks_6.Checks, sys = sysutils_3.SysUtils;
     var BAG_EVENTS;
     (function (BAG_EVENTS) {
         BAG_EVENTS["errors_changed"] = "errors_changed";
@@ -2184,7 +2184,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
                 return [];
             }
             var res = [];
-            coreUtils.forEachProp(bagErrors, function (name) {
+            forEachProp(bagErrors, function (name) {
                 var fieldName = null;
                 if (name !== "*") {
                     fieldName = name;
@@ -2238,14 +2238,14 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
         });
         JsonBag.prototype.getProp = function (name) {
             var fieldName = strUtils.trimBrackets(name);
-            return coreUtils.getValue(this._val, fieldName, "->");
+            return getValue(this._val, fieldName, "->");
         };
         JsonBag.prototype.setProp = function (name, val) {
             var old = this.getProp(name);
             if (old !== val) {
                 try {
                     var fieldName = strUtils.trimBrackets(name);
-                    coreUtils.setValue(this._val, fieldName, val, false, "->");
+                    setValue(this._val, fieldName, val, false, "->");
                     sys.raiseProp(this, name);
                     this._removeError(name);
                     var validationInfo = this._validateField(name);
@@ -2985,7 +2985,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
 define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/utils", "jriapp_shared/errors"], function (require, exports, object_3, lang_5, waitqueue_1, utils_2, utils_3, errors_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = utils_2.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys, valUtils = utils_3.ValueUtils, collUtils = utils_3.CollUtils;
+    var utils = utils_2.Utils, _a = utils.core, forEachProp = _a.forEachProp, getTimeZoneOffset = _a.getTimeZoneOffset, getNewID = _a.getNewID, strUtils = utils.str, _b = utils.check, undefined = _b.undefined, isArray = _b.isArray, isUndefined = _b.isUndefined, sys = utils.sys, stringifyValue = utils_3.ValueUtils.stringifyValue, getObjectField = utils_3.CollUtils.getObjectField;
     sys.isCollection = function (obj) { return (!!obj && obj instanceof BaseCollection); };
     var COLL_EVENTS;
     (function (COLL_EVENTS) {
@@ -3035,7 +3035,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             if (!fieldName) {
                 fieldName = "*";
             }
-            if (!(checks.isArray(errors) && errors.length > 0)) {
+            if (!(isArray(errors) && errors.length > 0)) {
                 this.removeError(item, fieldName, ignoreChangeErrors);
                 return;
             }
@@ -3086,7 +3086,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         Errors.prototype.getItemsWithErrors = function () {
             var _this = this;
             var res = [];
-            coreUtils.forEachProp(this._errors, function (key) {
+            forEachProp(this._errors, function (key) {
                 var item = _this._owner.getItemByKey(key);
                 res.push(item);
             });
@@ -3100,7 +3100,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         function BaseCollection() {
             var _this = _super.call(this) || this;
             var self = _this;
-            _this._objId = coreUtils.getNewID("coll");
+            _this._objId = getNewID("coll");
             _this._options = { enablePaging: false, pageSize: 50 };
             _this._isLoading = false;
             _this._isUpdating = false;
@@ -3192,7 +3192,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 return this._pkInfo;
             }
             var fldMap = this.getFieldMap(), pk = [];
-            coreUtils.forEachProp(fldMap, function (fldName) {
+            forEachProp(fldMap, function (fldName) {
                 if (fldMap[fldName].isPrimaryKey > 0) {
                     pk.push(fldMap[fldName]);
                 }
@@ -3344,8 +3344,8 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             return this._EditingItem;
         };
         BaseCollection.prototype._getStrValue = function (val, fieldInfo) {
-            var dcnv = fieldInfo.dateConversion, stz = coreUtils.getTimeZoneOffset();
-            return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+            var dcnv = fieldInfo.dateConversion, stz = getTimeZoneOffset();
+            return stringifyValue(val, dcnv, fieldInfo.dataType, stz);
         };
         BaseCollection.prototype._onBeforeEditing = function (item, isBegin, isCanceled) {
             if (this._isUpdating) {
@@ -3507,10 +3507,10 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                     fieldName = fieldNames[i];
                     af = sys.resolvePath(a, fieldName);
                     bf = sys.resolvePath(b, fieldName);
-                    if (af === checks.undefined) {
+                    if (af === undefined) {
                         af = null;
                     }
-                    if (bf === checks.undefined) {
+                    if (bf === undefined) {
                         bf = null;
                     }
                     if (af === null && bf !== null) {
@@ -3538,7 +3538,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         BaseCollection.prototype.isHasProp = function (prop) {
             if (strUtils.startsWith(prop, "[")) {
                 var res = sys.getProp(this, prop);
-                return !checks.isUndefined(res);
+                return !isUndefined(res);
             }
             return _super.prototype.isHasProp.call(this, prop);
         };
@@ -3550,7 +3550,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             }
             if (fld.fieldType === 5) {
                 for (var i = 1; i < parts.length; i += 1) {
-                    fld = collUtils.getObjectField(parts[i], fld.nested);
+                    fld = getObjectField(parts[i], fld.nested);
                 }
                 return fld;
             }
@@ -3618,7 +3618,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             }
             var self = this, pkInfo = self._getPKFieldInfos(), arr = [];
             var key, values = [];
-            if (vals.length === 1 && checks.isArray(vals[0])) {
+            if (vals.length === 1 && isArray(vals[0])) {
                 values = vals[0];
             }
             else {
@@ -4215,7 +4215,7 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
 define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/utils", "jriapp_shared/collection/utils", "jriapp_shared/errors", "jriapp_shared/collection/validation"], function (require, exports, object_4, utils_5, utils_6, errors_6, validation_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = utils_5.Utils, coreUtils = utils.core, checks = utils.check, sys = utils.sys, ERROR = utils.err, collUtils = utils_6.CollUtils;
+    var utils = utils_5.Utils, _a = utils.core, forEachProp = _a.forEachProp, getValue = _a.getValue, isNt = utils.check.isNt, sys = utils.sys, ERROR = utils.err, cloneVals = utils_6.CollUtils.cloneVals, walkFields = utils_6.CollUtils.walkFields, copyVals = utils_6.CollUtils.copyVals;
     var AspectFlags;
     (function (AspectFlags) {
         AspectFlags[AspectFlags["IsAttached"] = 0] = "IsAttached";
@@ -4223,7 +4223,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         AspectFlags[AspectFlags["IsRefreshing"] = 2] = "IsRefreshing";
         AspectFlags[AspectFlags["IsCancelling"] = 3] = "IsCancelling";
     })(AspectFlags || (AspectFlags = {}));
-    function fn_destroyVal(entry, nmspace) {
+    function disposeVal(entry, nmspace) {
         if (!entry) {
             return;
         }
@@ -4239,7 +4239,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             val.dispose();
         }
     }
-    function fn_checkDetached(aspect) {
+    function checkDetached(aspect) {
         if (aspect.isDetached) {
             throw new Error("Invalid operation. The item is detached");
         }
@@ -4272,8 +4272,8 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             }
             var bag = this._valueBag;
             if (!!bag) {
-                coreUtils.forEachProp(bag, function (name, val) {
-                    fn_destroyVal(val, coll.uniqueID);
+                forEachProp(bag, function (name, val) {
+                    disposeVal(val, coll.uniqueID);
                 });
             }
             this._flags = 0;
@@ -4300,7 +4300,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             this._setFlag(v, 3);
         };
         ItemAspect.prototype._beginEdit = function () {
-            fn_checkDetached(this);
+            checkDetached(this);
             var coll = this.coll;
             var isHandled = false;
             if (coll.isEditing) {
@@ -4321,7 +4321,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                     ERROR.reThrow(ex, isHandled);
                 }
             }
-            this._saveVals = collUtils.cloneVals(this.coll.getFieldInfos(), this._vals);
+            this._saveVals = cloneVals(this.coll.getFieldInfos(), this._vals);
             this.coll.currentItem = this.item;
             return true;
         };
@@ -4329,7 +4329,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (!this.isEditing) {
                 return false;
             }
-            fn_checkDetached(this);
+            checkDetached(this);
             var coll = this.coll, self = this, errors = coll.errors;
             errors.removeAllErrors(this.item);
             var validations = this._validateFields();
@@ -4347,7 +4347,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (!this.isEditing) {
                 return false;
             }
-            fn_checkDetached(this);
+            checkDetached(this);
             var coll = this.coll, self = this, item = self.item, changes = this._saveVals;
             this._vals = this._saveVals;
             this._saveVals = null;
@@ -4367,7 +4367,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype._validateField = function (fieldName) {
             var fieldInfo = this.getFieldInfo(fieldName), errors = this.coll.errors;
-            var value = coreUtils.getValue(this._vals, fieldName);
+            var value = getValue(this._vals, fieldName);
             if (this._skipValidate(fieldInfo, value)) {
                 return null;
             }
@@ -4384,7 +4384,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype._validateFields = function () {
             var self = this, fieldInfos = this.coll.getFieldInfos(), res = [];
-            collUtils.walkFields(fieldInfos, function (fld, fullName) {
+            walkFields(fieldInfos, function (fld, fullName) {
                 if (fld.fieldType !== 5) {
                     var fieldValidation = self._validateField(fullName);
                     if (!!fieldValidation && fieldValidation.errors.length > 0) {
@@ -4397,9 +4397,6 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         ItemAspect.prototype._resetStatus = function () {
         };
-        ItemAspect.prototype.handleError = function (error, source) {
-            return this.coll.handleError(error, source);
-        };
         ItemAspect.prototype._setKey = function (v) {
             this._key = v;
         };
@@ -4411,6 +4408,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 this._setFlag(v, 2);
                 this.objEvents.raiseProp("isRefreshing");
             }
+        };
+        ItemAspect.prototype.handleError = function (error, source) {
+            return this.coll.handleError(error, source);
         };
         ItemAspect.prototype.raiseErrorsChanged = function () {
             this._onErrorsChanged();
@@ -4427,7 +4427,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 return "";
             }
             var res = [];
-            coreUtils.forEachProp(itemErrors, function (name, errs) {
+            forEachProp(itemErrors, function (name, errs) {
                 for (var i = 0; i < errs.length; i += 1) {
                     res.push(name + ": " + errs[i]);
                 }
@@ -4440,7 +4440,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.rejectChanges = function () {
         };
         ItemAspect.prototype.beginEdit = function () {
-            fn_checkDetached(this);
+            checkDetached(this);
             if (this.isEditing) {
                 return false;
             }
@@ -4451,7 +4451,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             }
             internal.onEditing(item, true, false);
             if (!!this._valueBag && this.isEditing) {
-                coreUtils.forEachProp(this._valueBag, function (name, obj) {
+                forEachProp(this._valueBag, function (name, obj) {
                     if (!!obj && sys.isEditable(obj.val)) {
                         obj.val.beginEdit();
                     }
@@ -4463,12 +4463,12 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (!this.isEditing) {
                 return false;
             }
-            fn_checkDetached(this);
+            checkDetached(this);
             var coll = this.coll, internal = coll._getInternal(), item = this.item;
             internal.onBeforeEditing(item, false, false);
             var customEndEdit = true;
             if (!!this._valueBag) {
-                coreUtils.forEachProp(this._valueBag, function (name, obj) {
+                forEachProp(this._valueBag, function (name, obj) {
                     if (!!obj && sys.isEditable(obj.val)) {
                         if (!obj.val.endEdit()) {
                             customEndEdit = false;
@@ -4487,13 +4487,13 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (!this.isEditing) {
                 return false;
             }
-            fn_checkDetached(this);
+            checkDetached(this);
             this._setIsCancelling(true);
             try {
                 var coll = this.coll, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
                 internal.onBeforeEditing(item, false, true);
                 if (!!this._valueBag) {
-                    coreUtils.forEachProp(this._valueBag, function (name, obj) {
+                    forEachProp(this._valueBag, function (name, obj) {
                         if (!!obj && sys.isEditable(obj.val)) {
                             obj.val.cancelEdit();
                         }
@@ -4528,7 +4528,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.getIsHasErrors = function () {
             var res = !!this.coll.errors.getErrors(this.item);
             if (!res && !!this._valueBag) {
-                coreUtils.forEachProp(this._valueBag, function (name, obj) {
+                forEachProp(this._valueBag, function (name, obj) {
                     if (!!obj) {
                         var errNotification = sys.getErrorNotification(obj.val);
                         if (!!errNotification && errNotification.getIsHasErrors()) {
@@ -4566,7 +4566,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.getAllErrors = function () {
             var res = [];
             if (!!this._valueBag) {
-                coreUtils.forEachProp(this._valueBag, function (name, obj) {
+                forEachProp(this._valueBag, function (name, obj) {
                     var errNotification = sys.getErrorNotification(obj.val);
                     if (!!errNotification) {
                         res = res.concat(errNotification.getAllErrors());
@@ -4577,7 +4577,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (!itemErrors) {
                 return res;
             }
-            coreUtils.forEachProp(itemErrors, function (name) {
+            forEachProp(itemErrors, function (name) {
                 var fieldName = null;
                 if (name !== "*") {
                     fieldName = name;
@@ -4593,16 +4593,16 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             var _this = this;
             if (isOwnVal === void 0) { isOwnVal = true; }
             if (!this._valueBag) {
-                if (checks.isNt(val)) {
+                if (isNt(val)) {
                     return;
                 }
                 this._valueBag = {};
             }
             var oldEntry = this._valueBag[name], coll = this.coll;
             if (!!oldEntry && oldEntry.val !== val) {
-                fn_destroyVal(oldEntry, coll.uniqueID);
+                disposeVal(oldEntry, coll.uniqueID);
             }
-            if (checks.isNt(val)) {
+            if (isNt(val)) {
                 delete this._valueBag[name];
             }
             else {
@@ -4631,7 +4631,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         };
         Object.defineProperty(ItemAspect.prototype, "vals", {
             get: function () {
-                return collUtils.copyVals(this.coll.getFieldInfos(), this._vals, {});
+                return copyVals(this.coll.getFieldInfos(), this._vals, {});
             },
             enumerable: true,
             configurable: true
@@ -4639,7 +4639,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         Object.defineProperty(ItemAspect.prototype, "item", {
             get: function () {
                 if (!this._item) {
-                    this._item = this._coll.itemFactory(this);
+                    this._item = this.coll.itemFactory(this);
                 }
                 return this._item;
             },
@@ -4787,7 +4787,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
 define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_7, utils_8, base_1, aspect_1, errors_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = utils_7.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, collUtils = utils_8.CollUtils, sys = utils.sys;
+    var utils = utils_7.Utils, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, strUtils = utils.str, checks = utils.check, walkField = utils_8.CollUtils.walkField, initVals = utils_8.CollUtils.initVals, sys = utils.sys;
     var ListItemAspect = (function (_super) {
         __extends(ListItemAspect, _super);
         function ListItemAspect() {
@@ -4804,7 +4804,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
                         throw new Error(lang_7.ERRS.ERR_FIELD_READONLY);
                     }
-                    coreUtils.setValue(this._vals, name, val, false);
+                    setValue(this._vals, name, val, false);
                     sys.raiseProp(item, name);
                     errors.removeError(item, name);
                     var validationInfo = this._validateField(name);
@@ -4827,7 +4827,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             }
         };
         ListItemAspect.prototype._getProp = function (name) {
-            return coreUtils.getValue(this._vals, name);
+            return getValue(this._vals, name);
         };
         ListItemAspect.prototype._resetStatus = function () {
             this._status = 0;
@@ -4870,7 +4870,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                 fldInfo.dataType = prop.dtype;
                 self._fieldMap[prop.name] = fldInfo;
                 self._fieldInfos.push(fldInfo);
-                collUtils.walkField(fldInfo, function (fld, fullName) {
+                walkField(fldInfo, function (fld, fullName) {
                     fld.dependents = null;
                     fld.fullName = fullName;
                 });
@@ -4881,7 +4881,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             this._newKey = 0;
         };
         BaseList.prototype.createItem = function (obj) {
-            var isNew = !obj, vals = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj, key = this._getNewKey();
+            var isNew = !obj, vals = isNew ? initVals(this.getFieldInfos(), {}) : obj, key = this._getNewKey();
             var aspect = new ListItemAspect(this, vals, key, isNew);
             return aspect.item;
         };
@@ -4965,7 +4965,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
 define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/strUtils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/validation", "jriapp_shared/collection/list", "jriapp_shared/errors"], function (require, exports, coreutils_7, sysutils_5, strutils_5, debounce_2, item_1, validation_2, list_1, errors_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var coreUtils = coreutils_7.CoreUtils, strUtils = strutils_5.StringUtils, sys = sysutils_5.SysUtils;
+    var getValue = coreutils_7.CoreUtils.getValue, setValue = coreutils_7.CoreUtils.setValue, strUtils = strutils_5.StringUtils, sys = sysutils_5.SysUtils;
     var AnyItemAspect = (function (_super) {
         __extends(AnyItemAspect, _super);
         function AnyItemAspect() {
@@ -4978,11 +4978,11 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             return validation_2.Validations.distinct(this._validateItem());
         };
         AnyItemAspect.prototype._getProp = function (name) {
-            return coreUtils.getValue(this._vals, name);
+            return getValue(this._vals, name);
         };
         AnyItemAspect.prototype._setProp = function (name, val) {
             if (this._getProp(name) !== val) {
-                coreUtils.setValue(this._vals, name, val, false);
+                setValue(this._vals, name, val, false);
                 sys.raiseProp(this.item, name);
             }
         };
@@ -5008,14 +5008,14 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
         };
         AnyValListItem.prototype.getProp = function (name) {
             var fieldName = strUtils.trimBrackets(name);
-            return coreUtils.getValue(this.val, fieldName, "->");
+            return getValue(this.val, fieldName, "->");
         };
         AnyValListItem.prototype.setProp = function (name, val) {
             var coll = this._aspect.coll, errors = coll.errors, old = this.getProp(name);
             if (old !== val) {
                 try {
                     var fieldName = strUtils.trimBrackets(name);
-                    coreUtils.setValue(this.val, fieldName, val, false, "->");
+                    setValue(this.val, fieldName, val, false, "->");
                     sys.raiseProp(this, name);
                     errors.removeError(this, name);
                     var validation = this._aspect._validateField(name);
@@ -5143,7 +5143,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
 define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/anylist"], function (require, exports, object_6, coreutils_8, anylist_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var coreUtils = coreutils_8.CoreUtils;
+    var getNewID = coreutils_8.CoreUtils.getNewID, getValue = coreutils_8.CoreUtils.getValue, setValue = coreutils_8.CoreUtils.setValue;
     var BAG_EVENTS;
     (function (BAG_EVENTS) {
         BAG_EVENTS["errors_changed"] = "errors_changed";
@@ -5155,7 +5155,7 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
         function JsonArray(owner, pathToArray) {
             var _this = _super.call(this) || this;
             _this._list = null;
-            _this._objId = coreUtils.getNewID("jsn");
+            _this._objId = getNewID("jsn");
             _this._owner = owner;
             _this._pathToArray = pathToArray;
             _this.owner.objEvents.onProp("val", function () {
@@ -5177,7 +5177,7 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
             _super.prototype.dispose.call(this);
         };
         JsonArray.prototype.updateArray = function (arr) {
-            coreUtils.setValue(this._owner.val, this._pathToArray, arr, false, "->");
+            setValue(this._owner.val, this._pathToArray, arr, false, "->");
             this._owner.updateJson();
         };
         JsonArray.prototype.addOnValidateBag = function (fn, nmspace, context) {
@@ -5213,7 +5213,7 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
             if (!this._owner) {
                 return [];
             }
-            var res = coreUtils.getValue(this._owner.val, this._pathToArray, "->");
+            var res = getValue(this._owner.val, this._pathToArray, "->");
             return (!res) ? [] : res;
         };
         Object.defineProperty(JsonArray.prototype, "pathToArray", {

@@ -12,7 +12,7 @@ import { ValidationError } from "../errors";
 
 export { ICollValidateFieldArgs } from "../collection/int";
 
-const coreUtils = CoreUtils, strUtils = StringUtils, sys = SysUtils;
+const { getValue, setValue } = CoreUtils, strUtils = StringUtils, sys = SysUtils;
 
 export interface IAnyVal {
     val: any;
@@ -33,12 +33,12 @@ export class AnyItemAspect extends ListItemAspect<IAnyValItem, IAnyVal> {
     }
     // override List's methods
     _getProp(name: string) {
-        return coreUtils.getValue(this._vals, name);
+        return getValue(this._vals, name);
     }
      // override
     _setProp(name: string, val: any) {
         if (this._getProp(name) !== val) {
-            coreUtils.setValue(this._vals, name, val, false);
+            setValue(this._vals, name, val, false);
             sys.raiseProp(this.item, name);
         }
     }
@@ -58,14 +58,14 @@ export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAn
     }
     getProp(name: string): any {
         const fieldName = strUtils.trimBrackets(name);
-        return coreUtils.getValue(this.val, fieldName, "->");
+        return getValue(this.val, fieldName, "->");
     }
     setProp(name: string, val: any): void {
         const coll = this._aspect.coll, errors = coll.errors, old = this.getProp(name);
         if (old !== val) {
             try {
                 const fieldName = strUtils.trimBrackets(name);
-                coreUtils.setValue(this.val, fieldName, val, false, "->");
+                setValue(this.val, fieldName, val, false, "->");
                 sys.raiseProp(this, name);
                 errors.removeError(this, name);
                 const validation: IValidationInfo = this._aspect._validateField(name);

@@ -2662,7 +2662,8 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
 define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/viewchecks", "jriapp/bootstrap"], function (require, exports, jriapp_shared_12, viewchecks_1, bootstrap_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_12.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, sys = utils.sys, debug = utils.debug, log = utils.log, boot = bootstrap_4.bootstrap, ERRS = jriapp_shared_12.LocaleERRS, viewChecks = viewchecks_1.ViewChecks;
+    var utils = jriapp_shared_12.Utils, checks = utils.check, strUtils = utils.str, _a = utils.core, getNewID = _a.getNewID, forEachProp = _a.forEachProp, sys = utils.sys, debug = utils.debug, log = utils.log, boot = bootstrap_4.bootstrap, ERRS = jriapp_shared_12.LocaleERRS, viewChecks = viewchecks_1.ViewChecks;
+    var resolvePath = sys.resolvePath, getPathParts = sys.getPathParts, getErrorNotification = sys.getErrorNotification, getProp = sys.getProp, setProp = sys.setProp;
     sys.isBinding = function (obj) {
         return (!!obj && obj instanceof Binding);
     };
@@ -2756,7 +2757,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     bindingOpts.target = defTarget;
                 }
                 else {
-                    bindingOpts.target = sys.resolvePath(app, fixedTarget);
+                    bindingOpts.target = resolvePath(app, fixedTarget);
                 }
             }
             else {
@@ -2773,7 +2774,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     bindingOpts.source = defTarget;
                 }
                 else {
-                    bindingOpts.source = sys.resolvePath(app, fixedSource);
+                    bindingOpts.source = resolvePath(app, fixedSource);
                 }
             }
             else {
@@ -2810,14 +2811,14 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             _this._converter = !opts.converter ? null : opts.converter;
             _this._param = opts.param;
             _this._isEval = !!opts.isEval;
-            _this._srcPath = sys.getPathParts(opts.sourcePath);
-            _this._tgtPath = sys.getPathParts(opts.targetPath);
+            _this._srcPath = getPathParts(opts.sourcePath);
+            _this._tgtPath = getPathParts(opts.targetPath);
             if (_this._tgtPath.length < 1) {
                 throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
             }
             _this._srcFixed = (!!opts.isSourceFixed);
             _this._pathItems = {};
-            _this._objId = coreUtils.getNewID("bnd");
+            _this._objId = getNewID("bnd");
             _this._srcEnd = null;
             _this._tgtEnd = null;
             _this._source = null;
@@ -2828,7 +2829,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             _this._setTarget(opts.target);
             _this._setSource(opts.source);
             _this._update();
-            var errNotif = sys.getErrorNotification(_this._srcEnd);
+            var errNotif = getErrorNotification(_this._srcEnd);
             if (!!errNotif && errNotif.getIsHasErrors()) {
                 _this._onSrcErrChanged(errNotif);
             }
@@ -2840,7 +2841,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
             }
             this.setDisposing();
             var self = this;
-            coreUtils.forEachProp(this._pathItems, function (key, old) {
+            forEachProp(this._pathItems, function (key, old) {
                 self._cleanUp(old);
             });
             this._pathItems = {};
@@ -2923,7 +2924,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         };
         Binding.prototype._getTgtChangedFn = function (self, obj, prop, restPath, lvl) {
             return function () {
-                var val = sys.getProp(obj, prop);
+                var val = getProp(obj, prop);
                 if (restPath.length > 0) {
                     self._setPathItem(null, 1, lvl, restPath);
                 }
@@ -2933,7 +2934,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         };
         Binding.prototype._getSrcChangedFn = function (self, obj, prop, restPath, lvl) {
             return function () {
-                var val = sys.getProp(obj, prop);
+                var val = getProp(obj, prop);
                 if (restPath.length > 0) {
                     self._setPathItem(null, 0, lvl, restPath);
                 }
@@ -2984,7 +2985,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     self._addOnPropChanged(obj, path[0], fnChange);
                 }
                 if (!!obj) {
-                    var nextObj = sys.getProp(obj, path[0]);
+                    var nextObj = getProp(obj, path[0]);
                     if (!!nextObj) {
                         self._parseSrc2(nextObj, path.slice(1), lvl + 1);
                     }
@@ -3007,7 +3008,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                         };
                         self._addOnPropChanged(obj, path[0], fnUpd);
                     }
-                    var errNotif = sys.getErrorNotification(obj);
+                    var errNotif = getErrorNotification(obj);
                     if (!!errNotif) {
                         errNotif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
                     }
@@ -3055,7 +3056,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     self._addOnPropChanged(obj, path[0], fnChange);
                 }
                 if (!!obj) {
-                    var nextObj = sys.getProp(obj, path[0]);
+                    var nextObj = getProp(obj, path[0]);
                     if (!!nextObj) {
                         self._parseTgt2(nextObj, path.slice(1), lvl + 1);
                     }
@@ -3105,7 +3106,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         Binding.prototype._cleanUp = function (obj) {
             if (!!obj) {
                 obj.objEvents.offNS(this._objId);
-                var errNotif = sys.getErrorNotification(obj);
+                var errNotif = getErrorNotification(obj);
                 if (!!errNotif) {
                     errNotif.offOnErrorsChanged(this._objId);
                 }
@@ -3253,7 +3254,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 }
                 else if (!!this._srcEnd) {
                     var prop = this._srcPath[this._srcPath.length - 1];
-                    res = sys.getProp(this._srcEnd, prop);
+                    res = getProp(this._srcEnd, prop);
                 }
                 return res;
             },
@@ -3262,7 +3263,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     return;
                 }
                 var prop = this._srcPath[this._srcPath.length - 1];
-                sys.setProp(this._srcEnd, prop, v);
+                setProp(this._srcEnd, prop, v);
             },
             enumerable: true,
             configurable: true
@@ -3275,7 +3276,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                 }
                 else if (!!this._tgtEnd) {
                     var prop = this._tgtPath[this._tgtPath.length - 1];
-                    res = sys.getProp(this._tgtEnd, prop);
+                    res = getProp(this._tgtEnd, prop);
                 }
                 return res;
             },
@@ -3284,7 +3285,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     return;
                 }
                 var prop = this._tgtPath[this._tgtPath.length - 1];
-                sys.setProp(this._tgtEnd, prop, v);
+                setProp(this._tgtEnd, prop, v);
             },
             enumerable: true,
             configurable: true
@@ -3313,9 +3314,9 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
                     var evalparts = this._param;
                     var source = this.source;
                     if (evalparts.length > 1) {
-                        source = sys.resolvePath(boot.getApp(), evalparts[1]);
+                        source = resolvePath(boot.getApp(), evalparts[1]);
                     }
-                    return sys.resolvePath(source, evalparts[0]);
+                    return resolvePath(source, evalparts[0]);
                 }
                 else {
                     return this._param;
@@ -4585,6 +4586,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.9.16";
+    exports.VERSION = "2.9.17";
     bootstrap_8.Bootstrap._initFramework();
 });

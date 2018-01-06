@@ -11,8 +11,8 @@ import { CollUtils } from "./utils";
 import { ValidationError } from "../errors";
 import { Validations } from "./validation";
 
-const utils = Utils, coreUtils = utils.core, checks = utils.check,
-    sys = utils.sys, ERROR = utils.err, collUtils = CollUtils;
+const utils = Utils, { forEachProp, getValue } = utils.core, { isNt } = utils.check,
+    sys = utils.sys, ERROR = utils.err, { cloneVals, walkFields, copyVals } = CollUtils;
 
 const enum AspectFlags {
     IsAttached = 0,
@@ -26,7 +26,7 @@ interface ICustomVal {
     isOwnIt: boolean;
 }
 
-function fn_destroyVal(entry: ICustomVal, nmspace: string): void {
+function disposeVal(entry: ICustomVal, nmspace: string): void {
     if (!entry) {
         return;
     }
@@ -46,7 +46,7 @@ function fn_destroyVal(entry: ICustomVal, nmspace: string): void {
     }
 }
 
-function fn_checkDetached<TItem extends ICollectionItem, TObj>(aspect: IItemAspect<TItem, TObj>): void {
+function checkDetached<TItem extends ICollectionItem, TObj>(aspect: IItemAspect<TItem, TObj>): void {
     if (aspect.isDetached) {
         throw new Error("Invalid operation. The item is detached");
     }
@@ -88,8 +88,8 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         }
         const bag = this._valueBag;
         if (!!bag) {
-            coreUtils.forEachProp(bag, (name, val) => {
-                fn_destroyVal(val, coll.uniqueID);
+            forEachProp(bag, (name, val) => {
+                disposeVal(val, coll.uniqueID);
             });
         }
         this._flags = 0;
@@ -115,7 +115,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         this._setFlag(v, AspectFlags.IsCancelling);
     }
     protected _beginEdit(): boolean {
-        fn_checkDetached(this);
+        checkDetached(this);
         const coll = this.coll;
         let isHandled: boolean = false;
         if (coll.isEditing) {
@@ -135,7 +135,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
                 ERROR.reThrow(ex, isHandled);
             }
         }
-        this._saveVals = collUtils.cloneVals(this.coll.getFieldInfos(), this._vals);
+        this._saveVals = cloneVals(this.coll.getFieldInfos(), this._vals);
         this.coll.currentItem = this.item;
         return true;
     }
@@ -143,7 +143,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         if (!this.isEditing) {
             return false;
         }
-        fn_checkDetached(this);
+        checkDetached(this);
         const coll = this.coll, self = this, errors = coll.errors;
         // revalidate all
         errors.removeAllErrors(this.item);
@@ -161,7 +161,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         if (!this.isEditing) {
             return false;
         }
-        fn_checkDetached(this);
+        checkDetached(this);
         const coll = this.coll, self = this,
             item = self.item, changes = this._saveVals;
         this._vals = this._saveVals;
@@ -184,7 +184,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
     }
     protected _validateField(fieldName: string): IValidationInfo {
         const fieldInfo = this.getFieldInfo(fieldName), errors = this.coll.errors;
-        const value = coreUtils.getValue(this._vals, fieldName);
+        const value = getValue(this._vals, fieldName);
         if (this._skipValidate(fieldInfo, value)) {
             return null;
         }
@@ -205,7 +205,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         const self = this, fieldInfos = this.coll.getFieldInfos(),
             res: IValidationInfo[] = [];
         // revalidate all fields one by one
-        collUtils.walkFields(fieldInfos, (fld, fullName) => {
+        walkFields(fieldInfos, (fld, fullName) => {
             if (fld.fieldType !== FIELD_TYPE.Object) {
                 const fieldValidation: IValidationInfo = self._validateField(fullName);
                 if (!!fieldValidation && fieldValidation.errors.length > 0) {
@@ -218,32 +218,32 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         const itemVals: IValidationInfo[] = self._validateItem();
         return Validations.distinct(res.concat(itemVals));
     }
-    protected _resetStatus() {
+    protected _resetStatus(): void {
         // can reset isNew on all items in the collection
         // the list descendant does it
     }
-    handleError(error: any, source: any): boolean {
-        return this.coll.handleError(error, source);
-    }
-    _setKey(v: string) {
+    _setKey(v: string): void {
         this._key = v;
     }
-    _setIsAttached(v: boolean) {
+    _setIsAttached(v: boolean): void {
         this._setFlag(v, AspectFlags.IsAttached);
     }
-    _setIsRefreshing(v: boolean) {
+    _setIsRefreshing(v: boolean): void {
         if (this.isRefreshing !== v) {
             this._setFlag(v, AspectFlags.IsRefreshing);
             this.objEvents.raiseProp("isRefreshing");
         }
     }
+    handleError(error: any, source: any): boolean {
+        return this.coll.handleError(error, source);
+    }
     raiseErrorsChanged(): void {
         this._onErrorsChanged();
     }
-    getFieldInfo(fieldName: string) {
+    getFieldInfo(fieldName: string): IFieldInfo {
         return this.coll.getFieldInfo(fieldName);
     }
-    getFieldNames() {
+    getFieldNames(): string[] {
         return this.coll.getFieldNames();
     }
     getErrorString(): string {
@@ -252,7 +252,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
             return "";
         }
         const res: string[] = [];
-        coreUtils.forEachProp(itemErrors, (name, errs) => {
+        forEachProp(itemErrors, (name, errs) => {
             for (let i = 0; i < errs.length; i += 1) {
                 res.push(`${name}: ${errs[i]}`);
             }
@@ -263,9 +263,10 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         return utils.defer.reject<void>("not implemented");
     }
     rejectChanges(): void {
+        // noop
     }
     beginEdit(): boolean {
-        fn_checkDetached(this);
+        checkDetached(this);
         if (this.isEditing) {
             return false;
         }
@@ -276,7 +277,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         }
         internal.onEditing(item, true, false);
         if (!!this._valueBag && this.isEditing) {
-            coreUtils.forEachProp(this._valueBag, (name, obj) => {
+            forEachProp(this._valueBag, (name, obj) => {
                 if (!!obj && sys.isEditable(obj.val)) {
                     obj.val.beginEdit();
                 }
@@ -288,12 +289,12 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         if (!this.isEditing) {
             return false;
         }
-        fn_checkDetached(this);
+        checkDetached(this);
         const coll = this.coll, internal = coll._getInternal(), item = this.item;
         internal.onBeforeEditing(item, false, false);
         let customEndEdit = true;
         if (!!this._valueBag) {
-            coreUtils.forEachProp(this._valueBag, (name, obj) => {
+            forEachProp(this._valueBag, (name, obj) => {
                 if (!!obj && sys.isEditable(obj.val)) {
                     if (!obj.val.endEdit()) {
                         customEndEdit = false;
@@ -312,13 +313,13 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         if (!this.isEditing) {
             return false;
         }
-        fn_checkDetached(this);
+        checkDetached(this);
         this._setIsCancelling(true);
         try {
             const coll = this.coll, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
             internal.onBeforeEditing(item, false, true);
             if (!!this._valueBag) {
-                coreUtils.forEachProp(this._valueBag, (name, obj) => {
+                forEachProp(this._valueBag, (name, obj) => {
                     if (!!obj && sys.isEditable(obj.val)) {
                         obj.val.cancelEdit();
                     }
@@ -349,10 +350,10 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         this.dispose();
         return true;
     }
-    getIsHasErrors() {
+    getIsHasErrors(): boolean {
         let res = !!this.coll.errors.getErrors(this.item);
         if (!res && !!this._valueBag) {
-            coreUtils.forEachProp(this._valueBag, (name, obj) => {
+            forEachProp(this._valueBag, (name, obj) => {
                 if (!!obj) {
                     const errNotification = sys.getErrorNotification(obj.val);
                     if (!!errNotification && errNotification.getIsHasErrors()) {
@@ -363,10 +364,10 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         }
         return res;
     }
-    addOnErrorsChanged(fn: TEventHandler<ItemAspect<TItem, TObj>, any>, nmspace?: string, context?: any) {
+    addOnErrorsChanged(fn: TEventHandler<ItemAspect<TItem, TObj>, any>, nmspace?: string, context?: any): void {
         this.objEvents.on(ITEM_EVENTS.errors_changed, fn, nmspace, context);
     }
-    offOnErrorsChanged(nmspace?: string) {
+    offOnErrorsChanged(nmspace?: string): void {
         this.objEvents.off(ITEM_EVENTS.errors_changed, nmspace);
     }
     getFieldErrors(fieldName: string): IValidationInfo[] {
@@ -390,7 +391,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
     getAllErrors(): IValidationInfo[] {
         let res: IValidationInfo[] = [];
         if (!!this._valueBag) {
-            coreUtils.forEachProp(this._valueBag, (name, obj) => {
+            forEachProp(this._valueBag, (name, obj) => {
                 const errNotification = sys.getErrorNotification(obj.val);
                 if (!!errNotification) {
                     res = res.concat(errNotification.getAllErrors());
@@ -402,7 +403,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         if (!itemErrors) {
             return res;
         }
-        coreUtils.forEachProp(itemErrors, (name) => {
+        forEachProp(itemErrors, (name) => {
             let fieldName: string = null;
             if (name !== "*") {
                 fieldName = name;
@@ -417,7 +418,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
     // can be used to store any user object
     setCustomVal(name: string, val: any, isOwnVal: boolean = true): void {
         if (!this._valueBag) {
-            if (checks.isNt(val)) {
+            if (isNt(val)) {
                 return;
             }
             this._valueBag = {};
@@ -426,10 +427,10 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         const oldEntry = this._valueBag[name],  coll = this.coll;
 
         if (!!oldEntry && oldEntry.val !== val) {
-            fn_destroyVal(oldEntry, coll.uniqueID);
+            disposeVal(oldEntry, coll.uniqueID);
         }
 
-        if (checks.isNt(val)) {
+        if (isNt(val)) {
             delete this._valueBag[name];
         } else {
             const newEntry: ICustomVal = { val: val, isOwnIt: !!isOwnVal };
@@ -458,11 +459,11 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
     }
     // cloned values of this item
     get vals(): TObj {
-        return collUtils.copyVals(this.coll.getFieldInfos(), this._vals, {});
+        return copyVals(this.coll.getFieldInfos(), this._vals, {});
     }
     get item(): TItem {
         if (!this._item) {
-            this._item = this._coll.itemFactory(this);
+            this._item = this.coll.itemFactory(this);
         }
         return this._item;
     }

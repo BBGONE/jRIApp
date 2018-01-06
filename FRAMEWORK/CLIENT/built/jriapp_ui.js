@@ -5138,7 +5138,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
     exports.COLUMN_TYPE = const_3.COLUMN_TYPE;
     exports.ROW_ACTION = const_3.ROW_ACTION;
     exports.DefaultAnimation = animation_2.DefaultAnimation;
-    var utils = jriapp_shared_29.Utils, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, sys = utils.sys, dom = dom_28.DomUtils, parser = parser_2.Parser, doc = dom.document, win = dom.window, boot = bootstrap_16.bootstrap;
+    var utils = jriapp_shared_29.Utils, strUtils = utils.str, _a = utils.core, forEachProp = _a.forEachProp, merge = _a.merge, getNewID = _a.getNewID, extend = _a.extend, ERROR = utils.err, sys = utils.sys, dom = dom_28.DomUtils, parser = parser_2.Parser, doc = dom.document, win = dom.window, boot = bootstrap_16.bootstrap;
     var _columnWidthInterval, _gridsCount = 0;
     var _createdGrids = {};
     function getDataGrids() {
@@ -5180,7 +5180,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         }
     }
     function _checkGridWidth() {
-        coreUtils.forEachProp(_createdGrids, function (id) {
+        forEachProp(_createdGrids, function (id) {
             var grid = _createdGrids[id];
             if (grid.getIsStateDirty()) {
                 return;
@@ -5202,7 +5202,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         function DataGrid(options) {
             var _this = _super.call(this) || this;
             var self = _this;
-            options = coreUtils.merge(options, {
+            options = merge(options, {
                 el: null,
                 dataSource: null,
                 animation: null,
@@ -5228,7 +5228,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             _this._table = table;
             dom.addClass([table], "ria-data-table");
             _this._name = table.getAttribute("data-name");
-            _this._objId = coreUtils.getNewID("grd");
+            _this._objId = getNewID("grd");
             _this._rowMap = {};
             _this._rows = [];
             _this._columns = [];
@@ -5557,7 +5557,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             var options;
             var tempOpts = parser.parseOptions(columnAttr);
             if (tempOpts.length > 0) {
-                options = coreUtils.extend(defaultOp, tempOpts[0]);
+                options = extend(defaultOp, tempOpts[0]);
             }
             else {
                 options = defaultOp;
@@ -6059,7 +6059,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 item._aspect.beginEdit();
             }
             if (!this._dialog) {
-                dialogOptions = coreUtils.extend({
+                dialogOptions = extend({
                     dataContext: item,
                     templateID: null
                 }, this._options.editor);
@@ -6360,7 +6360,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             var _this = _super.call(this, options) || this;
             _this._stateProvider = null;
             _this._stateDebounce = new jriapp_shared_29.Debounce();
-            var opts = coreUtils.extend({
+            var opts = extend({
                 el: _this.el,
                 dataSource: null,
                 animation: null

@@ -23,8 +23,8 @@ import { DataQuery, TDataQuery } from "./dataquery";
 import { DbContext } from "./dbcontext";
 import { EntityAspect } from "./entity_aspect";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err,
-    valUtils = ValueUtils, colUtils = CollUtils;
+const utils = Utils, checks = utils.check, strUtils = utils.str, { getValue, setValue, merge, forEachProp } = utils.core, ERROR = utils.err,
+    { parseValue, stringifyValue } = ValueUtils, { getPKFields, walkField, walkFields, objToVals, initVals, getObjectField } = CollUtils;
 
 function doFieldDependences(dbSet: TDbSet, info: IFieldInfo) {
     if (!info.dependentOn) {
@@ -117,7 +117,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         this._calcfldMap = {};
         this._fieldMap = {};
         this._fieldInfos = fieldInfos;
-        this._pkFields = colUtils.getPKFields(fieldInfos);
+        this._pkFields = getPKFields(fieldInfos);
         this._isPageFilled = false;
         this._newKey = 0;
         // used when page index is changed
@@ -137,18 +137,18 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         this._ignorePageChanged = false;
         fieldInfos.forEach((f) => {
             self._fieldMap[f.fieldName] = f;
-            colUtils.walkField(f, (fld, fullName) => {
+            walkField(f, (fld, fullName) => {
                 fld.dependents = [];
                 fld.fullName = fullName;
             });
         });
-        colUtils.walkFields(fieldInfos, (fld, fullName) => {
+        walkFields(fieldInfos, (fld, fullName) => {
             if (fld.fieldType === FIELD_TYPE.Navigation) {
                 // navigation fields can NOT be on nested fields
-                coreUtils.setValue(self._navfldMap, fullName, self._doNavigationField(opts, fld), true);
+                setValue(self._navfldMap, fullName, self._doNavigationField(opts, fld), true);
             } else if (fld.fieldType === FIELD_TYPE.Calculated) {
                 // calculated fields can be on nested fields
-                coreUtils.setValue(self._calcfldMap, fullName, self._doCalculatedField(opts, fld), true);
+                setValue(self._calcfldMap, fullName, self._doCalculatedField(opts, fld), true);
             }
         });
 
@@ -201,7 +201,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             }
         };
         let internal = this._getInternal();
-        this._setInternal(coreUtils.merge(extraInternal, internal));
+        this._setInternal(merge(extraInternal, internal));
         this.dbContext.objEvents.onProp("isSubmiting", (s, a) => {
             self.objEvents.raiseProp("isBusy");
         }, this.dbSetName);
@@ -362,8 +362,8 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
                 self._applyFieldVals(vals, fieldName + ".", <any[]>value, name.p);
             } else {
                 // for other fields the value is a string, which is parsed to a typed value
-                const val = valUtils.parseValue(value, fld.dataType, fld.dateConversion, stz);
-                coreUtils.setValue(vals, fieldName, val, false);
+                const val = parseValue(value, fld.dataType, fld.dateConversion, stz);
+                setValue(vals, fieldName, val, false);
             }
         });
     }
@@ -432,7 +432,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         }
     }
     protected _defineCalculatedField(fullName: string, getFunc: (item: TItem) => any) {
-        const calcDef: ICalcFieldImpl<TItem> = coreUtils.getValue(this._calcfldMap, fullName);
+        const calcDef: ICalcFieldImpl<TItem> = getValue(this._calcfldMap, fullName);
         if (!calcDef) {
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "calculated fieldName", fullName));
         }
@@ -440,12 +440,12 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     }
     protected _getStrValue(val: any, fieldInfo: IFieldInfo): string {
         const dcnv = fieldInfo.dateConversion, stz = this.dbContext.serverTimezone;
-        return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+        return stringifyValue(val, dcnv, fieldInfo.dataType, stz);
     }
     protected _getKeyValue(vals: any): string {
         const pkFlds = this._pkFields, len = pkFlds.length;
         if (len === 1) {
-            const val = coreUtils.getValue(vals, pkFlds[0].fieldName);
+            const val = getValue(vals, pkFlds[0].fieldName);
             if (checks.isNt(val)) {
                 throw new Error(`Empty key field value for: ${pkFlds[0].fieldName}`);
             }
@@ -453,7 +453,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         } else {
             const pkVals: string[] = [];
             for (let i = 0; i < len; i += 1) {
-                const val = coreUtils.getValue(vals, pkFlds[i].fieldName);
+                const val = getValue(vals, pkFlds[i].fieldName);
                 if (checks.isNt(val)) {
                     throw new Error(`Empty key field value for: ${pkFlds[i].fieldName}`);
                 }
@@ -465,18 +465,18 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     }
     protected _getCalcFieldVal(fieldName: string, item: TItem): any {
         try {
-            const val: ICalcFieldImpl<TItem> = coreUtils.getValue(this._calcfldMap, fieldName);
+            const val: ICalcFieldImpl<TItem> = getValue(this._calcfldMap, fieldName);
             return val.getFunc.call(item, item);
         } catch (err) {
             ERROR.reThrow(err, this.handleError(err, this));
         }
     }
     protected _getNavFieldVal(fieldName: string, item: TItem): any {
-        const val: INavFieldImpl<TItem> = coreUtils.getValue(this._navfldMap, fieldName);
+        const val: INavFieldImpl<TItem> = getValue(this._navfldMap, fieldName);
         return val.getFunc.call(item, item);
     }
     protected _setNavFieldVal(fieldName: string, item: TItem, value: any): void {
-        const val: INavFieldImpl<TItem> = coreUtils.getValue(this._navfldMap, fieldName);
+        const val: INavFieldImpl<TItem> = getValue(this._navfldMap, fieldName);
         val.setFunc.call(item, value, item);
     }
     protected _beforeLoad(query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>): void {
@@ -698,7 +698,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             }
         });
         const res: IValidationInfo[] = [];
-        coreUtils.forEachProp(errors, (fieldName, err) => {
+        forEachProp(errors, (fieldName, err) => {
             res.push({ fieldName: fieldName, errors: err });
         });
         this.errors.addErrors(item, res);
@@ -706,15 +706,15 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     }
     protected _getChanges(): IRowInfo[] {
         const changes: IRowInfo[] = [], csh = this._changeCache;
-        coreUtils.forEachProp(csh, (key, item) => {
+        forEachProp(csh, (key, item) => {
             changes.push(item._aspect._getRowInfo());
         });
         return changes;
     }
     protected _getTrackAssocInfo(): ITrackAssoc[] {
         const self = this, res: ITrackAssoc[] = [], csh = this._changeCache, trackAssoc = self._trackAssoc;
-        coreUtils.forEachProp(csh, (key, item) => {
-            coreUtils.forEachProp(trackAssoc, (assocName, assocInfo) => {
+        forEachProp(csh, (key, item) => {
+            forEachProp(trackAssoc, (assocName, assocInfo) => {
                 const parentKey = item._aspect._getFieldVal(assocInfo.childToParentName),
                     childKey = item._key;
                 if (!!parentKey && !!childKey) {
@@ -777,7 +777,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     }
     protected _getNames(): IFieldName[] {
         const fieldInfos = this.getFieldInfos(), names: IFieldName[] = [];
-        colUtils.walkFields(fieldInfos, (fld, fullName, arr) => {
+        walkFields(fieldInfos, (fld, fullName, arr) => {
             if (fld.fieldType === FIELD_TYPE.Object) {
                 const res: any[] = [];
                 arr.push({
@@ -805,13 +805,13 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         return this._fieldInfos;
     }
     createEntityFromObj(obj: TObj, key?: string): TItem {
-        const isNew = !obj, vals: any = colUtils.objToVals(this.getFieldInfos(), obj),
+        const isNew = !obj, vals: any = objToVals(this.getFieldInfos(), obj),
             _key = isNew ? this._getNewKey() : (!key ? this._getKeyValue(vals) : key);
         const aspect = new EntityAspect<TItem, TObj, TDbContext>(this, vals, _key, isNew);
         return aspect.item;
     }
     createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem {
-        const vals: any = colUtils.initVals(this.getFieldInfos(), {}), isNew = !row;
+        const vals: any = initVals(this.getFieldInfos(), {}), isNew = !row;
         if (!!row) {
             this._applyFieldVals(vals, "", row.v, fieldNames);
         }
@@ -946,7 +946,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
 
         if (fld.fieldType === FIELD_TYPE.Object) {
             for (let i = 1; i < parts.length; i += 1) {
-                fld = colUtils.getObjectField(parts[i], fld.nested);
+                fld = getObjectField(parts[i], fld.nested);
             }
             return fld;
         } else if (fld.fieldType === FIELD_TYPE.Navigation) {
@@ -984,7 +984,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     }
     acceptChanges(): void {
         const csh = this._changeCache;
-        coreUtils.forEachProp(csh, (key) => {
+        forEachProp(csh, (key) => {
             const item = csh[key];
             item._aspect.acceptChanges();
         });
@@ -992,7 +992,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     }
     rejectChanges(): void {
         const csh = this._changeCache;
-        coreUtils.forEachProp(csh, (key) => {
+        forEachProp(csh, (key) => {
             const item = csh[key];
             item._aspect.rejectChanges();
         });

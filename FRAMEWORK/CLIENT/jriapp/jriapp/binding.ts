@@ -11,9 +11,10 @@ import {
 import { ViewChecks } from "./utils/viewchecks";
 import { bootstrap } from "./bootstrap";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
+const utils = Utils, checks = utils.check, strUtils = utils.str, { getNewID, forEachProp } = utils.core,
     sys = utils.sys, debug = utils.debug, log = utils.log,
     boot = bootstrap, ERRS = LocaleERRS, viewChecks = ViewChecks;
+const { resolvePath, getPathParts, getErrorNotification, getProp, setProp } = sys;
 
 sys.isBinding = (obj: any) => {
     return (!!obj && obj instanceof Binding);
@@ -129,7 +130,7 @@ export function getBindingOptions(bindInfo: IBindingInfo, defTarget: IBaseObject
                 bindingOpts.target = defTarget;
             } else {
                 // if no fixed target, then target evaluation starts from this app
-                bindingOpts.target = sys.resolvePath(app, fixedTarget);
+                bindingOpts.target = resolvePath(app, fixedTarget);
             }
         } else {
             bindingOpts.target = fixedTarget;
@@ -146,7 +147,7 @@ export function getBindingOptions(bindInfo: IBindingInfo, defTarget: IBaseObject
                 bindingOpts.source = defTarget;
             } else {
                 // source evaluation starts from this app
-                bindingOpts.source = sys.resolvePath(app, fixedSource);
+                bindingOpts.source = resolvePath(app, fixedSource);
             }
         } else {
             //this can happen when binding to inline literal source
@@ -183,7 +184,7 @@ export class Binding extends BaseObject implements IBinding {
     constructor(options: IBindingOptions) {
         super();
         /*
-        const opts: IBindingOptions = coreUtils.extend({
+        const opts: IBindingOptions = extend({
             target: null,
             source: null,
             targetPath: null,
@@ -225,14 +226,14 @@ export class Binding extends BaseObject implements IBinding {
         this._converter = !opts.converter ? null : opts.converter;
         this._param = opts.param;
         this._isEval = !!opts.isEval;
-        this._srcPath = sys.getPathParts(opts.sourcePath);
-        this._tgtPath = sys.getPathParts(opts.targetPath);
+        this._srcPath = getPathParts(opts.sourcePath);
+        this._tgtPath = getPathParts(opts.targetPath);
         if (this._tgtPath.length < 1) {
             throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
         }
         this._srcFixed = (!!opts.isSourceFixed);
         this._pathItems = {};
-        this._objId = coreUtils.getNewID("bnd");
+        this._objId = getNewID("bnd");
         this._srcEnd = null;
         this._tgtEnd = null;
         this._source = null;
@@ -245,7 +246,7 @@ export class Binding extends BaseObject implements IBinding {
         this._setSource(opts.source);
         this._update();
 
-        const errNotif = sys.getErrorNotification(this._srcEnd);
+        const errNotif = getErrorNotification(this._srcEnd);
         if (!!errNotif && errNotif.getIsHasErrors()) {
             this._onSrcErrChanged(errNotif);
         }
@@ -256,7 +257,7 @@ export class Binding extends BaseObject implements IBinding {
         }
         this.setDisposing();
         const self = this;
-        coreUtils.forEachProp(this._pathItems, (key, old) => {
+        forEachProp(this._pathItems, (key, old) => {
             self._cleanUp(old);
         });
         this._pathItems = {};
@@ -335,7 +336,7 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _getTgtChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number): () => void {
         return () => {
-            const val = sys.getProp(obj, prop);
+            const val = getProp(obj, prop);
             if (restPath.length > 0) {
                 self._setPathItem(null, BindTo.Target, lvl, restPath);
             }
@@ -346,7 +347,7 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _getSrcChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number): () => void {
         return () => {
-            const val = sys.getProp(obj, prop);
+            const val = getProp(obj, prop);
             if (restPath.length > 0) {
                 self._setPathItem(null, BindTo.Source, lvl, restPath);
             }
@@ -406,7 +407,7 @@ export class Binding extends BaseObject implements IBinding {
             }
 
             if (!!obj) {
-                const nextObj = sys.getProp(obj, path[0]);
+                const nextObj = getProp(obj, path[0]);
                 if (!!nextObj) {
                     self._parseSrc2(nextObj, path.slice(1), lvl + 1);
                 } else if (checks.isUndefined(nextObj)) {
@@ -431,7 +432,7 @@ export class Binding extends BaseObject implements IBinding {
                     self._addOnPropChanged(obj, path[0], fnUpd);
                 }
 
-                const errNotif = sys.getErrorNotification(obj);
+                const errNotif = getErrorNotification(obj);
                 if (!!errNotif) {
                     errNotif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
                 }
@@ -485,7 +486,7 @@ export class Binding extends BaseObject implements IBinding {
             }
 
             if (!!obj) {
-                const nextObj = sys.getProp(obj, path[0]);
+                const nextObj = getProp(obj, path[0]);
                 if (!!nextObj) {
                     self._parseTgt2(nextObj, path.slice(1), lvl + 1);
                 } else if (checks.isUndefined(nextObj)) {
@@ -537,7 +538,7 @@ export class Binding extends BaseObject implements IBinding {
     private _cleanUp(obj: IBaseObject): void {
         if (!!obj) {
             obj.objEvents.offNS(this._objId);
-            const errNotif = sys.getErrorNotification(obj);
+            const errNotif = getErrorNotification(obj);
             if (!!errNotif) {
                 errNotif.offOnErrorsChanged(this._objId);
             }
@@ -709,7 +710,7 @@ export class Binding extends BaseObject implements IBinding {
             res = this._srcEnd;
         } else if (!!this._srcEnd) {
             const prop = this._srcPath[this._srcPath.length - 1];
-            res = sys.getProp(this._srcEnd, prop);
+            res = getProp(this._srcEnd, prop);
         }
         return res;
     }
@@ -718,7 +719,7 @@ export class Binding extends BaseObject implements IBinding {
             return;
         }
         const prop = this._srcPath[this._srcPath.length - 1];
-        sys.setProp(this._srcEnd, prop, v);
+        setProp(this._srcEnd, prop, v);
     }
     get targetValue(): any {
         let res: any = null;
@@ -726,7 +727,7 @@ export class Binding extends BaseObject implements IBinding {
             res = this._tgtEnd;
         } else if (!!this._tgtEnd) {
             const prop = this._tgtPath[this._tgtPath.length - 1];
-            res = sys.getProp(this._tgtEnd, prop);
+            res = getProp(this._tgtEnd, prop);
         }
         return res;
     }
@@ -735,7 +736,7 @@ export class Binding extends BaseObject implements IBinding {
             return;
         }
         const prop = this._tgtPath[this._tgtPath.length - 1];
-        sys.setProp(this._tgtEnd, prop, v);
+        setProp(this._tgtEnd, prop, v);
     }
     get isSourceFixed(): boolean { return this._srcFixed; }
     get mode(): BINDING_MODE { return this._mode; }
@@ -749,9 +750,9 @@ export class Binding extends BaseObject implements IBinding {
             let source = this.source;
             if (evalparts.length > 1) {
                 //resolve source (second path relative to the application in the array)
-                source = sys.resolvePath(boot.getApp(), evalparts[1]);
+                source = resolvePath(boot.getApp(), evalparts[1]);
             }
-            return sys.resolvePath(source, evalparts[0]);
+            return resolvePath(source, evalparts[0]);
         } else {
             return this._param;
         }

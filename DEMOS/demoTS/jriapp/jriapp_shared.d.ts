@@ -1312,10 +1312,10 @@ declare module "jriapp_shared/collection/aspect" {
         protected _validateField(fieldName: string): IValidationInfo;
         protected _validateFields(): IValidationInfo[];
         protected _resetStatus(): void;
-        handleError(error: any, source: any): boolean;
         _setKey(v: string): void;
         _setIsAttached(v: boolean): void;
         _setIsRefreshing(v: boolean): void;
+        handleError(error: any, source: any): boolean;
         raiseErrorsChanged(): void;
         getFieldInfo(fieldName: string): IFieldInfo;
         getFieldNames(): string[];

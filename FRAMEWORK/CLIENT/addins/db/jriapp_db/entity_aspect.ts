@@ -15,8 +15,8 @@ import { IEntityItem, IValueChange, IRowInfo } from "./int";
 import { DbSet } from "./dbset";
 import { SubmitError } from "./error";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
-    valUtils = ValueUtils, collUtils = CollUtils, sys = utils.sys;
+const utils = Utils, { undefined } = utils.check, strUtils = utils.str, { getValue, setValue, uuid } = utils.core,
+    { compareVals, parseValue } = ValueUtils, { cloneVals } = CollUtils, sys = utils.sys;
 
 // don't submit these types of fields to the server
 function fn_isNotSubmittable(fieldInfo: IFieldInfo) {
@@ -91,8 +91,8 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
                 }
             }
         } else {
-            const newVal = dbSet._getInternal().getStrValue(coreUtils.getValue(self._vals, fullName), fieldInfo),
-                oldV = self._origVals === null ? newVal : dbSet._getInternal().getStrValue(coreUtils.getValue(self._origVals, fullName), fieldInfo),
+            const newVal = dbSet._getInternal().getStrValue(getValue(self._vals, fullName), fieldInfo),
+                oldV = self._origVals === null ? newVal : dbSet._getInternal().getStrValue(getValue(self._origVals, fullName), fieldInfo),
                 isChanged = (oldV !== newVal);
             if (isChanged) {
                 res = {
@@ -147,7 +147,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     }
     protected _fldChanging(fieldName: string, fieldInfo: IFieldInfo, oldV: any, newV: any): boolean {
         if (!this._origVals) {
-            this._origVals = collUtils.cloneVals(this.dbSet.getFieldInfos(), this._vals); // coreUtils.clone(this._vals);
+            this._origVals = cloneVals(this.dbSet.getFieldInfos(), this._vals); // clone(this._vals);
         }
         return true;
     }
@@ -232,13 +232,13 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         }
         const stz = self.serverTimezone, dataType = fld.dataType, dcnv = fld.dateConversion;
         let newVal: any, oldVal: any, oldValOrig: any;
-        newVal = valUtils.parseValue(val, dataType, dcnv, stz);
-        oldVal = coreUtils.getValue(self._vals, fullName);
+        newVal = parseValue(val, dataType, dcnv, stz);
+        oldVal = getValue(self._vals, fullName);
         switch (refreshMode) {
             case REFRESH_MODE.CommitChanges:
                 {
-                    if (!valUtils.compareVals(newVal, oldVal, dataType)) {
-                        coreUtils.setValue(self._vals, fullName, newVal, false);
+                    if (!compareVals(newVal, oldVal, dataType)) {
+                        setValue(self._vals, fullName, newVal, false);
                         self._onFieldChanged(fullName, fld);
                     }
                 }
@@ -246,13 +246,13 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             case REFRESH_MODE.RefreshCurrent:
                 {
                     if (!!self._origVals) {
-                        coreUtils.setValue(self._origVals, fullName, newVal, false);
+                        setValue(self._origVals, fullName, newVal, false);
                     }
                     if (!!self._saveVals) {
-                        coreUtils.setValue(self._saveVals, fullName, newVal, false);
+                        setValue(self._saveVals, fullName, newVal, false);
                     }
-                    if (!valUtils.compareVals(newVal, oldVal, dataType)) {
-                        coreUtils.setValue(self._vals, fullName, newVal, false);
+                    if (!compareVals(newVal, oldVal, dataType)) {
+                        setValue(self._vals, fullName, newVal, false);
                         self._onFieldChanged(fullName, fld);
                     }
                 }
@@ -260,13 +260,13 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             case REFRESH_MODE.MergeIntoCurrent:
                 {
                     if (!!self._origVals) {
-                        oldValOrig = coreUtils.getValue(self._origVals, fullName);
-                        coreUtils.setValue(self._origVals, fullName, newVal, false);
+                        oldValOrig = getValue(self._origVals, fullName);
+                        setValue(self._origVals, fullName, newVal, false);
                     }
-                    if (oldValOrig === checks.undefined || valUtils.compareVals(oldValOrig, oldVal, dataType)) {
+                    if (oldValOrig === undefined || compareVals(oldValOrig, oldVal, dataType)) {
                         // unmodified
-                        if (!valUtils.compareVals(newVal, oldVal, dataType)) {
-                            coreUtils.setValue(self._vals, fullName, newVal, false);
+                        if (!compareVals(newVal, oldVal, dataType)) {
+                            setValue(self._vals, fullName, newVal, false);
                             self._onFieldChanged(fullName, fld);
                         }
                     }
@@ -319,10 +319,10 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         this.dbSet._getInternal().setNavFieldVal(fieldName, this.item, value);
     }
     _clearFieldVal(fieldName: string): void {
-        coreUtils.setValue(this._vals, fieldName, null, false);
+        setValue(this._vals, fieldName, null, false);
     }
     _getFieldVal(fieldName: string): any {
-        return coreUtils.getValue(this._vals, fieldName);
+        return getValue(this._vals, fieldName);
     }
     _setFieldVal(fieldName: string, val: any): boolean {
         if (this.isCancelling) {
@@ -348,7 +348,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
                 }
 
                 if (this._fldChanging(fieldName, fieldInfo, oldV, newV)) {
-                    coreUtils.setValue(this._vals, fieldName, newV, false);
+                    setValue(this._vals, fieldName, newV, false);
                     if (!(fieldInfo.fieldType === FIELD_TYPE.ClientOnly || fieldInfo.fieldType === FIELD_TYPE.ServerCalculated)) {
                         switch (this.status) {
                             case ITEM_STATUS.None:
@@ -397,7 +397,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             }
             this._origVals = null;
             if (!!this._saveVals) {
-                this._saveVals = collUtils.cloneVals(this.dbSet.getFieldInfos(), this._vals); // coreUtils.clone(this._vals);
+                this._saveVals = cloneVals(this.dbSet.getFieldInfos(), this._vals); // clone(this._vals);
             }
             this._setStatus(ITEM_STATUS.None);
             errors.removeAllErrors(this.item);
@@ -446,10 +446,10 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
 
             const changes = self._getValueChanges(true);
             if (!!self._origVals) {
-                self._vals = collUtils.cloneVals(self.dbSet.getFieldInfos(), self._origVals); // coreUtils.clone(self._origVals);
+                self._vals = cloneVals(self.dbSet.getFieldInfos(), self._origVals); // clone(self._origVals);
                 self._origVals = null;
                 if (!!self._saveVals) {
-                    self._saveVals = collUtils.cloneVals(self.dbSet.getFieldInfos(), self._vals); // coreUtils.clone(self._vals);
+                    self._saveVals = cloneVals(self.dbSet.getFieldInfos(), self._vals); // clone(self._vals);
                 }
             }
             self._setStatus(ITEM_STATUS.None);
@@ -466,7 +466,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         const removeHandler = () => {
             dbxt.offOnSubmitError(uniqueID);
         };
-        const dbxt = this.dbSet.dbContext, uniqueID = coreUtils.uuid();
+        const dbxt = this.dbSet.dbContext, uniqueID = uuid();
         dbxt.addOnSubmitError((sender, args) => {
             if (args.error instanceof SubmitError) {
                 const submitErr: SubmitError = args.error;

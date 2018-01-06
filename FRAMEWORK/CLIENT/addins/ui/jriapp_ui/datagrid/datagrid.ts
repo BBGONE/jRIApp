@@ -46,7 +46,7 @@ export { IDataGridAnimation, DefaultAnimation } from "./animation";
 import { $ } from "../utils/jquery";
 
 
-const utils = Utils, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, sys = utils.sys,
+const utils = Utils, strUtils = utils.str, { forEachProp, merge, getNewID, extend } = utils.core, ERROR = utils.err, sys = utils.sys,
     dom = DomUtils, parser = Parser, doc = dom.document, win = dom.window, boot = bootstrap;
 
 let _columnWidthInterval: number, _gridsCount: number = 0;
@@ -96,7 +96,7 @@ function _gridDestroyed(grid: DataGrid) {
 }
 
 function _checkGridWidth() {
-    coreUtils.forEachProp(_createdGrids, (id) => {
+    forEachProp(_createdGrids, (id) => {
         const grid = _createdGrids[id];
         if (grid.getIsStateDirty()) {
             return;
@@ -192,7 +192,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     constructor(options: IDataGridConstructorOptions) {
         super();
         const self = this;
-        options = coreUtils.merge(options,
+        options = merge(options,
             {
                 el: null,
                 dataSource: null,
@@ -220,7 +220,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._table = table;
         dom.addClass([table], css.dataTable);
         this._name = table.getAttribute(DATA_ATTR.DATA_NAME);
-        this._objId = coreUtils.getNewID("grd");
+        this._objId = getNewID("grd");
         this._rowMap = {};
         this._rows = [];
         this._columns = [];
@@ -550,7 +550,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
 
         const tempOpts = parser.parseOptions(columnAttr);
         if (tempOpts.length > 0) {
-            options = coreUtils.extend(defaultOp, tempOpts[0]);
+            options = extend(defaultOp, tempOpts[0]);
         } else {
             options = defaultOp;
         }
@@ -1061,7 +1061,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             item._aspect.beginEdit();
         }
         if (!this._dialog) {
-            dialogOptions = coreUtils.extend({
+            dialogOptions = extend({
                 dataContext: item,
                 templateID: null
             }, this._options.editor);
@@ -1295,7 +1295,7 @@ export class DataGridElView extends BaseElView implements ISelectableProvider {
         super(options);
         this._stateProvider = null;
         this._stateDebounce = new Debounce();
-        const opts = <IDataGridConstructorOptions>coreUtils.extend(
+        const opts = <IDataGridConstructorOptions>extend(
             {
                 el: <HTMLTableElement>this.el,
                 dataSource: null,

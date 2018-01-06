@@ -125,7 +125,7 @@ export class SysUtils {
         return null;
     }
 
-    static getPathParts(path: string) {
+    static getPathParts(path: string): string[] {
         const parts: string[] = (!path) ? [] : path.split("."), parts2: string[] = [];
 
         for (let k = 0, l1 = parts.length; k < l1; k += 1) {
@@ -145,7 +145,7 @@ export class SysUtils {
         }
         return parts2;
     }
-    static getProp(obj: any, prop: string) {
+    static getProp(obj: any, prop: string): any {
         const self = SysUtils;
         if (!prop) {
             return obj;
@@ -171,7 +171,7 @@ export class SysUtils {
 
         return obj[prop];
     }
-    static setProp(obj: any, prop: string, val: any) {
+    static setProp(obj: any, prop: string, val: any): void {
         const self = SysUtils;
         if (!prop) {
             throw new Error("Invalid operation: Empty Property name");

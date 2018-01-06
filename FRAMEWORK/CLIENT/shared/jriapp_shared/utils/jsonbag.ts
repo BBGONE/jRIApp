@@ -8,7 +8,7 @@ import { Checks } from "./checks";
 import { Debounce } from "./debounce";
 import { ValidationError } from "../errors";
 
-const coreUtils = CoreUtils, strUtils = StringUtils, checks = Checks, sys = SysUtils;
+const { forEachProp, getValue, setValue } = CoreUtils, strUtils = StringUtils, checks = Checks, sys = SysUtils;
 
 const enum BAG_EVENTS {
     errors_changed = "errors_changed",
@@ -203,7 +203,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
             return [];
         }
         const res: IValidationInfo[] = [];
-        coreUtils.forEachProp(bagErrors, function (name) {
+        forEachProp(bagErrors, function (name) {
             let fieldName: string = null;
             if (name !== "*") {
                 fieldName = name;
@@ -261,14 +261,14 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
     // implements IPropertyBag
     getProp(name: string): any {
         const fieldName = strUtils.trimBrackets(name);
-        return coreUtils.getValue(this._val, fieldName, "->");
+        return getValue(this._val, fieldName, "->");
     }
     setProp(name: string, val: any): void {
         const old = this.getProp(name);
         if (old !== val) {
             try {
                 const fieldName = strUtils.trimBrackets(name);
-                coreUtils.setValue(this._val, fieldName, val, false, "->");
+                setValue(this._val, fieldName, val, false, "->");
                 sys.raiseProp(this, name);
                 this._removeError(name);
                 const validationInfo = this._validateField(name);

@@ -22,8 +22,8 @@ import { ItemAspect } from "./aspect";
 import { ValueUtils, CollUtils } from "./utils";
 import { ValidationError } from "../errors";
 
-const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check, sys = utils.sys,
-    valUtils = ValueUtils, collUtils = CollUtils;
+const utils = Utils, { forEachProp, getTimeZoneOffset, getNewID } = utils.core, strUtils = utils.str, { undefined, isArray, isUndefined } = utils.check,
+    sys = utils.sys, { stringifyValue } = ValueUtils, { getObjectField } = CollUtils;
 
 
 // REPLACE DUMMY IMPLEMENTATIONS
@@ -79,7 +79,7 @@ export class Errors<TItem extends ICollectionItem> {
         if (!fieldName) {
             fieldName = "*";
         }
-        if (!(checks.isArray(errors) && errors.length > 0)) {
+        if (!(isArray(errors) && errors.length > 0)) {
             this.removeError(item, fieldName, ignoreChangeErrors);
             return;
         }
@@ -129,7 +129,7 @@ export class Errors<TItem extends ICollectionItem> {
     }
     getItemsWithErrors(): TItem[] {
         const res: TItem[] = [];
-        coreUtils.forEachProp(this._errors, (key) => {
+        forEachProp(this._errors, (key) => {
             const item = this._owner.getItemByKey(key);
             res.push(item);
         });
@@ -157,7 +157,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     constructor() {
         super();
         const self = this;
-        this._objId = coreUtils.getNewID("coll");
+        this._objId = getNewID("coll");
         this._options = { enablePaging: false, pageSize: 50 };
         this._isLoading = false;
         this._isUpdating = false;
@@ -250,7 +250,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             return this._pkInfo;
         }
         const fldMap = this.getFieldMap(), pk: IFieldInfo[] = [];
-        coreUtils.forEachProp(fldMap, (fldName) => {
+        forEachProp(fldMap, (fldName) => {
             if (fldMap[fldName].isPrimaryKey > 0) {
                 pk.push(fldMap[fldName]);
             }
@@ -404,8 +404,8 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         return this._EditingItem;
     }
     protected _getStrValue(val: any, fieldInfo: IFieldInfo): string {
-        const dcnv = fieldInfo.dateConversion, stz = coreUtils.getTimeZoneOffset();
-        return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+        const dcnv = fieldInfo.dateConversion, stz = getTimeZoneOffset();
+        return stringifyValue(val, dcnv, fieldInfo.dataType, stz);
     }
     protected _onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void {
         if (this._isUpdating) {
@@ -570,10 +570,10 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
                 fieldName = fieldNames[i];
                 af = sys.resolvePath(a, fieldName);
                 bf = sys.resolvePath(b, fieldName);
-                if (af === checks.undefined) {
+                if (af === undefined) {
                     af = null;
                 }
-                if (bf === checks.undefined) {
+                if (bf === undefined) {
                     bf = null;
                 }
 
@@ -601,7 +601,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         // first check for indexed property name
         if (strUtils.startsWith(prop, "[")) {
             const res = sys.getProp(this, prop);
-            return !checks.isUndefined(res);
+            return !isUndefined(res);
         }
         return super.isHasProp(prop);
     }
@@ -614,7 +614,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
 
         if (fld.fieldType === FIELD_TYPE.Object) {
             for (let i = 1; i < parts.length; i += 1) {
-                fld = collUtils.getObjectField(parts[i], fld.nested);
+                fld = getObjectField(parts[i], fld.nested);
             }
             return fld;
         }
@@ -678,7 +678,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         }
         const self = this, pkInfo = self._getPKFieldInfos(), arr: string[] = [];
         let key: string, values: any[] = [];
-        if (vals.length === 1 && checks.isArray(vals[0])) {
+        if (vals.length === 1 && isArray(vals[0])) {
             values = vals[0];
         } else {
             values = vals;

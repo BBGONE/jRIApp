@@ -549,7 +549,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
 define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base", "jriapp_shared/collection/utils", "jriapp_db/dataquery", "jriapp_db/entity_aspect"], function (require, exports, jriapp_shared_3, base_1, utils_2, dataquery_1, entity_aspect_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_3.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, valUtils = utils_2.ValueUtils, colUtils = utils_2.CollUtils;
+    var utils = jriapp_shared_3.Utils, checks = utils.check, strUtils = utils.str, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, merge = _a.merge, forEachProp = _a.forEachProp, ERROR = utils.err, parseValue = utils_2.ValueUtils.parseValue, stringifyValue = utils_2.ValueUtils.stringifyValue, getPKFields = utils_2.CollUtils.getPKFields, walkField = utils_2.CollUtils.walkField, walkFields = utils_2.CollUtils.walkFields, objToVals = utils_2.CollUtils.objToVals, initVals = utils_2.CollUtils.initVals, getObjectField = utils_2.CollUtils.getObjectField;
     function doFieldDependences(dbSet, info) {
         if (!info.dependentOn) {
             return;
@@ -587,7 +587,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             _this._calcfldMap = {};
             _this._fieldMap = {};
             _this._fieldInfos = fieldInfos;
-            _this._pkFields = colUtils.getPKFields(fieldInfos);
+            _this._pkFields = getPKFields(fieldInfos);
             _this._isPageFilled = false;
             _this._newKey = 0;
             _this._pageDebounce = new jriapp_shared_3.Debounce(400);
@@ -600,17 +600,17 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             _this._ignorePageChanged = false;
             fieldInfos.forEach(function (f) {
                 self._fieldMap[f.fieldName] = f;
-                colUtils.walkField(f, function (fld, fullName) {
+                walkField(f, function (fld, fullName) {
                     fld.dependents = [];
                     fld.fullName = fullName;
                 });
             });
-            colUtils.walkFields(fieldInfos, function (fld, fullName) {
+            walkFields(fieldInfos, function (fld, fullName) {
                 if (fld.fieldType === 3) {
-                    coreUtils.setValue(self._navfldMap, fullName, self._doNavigationField(opts, fld), true);
+                    setValue(self._navfldMap, fullName, self._doNavigationField(opts, fld), true);
                 }
                 else if (fld.fieldType === 2) {
-                    coreUtils.setValue(self._calcfldMap, fullName, self._doCalculatedField(opts, fld), true);
+                    setValue(self._calcfldMap, fullName, self._doCalculatedField(opts, fld), true);
                 }
             });
             self._mapAssocFields();
@@ -662,7 +662,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 }
             };
             var internal = _this._getInternal();
-            _this._setInternal(coreUtils.merge(extraInternal, internal));
+            _this._setInternal(merge(extraInternal, internal));
             _this.dbContext.objEvents.onProp("isSubmiting", function (s, a) {
                 self.objEvents.raiseProp("isBusy");
             }, _this.dbSetName);
@@ -814,8 +814,8 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                     self._applyFieldVals(vals, fieldName + ".", value, name.p);
                 }
                 else {
-                    var val = valUtils.parseValue(value, fld.dataType, fld.dateConversion, stz);
-                    coreUtils.setValue(vals, fieldName, val, false);
+                    var val = parseValue(value, fld.dataType, fld.dateConversion, stz);
+                    setValue(vals, fieldName, val, false);
                 }
             });
         };
@@ -870,7 +870,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
         };
         DbSet.prototype._defineCalculatedField = function (fullName, getFunc) {
-            var calcDef = coreUtils.getValue(this._calcfldMap, fullName);
+            var calcDef = getValue(this._calcfldMap, fullName);
             if (!calcDef) {
                 throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_PARAM_INVALID, "calculated fieldName", fullName));
             }
@@ -878,12 +878,12 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype._getStrValue = function (val, fieldInfo) {
             var dcnv = fieldInfo.dateConversion, stz = this.dbContext.serverTimezone;
-            return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+            return stringifyValue(val, dcnv, fieldInfo.dataType, stz);
         };
         DbSet.prototype._getKeyValue = function (vals) {
             var pkFlds = this._pkFields, len = pkFlds.length;
             if (len === 1) {
-                var val = coreUtils.getValue(vals, pkFlds[0].fieldName);
+                var val = getValue(vals, pkFlds[0].fieldName);
                 if (checks.isNt(val)) {
                     throw new Error("Empty key field value for: " + pkFlds[0].fieldName);
                 }
@@ -892,7 +892,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             else {
                 var pkVals = [];
                 for (var i = 0; i < len; i += 1) {
-                    var val = coreUtils.getValue(vals, pkFlds[i].fieldName);
+                    var val = getValue(vals, pkFlds[i].fieldName);
                     if (checks.isNt(val)) {
                         throw new Error("Empty key field value for: " + pkFlds[i].fieldName);
                     }
@@ -904,7 +904,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype._getCalcFieldVal = function (fieldName, item) {
             try {
-                var val = coreUtils.getValue(this._calcfldMap, fieldName);
+                var val = getValue(this._calcfldMap, fieldName);
                 return val.getFunc.call(item, item);
             }
             catch (err) {
@@ -912,11 +912,11 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
         };
         DbSet.prototype._getNavFieldVal = function (fieldName, item) {
-            var val = coreUtils.getValue(this._navfldMap, fieldName);
+            var val = getValue(this._navfldMap, fieldName);
             return val.getFunc.call(item, item);
         };
         DbSet.prototype._setNavFieldVal = function (fieldName, item, value) {
-            var val = coreUtils.getValue(this._navfldMap, fieldName);
+            var val = getValue(this._navfldMap, fieldName);
             val.setFunc.call(item, value, item);
         };
         DbSet.prototype._beforeLoad = function (query, oldQuery) {
@@ -1114,7 +1114,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 }
             });
             var res = [];
-            coreUtils.forEachProp(errors, function (fieldName, err) {
+            forEachProp(errors, function (fieldName, err) {
                 res.push({ fieldName: fieldName, errors: err });
             });
             this.errors.addErrors(item, res);
@@ -1122,15 +1122,15 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype._getChanges = function () {
             var changes = [], csh = this._changeCache;
-            coreUtils.forEachProp(csh, function (key, item) {
+            forEachProp(csh, function (key, item) {
                 changes.push(item._aspect._getRowInfo());
             });
             return changes;
         };
         DbSet.prototype._getTrackAssocInfo = function () {
             var self = this, res = [], csh = this._changeCache, trackAssoc = self._trackAssoc;
-            coreUtils.forEachProp(csh, function (key, item) {
-                coreUtils.forEachProp(trackAssoc, function (assocName, assocInfo) {
+            forEachProp(csh, function (key, item) {
+                forEachProp(trackAssoc, function (assocName, assocInfo) {
                     var parentKey = item._aspect._getFieldVal(assocInfo.childToParentName), childKey = item._key;
                     if (!!parentKey && !!childKey) {
                         res.push({ assocName: assocName, parentKey: parentKey, childKey: childKey });
@@ -1188,7 +1188,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype._getNames = function () {
             var fieldInfos = this.getFieldInfos(), names = [];
-            colUtils.walkFields(fieldInfos, function (fld, fullName, arr) {
+            walkFields(fieldInfos, function (fld, fullName, arr) {
                 if (fld.fieldType === 5) {
                     var res = [];
                     arr.push({
@@ -1215,12 +1215,12 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return this._fieldInfos;
         };
         DbSet.prototype.createEntityFromObj = function (obj, key) {
-            var isNew = !obj, vals = colUtils.objToVals(this.getFieldInfos(), obj), _key = isNew ? this._getNewKey() : (!key ? this._getKeyValue(vals) : key);
+            var isNew = !obj, vals = objToVals(this.getFieldInfos(), obj), _key = isNew ? this._getNewKey() : (!key ? this._getKeyValue(vals) : key);
             var aspect = new entity_aspect_1.EntityAspect(this, vals, _key, isNew);
             return aspect.item;
         };
         DbSet.prototype.createEntityFromData = function (row, fieldNames) {
-            var vals = colUtils.initVals(this.getFieldInfos(), {}), isNew = !row;
+            var vals = initVals(this.getFieldInfos(), {}), isNew = !row;
             if (!!row) {
                 this._applyFieldVals(vals, "", row.v, fieldNames);
             }
@@ -1338,7 +1338,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
             if (fld.fieldType === 5) {
                 for (var i = 1; i < parts.length; i += 1) {
-                    fld = colUtils.getObjectField(parts[i], fld.nested);
+                    fld = getObjectField(parts[i], fld.nested);
                 }
                 return fld;
             }
@@ -1375,7 +1375,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype.acceptChanges = function () {
             var csh = this._changeCache;
-            coreUtils.forEachProp(csh, function (key) {
+            forEachProp(csh, function (key) {
                 var item = csh[key];
                 item._aspect.acceptChanges();
             });
@@ -1383,7 +1383,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype.rejectChanges = function () {
             var csh = this._changeCache;
-            coreUtils.forEachProp(csh, function (key) {
+            forEachProp(csh, function (key) {
                 var item = csh[key];
                 item._aspect.rejectChanges();
             });
@@ -3104,7 +3104,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
 define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriapp_shared/errors", "jriapp_shared/collection/utils", "jriapp_shared/collection/aspect", "jriapp_db/error"], function (require, exports, jriapp_shared_8, errors_1, utils_4, aspect_1, error_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_8.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, valUtils = utils_4.ValueUtils, collUtils = utils_4.CollUtils, sys = utils.sys;
+    var utils = jriapp_shared_8.Utils, undefined = utils.check.undefined, strUtils = utils.str, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, uuid = _a.uuid, compareVals = utils_4.ValueUtils.compareVals, parseValue = utils_4.ValueUtils.parseValue, cloneVals = utils_4.CollUtils.cloneVals, sys = utils.sys;
     function fn_isNotSubmittable(fieldInfo) {
         switch (fieldInfo.fieldType) {
             case 1:
@@ -3174,7 +3174,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 }
             }
             else {
-                var newVal = dbSet._getInternal().getStrValue(coreUtils.getValue(self._vals, fullName), fieldInfo), oldV = self._origVals === null ? newVal : dbSet._getInternal().getStrValue(coreUtils.getValue(self._origVals, fullName), fieldInfo), isChanged = (oldV !== newVal);
+                var newVal = dbSet._getInternal().getStrValue(getValue(self._vals, fullName), fieldInfo), oldV = self._origVals === null ? newVal : dbSet._getInternal().getStrValue(getValue(self._origVals, fullName), fieldInfo), isChanged = (oldV !== newVal);
                 if (isChanged) {
                     res = {
                         fieldName: fieldInfo.fieldName,
@@ -3230,7 +3230,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         };
         EntityAspect.prototype._fldChanging = function (fieldName, fieldInfo, oldV, newV) {
             if (!this._origVals) {
-                this._origVals = collUtils.cloneVals(this.dbSet.getFieldInfos(), this._vals);
+                this._origVals = cloneVals(this.dbSet.getFieldInfos(), this._vals);
             }
             return true;
         };
@@ -3316,13 +3316,13 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             }
             var stz = self.serverTimezone, dataType = fld.dataType, dcnv = fld.dateConversion;
             var newVal, oldVal, oldValOrig;
-            newVal = valUtils.parseValue(val, dataType, dcnv, stz);
-            oldVal = coreUtils.getValue(self._vals, fullName);
+            newVal = parseValue(val, dataType, dcnv, stz);
+            oldVal = getValue(self._vals, fullName);
             switch (refreshMode) {
                 case 3:
                     {
-                        if (!valUtils.compareVals(newVal, oldVal, dataType)) {
-                            coreUtils.setValue(self._vals, fullName, newVal, false);
+                        if (!compareVals(newVal, oldVal, dataType)) {
+                            setValue(self._vals, fullName, newVal, false);
                             self._onFieldChanged(fullName, fld);
                         }
                     }
@@ -3330,13 +3330,13 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 case 1:
                     {
                         if (!!self._origVals) {
-                            coreUtils.setValue(self._origVals, fullName, newVal, false);
+                            setValue(self._origVals, fullName, newVal, false);
                         }
                         if (!!self._saveVals) {
-                            coreUtils.setValue(self._saveVals, fullName, newVal, false);
+                            setValue(self._saveVals, fullName, newVal, false);
                         }
-                        if (!valUtils.compareVals(newVal, oldVal, dataType)) {
-                            coreUtils.setValue(self._vals, fullName, newVal, false);
+                        if (!compareVals(newVal, oldVal, dataType)) {
+                            setValue(self._vals, fullName, newVal, false);
                             self._onFieldChanged(fullName, fld);
                         }
                     }
@@ -3344,12 +3344,12 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 case 2:
                     {
                         if (!!self._origVals) {
-                            oldValOrig = coreUtils.getValue(self._origVals, fullName);
-                            coreUtils.setValue(self._origVals, fullName, newVal, false);
+                            oldValOrig = getValue(self._origVals, fullName);
+                            setValue(self._origVals, fullName, newVal, false);
                         }
-                        if (oldValOrig === checks.undefined || valUtils.compareVals(oldValOrig, oldVal, dataType)) {
-                            if (!valUtils.compareVals(newVal, oldVal, dataType)) {
-                                coreUtils.setValue(self._vals, fullName, newVal, false);
+                        if (oldValOrig === undefined || compareVals(oldValOrig, oldVal, dataType)) {
+                            if (!compareVals(newVal, oldVal, dataType)) {
+                                setValue(self._vals, fullName, newVal, false);
                                 self._onFieldChanged(fullName, fld);
                             }
                         }
@@ -3401,10 +3401,10 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             this.dbSet._getInternal().setNavFieldVal(fieldName, this.item, value);
         };
         EntityAspect.prototype._clearFieldVal = function (fieldName) {
-            coreUtils.setValue(this._vals, fieldName, null, false);
+            setValue(this._vals, fieldName, null, false);
         };
         EntityAspect.prototype._getFieldVal = function (fieldName) {
-            return coreUtils.getValue(this._vals, fieldName);
+            return getValue(this._vals, fieldName);
         };
         EntityAspect.prototype._setFieldVal = function (fieldName, val) {
             if (this.isCancelling) {
@@ -3427,7 +3427,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                         throw new Error(jriapp_shared_8.LocaleERRS.ERR_FIELD_READONLY);
                     }
                     if (this._fldChanging(fieldName, fieldInfo, oldV, newV)) {
-                        coreUtils.setValue(this._vals, fieldName, newV, false);
+                        setValue(this._vals, fieldName, newV, false);
                         if (!(fieldInfo.fieldType === 1 || fieldInfo.fieldType === 6)) {
                             switch (this.status) {
                                 case 0:
@@ -3478,7 +3478,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 }
                 this._origVals = null;
                 if (!!this._saveVals) {
-                    this._saveVals = collUtils.cloneVals(this.dbSet.getFieldInfos(), this._vals);
+                    this._saveVals = cloneVals(this.dbSet.getFieldInfos(), this._vals);
                 }
                 this._setStatus(0);
                 errors.removeAllErrors(this.item);
@@ -3527,10 +3527,10 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 }
                 var changes = self._getValueChanges(true);
                 if (!!self._origVals) {
-                    self._vals = collUtils.cloneVals(self.dbSet.getFieldInfos(), self._origVals);
+                    self._vals = cloneVals(self.dbSet.getFieldInfos(), self._origVals);
                     self._origVals = null;
                     if (!!self._saveVals) {
-                        self._saveVals = collUtils.cloneVals(self.dbSet.getFieldInfos(), self._vals);
+                        self._saveVals = cloneVals(self.dbSet.getFieldInfos(), self._vals);
                     }
                 }
                 self._setStatus(0);
@@ -3547,7 +3547,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             var removeHandler = function () {
                 dbxt.offOnSubmitError(uniqueID);
             };
-            var dbxt = this.dbSet.dbContext, uniqueID = coreUtils.uuid();
+            var dbxt = this.dbSet.dbContext, uniqueID = uuid();
             dbxt.addOnSubmitError(function (sender, args) {
                 if (args.error instanceof error_2.SubmitError) {
                     var submitErr = args.error;
