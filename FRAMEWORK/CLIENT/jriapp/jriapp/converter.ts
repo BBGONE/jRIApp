@@ -7,8 +7,7 @@ import { bootstrap } from "./bootstrap";
 import { IDatepicker } from "jriapp/int";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str,
-    coreUtils = utils.core, boot = bootstrap,
-    ERRS = LocaleERRS;
+    { round } = utils.core, boot = bootstrap, ERRS = LocaleERRS;
 
 export const NUM_CONV = { None: 0, Integer: 1, Decimal: 2, Float: 3, SmallInt: 4 };
 
@@ -90,7 +89,7 @@ export class NumberConverter implements IConverter {
                 break;
             case NUM_CONV.Decimal:
                 prec = defaults.decPrecision;
-                num = coreUtils.round(parseFloat(value), prec);
+                num = round(parseFloat(value), prec);
                 break;
             case NUM_CONV.Float:
                 num = parseFloat(value);

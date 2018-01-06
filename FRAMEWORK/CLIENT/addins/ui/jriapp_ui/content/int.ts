@@ -9,7 +9,7 @@ import {
     Parser
 } from "jriapp/utils/parser";
 
-const utils = Utils, coreUtils = utils.core, checks = utils.check, parser = Parser;
+const utils = Utils, { parseBool } = utils.core, checks = utils.check, parser = Parser;
 
 export const enum css {
     content = "ria-content-field",
@@ -53,7 +53,7 @@ export function parseContentAttr(contentAttr: string): IContentOptions {
             contentOptions.options = attr.options;
         }
         if (attr.readOnly !== checks.undefined) {
-            contentOptions.readOnly = coreUtils.parseBool(attr.readOnly);
+            contentOptions.readOnly = parseBool(attr.readOnly);
         }
     } else if (!!attr.template) {
         contentOptions.templateInfo = attr.template;

@@ -20,8 +20,8 @@ import { Promise } from "jriapp_shared/utils/deferred";
 import { createQueue } from "jriapp_shared/utils/queue";
 
 const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document, checks = utils.check,
-    _async = utils.defer, coreUtils = utils.core, strUtils = utils.str, ERROR = utils.err,
-    ERRS = LocaleERRS;
+    _async = utils.defer, { forEachProp, getNewID, getValue, setValue, removeValue } = utils.core, strUtils = utils.str,
+    ERROR = utils.err, ERRS = LocaleERRS;
 
 export const subscribeWeakMap: IWeakMap = createWeakMap(), selectableProviderWeakMap: IWeakMap = createWeakMap();
 
@@ -137,7 +137,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._bootState = BootstrapState.None;
         this._app = null;
         this._selectedControl = null;
-        this._objId = coreUtils.getNewID("app");
+        this._objId = getNewID("app");
 
         // exported types
         this._exports = {};
@@ -208,7 +208,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         }, this._objId);
 
         // event delegation - capturing delegated events
-        coreUtils.forEachProp(eventNames, ((name, flag) => {
+        forEachProp(eventNames, ((name, flag) => {
             const fn_name = "handle_" + name;
             dom.events.on(doc, name, (e) => {
                 const obj: any = subscribeMap.get(e.target);
@@ -374,13 +374,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         }
     }
     private _registerObject(root: IExports, name: string, obj: any): void {
-        coreUtils.setValue(root.getExports(), name, obj, true);
+        setValue(root.getExports(), name, obj, true);
     }
     private _unregisterObject(root: IExports, name: string): any {
-        return coreUtils.removeValue(root.getExports(), name);
+        return removeValue(root.getExports(), name);
     }
     private _getObject(root: IExports, name: string): any {
-        return coreUtils.getValue(root.getExports(), name);
+        return getValue(root.getExports(), name);
     }
     private _getConverter(name: string): IConverter {
         const name2 = STORE_KEY.CONVERTER + name;

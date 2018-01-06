@@ -15,7 +15,7 @@ import { createElViewFactory } from "./elview";
 import { createDataBindSvc } from "./databindsvc";
 
 const utils = Utils, dom = DomUtils, doc = dom.document,
-    boot = bootstrap, sys = utils.sys, ERRS = LocaleERRS;
+    boot = bootstrap, sys = utils.sys, ERRS = LocaleERRS, { forEachProp } = utils.core;
 
 const enum APP_EVENTS {
     startup = "startup"
@@ -71,7 +71,7 @@ export class Application extends BaseObject implements IApplication {
     private _cleanUpObjMaps() {
         const self = this;
         this._objMaps.forEach((objMap) => {
-            utils.core.forEachProp(objMap, (name) => {
+            forEachProp(objMap, (name) => {
                 const obj = objMap[name];
                 if (sys.isBaseObj(obj)) {
                     if (!obj.getIsDisposed()) {

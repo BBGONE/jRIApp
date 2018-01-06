@@ -3,7 +3,7 @@ import { Utils, IIndexer, IPromise, IDeferred } from "jriapp_shared";
 import { IModuleLoader } from "../int";
 import { createCssLoader as createCSSLoader } from "./sloader";
 
-const utils = Utils, coreUtils = utils.core, strUtils = utils.str, _async = utils.defer,
+const utils = Utils, { forEachProp } = utils.core, strUtils = utils.str, _async = utils.defer,
     arr = utils.arr, CSSPrefix = "css!";
 //ambient require function
 declare var require: any;
@@ -109,7 +109,7 @@ class ModuleLoader implements IModuleLoader {
     }
     whenAllLoaded(): IPromise<void> {
         const loads: IModuleLoad[] = [];
-        coreUtils.forEachProp(this._loads, (name, val) => {
+        forEachProp(this._loads, (name, val) => {
             loads.push(val);
         });
         return whenAll(loads);

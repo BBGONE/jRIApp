@@ -5,7 +5,8 @@ import { Utils } from "../utils/utils";
 import { ERRS } from "../lang";
 import { IValueUtils } from "./int";
 
-const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
+const utils = Utils, { getTimeZoneOffset, parseBool, getValue, setValue } = utils.core, strUtils = utils.str,
+    { undefined, isArray, isDate, isString, isBoolean, isNumber, isNt } = utils.check;
 
 function pad(num: number): string {
     if (num < 10) {
@@ -30,7 +31,7 @@ export const ValueUtils: IValueUtils = {
             return null;
         }
         const dt = new Date(val);
-        const clientTZ = coreUtils.getTimeZoneOffset();
+        const clientTZ = getTimeZoneOffset();
         // make fix for timezone
         dt.setMinutes(dt.getMinutes() + clientTZ);
 
@@ -54,11 +55,11 @@ export const ValueUtils: IValueUtils = {
             return null;
         }
 
-        if (!checks.isDate(dt)) {
+        if (!isDate(dt)) {
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "dt", dt));
         }
 
-        const clientTZ = coreUtils.getTimeZoneOffset();
+        const clientTZ = getTimeZoneOffset();
         switch (dtcnv) {
             case DATE_CONVERSION.None:
                 break;
@@ -83,7 +84,7 @@ export const ValueUtils: IValueUtils = {
             case DATA_TYPE.DateTime:
             case DATA_TYPE.Date:
             case DATA_TYPE.Time:
-                return (checks.isDate(v1) && checks.isDate(v2)) ? (v1.getTime() === v2.getTime()) : false;
+                return (isDate(v1) && isDate(v2)) ? (v1.getTime() === v2.getTime()) : false;
             default:
                 return v1 === v2;
         }
@@ -91,16 +92,16 @@ export const ValueUtils: IValueUtils = {
     stringifyValue: function (v: any, dtcnv: DATE_CONVERSION, dataType: DATA_TYPE, serverTZ: number): string {
         let res: string = null;
 
-        if (checks.isNt(v)) {
+        if (isNt(v)) {
             return res;
         }
 
         function conv(v: any): string {
-            if (checks.isDate(v)) {
+            if (isDate(v)) {
                 return ValueUtils.dateToValue(v, dtcnv, serverTZ);
-            } else if (checks.isArray(v)) {
+            } else if (isArray(v)) {
                 return JSON.stringify(v);
-            } else if (checks.isString(v)) {
+            } else if (isString(v)) {
                 return v;
             } else {
                 return JSON.stringify(v);
@@ -114,13 +115,13 @@ export const ValueUtils: IValueUtils = {
                 break;
             case DATA_TYPE.String:
             case DATA_TYPE.Guid:
-                if (checks.isString(v)) {
+                if (isString(v)) {
                     res = v;
                     isOK = true;
                 }
                 break;
             case DATA_TYPE.Bool:
-                if (checks.isBoolean(v)) {
+                if (isBoolean(v)) {
                     res = JSON.stringify(v);
                     isOK = true;
                 }
@@ -128,7 +129,7 @@ export const ValueUtils: IValueUtils = {
             case DATA_TYPE.Integer:
             case DATA_TYPE.Decimal:
             case DATA_TYPE.Float:
-                if (checks.isNumber(v)) {
+                if (isNumber(v)) {
                     res = JSON.stringify(v);
                     isOK = true;
                 }
@@ -136,13 +137,13 @@ export const ValueUtils: IValueUtils = {
             case DATA_TYPE.DateTime:
             case DATA_TYPE.Date:
             case DATA_TYPE.Time:
-                if (checks.isDate(v)) {
+                if (isDate(v)) {
                     res = ValueUtils.dateToValue(v, dtcnv, serverTZ);
                     isOK = true;
                 }
                 break;
             case DATA_TYPE.Binary:
-                if (checks.isArray(v)) {
+                if (isArray(v)) {
                     res = JSON.stringify(v);
                     isOK = true;
                 }
@@ -159,7 +160,7 @@ export const ValueUtils: IValueUtils = {
     parseValue: function (v: string, dataType: DATA_TYPE, dtcnv: DATE_CONVERSION, serverTZ: number) {
         let res: any = null;
 
-        if (v === checks.undefined || v === null) {
+        if (v === undefined || v === null) {
             return res;
         }
         switch (dataType) {
@@ -171,7 +172,7 @@ export const ValueUtils: IValueUtils = {
                 res = v;
                 break;
             case DATA_TYPE.Bool:
-                res = coreUtils.parseBool(v);
+                res = parseBool(v);
                 break;
             case DATA_TYPE.Integer:
                 res = parseInt(v, 10);
@@ -198,7 +199,7 @@ export const ValueUtils: IValueUtils = {
 
 export type WalkFieldCB<T> = (fld: IFieldInfo, name: string, parentRes?: T) => T;
 
-function fn_walkField<T>(fldName: string, fld: IFieldInfo, cb: WalkFieldCB<T>, parentRes?: T): void {
+export function fn_walkField<T>(fldName: string, fld: IFieldInfo, cb: WalkFieldCB<T>, parentRes?: T): void {
     if (fld.fieldType === FIELD_TYPE.Object) {
         const res = cb(fld, fldName, parentRes);
 
@@ -252,10 +253,10 @@ export const CollUtils = {
     initVals: function (flds: IFieldInfo[], vals: any): any {
         CollUtils.walkFields(flds, (fld, fullName) => {
             if (fld.fieldType === FIELD_TYPE.Object) {
-                coreUtils.setValue(vals, fullName, {});
+                setValue(vals, fullName, {});
             } else {
                 if (!(fld.fieldType === FIELD_TYPE.Navigation || fld.fieldType === FIELD_TYPE.Calculated)) {
-                    coreUtils.setValue(vals, fullName, null);
+                    setValue(vals, fullName, null);
                 }
             }
         });
@@ -264,11 +265,11 @@ export const CollUtils = {
     copyVals: function (flds: IFieldInfo[], from: any, to: any): any {
         CollUtils.walkFields(flds, (fld, fullName) => {
             if (fld.fieldType === FIELD_TYPE.Object) {
-                coreUtils.setValue(to, fullName, {});
+                setValue(to, fullName, {});
             } else {
                 if (!(fld.fieldType === FIELD_TYPE.Navigation || fld.fieldType === FIELD_TYPE.Calculated)) {
-                    const value = coreUtils.getValue(from, fullName);
-                    coreUtils.setValue(to, fullName, value);
+                    const value = getValue(from, fullName);
+                    setValue(to, fullName, value);
                 }
             }
         });

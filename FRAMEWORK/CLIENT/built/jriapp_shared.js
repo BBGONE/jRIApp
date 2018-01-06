@@ -2470,7 +2470,7 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
 define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/strUtils", "jriapp_shared/errors", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/deferred", "jriapp_shared/utils/async"], function (require, exports, strUtils_2, errors_4, coreutils_4, deferred_4, async_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var coreUtils = coreutils_4.CoreUtils, strUtils = strUtils_2.StringUtils, _async = async_1.AsyncUtils;
+    var forEachProp = coreutils_4.CoreUtils.forEachProp, merge = coreutils_4.CoreUtils.merge, strUtils = strUtils_2.StringUtils, _async = async_1.AsyncUtils;
     var HttpUtils = (function () {
         function HttpUtils() {
         }
@@ -2507,15 +2507,15 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
                 deferred.reject(new Error(strUtils.format('HTTP Request Operation Aborted for URL: "{0}"', url)));
             };
             req.timeout = HttpUtils.ajaxTimeOut * 1000;
-            var _headers = coreUtils.merge(HttpUtils.defaultHeaders);
-            _headers = coreUtils.merge(headers, _headers);
-            coreUtils.forEachProp(_headers, function (name, val) {
+            var _headers = merge(HttpUtils.defaultHeaders);
+            _headers = merge(headers, _headers);
+            forEachProp(_headers, function (name, val) {
                 req.setRequestHeader(name, val);
             });
             return req;
         };
         HttpUtils.postAjax = function (url, postData, headers) {
-            var _headers = coreUtils.merge(headers, { "Content-Type": "application/json; charset=utf-8" });
+            var _headers = merge(headers, { "Content-Type": "application/json; charset=utf-8" });
             var deferred = _async.createDeferred(), req = HttpUtils._getXMLRequest(url, "POST", deferred, _headers);
             req.send(postData);
             return new deferred_4.AbortablePromise(deferred, req);
@@ -2717,7 +2717,7 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
 define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang"], function (require, exports, utils_1, lang_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = utils_1.Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check;
+    var utils = utils_1.Utils, _a = utils.core, getTimeZoneOffset = _a.getTimeZoneOffset, parseBool = _a.parseBool, getValue = _a.getValue, setValue = _a.setValue, strUtils = utils.str, _b = utils.check, undefined = _b.undefined, isArray = _b.isArray, isDate = _b.isDate, isString = _b.isString, isBoolean = _b.isBoolean, isNumber = _b.isNumber, isNt = _b.isNt;
     function pad(num) {
         if (num < 10) {
             return "0" + num;
@@ -2739,7 +2739,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                 return null;
             }
             var dt = new Date(val);
-            var clientTZ = coreUtils.getTimeZoneOffset();
+            var clientTZ = getTimeZoneOffset();
             dt.setMinutes(dt.getMinutes() + clientTZ);
             switch (dtcnv) {
                 case 0:
@@ -2760,10 +2760,10 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             if (dt === null) {
                 return null;
             }
-            if (!checks.isDate(dt)) {
+            if (!isDate(dt)) {
                 throw new Error(strUtils.format(lang_4.ERRS.ERR_PARAM_INVALID, "dt", dt));
             }
-            var clientTZ = coreUtils.getTimeZoneOffset();
+            var clientTZ = getTimeZoneOffset();
             switch (dtcnv) {
                 case 0:
                     break;
@@ -2787,24 +2787,24 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                 case 6:
                 case 7:
                 case 8:
-                    return (checks.isDate(v1) && checks.isDate(v2)) ? (v1.getTime() === v2.getTime()) : false;
+                    return (isDate(v1) && isDate(v2)) ? (v1.getTime() === v2.getTime()) : false;
                 default:
                     return v1 === v2;
             }
         },
         stringifyValue: function (v, dtcnv, dataType, serverTZ) {
             var res = null;
-            if (checks.isNt(v)) {
+            if (isNt(v)) {
                 return res;
             }
             function conv(v) {
-                if (checks.isDate(v)) {
+                if (isDate(v)) {
                     return exports.ValueUtils.dateToValue(v, dtcnv, serverTZ);
                 }
-                else if (checks.isArray(v)) {
+                else if (isArray(v)) {
                     return JSON.stringify(v);
                 }
-                else if (checks.isString(v)) {
+                else if (isString(v)) {
                     return v;
                 }
                 else {
@@ -2820,13 +2820,13 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                     break;
                 case 1:
                 case 9:
-                    if (checks.isString(v)) {
+                    if (isString(v)) {
                         res = v;
                         isOK = true;
                     }
                     break;
                 case 2:
-                    if (checks.isBoolean(v)) {
+                    if (isBoolean(v)) {
                         res = JSON.stringify(v);
                         isOK = true;
                     }
@@ -2834,7 +2834,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                 case 3:
                 case 4:
                 case 5:
-                    if (checks.isNumber(v)) {
+                    if (isNumber(v)) {
                         res = JSON.stringify(v);
                         isOK = true;
                     }
@@ -2842,13 +2842,13 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                 case 6:
                 case 7:
                 case 8:
-                    if (checks.isDate(v)) {
+                    if (isDate(v)) {
                         res = exports.ValueUtils.dateToValue(v, dtcnv, serverTZ);
                         isOK = true;
                     }
                     break;
                 case 10:
-                    if (checks.isArray(v)) {
+                    if (isArray(v)) {
                         res = JSON.stringify(v);
                         isOK = true;
                     }
@@ -2863,7 +2863,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
         },
         parseValue: function (v, dataType, dtcnv, serverTZ) {
             var res = null;
-            if (v === checks.undefined || v === null) {
+            if (v === undefined || v === null) {
                 return res;
             }
             switch (dataType) {
@@ -2875,7 +2875,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                     res = v;
                     break;
                 case 2:
-                    res = coreUtils.parseBool(v);
+                    res = parseBool(v);
                     break;
                 case 3:
                     res = parseInt(v, 10);
@@ -2919,6 +2919,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
             cb(fld, fldName, parentRes);
         }
     }
+    exports.fn_walkField = fn_walkField;
     exports.CollUtils = {
         getObjectField: function (name, flds) {
             var arrFlds = flds.filter(function (f) { return f.fieldName === name; });
@@ -2950,11 +2951,11 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
         initVals: function (flds, vals) {
             exports.CollUtils.walkFields(flds, function (fld, fullName) {
                 if (fld.fieldType === 5) {
-                    coreUtils.setValue(vals, fullName, {});
+                    setValue(vals, fullName, {});
                 }
                 else {
                     if (!(fld.fieldType === 3 || fld.fieldType === 2)) {
-                        coreUtils.setValue(vals, fullName, null);
+                        setValue(vals, fullName, null);
                     }
                 }
             });
@@ -2963,12 +2964,12 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
         copyVals: function (flds, from, to) {
             exports.CollUtils.walkFields(flds, function (fld, fullName) {
                 if (fld.fieldType === 5) {
-                    coreUtils.setValue(to, fullName, {});
+                    setValue(to, fullName, {});
                 }
                 else {
                     if (!(fld.fieldType === 3 || fld.fieldType === 2)) {
-                        var value = coreUtils.getValue(from, fullName);
-                        coreUtils.setValue(to, fullName, value);
+                        var value = getValue(from, fullName);
+                        setValue(to, fullName, value);
                     }
                 }
             });

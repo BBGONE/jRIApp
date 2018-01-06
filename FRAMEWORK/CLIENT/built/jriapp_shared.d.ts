@@ -1090,6 +1090,7 @@ declare module "jriapp_shared/collection/utils" {
     import { IValueUtils } from "jriapp_shared/collection/int";
     export const ValueUtils: IValueUtils;
     export type WalkFieldCB<T> = (fld: IFieldInfo, name: string, parentRes?: T) => T;
+    export function fn_walkField<T>(fldName: string, fld: IFieldInfo, cb: WalkFieldCB<T>, parentRes?: T): void;
     export const CollUtils: {
         getObjectField: (name: string, flds: IFieldInfo[]) => IFieldInfo;
         walkField: <T>(fld: IFieldInfo, fn: WalkFieldCB<T>, parentRes?: T) => void;

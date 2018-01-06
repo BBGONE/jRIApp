@@ -3,7 +3,7 @@ import { BaseObject, Utils, IIndexer } from "jriapp_shared";
 import { TDataQuery } from "./dataquery";
 import { IEntityItem, ICachedPage, IKV } from "./int";
 
-const utils = Utils, checks = utils.check, coreUtils = utils.core;
+const utils = Utils, checks = utils.check, { forEachProp } = utils.core;
 
 
 export class DataCache extends BaseObject {
@@ -21,7 +21,7 @@ export class DataCache extends BaseObject {
     }
     private _getPrevPageIndex(currentPageIndex: number) {
         let pageIndex = -1;
-        coreUtils.forEachProp(this._pages, (index, page) => {
+        forEachProp(this._pages, (index, page) => {
             const cachePageIndex = page.pageIndex;
             if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex) {
                 pageIndex = cachePageIndex;

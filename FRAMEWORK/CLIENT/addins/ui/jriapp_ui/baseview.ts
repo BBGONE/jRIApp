@@ -16,7 +16,7 @@ import { createDatepickerSvc } from "./utils/datepicker";
 
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
-const utils = Utils, coreUtils = utils.core, dom = DomUtils, checks = utils.check,
+const utils = Utils, coreUtils = utils.core, dom = DomUtils, { undefined } = utils.check,
     boot = bootstrap, viewChecks = ViewChecks, subscribeMap = subscribeWeakMap;
 
 
@@ -262,7 +262,7 @@ export class BaseElView extends BaseObject implements IElView, ISubscriber {
     get events(): IPropertyBag {
         if (!this._eventBag) {
             if (this.getIsStateDirty()) {
-                return checks.undefined;
+                return undefined;
             }
             this._eventBag = new EventBag((s, a) => {
                 this._onEventChanged(a);
@@ -274,7 +274,7 @@ export class BaseElView extends BaseObject implements IElView, ISubscriber {
     get props(): IPropertyBag {
         if (!this._propBag) {
             if (this.getIsStateDirty()) {
-                return checks.undefined;
+                return undefined;
             }
             this._propBag = new PropertyBag(this.el);
         }
@@ -284,7 +284,7 @@ export class BaseElView extends BaseObject implements IElView, ISubscriber {
     get classes(): IPropertyBag {
         if (!this._classBag) {
             if (this.getIsStateDirty()) {
-                return checks.undefined;
+                return undefined;
             }
             this._classBag = new CSSBag(this.el);
         }

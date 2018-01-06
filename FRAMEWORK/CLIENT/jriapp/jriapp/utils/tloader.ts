@@ -2,7 +2,7 @@
 import { IPromise, LocaleERRS, BaseObject, WaitQueue, Utils } from "jriapp_shared";
 import { IApplication, ITemplateGroupInfoEx, ITemplateLoaderInfo } from "../int";
 
-const utils = Utils, checks = utils.check, coreUtils = utils.core,
+const utils = Utils, checks = utils.check, { getValue, setValue, removeValue, extend } = utils.core,
     strUtils = utils.str, defer = utils.defer, ERRS = LocaleERRS, DEBUG = utils.debug,
     LOG = utils.log, http = utils.http;
 
@@ -58,13 +58,13 @@ export class TemplateLoader extends BaseObject {
         this.objEvents.raise(LOADER_EVENTS.loaded, { html: html, app: app });
     }
     private _getTemplateGroup(name: string): ITemplateGroupInfoEx {
-        return coreUtils.getValue(this._templateGroups, name);
+        return getValue(this._templateGroups, name);
     }
     private _registerTemplateLoaderCore(name: string, loader: ITemplateLoaderInfo): void {
-        coreUtils.setValue(this._templateLoaders, name, loader, false);
+        setValue(this._templateLoaders, name, loader, false);
     }
     private _getTemplateLoaderCore(name: string): ITemplateLoaderInfo {
-        return coreUtils.getValue(this._templateLoaders, name);
+        return getValue(this._templateLoaders, name);
     }
     public loadTemplatesAsync(fnLoader: () => IPromise<string>, app: IApplication): IPromise<any> {
         const self = this, promise = fnLoader(), old = self.isLoading;
@@ -88,14 +88,14 @@ export class TemplateLoader extends BaseObject {
      fn_loader must load template and return promise which resolves with the loaded HTML string
     */
     public unRegisterTemplateLoader(name: string) {
-        coreUtils.removeValue(this._templateLoaders, name);
+        removeValue(this._templateLoaders, name);
     }
     public unRegisterTemplateGroup(name: string) {
-        coreUtils.removeValue(this._templateGroups, name);
+        removeValue(this._templateGroups, name);
     }
     public registerTemplateLoader(name: string, loader: ITemplateLoaderInfo): void {
         const self = this;
-        loader = coreUtils.extend({
+        loader = extend({
             fn_loader: null,
             groupName: null
         }, loader);
@@ -179,7 +179,7 @@ export class TemplateLoader extends BaseObject {
         }
     }
     public registerTemplateGroup(groupName: string, group: ITemplateGroupInfoEx): void {
-        const self = this, group2: ITemplateGroupInfoEx = coreUtils.extend({
+        const self = this, group2: ITemplateGroupInfoEx = extend({
             fn_loader: <() => IPromise<string>>null,
             url: <string>null,
             names: <string[]>null,
@@ -194,7 +194,7 @@ export class TemplateLoader extends BaseObject {
             };
         }
 
-        coreUtils.setValue(self._templateGroups, groupName, group2, true);
+        setValue(self._templateGroups, groupName, group2, true);
         group2.names.forEach((name) => {
             if (!!group2.app) {
                 name = group2.app.appName + "." + name;

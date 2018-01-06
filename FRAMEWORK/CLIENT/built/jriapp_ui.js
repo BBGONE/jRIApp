@@ -11,7 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 define("jriapp_ui/content/int", ["require", "exports", "jriapp_shared", "jriapp/utils/parser"], function (require, exports, jriapp_shared_1, parser_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_1.Utils, coreUtils = utils.core, checks = utils.check, parser = parser_1.Parser;
+    var utils = jriapp_shared_1.Utils, parseBool = utils.core.parseBool, checks = utils.check, parser = parser_1.Parser;
     var css;
     (function (css) {
         css["content"] = "ria-content-field";
@@ -41,7 +41,7 @@ define("jriapp_ui/content/int", ["require", "exports", "jriapp_shared", "jriapp/
                 contentOptions.options = attr.options;
             }
             if (attr.readOnly !== checks.undefined) {
-                contentOptions.readOnly = coreUtils.parseBool(attr.readOnly);
+                contentOptions.readOnly = parseBool(attr.readOnly);
             }
         }
         else if (!!attr.template) {
@@ -867,7 +867,7 @@ define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jr
 define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/const", "jriapp/bootstrap", "jriapp_ui/utils/eventbag", "jriapp_ui/utils/propbag", "jriapp_ui/utils/cssbag", "jriapp_ui/utils/tooltip", "jriapp_ui/utils/datepicker"], function (require, exports, jriapp_shared_9, dom_5, viewchecks_1, const_1, bootstrap_3, eventbag_1, propbag_1, cssbag_1, tooltip_1, datepicker_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_9.Utils, coreUtils = utils.core, dom = dom_5.DomUtils, checks = utils.check, boot = bootstrap_3.bootstrap, viewChecks = viewchecks_1.ViewChecks, subscribeMap = bootstrap_3.subscribeWeakMap;
+    var utils = jriapp_shared_9.Utils, coreUtils = utils.core, dom = dom_5.DomUtils, undefined = utils.check.undefined, boot = bootstrap_3.bootstrap, viewChecks = viewchecks_1.ViewChecks, subscribeMap = bootstrap_3.subscribeWeakMap;
     viewChecks.isElView = function (obj) {
         return !!obj && obj instanceof BaseElView;
     };
@@ -1123,7 +1123,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                 var _this = this;
                 if (!this._eventBag) {
                     if (this.getIsStateDirty()) {
-                        return checks.undefined;
+                        return undefined;
                     }
                     this._eventBag = new eventbag_1.EventBag(function (s, a) {
                         _this._onEventChanged(a);
@@ -1138,7 +1138,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             get: function () {
                 if (!this._propBag) {
                     if (this.getIsStateDirty()) {
-                        return checks.undefined;
+                        return undefined;
                     }
                     this._propBag = new propbag_1.PropertyBag(this.el);
                 }
@@ -1151,7 +1151,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             get: function () {
                 if (!this._classBag) {
                     if (this.getIsStateDirty()) {
-                        return checks.undefined;
+                        return undefined;
                     }
                     this._classBag = new cssbag_1.CSSBag(this.el);
                 }
@@ -1723,7 +1723,7 @@ define("jriapp_ui/content/datetime", ["require", "exports", "jriapp/bootstrap", 
 define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, jriapp_shared_13, dom_10, bootstrap_9, baseview_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_13.Utils, dom = dom_10.DomUtils, doc = dom.document, sys = utils.sys, checks = utils.check, coreUtils = utils.core, boot = bootstrap_9.bootstrap, subscribeMap = bootstrap_9.subscribeWeakMap;
+    var utils = jriapp_shared_13.Utils, dom = dom_10.DomUtils, doc = dom.document, sys = utils.sys, checks = utils.check, _a = utils.core, forEachProp = _a.forEachProp, extend = _a.extend, getNewID = _a.getNewID, boot = bootstrap_9.bootstrap, subscribeMap = bootstrap_9.subscribeWeakMap;
     var LISTBOX_EVENTS;
     (function (LISTBOX_EVENTS) {
         LISTBOX_EVENTS["refreshed"] = "refreshed";
@@ -1736,7 +1736,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         function ListBox(options) {
             var _this = _super.call(this) || this;
             var self = _this;
-            options = coreUtils.extend({
+            options = extend({
                 el: null,
                 dataSource: null,
                 valuePath: null,
@@ -1750,7 +1750,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             }
             _this._el = options.el;
             _this._options = options;
-            _this._objId = coreUtils.getNewID("lst");
+            _this._objId = getNewID("lst");
             _this._isDSFilled = false;
             _this._textProvider = null;
             _this._stateProvider = null;
@@ -1878,7 +1878,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         ListBox.prototype._mapByValue = function () {
             var self = this;
             this._valMap = {};
-            coreUtils.forEachProp(this._keyMap, function (key) {
+            forEachProp(this._keyMap, function (key) {
                 var data = self._keyMap[key], val = fn_Str(self._getValue(data.item));
                 if (!!val) {
                     self._valMap[val] = data;
@@ -1887,14 +1887,14 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype._resetText = function () {
             var self = this;
-            coreUtils.forEachProp(this._keyMap, function (key) {
+            forEachProp(this._keyMap, function (key) {
                 var data = self._keyMap[key];
                 data.op.text = self._getText(data.item, data.op.index);
             });
         };
         ListBox.prototype._resetState = function () {
             var self = this;
-            coreUtils.forEachProp(this._keyMap, function (key) {
+            forEachProp(this._keyMap, function (key) {
                 self._fnState(self._keyMap[key]);
             });
         };

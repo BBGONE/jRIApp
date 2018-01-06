@@ -4,7 +4,7 @@ import { IBindingInfo } from "../int";
 
 import { bootstrap } from "../bootstrap";
 
-const checks = Utils.check, strUtils = Utils.str, coreUtils = Utils.core, sys = Utils.sys;
+const { isNumeric, isBoolString } = Utils.check, strUtils = Utils.str, { parseBool } = Utils.core, sys = Utils.sys;
 
 const trim = strUtils.fastTrim, getRX = /^get[(].+[)]$/g;
 
@@ -203,10 +203,10 @@ function checkVal(kv: IKeyVal): boolean {
                 kv.val = moment().startOf('day').toDate();
             }
         } else if (!kv.tag) {
-            if (checks.isNumeric(kv.val)) {
+            if (isNumeric(kv.val)) {
                 kv.val = Number(kv.val);
-            } else if (checks.isBoolString(kv.val)) {
-                kv.val = coreUtils.parseBool(kv.val);
+            } else if (isBoolString(kv.val)) {
+                kv.val = parseBool(kv.val);
             }
         }
     }

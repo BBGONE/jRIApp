@@ -15,7 +15,7 @@ import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
-    checks = utils.check, coreUtils = utils.core, boot = bootstrap, subscribeMap = subscribeWeakMap;
+    checks = utils.check, { forEachProp, extend, getNewID } = utils.core, boot = bootstrap, subscribeMap = subscribeWeakMap;
 
 export interface IOptionStateProvider {
     getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
@@ -73,7 +73,7 @@ export class ListBox extends BaseObject implements ISubscriber {
     constructor(options: IListBoxConstructorOptions) {
         super();
         const self = this;
-        options = coreUtils.extend(
+        options = extend(
             {
                 el: null,
                 dataSource: null,
@@ -88,7 +88,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         }
         this._el = <HTMLSelectElement>options.el;
         this._options = options;
-        this._objId = coreUtils.getNewID("lst");
+        this._objId = getNewID("lst");
         this._isDSFilled = false;
         this._textProvider = null;
         this._stateProvider = null;
@@ -215,7 +215,7 @@ export class ListBox extends BaseObject implements ISubscriber {
     private _mapByValue(): void {
         const self = this;
         this._valMap = {};
-        coreUtils.forEachProp(this._keyMap, (key) => {
+        forEachProp(this._keyMap, (key) => {
             const data = self._keyMap[key], val = fn_Str(self._getValue(data.item));
             if (!!val) {
                 self._valMap[val] = data;
@@ -224,14 +224,14 @@ export class ListBox extends BaseObject implements ISubscriber {
     }
     private _resetText(): void {
         const self = this;
-        coreUtils.forEachProp(this._keyMap, (key) => {
+        forEachProp(this._keyMap, (key) => {
             const data = self._keyMap[key];
             data.op.text = self._getText(data.item, data.op.index);
         });
     }
     private _resetState(): void {
         const self = this;
-        coreUtils.forEachProp(this._keyMap, (key) => {
+        forEachProp(this._keyMap, (key) => {
             self._fnState(self._keyMap[key]);
         });
     }

@@ -7,7 +7,7 @@ import { CoreUtils } from "./coreutils";
 import { AbortablePromise } from "./deferred";
 import { AsyncUtils } from "./async";
 
-const coreUtils = CoreUtils, strUtils = StringUtils, _async = AsyncUtils;
+const { forEachProp, merge } = CoreUtils, strUtils = StringUtils, _async = AsyncUtils;
 
 export class HttpUtils {
     public static isStatusOK(status: string | number) {
@@ -41,15 +41,15 @@ export class HttpUtils {
             deferred.reject(new Error(strUtils.format('HTTP Request Operation Aborted for URL: "{0}"', url)));
         };
         req.timeout = HttpUtils.ajaxTimeOut * 1000;
-        let _headers = <IIndexer<string>>coreUtils.merge(HttpUtils.defaultHeaders);
-        _headers = coreUtils.merge(headers, _headers);
-        coreUtils.forEachProp(_headers, (name, val) => {
+        let _headers = <IIndexer<string>>merge(HttpUtils.defaultHeaders);
+        _headers = merge(headers, _headers);
+        forEachProp(_headers, (name, val) => {
             req.setRequestHeader(name, val);
         });
         return req;
     }
     static postAjax(url: string, postData: string, headers?: IIndexer<string>): IAbortablePromise<string> {
-        const _headers = <IIndexer<string>>coreUtils.merge(headers, { "Content-Type": "application/json; charset=utf-8" });
+        const _headers = <IIndexer<string>>merge(headers, { "Content-Type": "application/json; charset=utf-8" });
         const deferred = _async.createDeferred<string>(),
             req = HttpUtils._getXMLRequest(url, "POST", deferred, _headers);
         req.send(postData);

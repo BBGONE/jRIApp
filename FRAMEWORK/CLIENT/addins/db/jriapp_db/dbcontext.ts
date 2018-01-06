@@ -20,8 +20,8 @@ import {
     DataOperationError, SubmitError
 } from "./error";
 
-const utils = Utils, http = utils.http, checks = utils.check, strUtils = utils.str,
-    coreUtils = utils.core, ERROR = utils.err, valUtils = ValueUtils, _async = utils.defer;
+const utils = Utils, http = utils.http, { isArray, isNt, isFunc, isString } = utils.check, strUtils = utils.str,
+    { getTimeZoneOffset, merge } = utils.core, ERROR = utils.err, { stringifyValue } = ValueUtils, _async = utils.defer;
 
 const enum DATA_SVC_METH {
     Invoke = "invoke",
@@ -105,7 +105,7 @@ export class DbContext extends BaseObject {
         this._isHasChanges = false;
         this._pendingSubmit = null;
         // at first init it with client side timezone
-        this._serverTimezone = coreUtils.getTimeZoneOffset();
+        this._serverTimezone = getTimeZoneOffset();
         this._waitQueue = new WaitQueue(this);
         this._internal = {
             onItemRefreshed: (res: IRefreshRowInfo, item: IEntityItem) => {
@@ -236,28 +236,28 @@ export class DbContext extends BaseObject {
         for (let i = 0; i < len; i += 1) {
             const pinfo: IQueryParamInfo = paramInfos[i];
             let val = args[pinfo.name];
-            if (!pinfo.isNullable && !pinfo.isArray && !(pinfo.dataType === DATA_TYPE.String || pinfo.dataType === DATA_TYPE.Binary) && checks.isNt(val)) {
+            if (!pinfo.isNullable && !pinfo.isArray && !(pinfo.dataType === DATA_TYPE.String || pinfo.dataType === DATA_TYPE.Binary) && isNt(val)) {
                 throw new Error(strUtils.format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
             }
-            if (checks.isFunc(val)) {
+            if (isFunc(val)) {
                 throw new Error(strUtils.format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
             }
-            if (pinfo.isArray && !checks.isNt(val) && !checks.isArray(val)) {
+            if (pinfo.isArray && !isNt(val) && !isArray(val)) {
                 val = [val];
             }
             let value: string = null;
             // byte arrays are optimized for serialization
-            if (pinfo.dataType === DATA_TYPE.Binary && checks.isArray(val)) {
+            if (pinfo.dataType === DATA_TYPE.Binary && isArray(val)) {
                 value = JSON.stringify(val);
-            } else if (checks.isArray(val)) {
+            } else if (isArray(val)) {
                 const arr: string[] = [];
                 for (let k = 0; k < val.length; k += 1) {
                     // first convert all values to string
-                    arr.push(valUtils.stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone));
+                    arr.push(stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone));
                 }
                 value = JSON.stringify(arr);
             } else {
-                value = valUtils.stringifyValue(val, pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
+                value = stringifyValue(val, pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
             }
 
             data.paramInfo.parameters.push({ name: pinfo.name, value: value });
@@ -291,7 +291,7 @@ export class DbContext extends BaseObject {
         });
     }
     protected _loadSubsets(response: IQueryResponse, isClearAll: boolean): void {
-        const self = this, isHasSubsets = checks.isArray(response.subsets) && response.subsets.length > 0;
+        const self = this, isHasSubsets = isArray(response.subsets) && response.subsets.length > 0;
         if (!isHasSubsets) {
             return;
         }
@@ -304,11 +304,11 @@ export class DbContext extends BaseObject {
         const self = this;
         return _async.delay<IQueryResult<IEntityItem>>(() => {
             self._checkDestroy();
-            if (checks.isNt(response)) {
+            if (isNt(response)) {
                 throw new Error(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
             }
             const dbSetName = response.dbSetName, dbSet = self.getDbSet(dbSetName);
-            if (checks.isNt(dbSet)) {
+            if (isNt(dbSet)) {
                 throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, dbSetName));
             }
             fn_checkError(response.error, DATA_OPER.Query);
@@ -700,11 +700,11 @@ export class DbContext extends BaseObject {
         if (!!this._initState) {
             return this._initState;
         }
-        const self = this, opts = coreUtils.merge(options, {
+        const self = this, opts = merge(options, {
             serviceUrl: <string>null,
             permissions: <IPermissionsInfo>null
         });
-        if (!checks.isString(opts.serviceUrl)) {
+        if (!isString(opts.serviceUrl)) {
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "serviceUrl", opts.serviceUrl));
         }
         this._serviceUrl = opts.serviceUrl;
@@ -834,7 +834,7 @@ export class DbContext extends BaseObject {
         });
     }
     abortRequests(reason?: string, operType?: DATA_OPER): void {
-        if (checks.isNt(operType)) {
+        if (isNt(operType)) {
             operType = DATA_OPER.None;
         }
         const arr: IRequestPromise[] = this._requests.filter((a) => {

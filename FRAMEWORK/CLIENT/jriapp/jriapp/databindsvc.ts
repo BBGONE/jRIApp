@@ -16,7 +16,7 @@ import { ViewChecks } from "./utils/viewchecks";
 import { Parser } from "./utils/parser";
 
 const utils = Utils, _async = utils.defer, viewChecks = ViewChecks, dom = DomUtils,
-    strUtils = utils.str, boot = bootstrap, parser = Parser;
+    strUtils = utils.str, boot = bootstrap, parser = Parser, { forEachProp } = utils.core;
 
 export function createDataBindSvc(root: Document | Element, elViewFactory: IElViewFactory): IDataBindingService {
     return new DataBindingService(root, elViewFactory);
@@ -223,7 +223,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             }).filter((v) => !!v.viewMounted);
 
             const viewMap = utils.arr.toMap(viewsArr, (v) => v.uniqueID);
-            utils.core.forEachProp(viewMap, (n, v) => { v.viewMounted(); });
+            forEachProp(viewMap, (n, v) => { v.viewMounted(); });
 
             defer.resolve(lftm);
         } catch (err) {
