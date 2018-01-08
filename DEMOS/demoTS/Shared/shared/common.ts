@@ -43,11 +43,11 @@ export interface IDLinkOptions extends RIAPP.IViewOptions {
     baseUri?: string;
 }
 
-export class DownloadLinkElView extends uiMOD.BaseElView {
+export class DownloadLinkElView extends uiMOD.BaseElView<HTMLAnchorElement> {
     private _baseUri: string;
     private _id: string;
 
-    constructor(el: HTMLElement, options: IDLinkOptions) {
+    constructor(el: HTMLAnchorElement, options: IDLinkOptions) {
         super(el, options);
         this._baseUri = '';
         if (!!options.baseUri)
@@ -67,17 +67,19 @@ export class DownloadLinkElView extends uiMOD.BaseElView {
         }
     }
     get href(): string {
-        return (<HTMLAnchorElement>this.el).href;
+        return this.el.href;
     }
     set href(v) {
         let x = this.href;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            (<HTMLAnchorElement>this.el).href = v;
+            this.el.href = v;
             this.objEvents.raiseProp("href");
         }
     }
-    get id() { return this._id; }
+    get id() {
+        return this._id;
+    }
     set id(v) {
         let x = this._id;
         v = (!v) ? "" : ("" + v);
@@ -89,19 +91,20 @@ export class DownloadLinkElView extends uiMOD.BaseElView {
     }
 }
 
-export class FileImgElView extends uiMOD.BaseElView {
+export class FileImgElView extends uiMOD.BaseElView<HTMLImageElement> {
     private _baseUri: string;
     private _id: string;
     private _fileName: string;
     private _debounce: RIAPP.Debounce;
     private _src: string;
 
-    constructor(el: HTMLElement, options: IDLinkOptions) {
+    constructor(el: HTMLImageElement, options: IDLinkOptions) {
         super(el, options);
         this._debounce = new RIAPP.Debounce();
         this._baseUri = '';
-        if (!!options.baseUri)
+        if (!!options.baseUri) {
             this._baseUri = options.baseUri;
+        }
         this._id = '';
         this._src = null;
         this._fileName = null;
@@ -124,7 +127,9 @@ export class FileImgElView extends uiMOD.BaseElView {
             this.src = src + '?v=' + date.getTime();
         }
     }
-    get fileName() { return this._fileName; }
+    get fileName() {
+        return this._fileName;
+    }
     set fileName(v) {
         let x = this._fileName;
         if (x !== v) {
@@ -133,7 +138,7 @@ export class FileImgElView extends uiMOD.BaseElView {
             this.reloadImg();
         }
     }
-    get src() {
+    get src(): string {
         return this._src;
     }
     set src(v) {
@@ -143,18 +148,20 @@ export class FileImgElView extends uiMOD.BaseElView {
         }
         let img = this.el;
         //set empty image as a stub
-        (<HTMLImageElement>img).src = "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+        img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
         this._debounce.enque(() => {
             if (!!this._src) {
-                (<HTMLImageElement>img).src = this._src;
+                img.src = this._src;
             }
         });
     }
-    get id() { return this._id; }
+    get id() {
+        return this._id;
+    }
     set id(v) {
         let x = this._id;
-        v = (v === null)? '': ('' + v);
+        v = (v === null) ? '' : ('' + v);
         if (x !== v) {
             this._id = v;
             if (!this._id)
@@ -167,15 +174,15 @@ export class FileImgElView extends uiMOD.BaseElView {
 }
 
 export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
-    _error: any;
-    _errors: any[];
-    _message: string;
-    _title: string;
-    _dialogVM: uiMOD.DialogVM;
+    private _error: any;
+    private _errors: any[];
+    private _message: string;
+    private _title: string;
+    private _dialogVM: uiMOD.DialogVM;
 
     constructor(app: RIAPP.IApplication) {
         super(app);
-        const self = this;
+        let self = this;
         this._error = null;
         this._errors = [];
         this._message = null;
@@ -234,9 +241,11 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
         this._message = null;
         super.dispose();
     }
-    get error() { return this._error; }
+    get error(): any {
+        return this._error;
+    }
     set error(v) {
-        const self = this, old = this._error;
+        let self = this, old = this._error;
         if (!old) {
             this._error = v;
             let msg: string = '';
@@ -252,7 +261,9 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
             this.objEvents.raiseProp('errorCount');
         }
     }
-    get title() { return this._title; }
+    get title(): string {
+        return this._title;
+    }
     set title(v) {
         let old = this._title;
         if (old !== v) {
@@ -260,7 +271,9 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
             this.objEvents.raiseProp('title');
         }
     }
-    get message() { return this._message; }
+    get message(): string {
+        return this._message;
+    }
     set message(v) {
         let old = this._message;
         if (old !== v) {
@@ -268,7 +281,7 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
             this.objEvents.raiseProp('message');
         }
     }
-    get errorCount() {
+    get errorCount(): number {
         return this._errors.length + 1;
     }
 }

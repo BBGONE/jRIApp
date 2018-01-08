@@ -18,21 +18,21 @@ declare module "common" {
     export interface IDLinkOptions extends RIAPP.IViewOptions {
         baseUri?: string;
     }
-    export class DownloadLinkElView extends uiMOD.BaseElView {
+    export class DownloadLinkElView extends uiMOD.BaseElView<HTMLAnchorElement> {
         private _baseUri;
         private _id;
-        constructor(el: HTMLElement, options: IDLinkOptions);
+        constructor(el: HTMLAnchorElement, options: IDLinkOptions);
         text: string;
         href: string;
         id: string;
     }
-    export class FileImgElView extends uiMOD.BaseElView {
+    export class FileImgElView extends uiMOD.BaseElView<HTMLImageElement> {
         private _baseUri;
         private _id;
         private _fileName;
         private _debounce;
         private _src;
-        constructor(el: HTMLElement, options: IDLinkOptions);
+        constructor(el: HTMLImageElement, options: IDLinkOptions);
         dispose(): void;
         reloadImg(): void;
         fileName: string;
@@ -40,11 +40,11 @@ declare module "common" {
         id: string;
     }
     export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
-        _error: any;
-        _errors: any[];
-        _message: string;
-        _title: string;
-        _dialogVM: uiMOD.DialogVM;
+        private _error;
+        private _errors;
+        private _message;
+        private _title;
+        private _dialogVM;
         constructor(app: RIAPP.IApplication);
         showDialog(): void;
         dispose(): void;

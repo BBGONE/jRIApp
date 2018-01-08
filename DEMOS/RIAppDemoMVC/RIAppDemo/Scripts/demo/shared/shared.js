@@ -78,7 +78,9 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
             configurable: true
         });
         Object.defineProperty(DownloadLinkElView.prototype, "id", {
-            get: function () { return this._id; },
+            get: function () {
+                return this._id;
+            },
             set: function (v) {
                 var x = this._id;
                 v = (!v) ? "" : ("" + v);
@@ -100,8 +102,9 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
             var _this = _super.call(this, el, options) || this;
             _this._debounce = new RIAPP.Debounce();
             _this._baseUri = '';
-            if (!!options.baseUri)
+            if (!!options.baseUri) {
                 _this._baseUri = options.baseUri;
+            }
             _this._id = '';
             _this._src = null;
             _this._fileName = null;
@@ -126,7 +129,9 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
             }
         };
         Object.defineProperty(FileImgElView.prototype, "fileName", {
-            get: function () { return this._fileName; },
+            get: function () {
+                return this._fileName;
+            },
             set: function (v) {
                 var x = this._fileName;
                 if (x !== v) {
@@ -160,7 +165,9 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
             configurable: true
         });
         Object.defineProperty(FileImgElView.prototype, "id", {
-            get: function () { return this._id; },
+            get: function () {
+                return this._id;
+            },
             set: function (v) {
                 var x = this._id;
                 v = (v === null) ? '' : ('' + v);
@@ -240,7 +247,9 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
             _super.prototype.dispose.call(this);
         };
         Object.defineProperty(ErrorViewModel.prototype, "error", {
-            get: function () { return this._error; },
+            get: function () {
+                return this._error;
+            },
             set: function (v) {
                 var self = this, old = this._error;
                 if (!old) {
@@ -262,7 +271,9 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
             configurable: true
         });
         Object.defineProperty(ErrorViewModel.prototype, "title", {
-            get: function () { return this._title; },
+            get: function () {
+                return this._title;
+            },
             set: function (v) {
                 var old = this._title;
                 if (old !== v) {
@@ -274,7 +285,9 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
             configurable: true
         });
         Object.defineProperty(ErrorViewModel.prototype, "message", {
-            get: function () { return this._message; },
+            get: function () {
+                return this._message;
+            },
             set: function (v) {
                 var old = this._message;
                 if (old !== v) {
