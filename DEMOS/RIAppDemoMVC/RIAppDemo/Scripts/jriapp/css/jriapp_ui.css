@@ -263,6 +263,11 @@ td.ria-row-selector input[type="checkbox"] {
     min-width: 24px;
     text-align: center;
     box-sizing: border-box;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .ria-pager-interval {

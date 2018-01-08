@@ -25,7 +25,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         const self = this;
         this._dataGrid = null;
         this._dbSet = this.dbSets.Customer;
-        this._dbSet.isSubmitOnDelete = true;
+        // this._dbSet.isSubmitOnDelete = true;
         this._propWatcher = new RIAPP.PropWatcher();
 
         this._dbSet.addOnItemDeleting(function (sender, args) {

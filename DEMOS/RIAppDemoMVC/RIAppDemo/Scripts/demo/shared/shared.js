@@ -119,8 +119,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
         };
         FileImgElView.prototype.reloadImg = function () {
             if (!!this.src) {
-                var src = this.src;
-                var pos = src.indexOf('?');
+                var src = this.src, pos = src.indexOf('?');
                 if (pos >= 0) {
                     src = src.substr(0, pos);
                 }

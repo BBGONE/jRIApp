@@ -109,7 +109,7 @@ export class FileImgElView extends uiMOD.BaseElView<HTMLImageElement> {
         this._src = null;
         this._fileName = null;
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed())
             return;
         this.setDisposing();
@@ -118,8 +118,7 @@ export class FileImgElView extends uiMOD.BaseElView<HTMLImageElement> {
     }
     reloadImg(): void {
         if (!!this.src) {
-            let src = this.src;
-            let pos = src.indexOf('?');
+            let src = this.src, pos = src.indexOf('?');
             if (pos >= 0) {
                 src = src.substr(0, pos);
             }
@@ -127,11 +126,11 @@ export class FileImgElView extends uiMOD.BaseElView<HTMLImageElement> {
             this.src = src + '?v=' + date.getTime();
         }
     }
-    get fileName() {
+    get fileName(): string {
         return this._fileName;
     }
     set fileName(v) {
-        let x = this._fileName;
+        const x = this._fileName;
         if (x !== v) {
             this._fileName = v;
             this.objEvents.raiseProp('fileName');
@@ -146,7 +145,7 @@ export class FileImgElView extends uiMOD.BaseElView<HTMLImageElement> {
             this._src = v;
             this.objEvents.raiseProp('src');
         }
-        let img = this.el;
+        const img = this.el;
         //set empty image as a stub
         img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
@@ -156,7 +155,7 @@ export class FileImgElView extends uiMOD.BaseElView<HTMLImageElement> {
             }
         });
     }
-    get id() {
+    get id(): string {
         return this._id;
     }
     set id(v) {

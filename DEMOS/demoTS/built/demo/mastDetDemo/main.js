@@ -1911,7 +1911,6 @@ define("mastDetDemo/customerVM", ["require", "exports", "jriapp", "jriapp_db", "
             var self = _this;
             _this._dataGrid = null;
             _this._dbSet = _this.dbSets.Customer;
-            _this._dbSet.isSubmitOnDelete = true;
             _this._propWatcher = new RIAPP.PropWatcher();
             _this._dbSet.addOnItemDeleting(function (sender, args) {
                 if (!confirm('Are you sure that you want to delete customer ?'))
