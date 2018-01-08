@@ -5,23 +5,23 @@ import { SpanElView } from "./span";
 const boot = bootstrap;
 
 export class BlockElView extends SpanElView {
-    toString() {
+    toString(): string {
         return "BlockElView";
     }
-    get width() {
+    get width(): number {
         return this.el.offsetWidth;
     }
-    set width(v) {
+    set width(v: number) {
         const x = this.width;
         if (v !== x) {
             this.el.style.width = v + "px";
             this.objEvents.raiseProp("width");
         }
     }
-    get height() {
+    get height(): number {
         return this.el.offsetHeight;
     }
-    set height(v) {
+    set height(v: number) {
         const x = this.height;
         if (v !== x) {
             this.el.style.height = v + "px";

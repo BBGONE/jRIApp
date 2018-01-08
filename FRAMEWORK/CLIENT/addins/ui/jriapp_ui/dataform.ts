@@ -449,7 +449,7 @@ export class DataFormElView extends BaseElView {
             }
         }, this.uniqueID);
     }
-    protected _getErrorTipInfo(errors: IValidationInfo[]) {
+    protected _getErrorTipInfo(errors: IValidationInfo[]): string {
         const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<ul>"];
         errors.forEach((info) => {
             const fieldName = info.fieldName;
@@ -470,7 +470,7 @@ export class DataFormElView extends BaseElView {
         tip.push("</ul>");
         return tip.join("");
     }
-    protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]) {
+    protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void {
         if (!el) {
             return;
         }
@@ -490,12 +490,13 @@ export class DataFormElView extends BaseElView {
             this._setFieldError(false);
         }
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
         this.setDisposing();
         if (!!this._errorGliph) {
+            fn_addToolTip(this._errorGliph, null);
             dom.removeNode(this._errorGliph);
             this._errorGliph = null;
         }

@@ -3,11 +3,13 @@ import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
 
 export class SpanElView extends BaseElView {
-    toString() {
+    toString(): string {
         return "SpanElView";
     }
-    get text() { return this.el.textContent; }
-    set text(v) {
+    get text(): string {
+        return this.el.textContent;
+    }
+    set text(v: string) {
         const el = this.el, x = el.textContent, str = "" + v;
         v = (v === null ? "" : str);
         if (x !== v) {
@@ -16,14 +18,16 @@ export class SpanElView extends BaseElView {
             this.objEvents.raiseProp("value");
         }
     }
-    get value() {
+    get value(): string {
         return this.text;
     }
-    set value(v) {
+    set value(v: string) {
         this.text = v;
     }
-    get html() { return this.el.innerHTML; }
-    set html(v) {
+    get html(): string {
+        return this.el.innerHTML;
+    }
+    set html(v: string) {
         const el = this.el, x = this.el.innerHTML, str = "" + v;
         v = v === null ? "" : str;
         if (x !== v) {

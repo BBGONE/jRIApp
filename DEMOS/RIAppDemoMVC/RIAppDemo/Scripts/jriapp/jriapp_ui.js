@@ -922,8 +922,8 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
     var BaseElView = (function (_super) {
         __extends(BaseElView, _super);
         function BaseElView(el, options) {
-            if (options === void 0) { options = {}; }
             var _this = _super.call(this) || this;
+            options = options || {};
             _this._el = el;
             _this._toolTip = !options.tip ? null : options.tip;
             _this._css = !options.css ? null : options.css;
@@ -1480,7 +1480,6 @@ define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/uti
     var CheckBoxElView = (function (_super) {
         __extends(CheckBoxElView, _super);
         function CheckBoxElView(chk, options) {
-            if (options === void 0) { options = {}; }
             var _this = _super.call(this, chk, options) || this;
             var self = _this;
             _this._checked = null;
@@ -6870,7 +6869,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "rowCount", {
-            get: function () { return this._rowCount; },
+            get: function () {
+                return this._rowCount;
+            },
             set: function (v) {
                 if (this._rowCount !== v) {
                     this._rowCount = v;
@@ -6882,7 +6883,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "rowsPerPage", {
-            get: function () { return this._rowsPerPage; },
+            get: function () {
+                return this._rowsPerPage;
+            },
             set: function (v) {
                 if (this._rowsPerPage !== v) {
                     this._rowsPerPage = v;
@@ -6893,7 +6896,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "currentPage", {
-            get: function () { return this._currentPage; },
+            get: function () {
+                return this._currentPage;
+            },
             set: function (v) {
                 if (this._currentPage !== v) {
                     this._currentPage = v;
@@ -6905,7 +6910,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "useSlider", {
-            get: function () { return this._options.useSlider; },
+            get: function () {
+                return this._options.useSlider;
+            },
             set: function (v) {
                 if (this.useSlider !== v) {
                     this._options.useSlider = v;
@@ -6916,7 +6923,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "sliderSize", {
-            get: function () { return this._options.sliderSize; },
+            get: function () {
+                return this._options.sliderSize;
+            },
             set: function (v) {
                 if (this.sliderSize !== v) {
                     this._options.sliderSize = v;
@@ -6927,7 +6936,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "hideOnSinglePage", {
-            get: function () { return this._options.hideOnSinglePage; },
+            get: function () {
+                return this._options.hideOnSinglePage;
+            },
             set: function (v) {
                 if (this.hideOnSinglePage !== v) {
                     this._options.hideOnSinglePage = v;
@@ -6938,7 +6949,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "showTip", {
-            get: function () { return this._options.showTip; },
+            get: function () {
+                return this._options.showTip;
+            },
             set: function (v) {
                 if (this.showTip !== v) {
                     this._options.showTip = v;
@@ -6949,7 +6962,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "showInfo", {
-            get: function () { return this._options.showInfo; },
+            get: function () {
+                return this._options.showInfo;
+            },
             set: function (v) {
                 if (this._options.showInfo !== v) {
                     this._options.showInfo = v;
@@ -6960,7 +6975,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "showPreviousAndNext", {
-            get: function () { return this._options.showPreviousAndNext; },
+            get: function () {
+                return this._options.showPreviousAndNext;
+            },
             set: function (v) {
                 if (this.showPreviousAndNext !== v) {
                     this._options.showPreviousAndNext = v;
@@ -6971,7 +6988,9 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "showNumbers", {
-            get: function () { return this._options.showNumbers; },
+            get: function () {
+                return this._options.showNumbers;
+            },
             set: function (v) {
                 if (this.showNumbers !== v) {
                     this._options.showNumbers = v;
@@ -7775,7 +7794,9 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
             return "CommandElView";
         };
         Object.defineProperty(CommandElView.prototype, "command", {
-            get: function () { return this._command; },
+            get: function () {
+                return this._command;
+            },
             set: function (v) {
                 var self = this;
                 if (v !== this._command) {
@@ -7797,7 +7818,9 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
             configurable: true
         });
         Object.defineProperty(CommandElView.prototype, "commandParam", {
-            get: function () { return this._commandParam; },
+            get: function () {
+                return this._commandParam;
+            },
             set: function (v) {
                 if (v !== this._commandParam) {
                     this._commandParam = v;
@@ -8391,6 +8414,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             }
             this.setDisposing();
             if (!!this._errorGliph) {
+                baseview_11.fn_addToolTip(this._errorGliph, null);
                 dom.removeNode(this._errorGliph);
                 this._errorGliph = null;
             }
@@ -8649,7 +8673,9 @@ define("jriapp_ui/span", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/b
             return "SpanElView";
         };
         Object.defineProperty(SpanElView.prototype, "text", {
-            get: function () { return this.el.textContent; },
+            get: function () {
+                return this.el.textContent;
+            },
             set: function (v) {
                 var el = this.el, x = el.textContent, str = "" + v;
                 v = (v === null ? "" : str);
@@ -8673,7 +8699,9 @@ define("jriapp_ui/span", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/b
             configurable: true
         });
         Object.defineProperty(SpanElView.prototype, "html", {
-            get: function () { return this.el.innerHTML; },
+            get: function () {
+                return this.el.innerHTML;
+            },
             set: function (v) {
                 var el = this.el, x = this.el.innerHTML, str = "" + v;
                 v = v === null ? "" : str;
@@ -8939,7 +8967,6 @@ define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/ut
     var CheckBoxThreeStateElView = (function (_super) {
         __extends(CheckBoxThreeStateElView, _super);
         function CheckBoxThreeStateElView(chk, options) {
-            if (options === void 0) { options = {}; }
             var _this = _super.call(this, chk, options) || this;
             var self = _this;
             _this._checked = null;

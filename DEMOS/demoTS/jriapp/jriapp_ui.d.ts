@@ -212,7 +212,7 @@ declare module "jriapp_ui/baseview" {
         src = "src",
         click = "click",
     }
-    export class BaseElView extends BaseObject implements IElView, ISubscriber {
+    export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber {
         private _objId;
         private _el;
         private _subscribeFlags;
@@ -223,7 +223,7 @@ declare module "jriapp_ui/baseview" {
         private _css;
         private _toolTip;
         private _errors;
-        constructor(el: HTMLElement, options?: IViewOptions);
+        constructor(el: TElement, options?: IViewOptions);
         dispose(): void;
         private _getStore();
         protected _onEventChanged(args: IEventChangedArgs): void;
@@ -237,7 +237,7 @@ declare module "jriapp_ui/baseview" {
         protected _setIsSubcribed(flag: SubscribeFlags): void;
         isSubscribed(flag: SubscribeFlags): boolean;
         toString(): string;
-        readonly el: HTMLElement;
+        readonly el: TElement;
         readonly uniqueID: string;
         isVisible: boolean;
         validationErrors: IValidationInfo[];
@@ -253,7 +253,7 @@ declare module "jriapp_ui/baseview" {
 }
 declare module "jriapp_ui/input" {
     import { BaseElView } from "jriapp_ui/baseview";
-    export class InputElView extends BaseElView {
+    export class InputElView<TElement extends HTMLInputElement | HTMLTextAreaElement = HTMLInputElement> extends BaseElView<TElement> {
         toString(): string;
         isEnabled: boolean;
         value: string;
@@ -270,12 +270,12 @@ declare module "jriapp_ui/textbox" {
         value: string;
         isCancel: boolean;
     };
-    export class TextBoxElView extends InputElView {
-        constructor(el: HTMLInputElement | HTMLTextAreaElement, options: ITextBoxOptions);
+    export class TextBoxElView<TElement extends HTMLInputElement | HTMLTextAreaElement = HTMLInputElement> extends InputElView<TElement> {
+        constructor(el: TElement, options: ITextBoxOptions);
         handle_change(e: Event): boolean;
         handle_keypress(e: KeyboardEvent): boolean;
         handle_keyup(e: KeyboardEvent): void;
-        addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string): void;
+        addOnKeyPress(fn: (sender: TextBoxElView<TElement>, args: TKeyPressArgs) => void, nmspace?: string): void;
         offOnKeyPress(nmspace?: string): void;
         toString(): string;
         color: string;
@@ -297,7 +297,7 @@ declare module "jriapp_ui/textarea" {
     export interface ITextAreaOptions extends ITextBoxOptions {
         wrap?: string;
     }
-    export class TextAreaElView extends TextBoxElView {
+    export class TextAreaElView extends TextBoxElView<HTMLTextAreaElement> {
         constructor(el: HTMLTextAreaElement, options: ITextAreaOptions);
         toString(): string;
         wrap: string;
@@ -321,7 +321,7 @@ declare module "jriapp_ui/content/multyline" {
 declare module "jriapp_ui/checkbox" {
     import { IViewOptions } from "jriapp/int";
     import { InputElView } from "jriapp_ui/input";
-    export class CheckBoxElView extends InputElView {
+    export class CheckBoxElView extends InputElView<HTMLInputElement> {
         private _checked;
         constructor(chk: HTMLInputElement, options?: IViewOptions);
         handle_change(e: Event): boolean;
@@ -1540,11 +1540,11 @@ declare module "jriapp_ui/command" {
         preventDefault?: boolean;
         stopPropagation?: boolean;
     }
-    export class CommandElView extends BaseElView {
+    export class CommandElView<TElement extends HTMLElement = HTMLElement> extends BaseElView<TElement> {
         private _command;
         private _commandParam;
         private _flags;
-        constructor(el: HTMLElement, options: ICommandViewOptions);
+        constructor(el: TElement, options: ICommandViewOptions);
         private _getFlag(flag);
         private _setFlag(v, flag);
         private _onCanExecuteChanged(cmd, args);
@@ -1655,7 +1655,7 @@ declare module "jriapp_ui/anchor" {
         imageSrc?: string;
         glyph?: string;
     }
-    export class AnchorElView extends CommandElView {
+    export class AnchorElView extends CommandElView<HTMLAnchorElement> {
         private _imageSrc;
         private _glyph;
         private _image;
@@ -1713,9 +1713,9 @@ declare module "jriapp_ui/busy" {
 }
 declare module "jriapp_ui/button" {
     import { CommandElView, ICommandViewOptions } from "jriapp_ui/command";
-    export class ButtonElView extends CommandElView {
+    export class ButtonElView extends CommandElView<HTMLButtonElement | HTMLInputElement> {
         private _isButton;
-        constructor(el: HTMLElement, options: ICommandViewOptions);
+        constructor(el: HTMLButtonElement | HTMLInputElement, options: ICommandViewOptions);
         handle_click(e: Event): boolean;
         onClick(): void;
         toString(): string;
@@ -1727,7 +1727,7 @@ declare module "jriapp_ui/button" {
 declare module "jriapp_ui/checkbox3" {
     import { IViewOptions } from "jriapp/int";
     import { InputElView } from "jriapp_ui/input";
-    export class CheckBoxThreeStateElView extends InputElView {
+    export class CheckBoxThreeStateElView extends InputElView<HTMLInputElement> {
         private _checked;
         constructor(chk: HTMLInputElement, options?: IViewOptions);
         handle_change(e: Event): boolean;
@@ -1761,13 +1761,13 @@ declare module "jriapp_ui/expander" {
 }
 declare module "jriapp_ui/hidden" {
     import { InputElView } from "jriapp_ui/input";
-    export class HiddenElView extends InputElView {
+    export class HiddenElView extends InputElView<HTMLInputElement> {
         toString(): string;
     }
 }
 declare module "jriapp_ui/img" {
     import { BaseElView } from "jriapp_ui/baseview";
-    export class ImgElView extends BaseElView {
+    export class ImgElView extends BaseElView<HTMLImageElement> {
         toString(): string;
         src: string;
     }

@@ -9,10 +9,10 @@ import { css } from "./baseview";
 
 const checks = Utils.check, dom = DomUtils, boot = bootstrap, subscribeMap = subscribeWeakMap;
 
-export class CheckBoxThreeStateElView extends InputElView {
+export class CheckBoxThreeStateElView extends InputElView<HTMLInputElement> {
     private _checked: boolean;
 
-    constructor(chk: HTMLInputElement, options: IViewOptions = {}) {
+    constructor(chk: HTMLInputElement, options?: IViewOptions) {
         super(chk, options);
         const self = this;
         this._checked = null;
@@ -51,7 +51,7 @@ export class CheckBoxThreeStateElView extends InputElView {
     set checked(v: boolean) {
         if (this._checked !== v) {
             this._checked = v;
-            const chk = <HTMLInputElement>this.el;
+            const chk = this.el;
             chk.checked = !!v;
             chk.indeterminate = this._checked === null;
             this._updateState();

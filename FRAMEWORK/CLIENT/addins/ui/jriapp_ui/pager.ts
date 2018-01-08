@@ -461,83 +461,103 @@ export class Pager extends BaseObject implements ISelectableProvider {
             return result;
         }
     }
-    get rowCount() { return this._rowCount; }
-    set rowCount(v) {
+    get rowCount(): number {
+        return this._rowCount;
+    }
+    set rowCount(v: number) {
         if (this._rowCount !== v) {
             this._rowCount = v;
             this.render();
             this.objEvents.raiseProp("rowCount");
         }
     }
-    get rowsPerPage() { return this._rowsPerPage; }
-    set rowsPerPage(v) {
+    get rowsPerPage(): number {
+        return this._rowsPerPage;
+    }
+    set rowsPerPage(v: number) {
         if (this._rowsPerPage !== v) {
             this._rowsPerPage = v;
             this.render();
         }
     }
-    get currentPage() { return this._currentPage; }
-    set currentPage(v) {
+    get currentPage(): number {
+        return this._currentPage;
+    }
+    set currentPage(v: number) {
         if (this._currentPage !== v) {
             this._currentPage = v;
             this.render();
             this.objEvents.raiseProp("currentPage");
         }
     }
-    get useSlider() { return this._options.useSlider; }
-    set useSlider(v) {
+    get useSlider(): boolean {
+        return this._options.useSlider;
+    }
+    set useSlider(v: boolean) {
         if (this.useSlider !== v) {
             this._options.useSlider = v;
             this.render();
         }
     }
-    get sliderSize() { return this._options.sliderSize; }
-    set sliderSize(v) {
+    get sliderSize(): number {
+        return this._options.sliderSize;
+    }
+    set sliderSize(v: number) {
         if (this.sliderSize !== v) {
             this._options.sliderSize = v;
             this.render();
         }
     }
-    get hideOnSinglePage() { return this._options.hideOnSinglePage; }
-    set hideOnSinglePage(v) {
+    get hideOnSinglePage(): boolean {
+        return this._options.hideOnSinglePage;
+    }
+    set hideOnSinglePage(v: boolean) {
         if (this.hideOnSinglePage !== v) {
             this._options.hideOnSinglePage = v;
             this.render();
         }
     }
-    get showTip() { return this._options.showTip; }
-    set showTip(v) {
+    get showTip(): boolean {
+        return this._options.showTip;
+    }
+    set showTip(v: boolean) {
         if (this.showTip !== v) {
             this._options.showTip = v;
             this.render();
         }
     }
-    get showInfo() { return this._options.showInfo; }
-    set showInfo(v) {
+    get showInfo(): boolean {
+        return this._options.showInfo;
+    }
+    set showInfo(v: boolean) {
         if (this._options.showInfo !== v) {
             this._options.showInfo = v;
             this.render();
         }
     }
-    get showPreviousAndNext() { return this._options.showPreviousAndNext; }
-    set showPreviousAndNext(v) {
+    get showPreviousAndNext(): boolean {
+        return this._options.showPreviousAndNext;
+    }
+    set showPreviousAndNext(v: boolean) {
         if (this.showPreviousAndNext !== v) {
             this._options.showPreviousAndNext = v;
             this.render();
         }
     }
-    get showNumbers() { return this._options.showNumbers; }
-    set showNumbers(v) {
+    get showNumbers(): boolean {
+        return this._options.showNumbers;
+    }
+    set showNumbers(v: boolean) {
         if (this.showNumbers !== v) {
             this._options.showNumbers = v;
             this.render();
         }
     }
-    get isVisible() {
+    get isVisible(): boolean {
         const v = this.el.style.display;
         return !(v === "none");
     }
-    set isVisible(v) {
+    set isVisible(v: boolean) {
         v = !!v;
         if (v !== this.isVisible) {
             if (!v) {
@@ -556,10 +576,10 @@ export class Pager extends BaseObject implements ISelectableProvider {
     get selectable(): ISelectable {
         return !this._parentControl ? null : this._parentControl.selectable;
     }
-    get parentControl() {
+    get parentControl(): ISelectableProvider {
         return this._parentControl;
     }
-    set parentControl(v) {
+    set parentControl(v: ISelectableProvider) {
         if (this._parentControl !== v) {
             this._parentControl = v;
             this.objEvents.raiseProp("parentControl");
@@ -586,7 +606,7 @@ export class PagerElView extends BaseElView implements ISelectableProvider {
             }
         }, self.uniqueID);
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -596,25 +616,25 @@ export class PagerElView extends BaseElView implements ISelectableProvider {
         }
         super.dispose();
     }
-    toString() {
+    toString(): string {
         return "PagerElView";
     }
-    get dataSource() {
+    get dataSource(): ICollection<ICollectionItem> {
         return this._pager.dataSource;
     }
     set dataSource(v) {
         this._pager.dataSource = v;
     }
-    get pager() {
+    get pager(): Pager {
         return this._pager;
     }
     get selectable(): ISelectable {
         return this._pager.selectable;
     }
-    get parentControl() {
+    get parentControl(): ISelectableProvider {
         return this._pager.parentControl;
     }
-    set parentControl(v) {
+    set parentControl(v: ISelectableProvider) {
         this._pager.parentControl = v;
     }
 }

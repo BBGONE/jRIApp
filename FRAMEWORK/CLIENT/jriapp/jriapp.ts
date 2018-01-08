@@ -25,12 +25,10 @@ export { Binding } from "./jriapp/binding";
 export { createTemplate, ITemplateOptions } from "./jriapp/template";
 export { LifeTimeScope } from "./jriapp/utils/lifetime";
 export { PropWatcher } from "./jriapp/utils/propwatcher";
-export {
-    ViewModel, BaseCommand, Command, ICommand
-} from "./jriapp/mvvm";
+export { ViewModel, BaseCommand, Command, ICommand } from "./jriapp/mvvm";
 
 export { Application } from "./jriapp/app";
 
-export const VERSION = "2.10.0";
+export const VERSION = "2.10.1";
 
 Bootstrap._initFramework();

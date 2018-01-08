@@ -27,7 +27,7 @@ export interface IAutocompleteOptions extends RIAPP.IViewOptions {
     height?: any;
 }
 
-export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemplateEvents {
+export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> implements RIAPP.ITemplateEvents {
     private _templateId: string;
     private _fieldName: string;
     private _dbSetName: string;
@@ -70,7 +70,7 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
     }
     templateUnLoading(template: RIAPP.ITemplate): void {
     }
-    constructor(el: HTMLElement, options: IAutocompleteOptions) {
+    constructor(el: HTMLInputElement, options: IAutocompleteOptions) {
         super(el, options);
         const self = this;
         this._templateId = options.templateId;

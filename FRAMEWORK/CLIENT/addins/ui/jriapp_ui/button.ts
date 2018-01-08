@@ -6,10 +6,10 @@ import { CommandElView, ICommandViewOptions } from "./command";
 
 const boot = bootstrap, dom = DomUtils, subscribeMap = subscribeWeakMap;
 
-export class ButtonElView extends CommandElView {
+export class ButtonElView extends CommandElView<HTMLButtonElement | HTMLInputElement> {
     private _isButton: boolean;
 
-    constructor(el: HTMLElement, options: ICommandViewOptions) {
+    constructor(el: HTMLButtonElement | HTMLInputElement, options: ICommandViewOptions) {
         super(el, options);
         const self = this;
         this._isButton = this.el.tagName.toLowerCase() === "button";

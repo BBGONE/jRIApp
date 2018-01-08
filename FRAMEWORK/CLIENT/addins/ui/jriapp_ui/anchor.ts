@@ -12,7 +12,7 @@ export interface IAncorOptions extends ICommandViewOptions {
     glyph?: string;
 }
 
-export class AnchorElView extends CommandElView {
+export class AnchorElView extends CommandElView<HTMLAnchorElement> {
     private _imageSrc: string;
     private _glyph: string;
     private _image: HTMLImageElement;
@@ -159,13 +159,13 @@ export class AnchorElView extends CommandElView {
         }
     }
     get href(): string {
-        return (<HTMLAnchorElement>this.el).href;
+        return this.el.href;
     }
     set href(v: string) {
         const x = this.href;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            (<HTMLAnchorElement>this.el).href = v;
+            this.el.href = v;
             this.objEvents.raiseProp("href");
         }
     }

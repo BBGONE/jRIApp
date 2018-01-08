@@ -10,17 +10,17 @@ export class RadioElView extends CheckBoxElView {
         return "RadioElView";
     }
     get value(): string {
-        return (<HTMLInputElement>this.el).value;
+        return this.el.value;
     }
     set value(v: string) {
         const strv = checks.isNt(v) ? "" : ("" + v);
         if (strv !== this.value) {
-            (<HTMLInputElement>this.el).value = strv;
+            this.el.value = strv;
             this.objEvents.raiseProp("value");
         }
     }
     get name(): string {
-        return (<HTMLInputElement>this.el).name;
+        return this.el.name;
     }
 }
 

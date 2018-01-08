@@ -18,19 +18,19 @@ const enum CommandFlags {
     Disabled= 2
 }
 
-export class CommandElView extends BaseElView {
+export class CommandElView<TElement extends HTMLElement = HTMLElement> extends BaseElView<TElement> {
     private _command: ICommand;
     private _commandParam: any;
     private _flags: number;
 
-    constructor(el: HTMLElement, options: ICommandViewOptions) {
+    constructor(el: TElement, options: ICommandViewOptions) {
         super(el, options);
         this._command = null;
         this._commandParam = null;
         this._flags = 0;
         this._setFlag(!!options.preventDefault, CommandFlags.PreventDefault);
         this._setFlag(!!options.stopPropagation, CommandFlags.StopPropagation);
-        const disabled = ("disabled" in el) && (<HTMLInputElement>el).disabled;
+        const disabled = ("disabled" in el) && (<any>el).disabled;
         if (disabled) {
             this._setFlag(disabled, CommandFlags.Disabled);
         }
@@ -90,7 +90,9 @@ export class CommandElView extends BaseElView {
     toString(): string {
         return "CommandElView";
     }
-    get command(): ICommand { return this._command; }
+    get command(): ICommand {
+        return this._command;
+    }
     set command(v: ICommand) {
         const self = this;
         if (v !== this._command) {
@@ -107,7 +109,9 @@ export class CommandElView extends BaseElView {
             this._onCommandChanged();
         }
     }
-    get commandParam(): any { return this._commandParam; }
+    get commandParam(): any {
+        return this._commandParam;
+    }
     set commandParam(v: any) {
         if (v !== this._commandParam) {
             this._commandParam = v;

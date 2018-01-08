@@ -9,10 +9,10 @@ import { InputElView } from "./input";
 
 const dom = DomUtils, checks = Utils.check, boot = bootstrap, subscribeMap = subscribeWeakMap;
 
-export class CheckBoxElView extends InputElView {
+export class CheckBoxElView extends InputElView<HTMLInputElement> {
     private _checked: boolean;
 
-    constructor(chk: HTMLInputElement, options: IViewOptions = {}) {
+    constructor(chk: HTMLInputElement, options?: IViewOptions) {
         super(chk, options);
         const self = this;
         this._checked = null;
@@ -30,7 +30,7 @@ export class CheckBoxElView extends InputElView {
         this._updateState();
     }
     handle_change(e: Event): boolean {
-        const chk = <HTMLInputElement>this.el;
+        const chk = this.el;
         if (this.checked !== chk.checked) {
             this.checked = chk.checked;
         }
@@ -49,7 +49,7 @@ export class CheckBoxElView extends InputElView {
     set checked(v: boolean) {
         if (this._checked !== v) {
             this._checked = v;
-            const chk = <HTMLInputElement>this.el;
+            const chk = this.el;
             chk.checked = !!v;
             this._updateState();
             this.objEvents.raiseProp("checked");

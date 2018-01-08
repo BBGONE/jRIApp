@@ -7,7 +7,7 @@ export interface ITextAreaOptions extends ITextBoxOptions {
      wrap?: string;
 }
 
-export class TextAreaElView extends TextBoxElView {
+export class TextAreaElView extends TextBoxElView<HTMLTextAreaElement> {
     constructor(el: HTMLTextAreaElement, options: ITextAreaOptions) {
         super(el, options);
         if (!!options.wrap) {
@@ -18,12 +18,12 @@ export class TextAreaElView extends TextBoxElView {
         return "TextAreaElView";
     }
     get wrap(): string {
-        return (<HTMLTextAreaElement>this.el).wrap;
+        return this.el.wrap;
     }
     set wrap(v: string) {
         const x = this.wrap;
         if (x !== v) {
-            (<HTMLTextAreaElement>this.el).wrap = v;
+            this.el.wrap = v;
             this.objEvents.raiseProp("wrap");
         }
     }

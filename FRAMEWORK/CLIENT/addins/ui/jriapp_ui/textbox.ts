@@ -21,8 +21,8 @@ export type TKeyPressArgs = {
     isCancel: boolean;
 };
 
-export class TextBoxElView extends InputElView {
-    constructor(el: HTMLInputElement | HTMLTextAreaElement, options: ITextBoxOptions) {
+export class TextBoxElView<TElement extends HTMLInputElement | HTMLTextAreaElement = HTMLInputElement> extends InputElView<TElement> {
+    constructor(el: TElement, options: ITextBoxOptions) {
         super(el, options);
         const self = this;
         if (this.isDelegationOn) {
@@ -55,7 +55,7 @@ export class TextBoxElView extends InputElView {
     handle_keypress(e: KeyboardEvent): boolean {
         const args: TKeyPressArgs = {
             keyCode: e.which,
-            value: (<HTMLInputElement | HTMLTextAreaElement>e.target).value,
+            value: (<TElement>e.target).value,
             isCancel: false
         };
         this.objEvents.raise(TXTBOX_EVENTS.keypress, args);
@@ -68,7 +68,7 @@ export class TextBoxElView extends InputElView {
     handle_keyup(e: KeyboardEvent): void {
         this.objEvents.raiseProp("value");
     }
-    addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string) {
+    addOnKeyPress(fn: (sender: TextBoxElView<TElement>, args: TKeyPressArgs) => void, nmspace?: string) {
         this.objEvents.on(TXTBOX_EVENTS.keypress, fn, nmspace);
     }
     offOnKeyPress(nmspace?: string) {

@@ -72,9 +72,9 @@ export const enum PROP_NAME {
     click = "click"
 }
 
-export class BaseElView extends BaseObject implements IElView, ISubscriber {
+export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber {
     private _objId: string;
-    private _el: HTMLElement;
+    private _el: TElement;
     private _subscribeFlags: SubscribeFlags;
     private _eventBag: EventBag;
     private _propBag: IPropertyBag;
@@ -85,8 +85,9 @@ export class BaseElView extends BaseObject implements IElView, ISubscriber {
     private _toolTip: string;
     private _errors: IValidationInfo[];
 
-    constructor(el: HTMLElement, options: IViewOptions = {}) {
+    constructor(el: TElement, options?: IViewOptions) {
         super();
+        options = options || {};
         this._el = el;
         this._toolTip = !options.tip ? null : options.tip;
         this._css = !options.css ? null : options.css;
@@ -209,7 +210,7 @@ export class BaseElView extends BaseObject implements IElView, ISubscriber {
     toString(): string {
         return "BaseElView";
     }
-    get el(): HTMLElement {
+    get el(): TElement {
         return this._el;
     }
     get uniqueID(): string {

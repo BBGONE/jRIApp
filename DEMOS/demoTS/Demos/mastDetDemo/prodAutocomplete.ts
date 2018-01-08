@@ -6,7 +6,7 @@ export class ProductAutoComplete extends AUTOCOMPLETE.AutoCompleteElView {
     private _lastLoadedID: number;
     private _lookupSource: DEMODB.ProductDb;
 
-    constructor(el: HTMLElement, options: AUTOCOMPLETE.IAutocompleteOptions) {
+    constructor(el: HTMLInputElement, options: AUTOCOMPLETE.IAutocompleteOptions) {
         super(el, options);
         const self = this;
         this._lastLoadedID = null;

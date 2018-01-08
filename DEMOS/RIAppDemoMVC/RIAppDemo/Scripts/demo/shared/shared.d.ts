@@ -69,7 +69,7 @@ declare module "autocomplete" {
         width?: any;
         height?: any;
     }
-    export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemplateEvents {
+    export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> implements RIAPP.ITemplateEvents {
         private _templateId;
         private _fieldName;
         private _dbSetName;
@@ -92,7 +92,7 @@ declare module "autocomplete" {
         templateLoading(template: RIAPP.ITemplate): void;
         templateLoaded(template: RIAPP.ITemplate, error?: any): void;
         templateUnLoading(template: RIAPP.ITemplate): void;
-        constructor(el: HTMLElement, options: IAutocompleteOptions);
+        constructor(el: HTMLInputElement, options: IAutocompleteOptions);
         protected _createGridDataSource(): void;
         protected _getDbContext(): dbMOD.DbContext;
         protected _createTemplate(): RIAPP.ITemplate;

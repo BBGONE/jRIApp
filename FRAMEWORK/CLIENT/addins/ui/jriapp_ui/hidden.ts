@@ -2,7 +2,7 @@
 import { bootstrap } from "jriapp/bootstrap";
 import { InputElView } from "./input";
 
-export class HiddenElView extends InputElView {
+export class HiddenElView extends InputElView<HTMLInputElement> {
     toString(): string {
         return "HiddenElView";
     }

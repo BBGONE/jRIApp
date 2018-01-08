@@ -2,17 +2,17 @@
 import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
 
-export class ImgElView extends BaseElView {
+export class ImgElView extends BaseElView<HTMLImageElement> {
     toString(): string {
         return "ImgElView";
     }
     get src(): string {
-        return (<HTMLImageElement>this.el).src;
+        return this.el.src;
     }
     set src(v: string) {
         const x = this.src;
         if (x !== v) {
-            (<HTMLImageElement>this.el).src = v;
+            this.el.src = v;
             this.objEvents.raiseProp("src");
         }
     }
