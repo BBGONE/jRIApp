@@ -35,9 +35,9 @@ export interface IListBoxOptions {
 }
 
 export interface IListBoxConstructorOptions extends IListBoxOptions {
-    el: HTMLElement;
     dataSource?: ICollection<ICollectionItem>;
 }
+
 export interface IMappedItem {
     item: ICollectionItem;
     op: HTMLOptionElement;
@@ -70,12 +70,11 @@ export class ListBox extends BaseObject implements ISubscriber {
     private _fnCheckSelected: () => void;
     private _isDSFilled: boolean;
 
-    constructor(options: IListBoxConstructorOptions) {
+    constructor(el: HTMLSelectElement, options: IListBoxConstructorOptions) {
         super();
         const self = this;
         options = extend(
             {
-                el: null,
                 dataSource: null,
                 valuePath: null,
                 textPath: null,
@@ -86,7 +85,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
             throw new Error(ERRS.ERR_LISTBOX_DATASRC_INVALID);
         }
-        this._el = <HTMLSelectElement>options.el;
+        this._el = el;
         this._options = options;
         this._objId = getNewID("lst");
         this._isDSFilled = false;
@@ -110,9 +109,9 @@ export class ListBox extends BaseObject implements ISubscriber {
             data.op.className = !spr ? "" : spr.getCSS(item, data.op.index, val);
         };
         if (!this._options.nodelegate) {
-            subscribeMap.set(this._el, this);
+            subscribeMap.set(el, this);
         } else {
-            dom.events.on(this.el, "change", (e) => this.handle_change(e), this._objId);            
+            dom.events.on(el, "change", (e) => this.handle_change(e), this._objId);            
         }
         const ds = this._options.dataSource;
         this.setDataSource(ds);
@@ -698,10 +697,10 @@ export interface IListBoxViewOptions extends IListBoxOptions, IViewOptions {
 export class ListBoxElView extends BaseElView {
     private _listBox: ListBox;
 
-    constructor(options: IListBoxViewOptions) {
-        super(options);
+    constructor(el: HTMLSelectElement, options: IListBoxViewOptions) {
+        super(el, options);
         const self = this;
-        self._listBox = new ListBox(<IListBoxConstructorOptions>options);
+        self._listBox = new ListBox(el, <IListBoxConstructorOptions>options);
         self._listBox.objEvents.onProp("*", (sender, args) => {
             switch (args.property) {
                 case "dataSource":

@@ -141,7 +141,6 @@ export interface IDataGridOptions {
 
 
 export interface IDataGridConstructorOptions extends IDataGridOptions {
-    el: HTMLTableElement;
     dataSource: ICollection<ICollectionItem>;
     animation: IDataGridAnimation;
 }
@@ -189,12 +188,11 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     private _pageDebounce: Debounce;
     private _updateCurrent: () => void;
 
-    constructor(options: IDataGridConstructorOptions) {
+    constructor(table: HTMLTableElement, options: IDataGridConstructorOptions) {
         super();
         const self = this;
         options = merge(options,
             {
-                el: null,
                 dataSource: null,
                 animation: null,
                 isUseScrollInto: true,
@@ -216,7 +214,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             throw new Error(ERRS.ERR_GRID_DATASRC_INVALID);
         }
         this._options = options;
-        const table = this._options.el;
         this._table = table;
         dom.addClass([table], css.dataTable);
         this._name = table.getAttribute(DATA_ATTR.DATA_NAME);
@@ -1291,18 +1288,17 @@ export class DataGridElView extends BaseElView implements ISelectableProvider {
     private _stateProvider: IRowStateProvider;
     private _stateDebounce: Debounce;
 
-    constructor(options: IDataGridViewOptions) {
-        super(options);
+    constructor(table: HTMLTableElement, options: IDataGridViewOptions) {
+        super(table, options);
         this._stateProvider = null;
         this._stateDebounce = new Debounce();
         const opts = <IDataGridConstructorOptions>extend(
             {
-                el: <HTMLTableElement>this.el,
                 dataSource: null,
                 animation: null
             }, options);
 
-        this._grid = new DataGrid(opts);
+        this._grid = new DataGrid(table, opts);
         this._bindGridEvents();
     }
     toString() {

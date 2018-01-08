@@ -28,8 +28,8 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
     private _template: ITemplate;
     private _isEnabled: boolean;
 
-    constructor(options: IViewOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: IViewOptions) {
+        super(el, options);
         this._template = null;
         this._isEnabled = true;
     }

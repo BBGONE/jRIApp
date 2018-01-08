@@ -622,11 +622,11 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstra
         };
         ElViewFactory.prototype.createElView = function (viewInfo) {
             var viewType, elView;
-            var options = viewInfo.options, el = options.el;
-            if (!!viewInfo.name) {
-                viewType = this._register.getElViewType(viewInfo.name);
+            var el = viewInfo.el, options = viewInfo.options, name = viewInfo.name;
+            if (!!name) {
+                viewType = this._register.getElViewType(name);
                 if (!viewType) {
-                    throw new Error(utils.str.format(ERRS.ERR_ELVIEW_NOT_REGISTERED, viewInfo.name));
+                    throw new Error(utils.str.format(ERRS.ERR_ELVIEW_NOT_REGISTERED, name));
                 }
             }
             if (!viewType) {
@@ -648,7 +648,7 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstra
                 }
             }
             try {
-                elView = new viewType(options);
+                elView = new viewType(el, options || {});
             }
             catch (e) {
                 this._store.setElView(el, null);
@@ -681,12 +681,11 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstra
             if (el.hasAttribute("data-view-options")) {
                 var attr = el.getAttribute("data-view-options");
                 options = parser.parseViewOptions(attr, bootstrap_2.bootstrap.getApp(), dataContext);
-                options.el = el;
             }
             else {
-                options = { el: el };
+                options = {};
             }
-            return { name: viewName, options: options };
+            return { el: el, name: viewName, options: options };
         };
         Object.defineProperty(ElViewFactory.prototype, "store", {
             get: function () {
@@ -4574,6 +4573,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.9.19";
+    exports.VERSION = "2.10.0";
     bootstrap_8.Bootstrap._initFramework();
 });

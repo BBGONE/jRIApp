@@ -23,18 +23,18 @@ export class CommandElView extends BaseElView {
     private _commandParam: any;
     private _flags: number;
 
-    constructor(options: ICommandViewOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: ICommandViewOptions) {
+        super(el, options);
         this._command = null;
         this._commandParam = null;
         this._flags = 0;
         this._setFlag(!!options.preventDefault, CommandFlags.PreventDefault);
         this._setFlag(!!options.stopPropagation, CommandFlags.StopPropagation);
-        const disabled = ("disabled" in this.el) && (<any>this.el).disabled;
+        const disabled = ("disabled" in el) && (<HTMLInputElement>el).disabled;
         if (disabled) {
             this._setFlag(disabled, CommandFlags.Disabled);
         }
-        dom.setClass([this.el], css.disabled, this.isEnabled);
+        dom.setClass([el], css.disabled, this.isEnabled);
     }
     private _getFlag(flag: CommandFlags): boolean {
         return !!(this._flags & (1 << flag));

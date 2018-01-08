@@ -2270,8 +2270,8 @@ define("mastDetDemo/prodAutocomplete", ["require", "exports", "autocomplete"], f
     Object.defineProperty(exports, "__esModule", { value: true });
     var ProductAutoComplete = (function (_super) {
         __extends(ProductAutoComplete, _super);
-        function ProductAutoComplete(options) {
-            var _this = _super.call(this, options) || this;
+        function ProductAutoComplete(el, options) {
+            var _this = _super.call(this, el, options) || this;
             var self = _this;
             _this._lastLoadedID = null;
             _this._lookupSource = _this._getDbContext().getDbSet('Product');

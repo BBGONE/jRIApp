@@ -107,7 +107,6 @@ export interface ITemplateEvents {
 
 // --ElView interfaces
 export interface IViewOptions {
-    el: HTMLElement;
     css?: string;
     tip?: string;
     //use event delegation or not
@@ -127,6 +126,7 @@ export interface IElViewRegister {
 }
 
 export interface IElViewInfo {
+    readonly el: HTMLElement;
     readonly name: string;
     readonly options: IViewOptions;
 }
@@ -143,7 +143,7 @@ export interface IElViewFactory {
 
 
 export interface IViewType {
-    new (options: IViewOptions): IElView;
+    new (el: HTMLElement, options: IViewOptions): IElView;
 }
 
 export interface IElView extends IBaseObject {

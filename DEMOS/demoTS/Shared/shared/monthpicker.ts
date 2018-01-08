@@ -4,8 +4,8 @@ import * as uiMOD from "jriapp_ui";
 const $ = uiMOD.$;
 
 export class MonthPickerElView extends uiMOD.TextBoxElView {
-    constructor(options: any) {
-        super(options);
+    constructor(el: HTMLInputElement, options: any) {
+        super(el, options);
         const self = this, $el: any = $(this.el);
         $el.MonthPicker({
             OnAfterChooseMonth: function (selectedDate: any) {

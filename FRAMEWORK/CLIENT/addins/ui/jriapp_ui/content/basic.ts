@@ -7,7 +7,7 @@ import { IFieldInfo } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
 import {
     IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions,
-    IBindingInfo, IBindingOptions, IApplication, IConverter, IElView
+    IBindingInfo, IBindingOptions, IApplication, IConverter, IElView, IElViewInfo
 } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { Binding, getBindingOptions } from "jriapp/binding";
@@ -22,12 +22,16 @@ export interface IContentView extends IBaseObject {
     readonly el: HTMLElement;
 }
 
-export function getView(el: HTMLElement, viewInfo: { name: string; options: IViewOptions; }): IElView {
+export function getView(el: HTMLElement, name: string, options: IViewOptions): IElView {
     const factory = boot.getApp().viewFactory, elView = factory.store.getElView(el);
     if (!!elView) {
         return elView;
     }
-    viewInfo.options = coreUtils.merge({ el: el }, viewInfo.options);
+    const viewInfo: IElViewInfo = {
+        el: el,
+        name: name,
+        options: options || {}
+    };
     return factory.createElView(viewInfo);
 }
 
@@ -188,30 +192,27 @@ export class BasicContent extends BaseObject implements IContent {
         return null;
     }
     protected createdEditingView(): IContentView {
-        const info: { name: string; options: any; } = { name: this.getViewName(true), options: null };
-        const el = doc.createElement("input");
+        const name = this.getViewName(true), el = doc.createElement("input"), options = this._options.options;
         el.setAttribute("type", "text");
-        info.options = this._options.options;
-        if (!!info.options && !!info.options.placeholder) {
-            el.setAttribute("placeholder", info.options.placeholder);
+        if (!!options && !!options.placeholder) {
+            el.setAttribute("placeholder", options.placeholder);
         }
-        const view = getView(el, info);
+        const view = getView(el, name, options);
         if (!!view) {
             this.lfScope.addObj(view);
         }
-        const options = getBindingOption(true, this.options.fieldName, view, this.dataContext, "value", this.getConverter(true), this.getParam(true));
-        this._lfScope.addObj(this.app.bind(options));
+        const bindOption = getBindingOption(true, this.options.fieldName, view, this.dataContext, "value", this.getConverter(true), this.getParam(true));
+        this._lfScope.addObj(this.app.bind(bindOption));
         return view;
     }
     protected createdReadingView(): IContentView {
-        const info: { name: string; options: any; } = { name: this.getViewName(false), options: null };
-        const el = doc.createElement("span");
-        const view = getView(el, info);
+        const name = this.getViewName(false), el = doc.createElement("span");
+        const view = getView(el, name, {});
         if (!!view) {
             this.lfScope.addObj(view);
         }
-        const options = getBindingOption(false, this.options.fieldName, view, this.dataContext, "value", this.getConverter(false), this.getParam(false));
-        this._lfScope.addObj(this.app.bind(options));
+        const bindOption = getBindingOption(false, this.options.fieldName, view, this.dataContext, "value", this.getConverter(false), this.getParam(false));
+        this._lfScope.addObj(this.app.bind(bindOption));
         return view;
     }
     protected beforeCreateView(): boolean {

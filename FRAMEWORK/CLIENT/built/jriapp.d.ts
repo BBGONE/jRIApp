@@ -151,7 +151,6 @@ declare module "jriapp/int" {
         templateUnLoading(template: ITemplate): void;
     }
     export interface IViewOptions {
-        el: HTMLElement;
         css?: string;
         tip?: string;
         nodelegate?: boolean;
@@ -167,6 +166,7 @@ declare module "jriapp/int" {
         dispose(): void;
     }
     export interface IElViewInfo {
+        readonly el: HTMLElement;
         readonly name: string;
         readonly options: IViewOptions;
     }
@@ -180,7 +180,7 @@ declare module "jriapp/int" {
         dispose(): void;
     }
     export interface IViewType {
-        new (options: IViewOptions): IElView;
+        new (el: HTMLElement, options: IViewOptions): IElView;
     }
     export interface IElView extends IBaseObject {
         readonly el: HTMLElement;
@@ -1004,5 +1004,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.9.19";
+    export const VERSION = "2.10.0";
 }

@@ -44,11 +44,11 @@ export interface IDLinkOptions extends RIAPP.IViewOptions {
 }
 
 export class DownloadLinkElView extends uiMOD.BaseElView {
-    _baseUri: string;
-    _id: string;
+    private _baseUri: string;
+    private _id: string;
 
-    constructor(options: IDLinkOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: IDLinkOptions) {
+        super(el, options);
         this._baseUri = '';
         if (!!options.baseUri)
             this._baseUri = options.baseUri;
@@ -96,8 +96,8 @@ export class FileImgElView extends uiMOD.BaseElView {
     private _debounce: RIAPP.Debounce;
     private _src: string;
 
-    constructor(options: IDLinkOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: IDLinkOptions) {
+        super(el, options);
         this._debounce = new RIAPP.Debounce();
         this._baseUri = '';
         if (!!options.baseUri)

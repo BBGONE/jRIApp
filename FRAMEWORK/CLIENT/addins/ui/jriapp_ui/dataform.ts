@@ -14,7 +14,7 @@ import { BaseElView, fn_addToolTip } from "./baseview";
 import { Binding } from "jriapp/binding";
 import { parseContentAttr } from "./content/int";
 
-const utils = Utils, dom = DomUtils, checks = utils.check, coreUtils = utils.core, strUtils = utils.str,
+const utils = Utils, dom = DomUtils, checks = utils.check, { getNewID } = utils.core, strUtils = utils.str,
     sys = utils.sys, boot = bootstrap, viewChecks = ViewChecks, _async = utils.defer;
 
 export const enum css {
@@ -127,13 +127,13 @@ export class DataForm extends BaseObject {
     private _errors: IValidationInfo[];
     private _contentPromise: IVoidPromise;
 
-    constructor(options: IViewOptions) {
+    constructor(el: HTMLElement, options: IViewOptions) {
         super();
         const self = this;
-        this._el = options.el;
-        this._objId = coreUtils.getNewID("frm");
+        this._el = el;
+        this._objId = getNewID("frm");
         this._dataContext = null;
-        dom.addClass([this._el], css.dataform);
+        dom.addClass([el], css.dataform);
         this._isEditing = false;
         this._content = [];
         this._lfTime = null;
@@ -144,7 +144,7 @@ export class DataForm extends BaseObject {
         this._errors = null;
         this._contentPromise = null;
 
-        const parent = viewChecks.getParentDataForm(null, this._el);
+        const parent = viewChecks.getParentDataForm(null, el);
         // if this form is nested inside another dataform
         // subscribe for parent's dispose event
         if (!!parent) {
@@ -433,10 +433,10 @@ export class DataFormElView extends BaseElView {
     private _form: DataForm;
     private _errorGliph: HTMLElement;
 
-    constructor(options: IViewOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: IViewOptions) {
+        super(el, options);
         const self = this;
-        this._form = new DataForm(options);
+        this._form = new DataForm(el, options);
         this._errorGliph = null;
         this._form.objEvents.onProp("*", (form, args) => {
             switch (args.property) {

@@ -94,12 +94,12 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
     }
     createElView(viewInfo: IElViewInfo): IElView {
         let viewType: IViewType, elView: IElView;
-        const options = viewInfo.options, el = options.el;
+        const { el, options, name } = viewInfo;
 
-        if (!!viewInfo.name) {
-            viewType = this._register.getElViewType(viewInfo.name);
+        if (!!name) {
+            viewType = this._register.getElViewType(name);
             if (!viewType) {
-                throw new Error(utils.str.format(ERRS.ERR_ELVIEW_NOT_REGISTERED, viewInfo.name));
+                throw new Error(utils.str.format(ERRS.ERR_ELVIEW_NOT_REGISTERED, name));
             }
         }
         if (!viewType) {
@@ -123,7 +123,7 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
         }
 
         try {
-            elView = new viewType(options);
+            elView = new viewType(el, options || {});
         } catch (e) {
             // ensure clean up
             this._store.setElView(el, null);
@@ -156,12 +156,11 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
         if (el.hasAttribute(DATA_ATTR.DATA_VIEW_OPTIONS)) {
             const attr = el.getAttribute(DATA_ATTR.DATA_VIEW_OPTIONS);
             options = <IViewOptions>parser.parseViewOptions(attr, bootstrap.getApp(), dataContext);
-            options.el = el;
         } else {
-            options = { el: el };
+            options = {};
         }
        
-        return { name: viewName, options: options };
+        return { el: el, name: viewName, options: options };
     }
     get store() {
         return this._store;

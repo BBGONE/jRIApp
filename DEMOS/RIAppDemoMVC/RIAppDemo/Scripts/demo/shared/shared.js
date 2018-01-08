@@ -38,8 +38,8 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
     ;
     var DownloadLinkElView = (function (_super) {
         __extends(DownloadLinkElView, _super);
-        function DownloadLinkElView(options) {
-            var _this = _super.call(this, options) || this;
+        function DownloadLinkElView(el, options) {
+            var _this = _super.call(this, el, options) || this;
             _this._baseUri = '';
             if (!!options.baseUri)
                 _this._baseUri = options.baseUri;
@@ -96,8 +96,8 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
     exports.DownloadLinkElView = DownloadLinkElView;
     var FileImgElView = (function (_super) {
         __extends(FileImgElView, _super);
-        function FileImgElView(options) {
-            var _this = _super.call(this, options) || this;
+        function FileImgElView(el, options) {
+            var _this = _super.call(this, el, options) || this;
             _this._debounce = new RIAPP.Debounce();
             _this._baseUri = '';
             if (!!options.baseUri)
@@ -316,8 +316,8 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
     }
     var AutoCompleteElView = (function (_super) {
         __extends(AutoCompleteElView, _super);
-        function AutoCompleteElView(options) {
-            var _this = _super.call(this, options) || this;
+        function AutoCompleteElView(el, options) {
+            var _this = _super.call(this, el, options) || this;
             var self = _this;
             _this._templateId = options.templateId;
             _this._fieldName = options.fieldName;
@@ -700,8 +700,8 @@ define("monthpicker", ["require", "exports", "jriapp_ui"], function (require, ex
     var $ = uiMOD.$;
     var MonthPickerElView = (function (_super) {
         __extends(MonthPickerElView, _super);
-        function MonthPickerElView(options) {
-            var _this = _super.call(this, options) || this;
+        function MonthPickerElView(el, options) {
+            var _this = _super.call(this, el, options) || this;
             var self = _this, $el = $(_this.el);
             $el.MonthPicker({
                 OnAfterChooseMonth: function (selectedDate) {

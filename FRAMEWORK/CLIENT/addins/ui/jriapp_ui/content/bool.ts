@@ -30,7 +30,7 @@ export class BoolContent extends BasicContent {
         const chk = document.createElement("input");
         chk.setAttribute("type", "checkbox");
         dom.addClass([chk], css.checkbox);
-        const view = new CheckBoxElView({ el: chk });
+        const view = new CheckBoxElView(chk);
         const label = doc.createElement("label");
         dom.addClass([label], css.checkbox);
         label.appendChild(view.el);

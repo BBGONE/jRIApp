@@ -33,14 +33,15 @@ const enum ORIENTATION {
 
 interface IMappedItem { el: HTMLElement; template: ITemplate; item: ICollectionItem; }
 
+export type TOrientation = "vertical" | "horizontal";
+
 export interface IStackPanelOptions {
     templateID: string;
-    orientation?: "vertical" | "horizontal";
+    orientation?:TOrientation;
     syncSetDatasource?: boolean;
 }
 
 export interface IStackPanelConstructorOptions extends IStackPanelOptions {
-    el: HTMLElement;
     dataSource?: ICollection<ICollectionItem>;
 }
 
@@ -60,7 +61,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     private _isKeyNavigation: boolean;
     private _debounce: Debounce;
 
-    constructor(options: IStackPanelConstructorOptions) {
+    constructor(el: HTMLElement, options: IStackPanelConstructorOptions) {
         super();
         const self = this;
         options = <IStackPanelConstructorOptions>coreUtils.extend(
@@ -79,13 +80,13 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             throw new Error(ERRS.ERR_STACKPNL_TEMPLATE_INVALID);
         }
         this._options = options;
-        this._el = options.el;
-        dom.addClass([options.el], css.stackpanel);
-        const eltag = options.el.tagName.toLowerCase();
+        this._el = el;
+        dom.addClass([el], css.stackpanel);
+        const eltag = el.tagName.toLowerCase();
         this._itemTag = (eltag === "ul" || eltag === "ol") ? "li" : "div";
 
         if (this.orientation === ORIENTATION.HORIZONTAL) {
-            dom.addClass([options.el], css.horizontal);
+            dom.addClass([el], css.horizontal);
         }
         this._debounce = new Debounce();
         this._objId = coreUtils.getNewID("pnl");
@@ -101,7 +102,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             }
         };
 
-        dom.events.on(this._el, "click", (e) => {
+        dom.events.on(el, "click", (e) => {
             const el = <HTMLElement>e.target, mappedItem: IMappedItem = dom.getData(el, "data");
             self._onItemClicked(mappedItem.el, mappedItem.item);
         }, {
@@ -114,7 +115,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
                 }
             });
 
-        selectableProviderWeakMap.set(this._el, this);
+        selectableProviderWeakMap.set(el, this);
         const ds = this._options.dataSource;
         this.setDataSource(ds);
     }
@@ -415,18 +416,30 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     get selectable(): ISelectable {
         return this._selectable;
     }
-    get el() { return this._options.el; }
-    get uniqueID() { return this._objId; }
-    get orientation() { return this._options.orientation; }
-    get templateID() { return this._options.templateID; }
-    get dataSource() { return this._options.dataSource; }
+    get el(): HTMLElement {
+        return this._el;
+    }
+    get uniqueID(): string {
+        return this._objId;
+    }
+    get orientation(): TOrientation {
+        return this._options.orientation;
+    }
+    get templateID(): string {
+        return this._options.templateID;
+    }
+    get dataSource(): ICollection<ICollectionItem> {
+        return this._options.dataSource;
+    }
     set dataSource(v) {
         if (v !== this.dataSource) {
             this.setDataSource(v);
             this.objEvents.raiseProp("dataSource");
         }
     }
-    get currentItem() { return this._currentItem; }
+    get currentItem(): ICollectionItem {
+        return this._currentItem;
+    }
 }
 
 export interface IStackPanelViewOptions extends IStackPanelOptions, IViewOptions {
@@ -440,11 +453,11 @@ export class StackPanelElView extends BaseElView implements ISelectableProvider 
     private _panel: StackPanel;
     private _panelEvents: IPanelEvents;
 
-    constructor(options: IStackPanelViewOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: IStackPanelViewOptions) {
+        super(el, options);
         const self = this;
         this._panelEvents = null;
-        this._panel = new StackPanel(<IStackPanelConstructorOptions>options);
+        this._panel = new StackPanel(el, <IStackPanelConstructorOptions>options);
         this._panel.addOnItemClicked((sender, args) => {
             if (!!self._panelEvents) {
                 self._panelEvents.onItemClicked(args.item);

@@ -131,8 +131,8 @@ define("components/reactview", ["require", "exports", "jriapp_ui", "react", "rea
     Object.defineProperty(exports, "__esModule", { value: true });
     var ReactElView = (function (_super) {
         __extends(ReactElView, _super);
-        function ReactElView(options) {
-            var _this = _super.call(this, options) || this;
+        function ReactElView(el, options) {
+            var _this = _super.call(this, el, options) || this;
             _this._value = options.value || "25";
             return _this;
         }

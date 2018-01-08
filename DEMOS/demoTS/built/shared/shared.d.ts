@@ -19,9 +19,9 @@ declare module "common" {
         baseUri?: string;
     }
     export class DownloadLinkElView extends uiMOD.BaseElView {
-        _baseUri: string;
-        _id: string;
-        constructor(options: IDLinkOptions);
+        private _baseUri;
+        private _id;
+        constructor(el: HTMLElement, options: IDLinkOptions);
         text: string;
         href: string;
         id: string;
@@ -32,7 +32,7 @@ declare module "common" {
         private _fileName;
         private _debounce;
         private _src;
-        constructor(options: IDLinkOptions);
+        constructor(el: HTMLElement, options: IDLinkOptions);
         dispose(): void;
         reloadImg(): void;
         fileName: string;
@@ -92,7 +92,7 @@ declare module "autocomplete" {
         templateLoading(template: RIAPP.ITemplate): void;
         templateLoaded(template: RIAPP.ITemplate, error?: any): void;
         templateUnLoading(template: RIAPP.ITemplate): void;
-        constructor(options: IAutocompleteOptions);
+        constructor(el: HTMLElement, options: IAutocompleteOptions);
         protected _createGridDataSource(): void;
         protected _getDbContext(): dbMOD.DbContext;
         protected _createTemplate(): RIAPP.ITemplate;
@@ -147,7 +147,7 @@ declare module "monthpicker" {
     import * as RIAPP from "jriapp";
     import * as uiMOD from "jriapp_ui";
     export class MonthPickerElView extends uiMOD.TextBoxElView {
-        constructor(options: any);
+        constructor(el: HTMLInputElement, options: any);
         dispose(): void;
         toString(): string;
     }

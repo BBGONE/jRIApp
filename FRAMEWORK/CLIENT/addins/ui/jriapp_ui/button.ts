@@ -9,15 +9,15 @@ const boot = bootstrap, dom = DomUtils, subscribeMap = subscribeWeakMap;
 export class ButtonElView extends CommandElView {
     private _isButton: boolean;
 
-    constructor(options: ICommandViewOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: ICommandViewOptions) {
+        super(el, options);
         const self = this;
         this._isButton = this.el.tagName.toLowerCase() === "button";
         if (this.isDelegationOn) {
-            subscribeMap.set(this.el, this);
+            subscribeMap.set(el, this);
             this._setIsSubcribed(SubscribeFlags.click);
         } else {
-            dom.events.on(this.el, "click", (e) => {
+            dom.events.on(el, "click", (e) => {
                 self.handle_click(e);
             }, this.uniqueID);
         }

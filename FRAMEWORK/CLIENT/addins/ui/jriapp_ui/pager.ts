@@ -11,7 +11,7 @@ import { ICollection, ICollectionItem } from "jriapp_shared/collection/int";
 import { bootstrap, selectableProviderWeakMap } from "jriapp/bootstrap";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
-    strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
+    strUtils = utils.str, { getNewID, extend } = utils.core, boot = bootstrap;
 const _STRS = STRS.PAGER;
 
 const enum css {
@@ -35,7 +35,6 @@ export interface IPagerOptions {
 }
 
 export interface IPagerConstructorOptions extends IPagerOptions {
-    el: HTMLElement;
     dataSource?: ICollection<ICollectionItem>;
 }
 
@@ -60,11 +59,10 @@ export class Pager extends BaseObject implements ISelectableProvider {
     private _toolTips: Element[];
     private _parentControl: ISelectableProvider;
 
-    constructor(options: IPagerConstructorOptions) {
+    constructor(el: HTMLElement, options: IPagerConstructorOptions) {
         super();
-        options = coreUtils.extend(
+        options = extend(
             {
-                el: null,
                 dataSource: null,
                 showTip: true,
                 showInfo: false,
@@ -83,8 +81,8 @@ export class Pager extends BaseObject implements ISelectableProvider {
         //no use to have a sliderSize < 3
         options.sliderSize = options.sliderSize < 3 ? 3 : options.sliderSize;
 
-        this._el = options.el;
-        this._objId = coreUtils.getNewID("pgr");
+        this._el = el;
+        this._objId = getNewID("pgr");
         this._rowsPerPage = 0;
         this._rowCount = 0;
         this._currentPage = 1;
@@ -92,7 +90,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         this._pageDebounce = new Debounce();
         this._dsDebounce = new Debounce();
 
-        dom.events.on(this._el, "click", (e) => {
+        dom.events.on(el, "click", (e) => {
             e.preventDefault();
             const a = <HTMLElement>e.target, page = parseInt(a.getAttribute("data-page"), 10);
             self._pageDebounce.enque(() => {
@@ -113,7 +111,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
             });
 
         this._bindDS();
-        selectableProviderWeakMap.set(this._el, this);
+        selectableProviderWeakMap.set(el, this);
     }
     dispose() {
         if (this.getIsDisposed()) {
@@ -432,10 +430,12 @@ export class Pager extends BaseObject implements ISelectableProvider {
         this._options.dataSource = v;
         this._bindDS();
     }
-    toString() {
+    toString(): string {
         return "Pager";
     }
-    get el() { return this._options.el; }
+    get el(): HTMLElement {
+        return this._el;
+    }
     get dataSource(): ICollection<ICollectionItem> {
         return this._options.dataSource;
     }
@@ -573,10 +573,10 @@ export interface IPagerViewOptions extends IPagerOptions, IViewOptions {
 export class PagerElView extends BaseElView implements ISelectableProvider {
     private _pager: Pager;
 
-    constructor(options: IPagerViewOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: IPagerViewOptions) {
+        super(el, options);
         const self = this;
-        this._pager = new Pager(<IPagerConstructorOptions>options);
+        this._pager = new Pager(el, <IPagerConstructorOptions>options);
         self._pager.objEvents.onProp("*", (sender, args) => {
             switch (args.property) {
                 case "dataSource":

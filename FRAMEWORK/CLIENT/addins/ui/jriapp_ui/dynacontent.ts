@@ -30,8 +30,8 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
     private _tDebounce: Debounce;
     private _dsDebounce: Debounce;
 
-    constructor(options: IDynaContentOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: IDynaContentOptions) {
+        super(el, options);
         this._dataContext = null;
         this._prevTemplateID = null;
         this._templateID = null;

@@ -16,7 +16,7 @@ import { createDatepickerSvc } from "./utils/datepicker";
 
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
-const utils = Utils, coreUtils = utils.core, dom = DomUtils, { undefined } = utils.check,
+const utils = Utils, { getNewID } = utils.core, dom = DomUtils, { undefined } = utils.check,
     boot = bootstrap, viewChecks = ViewChecks, subscribeMap = subscribeWeakMap;
 
 
@@ -85,20 +85,20 @@ export class BaseElView extends BaseObject implements IElView, ISubscriber {
     private _toolTip: string;
     private _errors: IValidationInfo[];
 
-    constructor(options: IViewOptions) {
+    constructor(el: HTMLElement, options: IViewOptions = {}) {
         super();
-        const el = options.el;
         this._el = el;
-        this._toolTip = options.tip;
-        this._subscribeFlags = (options.nodelegate === true) ? 0 : 1;
+        this._toolTip = !options.tip ? null : options.tip;
+        this._css = !options.css ? null : options.css;
+        this._subscribeFlags = !options.nodelegate ? 1 : 0;
+        this._objId = getNewID("elv");
+
         // lazily initialized
         this._eventBag = null;
         this._propBag = null;
         this._classBag = null;
-        this._display = null;
-        this._css = options.css;
 
-        this._objId = coreUtils.getNewID("elv");
+        this._display = null;
         this._errors = null;
         if (!!this._css) {
             dom.addClass([el], this._css);

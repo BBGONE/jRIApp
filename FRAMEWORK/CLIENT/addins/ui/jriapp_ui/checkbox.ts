@@ -12,9 +12,9 @@ const dom = DomUtils, checks = Utils.check, boot = bootstrap, subscribeMap = sub
 export class CheckBoxElView extends InputElView {
     private _checked: boolean;
 
-    constructor(options: IViewOptions) {
-        super(options);
-        const self = this, chk = <HTMLInputElement>this.el;
+    constructor(chk: HTMLInputElement, options: IViewOptions = {}) {
+        super(chk, options);
+        const self = this;
         this._checked = null;
         chk.checked = false;
 

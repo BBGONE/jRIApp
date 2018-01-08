@@ -238,8 +238,8 @@ export class ResizableGrid extends uiMOD.DataGridElView {
     private _ds: RIAPP.ICollection<RIAPP.ICollectionItem>;
     private _resizeInfo: IResizeInfo;
 
-    constructor(options: uiMOD.IDataGridViewOptions) {
-        super(options);
+    constructor(el: HTMLTableElement, options: uiMOD.IDataGridViewOptions) {
+        super(el, options);
         const self = this, grid = self.grid;
         _gridCreated(this);
         let defaults: IOptions = {

@@ -70,8 +70,8 @@ export class AutoCompleteElView extends uiMOD.InputElView implements RIAPP.ITemp
     }
     templateUnLoading(template: RIAPP.ITemplate): void {
     }
-    constructor(options: IAutocompleteOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: IAutocompleteOptions) {
+        super(el, options);
         const self = this;
         this._templateId = options.templateId;
         this._fieldName = options.fieldName;

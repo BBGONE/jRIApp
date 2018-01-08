@@ -128,16 +128,15 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         }
     }
     protected createListBox(lookUpOptions: ILookupOptions): ListBox {
-        const options = {
+        const el = doc.createElement("select"), options = {
             valuePath: lookUpOptions.valuePath,
             textPath: lookUpOptions.textPath,
             statePath: (!lookUpOptions.statePath) ? null : lookUpOptions.statePath,
-            el: doc.createElement("select"),
             syncSetDatasource: true,
             dataSource: sys.resolvePath(this.app, lookUpOptions.dataSource)
-        }, el = options.el;
+        };
         el.setAttribute("size", "1");
-        return new ListBox(options);
+        return new ListBox(el, options);
     }
     // override
     protected cleanUp() {

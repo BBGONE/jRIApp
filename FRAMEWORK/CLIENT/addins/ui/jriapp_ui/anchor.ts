@@ -18,8 +18,8 @@ export class AnchorElView extends CommandElView {
     private _image: HTMLImageElement;
     private _span: HTMLSpanElement;
 
-    constructor(options: IAncorOptions) {
-        super(options);
+    constructor(el: HTMLAnchorElement, options: IAncorOptions) {
+        super(el, options);
         const self = this;
         this._imageSrc = null;
         this._image = null;
@@ -34,12 +34,12 @@ export class AnchorElView extends CommandElView {
             this.glyph = options.glyph;
         }
 
-        dom.addClass([this.el], css.commandLink);
+        dom.addClass([el], css.commandLink);
         if (this.isDelegationOn) {
-            subscribeMap.set(this.el, this);
+            subscribeMap.set(el, this);
             this._setIsSubcribed(SubscribeFlags.click);
         } else {
-            dom.events.on(this.el, "click", (e) => {
+            dom.events.on(el, "click", (e) => {
                 self.handle_click(e);
             }, this.uniqueID);
         }

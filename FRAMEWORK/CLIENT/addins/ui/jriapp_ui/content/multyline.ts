@@ -27,26 +27,24 @@ export class MultyLineContent extends BasicContent {
     }
     // override
     protected createdEditingView(): IContentView {
-        const info: { name: string; options: any; } = { name: this.getViewName(true), options: this.options.options };
-        const el = document.createElement("textarea");
-        const view = getView(el, info);
+        const name = this.getViewName(true), el = document.createElement("textarea"), options = this.options.options;
+        const view = getView(el, name, options);
         if (!!view) {
             this.lfScope.addObj(view);
         }
-        const options = getBindingOption(true, this.options.fieldName, view, this.dataContext, "value", this.getConverter(true), this.getParam(true));
-        this.lfScope.addObj(this.app.bind(options));
+        const bindOption = getBindingOption(true, this.options.fieldName, view, this.dataContext, "value", this.getConverter(true), this.getParam(true));
+        this.lfScope.addObj(this.app.bind(bindOption));
         return view;
     }
     // override
     protected createdReadingView(): IContentView {
-        const info: { name: string; options: any; } = { name: this.getViewName(false), options: null };
-        const el = document.createElement("div");
-        const view = getView(el, info);
+        const name = this.getViewName(false), el = document.createElement("div");
+        const view = getView(el, name, {});
         if (!!view) {
             this.lfScope.addObj(view);
         }
-        const options = getBindingOption(false, this.options.fieldName, view, this.dataContext, "value", this.getConverter(false), this.getParam(false));
-        this.lfScope.addObj(this.app.bind(options));
+        const bindOption = getBindingOption(false, this.options.fieldName, view, this.dataContext, "value", this.getConverter(false), this.getParam(false));
+        this.lfScope.addObj(this.app.bind(bindOption));
         return view;
     }
     // override

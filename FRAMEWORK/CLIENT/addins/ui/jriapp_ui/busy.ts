@@ -23,8 +23,8 @@ export class BusyElView extends BaseElView {
     private _img: HTMLImageElement;
     private _isBusy: boolean;
 
-    constructor(options: IBusyViewOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: IBusyViewOptions) {
+        super(el, options);
         let img: string;
         if (!!options.img) {
             img = options.img;

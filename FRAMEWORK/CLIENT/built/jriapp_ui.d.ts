@@ -31,10 +31,7 @@ declare module "jriapp_ui/content/basic" {
     export interface IContentView extends IBaseObject {
         readonly el: HTMLElement;
     }
-    export function getView(el: HTMLElement, viewInfo: {
-        name: string;
-        options: IViewOptions;
-    }): IElView;
+    export function getView(el: HTMLElement, name: string, options: IViewOptions): IElView;
     export function getBindingOption(isEdit: boolean, fieldName: string, target: IBaseObject, dataContext: any, targetPath: string, converter?: IConverter, param?: any): IBindingOptions;
     export class BasicContent extends BaseObject implements IContent {
         private _parentEl;
@@ -226,7 +223,7 @@ declare module "jriapp_ui/baseview" {
         private _css;
         private _toolTip;
         private _errors;
-        constructor(options: IViewOptions);
+        constructor(el: HTMLElement, options?: IViewOptions);
         dispose(): void;
         private _getStore();
         protected _onEventChanged(args: IEventChangedArgs): void;
@@ -274,7 +271,7 @@ declare module "jriapp_ui/textbox" {
         isCancel: boolean;
     };
     export class TextBoxElView extends InputElView {
-        constructor(options: ITextBoxOptions);
+        constructor(el: HTMLInputElement | HTMLTextAreaElement, options: ITextBoxOptions);
         handle_change(e: Event): boolean;
         handle_keypress(e: KeyboardEvent): boolean;
         handle_keyup(e: KeyboardEvent): void;
@@ -301,7 +298,7 @@ declare module "jriapp_ui/textarea" {
         wrap?: string;
     }
     export class TextAreaElView extends TextBoxElView {
-        constructor(options: ITextAreaOptions);
+        constructor(el: HTMLTextAreaElement, options: ITextAreaOptions);
         toString(): string;
         wrap: string;
     }
@@ -326,7 +323,7 @@ declare module "jriapp_ui/checkbox" {
     import { InputElView } from "jriapp_ui/input";
     export class CheckBoxElView extends InputElView {
         private _checked;
-        constructor(options: IViewOptions);
+        constructor(chk: HTMLInputElement, options?: IViewOptions);
         handle_change(e: Event): boolean;
         protected _updateState(): void;
         toString(): string;
@@ -402,7 +399,6 @@ declare module "jriapp_ui/listbox" {
         nodelegate?: boolean;
     }
     export interface IListBoxConstructorOptions extends IListBoxOptions {
-        el: HTMLElement;
         dataSource?: ICollection<ICollectionItem>;
     }
     export interface IMappedItem {
@@ -427,7 +423,7 @@ declare module "jriapp_ui/listbox" {
         private _changeDebounce;
         private _fnCheckSelected;
         private _isDSFilled;
-        constructor(options: IListBoxConstructorOptions);
+        constructor(el: HTMLSelectElement, options: IListBoxConstructorOptions);
         dispose(): void;
         private _bindDS();
         private _unbindDS();
@@ -476,7 +472,7 @@ declare module "jriapp_ui/listbox" {
     }
     export class ListBoxElView extends BaseElView {
         private _listBox;
-        constructor(options: IListBoxViewOptions);
+        constructor(el: HTMLSelectElement, options: IListBoxViewOptions);
         dispose(): void;
         toString(): string;
         isEnabled: boolean;
@@ -661,7 +657,7 @@ declare module "jriapp_ui/dynacontent" {
         private _animation;
         private _tDebounce;
         private _dsDebounce;
-        constructor(options: IDynaContentOptions);
+        constructor(el: HTMLElement, options: IDynaContentOptions);
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
@@ -1178,7 +1174,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         syncSetDatasource?: boolean;
     }
     export interface IDataGridConstructorOptions extends IDataGridOptions {
-        el: HTMLTableElement;
         dataSource: ICollection<ICollectionItem>;
         animation: IDataGridAnimation;
     }
@@ -1223,7 +1218,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _dsDebounce;
         private _pageDebounce;
         private _updateCurrent;
-        constructor(options: IDataGridConstructorOptions);
+        constructor(table: HTMLTableElement, options: IDataGridConstructorOptions);
         dispose(): void;
         protected _updateContentOptions(): void;
         protected _onKeyDown(key: number, event: Event): void;
@@ -1334,7 +1329,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _grid;
         private _stateProvider;
         private _stateDebounce;
-        constructor(options: IDataGridViewOptions);
+        constructor(table: HTMLTableElement, options: IDataGridViewOptions);
         toString(): string;
         dispose(): void;
         private _bindGridEvents();
@@ -1361,7 +1356,6 @@ declare module "jriapp_ui/pager" {
         sliderSize?: number;
     }
     export interface IPagerConstructorOptions extends IPagerOptions {
-        el: HTMLElement;
         dataSource?: ICollection<ICollectionItem>;
     }
     export class Pager extends BaseObject implements ISelectableProvider {
@@ -1376,7 +1370,7 @@ declare module "jriapp_ui/pager" {
         private _display;
         private _toolTips;
         private _parentControl;
-        constructor(options: IPagerConstructorOptions);
+        constructor(el: HTMLElement, options: IPagerConstructorOptions);
         dispose(): void;
         protected _addToolTip(el: Element, tip: string): void;
         protected _createElement(tag: string): HTMLElement;
@@ -1421,7 +1415,7 @@ declare module "jriapp_ui/pager" {
     }
     export class PagerElView extends BaseElView implements ISelectableProvider {
         private _pager;
-        constructor(options: IPagerViewOptions);
+        constructor(el: HTMLElement, options: IPagerViewOptions);
         dispose(): void;
         toString(): string;
         dataSource: ICollection<ICollectionItem>;
@@ -1436,13 +1430,13 @@ declare module "jriapp_ui/stackpanel" {
     import { BaseElView } from "jriapp_ui/baseview";
     import { ITEM_STATUS } from "jriapp_shared/collection/const";
     import { ICollection, ICollectionItem, ICollChangedArgs } from "jriapp_shared/collection/int";
+    export type TOrientation = "vertical" | "horizontal";
     export interface IStackPanelOptions {
         templateID: string;
-        orientation?: "vertical" | "horizontal";
+        orientation?: TOrientation;
         syncSetDatasource?: boolean;
     }
     export interface IStackPanelConstructorOptions extends IStackPanelOptions {
-        el: HTMLElement;
         dataSource?: ICollection<ICollectionItem>;
     }
     export class StackPanel extends BaseObject implements ISelectableProvider {
@@ -1455,7 +1449,7 @@ declare module "jriapp_ui/stackpanel" {
         private _itemTag;
         private _isKeyNavigation;
         private _debounce;
-        constructor(options: IStackPanelConstructorOptions);
+        constructor(el: HTMLElement, options: IStackPanelConstructorOptions);
         dispose(): void;
         protected _onKeyDown(key: number, event: Event): void;
         protected _onKeyUp(key: number, event: Event): void;
@@ -1486,7 +1480,7 @@ declare module "jriapp_ui/stackpanel" {
         readonly selectable: ISelectable;
         readonly el: HTMLElement;
         readonly uniqueID: string;
-        readonly orientation: "vertical" | "horizontal";
+        readonly orientation: TOrientation;
         readonly templateID: string;
         dataSource: ICollection<ICollectionItem>;
         readonly currentItem: ICollectionItem;
@@ -1499,7 +1493,7 @@ declare module "jriapp_ui/stackpanel" {
     export class StackPanelElView extends BaseElView implements ISelectableProvider {
         private _panel;
         private _panelEvents;
-        constructor(options: IStackPanelViewOptions);
+        constructor(el: HTMLElement, options: IStackPanelViewOptions);
         dispose(): void;
         toString(): string;
         dataSource: ICollection<ICollectionItem>;
@@ -1528,7 +1522,7 @@ declare module "jriapp_ui/tabs" {
         private _tabOpts;
         private _tabsEvents;
         private _tabsCreated;
-        constructor(options: IViewOptions);
+        constructor(el: HTMLElement, options: IViewOptions);
         protected _createTabs(): void;
         protected _destroyTabs(): void;
         protected _onTabsCreated(): void;
@@ -1550,7 +1544,7 @@ declare module "jriapp_ui/command" {
         private _command;
         private _commandParam;
         private _flags;
-        constructor(options: ICommandViewOptions);
+        constructor(el: HTMLElement, options: ICommandViewOptions);
         private _getFlag(flag);
         private _setFlag(v, flag);
         private _onCanExecuteChanged(cmd, args);
@@ -1582,7 +1576,7 @@ declare module "jriapp_ui/template" {
     export class TemplateElView extends CommandElView implements ITemplateEvents {
         private _template;
         private _isEnabled;
-        constructor(options: IViewOptions);
+        constructor(el: HTMLElement, options: IViewOptions);
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
@@ -1614,7 +1608,7 @@ declare module "jriapp_ui/dataform" {
         private _parentDataForm;
         private _errors;
         private _contentPromise;
-        constructor(options: IViewOptions);
+        constructor(el: HTMLElement, options: IViewOptions);
         private _getBindings();
         private _createContent();
         private _updateCreatedContent();
@@ -1635,7 +1629,7 @@ declare module "jriapp_ui/dataform" {
     export class DataFormElView extends BaseElView {
         private _form;
         private _errorGliph;
-        constructor(options: IViewOptions);
+        constructor(el: HTMLElement, options: IViewOptions);
         protected _getErrorTipInfo(errors: IValidationInfo[]): string;
         protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;
         dispose(): void;
@@ -1650,7 +1644,7 @@ declare module "jriapp_ui/datepicker" {
         datepicker?: any;
     }
     export class DatePickerElView extends TextBoxElView {
-        constructor(options: IDatePickerOptions);
+        constructor(el: HTMLInputElement, options: IDatePickerOptions);
         dispose(): void;
         toString(): string;
     }
@@ -1666,7 +1660,7 @@ declare module "jriapp_ui/anchor" {
         private _glyph;
         private _image;
         private _span;
-        constructor(options: IAncorOptions);
+        constructor(el: HTMLAnchorElement, options: IAncorOptions);
         handle_click(e: Event): boolean;
         protected onClick(): void;
         protected _updateImage(src: string): void;
@@ -1710,7 +1704,7 @@ declare module "jriapp_ui/busy" {
         private _loaderPath;
         private _img;
         private _isBusy;
-        constructor(options: IBusyViewOptions);
+        constructor(el: HTMLElement, options: IBusyViewOptions);
         dispose(): void;
         toString(): string;
         isBusy: boolean;
@@ -1721,7 +1715,7 @@ declare module "jriapp_ui/button" {
     import { CommandElView, ICommandViewOptions } from "jriapp_ui/command";
     export class ButtonElView extends CommandElView {
         private _isButton;
-        constructor(options: ICommandViewOptions);
+        constructor(el: HTMLElement, options: ICommandViewOptions);
         handle_click(e: Event): boolean;
         onClick(): void;
         toString(): string;
@@ -1735,7 +1729,7 @@ declare module "jriapp_ui/checkbox3" {
     import { InputElView } from "jriapp_ui/input";
     export class CheckBoxThreeStateElView extends InputElView {
         private _checked;
-        constructor(options: IViewOptions);
+        constructor(chk: HTMLInputElement, options?: IViewOptions);
         handle_change(e: Event): boolean;
         protected _updateState(): void;
         toString(): string;
@@ -1756,7 +1750,7 @@ declare module "jriapp_ui/expander" {
         private _expandedsrc;
         private _collapsedsrc;
         private _isExpanded;
-        constructor(options: IExpanderOptions);
+        constructor(el: HTMLAnchorElement, options: IExpanderOptions);
         protected refresh(): void;
         protected _onCommandChanged(): void;
         protected onClick(): void;
@@ -1772,10 +1766,8 @@ declare module "jriapp_ui/hidden" {
     }
 }
 declare module "jriapp_ui/img" {
-    import { IViewOptions } from "jriapp/int";
     import { BaseElView } from "jriapp_ui/baseview";
     export class ImgElView extends BaseElView {
-        constructor(options: IViewOptions);
         toString(): string;
         src: string;
     }

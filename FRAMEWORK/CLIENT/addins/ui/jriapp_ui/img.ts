@@ -1,12 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
 
 export class ImgElView extends BaseElView {
-    constructor(options: IViewOptions) {
-        super(options);
-    }
     toString(): string {
         return "ImgElView";
     }

@@ -13,8 +13,8 @@ export interface IReactViewOptions extends RIAPP.IViewOptions
 export class ReactElView extends uiMOD.BaseElView implements IReactView {
     private _value: string;
 
-    constructor(options: IReactViewOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: IReactViewOptions) {
+        super(el, options);
         this._value = options.value || "25";
     }
     // if present then occurs after all properties were databound

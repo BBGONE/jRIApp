@@ -6,8 +6,8 @@ import * as COMMON from "common";
 export class GridElView extends uiMOD.DataGridElView {
     private _myGridEvents: COMMON.IGridEvents<RIAPP.ICollectionItem>;
 
-    constructor(options: uiMOD.IDataGridViewOptions) {
-        super(options);
+    constructor(el: HTMLTableElement, options: uiMOD.IDataGridViewOptions) {
+        super(el, options);
         const self = this, grid = self.grid;
         //example of binding to dataGrid events using strongly typed methods
         if (!!grid) {

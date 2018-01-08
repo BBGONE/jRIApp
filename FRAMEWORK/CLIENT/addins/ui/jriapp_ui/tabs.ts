@@ -27,8 +27,8 @@ export class TabsElView extends BaseElView implements ITabs {
     private _tabsEvents: ITabsEvents;
     private _tabsCreated: boolean;
 
-    constructor(options: IViewOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: IViewOptions) {
+        super(el, options);
         this._tabOpts = options;
         this._tabsEvents = null;
         this._tabsCreated = false;

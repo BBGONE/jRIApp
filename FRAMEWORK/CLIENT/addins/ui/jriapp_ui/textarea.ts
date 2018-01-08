@@ -8,10 +8,10 @@ export interface ITextAreaOptions extends ITextBoxOptions {
 }
 
 export class TextAreaElView extends TextBoxElView {
-    constructor(options: ITextAreaOptions) {
-        super(options);
+    constructor(el: HTMLTextAreaElement, options: ITextAreaOptions) {
+        super(el, options);
         if (!!options.wrap) {
-            this.wrap = options.wrap;
+            el.wrap = options.wrap;
         }
     }
     toString(): string {

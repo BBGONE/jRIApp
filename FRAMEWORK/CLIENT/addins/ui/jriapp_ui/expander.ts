@@ -20,12 +20,12 @@ export class ExpanderElView extends AnchorElView {
     private _collapsedsrc: string;
     private _isExpanded: boolean;
 
-    constructor(options: IExpanderOptions) {
+    constructor(el: HTMLAnchorElement, options: IExpanderOptions) {
         const expandedsrc = options.expandedsrc || bootstrap.getImagePath(COLLAPSE_IMG);
         const collapsedsrc = options.collapsedsrc || bootstrap.getImagePath(EXPAND_IMG);
         const isExpanded = !!options.isExpanded;
         options.imageSrc = null;
-        super(options);
+        super(el, options);
         this._expandedsrc = expandedsrc;
         this._collapsedsrc = collapsedsrc;
         this.isExpanded = isExpanded;

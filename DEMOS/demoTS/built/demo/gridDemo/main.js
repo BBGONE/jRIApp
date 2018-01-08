@@ -2780,8 +2780,8 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
     };
     var ResizableGrid = (function (_super) {
         __extends(ResizableGrid, _super);
-        function ResizableGrid(options) {
-            var _this = _super.call(this, options) || this;
+        function ResizableGrid(el, options) {
+            var _this = _super.call(this, el, options) || this;
             var self = _this, grid = self.grid;
             _gridCreated(_this);
             var defaults = {

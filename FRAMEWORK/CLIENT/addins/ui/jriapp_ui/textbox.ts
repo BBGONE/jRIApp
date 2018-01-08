@@ -22,26 +22,26 @@ export type TKeyPressArgs = {
 };
 
 export class TextBoxElView extends InputElView {
-    constructor(options: ITextBoxOptions) {
-        super(options);
+    constructor(el: HTMLInputElement | HTMLTextAreaElement, options: ITextBoxOptions) {
+        super(el, options);
         const self = this;
         if (this.isDelegationOn) {
-            subscribeMap.set(this.el, this);
+            subscribeMap.set(el, this);
             this._setIsSubcribed(SubscribeFlags.change);
             this._setIsSubcribed(SubscribeFlags.keypress);
             if (!!options.updateOnKeyUp) {
                 this._setIsSubcribed(SubscribeFlags.keyup);
             }
         } else {
-            dom.events.on(this.el, "change", (e) => {
+            dom.events.on(el, "change", (e) => {
                 e.stopPropagation();
                 self.handle_change(e);
             }, this.uniqueID);
-            dom.events.on(this.el, "keypress", (e) => {
+            dom.events.on(el, "keypress", (e) => {
                 self.handle_keypress(e);
             }, this.uniqueID);
             if (!!options.updateOnKeyUp) {
-                dom.events.on(this.el, "keyup", (e) => {
+                dom.events.on(el, "keyup", (e) => {
                     self.handle_keyup(e);
                 }, this.uniqueID);
             }

@@ -11,14 +11,14 @@ export interface IDatePickerOptions extends ITextBoxOptions {
 }
 
 export class DatePickerElView extends TextBoxElView {
-    constructor(options: IDatePickerOptions) {
-        super(options);
+    constructor(el: HTMLInputElement, options: IDatePickerOptions) {
+        super(el, options);
         const datepicker = boot.getSvc<IDatepicker>(DATEPICKER_SVC);
         if (!datepicker) {
             throw new Error("IDatepicker service is not registered");
         }
-        datepicker.attachTo(this.el, options.datepicker, (datetext) => {
-            (<HTMLInputElement>this.el).value = datetext;
+        datepicker.attachTo(el, options.datepicker, (datetext) => {
+            el.value = datetext;
             this.objEvents.raiseProp("value");
         });
     }
