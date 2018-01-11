@@ -298,9 +298,9 @@ function getKeyVals(val: string): IKeyVal[] {
             continue;
         }
 
-        if (ch === ")") {
+        if (ch === ")" || ch === "}") {
             if (!literal) {
-                throw new Error(`Invalid: ) in expression ${val}`);
+                throw new Error(`Invalid: ${ch} in expression ${val}`);
             }
             continue;
         }

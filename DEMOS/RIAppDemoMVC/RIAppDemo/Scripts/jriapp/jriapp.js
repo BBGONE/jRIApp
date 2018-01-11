@@ -375,9 +375,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 start = -1;
                 continue;
             }
-            if (ch === ")") {
+            if (ch === ")" || ch === "}") {
                 if (!literal) {
-                    throw new Error("Invalid: ) in expression " + val);
+                    throw new Error("Invalid: " + ch + " in expression " + val);
                 }
                 continue;
             }
@@ -4573,6 +4573,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.10.1";
+    exports.VERSION = "2.10.2";
     bootstrap_8.Bootstrap._initFramework();
 });
