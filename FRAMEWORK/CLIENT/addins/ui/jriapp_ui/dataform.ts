@@ -2,7 +2,7 @@
 import {
     Utils, IBaseObject, IEditable, IErrorNotification,
     IValidationInfo, IVoidPromise, BaseObject, LocaleERRS as ERRS,
-    LocaleSTRS as STRS
+    LocaleSTRS as STRS, IValidatable
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
@@ -10,7 +10,7 @@ import { DATA_ATTR, ELVIEW_NM, BindScope } from "jriapp/const";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { IContent, IElView, ILifeTimeScope, IViewOptions, IApplication } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
-import { BaseElView, fn_addToolTip } from "./baseview";
+import { BaseElView, fn_addToolTip, addError, removeError } from "./baseview";
 import { Binding } from "jriapp/binding";
 import { parseContentAttr } from "./content/int";
 
@@ -111,7 +111,29 @@ function getFieldInfo(obj: any, fieldName: string): IFieldInfo {
     }
 }
 
-export class DataForm extends BaseObject {
+ function getErrorTipInfo(errors: IValidationInfo[]): string {
+    const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<ul>"];
+    errors.forEach((info) => {
+        const fieldName = info.fieldName;
+        let res = "";
+        if (!!fieldName) {
+            res = STRS.VALIDATE.errorField + " " + fieldName;
+        }
+        info.errors.forEach((str) => {
+            if (!!res) {
+                res = res + " -> " + str;
+            } else {
+                res = str;
+            }
+        });
+        tip.push("<li>" + res + "</li>");
+        res = "";
+    });
+    tip.push("</ul>");
+    return tip.join("");
+}
+
+export class DataForm extends BaseObject implements IValidatable {
     private static _DATA_FORM_SELECTOR = ["*[", DATA_ATTR.DATA_VIEW, "='", ELVIEW_NM.DataForm, "']"].join("");
     private static _DATA_CONTENT_SELECTOR = ["*[", DATA_ATTR.DATA_CONTENT, "]:not([", DATA_ATTR.DATA_COLUMN, "])"].join("");
     private _el: HTMLElement;
@@ -126,6 +148,7 @@ export class DataForm extends BaseObject {
     private _parentDataForm: IElView;
     private _errors: IValidationInfo[];
     private _contentPromise: IVoidPromise;
+    private _errorGliph: HTMLElement;
 
     constructor(el: HTMLElement, options: IViewOptions) {
         super();
@@ -133,6 +156,7 @@ export class DataForm extends BaseObject {
         this._el = el;
         this._objId = getNewID("frm");
         this._dataContext = null;
+        this._errorGliph = null;
         dom.addClass([el], css.dataform);
         this._isEditing = false;
         this._content = [];
@@ -220,7 +244,7 @@ export class DataForm extends BaseObject {
             self._contentCreated = true;
         });
     }
-    private _updateCreatedContent() {
+    private _updateCreatedContent(): void {
         const dctx: any = this._dataContext, self = this;
         try {
             this._content.forEach((content) => {
@@ -238,7 +262,7 @@ export class DataForm extends BaseObject {
             utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
-    private _updateContent() {
+    private _updateContent(): void {
         const self = this;
         try {
             if (self._contentCreated) {
@@ -264,15 +288,15 @@ export class DataForm extends BaseObject {
             utils.err.reThrow(ex, self.handleError(ex, self));
         }
     }
-    private _onDSErrorsChanged() {
+    private _onDSErrorsChanged(): void {
         if (!!this._errNotification) {
             this.validationErrors = this._errNotification.getAllErrors();
         }
     }
-    _onIsEditingChanged() {
+    _onIsEditingChanged(): void {
         this.isEditing = this._editable.isEditing;
     }
-    private _bindDS() {
+    private _bindDS(): void {
         const dataContext = this._dataContext, self = this;
         if (!dataContext) {
             return;
@@ -295,7 +319,7 @@ export class DataForm extends BaseObject {
             this._errNotification.addOnErrorsChanged(self._onDSErrorsChanged, self._objId, self);
         }
     }
-    private _unbindDS() {
+    private _unbindDS(): void {
         const dataContext = this._dataContext;
         this.validationErrors = null;
         if (!!dataContext && !dataContext.getIsStateDirty()) {
@@ -310,7 +334,7 @@ export class DataForm extends BaseObject {
         this._editable = null;
         this._errNotification = null;
     }
-    private _clearContent() {
+    private _clearContent(): void {
         this._content.forEach((content) => {
             content.dispose();
         });
@@ -321,11 +345,30 @@ export class DataForm extends BaseObject {
         }
         this._contentCreated = false;
     }
-    dispose() {
+    protected _setErrors(errors: IValidationInfo[]): void {
+        const el = this.el;
+        if (!!errors && errors.length > 0) {
+            if (!this._errorGliph) {
+                this._errorGliph = dom.fromHTML(`<div data-name="error_info" class="${css.error}" />`)[0];
+                dom.prepend(el, this._errorGliph);
+            }
+            fn_addToolTip(this._errorGliph, getErrorTipInfo(errors), true);
+            addError(el);
+        } else {
+            if (!!this._errorGliph) {
+                fn_addToolTip(this._errorGliph, null);
+                dom.removeNode(this._errorGliph);
+                this._errorGliph = null;
+            }
+            removeError(el);
+        }
+    }
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
         this.setDisposing();
+        this.validationErrors = null;
         this._clearContent();
         dom.removeClass([this.el], css.dataform);
         this._unbindDS();
@@ -424,6 +467,7 @@ export class DataForm extends BaseObject {
     set validationErrors(v) {
         if (v !== this._errors) {
             this._errors = v;
+            this._setErrors(this._errors);
             this.objEvents.raiseProp("validationErrors");
         }
     }
@@ -431,92 +475,52 @@ export class DataForm extends BaseObject {
 
 export class DataFormElView extends BaseElView {
     private _form: DataForm;
-    private _errorGliph: HTMLElement;
 
     constructor(el: HTMLElement, options: IViewOptions) {
         super(el, options);
         const self = this;
         this._form = new DataForm(el, options);
-        this._errorGliph = null;
         this._form.objEvents.onProp("*", (form, args) => {
             switch (args.property) {
                 case "validationErrors":
-                    self.validationErrors = form.validationErrors;
-                    break;
                 case "dataContext":
                     self.objEvents.raiseProp(args.property);
                     break;
             }
         }, this.uniqueID);
     }
-    protected _getErrorTipInfo(errors: IValidationInfo[]): string {
-        const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<ul>"];
-        errors.forEach((info) => {
-            const fieldName = info.fieldName;
-            let res = "";
-            if (!!fieldName) {
-                res = STRS.VALIDATE.errorField + " " + fieldName;
-            }
-            info.errors.forEach((str) => {
-                if (!!res) {
-                    res = res + " -> " + str;
-                } else  {
-                    res = str;
-                }
-            });
-            tip.push("<li>" + res + "</li>");
-            res = "";
-        });
-        tip.push("</ul>");
-        return tip.join("");
-    }
-    protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void {
-        if (!el) {
-            return;
-        }
-        if (!!errors && errors.length > 0) {
-            if (!this._errorGliph) {
-                this._errorGliph = dom.fromHTML(`<div data-name="error_info" class="${css.error}" />`)[0];
-                dom.prepend(el, this._errorGliph);
-            }
-            fn_addToolTip(this._errorGliph, this._getErrorTipInfo(errors), true);
-            this._setFieldError(true);
-        } else {
-            if (!!this._errorGliph) {
-                fn_addToolTip(this._errorGliph, null);
-                dom.removeNode(this._errorGliph);
-                this._errorGliph = null;
-            }
-            this._setFieldError(false);
-        }
-    }
     dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
         this.setDisposing();
-        if (!!this._errorGliph) {
-            fn_addToolTip(this._errorGliph, null);
-            dom.removeNode(this._errorGliph);
-            this._errorGliph = null;
-        }
         if (!this._form.getIsStateDirty()) {
             this._form.dispose();
         }
         super.dispose();
     }
-    toString() {
+    // override
+    protected _getErrors(): IValidationInfo[] {
+        return this._form.validationErrors;
+    }
+    // override
+    protected _setErrors(v: IValidationInfo[]): void {
+        this._form.validationErrors = v;
+    }
+    toString(): string {
         return "DataFormElView";
     }
-    get dataContext() {
+    get dataContext(): IBaseObject {
         return this._form.dataContext;
     }
-    set dataContext(v) {
+    set dataContext(v: IBaseObject) {
         if (this.dataContext !== v) {
             this._form.dataContext = v;
         }
     }
-    get form() { return this._form; }
+    get form(): DataForm {
+        return this._form;
+    }
 }
 
 boot.registerElView(ELVIEW_NM.DataForm, DataFormElView);

@@ -86,6 +86,10 @@ export interface IValidationInfo {
     errors: string[];
 }
 
+export interface IValidatable {
+    validationErrors: IValidationInfo[];
+}
+
 export interface IErrorNotification extends IBaseObject {
     getIsHasErrors(): boolean;
     addOnErrorsChanged(fn: TEventHandler, nmspace?: string, context?: any): void;

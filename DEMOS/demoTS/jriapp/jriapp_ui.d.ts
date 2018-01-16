@@ -167,13 +167,16 @@ declare module "jriapp_ui/utils/datepicker" {
     export function createDatepickerSvc(): IDatepicker;
 }
 declare module "jriapp_ui/baseview" {
-    import { BaseObject, IPropertyBag, IValidationInfo } from "jriapp_shared";
+    import { BaseObject, IPropertyBag, IValidationInfo, IValidatable } from "jriapp_shared";
     import { SubscribeFlags } from "jriapp/const";
     import { IElView, IApplication, IViewOptions, ISubscriber } from "jriapp/int";
     import { ICommand } from "jriapp/mvvm";
     import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
     export { IEventChangedArgs, EVENT_CHANGE_TYPE };
     export function fn_addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void;
+    export function getErrorTipInfo(errors: IValidationInfo[]): string;
+    export function addError(el: HTMLElement): void;
+    export function removeError(el: HTMLElement): void;
     export const enum css {
         fieldError = "ria-field-error",
         commandLink = "ria-command-link",
@@ -212,7 +215,7 @@ declare module "jriapp_ui/baseview" {
         src = "src",
         click = "click",
     }
-    export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber {
+    export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber, IValidatable {
         private _objId;
         private _el;
         private _subscribeFlags;
@@ -230,11 +233,9 @@ declare module "jriapp_ui/baseview" {
         protected _onEventAdded(name: string, newVal: ICommand): void;
         protected _onEventDeleted(name: string, oldVal: ICommand): void;
         protected _applyToolTip(): void;
-        protected _getErrorTipInfo(errors: IValidationInfo[]): string;
-        protected _setFieldError(isError: boolean): void;
-        protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;
-        protected _setToolTip(el: Element, tip: string, isError?: boolean): void;
         protected _setIsSubcribed(flag: SubscribeFlags): void;
+        protected _getErrors(): IValidationInfo[];
+        protected _setErrors(errors: IValidationInfo[]): void;
         isSubscribed(flag: SubscribeFlags): boolean;
         toString(): string;
         readonly el: TElement;
@@ -475,6 +476,9 @@ declare module "jriapp_ui/listbox" {
         constructor(el: HTMLSelectElement, options: IListBoxViewOptions);
         dispose(): void;
         toString(): string;
+        addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
+        offOnRefreshed(nmspace?: string): void;
+        getText(val: any): string;
         isEnabled: boolean;
         dataSource: ICollection<ICollectionItem>;
         selectedValue: any;
@@ -489,7 +493,7 @@ declare module "jriapp_ui/listbox" {
 declare module "jriapp_ui/content/lookup" {
     import { IBaseObject } from "jriapp_shared";
     import { IExternallyCachable, IBinding, IConstructorContentOptions, IElView } from "jriapp/int";
-    import { ListBox } from "jriapp_ui/listbox";
+    import { ListBoxElView } from "jriapp_ui/listbox";
     import { BasicContent, IContentView } from "jriapp_ui/content/basic";
     export interface ILookupOptions {
         dataSource: string;
@@ -514,12 +518,12 @@ declare module "jriapp_ui/content/lookup" {
         private _objId;
         constructor(options: IConstructorContentOptions);
         dispose(): void;
-        protected getListBox(): ListBox;
+        protected getListBox(): ListBoxElView;
         protected onListRefreshed(): void;
-        protected createListBox(lookUpOptions: ILookupOptions): ListBox;
+        protected createListBox(lookUpOptions: ILookupOptions): ListBoxElView;
         protected cleanUp(): void;
         protected bindToSpan(span: IElView): IBinding;
-        protected bindToList(listBox: ListBox): IBinding;
+        protected bindToList(listBox: IElView): IBinding;
         protected createdReadingView(): IContentView;
         protected createdEditingView(): IContentView;
         protected beforeCreateView(): boolean;
@@ -1586,14 +1590,14 @@ declare module "jriapp_ui/template" {
     }
 }
 declare module "jriapp_ui/dataform" {
-    import { IBaseObject, IValidationInfo, BaseObject } from "jriapp_shared";
+    import { IBaseObject, IValidationInfo, BaseObject, IValidatable } from "jriapp_shared";
     import { IViewOptions, IApplication } from "jriapp/int";
     import { BaseElView } from "jriapp_ui/baseview";
     export const enum css {
         dataform = "ria-dataform",
         error = "ria-form-error",
     }
-    export class DataForm extends BaseObject {
+    export class DataForm extends BaseObject implements IValidatable {
         private static _DATA_FORM_SELECTOR;
         private static _DATA_CONTENT_SELECTOR;
         private _el;
@@ -1608,6 +1612,7 @@ declare module "jriapp_ui/dataform" {
         private _parentDataForm;
         private _errors;
         private _contentPromise;
+        private _errorGliph;
         constructor(el: HTMLElement, options: IViewOptions);
         private _getBindings();
         private _createContent();
@@ -1618,6 +1623,7 @@ declare module "jriapp_ui/dataform" {
         private _bindDS();
         private _unbindDS();
         private _clearContent();
+        protected _setErrors(errors: IValidationInfo[]): void;
         dispose(): void;
         toString(): string;
         readonly app: IApplication;
@@ -1628,11 +1634,10 @@ declare module "jriapp_ui/dataform" {
     }
     export class DataFormElView extends BaseElView {
         private _form;
-        private _errorGliph;
         constructor(el: HTMLElement, options: IViewOptions);
-        protected _getErrorTipInfo(errors: IValidationInfo[]): string;
-        protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void;
         dispose(): void;
+        protected _getErrors(): IValidationInfo[];
+        protected _setErrors(v: IValidationInfo[]): void;
         toString(): string;
         dataContext: IBaseObject;
         readonly form: DataForm;

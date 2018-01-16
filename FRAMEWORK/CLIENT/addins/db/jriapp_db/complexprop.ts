@@ -38,15 +38,15 @@ export abstract class BaseComplexProperty extends BaseObject implements IErrorNo
     getIsHasErrors(): boolean {
         return this.getEntity().getIsHasErrors();
     }
-    addOnErrorsChanged(fn: TEventHandler<EntityAspect<IEntityItem, any, DbContext>, any>, nmspace?: string, context?: any): void {
-        this.getEntity().addOnErrorsChanged(fn, nmspace, context);
+    addOnErrorsChanged(fn: TEventHandler<BaseComplexProperty, any>, nmspace?: string, context?: any): void {
+        this.getEntity().addOnErrorsChanged(fn.bind(this), nmspace, context);
     }
     offOnErrorsChanged(nmspace?: string): void {
         this.getEntity().offOnErrorsChanged(nmspace);
     }
     getFieldErrors(fieldName: string): IValidationInfo[] {
-        const fullName = this.getFullPath(fieldName);
-        return this.getEntity().getFieldErrors(fullName);
+        const name = this.getFullPath(fieldName);
+        return this.getEntity().getFieldErrors(name);
     }
     getAllErrors(): IValidationInfo[] {
         return this.getEntity().getAllErrors();

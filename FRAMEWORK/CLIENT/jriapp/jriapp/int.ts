@@ -2,7 +2,7 @@
 import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "./const";
 import {
     IBaseObject, IDisposable, IIndexer, IPromise,
-    IVoidPromise, IValidationInfo, IErrorHandler, TEventHandler, IConfig
+    IVoidPromise, IErrorHandler, TEventHandler, IConfig
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 
@@ -150,7 +150,6 @@ export interface IElView extends IBaseObject {
     readonly el: HTMLElement;
     readonly app: IApplication;
     readonly uniqueID: string;
-    validationErrors: IValidationInfo[];
     viewMounted?: () => void;
 }
 

@@ -344,6 +344,12 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
             var tmp = obj.getIErrorNotification();
             return !!tmp && checks.isFunc(tmp.getIErrorNotification);
         };
+        SysUtils.isValidatable = function (obj) {
+            if (!obj) {
+                return false;
+            }
+            return "validationErrors" in obj;
+        };
         SysUtils.getErrorNotification = function (obj) {
             if (!obj) {
                 return null;

@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    Utils, BaseObject, IPropertyBag, IValidationInfo, LocaleSTRS as STRS
+    Utils, BaseObject, IPropertyBag, IValidationInfo, LocaleSTRS as STRS, IValidatable
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { ViewChecks } from "jriapp/utils/viewchecks";
@@ -30,6 +30,31 @@ boot.registerSvc(DATEPICKER_SVC, createDatepickerSvc());
 export function fn_addToolTip(el: Element, tip: string, isError?: boolean, pos?: string) {
     const svc = boot.getSvc<ITooltipService>(TOOLTIP_SVC);
     svc.addToolTip(el, tip, isError, pos);
+}
+
+export function getErrorTipInfo(errors: IValidationInfo[]): string {
+    const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<br/>"];
+    errors.forEach((info) => {
+        let res = "";
+        info.errors.forEach((str) => {
+            res = res + " " + str;
+        });
+        tip.push(res);
+        res = "";
+    });
+    return tip.join("");
+}
+
+function setError(el: HTMLElement, isError: boolean): void {
+    dom.setClass([el], css.fieldError, !isError);
+}
+
+export function addError(el: HTMLElement): void {
+    setError(el, true);
+}
+
+export function removeError(el: HTMLElement): void {
+    setError(el, false);
 }
 
 export const enum css {
@@ -72,7 +97,7 @@ export const enum PROP_NAME {
     click = "click"
 }
 
-export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber {
+export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber, IValidatable {
     private _objId: string;
     private _el: TElement;
     private _subscribeFlags: SubscribeFlags;
@@ -116,7 +141,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
             dom.events.offNS(this.el, this.uniqueID);
             this.css = null;
             this._toolTip = null;
-            this._setToolTip(this.el, null);
+            fn_addToolTip(this.el, null);
             this.validationErrors = null;
             if (this._subscribeFlags !== 0) {
                 subscribeMap.delete(this.el);
@@ -168,41 +193,28 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
     }
     protected _applyToolTip(): void {
         if (!!this._toolTip) {
-            this._setToolTip(this.el, this._toolTip);
+            fn_addToolTip(this.el, this._toolTip);
         }
-    }
-    protected _getErrorTipInfo(errors: IValidationInfo[]): string {
-        const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<br/>"];
-        errors.forEach((info) => {
-            let res = "";
-            info.errors.forEach((str) => {
-                res = res + " " + str;
-            });
-            tip.push(res);
-            res = "";
-        });
-        return tip.join("");
-    }
-    protected _setFieldError(isError: boolean): void {
-        dom.setClass([this.el], css.fieldError, !isError);
-    }
-    protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]): void {
-        if (!el) {
-            return;
-        }
-        if (!!errors && errors.length > 0) {
-            fn_addToolTip(el, this._getErrorTipInfo(errors), true);
-            this._setFieldError(true);
-        } else {
-            this._setToolTip(el, this.toolTip);
-            this._setFieldError(false);
-        }
-    }
-    protected _setToolTip(el: Element, tip: string, isError?: boolean): void {
-        fn_addToolTip(el, tip, isError);
     }
     protected _setIsSubcribed(flag: SubscribeFlags): void {
         this._subscribeFlags |= (1 << flag);
+    }
+    protected _getErrors(): IValidationInfo[] {
+        return this._errors;
+    }
+    protected _setErrors(errors: IValidationInfo[]): void {
+        if (errors !== this._errors) {
+            this._errors = errors;
+            const el = this.el;
+            if (!!errors && errors.length > 0) {
+                fn_addToolTip(el, getErrorTipInfo(errors), true);
+                addError(el);
+            } else {
+                fn_addToolTip(el, this.toolTip);
+                removeError(el);
+            }
+            this.objEvents.raiseProp("validationErrors");
+        }
     }
     isSubscribed(flag: SubscribeFlags): boolean {
         return !!(this._subscribeFlags & (1 << flag));
@@ -237,14 +249,10 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
         }
     }
     get validationErrors(): IValidationInfo[] {
-        return this._errors;
+        return this._getErrors();
     }
     set validationErrors(v: IValidationInfo[]) {
-        if (v !== this._errors) {
-            this._errors = v;
-            this.objEvents.raiseProp("validationErrors");
-            this._updateErrorUI(this.el, this._errors);
-        }
+        this._setErrors(v);
     }
     get dataName(): string {
         return this._el.getAttribute(DATA_ATTR.DATA_NAME);
@@ -255,7 +263,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
     set toolTip(v: string) {
         if (this._toolTip !== v) {
             this._toolTip = v;
-            this._setToolTip(this.el, v);
+            fn_addToolTip(this.el, v);
             this.objEvents.raiseProp("toolTip");
         }
     }

@@ -879,6 +879,30 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         svc.addToolTip(el, tip, isError, pos);
     }
     exports.fn_addToolTip = fn_addToolTip;
+    function getErrorTipInfo(errors) {
+        var tip = ["<b>", jriapp_shared_9.LocaleSTRS.VALIDATE.errorInfo, "</b>", "<br/>"];
+        errors.forEach(function (info) {
+            var res = "";
+            info.errors.forEach(function (str) {
+                res = res + " " + str;
+            });
+            tip.push(res);
+            res = "";
+        });
+        return tip.join("");
+    }
+    exports.getErrorTipInfo = getErrorTipInfo;
+    function setError(el, isError) {
+        dom.setClass([el], "ria-field-error", !isError);
+    }
+    function addError(el) {
+        setError(el, true);
+    }
+    exports.addError = addError;
+    function removeError(el) {
+        setError(el, false);
+    }
+    exports.removeError = removeError;
     var css;
     (function (css) {
         css["fieldError"] = "ria-field-error";
@@ -950,7 +974,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                 dom.events.offNS(this.el, this.uniqueID);
                 this.css = null;
                 this._toolTip = null;
-                this._setToolTip(this.el, null);
+                fn_addToolTip(this.el, null);
                 this.validationErrors = null;
                 if (this._subscribeFlags !== 0) {
                     subscribeMap.delete(this.el);
@@ -1003,42 +1027,29 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         };
         BaseElView.prototype._applyToolTip = function () {
             if (!!this._toolTip) {
-                this._setToolTip(this.el, this._toolTip);
+                fn_addToolTip(this.el, this._toolTip);
             }
-        };
-        BaseElView.prototype._getErrorTipInfo = function (errors) {
-            var tip = ["<b>", jriapp_shared_9.LocaleSTRS.VALIDATE.errorInfo, "</b>", "<br/>"];
-            errors.forEach(function (info) {
-                var res = "";
-                info.errors.forEach(function (str) {
-                    res = res + " " + str;
-                });
-                tip.push(res);
-                res = "";
-            });
-            return tip.join("");
-        };
-        BaseElView.prototype._setFieldError = function (isError) {
-            dom.setClass([this.el], "ria-field-error", !isError);
-        };
-        BaseElView.prototype._updateErrorUI = function (el, errors) {
-            if (!el) {
-                return;
-            }
-            if (!!errors && errors.length > 0) {
-                fn_addToolTip(el, this._getErrorTipInfo(errors), true);
-                this._setFieldError(true);
-            }
-            else {
-                this._setToolTip(el, this.toolTip);
-                this._setFieldError(false);
-            }
-        };
-        BaseElView.prototype._setToolTip = function (el, tip, isError) {
-            fn_addToolTip(el, tip, isError);
         };
         BaseElView.prototype._setIsSubcribed = function (flag) {
             this._subscribeFlags |= (1 << flag);
+        };
+        BaseElView.prototype._getErrors = function () {
+            return this._errors;
+        };
+        BaseElView.prototype._setErrors = function (errors) {
+            if (errors !== this._errors) {
+                this._errors = errors;
+                var el = this.el;
+                if (!!errors && errors.length > 0) {
+                    fn_addToolTip(el, getErrorTipInfo(errors), true);
+                    addError(el);
+                }
+                else {
+                    fn_addToolTip(el, this.toolTip);
+                    removeError(el);
+                }
+                this.objEvents.raiseProp("validationErrors");
+            }
         };
         BaseElView.prototype.isSubscribed = function (flag) {
             return !!(this._subscribeFlags & (1 << flag));
@@ -1086,14 +1097,10 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         });
         Object.defineProperty(BaseElView.prototype, "validationErrors", {
             get: function () {
-                return this._errors;
+                return this._getErrors();
             },
             set: function (v) {
-                if (v !== this._errors) {
-                    this._errors = v;
-                    this.objEvents.raiseProp("validationErrors");
-                    this._updateErrorUI(this.el, this._errors);
-                }
+                this._setErrors(v);
             },
             enumerable: true,
             configurable: true
@@ -1112,7 +1119,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             set: function (v) {
                 if (this._toolTip !== v) {
                     this._toolTip = v;
-                    this._setToolTip(this.el, v);
+                    fn_addToolTip(this.el, v);
                     this.objEvents.raiseProp("toolTip");
                 }
             },
@@ -2434,6 +2441,15 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         ListBoxElView.prototype.toString = function () {
             return "ListBoxElView";
         };
+        ListBoxElView.prototype.addOnRefreshed = function (fn, nmspace, context) {
+            this._listBox.objEvents.on("refreshed", fn, nmspace, context);
+        };
+        ListBoxElView.prototype.offOnRefreshed = function (nmspace) {
+            this._listBox.objEvents.off("refreshed", nmspace);
+        };
+        ListBoxElView.prototype.getText = function (val) {
+            return this._listBox.getText(val);
+        };
         Object.defineProperty(ListBoxElView.prototype, "isEnabled", {
             get: function () {
                 return !this.el.disabled;
@@ -2636,7 +2652,7 @@ define("jriapp_ui/content/lookup", ["require", "exports", "jriapp_shared", "jria
                 dataSource: sys.resolvePath(this.app, lookUpOptions.dataSource)
             };
             el.setAttribute("size", "1");
-            return new listbox_1.ListBox(el, options);
+            return new listbox_1.ListBoxElView(el, options);
         };
         LookupContent.prototype.cleanUp = function () {
             _super.prototype.cleanUp.call(this);
@@ -8038,6 +8054,28 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             return null;
         }
     }
+    function getErrorTipInfo(errors) {
+        var tip = ["<b>", jriapp_shared_35.LocaleSTRS.VALIDATE.errorInfo, "</b>", "<ul>"];
+        errors.forEach(function (info) {
+            var fieldName = info.fieldName;
+            var res = "";
+            if (!!fieldName) {
+                res = jriapp_shared_35.LocaleSTRS.VALIDATE.errorField + " " + fieldName;
+            }
+            info.errors.forEach(function (str) {
+                if (!!res) {
+                    res = res + " -> " + str;
+                }
+                else {
+                    res = str;
+                }
+            });
+            tip.push("<li>" + res + "</li>");
+            res = "";
+        });
+        tip.push("</ul>");
+        return tip.join("");
+    }
     var DataForm = (function (_super) {
         __extends(DataForm, _super);
         function DataForm(el, options) {
@@ -8046,6 +8084,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             _this._el = el;
             _this._objId = getNewID("frm");
             _this._dataContext = null;
+            _this._errorGliph = null;
             dom.addClass([el], "ria-dataform");
             _this._isEditing = false;
             _this._content = [];
@@ -8222,11 +8261,31 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             }
             this._contentCreated = false;
         };
+        DataForm.prototype._setErrors = function (errors) {
+            var el = this.el;
+            if (!!errors && errors.length > 0) {
+                if (!this._errorGliph) {
+                    this._errorGliph = dom.fromHTML("<div data-name=\"error_info\" class=\"" + "ria-form-error" + "\" />")[0];
+                    dom.prepend(el, this._errorGliph);
+                }
+                baseview_11.fn_addToolTip(this._errorGliph, getErrorTipInfo(errors), true);
+                baseview_11.addError(el);
+            }
+            else {
+                if (!!this._errorGliph) {
+                    baseview_11.fn_addToolTip(this._errorGliph, null);
+                    dom.removeNode(this._errorGliph);
+                    this._errorGliph = null;
+                }
+                baseview_11.removeError(el);
+            }
+        };
         DataForm.prototype.dispose = function () {
             if (this.getIsDisposed()) {
                 return;
             }
             this.setDisposing();
+            this.validationErrors = null;
             this._clearContent();
             dom.removeClass([this.el], "ria-dataform");
             this._unbindDS();
@@ -8335,6 +8394,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             set: function (v) {
                 if (v !== this._errors) {
                     this._errors = v;
+                    this._setErrors(this._errors);
                     this.objEvents.raiseProp("validationErrors");
                 }
             },
@@ -8352,12 +8412,9 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             var _this = _super.call(this, el, options) || this;
             var self = _this;
             _this._form = new DataForm(el, options);
-            _this._errorGliph = null;
             _this._form.objEvents.onProp("*", function (form, args) {
                 switch (args.property) {
                     case "validationErrors":
-                        self.validationErrors = form.validationErrors;
-                        break;
                     case "dataContext":
                         self.objEvents.raiseProp(args.property);
                         break;
@@ -8365,63 +8422,21 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             }, _this.uniqueID);
             return _this;
         }
-        DataFormElView.prototype._getErrorTipInfo = function (errors) {
-            var tip = ["<b>", jriapp_shared_35.LocaleSTRS.VALIDATE.errorInfo, "</b>", "<ul>"];
-            errors.forEach(function (info) {
-                var fieldName = info.fieldName;
-                var res = "";
-                if (!!fieldName) {
-                    res = jriapp_shared_35.LocaleSTRS.VALIDATE.errorField + " " + fieldName;
-                }
-                info.errors.forEach(function (str) {
-                    if (!!res) {
-                        res = res + " -> " + str;
-                    }
-                    else {
-                        res = str;
-                    }
-                });
-                tip.push("<li>" + res + "</li>");
-                res = "";
-            });
-            tip.push("</ul>");
-            return tip.join("");
-        };
-        DataFormElView.prototype._updateErrorUI = function (el, errors) {
-            if (!el) {
-                return;
-            }
-            if (!!errors && errors.length > 0) {
-                if (!this._errorGliph) {
-                    this._errorGliph = dom.fromHTML("<div data-name=\"error_info\" class=\"" + "ria-form-error" + "\" />")[0];
-                    dom.prepend(el, this._errorGliph);
-                }
-                baseview_11.fn_addToolTip(this._errorGliph, this._getErrorTipInfo(errors), true);
-                this._setFieldError(true);
-            }
-            else {
-                if (!!this._errorGliph) {
-                    baseview_11.fn_addToolTip(this._errorGliph, null);
-                    dom.removeNode(this._errorGliph);
-                    this._errorGliph = null;
-                }
-                this._setFieldError(false);
-            }
-        };
         DataFormElView.prototype.dispose = function () {
             if (this.getIsDisposed()) {
                 return;
             }
             this.setDisposing();
-            if (!!this._errorGliph) {
-                baseview_11.fn_addToolTip(this._errorGliph, null);
-                dom.removeNode(this._errorGliph);
-                this._errorGliph = null;
-            }
             if (!this._form.getIsStateDirty()) {
                 this._form.dispose();
             }
             _super.prototype.dispose.call(this);
+        };
+        DataFormElView.prototype._getErrors = function () {
+            return this._form.validationErrors;
+        };
+        DataFormElView.prototype._setErrors = function (v) {
+            this._form.validationErrors = v;
         };
         DataFormElView.prototype.toString = function () {
             return "DataFormElView";
@@ -8439,7 +8454,9 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             configurable: true
         });
         Object.defineProperty(DataFormElView.prototype, "form", {
-            get: function () { return this._form; },
+            get: function () {
+                return this._form;
+            },
             enumerable: true,
             configurable: true
         });

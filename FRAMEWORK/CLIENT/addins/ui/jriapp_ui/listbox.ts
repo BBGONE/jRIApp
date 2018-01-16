@@ -729,6 +729,15 @@ export class ListBoxElView extends BaseElView {
     toString(): string {
         return "ListBoxElView";
     }
+    addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void {
+        this._listBox.objEvents.on(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
+    }
+    offOnRefreshed(nmspace?: string): void {
+        this._listBox.objEvents.off(LISTBOX_EVENTS.refreshed, nmspace);
+    }
+    getText(val: any): string {
+        return this._listBox.getText(val);
+    }
     get isEnabled(): boolean {
         return !(<HTMLSelectElement>this.el).disabled;
     }

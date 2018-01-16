@@ -4202,14 +4202,14 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
             return this.getEntity().getIsHasErrors();
         };
         BaseComplexProperty.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
-            this.getEntity().addOnErrorsChanged(fn, nmspace, context);
+            this.getEntity().addOnErrorsChanged(fn.bind(this), nmspace, context);
         };
         BaseComplexProperty.prototype.offOnErrorsChanged = function (nmspace) {
             this.getEntity().offOnErrorsChanged(nmspace);
         };
         BaseComplexProperty.prototype.getFieldErrors = function (fieldName) {
-            var fullName = this.getFullPath(fieldName);
-            return this.getEntity().getFieldErrors(fullName);
+            var name = this.getFullPath(fieldName);
+            return this.getEntity().getFieldErrors(name);
         };
         BaseComplexProperty.prototype.getAllErrors = function () {
             return this.getEntity().getAllErrors();

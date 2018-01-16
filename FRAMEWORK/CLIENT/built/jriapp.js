@@ -2901,9 +2901,9 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/utils/v
         Binding.prototype._onSrcErrChanged = function (errNotif) {
             var errors = [];
             var tgt = this._tgtEnd, src = this._srcEnd, srcPath = this._srcPath;
-            if (!!tgt && viewChecks.isElView(tgt)) {
+            if (sys.isValidatable(tgt)) {
                 if (!!src && srcPath.length > 0) {
-                    var prop = sys.isPropBag(errNotif) ? srcPath[srcPath.length - 1] : srcPath.join(".");
+                    var prop = srcPath[srcPath.length - 1];
                     errors = errNotif.getFieldErrors(prop);
                 }
                 tgt.validationErrors = errors;
@@ -4573,6 +4573,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.10.2";
+    exports.VERSION = "2.10.3";
     bootstrap_8.Bootstrap._initFramework();
 });

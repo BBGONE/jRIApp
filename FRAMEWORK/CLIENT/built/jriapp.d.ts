@@ -69,7 +69,7 @@ declare module "jriapp/const" {
 }
 declare module "jriapp/int" {
     import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "jriapp/const";
-    import { IBaseObject, IDisposable, IIndexer, IPromise, IVoidPromise, IValidationInfo, IErrorHandler, TEventHandler, IConfig } from "jriapp_shared";
+    import { IBaseObject, IDisposable, IIndexer, IPromise, IVoidPromise, IErrorHandler, TEventHandler, IConfig } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     export interface IJRIAppConfig extends IConfig {
         frameworkPath?: string;
@@ -186,7 +186,6 @@ declare module "jriapp/int" {
         readonly el: HTMLElement;
         readonly app: IApplication;
         readonly uniqueID: string;
-        validationErrors: IValidationInfo[];
         viewMounted?: () => void;
     }
     export interface IBindArgs {
@@ -1004,5 +1003,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.10.2";
+    export const VERSION = "2.10.3";
 }

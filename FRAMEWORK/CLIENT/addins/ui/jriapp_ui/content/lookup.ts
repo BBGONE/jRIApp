@@ -5,7 +5,7 @@ import {
 import { DomUtils } from "jriapp/utils/dom";
 import { BINDING_MODE } from "jriapp/const";
 import { IExternallyCachable, IBinding, IBindingOptions, IConstructorContentOptions, IConverter, IElView } from "jriapp/int";
-import { ListBox } from "../listbox";
+import { ListBoxElView } from "../listbox";
 import { BasicContent, IContentView } from "./basic";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, strUtils = utils.str, coreUtils = utils.core,
@@ -52,7 +52,7 @@ class LookupConverter implements IConverter {
 
 export class LookupContent extends BasicContent implements IExternallyCachable {
     private _converter: LookupConverter;
-    private _listBox: ListBox;
+    private _listBox: ListBoxElView;
     private _isListBoxCachedExternally: boolean;
     private _spanBinding: IBinding;
     private _objId: string;
@@ -86,7 +86,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         this._converter = null;
         super.dispose();
     }
-    protected getListBox(): ListBox {
+    protected getListBox(): ListBoxElView {
         if (!!this._listBox) {
             return this._listBox;
         }
@@ -102,7 +102,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         this.objEvents.raise(LOOKUP_EVENTS.obj_needed, args1);
         if (!!args1.result) {
             this._isListBoxCachedExternally = true;
-            this._listBox = <ListBox>args1.result;
+            this._listBox = <ListBoxElView>args1.result;
         }
         if (!!this._listBox) {
             this._listBox.addOnRefreshed(this.onListRefreshed, this.uniqueID, this);
@@ -127,7 +127,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             this._spanBinding.updateTarget();
         }
     }
-    protected createListBox(lookUpOptions: ILookupOptions): ListBox {
+    protected createListBox(lookUpOptions: ILookupOptions): ListBoxElView {
         const el = doc.createElement("select"), options = {
             valuePath: lookUpOptions.valuePath,
             textPath: lookUpOptions.textPath,
@@ -136,7 +136,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             dataSource: sys.resolvePath(this.app, lookUpOptions.dataSource)
         };
         el.setAttribute("size", "1");
-        return new ListBox(el, options);
+        return new ListBoxElView(el, options);
     }
     // override
     protected cleanUp() {
@@ -161,7 +161,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         };
         return this.app.bind(options);
     }
-    protected bindToList(listBox: ListBox): IBinding {
+    protected bindToList(listBox: IElView): IBinding {
         const options: IBindingOptions = {
             target: listBox,
             source: this.dataContext,

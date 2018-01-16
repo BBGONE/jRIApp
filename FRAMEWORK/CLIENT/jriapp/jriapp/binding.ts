@@ -5,8 +5,7 @@ import {
 } from "jriapp_shared";
 import { BINDING_MODE, BindTo } from "./const";
 import {
-    IBindingInfo, IBindingOptions,
-    IBinding, IConverter, IElView
+    IBindingInfo, IBindingOptions, IBinding, IConverter
 } from "./int";
 import { ViewChecks } from "./utils/viewchecks";
 import { bootstrap } from "./bootstrap";
@@ -326,12 +325,12 @@ export class Binding extends BaseObject implements IBinding {
     private _onSrcErrChanged(errNotif: IErrorNotification): void {
         let errors: IValidationInfo[] = [];
         const tgt = this._tgtEnd, src = this._srcEnd, srcPath = this._srcPath;
-        if (!!tgt && viewChecks.isElView(tgt)) {
+        if (sys.isValidatable(tgt)) {
             if (!!src && srcPath.length > 0) {
-                const prop = sys.isPropBag(errNotif) ? srcPath[srcPath.length - 1] : srcPath.join(".");
+                const prop = srcPath[srcPath.length - 1];
                 errors = errNotif.getFieldErrors(prop);
             }
-            (<IElView>tgt).validationErrors = errors;
+            tgt.validationErrors = errors;
         }
     }
     private _getTgtChangedFn(self: Binding, obj: any, prop: string, restPath: string[], lvl: number): () => void {

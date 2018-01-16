@@ -882,7 +882,7 @@ declare module "jriapp_db/complexprop" {
         abstract getEntity(): EntityAspect<IEntityItem, any, DbContext>;
         getPropertyByName(name: string): IFieldInfo;
         getIsHasErrors(): boolean;
-        addOnErrorsChanged(fn: TEventHandler<EntityAspect<IEntityItem, any, DbContext>, any>, nmspace?: string, context?: any): void;
+        addOnErrorsChanged(fn: TEventHandler<BaseComplexProperty, any>, nmspace?: string, context?: any): void;
         offOnErrorsChanged(nmspace?: string): void;
         getFieldErrors(fieldName: string): IValidationInfo[];
         getAllErrors(): IValidationInfo[];

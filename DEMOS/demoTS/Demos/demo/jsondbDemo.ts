@@ -123,7 +123,6 @@ export class CustomerBag extends RIAPP.JsonBag {
             });
         });
     }
-
     dispose() {
         if (this.getIsDisposed())
             return;

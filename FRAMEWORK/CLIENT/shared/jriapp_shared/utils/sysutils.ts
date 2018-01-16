@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    ISubmittable, IErrorNotification, IEditable, IPropertyBag, IBaseObject
+    ISubmittable, IErrorNotification, IEditable, IPropertyBag, IBaseObject, IValidatable
 } from "../int";
 import { Checks } from "./checks";
 import { StringUtils } from "./strUtils";
@@ -87,6 +87,12 @@ export class SysUtils {
         }
         const tmp = obj.getIErrorNotification();
         return !!tmp && checks.isFunc(tmp.getIErrorNotification);
+    }
+    static isValidatable(obj: any): obj is IValidatable {
+        if (!obj) {
+            return false;
+        }
+        return "validationErrors" in obj;
     }
     static getErrorNotification(obj: any): IErrorNotification {
         if (!obj) {

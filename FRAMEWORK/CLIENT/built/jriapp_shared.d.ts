@@ -169,6 +169,9 @@ declare module "jriapp_shared/int" {
         readonly fieldName: string;
         errors: string[];
     }
+    export interface IValidatable {
+        validationErrors: IValidationInfo[];
+    }
     export interface IErrorNotification extends IBaseObject {
         getIsHasErrors(): boolean;
         addOnErrorsChanged(fn: TEventHandler, nmspace?: string, context?: any): void;
@@ -228,7 +231,7 @@ declare module "jriapp_shared/utils/strUtils" {
     }
 }
 declare module "jriapp_shared/utils/sysutils" {
-    import { ISubmittable, IErrorNotification, IEditable, IBaseObject } from "jriapp_shared/int";
+    import { ISubmittable, IErrorNotification, IEditable, IBaseObject, IValidatable } from "jriapp_shared/int";
     export class SysUtils {
         static _isBaseObj: (obj: any) => boolean;
         static isBinding: (obj: any) => boolean;
@@ -240,6 +243,7 @@ declare module "jriapp_shared/utils/sysutils" {
         static isEditable(obj: any): obj is IEditable;
         static isSubmittable(obj: any): obj is ISubmittable;
         static isErrorNotification(obj: any): obj is IErrorNotification;
+        static isValidatable(obj: any): obj is IValidatable;
         static getErrorNotification(obj: any): IErrorNotification;
         static getEditable(obj: any): IEditable;
         static getSubmittable(obj: any): ISubmittable;
