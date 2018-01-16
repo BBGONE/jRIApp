@@ -4202,7 +4202,8 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
             return this.getEntity().getIsHasErrors();
         };
         BaseComplexProperty.prototype.addOnErrorsChanged = function (fn, nmspace, context) {
-            this.getEntity().addOnErrorsChanged(fn.bind(this), nmspace, context);
+            var self = this;
+            this.getEntity().addOnErrorsChanged(function (_, args) { fn.apply(this, [self, args]); }, nmspace, context);
         };
         BaseComplexProperty.prototype.offOnErrorsChanged = function (nmspace) {
             this.getEntity().offOnErrorsChanged(nmspace);

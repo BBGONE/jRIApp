@@ -39,7 +39,8 @@ export abstract class BaseComplexProperty extends BaseObject implements IErrorNo
         return this.getEntity().getIsHasErrors();
     }
     addOnErrorsChanged(fn: TEventHandler<BaseComplexProperty, any>, nmspace?: string, context?: any): void {
-        this.getEntity().addOnErrorsChanged(fn.bind(this), nmspace, context);
+        const self = this;
+        this.getEntity().addOnErrorsChanged(function (this: any,_,args) { fn.apply(this, [self, args]); }, nmspace, context);
     }
     offOnErrorsChanged(nmspace?: string): void {
         this.getEntity().offOnErrorsChanged(nmspace);
