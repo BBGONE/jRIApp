@@ -24,8 +24,8 @@ function getPropParts(prop: string): string[] {
                 if (!!v) {
                     parts.push(v);
                 }
-                start = -1;
             }
+            start = -1;
         } else if (ch === "]") {
             --test;
             if (test !== 0) {
@@ -133,7 +133,6 @@ export class SysUtils {
 
     static getPathParts(path: string): string[] {
         const parts: string[] = (!path) ? [] : path.split("."), parts2: string[] = [];
-
         for (let k = 0, l1 = parts.length; k < l1; k += 1) {
             let part = parts[k];
             // if empty part

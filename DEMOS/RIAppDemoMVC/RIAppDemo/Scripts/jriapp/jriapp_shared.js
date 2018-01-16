@@ -291,8 +291,8 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/uti
                     if (!!v) {
                         parts.push(v);
                     }
-                    start = -1;
                 }
+                start = -1;
             }
             else if (ch === "]") {
                 --test;
