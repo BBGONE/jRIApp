@@ -114,6 +114,9 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
     protected _setIsCancelling(v: boolean) {
         this._setFlag(v, AspectFlags.IsCancelling);
     }
+    protected _cloneVals(): any {
+        return cloneVals(this.coll.getFieldInfos(), this._vals);
+    }
     protected _beginEdit(): boolean {
         checkDetached(this);
         const coll = this.coll;
@@ -135,7 +138,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
                 ERROR.reThrow(ex, isHandled);
             }
         }
-        this._saveVals = cloneVals(this.coll.getFieldInfos(), this._vals);
+        this._saveVals = this._cloneVals();
         this.coll.currentItem = this.item;
         return true;
     }

@@ -356,7 +356,6 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _addOnPropChanged(obj: IBaseObject, prop: string, fn: (s: any, a: any) => void) {
         obj.objEvents.onProp(prop, fn, this._objId);
-
         // for PropertyBag also listen for all property changes notification
         if (prop !== "[*]" && sys.isPropBag(obj)) {
             obj.objEvents.onProp("[*]", fn, this._objId);

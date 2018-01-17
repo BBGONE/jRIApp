@@ -2204,7 +2204,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
         };
         JsonBag.prototype.beginEdit = function () {
             if (!this.isEditing) {
-                this._saveVal = JSON.parse(JSON.stringify(this._val));
+                this._saveVal = JSON.stringify(this._val);
                 return true;
             }
             return false;
@@ -2227,7 +2227,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
         };
         JsonBag.prototype.cancelEdit = function () {
             if (this.isEditing) {
-                this._val = this._saveVal;
+                this._val = JSON.parse(this._saveVal);
                 this._saveVal = null;
                 this._removeAllErrors();
                 this.objEvents.raiseProp("[*]");
@@ -4306,6 +4306,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype._setIsCancelling = function (v) {
             this._setFlag(v, 3);
         };
+        ItemAspect.prototype._cloneVals = function () {
+            return cloneVals(this.coll.getFieldInfos(), this._vals);
+        };
         ItemAspect.prototype._beginEdit = function () {
             checkDetached(this);
             var coll = this.coll;
@@ -4328,7 +4331,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                     ERROR.reThrow(ex, isHandled);
                 }
             }
-            this._saveVals = cloneVals(this.coll.getFieldInfos(), this._vals);
+            this._saveVals = this._cloneVals();
             this.coll.currentItem = this.item;
             return true;
         };
@@ -4981,6 +4984,11 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
         AnyItemAspect.prototype._validateField = function (name) {
             return this.coll.errors.validateItemField(this.item, name);
         };
+        AnyItemAspect.prototype._cloneVals = function () {
+            var obj = _super.prototype._cloneVals.call(this);
+            obj.val = JSON.parse(JSON.stringify(obj.val));
+            return obj;
+        };
         AnyItemAspect.prototype._validateFields = function () {
             return validation_2.Validations.distinct(this._validateItem());
         };
@@ -5072,7 +5080,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             _this._saveVal = null;
             _this._onChanged = onChanged;
             _this._debounce = new debounce_2.Debounce();
-            _this.addOnBeginEdit(function (s, a) {
+            _this.addOnBeginEdit(function (_, a) {
                 _this._saveVal = JSON.stringify(a.item.val);
             });
             _this.addOnEndEdit(function (s, a) {
@@ -5082,7 +5090,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                     item.objEvents.raiseProp("[*]");
                     return;
                 }
-                var oldVal = _this._saveVal, newVal = JSON.parse(JSON.stringify(item.val));
+                var oldVal = _this._saveVal, newVal = JSON.stringify(item.val);
                 _this._saveVal = null;
                 if (oldVal !== newVal) {
                     _this.onChanged();

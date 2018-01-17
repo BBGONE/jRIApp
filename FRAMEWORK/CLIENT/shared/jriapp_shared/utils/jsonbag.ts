@@ -36,7 +36,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
     private _json: string = void 0;
     private _jsonChanged: (json: string) => void;
     private _val: any = {};
-    private _saveVal: any = null;
+    private _saveVal: string = null;
     private _debounce: Debounce;
     private _errors: IBagErrors;
 
@@ -220,7 +220,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
     beginEdit(): boolean {
         if (!this.isEditing) {
             // clone data
-            this._saveVal = JSON.parse(JSON.stringify(this._val));
+            this._saveVal = JSON.stringify(this._val);
             return true;
         }
         return false;
@@ -246,7 +246,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
     cancelEdit(): boolean {
         if (this.isEditing) {
             // restore value from saved value
-            this._val = this._saveVal;
+            this._val = JSON.parse(this._saveVal);
             this._saveVal = null;
             this._removeAllErrors();
             this.objEvents.raiseProp("[*]");

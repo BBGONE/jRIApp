@@ -1309,6 +1309,7 @@ declare module "jriapp_shared/collection/aspect" {
         private _setFlag(v, flag);
         protected _setIsEdited(v: boolean): void;
         protected _setIsCancelling(v: boolean): void;
+        protected _cloneVals(): any;
         protected _beginEdit(): boolean;
         protected _endEdit(): boolean;
         protected _cancelEdit(): boolean;
@@ -1418,6 +1419,7 @@ declare module "jriapp_shared/utils/anylist" {
     }
     export class AnyItemAspect extends ListItemAspect<IAnyValItem, IAnyVal> {
         _validateField(name: string): IValidationInfo;
+        protected _cloneVals(): any;
         protected _validateFields(): IValidationInfo[];
         _getProp(name: string): any;
         _setProp(name: string, val: any): void;

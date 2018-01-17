@@ -28,6 +28,12 @@ export class AnyItemAspect extends ListItemAspect<IAnyValItem, IAnyVal> {
         return this.coll.errors.validateItemField(this.item, name);
     }
     // override
+    protected _cloneVals(): any {
+        let obj = super._cloneVals();
+        obj.val = JSON.parse(JSON.stringify(obj.val));
+        return obj;
+    }
+    // override
     protected _validateFields(): IValidationInfo[] {
         return Validations.distinct(this._validateItem());
     }
@@ -107,7 +113,7 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
         this._onChanged = onChanged;
         this._debounce = new Debounce();
 
-        this.addOnBeginEdit((s, a) => {
+        this.addOnBeginEdit((_, a) => {
             this._saveVal = JSON.stringify(a.item.val);
         });
 
@@ -119,7 +125,7 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
                 item.objEvents.raiseProp("[*]");
                 return;
             }
-            const oldVal = this._saveVal, newVal = JSON.parse(JSON.stringify(item.val));
+            const oldVal = this._saveVal, newVal = JSON.stringify(item.val);
             this._saveVal = null;
 
             if (oldVal !== newVal) {
