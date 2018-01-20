@@ -916,7 +916,7 @@ declare module "jriapp_db/complexprop" {
     }
 }
 declare module "jriapp_db" {
-    export { IFieldName, IEntityItem, IPermissions, IQueryResult, IDbSetLoadedArgs, IErrorInfo, IMetadata, IDbSetConstuctorOptions, IValidationErrorInfo, IPermissionsInfo, IFilterInfo, ISortInfo, IRowData } from "jriapp_db/int";
+    export { IFieldName, IEntityItem, IPermissions, IQueryResult, IDbSetLoadedArgs, IErrorInfo, IMetadata, IDbSetConstuctorOptions, IValidationErrorInfo, IPermissionsInfo, IFilterInfo, ISortInfo, IRowData, IAssociationInfo } from "jriapp_db/int";
     export { DbSet, TDbSet, IDbSetConstructor, IInternalDbSetMethods } from "jriapp_db/dbset";
     export * from "jriapp_db/dataview";
     export * from "jriapp_db/child_dataview";

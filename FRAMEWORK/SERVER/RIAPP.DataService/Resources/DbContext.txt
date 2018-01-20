@@ -11,7 +11,7 @@ export class DbContext extends dbMOD.DbContext
 	protected _initDbSets(){
 		super._initDbSets();
 		this._dbSets = new DbSets(this);
-		var associations ={{ASSOCIATIONS}};
+		var associations: dbMOD.IAssociationInfo[] ={{ASSOCIATIONS}};
 		this._initAssociations(associations);
 		var methods ={{METHODS}};
 		this._initMethods(methods);

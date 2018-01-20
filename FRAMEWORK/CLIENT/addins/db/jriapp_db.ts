@@ -2,7 +2,7 @@
 /** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 export {
     IFieldName, IEntityItem, IPermissions, IQueryResult, IDbSetLoadedArgs, IErrorInfo, IMetadata, IDbSetConstuctorOptions,
-    IValidationErrorInfo, IPermissionsInfo, IFilterInfo, ISortInfo, IRowData
+    IValidationErrorInfo, IPermissionsInfo, IFilterInfo, ISortInfo, IRowData, IAssociationInfo
 } from "./jriapp_db/int";
 export { DbSet, TDbSet, IDbSetConstructor, IInternalDbSetMethods } from "./jriapp_db/dbset";
 export * from "./jriapp_db/dataview";
