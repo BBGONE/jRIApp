@@ -13,7 +13,7 @@ export class DbContext extends dbMOD.DbContext
 		this._dbSets = new DbSets(this);
 		var associations: dbMOD.IAssociationInfo[] ={{ASSOCIATIONS}};
 		this._initAssociations(associations);
-		var methods ={{METHODS}};
+		var methods: dbMOD.IQueryInfo[] ={{METHODS}};
 		this._initMethods(methods);
 	}
 	get associations() { return <IAssocs>this._assoc; }

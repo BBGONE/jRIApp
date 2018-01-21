@@ -15,8 +15,7 @@ export {
 } from "./jriapp_ui/datagrid/datagrid";
 export * from "./jriapp_ui/pager";
 export {
-    ListBox, ListBoxElView, IListBoxViewOptions,
-    IOptionStateProvider, IOptionTextProvider
+    ListBox, ListBoxElView, IListBoxViewOptions, IOptionStateProvider, IOptionTextProvider
 } from "./jriapp_ui/listbox";
 export * from "./jriapp_ui/stackpanel";
 export * from "./jriapp_ui/tabs";
