@@ -4,7 +4,7 @@ import {
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { ViewChecks } from "jriapp/utils/viewchecks";
-import { TOOLTIP_SVC, DATEPICKER_SVC, DATA_ATTR, SubscribeFlags } from "jriapp/const";
+import { TOOLTIP_SVC, DATEPICKER_SVC, DATA_ATTR, SubscribeFlags, css } from "jriapp/const";
 import { ITooltipService, IElView, IElViewStore, IApplication, IViewOptions, ISubscriber } from "jriapp/int";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { ICommand } from "jriapp/mvvm";
@@ -55,16 +55,6 @@ export function addError(el: HTMLElement): void {
 
 export function removeError(el: HTMLElement): void {
     setError(el, false);
-}
-
-export const enum css {
-    fieldError = "ria-field-error",
-    commandLink = "ria-command-link",
-    checkedNull = "ria-checked-null",
-    disabled = "disabled",
-    opacity = "opacity",
-    color = "color",
-    fontSize = "font-size"
 }
 
 export const enum PROP_NAME {
@@ -139,10 +129,11 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
         this.setDisposing();
         try {
             dom.events.offNS(this.el, this.uniqueID);
+            this.validationErrors = null;
             this.css = null;
             this._toolTip = null;
             fn_addToolTip(this.el, null);
-            this.validationErrors = null;
+
             if (this._subscribeFlags !== 0) {
                 subscribeMap.delete(this.el);
                 this._subscribeFlags = 0;
@@ -199,20 +190,22 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
     protected _setIsSubcribed(flag: SubscribeFlags): void {
         this._subscribeFlags |= (1 << flag);
     }
+    protected _onSetErrors(el: HTMLElement, errors: IValidationInfo[]): void {
+        if (!!errors && errors.length > 0) {
+            fn_addToolTip(el, getErrorTipInfo(errors), true);
+            addError(el);
+        } else {
+            fn_addToolTip(el, this.toolTip);
+            removeError(el);
+        }
+    }
     protected _getErrors(): IValidationInfo[] {
         return this._errors;
     }
     protected _setErrors(errors: IValidationInfo[]): void {
         if (errors !== this._errors) {
             this._errors = errors;
-            const el = this.el;
-            if (!!errors && errors.length > 0) {
-                fn_addToolTip(el, getErrorTipInfo(errors), true);
-                addError(el);
-            } else {
-                fn_addToolTip(el, this.toolTip);
-                removeError(el);
-            }
+            this._onSetErrors(this.el, errors);
             this.objEvents.raiseProp("validationErrors");
         }
     }

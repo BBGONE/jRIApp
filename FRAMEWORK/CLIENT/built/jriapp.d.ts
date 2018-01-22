@@ -66,6 +66,20 @@ declare module "jriapp/const" {
         keydown = 4,
         keyup = 5,
     }
+    export const enum css {
+        content = "ria-content-field",
+        required = "ria-required-field",
+        checkbox = "ria-checkbox",
+        fieldError = "ria-field-error",
+        commandLink = "ria-command-link",
+        checkedNull = "ria-checked-null",
+        dataform = "ria-dataform",
+        error = "ria-form-error",
+        disabled = "disabled",
+        opacity = "opacity",
+        color = "color",
+        fontSize = "font-size",
+    }
 }
 declare module "jriapp/int" {
     import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "jriapp/const";
@@ -1003,5 +1017,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.10.8";
+    export const VERSION = "2.10.9";
 }

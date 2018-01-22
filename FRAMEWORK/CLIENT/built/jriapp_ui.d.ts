@@ -3,26 +3,6 @@
 /// <reference path="../thirdparty/jquery.d.ts" />
 /// <reference path="../thirdparty/jqueryui.d.ts" />
 /// <reference path="../thirdparty/qtip2.d.ts" />
-declare module "jriapp_ui/content/int" {
-    import { IContentOptions, ITemplateInfo } from "jriapp/int";
-    export const enum css {
-        content = "ria-content-field",
-        required = "ria-required-field",
-        checkbox = "ria-checkbox",
-    }
-    export interface IDataContentAttr {
-        fieldName?: string;
-        readOnly?: boolean;
-        css?: {
-            displayCss: string;
-            editCss: string;
-        };
-        template?: ITemplateInfo;
-        name?: string;
-        options?: any;
-    }
-    export function parseContentAttr(contentAttr: string): IContentOptions;
-}
 declare module "jriapp_ui/content/basic" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
@@ -177,15 +157,6 @@ declare module "jriapp_ui/baseview" {
     export function getErrorTipInfo(errors: IValidationInfo[]): string;
     export function addError(el: HTMLElement): void;
     export function removeError(el: HTMLElement): void;
-    export const enum css {
-        fieldError = "ria-field-error",
-        commandLink = "ria-command-link",
-        checkedNull = "ria-checked-null",
-        disabled = "disabled",
-        opacity = "opacity",
-        color = "color",
-        fontSize = "font-size",
-    }
     export const enum PROP_NAME {
         isVisible = "isVisible",
         validationErrors = "validationErrors",
@@ -234,6 +205,7 @@ declare module "jriapp_ui/baseview" {
         protected _onEventDeleted(name: string, oldVal: ICommand): void;
         protected _applyToolTip(): void;
         protected _setIsSubcribed(flag: SubscribeFlags): void;
+        protected _onSetErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         protected _getErrors(): IValidationInfo[];
         protected _setErrors(errors: IValidationInfo[]): void;
         isSubscribed(flag: SubscribeFlags): boolean;
@@ -320,6 +292,7 @@ declare module "jriapp_ui/content/multyline" {
     }
 }
 declare module "jriapp_ui/checkbox" {
+    import { IValidationInfo } from "jriapp_shared";
     import { IViewOptions } from "jriapp/int";
     import { InputElView } from "jriapp_ui/input";
     export class CheckBoxElView extends InputElView<HTMLInputElement> {
@@ -327,6 +300,21 @@ declare module "jriapp_ui/checkbox" {
         constructor(chk: HTMLInputElement, options?: IViewOptions);
         handle_change(e: Event): boolean;
         protected _updateState(): void;
+        protected _onSetErrors(el: HTMLElement, errors: IValidationInfo[]): void;
+        toString(): string;
+        checked: boolean;
+    }
+}
+declare module "jriapp_ui/checkbox3" {
+    import { IValidationInfo } from "jriapp_shared";
+    import { IViewOptions } from "jriapp/int";
+    import { InputElView } from "jriapp_ui/input";
+    export class CheckBoxThreeStateElView extends InputElView<HTMLInputElement> {
+        private _checked;
+        constructor(chk: HTMLInputElement, options?: IViewOptions);
+        handle_change(e: Event): boolean;
+        protected _updateState(): void;
+        protected _onSetErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         toString(): string;
         checked: boolean;
     }
@@ -672,6 +660,21 @@ declare module "jriapp_ui/dynacontent" {
         dataContext: any;
         animation: IDynaContentAnimation;
     }
+}
+declare module "jriapp_ui/content/int" {
+    import { IContentOptions, ITemplateInfo } from "jriapp/int";
+    export interface IDataContentAttr {
+        fieldName?: string;
+        readOnly?: boolean;
+        css?: {
+            displayCss: string;
+            editCss: string;
+        };
+        template?: ITemplateInfo;
+        name?: string;
+        options?: any;
+    }
+    export function parseContentAttr(contentAttr: string): IContentOptions;
 }
 declare module "jriapp_ui/datagrid/const" {
     import { IIndexer } from "jriapp_shared";
@@ -1593,10 +1596,6 @@ declare module "jriapp_ui/dataform" {
     import { IBaseObject, IValidationInfo, BaseObject, IValidatable } from "jriapp_shared";
     import { IViewOptions, IApplication } from "jriapp/int";
     import { BaseElView } from "jriapp_ui/baseview";
-    export const enum css {
-        dataform = "ria-dataform",
-        error = "ria-form-error",
-    }
     export class DataForm extends BaseObject implements IValidatable {
         private static _DATA_FORM_SELECTOR;
         private static _DATA_CONTENT_SELECTOR;
@@ -1729,18 +1728,6 @@ declare module "jriapp_ui/button" {
         html: string;
     }
 }
-declare module "jriapp_ui/checkbox3" {
-    import { IViewOptions } from "jriapp/int";
-    import { InputElView } from "jriapp_ui/input";
-    export class CheckBoxThreeStateElView extends InputElView<HTMLInputElement> {
-        private _checked;
-        constructor(chk: HTMLInputElement, options?: IViewOptions);
-        handle_change(e: Event): boolean;
-        protected _updateState(): void;
-        toString(): string;
-        checked: boolean;
-    }
-}
 declare module "jriapp_ui/expander" {
     import { AnchorElView, IAncorOptions } from "jriapp_ui/anchor";
     export interface IExpanderOptions extends IAncorOptions {
@@ -1786,7 +1773,6 @@ declare module "jriapp_ui/radio" {
     }
 }
 declare module "jriapp_ui/content/all" {
-    export { css as contentCSS } from "jriapp_ui/content/int";
     export { BasicContent } from "jriapp_ui/content/basic";
     export { TemplateContent } from "jriapp_ui/content/template";
     export { StringContent } from "jriapp_ui/content/string";

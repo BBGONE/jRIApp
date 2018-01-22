@@ -1,11 +1,10 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { IValidationInfo, Utils } from "jriapp_shared";
 import { IViewOptions } from "jriapp/int";
-import { Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-import { SubscribeFlags } from "jriapp/const";
+import { SubscribeFlags, css } from "jriapp/const";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { InputElView } from "./input";
-import { css } from "./baseview";
 
 const checks = Utils.check, dom = DomUtils, boot = bootstrap, subscribeMap = subscribeWeakMap;
 
@@ -41,6 +40,12 @@ export class CheckBoxThreeStateElView extends InputElView<HTMLInputElement> {
     }
     protected _updateState(): void {
         dom.setClass([this.el], css.checkedNull, !checks.isNt(this.checked));
+    }
+    // override
+    protected _onSetErrors(el: HTMLElement, errors: IValidationInfo[]): void {
+        const parent = el.parentElement;
+        const mainEl = (!!parent && parent.tagName.toLowerCase() === "label") ? parent : el;
+        super._onSetErrors(mainEl, errors);
     }
     toString(): string {
         return "CheckBoxThreeStateElView";

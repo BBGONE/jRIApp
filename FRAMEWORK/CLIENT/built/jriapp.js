@@ -85,6 +85,21 @@ define("jriapp/const", ["require", "exports"], function (require, exports) {
         SubscribeFlags[SubscribeFlags["keydown"] = 4] = "keydown";
         SubscribeFlags[SubscribeFlags["keyup"] = 5] = "keyup";
     })(SubscribeFlags = exports.SubscribeFlags || (exports.SubscribeFlags = {}));
+    var css;
+    (function (css) {
+        css["content"] = "ria-content-field";
+        css["required"] = "ria-required-field";
+        css["checkbox"] = "ria-checkbox";
+        css["fieldError"] = "ria-field-error";
+        css["commandLink"] = "ria-command-link";
+        css["checkedNull"] = "ria-checked-null";
+        css["dataform"] = "ria-dataform";
+        css["error"] = "ria-form-error";
+        css["disabled"] = "disabled";
+        css["opacity"] = "opacity";
+        css["color"] = "color";
+        css["fontSize"] = "font-size";
+    })(css = exports.css || (exports.css = {}));
 });
 define("jriapp/int", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -4573,6 +4588,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.10.8";
+    exports.VERSION = "2.10.9";
     bootstrap_8.Bootstrap._initFramework();
 });

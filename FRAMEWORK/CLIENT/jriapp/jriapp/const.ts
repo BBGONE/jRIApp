@@ -73,3 +73,18 @@ export const enum SubscribeFlags {
     keydown = 4,
     keyup = 5
 }
+
+export const enum css {
+    content = "ria-content-field",
+    required = "ria-required-field",
+    checkbox = "ria-checkbox",
+    fieldError = "ria-field-error",
+    commandLink = "ria-command-link",
+    checkedNull = "ria-checked-null",
+    dataform = "ria-dataform",
+    error = "ria-form-error",
+    disabled = "disabled",
+    opacity = "opacity",
+    color = "color",
+    fontSize = "font-size"
+}

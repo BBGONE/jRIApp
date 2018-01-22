@@ -1,8 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DomUtils } from "jriapp/utils/dom";
-import { SubscribeFlags } from "jriapp/const";
+import { SubscribeFlags, css } from "jriapp/const";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
-import { css } from "./baseview";
 import { CommandElView, ICommandViewOptions } from "./command";
 
 const dom = DomUtils, boot = bootstrap, subscribeMap = subscribeWeakMap;

@@ -6,7 +6,7 @@ import {
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { DATA_ATTR, ELVIEW_NM, BindScope } from "jriapp/const";
+import { DATA_ATTR, ELVIEW_NM, BindScope, css } from "jriapp/const";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { IContent, IElView, ILifeTimeScope, IViewOptions, IApplication } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
@@ -16,11 +16,6 @@ import { parseContentAttr } from "./content/int";
 
 const utils = Utils, dom = DomUtils, checks = utils.check, { getNewID } = utils.core, strUtils = utils.str,
     sys = utils.sys, boot = bootstrap, viewChecks = ViewChecks, _async = utils.defer;
-
-export const enum css {
-    dataform = "ria-dataform",
-    error = "ria-form-error"
-}
 
 viewChecks.isDataForm = (el: Element) => {
     if (!el) {

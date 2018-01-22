@@ -129,15 +129,13 @@ input.ria-field-error, select.ria-field-error, textarea.ria-field-error {
     outline: 2px solid red;
 }
 
-
-input.ria-checked-null {
-  opacity: 0.4;
-  outline: 2px inset silver;
+label.ria-field-error  {
+  outline: 2px solid red;
 }
 
 /* more specific */
 input[type=checkbox].ria-field-error, input[type=radio].ria-field-error {
-  outline: 2px outset red;
+  outline: 2px solid red;
 }
 
 /* Dataform styles */
@@ -166,4 +164,9 @@ input[type="checkbox"].ria-checkbox
 {
     margin: 0;
     margin-bottom: 5px;
+}
+
+input.ria-checked-null {
+  opacity: 0.4;
+  outline: 2px inset silver;
 }

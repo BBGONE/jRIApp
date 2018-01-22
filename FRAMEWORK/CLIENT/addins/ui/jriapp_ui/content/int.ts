@@ -11,12 +11,6 @@ import {
 
 const utils = Utils, { parseBool } = utils.core, checks = utils.check, parser = Parser;
 
-export const enum css {
-    content = "ria-content-field",
-    required = "ria-required-field",
-    checkbox = "ria-checkbox"
-}
-
 // the result of parsing of the data-content attribute
 export interface IDataContentAttr {
     fieldName?: string;

@@ -1,10 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { IValidationInfo, Utils } from "jriapp_shared";
 import { IViewOptions } from "jriapp/int";
-import { Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-import { SubscribeFlags } from "jriapp/const";
+import { SubscribeFlags, css } from "jriapp/const";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
-import { css } from "./baseview";
 import { InputElView } from "./input";
 
 const dom = DomUtils, checks = Utils.check, boot = bootstrap, subscribeMap = subscribeWeakMap;
@@ -39,6 +38,12 @@ export class CheckBoxElView extends InputElView<HTMLInputElement> {
     }
     protected _updateState(): void {
         dom.setClass([this.el], css.checkedNull, !checks.isNt(this.checked));
+    }
+    // override
+    protected _onSetErrors(el: HTMLElement, errors: IValidationInfo[]): void {
+        const parent = el.parentElement;
+        const mainEl = (!!parent && parent.tagName.toLowerCase() === "label") ? parent : el;
+        super._onSetErrors(mainEl, errors);
     }
     toString(): string {
         return "CheckBoxElView";

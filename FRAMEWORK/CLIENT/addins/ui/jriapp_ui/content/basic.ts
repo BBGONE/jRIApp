@@ -1,19 +1,16 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { FIELD_TYPE } from "jriapp_shared/collection/const";
-import {
-    IBaseObject, BaseObject, Utils
-} from "jriapp_shared";
+import { IBaseObject, BaseObject, Utils } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
 import {
     IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions,
     IBindingInfo, IBindingOptions, IApplication, IConverter, IElView, IElViewInfo
 } from "jriapp/int";
+import { css } from "jriapp/const";
 import { bootstrap } from "jriapp/bootstrap";
 import { Binding, getBindingOptions } from "jriapp/binding";
 import { LifeTimeScope } from "jriapp/utils/lifetime";
-
-import { css } from "./int";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, coreUtils = utils.core,
     boot = bootstrap, sys = utils.sys;
