@@ -15,7 +15,7 @@ const utils = Utils, { parseBool } = utils.core, checks = utils.check, parser = 
 export interface IDataContentAttr {
     fieldName?: string;
     readOnly?: boolean;
-    css?: { displayCss: string; editCss: string; };
+    css?: { readCss: string; editCss: string; };
     template?: ITemplateInfo;
     name?: string;
     options?: any;
@@ -24,8 +24,11 @@ export interface IDataContentAttr {
 export function parseContentAttr(contentAttr: string): IContentOptions {
     const contentOptions: IContentOptions = {
         name: null,
-        templateInfo: null,
-        displayInfo: null,
+        readOnly: false,
+        initContentFn: null,
+        fieldInfo: null,
+        css: null,
+        template: null,
         fieldName: null,
         options: null
     };
@@ -38,7 +41,7 @@ export function parseContentAttr(contentAttr: string): IContentOptions {
     }
     const attr: IDataContentAttr = tempOpts[0];
     if (!attr.template && !!attr.fieldName) {
-        contentOptions.displayInfo = attr.css;
+        contentOptions.css = attr.css;
         contentOptions.fieldName = attr.fieldName;
         if (!!attr.name) {
             contentOptions.name = attr.name;
@@ -50,7 +53,7 @@ export function parseContentAttr(contentAttr: string): IContentOptions {
             contentOptions.readOnly = parseBool(attr.readOnly);
         }
     } else if (!!attr.template) {
-        contentOptions.templateInfo = attr.template;
+        contentOptions.template = attr.template;
         attr.template = null;
     }
     return contentOptions;

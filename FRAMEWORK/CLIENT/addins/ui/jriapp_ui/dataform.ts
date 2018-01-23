@@ -6,11 +6,11 @@ import {
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { DATA_ATTR, ELVIEW_NM, BindScope, css } from "jriapp/const";
+import { DATA_ATTR, ELVIEW_NM, BindScope } from "jriapp/const";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { IContent, IElView, ILifeTimeScope, IViewOptions, IApplication } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
-import { BaseElView, fn_addToolTip, addError, removeError } from "./baseview";
+import { BaseElView, fn_addToolTip, addError, removeError, cssStyles } from "./baseview";
 import { Binding } from "jriapp/binding";
 import { parseContentAttr } from "./content/int";
 
@@ -152,7 +152,7 @@ export class DataForm extends BaseObject implements IValidatable {
         this._objId = getNewID("frm");
         this._dataContext = null;
         this._errorGliph = null;
-        dom.addClass([el], css.dataform);
+        dom.addClass([el], cssStyles.dataform);
         this._isEditing = false;
         this._content = [];
         this._lfTime = null;
@@ -344,7 +344,7 @@ export class DataForm extends BaseObject implements IValidatable {
         const el = this.el;
         if (!!errors && errors.length > 0) {
             if (!this._errorGliph) {
-                this._errorGliph = dom.fromHTML(`<div data-name="error_info" class="${css.error}" />`)[0];
+                this._errorGliph = dom.fromHTML(`<div data-name="error_info" class="${cssStyles.error}" />`)[0];
                 dom.prepend(el, this._errorGliph);
             }
             fn_addToolTip(this._errorGliph, getErrorTipInfo(errors), true);
@@ -365,7 +365,7 @@ export class DataForm extends BaseObject implements IValidatable {
         this.setDisposing();
         this.validationErrors = null;
         this._clearContent();
-        dom.removeClass([this.el], css.dataform);
+        dom.removeClass([this.el], cssStyles.dataform);
         this._unbindDS();
         const parentDataForm = this._parentDataForm;
         this._parentDataForm = null;

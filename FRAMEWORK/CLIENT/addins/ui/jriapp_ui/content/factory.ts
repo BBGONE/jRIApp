@@ -27,7 +27,7 @@ class ContentFactory implements IContentFactory {
     }
 
     getContentType(options: IContentOptions): IContentConstructor {
-        if (!!options.templateInfo) {
+        if (!!options.template) {
             return TemplateContent;
         }
         if (!options.fieldName) {

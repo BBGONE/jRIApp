@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DomUtils } from "jriapp/utils/dom";
 import { IConstructorContentOptions } from "jriapp/int";
-import { css } from "jriapp/const";
+import { cssStyles } from "../baseview";
 import { CheckBoxElView } from "../checkbox";
 import { CheckBoxThreeStateElView } from "../checkbox3";
 import { BasicContent, IContentView, getBindingOption } from "./basic";
@@ -33,10 +33,10 @@ export class BoolContent extends BasicContent {
         
         const chk = document.createElement("input");
         chk.setAttribute("type", "checkbox");
-        dom.addClass([chk], css.checkbox);
+        dom.addClass([chk], cssStyles.checkbox);
         const view = isNullable ? new CheckBoxThreeStateElView(chk) : new CheckBoxElView(chk);
         const label = doc.createElement("label");
-        dom.addClass([label], css.checkbox);
+        dom.addClass([label], cssStyles.checkbox);
         label.appendChild(view.el);
         label.appendChild(doc.createElement("span"));
         this._label = label;

@@ -1,10 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
 import { IViewOptions } from "jriapp/int";
-import { css } from "jriapp/const";
 import { DomUtils } from "jriapp/utils/dom";
 import { ICommand } from "jriapp/mvvm";
-import { BaseElView } from "./baseview";
+import { BaseElView, cssStyles } from "./baseview";
 
 const utils = Utils, dom = DomUtils, sys = utils.sys;
 
@@ -35,7 +34,7 @@ export class CommandElView<TElement extends HTMLElement = HTMLElement> extends B
         if (disabled) {
             this._setFlag(disabled, CommandFlags.Disabled);
         }
-        dom.setClass([el], css.disabled, this.isEnabled);
+        dom.setClass([el], cssStyles.disabled, this.isEnabled);
     }
     private _getFlag(flag: CommandFlags): boolean {
         return !!(this._flags & (1 << flag));
@@ -136,7 +135,7 @@ export class CommandElView<TElement extends HTMLElement = HTMLElement> extends B
             } else {
                 this._setFlag(!v, CommandFlags.Disabled);
             }
-            dom.setClass([this.el], css.disabled, !!v);
+            dom.setClass([this.el], cssStyles.disabled, !!v);
             this.objEvents.raiseProp("isEnabled");
         }
     }

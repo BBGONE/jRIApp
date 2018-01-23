@@ -4,7 +4,7 @@ import {
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { ViewChecks } from "jriapp/utils/viewchecks";
-import { TOOLTIP_SVC, DATEPICKER_SVC, DATA_ATTR, SubscribeFlags, css } from "jriapp/const";
+import { TOOLTIP_SVC, DATEPICKER_SVC, DATA_ATTR, SubscribeFlags } from "jriapp/const";
 import { ITooltipService, IElView, IElViewStore, IApplication, IViewOptions, ISubscriber } from "jriapp/int";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { ICommand } from "jriapp/mvvm";
@@ -19,6 +19,20 @@ export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 const utils = Utils, { getNewID } = utils.core, dom = DomUtils, { undefined } = utils.check,
     boot = bootstrap, viewChecks = ViewChecks, subscribeMap = subscribeWeakMap;
 
+export const enum cssStyles {
+    content = "ria-content-field",
+    required = "ria-required-field",
+    checkbox = "ria-checkbox",
+    fieldError = "ria-field-error",
+    commandLink = "ria-command-link",
+    checkedNull = "ria-checked-null",
+    dataform = "ria-dataform",
+    error = "ria-form-error",
+    disabled = "disabled",
+    opacity = "opacity",
+    color = "color",
+    fontSize = "font-size"
+}
 
 viewChecks.isElView = (obj: any) => {
     return !!obj && obj instanceof BaseElView;
@@ -46,7 +60,7 @@ export function getErrorTipInfo(errors: IValidationInfo[]): string {
 }
 
 function setError(el: HTMLElement, isError: boolean): void {
-    dom.setClass([el], css.fieldError, !isError);
+    dom.setClass([el], cssStyles.fieldError, !isError);
 }
 
 export function addError(el: HTMLElement): void {

@@ -7,10 +7,10 @@ import {
     IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions,
     IBindingInfo, IBindingOptions, IApplication, IConverter, IElView, IElViewInfo
 } from "jriapp/int";
-import { css } from "jriapp/const";
 import { bootstrap } from "jriapp/bootstrap";
 import { Binding, getBindingOptions } from "jriapp/binding";
 import { LifeTimeScope } from "jriapp/utils/lifetime";
+import { cssStyles } from "../baseview";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, coreUtils = utils.core,
     boot = bootstrap, sys = utils.sys;
@@ -82,18 +82,18 @@ export class BasicContent extends BaseObject implements IContent {
         this._isReadOnly = !!this._options.readOnly;
         this._lfScope = null;
         this._view = null;
-        dom.addClass([this._parentEl], css.content);
+        dom.addClass([this._parentEl], cssStyles.content);
     }
     dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
         this.setDisposing();
-        const displayInfo = this._options.displayInfo;
-        dom.removeClass([this._parentEl], css.content);
-        dom.removeClass([this._parentEl], css.required);
-        if (!!displayInfo && !!displayInfo.displayCss) {
-            dom.removeClass([this._parentEl], displayInfo.displayCss);
+        const displayInfo = this._options.css;
+        dom.removeClass([this._parentEl], cssStyles.content);
+        dom.removeClass([this._parentEl], cssStyles.required);
+        if (!!displayInfo && !!displayInfo.readCss) {
+            dom.removeClass([this._parentEl], displayInfo.readCss);
         }
         if (!!displayInfo && !!displayInfo.editCss) {
             dom.removeClass([this._parentEl], displayInfo.editCss);
@@ -105,31 +105,31 @@ export class BasicContent extends BaseObject implements IContent {
         super.dispose();
     }
     protected updateCss(): void {
-        const displayInfo = this._options.displayInfo, parentEl = this._parentEl,
+        const displayInfo = this._options.css, parentEl = this._parentEl,
             fieldInfo = this.getFieldInfo();
         if (this._isEditing && this.getIsCanBeEdited()) {
             if (!!displayInfo) {
                 if (!!displayInfo.editCss) {
                     dom.addClass([parentEl], displayInfo.editCss);
                 }
-                if (!!displayInfo.displayCss) {
-                    dom.removeClass([parentEl], displayInfo.displayCss);
+                if (!!displayInfo.readCss) {
+                    dom.removeClass([parentEl], displayInfo.readCss);
                 }
             }
             if (!!fieldInfo && !fieldInfo.isNullable) {
-                dom.addClass([parentEl], css.required);
+                dom.addClass([parentEl], cssStyles.required);
             }
         } else {
             if (!!displayInfo) {
-                if (!!displayInfo.displayCss) {
-                    dom.addClass([parentEl], displayInfo.displayCss);
+                if (!!displayInfo.readCss) {
+                    dom.addClass([parentEl], displayInfo.readCss);
                 }
                 if (!!displayInfo.editCss) {
                     dom.removeClass([parentEl], displayInfo.editCss);
                 }
             }
             if (!!fieldInfo && !fieldInfo.isNullable) {
-                dom.removeClass([parentEl], css.required);
+                dom.removeClass([parentEl], cssStyles.required);
             }
         }
     }

@@ -235,19 +235,19 @@ export interface IContentConstructor {
 
 // it can have two template ids - one for display and one for editing
 export interface ITemplateInfo {
-    displayID?: string;
+    readID?: string;
     editID?: string;
 }
 
 export interface IContentOptions {
-    name?: string;
-    readOnly?: boolean;
-    initContentFn?: (content: IExternallyCachable) => void;
-    fieldInfo?: IFieldInfo;
-    displayInfo?: { displayCss?: string; editCss?: string; };
-    templateInfo?: ITemplateInfo;
-    fieldName?: string;
-    options?: any;
+    name: string;
+    readOnly: boolean;
+    initContentFn: (content: IExternallyCachable) => void;
+    fieldInfo: IFieldInfo;
+    css: { readCss?: string; editCss?: string; };
+    template: ITemplateInfo;
+    fieldName: string;
+    options: any;
 }
 
 export interface IConstructorContentOptions {

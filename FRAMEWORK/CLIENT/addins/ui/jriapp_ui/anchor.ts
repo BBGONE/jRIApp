@@ -1,7 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DomUtils } from "jriapp/utils/dom";
-import { SubscribeFlags, css } from "jriapp/const";
+import { SubscribeFlags } from "jriapp/const";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
+import { cssStyles } from "./baseview";
 import { CommandElView, ICommandViewOptions } from "./command";
 
 const dom = DomUtils, boot = bootstrap, subscribeMap = subscribeWeakMap;
@@ -33,7 +34,7 @@ export class AnchorElView extends CommandElView<HTMLAnchorElement> {
             this.glyph = options.glyph;
         }
 
-        dom.addClass([el], css.commandLink);
+        dom.addClass([el], cssStyles.commandLink);
         if (this.isDelegationOn) {
             subscribeMap.set(el, this);
             this._setIsSubcribed(SubscribeFlags.click);
@@ -111,7 +112,7 @@ export class AnchorElView extends CommandElView<HTMLAnchorElement> {
             return;
         }
         this.setDisposing();
-        dom.removeClass([this.el], css.commandLink);
+        dom.removeClass([this.el], cssStyles.commandLink);
         this.imageSrc = null;
         this.glyph = null;
         super.dispose();

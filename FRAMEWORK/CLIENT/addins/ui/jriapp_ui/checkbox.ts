@@ -2,8 +2,9 @@
 import { IValidationInfo, Utils } from "jriapp_shared";
 import { IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { SubscribeFlags, css } from "jriapp/const";
+import { SubscribeFlags } from "jriapp/const";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
+import { cssStyles } from "./baseview";
 import { InputElView } from "./input";
 
 const dom = DomUtils, checks = Utils.check, boot = bootstrap, subscribeMap = subscribeWeakMap;
@@ -37,7 +38,7 @@ export class CheckBoxElView extends InputElView<HTMLInputElement> {
         return true;
     }
     protected _updateState(): void {
-        dom.setClass([this.el], css.checkedNull, !checks.isNt(this.checked));
+        dom.setClass([this.el], cssStyles.checkedNull, !checks.isNt(this.checked));
     }
     // override
     protected _onSetErrors(el: HTMLElement, errors: IValidationInfo[]): void {

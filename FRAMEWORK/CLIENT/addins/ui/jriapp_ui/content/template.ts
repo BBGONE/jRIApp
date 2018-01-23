@@ -3,12 +3,12 @@ import { BaseObject, LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import {
     IContent, IApplication, ITemplate, ITemplateInfo, IConstructorContentOptions
 } from "jriapp/int";
-import { css } from "jriapp/const";
 import { DomUtils } from "jriapp/utils/dom";
 import { bootstrap } from "jriapp/bootstrap";
 import { createTemplate } from "jriapp/template";
+import { cssStyles } from "../baseview";
 
-const utils = Utils, coreUtils = utils.core, dom = DomUtils, boot = bootstrap, ERROR = utils.err;
+const utils = Utils, { extend } = utils.core, dom = DomUtils, boot = bootstrap, ERROR = utils.err;
 
 export class TemplateContent extends BaseObject implements IContent {
     private _parentEl: HTMLElement;
@@ -20,7 +20,7 @@ export class TemplateContent extends BaseObject implements IContent {
 
     constructor(options: IConstructorContentOptions) {
         super();
-        options = coreUtils.extend(
+        options = extend(
             {
                 parentEl: null,
                 contentOptions: null,
@@ -32,16 +32,16 @@ export class TemplateContent extends BaseObject implements IContent {
         this._parentEl = options.parentEl;
         this._isEditing = options.isEditing;
         this._dataContext = options.dataContext;
-        this._templateInfo = options.contentOptions.templateInfo;
+        this._templateInfo = options.contentOptions.template;
         this._template = null;
-        dom.addClass([this._parentEl], css.content);
+        dom.addClass([this._parentEl], cssStyles.content);
     }
     dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
         this.setDisposing();
-        dom.removeClass([this._parentEl], css.content);
+        dom.removeClass([this._parentEl], cssStyles.content);
         this.cleanUp();
         this._parentEl = null;
         this._dataContext = null;
@@ -53,7 +53,7 @@ export class TemplateContent extends BaseObject implements IContent {
             throw new Error(ERRS.ERR_TEMPLATE_ID_INVALID);
         }
         const info = this._templateInfo;
-        let id = info.displayID;
+        let id = info.readID;
         if (this._isEditing && !!info.editID) {
             id = info.editID;
         }
