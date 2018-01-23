@@ -7,12 +7,11 @@ import { BINDING_MODE, BindTo } from "./const";
 import {
     IBindingInfo, IBindingOptions, IBinding, IConverter
 } from "./int";
-import { ViewChecks } from "./utils/viewchecks";
 import { bootstrap } from "./bootstrap";
 
 const utils = Utils, checks = utils.check, strUtils = utils.str, { getNewID, forEachProp } = utils.core,
     sys = utils.sys, debug = utils.debug, log = utils.log,
-    boot = bootstrap, ERRS = LocaleERRS, viewChecks = ViewChecks;
+    boot = bootstrap, ERRS = LocaleERRS;
 const { resolvePath, getPathParts, getErrorNotification, getProp, setProp } = sys;
 
 sys.isBinding = (obj: any) => {
@@ -672,12 +671,12 @@ export class Binding extends BaseObject implements IBinding {
                 this.sourceValue = this._converter.convertToSource(this.targetValue, this.param, this.source);
             }
         } catch (ex) {
-            if (!sys.isValidationError(ex) || !viewChecks.isElView(this._tgtEnd)) {
+            if (!sys.isValidationError(ex) || !sys.isValidatable(this._tgtEnd)) {
                 // BaseElView is notified about errors in _onSrcErrChanged event handler
                 // err_notif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
                 // we only need to rethrow in other cases:
-                // 1) when target is not BaseElView
-                // 2) when error is not ValidationError
+                // 1) when target is not a IValidatable
+                // 2) when error is not a ValidationError
                 utils.err.reThrow(ex, this.handleError(ex, this));
             }
         }
