@@ -78,10 +78,10 @@
                 <th data-column="width:35px,type:row_expander"></th>
                 <th data-column="width:50px,type:row_actions"></th>
                 <th data-column="width:80px,sortable:true,title:ID" data-content="fieldName:CustomerID,readOnly:true"></th>
-                <th data-column="width:45%,title:Customer Name" data-content="template={displayID=nameTemplate}"></th>
-                <th data-column="width:35%,title:E-Mail" data-content="template={displayID=emailTemplate}"></th>
-                <th data-column="width:20%,title:Phone" data-content="template={displayID=phoneTemplate}"></th>
-                <th data-column="width:150px,title:Modified" data-content="template={displayID=dateTemplate}"></th>
+                <th data-column="width:45%,title:Customer Name" data-content="template={readID=nameTemplate}"></th>
+                <th data-column="width:35%,title:E-Mail" data-content="template={readID=emailTemplate}"></th>
+                <th data-column="width:20%,title:Phone" data-content="template={readID=phoneTemplate}"></th>
+                <th data-column="width:150px,title:Modified" data-content="template={readID=dateTemplate}"></th>
             </tr>
             </thead>
             <tbody></tbody>
@@ -120,7 +120,7 @@
                         ID:
                     </td>
                     <td>
-                        <span data-content="fieldName:CustomerID,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                        <span data-content="fieldName:CustomerID,css:{readCss:'custInfo',editCss:'custEdit'}"></span>
                     </td>
                 </tr>
                 <tr>
@@ -238,7 +238,7 @@
             <thead>
                 <tr>
                     <th data-column="width:50px,type:row_actions"></th>
-                    <th data-column="width:100%,title:Address" data-content="template={displayID=addrTemplate}"></th>
+                    <th data-column="width:100%,title:Address" data-content="template={readID=addrTemplate}"></th>
                 </tr>
             </thead>
             <tbody></tbody>

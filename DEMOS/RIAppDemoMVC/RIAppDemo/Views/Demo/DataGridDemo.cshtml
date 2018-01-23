@@ -319,14 +319,14 @@
                 <th data-column="width:35px,type:row_expander,tip='Row expander'"></th>
                 <th data-column="width:50px,type:row_actions,tip='Row actions'"></th>
                 <th data-column="width:40px,type:row_selector,tip='Column selector'"></th>
-                <th data-column="width:100px,sortable:false,templateID:productNumberTemplate,tip='Product number column implemented using template!!!'" data-content="fieldName:ProductNumber,css:{displayCss:'number-display',editCss:'number-edit'}"></th>
+                <th data-column="width:100px,sortable:false,templateID:productNumberTemplate,tip='Product number column implemented using template!!!'" data-content="fieldName:ProductNumber,css:{readCss:'number-display',editCss:'number-edit'}"></th>
                 <th data-column="width:25%,sortable:true,title:Name,tip='Product name'" data-content="fieldName:Name"></th>
                 <th data-column="width:90px,title:'Weight',sortable:true,rowCellCss:weightCell,colCellCss:weightCol,tip='Example of a tooltip in the datagrid column''s header'" data-content="fieldName:Weight"></th>
                 <th data-column="width:15%,title=CategoryID,sortable:true,sortMemberName=ProductCategoryID" data-content="fieldName=ProductCategoryID,name:lookup,options:{dataSource=dbContext.dbSets.ProductCategory,valuePath=ProductCategoryID,textPath=Name}"></th>
                 <th data-column="width:100px,sortable:true,rowCellCss:dateCell,title='SellStartDate',tip='Start of the sales'" data-content="fieldName=SellStartDate"></th>
                 <th data-column="width:100px,sortable:true,rowCellCss:dateCell,title='SellEndDate',tip='End of the sales'" data-content="fieldName=SellEndDate"></th>
                 <th data-column="width:90px,sortable:true,rowCellCss:activeCell,title='IsActive',sortMemberName=SellEndDate" data-content="fieldName=IsActive"></th>
-                <th data-column="width:10%,title=Size,sortable:true,sortMemberName=Size" data-content="template={displayID=sizeDisplayTemplate}"></th>
+                <th data-column="width:10%,title=Size,sortable:true,sortMemberName=Size" data-content="template={readID=sizeDisplayTemplate}"></th>
             </tr>
             </thead>
             <tbody></tbody>

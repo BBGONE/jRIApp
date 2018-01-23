@@ -3,78 +3,6 @@
 /// <reference path="../thirdparty/jquery.d.ts" />
 /// <reference path="../thirdparty/jqueryui.d.ts" />
 /// <reference path="../thirdparty/qtip2.d.ts" />
-declare module "jriapp_ui/content/basic" {
-    import { IBaseObject, BaseObject } from "jriapp_shared";
-    import { IFieldInfo } from "jriapp_shared/collection/int";
-    import { IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions, IBindingOptions, IApplication, IConverter, IElView } from "jriapp/int";
-    import { Binding } from "jriapp/binding";
-    export interface IContentView extends IBaseObject {
-        readonly el: HTMLElement;
-    }
-    export function getView(el: HTMLElement, name: string, options: IViewOptions): IElView;
-    export function getBindingOption(isEdit: boolean, fieldName: string, target: IBaseObject, dataContext: any, targetPath: string, converter?: IConverter, param?: any): IBindingOptions;
-    export class BasicContent extends BaseObject implements IContent {
-        private _parentEl;
-        private _options;
-        private _isReadOnly;
-        private _isEditing;
-        private _dataContext;
-        private _lfScope;
-        private _view;
-        protected _el: HTMLElement;
-        constructor(options: IConstructorContentOptions);
-        dispose(): void;
-        protected updateCss(): void;
-        protected getIsCanBeEdited(): boolean;
-        protected getBindings(): Binding[];
-        protected updateBindingSource(): void;
-        protected cleanUp(): void;
-        protected getFieldInfo(): IFieldInfo;
-        protected getParam(isEdit: boolean): any;
-        protected getConverter(isEdit: boolean): IConverter;
-        protected getViewName(isEdit: boolean): string;
-        protected createdEditingView(): IContentView;
-        protected createdReadingView(): IContentView;
-        protected beforeCreateView(): boolean;
-        protected createView(): void;
-        protected afterCreateView(): void;
-        render(): void;
-        toString(): string;
-        protected readonly lfScope: ILifeTimeScope;
-        readonly parentEl: HTMLElement;
-        readonly el: HTMLElement;
-        readonly view: IContentView;
-        isEditing: boolean;
-        dataContext: any;
-        readonly isReadOnly: boolean;
-        readonly options: IContentOptions;
-        readonly app: IApplication;
-    }
-}
-declare module "jriapp_ui/content/template" {
-    import { BaseObject } from "jriapp_shared";
-    import { IContent, IApplication, ITemplate, IConstructorContentOptions } from "jriapp/int";
-    export class TemplateContent extends BaseObject implements IContent {
-        private _parentEl;
-        private _template;
-        private _templateInfo;
-        private _isEditing;
-        private _dataContext;
-        private _templateID;
-        constructor(options: IConstructorContentOptions);
-        dispose(): void;
-        private getTemplateID();
-        private createTemplate();
-        protected cleanUp(): void;
-        render(): void;
-        toString(): string;
-        readonly parentEl: HTMLElement;
-        readonly template: ITemplate;
-        isEditing: boolean;
-        dataContext: any;
-        readonly app: IApplication;
-    }
-}
 declare module "jriapp_ui/utils/eventbag" {
     import { BaseObject, IPropertyBag } from "jriapp_shared";
     import { ICommand } from "jriapp/mvvm";
@@ -153,6 +81,20 @@ declare module "jriapp_ui/baseview" {
     import { ICommand } from "jriapp/mvvm";
     import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
     export { IEventChangedArgs, EVENT_CHANGE_TYPE };
+    export const enum cssStyles {
+        content = "ria-content-field",
+        required = "ria-required-field",
+        checkbox = "ria-checkbox",
+        fieldError = "ria-field-error",
+        commandLink = "ria-command-link",
+        checkedNull = "ria-checked-null",
+        dataform = "ria-dataform",
+        error = "ria-form-error",
+        disabled = "disabled",
+        opacity = "opacity",
+        color = "color",
+        fontSize = "font-size",
+    }
     export function fn_addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void;
     export function getErrorTipInfo(errors: IValidationInfo[]): string;
     export function addError(el: HTMLElement): void;
@@ -221,6 +163,78 @@ declare module "jriapp_ui/baseview" {
         readonly classes: IPropertyBag;
         readonly isDelegationOn: boolean;
         css: string;
+        readonly app: IApplication;
+    }
+}
+declare module "jriapp_ui/content/basic" {
+    import { IBaseObject, BaseObject } from "jriapp_shared";
+    import { IFieldInfo } from "jriapp_shared/collection/int";
+    import { IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions, IBindingOptions, IApplication, IConverter, IElView } from "jriapp/int";
+    import { Binding } from "jriapp/binding";
+    export interface IContentView extends IBaseObject {
+        readonly el: HTMLElement;
+    }
+    export function getView(el: HTMLElement, name: string, options: IViewOptions): IElView;
+    export function getBindingOption(isEdit: boolean, fieldName: string, target: IBaseObject, dataContext: any, targetPath: string, converter?: IConverter, param?: any): IBindingOptions;
+    export class BasicContent extends BaseObject implements IContent {
+        private _parentEl;
+        private _options;
+        private _isReadOnly;
+        private _isEditing;
+        private _dataContext;
+        private _lfScope;
+        private _view;
+        protected _el: HTMLElement;
+        constructor(options: IConstructorContentOptions);
+        dispose(): void;
+        protected updateCss(): void;
+        protected getIsCanBeEdited(): boolean;
+        protected getBindings(): Binding[];
+        protected updateBindingSource(): void;
+        protected cleanUp(): void;
+        protected getFieldInfo(): IFieldInfo;
+        protected getParam(isEdit: boolean): any;
+        protected getConverter(isEdit: boolean): IConverter;
+        protected getViewName(isEdit: boolean): string;
+        protected createdEditingView(): IContentView;
+        protected createdReadingView(): IContentView;
+        protected beforeCreateView(): boolean;
+        protected createView(): void;
+        protected afterCreateView(): void;
+        render(): void;
+        toString(): string;
+        protected readonly lfScope: ILifeTimeScope;
+        readonly parentEl: HTMLElement;
+        readonly el: HTMLElement;
+        readonly view: IContentView;
+        isEditing: boolean;
+        dataContext: any;
+        readonly isReadOnly: boolean;
+        readonly options: IContentOptions;
+        readonly app: IApplication;
+    }
+}
+declare module "jriapp_ui/content/template" {
+    import { BaseObject } from "jriapp_shared";
+    import { IContent, IApplication, ITemplate, IConstructorContentOptions } from "jriapp/int";
+    export class TemplateContent extends BaseObject implements IContent {
+        private _parentEl;
+        private _template;
+        private _templateInfo;
+        private _isEditing;
+        private _dataContext;
+        private _templateID;
+        constructor(options: IConstructorContentOptions);
+        dispose(): void;
+        private getTemplateID();
+        private createTemplate();
+        protected cleanUp(): void;
+        render(): void;
+        toString(): string;
+        readonly parentEl: HTMLElement;
+        readonly template: ITemplate;
+        isEditing: boolean;
+        dataContext: any;
         readonly app: IApplication;
     }
 }
@@ -667,7 +681,7 @@ declare module "jriapp_ui/content/int" {
         fieldName?: string;
         readOnly?: boolean;
         css?: {
-            displayCss: string;
+            readCss: string;
             editCss: string;
         };
         template?: ITemplateInfo;

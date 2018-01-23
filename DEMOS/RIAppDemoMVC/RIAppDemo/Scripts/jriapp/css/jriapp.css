@@ -133,6 +133,12 @@ label.ria-field-error  {
   outline: 2px solid red;
 }
 
+span.ria-field-error {
+    outline: 2px solid red;
+    display: inline-block;
+    min-width: 25px;
+}
+
 /* more specific */
 input[type=checkbox].ria-field-error, input[type=radio].ria-field-error {
   outline: 2px solid red;

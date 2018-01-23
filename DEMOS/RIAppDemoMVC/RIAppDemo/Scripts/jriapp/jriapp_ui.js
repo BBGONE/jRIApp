@@ -8,448 +8,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp/binding", "jriapp/utils/lifetime"], function (require, exports, jriapp_shared_1, dom_1, bootstrap_1, binding_1, lifetime_1) {
+define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_1.Utils, dom = dom_1.DomUtils, doc = dom.document, coreUtils = utils.core, boot = bootstrap_1.bootstrap, sys = utils.sys;
-    function getView(el, name, options) {
-        var factory = boot.getApp().viewFactory, elView = factory.store.getElView(el);
-        if (!!elView) {
-            return elView;
-        }
-        var viewInfo = {
-            el: el,
-            name: name,
-            options: options || {}
-        };
-        return factory.createElView(viewInfo);
-    }
-    exports.getView = getView;
-    function getBindingOption(isEdit, fieldName, target, dataContext, targetPath, converter, param) {
-        if (converter === void 0) { converter = null; }
-        if (param === void 0) { param = null; }
-        var bindInfo = {
-            target: null,
-            source: null,
-            targetPath: null,
-            sourcePath: fieldName,
-            mode: isEdit ? "TwoWay" : "OneWay",
-            converter: null,
-            param: null,
-            isEval: false
-        };
-        var options = binding_1.getBindingOptions(bindInfo, target, dataContext);
-        if (!!targetPath) {
-            options.targetPath = targetPath;
-        }
-        options.converter = converter;
-        options.param = param;
-        return options;
-    }
-    exports.getBindingOption = getBindingOption;
-    var BasicContent = (function (_super) {
-        __extends(BasicContent, _super);
-        function BasicContent(options) {
-            var _this = _super.call(this) || this;
-            options = coreUtils.extend({
-                parentEl: null,
-                contentOptions: null,
-                dataContext: null,
-                isEditing: false
-            }, options);
-            _this._el = null;
-            _this._parentEl = options.parentEl;
-            _this._isEditing = !!options.isEditing;
-            _this._dataContext = options.dataContext;
-            _this._options = options.contentOptions;
-            _this._isReadOnly = !!_this._options.readOnly;
-            _this._lfScope = null;
-            _this._view = null;
-            dom.addClass([_this._parentEl], "ria-content-field");
-            return _this;
-        }
-        BasicContent.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            var displayInfo = this._options.displayInfo;
-            dom.removeClass([this._parentEl], "ria-content-field");
-            dom.removeClass([this._parentEl], "ria-required-field");
-            if (!!displayInfo && !!displayInfo.displayCss) {
-                dom.removeClass([this._parentEl], displayInfo.displayCss);
-            }
-            if (!!displayInfo && !!displayInfo.editCss) {
-                dom.removeClass([this._parentEl], displayInfo.editCss);
-            }
-            this.cleanUp();
-            this._parentEl = null;
-            this._dataContext = null;
-            this._options = null;
-            _super.prototype.dispose.call(this);
-        };
-        BasicContent.prototype.updateCss = function () {
-            var displayInfo = this._options.displayInfo, parentEl = this._parentEl, fieldInfo = this.getFieldInfo();
-            if (this._isEditing && this.getIsCanBeEdited()) {
-                if (!!displayInfo) {
-                    if (!!displayInfo.editCss) {
-                        dom.addClass([parentEl], displayInfo.editCss);
-                    }
-                    if (!!displayInfo.displayCss) {
-                        dom.removeClass([parentEl], displayInfo.displayCss);
-                    }
-                }
-                if (!!fieldInfo && !fieldInfo.isNullable) {
-                    dom.addClass([parentEl], "ria-required-field");
-                }
-            }
-            else {
-                if (!!displayInfo) {
-                    if (!!displayInfo.displayCss) {
-                        dom.addClass([parentEl], displayInfo.displayCss);
-                    }
-                    if (!!displayInfo.editCss) {
-                        dom.removeClass([parentEl], displayInfo.editCss);
-                    }
-                }
-                if (!!fieldInfo && !fieldInfo.isNullable) {
-                    dom.removeClass([parentEl], "ria-required-field");
-                }
-            }
-        };
-        BasicContent.prototype.getIsCanBeEdited = function () {
-            if (this._isReadOnly) {
-                return false;
-            }
-            var finf = this.getFieldInfo();
-            if (!finf) {
-                return false;
-            }
-            var editable = sys.getEditable(this._dataContext);
-            return !!editable && !finf.isReadOnly && finf.fieldType !== 2;
-        };
-        BasicContent.prototype.getBindings = function () {
-            if (!this._lfScope) {
-                return [];
-            }
-            var arr = this._lfScope.getObjs(), res = [], len = arr.length;
-            for (var i = 0; i < len; i += 1) {
-                if (sys.isBinding(arr[i])) {
-                    res.push(arr[i]);
-                }
-            }
-            return res;
-        };
-        BasicContent.prototype.updateBindingSource = function () {
-            var bindings = this.getBindings(), len = bindings.length;
-            for (var i = 0; i < len; i += 1) {
-                var binding = bindings[i];
-                if (!binding.isSourceFixed) {
-                    binding.source = this._dataContext;
-                }
-            }
-        };
-        BasicContent.prototype.cleanUp = function () {
-            if (!!this._lfScope) {
-                this._lfScope.dispose();
-                this._lfScope = null;
-            }
-            if (!!this._el) {
-                dom.removeNode(this._el);
-                this._el = null;
-            }
-            this._view = null;
-        };
-        BasicContent.prototype.getFieldInfo = function () {
-            return this._options.fieldInfo;
-        };
-        BasicContent.prototype.getParam = function (isEdit) {
-            return null;
-        };
-        BasicContent.prototype.getConverter = function (isEdit) {
-            return null;
-        };
-        BasicContent.prototype.getViewName = function (isEdit) {
-            return null;
-        };
-        BasicContent.prototype.createdEditingView = function () {
-            var name = this.getViewName(true), el = doc.createElement("input"), options = this._options.options;
-            el.setAttribute("type", "text");
-            if (!!options && !!options.placeholder) {
-                el.setAttribute("placeholder", options.placeholder);
-            }
-            var view = getView(el, name, options);
-            if (!!view) {
-                this.lfScope.addObj(view);
-            }
-            var bindOption = getBindingOption(true, this.options.fieldName, view, this.dataContext, "value", this.getConverter(true), this.getParam(true));
-            this._lfScope.addObj(this.app.bind(bindOption));
-            return view;
-        };
-        BasicContent.prototype.createdReadingView = function () {
-            var name = this.getViewName(false), el = doc.createElement("span");
-            var view = getView(el, name, {});
-            if (!!view) {
-                this.lfScope.addObj(view);
-            }
-            var bindOption = getBindingOption(false, this.options.fieldName, view, this.dataContext, "value", this.getConverter(false), this.getParam(false));
-            this._lfScope.addObj(this.app.bind(bindOption));
-            return view;
-        };
-        BasicContent.prototype.beforeCreateView = function () {
-            this.cleanUp();
-            return !!this._options.fieldName;
-        };
-        BasicContent.prototype.createView = function () {
-            var view = null;
-            if (this._isEditing && this.getIsCanBeEdited()) {
-                view = this.createdEditingView();
-            }
-            else {
-                view = this.createdReadingView();
-            }
-            this._el = view.el;
-            this._view = view;
-            this.updateCss();
-        };
-        BasicContent.prototype.afterCreateView = function () {
-            this._parentEl.appendChild(this._el);
-        };
-        BasicContent.prototype.render = function () {
-            if (this.beforeCreateView()) {
-                try {
-                    this.createView();
-                    this.afterCreateView();
-                }
-                catch (ex) {
-                    utils.err.reThrow(ex, this.handleError(ex, this));
-                }
-            }
-        };
-        BasicContent.prototype.toString = function () {
-            return "BasicContent";
-        };
-        Object.defineProperty(BasicContent.prototype, "lfScope", {
-            get: function () {
-                if (!this._lfScope) {
-                    this._lfScope = new lifetime_1.LifeTimeScope();
-                }
-                return this._lfScope;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BasicContent.prototype, "parentEl", {
-            get: function () {
-                return this._parentEl;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BasicContent.prototype, "el", {
-            get: function () {
-                return this._el;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BasicContent.prototype, "view", {
-            get: function () {
-                return this._view;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BasicContent.prototype, "isEditing", {
-            get: function () {
-                return this._isEditing;
-            },
-            set: function (v) {
-                if (this._isEditing !== v) {
-                    this._isEditing = v;
-                    this.render();
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BasicContent.prototype, "dataContext", {
-            get: function () {
-                return this._dataContext;
-            },
-            set: function (v) {
-                if (this._dataContext !== v) {
-                    this._dataContext = v;
-                    this.updateBindingSource();
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BasicContent.prototype, "isReadOnly", {
-            get: function () {
-                return this._isReadOnly;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BasicContent.prototype, "options", {
-            get: function () {
-                return this._options;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BasicContent.prototype, "app", {
-            get: function () {
-                return boot.getApp();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return BasicContent;
-    }(jriapp_shared_1.BaseObject));
-    exports.BasicContent = BasicContent;
-});
-define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp/template"], function (require, exports, jriapp_shared_2, dom_2, bootstrap_2, template_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_2.Utils, coreUtils = utils.core, dom = dom_2.DomUtils, boot = bootstrap_2.bootstrap, ERROR = utils.err;
-    var TemplateContent = (function (_super) {
-        __extends(TemplateContent, _super);
-        function TemplateContent(options) {
-            var _this = _super.call(this) || this;
-            options = coreUtils.extend({
-                parentEl: null,
-                contentOptions: null,
-                dataContext: null,
-                isEditing: false,
-                appName: null
-            }, options);
-            _this._templateID = null;
-            _this._parentEl = options.parentEl;
-            _this._isEditing = options.isEditing;
-            _this._dataContext = options.dataContext;
-            _this._templateInfo = options.contentOptions.templateInfo;
-            _this._template = null;
-            dom.addClass([_this._parentEl], "ria-content-field");
-            return _this;
-        }
-        TemplateContent.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            dom.removeClass([this._parentEl], "ria-content-field");
-            this.cleanUp();
-            this._parentEl = null;
-            this._dataContext = null;
-            this._templateInfo = null;
-            _super.prototype.dispose.call(this);
-        };
-        TemplateContent.prototype.getTemplateID = function () {
-            if (!this._templateInfo) {
-                throw new Error(jriapp_shared_2.LocaleERRS.ERR_TEMPLATE_ID_INVALID);
-            }
-            var info = this._templateInfo;
-            var id = info.displayID;
-            if (this._isEditing && !!info.editID) {
-                id = info.editID;
-            }
-            if (!id) {
-                id = info.editID;
-            }
-            if (!id) {
-                throw new Error(jriapp_shared_2.LocaleERRS.ERR_TEMPLATE_ID_INVALID);
-            }
-            return id;
-        };
-        TemplateContent.prototype.createTemplate = function () {
-            var template = template_1.createTemplate(this._dataContext);
-            template.templateID = this._templateID;
-            return template;
-        };
-        TemplateContent.prototype.cleanUp = function () {
-            if (!!this._template) {
-                this._template.dispose();
-                this._template = null;
-                this._templateID = null;
-            }
-        };
-        TemplateContent.prototype.render = function () {
-            try {
-                var id = this.getTemplateID();
-                if (this._templateID !== id) {
-                    this.cleanUp();
-                    this._templateID = id;
-                    this._template = this.createTemplate();
-                    this._parentEl.appendChild(this._template.el);
-                }
-            }
-            catch (ex) {
-                ERROR.reThrow(ex, this.handleError(ex, this));
-            }
-        };
-        TemplateContent.prototype.toString = function () {
-            return "TemplateContent";
-        };
-        Object.defineProperty(TemplateContent.prototype, "parentEl", {
-            get: function () {
-                return this._parentEl;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TemplateContent.prototype, "template", {
-            get: function () {
-                return this._template;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TemplateContent.prototype, "isEditing", {
-            get: function () {
-                return this._isEditing;
-            },
-            set: function (v) {
-                if (this._isEditing !== v) {
-                    this._isEditing = v;
-                    this.render();
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TemplateContent.prototype, "dataContext", {
-            get: function () {
-                return this._dataContext;
-            },
-            set: function (v) {
-                if (this._dataContext !== v) {
-                    this._dataContext = v;
-                    if (!!this._template) {
-                        this._template.dataContext = this._dataContext;
-                    }
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TemplateContent.prototype, "app", {
-            get: function () {
-                return boot.getApp();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return TemplateContent;
-    }(jriapp_shared_2.BaseObject));
-    exports.TemplateContent = TemplateContent;
-});
-define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_3.Utils, strUtils = utils.str;
+    var utils = jriapp_shared_1.Utils, strUtils = utils.str;
     var EVENT_CHANGE_TYPE;
     (function (EVENT_CHANGE_TYPE) {
         EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["None"] = 0] = "None";
@@ -552,13 +114,13 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
             _super.prototype.dispose.call(this);
         };
         return EventBag;
-    }(jriapp_shared_3.BaseObject));
+    }(jriapp_shared_1.BaseObject));
     exports.EventBag = EventBag;
 });
-define("jriapp_ui/utils/propbag", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_4) {
+define("jriapp_ui/utils/propbag", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_4.Utils, strUtils = utils.str;
+    var utils = jriapp_shared_2.Utils, strUtils = utils.str;
     var PropertyBag = (function (_super) {
         __extends(PropertyBag, _super);
         function PropertyBag(el) {
@@ -593,13 +155,13 @@ define("jriapp_ui/utils/propbag", ["require", "exports", "jriapp_shared"], funct
             return "PropertyBag";
         };
         return PropertyBag;
-    }(jriapp_shared_4.BaseObject));
+    }(jriapp_shared_2.BaseObject));
     exports.PropertyBag = PropertyBag;
 });
-define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared", "jriapp/utils/dom"], function (require, exports, jriapp_shared_5, dom_3) {
+define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared", "jriapp/utils/dom"], function (require, exports, jriapp_shared_3, dom_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_5.Utils, checks = utils.check, dom = dom_3.DomUtils, strUtils = utils.str;
+    var utils = jriapp_shared_3.Utils, checks = utils.check, dom = dom_1.DomUtils, strUtils = utils.str;
     var CSSBag = (function (_super) {
         __extends(CSSBag, _super);
         function CSSBag(el) {
@@ -643,14 +205,14 @@ define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared", "jriapp
             return "CSSBag";
         };
         return CSSBag;
-    }(jriapp_shared_5.BaseObject));
+    }(jriapp_shared_3.BaseObject));
     exports.CSSBag = CSSBag;
 });
-define("jriapp_ui/utils/jquery", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_6) {
+define("jriapp_ui/utils/jquery", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     if (!("jQuery" in window)) {
-        throw new Error(jriapp_shared_6.LocaleERRS.ERR_APP_NEED_JQUERY);
+        throw new Error(jriapp_shared_4.LocaleERRS.ERR_APP_NEED_JQUERY);
     }
     exports.$ = jQuery;
     var JQueryUtils = (function () {
@@ -667,10 +229,10 @@ define("jriapp_ui/utils/jquery", ["require", "exports", "jriapp_shared"], functi
     }());
     exports.JQueryUtils = JQueryUtils;
 });
-define("jriapp_ui/utils/tooltip", ["require", "exports", "jriapp_ui/utils/jquery", "jriapp/utils/dom"], function (require, exports, jquery_1, dom_4) {
+define("jriapp_ui/utils/tooltip", ["require", "exports", "jriapp_ui/utils/jquery", "jriapp/utils/dom"], function (require, exports, jquery_1, dom_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var window = dom_4.DomUtils.window;
+    var window = dom_2.DomUtils.window;
     var css;
     (function (css) {
         css["toolTip"] = "qtip";
@@ -721,10 +283,10 @@ define("jriapp_ui/utils/tooltip", ["require", "exports", "jriapp_ui/utils/jquery
         return TooltipService;
     }());
 });
-define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jriapp_ui/utils/jquery"], function (require, exports, jriapp_shared_7, jquery_2) {
+define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jriapp_ui/utils/jquery"], function (require, exports, jriapp_shared_5, jquery_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var ERRS = jriapp_shared_7.LocaleERRS;
+    var ERRS = jriapp_shared_5.LocaleERRS;
     function createDatepickerSvc() {
         return new Datepicker();
     }
@@ -819,12 +381,27 @@ define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jr
             configurable: true
         });
         return Datepicker;
-    }(jriapp_shared_7.BaseObject));
+    }(jriapp_shared_5.BaseObject));
 });
-define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/const", "jriapp/bootstrap", "jriapp_ui/utils/eventbag", "jriapp_ui/utils/propbag", "jriapp_ui/utils/cssbag", "jriapp_ui/utils/tooltip", "jriapp_ui/utils/datepicker"], function (require, exports, jriapp_shared_8, dom_5, viewchecks_1, const_1, bootstrap_3, eventbag_1, propbag_1, cssbag_1, tooltip_1, datepicker_1) {
+define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/const", "jriapp/bootstrap", "jriapp_ui/utils/eventbag", "jriapp_ui/utils/propbag", "jriapp_ui/utils/cssbag", "jriapp_ui/utils/tooltip", "jriapp_ui/utils/datepicker"], function (require, exports, jriapp_shared_6, dom_3, viewchecks_1, const_1, bootstrap_1, eventbag_1, propbag_1, cssbag_1, tooltip_1, datepicker_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_8.Utils, getNewID = utils.core.getNewID, dom = dom_5.DomUtils, undefined = utils.check.undefined, boot = bootstrap_3.bootstrap, viewChecks = viewchecks_1.ViewChecks, subscribeMap = bootstrap_3.subscribeWeakMap;
+    var utils = jriapp_shared_6.Utils, getNewID = utils.core.getNewID, dom = dom_3.DomUtils, undefined = utils.check.undefined, boot = bootstrap_1.bootstrap, viewChecks = viewchecks_1.ViewChecks, subscribeMap = bootstrap_1.subscribeWeakMap;
+    var cssStyles;
+    (function (cssStyles) {
+        cssStyles["content"] = "ria-content-field";
+        cssStyles["required"] = "ria-required-field";
+        cssStyles["checkbox"] = "ria-checkbox";
+        cssStyles["fieldError"] = "ria-field-error";
+        cssStyles["commandLink"] = "ria-command-link";
+        cssStyles["checkedNull"] = "ria-checked-null";
+        cssStyles["dataform"] = "ria-dataform";
+        cssStyles["error"] = "ria-form-error";
+        cssStyles["disabled"] = "disabled";
+        cssStyles["opacity"] = "opacity";
+        cssStyles["color"] = "color";
+        cssStyles["fontSize"] = "font-size";
+    })(cssStyles = exports.cssStyles || (exports.cssStyles = {}));
     viewChecks.isElView = function (obj) {
         return !!obj && obj instanceof BaseElView;
     };
@@ -836,7 +413,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
     }
     exports.fn_addToolTip = fn_addToolTip;
     function getErrorTipInfo(errors) {
-        var tip = ["<b>", jriapp_shared_8.LocaleSTRS.VALIDATE.errorInfo, "</b>", "<br/>"];
+        var tip = ["<b>", jriapp_shared_6.LocaleSTRS.VALIDATE.errorInfo, "</b>", "<br/>"];
         errors.forEach(function (info) {
             var res = "";
             info.errors.forEach(function (str) {
@@ -1152,10 +729,448 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             configurable: true
         });
         return BaseElView;
-    }(jriapp_shared_8.BaseObject));
+    }(jriapp_shared_6.BaseObject));
     exports.BaseElView = BaseElView;
     boot.registerElView("generic", BaseElView);
     boot.registerElView("baseview", BaseElView);
+});
+define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp/binding", "jriapp/utils/lifetime"], function (require, exports, jriapp_shared_7, dom_4, bootstrap_2, binding_1, lifetime_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = jriapp_shared_7.Utils, dom = dom_4.DomUtils, doc = dom.document, coreUtils = utils.core, boot = bootstrap_2.bootstrap, sys = utils.sys;
+    function getView(el, name, options) {
+        var factory = boot.getApp().viewFactory, elView = factory.store.getElView(el);
+        if (!!elView) {
+            return elView;
+        }
+        var viewInfo = {
+            el: el,
+            name: name,
+            options: options || {}
+        };
+        return factory.createElView(viewInfo);
+    }
+    exports.getView = getView;
+    function getBindingOption(isEdit, fieldName, target, dataContext, targetPath, converter, param) {
+        if (converter === void 0) { converter = null; }
+        if (param === void 0) { param = null; }
+        var bindInfo = {
+            target: null,
+            source: null,
+            targetPath: null,
+            sourcePath: fieldName,
+            mode: isEdit ? "TwoWay" : "OneWay",
+            converter: null,
+            param: null,
+            isEval: false
+        };
+        var options = binding_1.getBindingOptions(bindInfo, target, dataContext);
+        if (!!targetPath) {
+            options.targetPath = targetPath;
+        }
+        options.converter = converter;
+        options.param = param;
+        return options;
+    }
+    exports.getBindingOption = getBindingOption;
+    var BasicContent = (function (_super) {
+        __extends(BasicContent, _super);
+        function BasicContent(options) {
+            var _this = _super.call(this) || this;
+            options = coreUtils.extend({
+                parentEl: null,
+                contentOptions: null,
+                dataContext: null,
+                isEditing: false
+            }, options);
+            _this._el = null;
+            _this._parentEl = options.parentEl;
+            _this._isEditing = !!options.isEditing;
+            _this._dataContext = options.dataContext;
+            _this._options = options.contentOptions;
+            _this._isReadOnly = !!_this._options.readOnly;
+            _this._lfScope = null;
+            _this._view = null;
+            dom.addClass([_this._parentEl], "ria-content-field");
+            return _this;
+        }
+        BasicContent.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            var displayInfo = this._options.css;
+            dom.removeClass([this._parentEl], "ria-content-field");
+            dom.removeClass([this._parentEl], "ria-required-field");
+            if (!!displayInfo && !!displayInfo.readCss) {
+                dom.removeClass([this._parentEl], displayInfo.readCss);
+            }
+            if (!!displayInfo && !!displayInfo.editCss) {
+                dom.removeClass([this._parentEl], displayInfo.editCss);
+            }
+            this.cleanUp();
+            this._parentEl = null;
+            this._dataContext = null;
+            this._options = null;
+            _super.prototype.dispose.call(this);
+        };
+        BasicContent.prototype.updateCss = function () {
+            var displayInfo = this._options.css, parentEl = this._parentEl, fieldInfo = this.getFieldInfo();
+            if (this._isEditing && this.getIsCanBeEdited()) {
+                if (!!displayInfo) {
+                    if (!!displayInfo.editCss) {
+                        dom.addClass([parentEl], displayInfo.editCss);
+                    }
+                    if (!!displayInfo.readCss) {
+                        dom.removeClass([parentEl], displayInfo.readCss);
+                    }
+                }
+                if (!!fieldInfo && !fieldInfo.isNullable) {
+                    dom.addClass([parentEl], "ria-required-field");
+                }
+            }
+            else {
+                if (!!displayInfo) {
+                    if (!!displayInfo.readCss) {
+                        dom.addClass([parentEl], displayInfo.readCss);
+                    }
+                    if (!!displayInfo.editCss) {
+                        dom.removeClass([parentEl], displayInfo.editCss);
+                    }
+                }
+                if (!!fieldInfo && !fieldInfo.isNullable) {
+                    dom.removeClass([parentEl], "ria-required-field");
+                }
+            }
+        };
+        BasicContent.prototype.getIsCanBeEdited = function () {
+            if (this._isReadOnly) {
+                return false;
+            }
+            var finf = this.getFieldInfo();
+            if (!finf) {
+                return false;
+            }
+            var editable = sys.getEditable(this._dataContext);
+            return !!editable && !finf.isReadOnly && finf.fieldType !== 2;
+        };
+        BasicContent.prototype.getBindings = function () {
+            if (!this._lfScope) {
+                return [];
+            }
+            var arr = this._lfScope.getObjs(), res = [], len = arr.length;
+            for (var i = 0; i < len; i += 1) {
+                if (sys.isBinding(arr[i])) {
+                    res.push(arr[i]);
+                }
+            }
+            return res;
+        };
+        BasicContent.prototype.updateBindingSource = function () {
+            var bindings = this.getBindings(), len = bindings.length;
+            for (var i = 0; i < len; i += 1) {
+                var binding = bindings[i];
+                if (!binding.isSourceFixed) {
+                    binding.source = this._dataContext;
+                }
+            }
+        };
+        BasicContent.prototype.cleanUp = function () {
+            if (!!this._lfScope) {
+                this._lfScope.dispose();
+                this._lfScope = null;
+            }
+            if (!!this._el) {
+                dom.removeNode(this._el);
+                this._el = null;
+            }
+            this._view = null;
+        };
+        BasicContent.prototype.getFieldInfo = function () {
+            return this._options.fieldInfo;
+        };
+        BasicContent.prototype.getParam = function (isEdit) {
+            return null;
+        };
+        BasicContent.prototype.getConverter = function (isEdit) {
+            return null;
+        };
+        BasicContent.prototype.getViewName = function (isEdit) {
+            return null;
+        };
+        BasicContent.prototype.createdEditingView = function () {
+            var name = this.getViewName(true), el = doc.createElement("input"), options = this._options.options;
+            el.setAttribute("type", "text");
+            if (!!options && !!options.placeholder) {
+                el.setAttribute("placeholder", options.placeholder);
+            }
+            var view = getView(el, name, options);
+            if (!!view) {
+                this.lfScope.addObj(view);
+            }
+            var bindOption = getBindingOption(true, this.options.fieldName, view, this.dataContext, "value", this.getConverter(true), this.getParam(true));
+            this._lfScope.addObj(this.app.bind(bindOption));
+            return view;
+        };
+        BasicContent.prototype.createdReadingView = function () {
+            var name = this.getViewName(false), el = doc.createElement("span");
+            var view = getView(el, name, {});
+            if (!!view) {
+                this.lfScope.addObj(view);
+            }
+            var bindOption = getBindingOption(false, this.options.fieldName, view, this.dataContext, "value", this.getConverter(false), this.getParam(false));
+            this._lfScope.addObj(this.app.bind(bindOption));
+            return view;
+        };
+        BasicContent.prototype.beforeCreateView = function () {
+            this.cleanUp();
+            return !!this._options.fieldName;
+        };
+        BasicContent.prototype.createView = function () {
+            var view = null;
+            if (this._isEditing && this.getIsCanBeEdited()) {
+                view = this.createdEditingView();
+            }
+            else {
+                view = this.createdReadingView();
+            }
+            this._el = view.el;
+            this._view = view;
+            this.updateCss();
+        };
+        BasicContent.prototype.afterCreateView = function () {
+            this._parentEl.appendChild(this._el);
+        };
+        BasicContent.prototype.render = function () {
+            if (this.beforeCreateView()) {
+                try {
+                    this.createView();
+                    this.afterCreateView();
+                }
+                catch (ex) {
+                    utils.err.reThrow(ex, this.handleError(ex, this));
+                }
+            }
+        };
+        BasicContent.prototype.toString = function () {
+            return "BasicContent";
+        };
+        Object.defineProperty(BasicContent.prototype, "lfScope", {
+            get: function () {
+                if (!this._lfScope) {
+                    this._lfScope = new lifetime_1.LifeTimeScope();
+                }
+                return this._lfScope;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BasicContent.prototype, "parentEl", {
+            get: function () {
+                return this._parentEl;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BasicContent.prototype, "el", {
+            get: function () {
+                return this._el;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BasicContent.prototype, "view", {
+            get: function () {
+                return this._view;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BasicContent.prototype, "isEditing", {
+            get: function () {
+                return this._isEditing;
+            },
+            set: function (v) {
+                if (this._isEditing !== v) {
+                    this._isEditing = v;
+                    this.render();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BasicContent.prototype, "dataContext", {
+            get: function () {
+                return this._dataContext;
+            },
+            set: function (v) {
+                if (this._dataContext !== v) {
+                    this._dataContext = v;
+                    this.updateBindingSource();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BasicContent.prototype, "isReadOnly", {
+            get: function () {
+                return this._isReadOnly;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BasicContent.prototype, "options", {
+            get: function () {
+                return this._options;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BasicContent.prototype, "app", {
+            get: function () {
+                return boot.getApp();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return BasicContent;
+    }(jriapp_shared_7.BaseObject));
+    exports.BasicContent = BasicContent;
+});
+define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp/template"], function (require, exports, jriapp_shared_8, dom_5, bootstrap_3, template_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = jriapp_shared_8.Utils, extend = utils.core.extend, dom = dom_5.DomUtils, boot = bootstrap_3.bootstrap, ERROR = utils.err;
+    var TemplateContent = (function (_super) {
+        __extends(TemplateContent, _super);
+        function TemplateContent(options) {
+            var _this = _super.call(this) || this;
+            options = extend({
+                parentEl: null,
+                contentOptions: null,
+                dataContext: null,
+                isEditing: false,
+                appName: null
+            }, options);
+            _this._templateID = null;
+            _this._parentEl = options.parentEl;
+            _this._isEditing = options.isEditing;
+            _this._dataContext = options.dataContext;
+            _this._templateInfo = options.contentOptions.template;
+            _this._template = null;
+            dom.addClass([_this._parentEl], "ria-content-field");
+            return _this;
+        }
+        TemplateContent.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            dom.removeClass([this._parentEl], "ria-content-field");
+            this.cleanUp();
+            this._parentEl = null;
+            this._dataContext = null;
+            this._templateInfo = null;
+            _super.prototype.dispose.call(this);
+        };
+        TemplateContent.prototype.getTemplateID = function () {
+            if (!this._templateInfo) {
+                throw new Error(jriapp_shared_8.LocaleERRS.ERR_TEMPLATE_ID_INVALID);
+            }
+            var info = this._templateInfo;
+            var id = info.readID;
+            if (this._isEditing && !!info.editID) {
+                id = info.editID;
+            }
+            if (!id) {
+                id = info.editID;
+            }
+            if (!id) {
+                throw new Error(jriapp_shared_8.LocaleERRS.ERR_TEMPLATE_ID_INVALID);
+            }
+            return id;
+        };
+        TemplateContent.prototype.createTemplate = function () {
+            var template = template_1.createTemplate(this._dataContext);
+            template.templateID = this._templateID;
+            return template;
+        };
+        TemplateContent.prototype.cleanUp = function () {
+            if (!!this._template) {
+                this._template.dispose();
+                this._template = null;
+                this._templateID = null;
+            }
+        };
+        TemplateContent.prototype.render = function () {
+            try {
+                var id = this.getTemplateID();
+                if (this._templateID !== id) {
+                    this.cleanUp();
+                    this._templateID = id;
+                    this._template = this.createTemplate();
+                    this._parentEl.appendChild(this._template.el);
+                }
+            }
+            catch (ex) {
+                ERROR.reThrow(ex, this.handleError(ex, this));
+            }
+        };
+        TemplateContent.prototype.toString = function () {
+            return "TemplateContent";
+        };
+        Object.defineProperty(TemplateContent.prototype, "parentEl", {
+            get: function () {
+                return this._parentEl;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TemplateContent.prototype, "template", {
+            get: function () {
+                return this._template;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TemplateContent.prototype, "isEditing", {
+            get: function () {
+                return this._isEditing;
+            },
+            set: function (v) {
+                if (this._isEditing !== v) {
+                    this._isEditing = v;
+                    this.render();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TemplateContent.prototype, "dataContext", {
+            get: function () {
+                return this._dataContext;
+            },
+            set: function (v) {
+                if (this._dataContext !== v) {
+                    this._dataContext = v;
+                    if (!!this._template) {
+                        this._template.dataContext = this._dataContext;
+                    }
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TemplateContent.prototype, "app", {
+            get: function () {
+                return boot.getApp();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return TemplateContent;
+    }(jriapp_shared_8.BaseObject));
+    exports.TemplateContent = TemplateContent;
 });
 define("jriapp_ui/input", ["require", "exports", "jriapp_ui/baseview"], function (require, exports, baseview_1) {
     "use strict";
@@ -2767,7 +2782,7 @@ define("jriapp_ui/content/factory", ["require", "exports", "jriapp_shared", "jri
             this._nextFactory = nextFactory;
         }
         ContentFactory.prototype.getContentType = function (options) {
-            if (!!options.templateInfo) {
+            if (!!options.template) {
                 return template_2.TemplateContent;
             }
             if (!options.fieldName) {
@@ -3536,8 +3551,11 @@ define("jriapp_ui/content/int", ["require", "exports", "jriapp_shared", "jriapp/
     function parseContentAttr(contentAttr) {
         var contentOptions = {
             name: null,
-            templateInfo: null,
-            displayInfo: null,
+            readOnly: false,
+            initContentFn: null,
+            fieldInfo: null,
+            css: null,
+            template: null,
             fieldName: null,
             options: null
         };
@@ -3547,7 +3565,7 @@ define("jriapp_ui/content/int", ["require", "exports", "jriapp_shared", "jriapp/
         }
         var attr = tempOpts[0];
         if (!attr.template && !!attr.fieldName) {
-            contentOptions.displayInfo = attr.css;
+            contentOptions.css = attr.css;
             contentOptions.fieldName = attr.fieldName;
             if (!!attr.name) {
                 contentOptions.name = attr.name;
@@ -3560,7 +3578,7 @@ define("jriapp_ui/content/int", ["require", "exports", "jriapp_shared", "jriapp/
             }
         }
         else if (!!attr.template) {
-            contentOptions.templateInfo = attr.template;
+            contentOptions.template = attr.template;
             attr.template = null;
         }
         return contentOptions;
