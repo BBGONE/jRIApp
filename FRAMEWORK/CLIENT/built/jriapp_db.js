@@ -831,7 +831,16 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype._createNew = function () {
             return this.createEntityFromData(null, null);
         };
+        DbSet.prototype._clearChanges = function () {
+            if (!this.isHasChanges) {
+                return;
+            }
+            this._changeCache = {};
+            this._changeCount = 0;
+            this.objEvents.raiseProp("isHasChanges");
+        };
         DbSet.prototype._clear = function (reason, oper) {
+            this._clearChanges();
             _super.prototype._clear.call(this, reason, oper);
             this._newKey = 0;
             this._isPageFilled = false;
