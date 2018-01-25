@@ -396,6 +396,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     // it is overriden in DataView class!!!
     protected _disposeItems(items: TItem[]): void {
         items.forEach((item) => {
+            item._aspect.rejectChanges();
             item._aspect._setIsAttached(false);
             item.dispose();
         });
@@ -463,6 +464,8 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this.currentItem = null;
         const oldItems = this._items;
         try {
+            this._disposeItems(oldItems);
+        } finally {
             this._items = [];
             this._itemsByKey = {};
             this._errors.clear();
@@ -477,10 +480,6 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             }
             this.objEvents.raise(COLL_EVENTS.cleared, { reason: reason });
             this._onCountChanged();
-        } finally {
-            utils.defer.getTaskQueue().enque(() => {
-                this._disposeItems(oldItems);
-            });
         }
     }
     protected _replaceItems(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER, items: TItem[]): void {

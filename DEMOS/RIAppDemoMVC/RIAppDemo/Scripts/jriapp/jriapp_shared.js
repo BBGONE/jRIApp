@@ -3343,6 +3343,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype._disposeItems = function (items) {
             items.forEach(function (item) {
+                item._aspect.rejectChanges();
                 item._aspect._setIsAttached(false);
                 item.dispose();
             });
@@ -3405,13 +3406,15 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             return !args.isCancel;
         };
         BaseCollection.prototype._clear = function (reason, oper) {
-            var _this = this;
             this.objEvents.raise("clearing", { reason: reason });
             this.cancelEdit();
             this._EditingItem = null;
             this.currentItem = null;
             var oldItems = this._items;
             try {
+                this._disposeItems(oldItems);
+            }
+            finally {
                 this._items = [];
                 this._itemsByKey = {};
                 this._errors.clear();
@@ -3426,11 +3429,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 }
                 this.objEvents.raise("cleared", { reason: reason });
                 this._onCountChanged();
-            }
-            finally {
-                utils.defer.getTaskQueue().enque(function () {
-                    _this._disposeItems(oldItems);
-                });
             }
         };
         BaseCollection.prototype._replaceItems = function (reason, oper, items) {

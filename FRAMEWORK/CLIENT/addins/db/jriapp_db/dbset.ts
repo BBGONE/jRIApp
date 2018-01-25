@@ -382,6 +382,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     protected _createNew(): TItem {
         return this.createEntityFromData(null, null);
     }
+    /*
     protected _clearChanges(): void {
         if (!this.isHasChanges) {
             return;
@@ -390,8 +391,8 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         this._changeCount = 0;
         this.objEvents.raiseProp("isHasChanges");
     }
+    */
     protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
-        this._clearChanges();
         super._clear(reason, oper);
         this._newKey = 0;
         this._isPageFilled = false;
