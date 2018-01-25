@@ -208,7 +208,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             }
         };
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -396,7 +396,6 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     // it is overriden in DataView class!!!
     protected _disposeItems(items: TItem[]): void {
         items.forEach((item) => {
-            item._aspect.rejectChanges();
             item._aspect._setIsAttached(false);
             item.dispose();
         });

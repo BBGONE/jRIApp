@@ -438,6 +438,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(self.item, true, true, oldStatus);
             if (oldStatus === ITEM_STATUS.Added) {
+                self._setStatus(ITEM_STATUS.None);
                 if (!this.getIsStateDirty()) {
                     this.dispose();
                 }

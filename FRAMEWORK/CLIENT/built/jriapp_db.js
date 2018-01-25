@@ -3520,6 +3520,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             if (oldStatus !== 0) {
                 internal.onCommitChanges(self.item, true, true, oldStatus);
                 if (oldStatus === 1) {
+                    self._setStatus(0);
                     if (!this.getIsStateDirty()) {
                         this.dispose();
                     }

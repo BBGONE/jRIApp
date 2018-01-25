@@ -230,7 +230,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     public handleError(error: any, source: any): boolean {
         return (!this._dbContext) ? super.handleError(error, source) : this._dbContext.handleError(error, source);
     }
-    protected _mapAssocFields() {
+    protected _mapAssocFields(): void {
         const trackAssoc = this._trackAssoc, tasKeys = Object.keys(trackAssoc), trackAssocMap = this._trackAssocMap;
         const len = tasKeys.length;
         for (let i = 0; i < len; i += 1) {
@@ -367,7 +367,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             }
         });
     }
-    protected _getNewKey() {
+    protected _getNewKey(): string {
         // client's item ID
         const key = "clkey_" + this._newKey;
         this._newKey += 1;
@@ -382,22 +382,13 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     protected _createNew(): TItem {
         return this.createEntityFromData(null, null);
     }
-    /*
-    protected _clearChanges(): void {
-        if (!this.isHasChanges) {
-            return;
-        }
-        this._changeCache = {};
-        this._changeCount = 0;
-        this.objEvents.raiseProp("isHasChanges");
-    }
-    */
-    protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
+    // override
+    protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void {
         super._clear(reason, oper);
         this._newKey = 0;
         this._isPageFilled = false;
     }
-    protected _onPageChanging() {
+    protected _onPageChanging(): boolean {
         const res = super._onPageChanging();
         if (!res) {
             return res;
@@ -412,7 +403,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         }
         return res;
     }
-    protected _onPageChanged() {
+    protected _onPageChanged(): void {
         const self = this;
         this._isPageFilled = false;
         this.cancelEdit();
@@ -425,13 +416,13 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             self.dbContext._getInternal().load(self.query, COLL_CHANGE_REASON.PageChange);
         });
     }
-    protected _onPageSizeChanged() {
+    protected _onPageSizeChanged(): void {
         super._onPageSizeChanged();
         if (!!this._query) {
             this._query.pageSize = this.pageSize;
         }
     }
-    protected _defineCalculatedField(fullName: string, getFunc: (item: TItem) => any) {
+    protected _defineCalculatedField(fullName: string, getFunc: (item: TItem) => any): void {
         const calcDef: ICalcFieldImpl<TItem> = getValue(this._calcfldMap, fullName);
         if (!calcDef) {
             throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "calculated fieldName", fullName));

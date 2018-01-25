@@ -3343,7 +3343,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype._disposeItems = function (items) {
             items.forEach(function (item) {
-                item._aspect.rejectChanges();
                 item._aspect._setIsAttached(false);
                 item.dispose();
             });
