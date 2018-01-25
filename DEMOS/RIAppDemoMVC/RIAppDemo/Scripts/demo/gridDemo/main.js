@@ -2195,6 +2195,31 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ProductViewModel.prototype, "dialogOptions", {
+            get: function () {
+                var dialogOptions;
+                dialogOptions = {
+                    templateID: 'productEditTemplate',
+                    width: 550,
+                    height: 650,
+                    title: 'Edit Product',
+                    submitOnOK: true,
+                    fn_OnShow: function (dialog) {
+                        console.log("edit dialog is shown");
+                    },
+                    fn_OnClose: function (dialog) {
+                        console.log("edit dialog is closed");
+                    },
+                    fn_OnOK: function (dialog) {
+                        console.log("edit dialog: OK clicked");
+                        return 0;
+                    }
+                };
+                return dialogOptions;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return ProductViewModel;
     }(RIAPP.ViewModel));
     exports.ProductViewModel = ProductViewModel;

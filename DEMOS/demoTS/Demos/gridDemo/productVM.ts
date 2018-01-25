@@ -376,4 +376,25 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         else
             this._removeGrid();
     }
+    get dialogOptions(): uiMOD.IDialogConstructorOptions {
+        let dialogOptions: uiMOD.IDialogConstructorOptions;
+        dialogOptions = {
+            templateID: 'productEditTemplate',
+            width: 550,
+            height: 650,
+            title: 'Edit Product',
+            submitOnOK: true,
+            fn_OnShow: function (dialog) {
+                console.log("edit dialog is shown"); 
+            },
+            fn_OnClose: function (dialog) {
+                console.log("edit dialog is closed"); 
+            },
+            fn_OnOK: function (dialog): number {
+                console.log("edit dialog: OK clicked"); 
+                return uiMOD.DIALOG_ACTION.Default;
+            }
+        };
+        return dialogOptions;
+    }
 }

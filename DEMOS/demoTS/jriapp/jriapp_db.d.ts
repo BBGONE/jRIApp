@@ -207,6 +207,7 @@ declare module "jriapp_db/dbset" {
         protected _getNewKey(): string;
         protected _onItemAdded(item: TItem): void;
         protected _createNew(): TItem;
+        protected _clearChanges(): void;
         protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
         protected _onPageChanging(): boolean;
         protected _onPageChanged(): void;

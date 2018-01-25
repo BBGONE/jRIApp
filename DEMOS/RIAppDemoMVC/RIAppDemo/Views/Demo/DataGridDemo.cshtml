@@ -303,11 +303,12 @@
     rowStateField:IsActive,
     isHandleAddNew:true,
     isCanEdit:true,
-    editor:{templateID:productEditTemplate,width:550,height:650,submitOnOK:true,title:'Product editing'},
+    editor:eval(dialogOptions,productVM),
     details:{templateID:productDetailsTemplate}
 </script>
 
-<div id="demoContent" style="opacity:0;" data-bind="this.isBusy,to=dbContext.isBusy" data-view="busy">
+<div id="demoContent" style="opacity:0;" data-bind="this.isBusy,to=dbContext.isBusy" 
+     data-view="busy">
     <div style="height: 85%; vertical-align: top;">
         <table data-name="gridProducts" data-bind1="this.dataSource,to=dbSet,source=productVM"
                data-bind2="this.grid,to=grid,mode=BackWay,source=productVM"
