@@ -384,18 +384,19 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     }
     // override
     protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void {
-        super._clear(reason, oper);
-        this._newKey = 0;
-        this._isPageFilled = false;
+        try {
+            super._clear(reason, oper);
+        } finally {
+            this._newKey = 0;
+            this._isPageFilled = false;
+        }
     }
     protected _onPageChanging(): boolean {
         const res = super._onPageChanging();
         if (!res) {
             return res;
         }
-        if (this.isHasChanges) {
-            this.rejectChanges();
-        }
+        this.rejectChanges();
 
         const query = this.query;
         if (!!query && query.loadPageCount > 1 && this._isPageFilled) {
@@ -655,7 +656,8 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
     protected _commitChanges(rows: IRowInfo[]): void {
         const self = this;
         rows.forEach((rowInfo) => {
-            const oldKey = rowInfo.clientKey, item: TItem = self.getItemByKey(oldKey);
+            const oldKey = rowInfo.clientKey, newKey = rowInfo.serverKey,
+                item: TItem = self.getItemByKey(oldKey);
             if (!item) {
                 throw new Error(strUtils.format(ERRS.ERR_KEY_IS_NOTFOUND, oldKey));
             }
@@ -664,14 +666,14 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
             if (itemStatus === ITEM_STATUS.Added) {
                 // on insert
                 item._aspect._updateKeys(rowInfo.serverKey);
-                self._remapItem(oldKey, item._key, item);
+                self._remapItem(oldKey, newKey, item);
                 self._onCollectionChanged({
                     changeType: COLL_CHANGE_TYPE.Remap,
                     reason: COLL_CHANGE_REASON.None,
                     oper: COLL_CHANGE_OPER.Commit,
                     items: [item],
                     old_key: oldKey,
-                    new_key: item._key
+                    new_key: newKey
                 });
             }
         });
@@ -974,19 +976,33 @@ export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends 
         }
     }
     acceptChanges(): void {
+        if (!this.isHasChanges) {
+            return;
+        }
         const csh = this._changeCache;
         forEachProp(csh, (key) => {
             const item = csh[key];
             item._aspect.acceptChanges();
         });
-        this._changeCount = 0;
+        if (this.isHasChanges) {
+            // should never happen
+            throw new Error("Invalid Operation: the changes are left after the acceptChanges operation");
+        }
     }
+    // override
     rejectChanges(): void {
+        if (!this.isHasChanges) {
+            return;
+        }
         const csh = this._changeCache;
         forEachProp(csh, (key) => {
             const item = csh[key];
             item._aspect.rejectChanges();
         });
+        if (this.isHasChanges) {
+            // should never happen
+            throw new Error("Invalid Operation: the changes are left after the rejectChanges operation");
+        }
     }
     deleteOnSubmit(item: TItem): void {
         item._aspect.deleteOnSubmit();

@@ -1210,6 +1210,7 @@ declare module "jriapp_shared/collection/base" {
         removeItem(item: TItem): void;
         sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
         sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
+        rejectChanges(): void;
         clear(): void;
         waitForNotLoading(callback: () => void, groupName: string): void;
         toString(): string;

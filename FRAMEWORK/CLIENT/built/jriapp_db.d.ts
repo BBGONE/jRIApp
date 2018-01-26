@@ -521,8 +521,9 @@ declare module "jriapp_db/entity_aspect" {
         private _srvKey;
         private _origVals;
         private _savedStatus;
-        private _ownedObjs;
+        private _disposables;
         constructor(dbSet: DbSet<TItem, TObj, TDbContext>, vals: TObj, key: string, isNew: boolean);
+        dispose(): void;
         protected _onFieldChanged(fieldName: string, fieldInfo?: IFieldInfo): void;
         protected _getValueChange(fullName: string, fieldInfo: IFieldInfo, changedOnly: boolean): IValueChange;
         protected _getValueChanges(changedOnly: boolean): IValueChange[];
@@ -532,7 +533,7 @@ declare module "jriapp_db/entity_aspect" {
         protected _endEdit(): boolean;
         protected _cancelEdit(): boolean;
         protected _setStatus(v: ITEM_STATUS): void;
-        _addOwnedObject(obj: IBaseObject): void;
+        _addDisposable(obj: IBaseObject): void;
         _updateKeys(key: string): void;
         _checkCanRefresh(): void;
         _refreshValue(val: any, fullName: string, refreshMode: REFRESH_MODE): void;
@@ -552,7 +553,6 @@ declare module "jriapp_db/entity_aspect" {
         rejectChanges(): void;
         submitChanges(): IVoidPromise;
         refresh(): IStatefulPromise<TItem>;
-        dispose(): void;
         toString(): string;
         readonly srvKey: string;
         readonly isCanSubmit: boolean;

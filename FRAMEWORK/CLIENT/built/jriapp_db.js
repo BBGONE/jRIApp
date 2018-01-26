@@ -832,18 +832,20 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return this.createEntityFromData(null, null);
         };
         DbSet.prototype._clear = function (reason, oper) {
-            _super.prototype._clear.call(this, reason, oper);
-            this._newKey = 0;
-            this._isPageFilled = false;
+            try {
+                _super.prototype._clear.call(this, reason, oper);
+            }
+            finally {
+                this._newKey = 0;
+                this._isPageFilled = false;
+            }
         };
         DbSet.prototype._onPageChanging = function () {
             var res = _super.prototype._onPageChanging.call(this);
             if (!res) {
                 return res;
             }
-            if (this.isHasChanges) {
-                this.rejectChanges();
-            }
+            this.rejectChanges();
             var query = this.query;
             if (!!query && query.loadPageCount > 1 && this._isPageFilled) {
                 query._getInternal().updateCache(this.pageIndex, this.items);
@@ -1080,7 +1082,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype._commitChanges = function (rows) {
             var self = this;
             rows.forEach(function (rowInfo) {
-                var oldKey = rowInfo.clientKey, item = self.getItemByKey(oldKey);
+                var oldKey = rowInfo.clientKey, newKey = rowInfo.serverKey, item = self.getItemByKey(oldKey);
                 if (!item) {
                     throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_KEY_IS_NOTFOUND, oldKey));
                 }
@@ -1088,14 +1090,14 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 item._aspect._acceptChanges(rowInfo);
                 if (itemStatus === 1) {
                     item._aspect._updateKeys(rowInfo.serverKey);
-                    self._remapItem(oldKey, item._key, item);
+                    self._remapItem(oldKey, newKey, item);
                     self._onCollectionChanged({
                         changeType: 3,
                         reason: 0,
                         oper: 4,
                         items: [item],
                         old_key: oldKey,
-                        new_key: item._key
+                        new_key: newKey
                     });
                 }
             });
@@ -1374,19 +1376,30 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
         };
         DbSet.prototype.acceptChanges = function () {
+            if (!this.isHasChanges) {
+                return;
+            }
             var csh = this._changeCache;
             forEachProp(csh, function (key) {
                 var item = csh[key];
                 item._aspect.acceptChanges();
             });
-            this._changeCount = 0;
+            if (this.isHasChanges) {
+                throw new Error("Invalid Operation: the changes are left after the acceptChanges operation");
+            }
         };
         DbSet.prototype.rejectChanges = function () {
+            if (!this.isHasChanges) {
+                return;
+            }
             var csh = this._changeCache;
             forEachProp(csh, function (key) {
                 var item = csh[key];
                 item._aspect.rejectChanges();
             });
+            if (this.isHasChanges) {
+                throw new Error("Invalid Operation: the changes are left after the rejectChanges operation");
+            }
         };
         DbSet.prototype.deleteOnSubmit = function (item) {
             item._aspect.deleteOnSubmit();
@@ -3143,10 +3156,33 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             var _this = _super.call(this, dbSet, vals, key, isNew) || this;
             _this._srvKey = !isNew ? key : null;
             _this._origVals = null;
-            _this._ownedObjs = null;
+            _this._disposables = null;
             _this._savedStatus = null;
             return _this;
         }
+        EntityAspect.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            try {
+                if (!this.isDetached) {
+                    this.cancelEdit();
+                    this.rejectChanges();
+                }
+                var objs = this._disposables;
+                this._disposables = null;
+                if (!!objs && objs.length > 0) {
+                    var k = objs.length - 1;
+                    for (var i = k; i >= 0; --i) {
+                        objs[i].dispose();
+                    }
+                }
+            }
+            finally {
+                _super.prototype.dispose.call(this);
+            }
+        };
         EntityAspect.prototype._onFieldChanged = function (fieldName, fieldInfo) {
             var _this = this;
             sys.raiseProp(this.item, fieldName);
@@ -3294,11 +3330,11 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 this.dbSet._getInternal().onItemStatusChanged(this.item, oldStatus);
             }
         };
-        EntityAspect.prototype._addOwnedObject = function (obj) {
-            if (!this._ownedObjs) {
-                this._ownedObjs = [];
+        EntityAspect.prototype._addDisposable = function (obj) {
+            if (!this._disposables) {
+                this._disposables = [];
             }
-            this._ownedObjs.push(obj);
+            this._disposables.push(obj);
         };
         EntityAspect.prototype._updateKeys = function (key) {
             this._setSrvKey(key);
@@ -3471,6 +3507,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             if (oldStatus !== 0) {
                 internal.onCommitChanges(this.item, true, false, oldStatus);
                 if (oldStatus === 3) {
+                    this._setStatus(0);
                     if (!this.getIsStateDirty()) {
                         this.dispose();
                     }
@@ -3564,27 +3601,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         EntityAspect.prototype.refresh = function () {
             var dbxt = this.dbSet.dbContext;
             return dbxt._getInternal().refreshItem(this.item);
-        };
-        EntityAspect.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            try {
-                this.cancelEdit();
-                this.rejectChanges();
-                var ownedObjs = this._ownedObjs;
-                if (!!ownedObjs && ownedObjs.length > 0) {
-                    this._ownedObjs = null;
-                    var k = ownedObjs.length - 1;
-                    for (var i = k; i >= 0; --i) {
-                        ownedObjs[i].dispose();
-                    }
-                }
-            }
-            finally {
-                _super.prototype.dispose.call(this);
-            }
         };
         EntityAspect.prototype.toString = function () {
             return this.dbSetName + "EntityAspect";
@@ -4227,11 +4243,11 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
         function RootComplexProperty(name, owner) {
             var _this = _super.call(this, name) || this;
             _this._entity = owner;
-            _this._entity._addOwnedObject(_this);
+            _this._entity._addDisposable(_this);
             return _this;
         }
         RootComplexProperty.prototype._addOwnedObject = function (obj) {
-            this._entity._addOwnedObject(obj);
+            this._entity._addDisposable(obj);
         };
         RootComplexProperty.prototype._getFullPath = function (path) {
             return this.getName() + "." + path;

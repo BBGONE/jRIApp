@@ -459,27 +459,29 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
         this.objEvents.raise(COLL_EVENTS.clearing, { reason: reason });
         this.cancelEdit();
+        this.rejectChanges();
         this._EditingItem = null;
         this.currentItem = null;
         const oldItems = this._items;
-        try {
-            this._disposeItems(oldItems);
-        } finally {
-            this._items = [];
-            this._itemsByKey = {};
-            this._errors.clear();
-            if (oper !== COLL_CHANGE_OPER.Fill) {
-                this._onCollectionChanged({
-                    changeType: COLL_CHANGE_TYPE.Reset,
-                    reason: reason,
-                    oper: oper,
-                    items: [],
-                    pos: []
-                });
-            }
-            this.objEvents.raise(COLL_EVENTS.cleared, { reason: reason });
-            this._onCountChanged();
+        if (oldItems.length > 0) {
+            utils.queue.enque(() => {
+                this._disposeItems(oldItems);
+            });
         }
+        this._errors.clear();
+        this._items = [];
+        this._itemsByKey = {};
+        if (oper !== COLL_CHANGE_OPER.Fill) {
+            this._onCollectionChanged({
+                changeType: COLL_CHANGE_TYPE.Reset,
+                reason: reason,
+                oper: oper,
+                items: [],
+                pos: []
+            });
+        }
+        this.objEvents.raise(COLL_EVENTS.cleared, { reason: reason });
+        this._onCountChanged();
     }
     protected _replaceItems(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER, items: TItem[]): void {
         this._clear(reason, oper);
@@ -835,6 +837,9 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         }, "sorting");
 
         return deferred.promise();
+    }
+    rejectChanges(): void {
+       // noop
     }
     clear() {
         this._clear(COLL_CHANGE_REASON.None, COLL_CHANGE_OPER.None);

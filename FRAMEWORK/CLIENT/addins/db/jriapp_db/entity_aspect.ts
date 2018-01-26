@@ -56,14 +56,37 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     private _srvKey: string;
     private _origVals: IIndexer<any>;
     private _savedStatus: ITEM_STATUS;
-    private _ownedObjs: Array<IBaseObject>;
+    private _disposables: Array<IBaseObject>;
 
     constructor(dbSet: DbSet<TItem, TObj, TDbContext>, vals: TObj, key: string, isNew: boolean) {
         super(dbSet, vals, key, isNew);
         this._srvKey = !isNew ? key : null;
         this._origVals = null;
-        this._ownedObjs = null;
+        this._disposables = null;
         this._savedStatus = null;
+    }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        try {
+            if (!this.isDetached) {
+                this.cancelEdit();
+                this.rejectChanges();
+            }
+            const objs = this._disposables;
+            this._disposables = null;
+            // destroy objects which we own: such as complex properties
+            if (!!objs && objs.length > 0) {
+                const k = objs.length - 1;
+                for (let i = k; i >= 0; --i) {
+                    objs[i].dispose();
+                }
+            }
+        } finally {
+            super.dispose();
+        }
     }
     protected _onFieldChanged(fieldName: string, fieldInfo?: IFieldInfo): void {
         sys.raiseProp(this.item, fieldName);
@@ -210,11 +233,11 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             this.dbSet._getInternal().onItemStatusChanged(this.item, oldStatus);
         }
     }
-    _addOwnedObject(obj: IBaseObject): void {
-        if (!this._ownedObjs) {
-            this._ownedObjs = [];
+    _addDisposable(obj: IBaseObject): void {
+        if (!this._disposables) {
+            this._disposables = [];
         }
-        this._ownedObjs.push(obj);
+        this._disposables.push(obj);
     }
     _updateKeys(key: string): void {
         this._setSrvKey(key);
@@ -386,10 +409,12 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         if (this.getIsDisposed()) {
             return;
         }
-        const oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal(),  errors = dbSet.errors;
+        const oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal(),
+            errors = dbSet.errors;
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(this.item, true, false, oldStatus);
             if (oldStatus === ITEM_STATUS.Deleted) {
+                this._setStatus(ITEM_STATUS.None);
                 if (!this.getIsStateDirty()) {
                    this.dispose();
                 }
@@ -485,27 +510,6 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     refresh(): IStatefulPromise<TItem> {
         const dbxt = this.dbSet.dbContext;
         return <IStatefulPromise<TItem>>dbxt._getInternal().refreshItem(this.item);
-    }
-    dispose(): void {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        try {
-            this.cancelEdit();
-            this.rejectChanges();
-            const ownedObjs = this._ownedObjs;
-            if (!!ownedObjs && ownedObjs.length > 0) {
-                this._ownedObjs = null;
-                const k = ownedObjs.length - 1;
-                //destroy objects which we own: such as complex properties
-                for (let i = k; i >= 0; --i) {
-                    ownedObjs[i].dispose();
-                }
-            }
-        } finally {
-            super.dispose();
-        }
     }
     toString(): string {
         return this.dbSetName + "EntityAspect";

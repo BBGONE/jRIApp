@@ -3405,30 +3405,32 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             return !args.isCancel;
         };
         BaseCollection.prototype._clear = function (reason, oper) {
+            var _this = this;
             this.objEvents.raise("clearing", { reason: reason });
             this.cancelEdit();
+            this.rejectChanges();
             this._EditingItem = null;
             this.currentItem = null;
             var oldItems = this._items;
-            try {
-                this._disposeItems(oldItems);
+            if (oldItems.length > 0) {
+                utils.queue.enque(function () {
+                    _this._disposeItems(oldItems);
+                });
             }
-            finally {
-                this._items = [];
-                this._itemsByKey = {};
-                this._errors.clear();
-                if (oper !== 1) {
-                    this._onCollectionChanged({
-                        changeType: 2,
-                        reason: reason,
-                        oper: oper,
-                        items: [],
-                        pos: []
-                    });
-                }
-                this.objEvents.raise("cleared", { reason: reason });
-                this._onCountChanged();
+            this._errors.clear();
+            this._items = [];
+            this._itemsByKey = {};
+            if (oper !== 1) {
+                this._onCollectionChanged({
+                    changeType: 2,
+                    reason: reason,
+                    oper: oper,
+                    items: [],
+                    pos: []
+                });
             }
+            this.objEvents.raise("cleared", { reason: reason });
+            this._onCountChanged();
         };
         BaseCollection.prototype._replaceItems = function (reason, oper, items) {
             var _this = this;
@@ -3782,6 +3784,8 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 self.currentItem = cur;
             }, "sorting");
             return deferred.promise();
+        };
+        BaseCollection.prototype.rejectChanges = function () {
         };
         BaseCollection.prototype.clear = function () {
             this._clear(0, 0);

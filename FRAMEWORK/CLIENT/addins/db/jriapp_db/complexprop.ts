@@ -63,10 +63,10 @@ export class RootComplexProperty extends BaseComplexProperty {
     constructor(name: string, owner: EntityAspect<IEntityItem, any, DbContext>) {
         super(name);
         this._entity = owner;
-        this._entity._addOwnedObject(this);
+        this._entity._addDisposable(this);
     }
     _addOwnedObject(obj: IBaseObject): void {
-        this._entity._addOwnedObject(obj);
+        this._entity._addDisposable(obj);
     }
     _getFullPath(path: string): string {
         return this.getName() + "." + path;
