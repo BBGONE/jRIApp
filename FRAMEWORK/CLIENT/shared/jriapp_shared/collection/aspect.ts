@@ -87,6 +87,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
             }
         }
         const bag = this._valueBag;
+        this._valueBag = null;
         if (!!bag) {
             forEachProp(bag, (name, val) => {
                 disposeVal(val, coll.uniqueID);

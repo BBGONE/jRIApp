@@ -239,6 +239,10 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         };
         return fieldInfo;
     }
+    // overriden in DataView class!!!
+    protected _isOwnsItems(): boolean {
+        return true;
+    }
     protected _setInternal<T extends IInternalCollMethods<TItem>>(internal: T) {
         this._internal = internal;
     }
@@ -393,13 +397,6 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             self._onCurrentChanged();
         }
     }
-    // it is overriden in DataView class!!!
-    protected _disposeItems(items: TItem[]): void {
-        items.forEach((item) => {
-            item._aspect._setIsAttached(false);
-            item.dispose();
-        });
-    }
     protected _getEditingItem(): TItem {
         return this._EditingItem;
     }
@@ -456,21 +453,29 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this.objEvents.raise(COLL_EVENTS.item_deleting, args);
         return !args.isCancel;
     }
-    protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
+    protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void {
         this.objEvents.raise(COLL_EVENTS.clearing, { reason: reason });
         this.cancelEdit();
         this.rejectChanges();
         this._EditingItem = null;
         this.currentItem = null;
         const oldItems = this._items;
-        if (oldItems.length > 0) {
-            utils.queue.enque(() => {
-                this._disposeItems(oldItems);
-            });
-        }
         this._errors.clear();
         this._items = [];
         this._itemsByKey = {};
+        // dispose items only if this collection owns it!
+        if (this._isOwnsItems()) {
+            oldItems.forEach((item) => {
+                item._aspect._setIsAttached(false);
+            });
+            if (oldItems.length > 0) {
+                utils.queue.enque(() => {
+                    oldItems.forEach((item) => {
+                        item.dispose();
+                    });
+                });
+            }
+        }
         if (oper !== COLL_CHANGE_OPER.Fill) {
             this._onCollectionChanged({
                 changeType: COLL_CHANGE_TYPE.Reset,

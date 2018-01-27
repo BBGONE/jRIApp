@@ -1148,6 +1148,7 @@ declare module "jriapp_shared/collection/base" {
         constructor();
         dispose(): void;
         static getEmptyFieldInfo(fieldName: string): IFieldInfo;
+        protected _isOwnsItems(): boolean;
         protected _setInternal<T extends IInternalCollMethods<TItem>>(internal: T): void;
         protected _updatePermissions(perms: IPermissions): void;
         protected _getPKFieldInfos(): IFieldInfo[];
@@ -1168,7 +1169,6 @@ declare module "jriapp_shared/collection/base" {
         protected _onPageChanging(): boolean;
         protected _onPageChanged(): void;
         protected _setCurrentItem(v: TItem): void;
-        protected _disposeItems(items: TItem[]): void;
         protected _getEditingItem(): TItem;
         protected _getStrValue(val: any, fieldInfo: IFieldInfo): string;
         protected _onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;

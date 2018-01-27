@@ -3507,22 +3507,24 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             if (oldStatus !== 0) {
                 internal.onCommitChanges(this.item, true, false, oldStatus);
                 if (oldStatus === 3) {
-                    this._setStatus(0);
+                    internal.removeFromChanged(this.key);
+                    errors.removeAllErrors(this.item);
                     if (!this.getIsStateDirty()) {
                         this.dispose();
                     }
-                    return;
                 }
-                this._origVals = null;
-                if (!!this._saveVals) {
-                    this._saveVals = cloneVals(this.dbSet.getFieldInfos(), this._vals);
+                else {
+                    this._origVals = null;
+                    if (!!this._saveVals) {
+                        this._saveVals = cloneVals(this.dbSet.getFieldInfos(), this._vals);
+                    }
+                    this._setStatus(0);
+                    errors.removeAllErrors(this.item);
+                    if (!!rowInfo) {
+                        this._refreshValues(rowInfo, 3);
+                    }
+                    internal.onCommitChanges(this.item, false, false, oldStatus);
                 }
-                this._setStatus(0);
-                errors.removeAllErrors(this.item);
-                if (!!rowInfo) {
-                    this._refreshValues(rowInfo, 3);
-                }
-                internal.onCommitChanges(this.item, false, false, oldStatus);
             }
         };
         EntityAspect.prototype.deleteItem = function () {
@@ -3557,28 +3559,30 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             if (oldStatus !== 0) {
                 internal.onCommitChanges(self.item, true, true, oldStatus);
                 if (oldStatus === 1) {
-                    self._setStatus(0);
+                    internal.removeFromChanged(this.key);
+                    errors.removeAllErrors(this.item);
                     if (!this.getIsStateDirty()) {
                         this.dispose();
                     }
-                    return;
                 }
-                var changes = self._getValueChanges(true);
-                if (!!self._origVals) {
-                    self._vals = cloneVals(self.dbSet.getFieldInfos(), self._origVals);
-                    self._origVals = null;
-                    if (!!self._saveVals) {
-                        self._saveVals = cloneVals(self.dbSet.getFieldInfos(), self._vals);
+                else {
+                    var changes = self._getValueChanges(true);
+                    if (!!self._origVals) {
+                        self._vals = cloneVals(self.dbSet.getFieldInfos(), self._origVals);
+                        self._origVals = null;
+                        if (!!self._saveVals) {
+                            self._saveVals = cloneVals(self.dbSet.getFieldInfos(), self._vals);
+                        }
                     }
-                }
-                self._setStatus(0);
-                errors.removeAllErrors(this.item);
-                changes.forEach(function (v) {
-                    fn_walkChanges(v, function (fullName) {
-                        self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));
+                    self._setStatus(0);
+                    errors.removeAllErrors(this.item);
+                    changes.forEach(function (v) {
+                        fn_walkChanges(v, function (fullName) {
+                            self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));
+                        });
                     });
-                });
-                internal.onCommitChanges(this.item, false, true, oldStatus);
+                    internal.onCommitChanges(this.item, false, true, oldStatus);
+                }
             }
         };
         EntityAspect.prototype.submitChanges = function () {
@@ -3675,6 +3679,9 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             _this._bindDS();
             return _this;
         }
+        DataView.prototype._isOwnsItems = function () {
+            return false;
+        };
         DataView.prototype._onAddNew = function (item, pos) {
             var args = {
                 changeType: 1,
@@ -3685,8 +3692,6 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 new_key: item._key
             };
             this._onCollectionChanged(args);
-        };
-        DataView.prototype._disposeItems = function (items) {
         };
         DataView.prototype._filterForPaging = function (items) {
             var skip = 0, take = 0, pos = -1, cnt = -1;

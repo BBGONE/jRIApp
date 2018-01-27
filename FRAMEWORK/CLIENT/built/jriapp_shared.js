@@ -3188,6 +3188,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             };
             return fieldInfo;
         };
+        BaseCollection.prototype._isOwnsItems = function () {
+            return true;
+        };
         BaseCollection.prototype._setInternal = function (internal) {
             this._internal = internal;
         };
@@ -3341,12 +3344,6 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 self._onCurrentChanged();
             }
         };
-        BaseCollection.prototype._disposeItems = function (items) {
-            items.forEach(function (item) {
-                item._aspect._setIsAttached(false);
-                item.dispose();
-            });
-        };
         BaseCollection.prototype._getEditingItem = function () {
             return this._EditingItem;
         };
@@ -3405,21 +3402,27 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             return !args.isCancel;
         };
         BaseCollection.prototype._clear = function (reason, oper) {
-            var _this = this;
             this.objEvents.raise("clearing", { reason: reason });
             this.cancelEdit();
             this.rejectChanges();
             this._EditingItem = null;
             this.currentItem = null;
             var oldItems = this._items;
-            if (oldItems.length > 0) {
-                utils.queue.enque(function () {
-                    _this._disposeItems(oldItems);
-                });
-            }
             this._errors.clear();
             this._items = [];
             this._itemsByKey = {};
+            if (this._isOwnsItems()) {
+                oldItems.forEach(function (item) {
+                    item._aspect._setIsAttached(false);
+                });
+                if (oldItems.length > 0) {
+                    utils.queue.enque(function () {
+                        oldItems.forEach(function (item) {
+                            item.dispose();
+                        });
+                    });
+                }
+            }
             if (oper !== 1) {
                 this._onCollectionChanged({
                     changeType: 2,
@@ -4279,6 +4282,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 }
             }
             var bag = this._valueBag;
+            this._valueBag = null;
             if (!!bag) {
                 forEachProp(bag, function (name, val) {
                     disposeVal(val, coll.uniqueID);

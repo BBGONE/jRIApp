@@ -51,6 +51,10 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         this._bindDS();
     }
     // override
+    protected _isOwnsItems(): boolean {
+        return false;
+    }
+    // override
     protected _onAddNew(item: TItem, pos: number): void {
         const args = {
             changeType: COLL_CHANGE_TYPE.Add,
@@ -61,10 +65,6 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             new_key: item._key
         };
         this._onCollectionChanged(args);
-    }
-    // override
-    protected _disposeItems(items: TItem[]): void {
-        // don't dispose items, because they belong to the other collection
     }
     protected _filterForPaging(items: TItem[]): TItem[] {
         let skip = 0, take = 0, pos = -1, cnt = -1;
@@ -464,7 +464,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
             this._refresh(COLL_CHANGE_REASON.Refresh);
         }
     }
-    toString() {
+    toString(): string {
         return !this.dataSource ? "DataView" : ("DataView For " + this.dataSource.toString()); 
     }
 }

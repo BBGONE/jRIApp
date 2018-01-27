@@ -413,23 +413,25 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             errors = dbSet.errors;
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(this.item, true, false, oldStatus);
+
             if (oldStatus === ITEM_STATUS.Deleted) {
-                this._setStatus(ITEM_STATUS.None);
+                internal.removeFromChanged(this.key);
+                errors.removeAllErrors(this.item);
                 if (!this.getIsStateDirty()) {
-                   this.dispose();
+                    this.dispose();
                 }
-                return;
+            } else {
+                this._origVals = null;
+                if (!!this._saveVals) {
+                    this._saveVals = cloneVals(this.dbSet.getFieldInfos(), this._vals); // clone(this._vals);
+                }
+                this._setStatus(ITEM_STATUS.None);
+                errors.removeAllErrors(this.item);
+                if (!!rowInfo) {
+                    this._refreshValues(rowInfo, REFRESH_MODE.CommitChanges);
+                }
+                internal.onCommitChanges(this.item, false, false, oldStatus);
             }
-            this._origVals = null;
-            if (!!this._saveVals) {
-                this._saveVals = cloneVals(this.dbSet.getFieldInfos(), this._vals); // clone(this._vals);
-            }
-            this._setStatus(ITEM_STATUS.None);
-            errors.removeAllErrors(this.item);
-            if (!!rowInfo) {
-                this._refreshValues(rowInfo, REFRESH_MODE.CommitChanges);
-            }
-            internal.onCommitChanges(this.item, false, false, oldStatus);
         }
     }
     deleteItem(): boolean {
@@ -462,30 +464,31 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         const self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal(), errors = dbSet.errors;
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(self.item, true, true, oldStatus);
+
             if (oldStatus === ITEM_STATUS.Added) {
-                self._setStatus(ITEM_STATUS.None);
+                internal.removeFromChanged(this.key);
+                errors.removeAllErrors(this.item);
                 if (!this.getIsStateDirty()) {
                     this.dispose();
                 }
-                return;
-            }
-
-            const changes = self._getValueChanges(true);
-            if (!!self._origVals) {
-                self._vals = cloneVals(self.dbSet.getFieldInfos(), self._origVals); // clone(self._origVals);
-                self._origVals = null;
-                if (!!self._saveVals) {
-                    self._saveVals = cloneVals(self.dbSet.getFieldInfos(), self._vals); // clone(self._vals);
+            } else {
+                const changes = self._getValueChanges(true);
+                if (!!self._origVals) {
+                    self._vals = cloneVals(self.dbSet.getFieldInfos(), self._origVals); // clone(self._origVals);
+                    self._origVals = null;
+                    if (!!self._saveVals) {
+                        self._saveVals = cloneVals(self.dbSet.getFieldInfos(), self._vals); // clone(self._vals);
+                    }
                 }
-            }
-            self._setStatus(ITEM_STATUS.None);
-            errors.removeAllErrors(this.item);
-            changes.forEach((v) => {
-                fn_walkChanges(v, (fullName) => {
-                    self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));
+                self._setStatus(ITEM_STATUS.None);
+                errors.removeAllErrors(this.item);
+                changes.forEach((v) => {
+                    fn_walkChanges(v, (fullName) => {
+                        self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));
+                    });
                 });
-            });
-            internal.onCommitChanges(this.item, false, true, oldStatus);
+                internal.onCommitChanges(this.item, false, true, oldStatus);
+            }
         }
     }
     submitChanges(): IVoidPromise {
