@@ -524,8 +524,8 @@ declare module "jriapp_db/entity_aspect" {
         private _disposables;
         constructor(dbSet: DbSet<TItem, TObj, TDbContext>, vals: TObj, key: string, isNew: boolean);
         dispose(): void;
-        protected _getValue(name: string, ver?: VALS_VERSION): any;
-        protected _setValue(name: string, val: any, ver?: VALS_VERSION): void;
+        protected _getValue(name: string, ver: VALS_VERSION): any;
+        protected _setValue(name: string, val: any, ver: VALS_VERSION): void;
         protected _storeVals(toVer: VALS_VERSION): void;
         protected _restoreVals(fromVer: VALS_VERSION): void;
         protected _onFieldChanged(fieldName: string, fieldInfo?: IFieldInfo): void;
@@ -558,6 +558,7 @@ declare module "jriapp_db/entity_aspect" {
         submitChanges(): IVoidPromise;
         refresh(): IStatefulPromise<TItem>;
         toString(): string;
+        protected readonly hasOrigVals: boolean;
         readonly srvKey: string;
         readonly isCanSubmit: boolean;
         readonly dbSetName: string;

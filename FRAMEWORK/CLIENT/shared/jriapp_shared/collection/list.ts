@@ -3,7 +3,7 @@ import { Utils } from "../utils/utils";
 import { ERRS } from "../lang";
 import { IIndexer } from "../int";
 import {
-    COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER
+    COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER, VALS_VERSION
 } from "./const";
 import {
     ICollectionItem, IPropInfo, IFieldInfo
@@ -32,7 +32,7 @@ export class ListItemAspect<TItem extends IListItem, TObj extends IIndexer<any>>
                 if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
                     throw new Error(ERRS.ERR_FIELD_READONLY);
                 }
-                this._setValue(name, val);
+                this._setValue(name, val, VALS_VERSION.Default);
                 sys.raiseProp(item, name);
                 errors.removeError(item, name);
                 const validationInfo = this._validateField(name);
@@ -53,7 +53,7 @@ export class ListItemAspect<TItem extends IListItem, TObj extends IIndexer<any>>
         }
     }
     _getProp(name: string): any {
-        return this._getValue(name);
+        return this._getValue(name, VALS_VERSION.Default);
     }
     toString(): string {
         if (!this.item) {

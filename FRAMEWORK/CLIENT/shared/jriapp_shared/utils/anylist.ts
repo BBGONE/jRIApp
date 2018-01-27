@@ -4,7 +4,7 @@ import { CoreUtils } from "./coreutils";
 import { SysUtils } from "./sysutils";
 import { StringUtils } from "./strutils";
 import { Debounce } from "./debounce";
-import { COLL_CHANGE_TYPE } from "../collection/const";
+import { COLL_CHANGE_TYPE, VALS_VERSION } from "../collection/const";
 import { CollectionItem } from "../collection/item";
 import { Validations } from "../collection/validation";
 import { IListItem, ListItemAspect, BaseList } from "../collection/list";
@@ -39,12 +39,12 @@ export class AnyItemAspect extends ListItemAspect<IAnyValItem, IAnyVal> {
     }
     // override List's methods
     _getProp(name: string) {
-        return this._getValue(name);
+        return this._getValue(name, VALS_VERSION.Default);
     }
      // override
     _setProp(name: string, val: any) {
         if (this._getProp(name) !== val) {
-            this._setValue(name, val);
+            this._setValue(name, val, VALS_VERSION.Default);
             sys.raiseProp(this.item, name);
         }
     }

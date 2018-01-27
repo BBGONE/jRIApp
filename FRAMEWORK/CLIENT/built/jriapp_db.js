@@ -3184,7 +3184,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             }
         };
         EntityAspect.prototype._getValue = function (name, ver) {
-            if (ver === void 0) { ver = 0; }
             switch (ver) {
                 case 2:
                     if (!this._origVals) {
@@ -3196,7 +3195,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             }
         };
         EntityAspect.prototype._setValue = function (name, val, ver) {
-            if (ver === void 0) { ver = 0; }
             switch (ver) {
                 case 2:
                     if (!this._origVals) {
@@ -3260,7 +3258,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 }
             }
             else {
-                var newVal = dbSet._getInternal().getStrValue(self._getValue(fullName), fieldInfo), oldV = !self._origVals ? newVal : dbSet._getInternal().getStrValue(self._getValue(fullName, 2), fieldInfo), isChanged = (oldV !== newVal);
+                var newVal = dbSet._getInternal().getStrValue(self._getValue(fullName, 0), fieldInfo), oldV = !self.hasOrigVals ? newVal : dbSet._getInternal().getStrValue(self._getValue(fullName, 2), fieldInfo), isChanged = (oldV !== newVal);
                 if (isChanged) {
                     res = {
                         fieldName: fieldInfo.fieldName,
@@ -3401,26 +3399,26 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 throw new Error(strUtils.format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
             }
             var stz = self.serverTimezone, dataType = fld.dataType, dcnv = fld.dateConversion;
-            var newVal = parseValue(val, dataType, dcnv, stz), oldVal = self._getValue(fullName);
+            var newVal = parseValue(val, dataType, dcnv, stz), oldVal = self._getValue(fullName, 0);
             switch (refreshMode) {
                 case 3:
                     {
                         if (!compareVals(newVal, oldVal, dataType)) {
-                            self._setValue(fullName, newVal);
+                            self._setValue(fullName, newVal, 0);
                             self._onFieldChanged(fullName, fld);
                         }
                     }
                     break;
                 case 1:
                     {
-                        if (!!self._origVals) {
+                        if (self.hasOrigVals) {
                             self._setValue(fullName, newVal, 2);
                         }
-                        if (!!self.tempVals) {
+                        if (self.hasTempVals) {
                             self._setValue(fullName, newVal, 1);
                         }
                         if (!compareVals(newVal, oldVal, dataType)) {
-                            self._setValue(fullName, newVal);
+                            self._setValue(fullName, newVal, 0);
                             self._onFieldChanged(fullName, fld);
                         }
                     }
@@ -3428,13 +3426,13 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 case 2:
                     {
                         var origOldVal = undefined;
-                        if (!!self._origVals) {
+                        if (self.hasOrigVals) {
                             origOldVal = self._getValue(fullName, 2);
                             self._setValue(fullName, newVal, 2);
                         }
                         if (origOldVal === undefined || compareVals(origOldVal, oldVal, dataType)) {
                             if (!compareVals(newVal, oldVal, dataType)) {
-                                self._setValue(fullName, newVal);
+                                self._setValue(fullName, newVal, 0);
                                 self._onFieldChanged(fullName, fld);
                             }
                         }
@@ -3486,10 +3484,10 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             this.dbSet._getInternal().setNavFieldVal(fieldName, this.item, value);
         };
         EntityAspect.prototype._clearFieldVal = function (fieldName) {
-            this._setValue(fieldName, null);
+            this._setValue(fieldName, null, 0);
         };
         EntityAspect.prototype._getFieldVal = function (fieldName) {
-            return this._getValue(fieldName);
+            return this._getValue(fieldName, 0);
         };
         EntityAspect.prototype._setFieldVal = function (fieldName, val) {
             if (this.isCancelling) {
@@ -3512,7 +3510,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                         throw new Error(jriapp_shared_8.LocaleERRS.ERR_FIELD_READONLY);
                     }
                     if (this._fldChanging(fieldName, fieldInfo, oldV, newV)) {
-                        this._setValue(fieldName, newV);
+                        this._setValue(fieldName, newV, 0);
                         if (!(fieldInfo.fieldType === 1 || fieldInfo.fieldType === 6)) {
                             switch (this.status) {
                                 case 0:
@@ -3564,7 +3562,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 }
                 else {
                     this._origVals = null;
-                    if (!!this.tempVals) {
+                    if (this.hasTempVals) {
                         this._storeVals(1);
                     }
                     this._setStatus(0);
@@ -3616,9 +3614,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 }
                 else {
                     var changes = self._getValueChanges(true);
-                    if (!!self._origVals) {
+                    if (self.hasOrigVals) {
                         self._restoreVals(2);
-                        if (!!self.tempVals) {
+                        if (self.hasTempVals) {
                             self._storeVals(1);
                         }
                     }
@@ -3657,6 +3655,13 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         EntityAspect.prototype.toString = function () {
             return this.dbSetName + "EntityAspect";
         };
+        Object.defineProperty(EntityAspect.prototype, "hasOrigVals", {
+            get: function () {
+                return !!this._origVals;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(EntityAspect.prototype, "srvKey", {
             get: function () {
                 return this._srvKey;

@@ -229,9 +229,9 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj extends IIn
     protected _replaceVals(vals: TObj): void {
         this._vals = vals;
     }
-    protected _getValue(name: string, ver: VALS_VERSION = VALS_VERSION.None): any {
+    protected _getValue(name: string, ver: VALS_VERSION): any {
         switch (ver) {
-            case VALS_VERSION.None:
+            case VALS_VERSION.Default:
                 return getValue(this._vals, name);
             case VALS_VERSION.Temporary:
                 if (!this._tempVals) {
@@ -242,9 +242,9 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj extends IIn
                 throw new Error("Invalid Operation, Unknown Version: " + ver);
         }
     }
-    protected _setValue(name: string, val: any, ver: VALS_VERSION = VALS_VERSION.None): void {
+    protected _setValue(name: string, val: any, ver: VALS_VERSION): void {
         switch (ver) {
-            case VALS_VERSION.None:
+            case VALS_VERSION.Default:
                 setValue(this._vals, name, val, false);
                 break;
             case VALS_VERSION.Temporary:
@@ -518,8 +518,8 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj extends IIn
     toString(): string {
         return "ItemAspect";
     }
-    protected  get tempVals(): TObj {
-        return this._tempVals;
+    protected get hasTempVals(): boolean {
+        return !!this._tempVals;
     }
     // cloned values of this item
     get vals(): TObj {

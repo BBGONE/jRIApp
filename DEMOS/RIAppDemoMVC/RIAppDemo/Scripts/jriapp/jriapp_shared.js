@@ -2385,7 +2385,7 @@ define("jriapp_shared/collection/const", ["require", "exports"], function (requi
     })(ITEM_STATUS = exports.ITEM_STATUS || (exports.ITEM_STATUS = {}));
     var VALS_VERSION;
     (function (VALS_VERSION) {
-        VALS_VERSION[VALS_VERSION["None"] = 0] = "None";
+        VALS_VERSION[VALS_VERSION["Default"] = 0] = "Default";
         VALS_VERSION[VALS_VERSION["Temporary"] = 1] = "Temporary";
         VALS_VERSION[VALS_VERSION["Original"] = 2] = "Original";
     })(VALS_VERSION = exports.VALS_VERSION || (exports.VALS_VERSION = {}));
@@ -4424,7 +4424,6 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             this._vals = vals;
         };
         ItemAspect.prototype._getValue = function (name, ver) {
-            if (ver === void 0) { ver = 0; }
             switch (ver) {
                 case 0:
                     return getValue(this._vals, name);
@@ -4438,7 +4437,6 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             }
         };
         ItemAspect.prototype._setValue = function (name, val, ver) {
-            if (ver === void 0) { ver = 0; }
             switch (ver) {
                 case 0:
                     setValue(this._vals, name, val, false);
@@ -4711,9 +4709,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.toString = function () {
             return "ItemAspect";
         };
-        Object.defineProperty(ItemAspect.prototype, "tempVals", {
+        Object.defineProperty(ItemAspect.prototype, "hasTempVals", {
             get: function () {
-                return this._tempVals;
+                return !!this._tempVals;
             },
             enumerable: true,
             configurable: true
@@ -4893,7 +4891,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
                         throw new Error(lang_7.ERRS.ERR_FIELD_READONLY);
                     }
-                    this._setValue(name, val);
+                    this._setValue(name, val, 0);
                     sys.raiseProp(item, name);
                     errors.removeError(item, name);
                     var validationInfo = this._validateField(name);
@@ -4916,7 +4914,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             }
         };
         ListItemAspect.prototype._getProp = function (name) {
-            return this._getValue(name);
+            return this._getValue(name, 0);
         };
         ListItemAspect.prototype.toString = function () {
             if (!this.item) {
@@ -5069,11 +5067,11 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             return validation_2.Validations.distinct(this._validateItem());
         };
         AnyItemAspect.prototype._getProp = function (name) {
-            return this._getValue(name);
+            return this._getValue(name, 0);
         };
         AnyItemAspect.prototype._setProp = function (name, val) {
             if (this._getProp(name) !== val) {
-                this._setValue(name, val);
+                this._setValue(name, val, 0);
                 sys.raiseProp(this.item, name);
             }
         };
