@@ -2383,6 +2383,12 @@ define("jriapp_shared/collection/const", ["require", "exports"], function (requi
         ITEM_STATUS[ITEM_STATUS["Updated"] = 2] = "Updated";
         ITEM_STATUS[ITEM_STATUS["Deleted"] = 3] = "Deleted";
     })(ITEM_STATUS = exports.ITEM_STATUS || (exports.ITEM_STATUS = {}));
+    var VALS_VERSION;
+    (function (VALS_VERSION) {
+        VALS_VERSION[VALS_VERSION["None"] = 0] = "None";
+        VALS_VERSION[VALS_VERSION["Temporary"] = 1] = "Temporary";
+        VALS_VERSION[VALS_VERSION["Original"] = 2] = "Original";
+    })(VALS_VERSION = exports.VALS_VERSION || (exports.VALS_VERSION = {}));
 });
 define("jriapp_shared/collection/int", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -4226,7 +4232,7 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
 define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/utils", "jriapp_shared/collection/utils", "jriapp_shared/errors", "jriapp_shared/collection/validation"], function (require, exports, object_4, utils_5, utils_6, errors_6, validation_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = utils_5.Utils, _a = utils.core, forEachProp = _a.forEachProp, getValue = _a.getValue, isNt = utils.check.isNt, sys = utils.sys, ERROR = utils.err, cloneVals = utils_6.CollUtils.cloneVals, walkFields = utils_6.CollUtils.walkFields, copyVals = utils_6.CollUtils.copyVals;
+    var utils = utils_5.Utils, _a = utils.core, forEachProp = _a.forEachProp, getValue = _a.getValue, setValue = _a.setValue, isNt = utils.check.isNt, sys = utils.sys, ERROR = utils.err, cloneVals = utils_6.CollUtils.cloneVals, walkFields = utils_6.CollUtils.walkFields;
     var AspectFlags;
     (function (AspectFlags) {
         AspectFlags[AspectFlags["IsAttached"] = 0] = "IsAttached";
@@ -4263,7 +4269,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             _this._vals = vals;
             _this._key = key;
             _this._status = isNew ? 1 : 0;
-            _this._saveVals = null;
+            _this._tempVals = null;
             _this._flags = 0;
             _this._valueBag = null;
             _this._item = null;
@@ -4289,6 +4295,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 });
             }
             this._flags = 0;
+            this._status = 0;
             _super.prototype.dispose.call(this);
         };
         ItemAspect.prototype._onErrorsChanged = function () {
@@ -4336,7 +4343,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                     ERROR.reThrow(ex, isHandled);
                 }
             }
-            this._saveVals = this._cloneVals();
+            this._tempVals = this._cloneVals();
             this.coll.currentItem = this.item;
             return true;
         };
@@ -4354,7 +4361,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (this.getIsHasErrors()) {
                 return false;
             }
-            this._saveVals = null;
+            this._tempVals = null;
             return true;
         };
         ItemAspect.prototype._cancelEdit = function () {
@@ -4363,9 +4370,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 return false;
             }
             checkDetached(this);
-            var coll = this.coll, self = this, item = self.item, changes = this._saveVals;
-            this._vals = this._saveVals;
-            this._saveVals = null;
+            var coll = this.coll, self = this, item = self.item, changes = this._tempVals;
+            this._vals = this._tempVals;
+            this._tempVals = null;
             coll.errors.removeAllErrors(item);
             coll.getFieldNames().forEach(function (name) {
                 if (changes[name] !== self._vals[name]) {
@@ -4410,7 +4417,66 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             var itemVals = self._validateItem();
             return validation_1.Validations.distinct(res.concat(itemVals));
         };
+        ItemAspect.prototype._setStatus = function (v) {
+            this._status = v;
+        };
+        ItemAspect.prototype._replaceVals = function (vals) {
+            this._vals = vals;
+        };
+        ItemAspect.prototype._getValue = function (name, ver) {
+            if (ver === void 0) { ver = 0; }
+            switch (ver) {
+                case 0:
+                    return getValue(this._vals, name);
+                case 1:
+                    if (!this._tempVals) {
+                        throw new Error("Invalid Operation, no Stored Version: " + ver);
+                    }
+                    return getValue(this._tempVals, name);
+                default:
+                    throw new Error("Invalid Operation, Unknown Version: " + ver);
+            }
+        };
+        ItemAspect.prototype._setValue = function (name, val, ver) {
+            if (ver === void 0) { ver = 0; }
+            switch (ver) {
+                case 0:
+                    setValue(this._vals, name, val, false);
+                    break;
+                case 1:
+                    if (!this._tempVals) {
+                        throw new Error("Invalid Operation, no Stored Version: " + ver);
+                    }
+                    setValue(this._tempVals, name, val, false);
+                    break;
+                default:
+                    throw new Error("Invalid Operation, Unknown Version: " + ver);
+            }
+        };
+        ItemAspect.prototype._storeVals = function (toVer) {
+            switch (toVer) {
+                case 1:
+                    this._tempVals = this._cloneVals();
+                    break;
+                default:
+                    throw new Error("Invalid Operation, Unknown Version: " + toVer);
+            }
+        };
+        ItemAspect.prototype._restoreVals = function (fromVer) {
+            switch (fromVer) {
+                case 1:
+                    if (!this._tempVals) {
+                        throw new Error("Invalid Operation, no Stored Version: " + fromVer);
+                    }
+                    this._replaceVals(this._tempVals);
+                    this._tempVals = null;
+                    break;
+                default:
+                    throw new Error("Invalid Operation, Unknown Version: " + fromVer);
+            }
+        };
         ItemAspect.prototype._resetStatus = function () {
+            this._status = 0;
         };
         ItemAspect.prototype._setKey = function (v) {
             this._key = v;
@@ -4607,6 +4673,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.setCustomVal = function (name, val, isOwnVal) {
             var _this = this;
             if (isOwnVal === void 0) { isOwnVal = true; }
+            checkDetached(this);
             if (!this._valueBag) {
                 if (isNt(val)) {
                     return;
@@ -4644,9 +4711,16 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.toString = function () {
             return "ItemAspect";
         };
+        Object.defineProperty(ItemAspect.prototype, "tempVals", {
+            get: function () {
+                return this._tempVals;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ItemAspect.prototype, "vals", {
             get: function () {
-                return copyVals(this.coll.getFieldInfos(), this._vals, {});
+                return this._cloneVals();
             },
             enumerable: true,
             configurable: true
@@ -4802,7 +4876,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
 define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_7, utils_8, base_1, aspect_1, errors_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = utils_7.Utils, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, strUtils = utils.str, checks = utils.check, walkField = utils_8.CollUtils.walkField, initVals = utils_8.CollUtils.initVals, sys = utils.sys;
+    var utils = utils_7.Utils, strUtils = utils.str, checks = utils.check, walkField = utils_8.CollUtils.walkField, initVals = utils_8.CollUtils.initVals, sys = utils.sys;
     var ListItemAspect = (function (_super) {
         __extends(ListItemAspect, _super);
         function ListItemAspect() {
@@ -4819,7 +4893,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
                         throw new Error(lang_7.ERRS.ERR_FIELD_READONLY);
                     }
-                    setValue(this._vals, name, val, false);
+                    this._setValue(name, val);
                     sys.raiseProp(item, name);
                     errors.removeError(item, name);
                     var validationInfo = this._validateField(name);
@@ -4842,10 +4916,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             }
         };
         ListItemAspect.prototype._getProp = function (name) {
-            return getValue(this._vals, name);
-        };
-        ListItemAspect.prototype._resetStatus = function () {
-            this._status = 0;
+            return this._getValue(name);
         };
         ListItemAspect.prototype.toString = function () {
             if (!this.item) {
@@ -4998,11 +5069,11 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             return validation_2.Validations.distinct(this._validateItem());
         };
         AnyItemAspect.prototype._getProp = function (name) {
-            return getValue(this._vals, name);
+            return this._getValue(name);
         };
         AnyItemAspect.prototype._setProp = function (name, val) {
             if (this._getProp(name) !== val) {
-                setValue(this._vals, name, val, false);
+                this._setValue(name, val);
                 sys.raiseProp(this.item, name);
             }
         };

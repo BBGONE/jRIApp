@@ -3117,7 +3117,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
 define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriapp_shared/errors", "jriapp_shared/collection/utils", "jriapp_shared/collection/aspect", "jriapp_db/error"], function (require, exports, jriapp_shared_8, errors_1, utils_4, aspect_1, error_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_8.Utils, undefined = utils.check.undefined, strUtils = utils.str, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, uuid = _a.uuid, compareVals = utils_4.ValueUtils.compareVals, parseValue = utils_4.ValueUtils.parseValue, cloneVals = utils_4.CollUtils.cloneVals, sys = utils.sys;
+    var utils = jriapp_shared_8.Utils, undefined = utils.check.undefined, strUtils = utils.str, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, uuid = _a.uuid, compareVals = utils_4.ValueUtils.compareVals, parseValue = utils_4.ValueUtils.parseValue, sys = utils.sys;
     function fn_isNotSubmittable(fieldInfo) {
         switch (fieldInfo.fieldType) {
             case 1:
@@ -3183,6 +3183,56 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 _super.prototype.dispose.call(this);
             }
         };
+        EntityAspect.prototype._getValue = function (name, ver) {
+            if (ver === void 0) { ver = 0; }
+            switch (ver) {
+                case 2:
+                    if (!this._origVals) {
+                        throw new Error("Invalid Operation, no Stored Version: " + ver);
+                    }
+                    return getValue(this._origVals, name);
+                default:
+                    return _super.prototype._getValue.call(this, name, ver);
+            }
+        };
+        EntityAspect.prototype._setValue = function (name, val, ver) {
+            if (ver === void 0) { ver = 0; }
+            switch (ver) {
+                case 2:
+                    if (!this._origVals) {
+                        throw new Error("Invalid Operation, no Stored Version: " + ver);
+                    }
+                    setValue(this._origVals, name, val, false);
+                    break;
+                default:
+                    _super.prototype._setValue.call(this, name, val, ver);
+                    break;
+            }
+        };
+        EntityAspect.prototype._storeVals = function (toVer) {
+            switch (toVer) {
+                case 2:
+                    this._origVals = this._cloneVals();
+                    break;
+                default:
+                    _super.prototype._storeVals.call(this, toVer);
+                    break;
+            }
+        };
+        EntityAspect.prototype._restoreVals = function (fromVer) {
+            switch (fromVer) {
+                case 2:
+                    if (!this._origVals) {
+                        throw new Error("Invalid Operation, no Stored Version: " + fromVer);
+                    }
+                    this._replaceVals(this._origVals);
+                    this._origVals = null;
+                    break;
+                default:
+                    _super.prototype._restoreVals.call(this, fromVer);
+                    break;
+            }
+        };
         EntityAspect.prototype._onFieldChanged = function (fieldName, fieldInfo) {
             var _this = this;
             sys.raiseProp(this.item, fieldName);
@@ -3210,7 +3260,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 }
             }
             else {
-                var newVal = dbSet._getInternal().getStrValue(getValue(self._vals, fullName), fieldInfo), oldV = self._origVals === null ? newVal : dbSet._getInternal().getStrValue(getValue(self._origVals, fullName), fieldInfo), isChanged = (oldV !== newVal);
+                var newVal = dbSet._getInternal().getStrValue(self._getValue(fullName), fieldInfo), oldV = !self._origVals ? newVal : dbSet._getInternal().getStrValue(self._getValue(fullName, 2), fieldInfo), isChanged = (oldV !== newVal);
                 if (isChanged) {
                     res = {
                         fieldName: fieldInfo.fieldName,
@@ -3266,7 +3316,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         };
         EntityAspect.prototype._fldChanging = function (fieldName, fieldInfo, oldV, newV) {
             if (!this._origVals) {
-                this._origVals = cloneVals(this.dbSet.getFieldInfos(), this._vals);
+                this._storeVals(2);
             }
             return true;
         };
@@ -3303,8 +3353,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 return false;
             }
             var self = this, changes = this._getValueChanges(true), dbSet = this.dbSet;
-            this._vals = this._saveVals;
-            this._saveVals = null;
+            this._restoreVals(1);
             dbSet.errors.removeAllErrors(this.item);
             this._setStatus(this._savedStatus);
             this._savedStatus = null;
@@ -3318,16 +3367,17 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             return true;
         };
         EntityAspect.prototype._setStatus = function (v) {
-            if (this._status !== v) {
-                var oldStatus = this._status;
-                this._status = v;
+            var old = this.status;
+            if (old !== v) {
+                var internal = this.dbSet._getInternal();
+                _super.prototype._setStatus.call(this, v);
                 if (v !== 0) {
-                    this.dbSet._getInternal().addToChanged(this.item);
+                    internal.addToChanged(this.item);
                 }
                 else {
-                    this.dbSet._getInternal().removeFromChanged(this.key);
+                    internal.removeFromChanged(this.key);
                 }
-                this.dbSet._getInternal().onItemStatusChanged(this.item, oldStatus);
+                internal.onItemStatusChanged(this.item, old);
             }
         };
         EntityAspect.prototype._addDisposable = function (obj) {
@@ -3351,14 +3401,12 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 throw new Error(strUtils.format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
             }
             var stz = self.serverTimezone, dataType = fld.dataType, dcnv = fld.dateConversion;
-            var newVal, oldVal, oldValOrig;
-            newVal = parseValue(val, dataType, dcnv, stz);
-            oldVal = getValue(self._vals, fullName);
+            var newVal = parseValue(val, dataType, dcnv, stz), oldVal = self._getValue(fullName);
             switch (refreshMode) {
                 case 3:
                     {
                         if (!compareVals(newVal, oldVal, dataType)) {
-                            setValue(self._vals, fullName, newVal, false);
+                            self._setValue(fullName, newVal);
                             self._onFieldChanged(fullName, fld);
                         }
                     }
@@ -3366,26 +3414,27 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 case 1:
                     {
                         if (!!self._origVals) {
-                            setValue(self._origVals, fullName, newVal, false);
+                            self._setValue(fullName, newVal, 2);
                         }
-                        if (!!self._saveVals) {
-                            setValue(self._saveVals, fullName, newVal, false);
+                        if (!!self.tempVals) {
+                            self._setValue(fullName, newVal, 1);
                         }
                         if (!compareVals(newVal, oldVal, dataType)) {
-                            setValue(self._vals, fullName, newVal, false);
+                            self._setValue(fullName, newVal);
                             self._onFieldChanged(fullName, fld);
                         }
                     }
                     break;
                 case 2:
                     {
+                        var origOldVal = undefined;
                         if (!!self._origVals) {
-                            oldValOrig = getValue(self._origVals, fullName);
-                            setValue(self._origVals, fullName, newVal, false);
+                            origOldVal = self._getValue(fullName, 2);
+                            self._setValue(fullName, newVal, 2);
                         }
-                        if (oldValOrig === undefined || compareVals(oldValOrig, oldVal, dataType)) {
+                        if (origOldVal === undefined || compareVals(origOldVal, oldVal, dataType)) {
                             if (!compareVals(newVal, oldVal, dataType)) {
-                                setValue(self._vals, fullName, newVal, false);
+                                self._setValue(fullName, newVal);
                                 self._onFieldChanged(fullName, fld);
                             }
                         }
@@ -3437,10 +3486,10 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             this.dbSet._getInternal().setNavFieldVal(fieldName, this.item, value);
         };
         EntityAspect.prototype._clearFieldVal = function (fieldName) {
-            setValue(this._vals, fieldName, null, false);
+            this._setValue(fieldName, null);
         };
         EntityAspect.prototype._getFieldVal = function (fieldName) {
-            return getValue(this._vals, fieldName);
+            return this._getValue(fieldName);
         };
         EntityAspect.prototype._setFieldVal = function (fieldName, val) {
             if (this.isCancelling) {
@@ -3463,7 +3512,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                         throw new Error(jriapp_shared_8.LocaleERRS.ERR_FIELD_READONLY);
                     }
                     if (this._fldChanging(fieldName, fieldInfo, oldV, newV)) {
-                        setValue(this._vals, fieldName, newV, false);
+                        this._setValue(fieldName, newV);
                         if (!(fieldInfo.fieldType === 1 || fieldInfo.fieldType === 6)) {
                             switch (this.status) {
                                 case 0:
@@ -3515,8 +3564,8 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 }
                 else {
                     this._origVals = null;
-                    if (!!this._saveVals) {
-                        this._saveVals = cloneVals(this.dbSet.getFieldInfos(), this._vals);
+                    if (!!this.tempVals) {
+                        this._storeVals(1);
                     }
                     this._setStatus(0);
                     errors.removeAllErrors(this.item);
@@ -3568,10 +3617,9 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 else {
                     var changes = self._getValueChanges(true);
                     if (!!self._origVals) {
-                        self._vals = cloneVals(self.dbSet.getFieldInfos(), self._origVals);
-                        self._origVals = null;
-                        if (!!self._saveVals) {
-                            self._saveVals = cloneVals(self.dbSet.getFieldInfos(), self._vals);
+                        self._restoreVals(2);
+                        if (!!self.tempVals) {
+                            self._storeVals(1);
                         }
                     }
                     self._setStatus(0);
