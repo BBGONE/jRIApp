@@ -171,7 +171,7 @@ declare module "jriapp_db/dbset" {
     export interface IDbSetConstructor<TItem extends IEntityItem, TObj> {
         new (dbContext: DbContext): DbSet<TItem, TObj, DbContext>;
     }
-    export abstract class DbSet<TItem extends IEntityItem, TObj, TDbContext extends DbContext> extends BaseCollection<TItem> {
+    export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any>, TDbContext extends DbContext> extends BaseCollection<TItem> {
         private _dbContext;
         private _isSubmitOnDelete;
         private _trackAssoc;
@@ -510,14 +510,14 @@ declare module "jriapp_db/dbcontext" {
 }
 declare module "jriapp_db/entity_aspect" {
     import { ITEM_STATUS, VALS_VERSION } from "jriapp_shared/collection/const";
-    import { IBaseObject, IVoidPromise, IStatefulPromise } from "jriapp_shared";
+    import { IBaseObject, IVoidPromise, IIndexer, IStatefulPromise } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     import { ItemAspect } from "jriapp_shared/collection/aspect";
     import { REFRESH_MODE } from "jriapp_db/const";
     import { DbContext } from "jriapp_db/dbcontext";
     import { IEntityItem, IValueChange, IRowInfo } from "jriapp_db/int";
     import { DbSet } from "jriapp_db/dbset";
-    export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends DbContext> extends ItemAspect<TItem, TObj> {
+    export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>, TDbContext extends DbContext> extends ItemAspect<TItem, TObj> {
         private _srvKey;
         private _origVals;
         private _savedStatus;

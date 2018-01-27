@@ -1393,13 +1393,13 @@ declare module "jriapp_shared/collection/list" {
     export interface IListItem extends ICollectionItem {
         readonly _aspect: ListItemAspect<IListItem, any>;
     }
-    export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem, TObj> {
+    export class ListItemAspect<TItem extends IListItem, TObj extends IIndexer<any>> extends ItemAspect<TItem, TObj> {
         _setProp(name: string, val: any): void;
         _getProp(name: string): any;
         toString(): string;
         readonly list: BaseList<TItem, TObj>;
     }
-    export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
+    export abstract class BaseList<TItem extends IListItem, TObj extends IIndexer<any>> extends BaseCollection<TItem> {
         private _fieldMap;
         private _fieldInfos;
         private _newKey;
@@ -1488,9 +1488,10 @@ declare module "jriapp_shared/utils/weakmap" {
     export function createWeakMap(): IWeakMap;
 }
 declare module "jriapp_shared/collection/dictionary" {
+    import { IIndexer } from "jriapp_shared/int";
     import { IPropInfo } from "jriapp_shared/collection/int";
     import { BaseList, IListItem } from "jriapp_shared/collection/list";
-    export abstract class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj> {
+    export abstract class BaseDictionary<TItem extends IListItem, TObj extends IIndexer<any>> extends BaseList<TItem, TObj> {
         private _keyName;
         constructor(keyName: string, props: IPropInfo[]);
         protected createItem(obj?: TObj): TItem;

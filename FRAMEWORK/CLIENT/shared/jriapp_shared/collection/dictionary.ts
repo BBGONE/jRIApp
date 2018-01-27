@@ -2,6 +2,7 @@
 import { COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER } from "./const";
 import { Utils } from "../utils/utils";
 import { ERRS } from "../lang";
+import { IIndexer } from "../int";
 import { IPropInfo, ICollectionItem } from "./int";
 import { CollUtils } from "./utils";
 import { BaseCollection } from "./base";
@@ -20,7 +21,7 @@ sys.getItemByProp = (obj: any, prop: string) => {
 };
 
 
-export abstract class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj> {
+export abstract class BaseDictionary<TItem extends IListItem, TObj extends IIndexer<any>> extends BaseList<TItem, TObj> {
     private _keyName: string;
 
     constructor(keyName: string, props: IPropInfo[]) {

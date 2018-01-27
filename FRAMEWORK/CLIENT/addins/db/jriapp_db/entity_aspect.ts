@@ -3,7 +3,7 @@ import {
     FIELD_TYPE, DATA_TYPE, ITEM_STATUS, VALS_VERSION
 } from "jriapp_shared/collection/const";
 import {
-    IBaseObject, IVoidPromise, IStatefulPromise, LocaleERRS as ERRS, Utils
+    IBaseObject, IVoidPromise, IIndexer, IStatefulPromise, LocaleERRS as ERRS, Utils
 } from "jriapp_shared";
 import { ValidationError } from "jriapp_shared/errors";
 import { ICancellableArgs, IFieldInfo } from "jriapp_shared/collection/int";
@@ -52,7 +52,7 @@ function fn_walkChanges(val: IValueChange, fn: (name: string, val: IValueChange)
     _fn_walkChanges(val.fieldName, val, fn);
 }
 
-export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends DbContext> extends ItemAspect<TItem, TObj> {
+export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>, TDbContext extends DbContext> extends ItemAspect<TItem, TObj> {
     private _srvKey: string;
     private _origVals: TObj;
     private _savedStatus: ITEM_STATUS;

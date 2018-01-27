@@ -19,7 +19,7 @@ export interface IListItem extends ICollectionItem {
     readonly _aspect: ListItemAspect<IListItem, any>;
 }
 
-export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem, TObj> {
+export class ListItemAspect<TItem extends IListItem, TObj extends IIndexer<any>> extends ItemAspect<TItem, TObj> {
     _setProp(name: string, val: any) {
         if (this.isCancelling) {
             return;
@@ -64,7 +64,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
     get list(): BaseList<TItem, TObj> { return <BaseList<TItem, TObj>>this.coll; }
 }
 
-export abstract class BaseList<TItem extends IListItem, TObj> extends BaseCollection<TItem> {
+export abstract class BaseList<TItem extends IListItem, TObj extends IIndexer<any>> extends BaseCollection<TItem> {
     private _fieldMap: IIndexer<IFieldInfo>;
     private _fieldInfos: IFieldInfo[];
     private _newKey: number;
