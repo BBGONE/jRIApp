@@ -60,7 +60,7 @@ export interface IPermissions {
     canRefreshRow: boolean;
 }
 
-export interface IItemAspect<TItem extends ICollectionItem, TObj> extends IBaseObject, IErrorNotification, IEditable, ISubmittable {
+export interface IItemAspect<TItem extends ICollectionItem, TObj extends IIndexer<any>> extends IBaseObject, IErrorNotification, IEditable, ISubmittable {
     getFieldInfo(fieldName: string): IFieldInfo;
     getFieldNames(): string[];
     getErrorString(): string;

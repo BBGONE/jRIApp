@@ -762,6 +762,11 @@ declare module "jriapp_shared/collection/const" {
         Updated = 2,
         Deleted = 3,
     }
+    export const enum VALS_VERSION {
+        None = 0,
+        Temporary = 1,
+        Original = 2,
+    }
 }
 declare module "jriapp_shared/collection/int" {
     import { DATE_CONVERSION, DATA_TYPE, SORT_ORDER, FIELD_TYPE, COLL_CHANGE_OPER, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, ITEM_STATUS } from "jriapp_shared/collection/const";
@@ -812,7 +817,7 @@ declare module "jriapp_shared/collection/int" {
         canDeleteRow: boolean;
         canRefreshRow: boolean;
     }
-    export interface IItemAspect<TItem extends ICollectionItem, TObj> extends IBaseObject, IErrorNotification, IEditable, ISubmittable {
+    export interface IItemAspect<TItem extends ICollectionItem, TObj extends IIndexer<any>> extends IBaseObject, IErrorNotification, IEditable, ISubmittable {
         getFieldInfo(fieldName: string): IFieldInfo;
         getFieldNames(): string[];
         getErrorString(): string;
@@ -1287,22 +1292,22 @@ declare module "jriapp_shared/collection/validation" {
     }
 }
 declare module "jriapp_shared/collection/aspect" {
-    import { ITEM_STATUS } from "jriapp_shared/collection/const";
+    import { ITEM_STATUS, VALS_VERSION } from "jriapp_shared/collection/const";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     import { IVoidPromise } from "jriapp_shared/utils/ideferred";
     import { IIndexer, IValidationInfo, TEventHandler, IErrorNotification } from "jriapp_shared/int";
     import { BaseObject } from "jriapp_shared/object";
     import { ICollectionItem, IItemAspect } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
-    export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject implements IItemAspect<TItem, TObj> {
+    export abstract class ItemAspect<TItem extends ICollectionItem, TObj extends IIndexer<any>> extends BaseObject implements IItemAspect<TItem, TObj> {
         private _key;
         private _item;
         private _coll;
         private _flags;
         private _valueBag;
-        protected _status: ITEM_STATUS;
-        protected _saveVals: IIndexer<any>;
-        protected _vals: IIndexer<any>;
+        private _status;
+        private _tempVals;
+        private _vals;
         constructor(collection: BaseCollection<TItem>, vals: any, key: string, isNew: boolean);
         dispose(): void;
         protected _onErrorsChanged(): void;
@@ -1310,7 +1315,7 @@ declare module "jriapp_shared/collection/aspect" {
         private _setFlag(v, flag);
         protected _setIsEdited(v: boolean): void;
         protected _setIsCancelling(v: boolean): void;
-        protected _cloneVals(): any;
+        protected _cloneVals(): TObj;
         protected _beginEdit(): boolean;
         protected _endEdit(): boolean;
         protected _cancelEdit(): boolean;
@@ -1318,7 +1323,13 @@ declare module "jriapp_shared/collection/aspect" {
         protected _validateItem(): IValidationInfo[];
         protected _validateField(fieldName: string): IValidationInfo;
         protected _validateFields(): IValidationInfo[];
-        protected _resetStatus(): void;
+        protected _setStatus(v: ITEM_STATUS): void;
+        protected _replaceVals(vals: TObj): void;
+        protected _getValue(name: string, ver?: VALS_VERSION): any;
+        protected _setValue(name: string, val: any, ver?: VALS_VERSION): void;
+        protected _storeVals(toVer: VALS_VERSION): void;
+        protected _restoreVals(fromVer: VALS_VERSION): void;
+        _resetStatus(): void;
         _setKey(v: string): void;
         _setIsAttached(v: boolean): void;
         _setIsRefreshing(v: boolean): void;
@@ -1342,6 +1353,7 @@ declare module "jriapp_shared/collection/aspect" {
         setCustomVal(name: string, val: any, isOwnVal?: boolean): void;
         getCustomVal(name: string): any;
         toString(): string;
+        protected readonly tempVals: TObj;
         readonly vals: TObj;
         readonly item: TItem;
         readonly key: string;
@@ -1384,7 +1396,6 @@ declare module "jriapp_shared/collection/list" {
     export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TItem, TObj> {
         _setProp(name: string, val: any): void;
         _getProp(name: string): any;
-        _resetStatus(): void;
         toString(): string;
         readonly list: BaseList<TItem, TObj>;
     }

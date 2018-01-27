@@ -39,12 +39,12 @@ export class AnyItemAspect extends ListItemAspect<IAnyValItem, IAnyVal> {
     }
     // override List's methods
     _getProp(name: string) {
-        return getValue(this._vals, name);
+        return this._getValue(name);
     }
      // override
     _setProp(name: string, val: any) {
         if (this._getProp(name) !== val) {
-            setValue(this._vals, name, val, false);
+            this._setValue(name, val);
             sys.raiseProp(this.item, name);
         }
     }

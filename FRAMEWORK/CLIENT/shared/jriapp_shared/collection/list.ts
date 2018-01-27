@@ -3,7 +3,7 @@ import { Utils } from "../utils/utils";
 import { ERRS } from "../lang";
 import { IIndexer } from "../int";
 import {
-    COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER, ITEM_STATUS
+    COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER
 } from "./const";
 import {
     ICollectionItem, IPropInfo, IFieldInfo
@@ -13,7 +13,7 @@ import { BaseCollection } from "./base";
 import { ItemAspect } from "./aspect";
 import { ValidationError } from "../errors";
 
-const utils = Utils, { getValue, setValue } = utils.core, strUtils = utils.str, checks = utils.check, { walkField, initVals } = CollUtils, sys = utils.sys;
+const utils = Utils, strUtils = utils.str, checks = utils.check, { walkField, initVals } = CollUtils, sys = utils.sys;
 
 export interface IListItem extends ICollectionItem {
     readonly _aspect: ListItemAspect<IListItem, any>;
@@ -32,7 +32,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
                 if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
                     throw new Error(ERRS.ERR_FIELD_READONLY);
                 }
-                setValue(this._vals, name, val, false);
+                this._setValue(name, val);
                 sys.raiseProp(item, name);
                 errors.removeError(item, name);
                 const validationInfo = this._validateField(name);
@@ -53,10 +53,7 @@ export class ListItemAspect<TItem extends IListItem, TObj> extends ItemAspect<TI
         }
     }
     _getProp(name: string): any {
-        return getValue(this._vals, name);
-    }
-    _resetStatus(): void {
-        this._status = ITEM_STATUS.None;
+        return this._getValue(name);
     }
     toString(): string {
         if (!this.item) {

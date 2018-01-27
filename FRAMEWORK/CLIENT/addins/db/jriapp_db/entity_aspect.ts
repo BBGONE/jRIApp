@@ -1,13 +1,13 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    FIELD_TYPE, DATA_TYPE, ITEM_STATUS
+    FIELD_TYPE, DATA_TYPE, ITEM_STATUS, VALS_VERSION
 } from "jriapp_shared/collection/const";
 import {
-    IBaseObject, IIndexer, IVoidPromise, IStatefulPromise, LocaleERRS as ERRS, Utils
+    IBaseObject, IVoidPromise, IStatefulPromise, LocaleERRS as ERRS, Utils
 } from "jriapp_shared";
 import { ValidationError } from "jriapp_shared/errors";
 import { ICancellableArgs, IFieldInfo } from "jriapp_shared/collection/int";
-import { ValueUtils, CollUtils } from "jriapp_shared/collection/utils";
+import { ValueUtils } from "jriapp_shared/collection/utils";
 import { ItemAspect } from "jriapp_shared/collection/aspect";
 import { FLAGS, REFRESH_MODE } from "./const";
 import { DbContext } from "./dbcontext";
@@ -16,7 +16,7 @@ import { DbSet } from "./dbset";
 import { SubmitError } from "./error";
 
 const utils = Utils, { undefined } = utils.check, strUtils = utils.str, { getValue, setValue, uuid } = utils.core,
-    { compareVals, parseValue } = ValueUtils, { cloneVals } = CollUtils, sys = utils.sys;
+    { compareVals, parseValue } = ValueUtils, sys = utils.sys;
 
 // don't submit these types of fields to the server
 function fn_isNotSubmittable(fieldInfo: IFieldInfo) {
@@ -54,7 +54,7 @@ function fn_walkChanges(val: IValueChange, fn: (name: string, val: IValueChange)
 
 export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends DbContext> extends ItemAspect<TItem, TObj> {
     private _srvKey: string;
-    private _origVals: IIndexer<any>;
+    private _origVals: TObj;
     private _savedStatus: ITEM_STATUS;
     private _disposables: Array<IBaseObject>;
 
@@ -88,6 +88,56 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             super.dispose();
         }
     }
+    // override
+    protected _getValue(name: string, ver: VALS_VERSION = VALS_VERSION.None): any {
+        switch (ver) {
+            case VALS_VERSION.Original:
+                if (!this._origVals) {
+                    throw new Error("Invalid Operation, no Stored Version: " + ver);
+                }
+                return getValue(this._origVals, name);
+            default:
+                return super._getValue(name, ver);
+        }
+    }
+    // override
+    protected _setValue(name: string, val: any, ver: VALS_VERSION = VALS_VERSION.None): void {
+        switch (ver) {
+            case VALS_VERSION.Original:
+                if (!this._origVals) {
+                    throw new Error("Invalid Operation, no Stored Version: " + ver);
+                }
+                setValue(this._origVals, name, val, false);
+                break;
+            default:
+                super._setValue(name, val, ver);
+                break;
+        }
+    }
+    protected _storeVals(toVer: VALS_VERSION): void {
+        switch (toVer) {
+            case VALS_VERSION.Original:
+                this._origVals = this._cloneVals();
+                break;
+            default:
+                super._storeVals(toVer);
+                break;
+        }
+    }
+    protected _restoreVals(fromVer: VALS_VERSION): void {
+        switch (fromVer) {
+            case VALS_VERSION.Original:
+                if (!this._origVals) {
+                    throw new Error("Invalid Operation, no Stored Version: " + fromVer);
+                }
+                this._replaceVals(this._origVals);
+                this._origVals = null;
+                break;
+            default:
+                super._restoreVals(fromVer);
+                break;
+        }
+    }
     protected _onFieldChanged(fieldName: string, fieldInfo?: IFieldInfo): void {
         sys.raiseProp(this.item, fieldName);
         const info = fieldInfo || this.coll.getFieldInfo(fieldName);
@@ -114,8 +164,8 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
                 }
             }
         } else {
-            const newVal = dbSet._getInternal().getStrValue(getValue(self._vals, fullName), fieldInfo),
-                oldV = self._origVals === null ? newVal : dbSet._getInternal().getStrValue(getValue(self._origVals, fullName), fieldInfo),
+            const newVal = dbSet._getInternal().getStrValue(self._getValue(fullName), fieldInfo),
+                oldV = !self._origVals ? newVal : dbSet._getInternal().getStrValue(self._getValue(fullName, VALS_VERSION.Original), fieldInfo),
                 isChanged = (oldV !== newVal);
             if (isChanged) {
                 res = {
@@ -170,7 +220,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
     }
     protected _fldChanging(fieldName: string, fieldInfo: IFieldInfo, oldV: any, newV: any): boolean {
         if (!this._origVals) {
-            this._origVals = cloneVals(this.dbSet.getFieldInfos(), this._vals); // clone(this._vals);
+            this._storeVals(VALS_VERSION.Original);
         }
         return true;
     }
@@ -207,8 +257,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             return false;
         }
         const self = this, changes = this._getValueChanges(true), dbSet = this.dbSet;
-        this._vals = this._saveVals;
-        this._saveVals = null;
+        this._restoreVals(VALS_VERSION.Temporary);
         dbSet.errors.removeAllErrors(this.item);
         this._setStatus(this._savedStatus);
         this._savedStatus = null;
@@ -221,16 +270,18 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         });
         return true;
     }
+    // override
     protected _setStatus(v: ITEM_STATUS): void {
-        if (this._status !== v) {
-            const oldStatus = this._status;
-            this._status = v;
+        const old = this.status;
+        if (old !== v) {
+            const internal = this.dbSet._getInternal();
+            super._setStatus(v);
             if (v !== ITEM_STATUS.None) {
-                this.dbSet._getInternal().addToChanged(this.item);
+                internal.addToChanged(this.item);
             } else {
-                this.dbSet._getInternal().removeFromChanged(this.key);
+                internal.removeFromChanged(this.key);
             }
-            this.dbSet._getInternal().onItemStatusChanged(this.item, oldStatus);
+            internal.onItemStatusChanged(this.item, old);
         }
     }
     _addDisposable(obj: IBaseObject): void {
@@ -254,14 +305,12 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
         }
         const stz = self.serverTimezone, dataType = fld.dataType, dcnv = fld.dateConversion;
-        let newVal: any, oldVal: any, oldValOrig: any;
-        newVal = parseValue(val, dataType, dcnv, stz);
-        oldVal = getValue(self._vals, fullName);
+        let newVal = parseValue(val, dataType, dcnv, stz), oldVal = self._getValue(fullName);
         switch (refreshMode) {
             case REFRESH_MODE.CommitChanges:
                 {
                     if (!compareVals(newVal, oldVal, dataType)) {
-                        setValue(self._vals, fullName, newVal, false);
+                        self._setValue(fullName, newVal);
                         self._onFieldChanged(fullName, fld);
                     }
                 }
@@ -269,27 +318,28 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             case REFRESH_MODE.RefreshCurrent:
                 {
                     if (!!self._origVals) {
-                        setValue(self._origVals, fullName, newVal, false);
+                        self._setValue(fullName, newVal, VALS_VERSION.Original);
                     }
-                    if (!!self._saveVals) {
-                        setValue(self._saveVals, fullName, newVal, false);
+                    if (!!self.tempVals) {
+                        self._setValue(fullName, newVal, VALS_VERSION.Temporary);
                     }
                     if (!compareVals(newVal, oldVal, dataType)) {
-                        setValue(self._vals, fullName, newVal, false);
+                        self._setValue(fullName, newVal);
                         self._onFieldChanged(fullName, fld);
                     }
                 }
                 break;
             case REFRESH_MODE.MergeIntoCurrent:
                 {
+                    let origOldVal: any = undefined;
                     if (!!self._origVals) {
-                        oldValOrig = getValue(self._origVals, fullName);
-                        setValue(self._origVals, fullName, newVal, false);
+                        origOldVal = self._getValue(fullName, VALS_VERSION.Original);
+                        self._setValue(fullName, newVal, VALS_VERSION.Original);
                     }
-                    if (oldValOrig === undefined || compareVals(oldValOrig, oldVal, dataType)) {
+                    if (origOldVal === undefined || compareVals(origOldVal, oldVal, dataType)) {
                         // unmodified
                         if (!compareVals(newVal, oldVal, dataType)) {
-                            setValue(self._vals, fullName, newVal, false);
+                            self._setValue(fullName, newVal);
                             self._onFieldChanged(fullName, fld);
                         }
                     }
@@ -342,10 +392,10 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
         this.dbSet._getInternal().setNavFieldVal(fieldName, this.item, value);
     }
     _clearFieldVal(fieldName: string): void {
-        setValue(this._vals, fieldName, null, false);
+        this._setValue(fieldName, null);
     }
     _getFieldVal(fieldName: string): any {
-        return getValue(this._vals, fieldName);
+        return this._getValue(fieldName);
     }
     _setFieldVal(fieldName: string, val: any): boolean {
         if (this.isCancelling) {
@@ -371,7 +421,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
                 }
 
                 if (this._fldChanging(fieldName, fieldInfo, oldV, newV)) {
-                    setValue(this._vals, fieldName, newV, false);
+                    this._setValue(fieldName, newV);
                     if (!(fieldInfo.fieldType === FIELD_TYPE.ClientOnly || fieldInfo.fieldType === FIELD_TYPE.ServerCalculated)) {
                         switch (this.status) {
                             case ITEM_STATUS.None:
@@ -422,8 +472,9 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
                 }
             } else {
                 this._origVals = null;
-                if (!!this._saveVals) {
-                    this._saveVals = cloneVals(this.dbSet.getFieldInfos(), this._vals); // clone(this._vals);
+                if (!!this.tempVals) {
+                    // refresh saved temporary values
+                    this._storeVals(VALS_VERSION.Temporary);
                 }
                 this._setStatus(ITEM_STATUS.None);
                 errors.removeAllErrors(this.item);
@@ -474,10 +525,10 @@ export class EntityAspect<TItem extends IEntityItem, TObj, TDbContext extends Db
             } else {
                 const changes = self._getValueChanges(true);
                 if (!!self._origVals) {
-                    self._vals = cloneVals(self.dbSet.getFieldInfos(), self._origVals); // clone(self._origVals);
-                    self._origVals = null;
-                    if (!!self._saveVals) {
-                        self._saveVals = cloneVals(self.dbSet.getFieldInfos(), self._vals); // clone(self._vals);
+                    self._restoreVals(VALS_VERSION.Original);
+                    if (!!self.tempVals) {
+                        // refresh saved temporary values
+                        self._storeVals(VALS_VERSION.Temporary);
                     }
                 }
                 self._setStatus(ITEM_STATUS.None);

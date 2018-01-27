@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { FIELD_TYPE, ITEM_STATUS } from "./const";
+import { FIELD_TYPE, ITEM_STATUS, VALS_VERSION } from "./const";
 import { IFieldInfo } from "./int";
 import { IVoidPromise } from "../utils/ideferred";
 import { IIndexer, IValidationInfo, TEventHandler, IErrorNotification } from "../int";
@@ -11,8 +11,8 @@ import { CollUtils } from "./utils";
 import { ValidationError } from "../errors";
 import { Validations } from "./validation";
 
-const utils = Utils, { forEachProp, getValue } = utils.core, { isNt } = utils.check,
-    sys = utils.sys, ERROR = utils.err, { cloneVals, walkFields, copyVals } = CollUtils;
+const utils = Utils, { forEachProp, getValue, setValue } = utils.core, { isNt } = utils.check,
+    sys = utils.sys, ERROR = utils.err, { cloneVals, walkFields } = CollUtils;
 
 const enum AspectFlags {
     IsAttached = 0,
@@ -52,15 +52,15 @@ function checkDetached<TItem extends ICollectionItem, TObj>(aspect: IItemAspect<
     }
 }
 
-export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends BaseObject implements IItemAspect<TItem, TObj> {
+export abstract class ItemAspect<TItem extends ICollectionItem, TObj extends IIndexer<any>> extends BaseObject implements IItemAspect<TItem, TObj> {
     private _key: string;
     private _item: TItem;
     private _coll: BaseCollection<TItem>;
     private _flags: number;
     private _valueBag: IIndexer<ICustomVal>;
-    protected _status: ITEM_STATUS;
-    protected _saveVals: IIndexer<any>;
-    protected _vals: IIndexer<any>;
+    private _status: ITEM_STATUS;
+    private _tempVals: TObj;
+    private _vals: TObj;
 
     constructor(collection: BaseCollection<TItem>, vals: any, key: string, isNew: boolean) {
         super();
@@ -68,7 +68,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         this._vals = vals;
         this._key = key;
         this._status = isNew ? ITEM_STATUS.Added : ITEM_STATUS.None;
-        this._saveVals = null;
+        this._tempVals = null;
         this._flags = 0;
         this._valueBag = null;
         this._item = null;
@@ -94,6 +94,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
             });
         }
         this._flags = 0;
+        this._status = ITEM_STATUS.None;
         super.dispose();
     }
     protected _onErrorsChanged(): void {
@@ -115,7 +116,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
     protected _setIsCancelling(v: boolean) {
         this._setFlag(v, AspectFlags.IsCancelling);
     }
-    protected _cloneVals(): any {
+    protected _cloneVals(): TObj {
         return cloneVals(this.coll.getFieldInfos(), this._vals);
     }
     protected _beginEdit(): boolean {
@@ -139,7 +140,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
                 ERROR.reThrow(ex, isHandled);
             }
         }
-        this._saveVals = this._cloneVals();
+        this._tempVals = this._cloneVals();
         this.coll.currentItem = this.item;
         return true;
     }
@@ -158,7 +159,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         if (this.getIsHasErrors()) {
             return false;
         }
-        this._saveVals = null;
+        this._tempVals = null;
         return true;
     }
     protected _cancelEdit(): boolean {
@@ -167,9 +168,9 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         }
         checkDetached(this);
         const coll = this.coll, self = this,
-            item = self.item, changes = this._saveVals;
-        this._vals = this._saveVals;
-        this._saveVals = null;
+            item = self.item, changes = this._tempVals;
+        this._vals = this._tempVals;
+        this._tempVals = null;
         coll.errors.removeAllErrors(item);
         // refresh User interface when values restored
         coll.getFieldNames().forEach((name) => {
@@ -222,9 +223,64 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
         const itemVals: IValidationInfo[] = self._validateItem();
         return Validations.distinct(res.concat(itemVals));
     }
-    protected _resetStatus(): void {
-        // can reset isNew on all items in the collection
-        // the list descendant does it
+    protected _setStatus(v: ITEM_STATUS): void {
+        this._status = v;
+    }
+    protected _replaceVals(vals: TObj): void {
+        this._vals = vals;
+    }
+    protected _getValue(name: string, ver: VALS_VERSION = VALS_VERSION.None): any {
+        switch (ver) {
+            case VALS_VERSION.None:
+                return getValue(this._vals, name);
+            case VALS_VERSION.Temporary:
+                if (!this._tempVals) {
+                    throw new Error("Invalid Operation, no Stored Version: " + ver);
+                }
+                return getValue(this._tempVals, name);
+            default:
+                throw new Error("Invalid Operation, Unknown Version: " + ver);
+        }
+    }
+    protected _setValue(name: string, val: any, ver: VALS_VERSION = VALS_VERSION.None): void {
+        switch (ver) {
+            case VALS_VERSION.None:
+                setValue(this._vals, name, val, false);
+                break;
+            case VALS_VERSION.Temporary:
+                if (!this._tempVals) {
+                    throw new Error("Invalid Operation, no Stored Version: " + ver);
+                }
+                setValue(this._tempVals, name, val, false);
+                break;
+            default:
+                throw new Error("Invalid Operation, Unknown Version: " + ver);
+        }
+    }
+    protected _storeVals(toVer: VALS_VERSION): void {
+        switch (toVer) {
+            case VALS_VERSION.Temporary:
+                this._tempVals = this._cloneVals();
+                break;
+            default:
+                throw new Error("Invalid Operation, Unknown Version: " + toVer);
+        }
+    }
+    protected _restoreVals(fromVer: VALS_VERSION): void {
+        switch (fromVer) {
+            case VALS_VERSION.Temporary:
+                if (!this._tempVals) {
+                    throw new Error("Invalid Operation, no Stored Version: " + fromVer);
+                }
+                this._replaceVals(this._tempVals);
+                this._tempVals = null;
+                break;
+            default:
+                throw new Error("Invalid Operation, Unknown Version: " + fromVer);
+        }
+    }
+    _resetStatus(): void {
+        this._status = ITEM_STATUS.None;
     }
     _setKey(v: string): void {
         this._key = v;
@@ -421,6 +477,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
     }
     // can be used to store any user object
     setCustomVal(name: string, val: any, isOwnVal: boolean = true): void {
+        checkDetached(this);
         if (!this._valueBag) {
             if (isNt(val)) {
                 return;
@@ -461,9 +518,12 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj> extends Ba
     toString(): string {
         return "ItemAspect";
     }
+    protected  get tempVals(): TObj {
+        return this._tempVals;
+    }
     // cloned values of this item
     get vals(): TObj {
-        return copyVals(this.coll.getFieldInfos(), this._vals, {});
+        return this._cloneVals();
     }
     get item(): TItem {
         if (!this._item) {

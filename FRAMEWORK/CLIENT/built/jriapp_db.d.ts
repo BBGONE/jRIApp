@@ -509,7 +509,7 @@ declare module "jriapp_db/dbcontext" {
     }
 }
 declare module "jriapp_db/entity_aspect" {
-    import { ITEM_STATUS } from "jriapp_shared/collection/const";
+    import { ITEM_STATUS, VALS_VERSION } from "jriapp_shared/collection/const";
     import { IBaseObject, IVoidPromise, IStatefulPromise } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     import { ItemAspect } from "jriapp_shared/collection/aspect";
@@ -524,6 +524,10 @@ declare module "jriapp_db/entity_aspect" {
         private _disposables;
         constructor(dbSet: DbSet<TItem, TObj, TDbContext>, vals: TObj, key: string, isNew: boolean);
         dispose(): void;
+        protected _getValue(name: string, ver?: VALS_VERSION): any;
+        protected _setValue(name: string, val: any, ver?: VALS_VERSION): void;
+        protected _storeVals(toVer: VALS_VERSION): void;
+        protected _restoreVals(fromVer: VALS_VERSION): void;
         protected _onFieldChanged(fieldName: string, fieldInfo?: IFieldInfo): void;
         protected _getValueChange(fullName: string, fieldInfo: IFieldInfo, changedOnly: boolean): IValueChange;
         protected _getValueChanges(changedOnly: boolean): IValueChange[];

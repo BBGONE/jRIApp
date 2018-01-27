@@ -846,14 +846,14 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     rejectChanges(): void {
        // noop
     }
-    clear() {
+    clear(): void {
         this._clear(COLL_CHANGE_REASON.None, COLL_CHANGE_OPER.None);
         this.totalCount = 0;
     }
-    waitForNotLoading(callback: () => void, groupName: string) {
+    waitForNotLoading(callback: () => void, groupName: string): void {
         this._waitForProp("isLoading", callback, groupName);
     }
-    toString() {
+    toString(): string {
         return "BaseCollection";
     }
     addOnClearing(fn: TEventHandler<ICollection<TItem>, { reason: COLL_CHANGE_REASON; }>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {

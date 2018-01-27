@@ -20,3 +20,4 @@ export const enum COLL_CHANGE_TYPE { Remove = 0, Add = 1, Reset = 2, Remap = 3 }
 export const enum COLL_CHANGE_REASON { None = 0, PageChange = 1, Sorting = 2, Refresh = 3 }
 export const enum COLL_CHANGE_OPER { None = 0, Fill = 1, AddNew = 2, Remove = 3, Commit = 4, Sort = 5 }
 export const enum ITEM_STATUS { None = 0, Added = 1, Updated = 2, Deleted = 3 }
+export const enum VALS_VERSION { None = 0, Temporary = 1, Original= 2 }
