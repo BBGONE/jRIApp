@@ -5,7 +5,10 @@
 /// <reference path="../../thirdparty/qtip2.d.ts" />
 /** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { bootstrap } from "jriapp/bootstrap";
+import { TOOLTIP_SVC, DATEPICKER_SVC } from "jriapp/const";
 import { initContentFactory } from "./jriapp_ui/content/factory";
+import { createToolTipSvc } from "./jriapp_ui/utils/tooltip";
+import { createDatepickerSvc } from "./jriapp_ui/utils/datepicker";
 
 export { DIALOG_ACTION, IDialogConstructorOptions, DataEditDialog, DialogVM } from "./jriapp_ui/dialog";
 export { DynaContentElView, IDynaContentAnimation, IDynaContentOptions } from "./jriapp_ui/dynacontent";
@@ -19,7 +22,8 @@ export {
 } from "./jriapp_ui/listbox";
 export * from "./jriapp_ui/stackpanel";
 export * from "./jriapp_ui/tabs";
-export { BaseElView, fn_addToolTip } from "./jriapp_ui/baseview";
+export { fn_addToolTip } from "./jriapp_ui/int";
+export { BaseElView } from "./jriapp_ui/baseview";
 export { TemplateElView, TemplateCommand, TemplateCommandParam } from "./jriapp_ui/template";
 export { DataForm, DataFormElView } from "./jriapp_ui/dataform";
 export { DatePickerElView } from "./jriapp_ui/datepicker";
@@ -43,7 +47,12 @@ export { DblClick } from "./jriapp_ui/utils/dblclick";
 export { JQueryUtils, $ } from "./jriapp_ui/utils/jquery";
 export * from "./jriapp_ui/content/all";
 
+const boot = bootstrap;
+
 initContentFactory();
 
+boot.registerSvc(TOOLTIP_SVC, createToolTipSvc());
+boot.registerSvc(DATEPICKER_SVC, createDatepickerSvc());
+
 // Load Stylesheet for all the bundle
-bootstrap.loadOwnStyle("jriapp_ui");
+boot.loadOwnStyle("jriapp_ui");

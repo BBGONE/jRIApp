@@ -6,7 +6,7 @@ import {
 import { DomUtils } from "jriapp/utils/dom";
 import { bootstrap } from "jriapp/bootstrap";
 import { createTemplate } from "jriapp/template";
-import { cssStyles } from "../baseview";
+import { cssStyles } from "../int";
 
 const utils = Utils, { extend } = utils.core, dom = DomUtils, boot = bootstrap, ERROR = utils.err;
 

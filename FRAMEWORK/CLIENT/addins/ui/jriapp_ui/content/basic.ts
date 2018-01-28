@@ -10,7 +10,7 @@ import {
 import { bootstrap } from "jriapp/bootstrap";
 import { Binding, getBindingOptions } from "jriapp/binding";
 import { LifeTimeScope } from "jriapp/utils/lifetime";
-import { cssStyles } from "../baseview";
+import { cssStyles } from "../int";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, coreUtils = utils.core,
     boot = bootstrap, sys = utils.sys;

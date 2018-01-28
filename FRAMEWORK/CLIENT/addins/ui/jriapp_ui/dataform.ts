@@ -10,7 +10,10 @@ import { DATA_ATTR, ELVIEW_NM, BindScope } from "jriapp/const";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { IContent, IElView, ILifeTimeScope, IViewOptions, IApplication } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
-import { BaseElView, fn_addToolTip, addError, removeError, cssStyles } from "./baseview";
+import { fn_addToolTip, cssStyles } from "./int";
+import { addError, removeError } from "./utils/errors";
+import { BaseElView } from "./baseview";
+
 import { Binding } from "jriapp/binding";
 import { parseContentAttr } from "./content/int";
 

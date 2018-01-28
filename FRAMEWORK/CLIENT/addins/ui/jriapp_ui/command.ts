@@ -3,7 +3,8 @@ import { Utils } from "jriapp_shared";
 import { IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { ICommand } from "jriapp/mvvm";
-import { BaseElView, cssStyles } from "./baseview";
+import { cssStyles } from "./int";
+import { BaseElView } from "./baseview";
 
 const utils = Utils, dom = DomUtils, sys = utils.sys;
 

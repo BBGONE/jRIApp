@@ -19,6 +19,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
@@ -113,6 +114,7 @@
     <TypeScriptCompile Include="ui\jriapp_ui\dynacontent.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\expander.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\baseview.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\int.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\hidden.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\img.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\input.ts" />
@@ -133,6 +135,7 @@
     <TypeScriptCompile Include="ui\jriapp_ui\utils\jquery.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\utils\propbag.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\utils\tooltip.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\utils\errors.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="db\tsconfig.json" />

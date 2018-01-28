@@ -1,105 +1,25 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import {
-    Utils, BaseObject, IPropertyBag, IValidationInfo, LocaleSTRS as STRS, IValidatable
-} from "jriapp_shared";
+import { Utils, BaseObject, IPropertyBag, IValidationInfo, IValidatable } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { ViewChecks } from "jriapp/utils/viewchecks";
-import { TOOLTIP_SVC, DATEPICKER_SVC, DATA_ATTR, SubscribeFlags } from "jriapp/const";
-import { ITooltipService, IElView, IElViewStore, IApplication, IViewOptions, ISubscriber } from "jriapp/int";
+import { DATA_ATTR, SubscribeFlags } from "jriapp/const";
+import { IElView, IElViewStore, IApplication, IViewOptions, ISubscriber } from "jriapp/int";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { ICommand } from "jriapp/mvvm";
 import { EventBag, EVENT_CHANGE_TYPE, IEventChangedArgs } from "./utils/eventbag";
 import { PropertyBag } from "./utils/propbag";
 import { CSSBag } from "./utils/cssbag";
-import { createToolTipSvc } from "./utils/tooltip";
-import { createDatepickerSvc } from "./utils/datepicker";
+import { ErrorHelper } from "./utils/errors";
+import { fn_addToolTip } from "./int";
 
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
 const utils = Utils, { getNewID } = utils.core, dom = DomUtils, { undefined } = utils.check,
     boot = bootstrap, viewChecks = ViewChecks, subscribeMap = subscribeWeakMap;
 
-export const enum cssStyles {
-    content = "ria-content-field",
-    required = "ria-required-field",
-    checkbox = "ria-checkbox",
-    fieldError = "ria-field-error",
-    commandLink = "ria-command-link",
-    checkedNull = "ria-checked-null",
-    dataform = "ria-dataform",
-    error = "ria-form-error",
-    disabled = "disabled",
-    opacity = "opacity",
-    color = "color",
-    fontSize = "font-size"
-}
-
 viewChecks.isElView = (obj: any) => {
     return !!obj && obj instanceof BaseElView;
 };
-
-boot.registerSvc(TOOLTIP_SVC, createToolTipSvc());
-boot.registerSvc(DATEPICKER_SVC, createDatepickerSvc());
-
-export function fn_addToolTip(el: Element, tip: string, isError?: boolean, pos?: string) {
-    const svc = boot.getSvc<ITooltipService>(TOOLTIP_SVC);
-    svc.addToolTip(el, tip, isError, pos);
-}
-
-export function getErrorTipInfo(errors: IValidationInfo[]): string {
-    const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<br/>"];
-    errors.forEach((info) => {
-        let res = "";
-        info.errors.forEach((str) => {
-            res = res + " " + str;
-        });
-        tip.push(res);
-        res = "";
-    });
-    return tip.join("");
-}
-
-function setError(el: HTMLElement, isError: boolean): void {
-    dom.setClass([el], cssStyles.fieldError, !isError);
-}
-
-export function addError(el: HTMLElement): void {
-    setError(el, true);
-}
-
-export function removeError(el: HTMLElement): void {
-    setError(el, false);
-}
-
-export const enum PROP_NAME {
-    isVisible = "isVisible",
-    validationErrors = "validationErrors",
-    toolTip = "toolTip",
-    css = "css",
-    isEnabled = "isEnabled",
-    value = "value",
-    command = "command",
-    disabled = "disabled",
-    commandParam = "commandParam",
-    isBusy = "isBusy",
-    delay = "delay",
-    checked = "checked",
-    color = "color",
-    wrap = "wrap",
-    text = "text",
-    html = "html",
-    preventDefault = "preventDefault",
-    imageSrc = "imageSrc",
-    glyph = "glyph",
-    href = "href",
-    fontSize = "fontSize",
-    borderColor = "borderColor",
-    borderStyle = "borderStyle",
-    width = "width",
-    height = "height",
-    src = "src",
-    click = "click"
-}
 
 export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber, IValidatable {
     private _objId: string;
@@ -205,23 +125,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
         this._subscribeFlags |= (1 << flag);
     }
     protected _onSetErrors(el: HTMLElement, errors: IValidationInfo[]): void {
-        if (!!errors && errors.length > 0) {
-            fn_addToolTip(el, getErrorTipInfo(errors), true);
-            addError(el);
-        } else {
-            fn_addToolTip(el, this.toolTip);
-            removeError(el);
-        }
-    }
-    protected _getErrors(): IValidationInfo[] {
-        return this._errors;
-    }
-    protected _setErrors(errors: IValidationInfo[]): void {
-        if (errors !== this._errors) {
-            this._errors = errors;
-            this._onSetErrors(this.el, errors);
-            this.objEvents.raiseProp("validationErrors");
-        }
+        ErrorHelper.setErrors(el, errors, this.toolTip);
     }
     isSubscribed(flag: SubscribeFlags): boolean {
         return !!(this._subscribeFlags & (1 << flag));
@@ -256,10 +160,14 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
         }
     }
     get validationErrors(): IValidationInfo[] {
-        return this._getErrors();
+        return this._errors;
     }
     set validationErrors(v: IValidationInfo[]) {
-        this._setErrors(v);
+        if (this._errors !== v) {
+            this._errors = v;
+            this._onSetErrors(this.el, this._errors);
+            this.objEvents.raiseProp("validationErrors");
+        }
     }
     get dataName(): string {
         return this._el.getAttribute(DATA_ATTR.DATA_NAME);

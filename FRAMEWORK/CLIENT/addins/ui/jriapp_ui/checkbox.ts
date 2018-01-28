@@ -4,7 +4,7 @@ import { IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { SubscribeFlags } from "jriapp/const";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
-import { cssStyles } from "./baseview";
+import { cssStyles } from "./int";
 import { InputElView } from "./input";
 
 const dom = DomUtils, checks = Utils.check, boot = bootstrap, subscribeMap = subscribeWeakMap;

@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DomUtils } from "jriapp/utils/dom";
 import { IConstructorContentOptions } from "jriapp/int";
-import { cssStyles } from "../baseview";
+import { cssStyles } from "../int";
 import { CheckBoxElView } from "../checkbox";
 import { CheckBoxThreeStateElView } from "../checkbox3";
 import { BasicContent, IContentView, getBindingOption } from "./basic";

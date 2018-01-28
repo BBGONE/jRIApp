@@ -3,7 +3,7 @@ import { LocaleSTRS as STRS, Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR, } from "jriapp/const";
 import { ButtonCss } from "jriapp/int";
-import { fn_addToolTip } from "../../baseview";
+import { fn_addToolTip } from "../../int";
 
 import { css, txtMap } from "../const";
 import { BaseCell, ICellOptions } from "./base";

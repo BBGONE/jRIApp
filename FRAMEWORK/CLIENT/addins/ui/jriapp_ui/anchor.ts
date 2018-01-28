@@ -2,7 +2,7 @@
 import { DomUtils } from "jriapp/utils/dom";
 import { SubscribeFlags } from "jriapp/const";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
-import { cssStyles } from "./baseview";
+import { cssStyles } from "./int";
 import { CommandElView, ICommandViewOptions } from "./command";
 
 const dom = DomUtils, boot = bootstrap, subscribeMap = subscribeWeakMap;

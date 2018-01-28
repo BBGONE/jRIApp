@@ -3,7 +3,7 @@ import { BaseObject, Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
-import { fn_addToolTip } from "../../baseview";
+import { fn_addToolTip } from "../../int";
 import { selectableProviderWeakMap } from "jriapp/bootstrap";
 
 import { css } from "../const";

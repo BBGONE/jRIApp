@@ -5,7 +5,8 @@ import {
 import { DATA_ATTR } from "jriapp/const";
 import { DomUtils } from "jriapp/utils/dom";
 import { IViewOptions, ISelectable, ISelectableProvider } from "jriapp/int";
-import { BaseElView, fn_addToolTip } from "./baseview";
+import { fn_addToolTip } from "./int";
+import { BaseElView } from "./baseview";
 import { COLL_CHANGE_REASON, COLL_CHANGE_TYPE } from "jriapp_shared/collection/const";
 import { ICollection, ICollectionItem } from "jriapp_shared/collection/int";
 import { bootstrap, selectableProviderWeakMap } from "jriapp/bootstrap";

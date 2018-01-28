@@ -3,89 +3,13 @@
 /// <reference path="../thirdparty/jquery.d.ts" />
 /// <reference path="../thirdparty/jqueryui.d.ts" />
 /// <reference path="../thirdparty/qtip2.d.ts" />
-declare module "jriapp_ui/utils/eventbag" {
-    import { BaseObject, IPropertyBag } from "jriapp_shared";
-    import { ICommand } from "jriapp/mvvm";
-    export const enum EVENT_CHANGE_TYPE {
-        None = 0,
-        Added = 1,
-        Deleted = 2,
-        Updated = 3,
-    }
-    export interface IEventChangedArgs {
-        name: string;
-        changeType: EVENT_CHANGE_TYPE;
-        oldVal: ICommand;
-        newVal: ICommand;
-    }
-    export class EventBag extends BaseObject implements IPropertyBag {
-        private _dic;
-        private _onChange;
-        constructor(onChange: (sender: EventBag, args: IEventChangedArgs) => void);
-        isHasProp(prop: string): boolean;
-        getProp(name: string): ICommand;
-        setProp(name: string, command: ICommand): void;
-        readonly isPropertyBag: boolean;
-        trigger(eventName: string, args?: any): boolean;
-        toString(): string;
-        dispose(): void;
-    }
-}
-declare module "jriapp_ui/utils/propbag" {
-    import { BaseObject, IPropertyBag } from "jriapp_shared";
-    export class PropertyBag extends BaseObject implements IPropertyBag {
-        private _el;
-        constructor(el: HTMLElement);
-        isHasProp(prop: string): boolean;
-        getProp(name: string): any;
-        setProp(name: string, val: any): void;
-        readonly isPropertyBag: boolean;
-        toString(): string;
-    }
-}
-declare module "jriapp_ui/utils/cssbag" {
-    import { BaseObject, IPropertyBag } from "jriapp_shared";
-    export class CSSBag extends BaseObject implements IPropertyBag {
-        private _el;
-        constructor(el: Element);
-        isHasProp(prop: string): boolean;
-        getProp(name: string): any;
-        setProp(name: string, val: any): void;
-        readonly isPropertyBag: boolean;
-        toString(): string;
-    }
-}
-declare module "jriapp_ui/utils/jquery" {
-    export const $: JQueryStatic;
-    export class JQueryUtils {
-        static $: JQueryStatic;
-        static dispose$Plugin($el: JQuery, name: string): void;
-    }
-}
-declare module "jriapp_ui/utils/tooltip" {
-    import { ITooltipService } from "jriapp/int";
-    export const enum css {
-        toolTip = "qtip",
-        toolTipError = "qtip-red",
-    }
-    export function createToolTipSvc(): ITooltipService;
-}
-declare module "jriapp_ui/utils/datepicker" {
-    import { IDatepicker } from "jriapp";
-    export function createDatepickerSvc(): IDatepicker;
-}
-declare module "jriapp_ui/baseview" {
-    import { BaseObject, IPropertyBag, IValidationInfo, IValidatable } from "jriapp_shared";
-    import { SubscribeFlags } from "jriapp/const";
-    import { IElView, IApplication, IViewOptions, ISubscriber } from "jriapp/int";
-    import { ICommand } from "jriapp/mvvm";
-    import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
-    export { IEventChangedArgs, EVENT_CHANGE_TYPE };
+declare module "jriapp_ui/int" {
+    export function fn_addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void;
     export const enum cssStyles {
+        fieldError = "ria-field-error",
         content = "ria-content-field",
         required = "ria-required-field",
         checkbox = "ria-checkbox",
-        fieldError = "ria-field-error",
         commandLink = "ria-command-link",
         checkedNull = "ria-checked-null",
         dataform = "ria-dataform",
@@ -94,76 +18,6 @@ declare module "jriapp_ui/baseview" {
         opacity = "opacity",
         color = "color",
         fontSize = "font-size",
-    }
-    export function fn_addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void;
-    export function getErrorTipInfo(errors: IValidationInfo[]): string;
-    export function addError(el: HTMLElement): void;
-    export function removeError(el: HTMLElement): void;
-    export const enum PROP_NAME {
-        isVisible = "isVisible",
-        validationErrors = "validationErrors",
-        toolTip = "toolTip",
-        css = "css",
-        isEnabled = "isEnabled",
-        value = "value",
-        command = "command",
-        disabled = "disabled",
-        commandParam = "commandParam",
-        isBusy = "isBusy",
-        delay = "delay",
-        checked = "checked",
-        color = "color",
-        wrap = "wrap",
-        text = "text",
-        html = "html",
-        preventDefault = "preventDefault",
-        imageSrc = "imageSrc",
-        glyph = "glyph",
-        href = "href",
-        fontSize = "fontSize",
-        borderColor = "borderColor",
-        borderStyle = "borderStyle",
-        width = "width",
-        height = "height",
-        src = "src",
-        click = "click",
-    }
-    export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber, IValidatable {
-        private _objId;
-        private _el;
-        private _subscribeFlags;
-        private _eventBag;
-        private _propBag;
-        private _classBag;
-        private _display;
-        private _css;
-        private _toolTip;
-        private _errors;
-        constructor(el: TElement, options?: IViewOptions);
-        dispose(): void;
-        private _getStore();
-        protected _onEventChanged(args: IEventChangedArgs): void;
-        protected _onEventAdded(name: string, newVal: ICommand): void;
-        protected _onEventDeleted(name: string, oldVal: ICommand): void;
-        protected _applyToolTip(): void;
-        protected _setIsSubcribed(flag: SubscribeFlags): void;
-        protected _onSetErrors(el: HTMLElement, errors: IValidationInfo[]): void;
-        protected _getErrors(): IValidationInfo[];
-        protected _setErrors(errors: IValidationInfo[]): void;
-        isSubscribed(flag: SubscribeFlags): boolean;
-        toString(): string;
-        readonly el: TElement;
-        readonly uniqueID: string;
-        isVisible: boolean;
-        validationErrors: IValidationInfo[];
-        readonly dataName: string;
-        toolTip: string;
-        readonly events: IPropertyBag;
-        readonly props: IPropertyBag;
-        readonly classes: IPropertyBag;
-        readonly isDelegationOn: boolean;
-        css: string;
-        readonly app: IApplication;
     }
 }
 declare module "jriapp_ui/content/basic" {
@@ -235,6 +89,110 @@ declare module "jriapp_ui/content/template" {
         readonly template: ITemplate;
         isEditing: boolean;
         dataContext: any;
+        readonly app: IApplication;
+    }
+}
+declare module "jriapp_ui/utils/eventbag" {
+    import { BaseObject, IPropertyBag } from "jriapp_shared";
+    import { ICommand } from "jriapp/mvvm";
+    export const enum EVENT_CHANGE_TYPE {
+        None = 0,
+        Added = 1,
+        Deleted = 2,
+        Updated = 3,
+    }
+    export interface IEventChangedArgs {
+        name: string;
+        changeType: EVENT_CHANGE_TYPE;
+        oldVal: ICommand;
+        newVal: ICommand;
+    }
+    export class EventBag extends BaseObject implements IPropertyBag {
+        private _dic;
+        private _onChange;
+        constructor(onChange: (sender: EventBag, args: IEventChangedArgs) => void);
+        isHasProp(prop: string): boolean;
+        getProp(name: string): ICommand;
+        setProp(name: string, command: ICommand): void;
+        readonly isPropertyBag: boolean;
+        trigger(eventName: string, args?: any): boolean;
+        toString(): string;
+        dispose(): void;
+    }
+}
+declare module "jriapp_ui/utils/propbag" {
+    import { BaseObject, IPropertyBag } from "jriapp_shared";
+    export class PropertyBag extends BaseObject implements IPropertyBag {
+        private _el;
+        constructor(el: HTMLElement);
+        isHasProp(prop: string): boolean;
+        getProp(name: string): any;
+        setProp(name: string, val: any): void;
+        readonly isPropertyBag: boolean;
+        toString(): string;
+    }
+}
+declare module "jriapp_ui/utils/cssbag" {
+    import { BaseObject, IPropertyBag } from "jriapp_shared";
+    export class CSSBag extends BaseObject implements IPropertyBag {
+        private _el;
+        constructor(el: Element);
+        isHasProp(prop: string): boolean;
+        getProp(name: string): any;
+        setProp(name: string, val: any): void;
+        readonly isPropertyBag: boolean;
+        toString(): string;
+    }
+}
+declare module "jriapp_ui/utils/errors" {
+    import { IValidationInfo } from "jriapp_shared";
+    export function getErrorTipInfo(errors: IValidationInfo[]): string;
+    export function addError(el: HTMLElement): void;
+    export function removeError(el: HTMLElement): void;
+    export class ErrorHelper {
+        static setErrors(el: HTMLElement, errors: IValidationInfo[], toolTip?: string): void;
+    }
+}
+declare module "jriapp_ui/baseview" {
+    import { BaseObject, IPropertyBag, IValidationInfo, IValidatable } from "jriapp_shared";
+    import { SubscribeFlags } from "jriapp/const";
+    import { IElView, IApplication, IViewOptions, ISubscriber } from "jriapp/int";
+    import { ICommand } from "jriapp/mvvm";
+    import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
+    export { IEventChangedArgs, EVENT_CHANGE_TYPE };
+    export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber, IValidatable {
+        private _objId;
+        private _el;
+        private _subscribeFlags;
+        private _eventBag;
+        private _propBag;
+        private _classBag;
+        private _display;
+        private _css;
+        private _toolTip;
+        private _errors;
+        constructor(el: TElement, options?: IViewOptions);
+        dispose(): void;
+        private _getStore();
+        protected _onEventChanged(args: IEventChangedArgs): void;
+        protected _onEventAdded(name: string, newVal: ICommand): void;
+        protected _onEventDeleted(name: string, oldVal: ICommand): void;
+        protected _applyToolTip(): void;
+        protected _setIsSubcribed(flag: SubscribeFlags): void;
+        protected _onSetErrors(el: HTMLElement, errors: IValidationInfo[]): void;
+        isSubscribed(flag: SubscribeFlags): boolean;
+        toString(): string;
+        readonly el: TElement;
+        readonly uniqueID: string;
+        isVisible: boolean;
+        validationErrors: IValidationInfo[];
+        readonly dataName: string;
+        toolTip: string;
+        readonly events: IPropertyBag;
+        readonly props: IPropertyBag;
+        readonly classes: IPropertyBag;
+        readonly isDelegationOn: boolean;
+        css: string;
         readonly app: IApplication;
     }
 }
@@ -540,6 +498,25 @@ declare module "jriapp_ui/content/lookup" {
 }
 declare module "jriapp_ui/content/factory" {
     export function initContentFactory(): void;
+}
+declare module "jriapp_ui/utils/jquery" {
+    export const $: JQueryStatic;
+    export class JQueryUtils {
+        static $: JQueryStatic;
+        static dispose$Plugin($el: JQuery, name: string): void;
+    }
+}
+declare module "jriapp_ui/utils/tooltip" {
+    import { ITooltipService } from "jriapp/int";
+    export const enum css {
+        toolTip = "qtip",
+        toolTipError = "qtip-red",
+    }
+    export function createToolTipSvc(): ITooltipService;
+}
+declare module "jriapp_ui/utils/datepicker" {
+    import { IDatepicker } from "jriapp";
+    export function createDatepickerSvc(): IDatepicker;
 }
 declare module "jriapp_ui/dialog" {
     import { IBaseObject, TEventHandler, IPromise, BaseObject } from "jriapp_shared";
@@ -1805,7 +1782,8 @@ declare module "jriapp_ui" {
     export { ListBox, ListBoxElView, IListBoxViewOptions, IOptionStateProvider, IOptionTextProvider } from "jriapp_ui/listbox";
     export * from "jriapp_ui/stackpanel";
     export * from "jriapp_ui/tabs";
-    export { BaseElView, fn_addToolTip } from "jriapp_ui/baseview";
+    export { fn_addToolTip } from "jriapp_ui/int";
+    export { BaseElView } from "jriapp_ui/baseview";
     export { TemplateElView, TemplateCommand, TemplateCommandParam } from "jriapp_ui/template";
     export { DataForm, DataFormElView } from "jriapp_ui/dataform";
     export { DatePickerElView } from "jriapp_ui/datepicker";
