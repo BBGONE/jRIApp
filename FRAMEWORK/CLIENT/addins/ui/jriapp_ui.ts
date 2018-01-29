@@ -6,9 +6,11 @@
 /** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { bootstrap } from "jriapp/bootstrap";
 import { TOOLTIP_SVC, DATEPICKER_SVC } from "jriapp/const";
+import { UIERRORS_SVC } from "./jriapp_ui/int";
 import { initContentFactory } from "./jriapp_ui/content/factory";
 import { createToolTipSvc } from "./jriapp_ui/utils/tooltip";
 import { createDatepickerSvc } from "./jriapp_ui/utils/datepicker";
+import { createUIErrorsSvc } from "./jriapp_ui/utils/errors";
 
 export { DIALOG_ACTION, IDialogConstructorOptions, DataEditDialog, DialogVM } from "./jriapp_ui/dialog";
 export { DynaContentElView, IDynaContentAnimation, IDynaContentOptions } from "./jriapp_ui/dynacontent";
@@ -22,8 +24,7 @@ export {
 } from "./jriapp_ui/listbox";
 export * from "./jriapp_ui/stackpanel";
 export * from "./jriapp_ui/tabs";
-export { fn_addToolTip } from "./jriapp_ui/int";
-export { BaseElView } from "./jriapp_ui/baseview";
+export { BaseElView, addToolTip } from "./jriapp_ui/baseview";
 export { TemplateElView, TemplateCommand, TemplateCommandParam } from "./jriapp_ui/template";
 export { DataForm, DataFormElView } from "./jriapp_ui/dataform";
 export { DatePickerElView } from "./jriapp_ui/datepicker";
@@ -53,6 +54,7 @@ initContentFactory();
 
 boot.registerSvc(TOOLTIP_SVC, createToolTipSvc());
 boot.registerSvc(DATEPICKER_SVC, createDatepickerSvc());
+boot.registerSvc(UIERRORS_SVC, createUIErrorsSvc());
 
 // Load Stylesheet for all the bundle
 boot.loadOwnStyle("jriapp_ui");

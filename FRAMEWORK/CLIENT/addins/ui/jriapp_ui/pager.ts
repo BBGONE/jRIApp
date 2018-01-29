@@ -1,11 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    Utils, BaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS, Debounce
+    Utils, BaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS, Debounce, IValidationInfo
 } from "jriapp_shared";
 import { DATA_ATTR } from "jriapp/const";
 import { DomUtils } from "jriapp/utils/dom";
 import { IViewOptions, ISelectable, ISelectableProvider } from "jriapp/int";
-import { fn_addToolTip } from "./int";
+import { addToolTip } from "./baseview";
 import { BaseElView } from "./baseview";
 import { COLL_CHANGE_REASON, COLL_CHANGE_TYPE } from "jriapp_shared/collection/const";
 import { ICollection, ICollectionItem } from "jriapp_shared/collection/int";
@@ -41,7 +41,7 @@ export interface IPagerConstructorOptions extends IPagerOptions {
 
 function _removeToolTips(toolTips: Element[]): void {
     toolTips.forEach((el) => {
-        fn_addToolTip(el, null);
+        addToolTip(el, null);
     });
 }
 
@@ -131,7 +131,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         super.dispose();
     }
     protected _addToolTip(el: Element, tip: string) {
-        fn_addToolTip(el, tip);
+        addToolTip(el, tip);
         if (!!tip) {
             this._toolTips.push(el);
         }
@@ -616,6 +616,10 @@ export class PagerElView extends BaseElView implements ISelectableProvider {
             this._pager.dispose();
         }
         super.dispose();
+    }
+    // override
+    protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void {
+        // noop
     }
     toString(): string {
         return "PagerElView";

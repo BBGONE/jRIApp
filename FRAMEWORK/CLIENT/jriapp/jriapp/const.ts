@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-export const TOOLTIP_SVC = "tooltipSVC";
-export const DATEPICKER_SVC = "IDatepicker";
+export const TOOLTIP_SVC = "ITooltipService";
+export const DATEPICKER_SVC = "IDatepickerService";
 
 export const enum STORE_KEY {
     SVC = "svc.",

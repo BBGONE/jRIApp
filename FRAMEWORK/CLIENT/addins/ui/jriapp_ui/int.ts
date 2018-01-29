@@ -1,12 +1,10 @@
-﻿import { ITooltipService } from "jriapp/int";
-import { TOOLTIP_SVC } from "jriapp/const";
-import { bootstrap } from "jriapp/bootstrap";
+﻿import { IValidationInfo } from "jriapp_shared";
 
-const boot = bootstrap;
+export const UIERRORS_SVC = "IUIErrorsService";
 
-export function fn_addToolTip(el: Element, tip: string, isError?: boolean, pos?: string) {
-    const svc = boot.getSvc<ITooltipService>(TOOLTIP_SVC);
-    svc.addToolTip(el, tip, isError, pos);
+export interface IUIErrorsService {
+    setErrors(el: HTMLElement, errors: IValidationInfo[], toolTip?: string): void;
+    setFormErrors(el: HTMLElement, errors: IValidationInfo[]): void;
 }
 
 export const enum cssStyles {

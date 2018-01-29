@@ -3,7 +3,7 @@ import { LocaleSTRS as STRS, Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR, } from "jriapp/const";
 import { ButtonCss } from "jriapp/int";
-import { fn_addToolTip } from "../../int";
+import { addToolTip } from "../../baseview";
 
 import { css, txtMap } from "../const";
 import { BaseCell, ICellOptions } from "./base";
@@ -39,7 +39,7 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
             dom.setData(btn, "cell", self);
             const name = btn.getAttribute(DATA_ATTR.DATA_NAME);
             if (isActionsToolTips) {
-                fn_addToolTip(btn, STRS.TEXT[txtMap[name]]);
+                addToolTip(btn, STRS.TEXT[txtMap[name]]);
             }
             btn.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, self.column.uniqueID);
         });
@@ -50,7 +50,7 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
         btns.forEach((el) => {
             dom.removeData(el);
             if (isActionsToolTips) {
-                fn_addToolTip(el, null);
+                addToolTip(el, null);
             }
         });
     }

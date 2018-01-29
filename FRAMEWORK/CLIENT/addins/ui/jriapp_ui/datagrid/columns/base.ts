@@ -3,7 +3,7 @@ import { BaseObject, Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { IContentOptions, ITemplateEvents, ITemplate } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
-import { fn_addToolTip } from "../../int";
+import { addToolTip } from "../../baseview";
 import { selectableProviderWeakMap } from "jriapp/bootstrap";
 
 import { css } from "../const";
@@ -77,7 +77,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         }
 
         if (!!this._options.tip) {
-            fn_addToolTip(col, this._options.tip, false, "bottom center");
+            addToolTip(col, this._options.tip, false, "bottom center");
         }
     }
     dispose() {
@@ -89,7 +89,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         dom.events.offNS(this.grid.table, this.uniqueID);
 
         if (!!this._options.tip) {
-            fn_addToolTip(this._col, null);
+            addToolTip(this._col, null);
         }
 
         if (!!this._template) {

@@ -1,8 +1,8 @@
 /// <reference path="../thirdparty/moment.d.ts" />
 /// <reference path="jriapp_shared.d.ts" />
 declare module "jriapp/const" {
-    export const TOOLTIP_SVC = "tooltipSVC";
-    export const DATEPICKER_SVC = "IDatepicker";
+    export const TOOLTIP_SVC = "ITooltipService";
+    export const DATEPICKER_SVC = "IDatepickerService";
     export const enum STORE_KEY {
         SVC = "svc.",
         CONVERTER = "cnv.",
@@ -1003,5 +1003,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.11.3";
+    export const VERSION = "2.11.4";
 }

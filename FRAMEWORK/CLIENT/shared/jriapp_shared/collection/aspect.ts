@@ -140,7 +140,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj extends IIn
                 ERROR.reThrow(ex, isHandled);
             }
         }
-        this._tempVals = this._cloneVals();
+        this._storeVals(VALS_VERSION.Temporary);
         this.coll.currentItem = this.item;
         return true;
     }
@@ -167,16 +167,17 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj extends IIn
             return false;
         }
         checkDetached(this);
-        const coll = this.coll, self = this,
-            item = self.item, changes = this._tempVals;
-        this._vals = this._tempVals;
-        this._tempVals = null;
+        const coll = this.coll, self = this, item = self.item, changed: string[] = [];
         coll.errors.removeAllErrors(item);
-        // refresh User interface when values restored
         coll.getFieldNames().forEach((name) => {
-            if (changes[name] !== self._vals[name]) {
-                sys.raiseProp(this.item, name);
+            if (self._getValue(name, VALS_VERSION.Temporary) !== self._getValue(name, VALS_VERSION.Current)) {
+                changed.push(name);
             }
+        });
+        this._restoreVals(VALS_VERSION.Temporary);
+        // refresh User interface when values restored
+        changed.forEach((name) => {
+            sys.raiseProp(this.item, name);
         });
 
         return true;
@@ -226,12 +227,9 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj extends IIn
     protected _setStatus(v: ITEM_STATUS): void {
         this._status = v;
     }
-    protected _replaceVals(vals: TObj): void {
-        this._vals = vals;
-    }
     protected _getValue(name: string, ver: VALS_VERSION): any {
         switch (ver) {
-            case VALS_VERSION.Default:
+            case VALS_VERSION.Current:
                 return getValue(this._vals, name);
             case VALS_VERSION.Temporary:
                 if (!this._tempVals) {
@@ -244,7 +242,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj extends IIn
     }
     protected _setValue(name: string, val: any, ver: VALS_VERSION): void {
         switch (ver) {
-            case VALS_VERSION.Default:
+            case VALS_VERSION.Current:
                 setValue(this._vals, name, val, false);
                 break;
             case VALS_VERSION.Temporary:
@@ -256,6 +254,9 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj extends IIn
             default:
                 throw new Error("Invalid Operation, Unknown Version: " + ver);
         }
+    }
+    protected _setVals(vals: TObj): void {
+        this._vals = vals;
     }
     protected _storeVals(toVer: VALS_VERSION): void {
         switch (toVer) {
@@ -272,7 +273,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem, TObj extends IIn
                 if (!this._tempVals) {
                     throw new Error("Invalid Operation, no Stored Version: " + fromVer);
                 }
-                this._replaceVals(this._tempVals);
+                this._setVals(this._tempVals);
                 this._tempVals = null;
                 break;
             default:

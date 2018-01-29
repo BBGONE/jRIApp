@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     TEventHandler, IIndexer, LocaleERRS as ERRS, BaseObject,
-    Debounce, Utils, IPromise
+    Debounce, Utils, IPromise, IValidationInfo
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { DATA_ATTR, KEYS } from "jriapp/const";
@@ -1301,10 +1301,10 @@ export class DataGridElView extends BaseElView implements ISelectableProvider {
         this._grid = new DataGrid(table, opts);
         this._bindGridEvents();
     }
-    toString() {
+    toString(): string {
         return "DataGridElView";
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -1316,7 +1316,7 @@ export class DataGridElView extends BaseElView implements ISelectableProvider {
         this._stateProvider = null;
         super.dispose();
     }
-    private _bindGridEvents() {
+    private _bindGridEvents(): void {
         const self = this;
         this._grid.addOnRowStateChanged((sender, args) => {
             if (!!self._stateProvider) {
@@ -1330,6 +1330,10 @@ export class DataGridElView extends BaseElView implements ISelectableProvider {
                     break;
             }
         }, self.uniqueID);
+    }
+    // override
+    protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void {
+        // noop
     }
     get dataSource(): ICollection<ICollectionItem> {
         return this.grid.dataSource;

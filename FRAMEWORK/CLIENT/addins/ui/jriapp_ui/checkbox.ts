@@ -41,10 +41,10 @@ export class CheckBoxElView extends InputElView<HTMLInputElement> {
         dom.setClass([this.el], cssStyles.checkedNull, !checks.isNt(this.checked));
     }
     // override
-    protected _onSetErrors(el: HTMLElement, errors: IValidationInfo[]): void {
+    protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void {
         const parent = el.parentElement;
         const mainEl = (!!parent && parent.tagName.toLowerCase() === "label") ? parent : el;
-        super._onSetErrors(mainEl, errors);
+        super._setErrors(mainEl, errors);
     }
     toString(): string {
         return "CheckBoxElView";

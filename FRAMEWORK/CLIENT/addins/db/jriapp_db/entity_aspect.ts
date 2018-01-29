@@ -132,7 +132,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>,
                 if (!this._origVals) {
                     throw new Error("Invalid Operation, no Stored Version: " + fromVer);
                 }
-                this._replaceVals(this._origVals);
+                this._setVals(this._origVals);
                 this._origVals = null;
                 break;
             default:
@@ -166,7 +166,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>,
                 }
             }
         } else {
-            const newVal = dbSet._getInternal().getStrValue(self._getValue(fullName, VALS_VERSION.Default), fieldInfo),
+            const newVal = dbSet._getInternal().getStrValue(self._getValue(fullName, VALS_VERSION.Current), fieldInfo),
                 oldV = !self.hasOrigVals ? newVal : dbSet._getInternal().getStrValue(self._getValue(fullName, VALS_VERSION.Original), fieldInfo),
                 isChanged = (oldV !== newVal);
             if (isChanged) {
@@ -258,13 +258,13 @@ export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>,
         if (!this.isEditing) {
             return false;
         }
-        const self = this, changes = this._getValueChanges(true), dbSet = this.dbSet;
+        const self = this, changes: IValueChange[] = this._getValueChanges(true), dbSet = this.dbSet;
         this._restoreVals(VALS_VERSION.Temporary);
         dbSet.errors.removeAllErrors(this.item);
         this._setStatus(this._savedStatus);
         this._savedStatus = null;
         changes.forEach((v) => {
-            const fld = self.dbSet.getFieldInfo(v.fieldName);
+            const fld = dbSet.getFieldInfo(v.fieldName);
             if (!fld) {
                 throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
             }
@@ -307,12 +307,12 @@ export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>,
             throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
         }
         const stz = self.serverTimezone, dataType = fld.dataType, dcnv = fld.dateConversion;
-        let newVal = parseValue(val, dataType, dcnv, stz), oldVal = self._getValue(fullName, VALS_VERSION.Default);
+        let newVal = parseValue(val, dataType, dcnv, stz), oldVal = self._getValue(fullName, VALS_VERSION.Current);
         switch (refreshMode) {
             case REFRESH_MODE.CommitChanges:
                 {
                     if (!compareVals(newVal, oldVal, dataType)) {
-                        self._setValue(fullName, newVal, VALS_VERSION.Default);
+                        self._setValue(fullName, newVal, VALS_VERSION.Current);
                         self._onFieldChanged(fullName, fld);
                     }
                 }
@@ -326,7 +326,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>,
                         self._setValue(fullName, newVal, VALS_VERSION.Temporary);
                     }
                     if (!compareVals(newVal, oldVal, dataType)) {
-                        self._setValue(fullName, newVal, VALS_VERSION.Default);
+                        self._setValue(fullName, newVal, VALS_VERSION.Current);
                         self._onFieldChanged(fullName, fld);
                     }
                 }
@@ -341,7 +341,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>,
                     if (origOldVal === undefined || compareVals(origOldVal, oldVal, dataType)) {
                         // unmodified
                         if (!compareVals(newVal, oldVal, dataType)) {
-                            self._setValue(fullName, newVal, VALS_VERSION.Default);
+                            self._setValue(fullName, newVal, VALS_VERSION.Current);
                             self._onFieldChanged(fullName, fld);
                         }
                     }
@@ -394,10 +394,10 @@ export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>,
         this.dbSet._getInternal().setNavFieldVal(fieldName, this.item, value);
     }
     _clearFieldVal(fieldName: string): void {
-        this._setValue(fieldName, null, VALS_VERSION.Default);
+        this._setValue(fieldName, null, VALS_VERSION.Current);
     }
     _getFieldVal(fieldName: string): any {
-        return this._getValue(fieldName, VALS_VERSION.Default);
+        return this._getValue(fieldName, VALS_VERSION.Current);
     }
     _setFieldVal(fieldName: string, val: any): boolean {
         if (this.isCancelling) {
@@ -423,7 +423,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>,
                 }
 
                 if (this._fldChanging(fieldName, fieldInfo, oldV, newV)) {
-                    this._setValue(fieldName, newV, VALS_VERSION.Default);
+                    this._setValue(fieldName, newV, VALS_VERSION.Current);
                     if (!(fieldInfo.fieldType === FIELD_TYPE.ClientOnly || fieldInfo.fieldType === FIELD_TYPE.ServerCalculated)) {
                         switch (this.status) {
                             case ITEM_STATUS.None:

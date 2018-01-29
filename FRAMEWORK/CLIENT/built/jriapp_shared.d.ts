@@ -763,7 +763,7 @@ declare module "jriapp_shared/collection/const" {
         Deleted = 3,
     }
     export const enum VALS_VERSION {
-        Default = 0,
+        Current = 0,
         Temporary = 1,
         Original = 2,
     }
@@ -1324,9 +1324,9 @@ declare module "jriapp_shared/collection/aspect" {
         protected _validateField(fieldName: string): IValidationInfo;
         protected _validateFields(): IValidationInfo[];
         protected _setStatus(v: ITEM_STATUS): void;
-        protected _replaceVals(vals: TObj): void;
         protected _getValue(name: string, ver: VALS_VERSION): any;
         protected _setValue(name: string, val: any, ver: VALS_VERSION): void;
+        protected _setVals(vals: TObj): void;
         protected _storeVals(toVer: VALS_VERSION): void;
         protected _restoreVals(fromVer: VALS_VERSION): void;
         _resetStatus(): void;

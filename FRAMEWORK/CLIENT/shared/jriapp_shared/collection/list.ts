@@ -32,7 +32,7 @@ export class ListItemAspect<TItem extends IListItem, TObj extends IIndexer<any>>
                 if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
                     throw new Error(ERRS.ERR_FIELD_READONLY);
                 }
-                this._setValue(name, val, VALS_VERSION.Default);
+                this._setValue(name, val, VALS_VERSION.Current);
                 sys.raiseProp(item, name);
                 errors.removeError(item, name);
                 const validationInfo = this._validateField(name);
@@ -53,7 +53,7 @@ export class ListItemAspect<TItem extends IListItem, TObj extends IIndexer<any>>
         }
     }
     _getProp(name: string): any {
-        return this._getValue(name, VALS_VERSION.Default);
+        return this._getValue(name, VALS_VERSION.Current);
     }
     toString(): string {
         if (!this.item) {
