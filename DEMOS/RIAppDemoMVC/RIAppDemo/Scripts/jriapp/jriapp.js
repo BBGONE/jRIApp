@@ -11,8 +11,8 @@ var __extends = (this && this.__extends) || (function () {
 define("jriapp/const", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TOOLTIP_SVC = "tooltipSVC";
-    exports.DATEPICKER_SVC = "IDatepicker";
+    exports.TOOLTIP_SVC = "ITooltipService";
+    exports.DATEPICKER_SVC = "IDatepickerService";
     var STORE_KEY;
     (function (STORE_KEY) {
         STORE_KEY["SVC"] = "svc.";
@@ -4573,6 +4573,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.11.3";
+    exports.VERSION = "2.11.4";
     bootstrap_8.Bootstrap._initFramework();
 });

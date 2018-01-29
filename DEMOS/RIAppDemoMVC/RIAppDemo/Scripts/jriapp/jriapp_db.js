@@ -3223,7 +3223,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                     if (!this._origVals) {
                         throw new Error("Invalid Operation, no Stored Version: " + fromVer);
                     }
-                    this._replaceVals(this._origVals);
+                    this._setVals(this._origVals);
                     this._origVals = null;
                     break;
                 default:
@@ -3356,7 +3356,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             this._setStatus(this._savedStatus);
             this._savedStatus = null;
             changes.forEach(function (v) {
-                var fld = self.dbSet.getFieldInfo(v.fieldName);
+                var fld = dbSet.getFieldInfo(v.fieldName);
                 if (!fld) {
                     throw new Error(strUtils.format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
                 }

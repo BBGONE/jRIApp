@@ -4,7 +4,12 @@
 /// <reference path="../thirdparty/jqueryui.d.ts" />
 /// <reference path="../thirdparty/qtip2.d.ts" />
 declare module "jriapp_ui/int" {
-    export function fn_addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void;
+    import { IValidationInfo } from "jriapp_shared";
+    export const UIERRORS_SVC = "IUIErrorsService";
+    export interface IUIErrorsService {
+        setErrors(el: HTMLElement, errors: IValidationInfo[], toolTip?: string): void;
+        setFormErrors(el: HTMLElement, errors: IValidationInfo[]): void;
+    }
     export const enum cssStyles {
         fieldError = "ria-field-error",
         content = "ria-content-field",
@@ -144,15 +149,6 @@ declare module "jriapp_ui/utils/cssbag" {
         toString(): string;
     }
 }
-declare module "jriapp_ui/utils/errors" {
-    import { IValidationInfo } from "jriapp_shared";
-    export function getErrorTipInfo(errors: IValidationInfo[]): string;
-    export function addError(el: HTMLElement): void;
-    export function removeError(el: HTMLElement): void;
-    export class ErrorHelper {
-        static setErrors(el: HTMLElement, errors: IValidationInfo[], toolTip?: string): void;
-    }
-}
 declare module "jriapp_ui/baseview" {
     import { BaseObject, IPropertyBag, IValidationInfo, IValidatable } from "jriapp_shared";
     import { SubscribeFlags } from "jriapp/const";
@@ -160,6 +156,7 @@ declare module "jriapp_ui/baseview" {
     import { ICommand } from "jriapp/mvvm";
     import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
     export { IEventChangedArgs, EVENT_CHANGE_TYPE };
+    export function addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void;
     export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber, IValidatable {
         private _objId;
         private _el;
@@ -179,7 +176,7 @@ declare module "jriapp_ui/baseview" {
         protected _onEventDeleted(name: string, oldVal: ICommand): void;
         protected _applyToolTip(): void;
         protected _setIsSubcribed(flag: SubscribeFlags): void;
-        protected _onSetErrors(el: HTMLElement, errors: IValidationInfo[]): void;
+        protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         isSubscribed(flag: SubscribeFlags): boolean;
         toString(): string;
         readonly el: TElement;
@@ -272,7 +269,7 @@ declare module "jriapp_ui/checkbox" {
         constructor(chk: HTMLInputElement, options?: IViewOptions);
         handle_change(e: Event): boolean;
         protected _updateState(): void;
-        protected _onSetErrors(el: HTMLElement, errors: IValidationInfo[]): void;
+        protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         toString(): string;
         checked: boolean;
     }
@@ -286,7 +283,7 @@ declare module "jriapp_ui/checkbox3" {
         constructor(chk: HTMLInputElement, options?: IViewOptions);
         handle_change(e: Event): boolean;
         protected _updateState(): void;
-        protected _onSetErrors(el: HTMLElement, errors: IValidationInfo[]): void;
+        protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         toString(): string;
         checked: boolean;
     }
@@ -517,6 +514,10 @@ declare module "jriapp_ui/utils/tooltip" {
 declare module "jriapp_ui/utils/datepicker" {
     import { IDatepicker } from "jriapp";
     export function createDatepickerSvc(): IDatepicker;
+}
+declare module "jriapp_ui/utils/errors" {
+    import { IUIErrorsService } from "jriapp_ui/int";
+    export function createUIErrorsSvc(): IUIErrorsService;
 }
 declare module "jriapp_ui/dialog" {
     import { IBaseObject, TEventHandler, IPromise, BaseObject } from "jriapp_shared";
@@ -1128,7 +1129,7 @@ declare module "jriapp_ui/datagrid/rows/fillspace" {
     }
 }
 declare module "jriapp_ui/datagrid/datagrid" {
-    import { TEventHandler, BaseObject, IPromise } from "jriapp_shared";
+    import { TEventHandler, BaseObject, IPromise, IValidationInfo } from "jriapp_shared";
     import { ISelectableProvider, ISelectable, IViewOptions } from "jriapp/int";
     import { ITEM_STATUS } from "jriapp_shared/collection/const";
     import { ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs } from "jriapp_shared/collection/int";
@@ -1331,6 +1332,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         toString(): string;
         dispose(): void;
         private _bindGridEvents();
+        protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         dataSource: ICollection<ICollectionItem>;
         readonly grid: DataGrid;
         stateProvider: IRowStateProvider;
@@ -1339,7 +1341,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
     }
 }
 declare module "jriapp_ui/pager" {
-    import { BaseObject } from "jriapp_shared";
+    import { BaseObject, IValidationInfo } from "jriapp_shared";
     import { IViewOptions, ISelectable, ISelectableProvider } from "jriapp/int";
     import { BaseElView } from "jriapp_ui/baseview";
     import { ICollection, ICollectionItem } from "jriapp_shared/collection/int";
@@ -1415,6 +1417,7 @@ declare module "jriapp_ui/pager" {
         private _pager;
         constructor(el: HTMLElement, options: IPagerViewOptions);
         dispose(): void;
+        protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         toString(): string;
         dataSource: ICollection<ICollectionItem>;
         readonly pager: Pager;
@@ -1584,10 +1587,10 @@ declare module "jriapp_ui/template" {
     }
 }
 declare module "jriapp_ui/dataform" {
-    import { IBaseObject, IValidationInfo, BaseObject, IValidatable } from "jriapp_shared";
+    import { IBaseObject, IValidationInfo, BaseObject } from "jriapp_shared";
     import { IViewOptions, IApplication } from "jriapp/int";
     import { BaseElView } from "jriapp_ui/baseview";
-    export class DataForm extends BaseObject implements IValidatable {
+    export class DataForm extends BaseObject {
         private static _DATA_FORM_SELECTOR;
         private static _DATA_CONTENT_SELECTOR;
         private _el;
@@ -1600,34 +1603,30 @@ declare module "jriapp_ui/dataform" {
         private _editable;
         private _errNotification;
         private _parentDataForm;
-        private _errors;
         private _contentPromise;
-        private _errorGliph;
         constructor(el: HTMLElement, options: IViewOptions);
+        dispose(): void;
         private _getBindings();
         private _createContent();
         private _updateCreatedContent();
         private _updateContent();
         private _onDSErrorsChanged();
-        _onIsEditingChanged(): void;
         private _bindDS();
         private _unbindDS();
         private _clearContent();
         protected _setErrors(errors: IValidationInfo[]): void;
-        dispose(): void;
+        protected _onIsEditingChanged(): void;
         toString(): string;
         readonly app: IApplication;
         readonly el: HTMLElement;
         dataContext: IBaseObject;
         isEditing: boolean;
-        validationErrors: IValidationInfo[];
     }
     export class DataFormElView extends BaseElView {
         private _form;
         constructor(el: HTMLElement, options: IViewOptions);
         dispose(): void;
-        protected _getErrors(): IValidationInfo[];
-        protected _setErrors(v: IValidationInfo[]): void;
+        protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         toString(): string;
         dataContext: IBaseObject;
         readonly form: DataForm;
@@ -1782,8 +1781,7 @@ declare module "jriapp_ui" {
     export { ListBox, ListBoxElView, IListBoxViewOptions, IOptionStateProvider, IOptionTextProvider } from "jriapp_ui/listbox";
     export * from "jriapp_ui/stackpanel";
     export * from "jriapp_ui/tabs";
-    export { fn_addToolTip } from "jriapp_ui/int";
-    export { BaseElView } from "jriapp_ui/baseview";
+    export { BaseElView, addToolTip } from "jriapp_ui/baseview";
     export { TemplateElView, TemplateCommand, TemplateCommandParam } from "jriapp_ui/template";
     export { DataForm, DataFormElView } from "jriapp_ui/dataform";
     export { DatePickerElView } from "jriapp_ui/datepicker";
