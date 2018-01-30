@@ -17,7 +17,7 @@ export class ExpanderCell extends BaseCell<ExpanderColumn> {
         dom.addClass([this.td], css.rowCollapsed);
         dom.addClass([this.td], css.rowExpander);
     }
-    protected _onCellClicked(row?: Row) {
+    protected _onCellClicked(row?: Row): void {
         const clickedRow: Row = row || this.row;
         if (!clickedRow) {
             return;
@@ -25,7 +25,7 @@ export class ExpanderCell extends BaseCell<ExpanderColumn> {
         super._onCellClicked(clickedRow);
         clickedRow.isExpanded = !clickedRow.isExpanded;
     }
-    toggleImage() {
+    toggleImage(): void {
         if (this.row.isExpanded) {
             dom.removeClass([this.td], css.rowCollapsed);
             dom.addClass([this.td], css.rowExpanded);
@@ -34,7 +34,7 @@ export class ExpanderCell extends BaseCell<ExpanderColumn> {
             dom.addClass([this.td], css.rowCollapsed);
         }
     }
-    toString() {
+    toString(): string {
         return "ExpanderCell";
     }
 }

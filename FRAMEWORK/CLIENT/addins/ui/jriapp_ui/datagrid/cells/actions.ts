@@ -98,6 +98,10 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
     toString(): string {
         return "ActionsCell";
     }
-    get isCanEdit(): boolean { return this.grid.isCanEdit; }
-    get isCanDelete(): boolean { return this.grid.isCanDelete; }
+    get isCanEdit(): boolean {
+        return this.grid.isCanEdit;
+    }
+    get isCanDelete(): boolean {
+        return this.grid.isCanDelete;
+    }
 }

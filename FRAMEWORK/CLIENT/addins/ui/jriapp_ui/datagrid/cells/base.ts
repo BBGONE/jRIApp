@@ -11,11 +11,10 @@ import { Row } from "../rows/row";
 import { BaseColumn } from "../columns/base";
 import { DataGrid } from "../datagrid";
 
-const utils = Utils, dom = DomUtils, subscribeMap = subscribeWeakMap;
+const utils = Utils, dom = DomUtils, doc = dom.document, subscribeMap = subscribeWeakMap;
 
 export interface ICellOptions {
     row: Row;
-    td: HTMLTableCellElement;
     column: BaseColumn;
     num: number;
 }
@@ -32,12 +31,11 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject implements 
         options = utils.core.extend(
             {
                 row: null,
-                td: null,
                 column: null,
                 num: 0
             }, options);
         this._row = options.row;
-        this._td = options.td;
+        this._td = <HTMLTableCellElement>doc.createElement("td");
         subscribeMap.set(this._td, this);
         this._column = <TColumn>options.column;
         this._num = options.num;

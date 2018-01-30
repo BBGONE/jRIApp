@@ -12,17 +12,17 @@ export class FillSpaceCell extends BaseObject {
     private _td: HTMLTableCellElement;
     private _div: HTMLElement;
 
-    constructor(options: { row: FillSpaceRow; td: HTMLTableCellElement; }) {
+    constructor(options: { row: FillSpaceRow }) {
         super();
         this._row = options.row;
-        this._td = options.td;
+        this._td = <HTMLTableCellElement>document.createElement("td");
         this._td.colSpan = this.grid.columns.length;
         this._row.tr.appendChild(this._td);
         this._div = doc.createElement("div");
         this._div.className = css.fillVSpace;
         this._td.appendChild(this._div);
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -35,12 +35,22 @@ export class FillSpaceCell extends BaseObject {
     toString(): string {
         return "FillSpaceCell";
     }
-    get td(): HTMLTableCellElement { return this._td; }
-    get row(): FillSpaceRow { return this._row; }
-    get grid(): DataGrid { return this._row.grid; }
-    get div(): HTMLElement { return this._div; }
-    get height(): number { return this._div.offsetHeight; }
-    set height(v) {
+    get td(): HTMLTableCellElement {
+        return this._td;
+    }
+    get row(): FillSpaceRow {
+        return this._row;
+    }
+    get grid(): DataGrid {
+        return this._row.grid;
+    }
+    get div(): HTMLElement {
+        return this._div;
+    }
+    get height(): number {
+        return this._div.offsetHeight;
+    }
+    set height(v: number) {
         this._div.style.height = (!v ? 0 : v) + "px";
     }
 }

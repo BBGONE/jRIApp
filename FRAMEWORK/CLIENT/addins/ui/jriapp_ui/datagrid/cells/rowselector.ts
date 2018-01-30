@@ -27,16 +27,7 @@ export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
         this._chk = chk;
         dom.setData(chk, "cell", this);
     }
-    get checked() {
-        return this._chk.checked;
-    }
-    set checked(v) {
-        const bv = !!v;
-        if (bv !== this._chk.checked) {
-            this._chk.checked = bv;
-        }
-    }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -44,7 +35,16 @@ export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
         dom.removeData(this._chk);
         super.dispose();
     }
-    toString() {
+    get checked(): boolean {
+        return this._chk.checked;
+    }
+    set checked(v: boolean) {
+        const bv = !!v;
+        if (bv !== this._chk.checked) {
+            this._chk.checked = bv;
+        }
+    }
+    toString(): string {
         return "RowSelectorCell";
     }
 }

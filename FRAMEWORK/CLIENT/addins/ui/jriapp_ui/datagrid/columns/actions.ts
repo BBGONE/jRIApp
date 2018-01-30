@@ -61,38 +61,7 @@ export class ActionsColumn extends BaseColumn {
             }
         }, this.uniqueID);
     }
-    protected _onOk(cell: ActionsCell) {
-        if (!cell.row) {
-            return;
-        }
-        cell.row.endEdit();
-        cell.update();
-    }
-    protected _onCancel(cell: ActionsCell) {
-        if (!cell.row) {
-            return;
-        }
-        cell.row.cancelEdit();
-        cell.update();
-    }
-    protected _onDelete(cell: ActionsCell) {
-        if (!cell.row) {
-            return;
-        }
-        cell.row.deleteRow();
-    }
-    protected _onEdit(cell: ActionsCell) {
-        if (!cell.row) {
-            return;
-        }
-        cell.row.beginEdit();
-        cell.update();
-        this.grid.showEditDialog();
-    }
-    toString() {
-        return "ActionsColumn";
-    }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -100,5 +69,36 @@ export class ActionsColumn extends BaseColumn {
         dom.events.offNS(this.grid.table, this.uniqueID);
         this.grid.objEvents.offNS(this.uniqueID);
         super.dispose();
+    }
+    protected _onOk(cell: ActionsCell): void {
+        if (!cell.row) {
+            return;
+        }
+        cell.row.endEdit();
+        cell.update();
+    }
+    protected _onCancel(cell: ActionsCell): void {
+        if (!cell.row) {
+            return;
+        }
+        cell.row.cancelEdit();
+        cell.update();
+    }
+    protected _onDelete(cell: ActionsCell): void {
+        if (!cell.row) {
+            return;
+        }
+        cell.row.deleteRow();
+    }
+    protected _onEdit(cell: ActionsCell): void {
+        if (!cell.row) {
+            return;
+        }
+        cell.row.beginEdit();
+        cell.update();
+        this.grid.showEditDialog();
+    }
+    toString(): string {
+        return "ActionsColumn";
     }
 }

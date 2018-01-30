@@ -3,9 +3,12 @@ import { BaseObject } from "jriapp_shared";
 import { ITemplate } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
 import { ICollectionItem } from "jriapp_shared/collection/int";
+import { DomUtils } from "jriapp/utils/dom";
 
 import { DetailsRow } from "../rows/details";
 import { DataGrid } from "../datagrid";
+
+const dom = DomUtils, doc = dom.document;
 
 export class DetailsCell extends BaseObject {
     private _row: DetailsRow;
@@ -14,21 +17,21 @@ export class DetailsCell extends BaseObject {
 
     constructor(options: {
         row: DetailsRow;
-        td: HTMLTableCellElement; details_id: string;
+        details_id: string;
     }) {
         super();
         this._row = options.row;
-        this._td = options.td;
+        this._td = <HTMLTableCellElement>doc.createElement("td");
+        this._td.colSpan = this.grid.columns.length;
         if (!options.details_id) {
             return;
         }
-        this._td.colSpan = this.grid.columns.length;
         this._row.tr.appendChild(this._td);
         this._template = createTemplate(null, null);
         this._template.templateID = options.details_id;
         this._td.appendChild(this._template.el);
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -44,14 +47,22 @@ export class DetailsCell extends BaseObject {
     toString(): string {
         return "DetailsCell";
     }
-    get td(): HTMLTableCellElement { return this._td; }
-    get row(): DetailsRow { return this._row; }
-    get grid(): DataGrid { return this._row.grid; }
+    get td(): HTMLTableCellElement {
+        return this._td;
+    }
+    get row(): DetailsRow {
+        return this._row;
+    }
+    get grid(): DataGrid {
+        return this._row.grid;
+    }
     get item(): ICollectionItem {
         return this._template.dataContext;
     }
     set item(v: ICollectionItem) {
         this._template.dataContext = v;
     }
-    get template(): ITemplate { return this._template; }
+    get template(): ITemplate {
+        return this._template;
+    }
 }

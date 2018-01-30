@@ -107,6 +107,10 @@ function getFieldInfo(obj: any, fieldName: string): IFieldInfo {
     }
 }
 
+function UIErrorsService(): IUIErrorsService {
+    return boot.getSvc<IUIErrorsService>(UIERRORS_SVC);
+}
+
 export class DataForm extends BaseObject {
     private static _DATA_FORM_SELECTOR = ["*[", DATA_ATTR.DATA_VIEW, "='", ELVIEW_NM.DataForm, "']"].join("");
     private static _DATA_CONTENT_SELECTOR = ["*[", DATA_ATTR.DATA_CONTENT, "]:not([", DATA_ATTR.DATA_COLUMN, "])"].join("");
@@ -334,7 +338,7 @@ export class DataForm extends BaseObject {
         this._contentCreated = false;
     }
     protected _setErrors(errors: IValidationInfo[]): void {
-        const uierrSvc = boot.getSvc<IUIErrorsService>(UIERRORS_SVC);
+        const uierrSvc = UIErrorsService();
         uierrSvc.setFormErrors(this.el, errors);
     }
     protected _onIsEditingChanged(): void {

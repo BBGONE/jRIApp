@@ -29,7 +29,20 @@ export class DataColumn extends BaseColumn {
         }
         dom.addClass([this.col], colClass);
     }
-    protected _onColumnClicked() {
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        const self = this;
+        this._contentType = null;
+        utils.core.forEachProp(self._objCache, (key) => {
+            self._objCache[key].dispose();
+        });
+        self._objCache = null;
+        super.dispose();
+    }
+    protected _onColumnClicked(): void {
         if (this.isSortable && !!this.sortMemberName) {
             const sortOrd = this._sortOrder;
             this.grid._getInternal().resetColumnsSort();
@@ -38,10 +51,10 @@ export class DataColumn extends BaseColumn {
             this.grid.sortByColumn(this);
         }
     }
-    protected _cacheObject(key: string, obj: IBaseObject) {
+    protected _cacheObject(key: string, obj: IBaseObject): void {
         this._objCache[key] = obj;
     }
-    protected _getCachedObject(key: string) {
+    protected _getCachedObject(key: string): IBaseObject {
         return this._objCache[key];
     }
     protected _getInitContentFn(): (content: IExternallyCachable) => void {
@@ -73,29 +86,22 @@ export class DataColumn extends BaseColumn {
             contentOptions.readOnly = true;
         }
     }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        const self = this;
-        this._contentType = null;
-        utils.core.forEachProp(self._objCache, (key) => {
-            self._objCache[key].dispose();
-        });
-        self._objCache = null;
-        super.dispose();
-    }
-    toString() {
+    toString(): string {
         return "DataColumn";
     }
     get contentType(): IContentConstructor {
         return this._contentType;
     }
-    get isSortable() { return !!(this.options.sortable); }
-    get sortMemberName() { return this.options.sortMemberName; }
-    get sortOrder() { return this._sortOrder; }
-    set sortOrder(v) {
+    get isSortable(): boolean {
+        return !!(this.options.sortable);
+    }
+    get sortMemberName(): string {
+        return this.options.sortMemberName;
+    }
+    get sortOrder(): SORT_ORDER {
+        return this._sortOrder;
+    }
+    set sortOrder(v: SORT_ORDER) {
         if (this._sortOrder !== v) {
             this._sortOrder = v;
             const styles = [(v === SORT_ORDER.ASC ? "+" : "-") + css.colSortAsc, (v === SORT_ORDER.DESC ? "+" : "-") + css.colSortDesc];

@@ -9,10 +9,9 @@ const dom = DomUtils;
 export class ExpanderColumn extends BaseColumn {
     constructor(grid: DataGrid, options: ICellInfo) {
         super(grid, options);
-
         dom.addClass([this.col], css.rowExpander);
     }
-    toString() {
+    toString(): string {
         return "ExpanderColumn";
     }
 }

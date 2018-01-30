@@ -304,7 +304,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         const ds = this._options.dataSource;
         this.setDataSource(ds);
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -535,7 +535,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         this.objEvents.raise(GRID_EVENTS.row_expanded, { collapsedRow: old, expandedRow: parentRow, isExpanded: expanded });
     }
-    protected _parseColumnAttr(columnAttr: string, contentAttr: string) {
+    protected _parseColumnAttr(columnAttr: string, contentAttr: string): IColumnInfo {
         const defaultOp: IColumnInfo = {
             "type": COLUMN_TYPE.DATA, // default column type
             title: null,
@@ -561,7 +561,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
 
         return options;
     }
-    protected _findUndeleted(row: Row, isUp: boolean) {
+    protected _findUndeleted(row: Row, isUp: boolean): Row {
         if (!row) {
             return null;
         }
@@ -603,7 +603,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         return row;
     }
-    protected _onDSCurrentChanged(prevCurrent: ICollectionItem, newCurrent: ICollectionItem) {
+    protected _onDSCurrentChanged(prevCurrent: ICollectionItem, newCurrent: ICollectionItem): void {
         if (prevCurrent !== newCurrent) {
             const oldRow = !prevCurrent ? null : this._rowMap[prevCurrent._key];
             const newRow = !newCurrent ? null : this._rowMap[newCurrent._key];
@@ -617,7 +617,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             }
         }
     }
-    protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>) {
+    protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void {
         const self = this;
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
@@ -669,7 +669,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 throw new Error(strUtils.format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
         }
     }
-    protected _updateTableDisplay() {
+    protected _updateTableDisplay(): void {
         if (!this._table) {
             return;
         }
@@ -679,13 +679,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this._table.style.visibility = "visible";
         }
     }
-    protected _onPageChanged() {
+    protected _onPageChanged(): void {
         if (!!this._rowSelectorCol) {
             this._rowSelectorCol.checked = false;
         }
         this.objEvents.raise(GRID_EVENTS.page_changed, {});
     }
-    protected _onItemEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean) {
+    protected _onItemEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean): void {
         const row = this._rowMap[item._key];
         if (!row) {
             return;
@@ -699,7 +699,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         this.objEvents.raiseProp("editingRow");
     }
-    protected _onItemAdded(sender: any, args: ICollItemAddedArgs<ICollectionItem>) {
+    protected _onItemAdded(sender: any, args: ICollItemAddedArgs<ICollectionItem>): void {
         const item = args.item, row = this._rowMap[item._key];
         if (!row) {
             return;
@@ -710,7 +710,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             args.isAddNewHandled = this.showEditDialog();
         }
     }
-    protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS) {
+    protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS): void {
         const newStatus: ITEM_STATUS = item._aspect.status, ds = this.dataSource, row = this._rowMap[item._key];
         if (!row) {
              return;
@@ -728,14 +728,14 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             row.isDeleted = false;
         }
     }
-    protected _onDSErrorsChanged(sender: any, args: ICollItemArgs<ICollectionItem>) {
+    protected _onDSErrorsChanged(sender: any, args: ICollItemArgs<ICollectionItem>): void {
         const row = this._rowMap[args.item._key];
         if (!row) {
             return;
         }
         row.updateErrorState();
     }
-    protected _bindDS() {
+    protected _bindDS(): void {
         const self = this, ds = this.dataSource;
         if (!ds) {
             this._updateTableDisplay();
@@ -767,7 +767,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             self.collapseDetails();
         }, self._objId);
     }
-    protected _unbindDS() {
+    protected _unbindDS(): void {
         const self = this, ds = this.dataSource;
         this._updateTableDisplay();
         if (!ds) {
@@ -775,7 +775,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         ds.objEvents.offNS(self._objId);
     }
-    protected _clearGrid() {
+    protected _clearGrid(): void {
         if (this._rows.length === 0) {
             return;
         }
@@ -790,7 +790,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             row.dispose();
         });
     }
-    protected _wrapTable() {
+    protected _wrapTable(): void {
         const options = this._options;
         const wrapper = doc.createElement("div"), container = doc.createElement("div"),
             header = doc.createElement("div");
@@ -817,7 +817,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._contaner = container;
         selectableProviderWeakMap.set(this._contaner, this);
     }
-    protected _unWrapTable() {
+    protected _unWrapTable(): void {
         if (!this._header) {
             return;
         }
@@ -831,7 +831,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._wrapper = null;
         this._contaner = null;
     }
-    protected _createColumns() {
+    protected _createColumns(): void {
         const self = this, headCells = this._tHeadCells, cellInfos: ICellInfo[] = [];
         const cnt = headCells.length;
 
@@ -849,7 +849,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
 
         self.updateColumnsSize();
     }
-    protected _createColumn(cellInfo: ICellInfo) {
+    protected _createColumn(cellInfo: ICellInfo): BaseColumn {
         let col: BaseColumn;
         switch (cellInfo.colInfo.type) {
             case COLUMN_TYPE.ROW_EXPANDER:
@@ -878,7 +878,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         return col;
     }
-    protected _appendItems(newItems: ICollectionItem[]) {
+    protected _appendItems(newItems: ICollectionItem[]): void {
         const self = this, tbody = this._tBodyEl;
         let isPrepend = self.options.isPrependAllRows;
         const isPrependNew = self.options.isPrependNewRows;
@@ -903,7 +903,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
 
         self.updateColumnsSize();
     }
-    protected _refresh(isPageChanged: boolean) {
+    protected _refresh(isPageChanged: boolean): void {
         const self = this, ds = this.dataSource;
         if (!ds || self.getIsStateDirty()) {
             return;
@@ -926,15 +926,15 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         self._updateTableDisplay();
         self._updateCurrent();
     }
-    protected _addNodeToParent(parent: Node, node: Node, prepend: boolean) {
+    protected _addNodeToParent(parent: Node, node: Node, prepend: boolean): void {
         if (!prepend) {
             dom.append(parent, [node]);
         } else {
             dom.prepend(parent, node);
         }
     }
-    protected _createRowForItem(parent: Node, item: ICollectionItem, prepend: boolean) {
-        const self = this, tr = doc.createElement("tr"), gridRow = new Row(self, { tr: tr, item: item });
+    protected _createRowForItem(parent: Node, item: ICollectionItem, prepend: boolean): Row {
+        const self = this, gridRow = new Row(self, { item: item });
         self._rowMap[item._key] = gridRow;
         if (!prepend) {
             self._rows.push(gridRow);
@@ -944,15 +944,14 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         self._addNodeToParent(parent, gridRow.tr, prepend);
         return gridRow;
     }
-    protected _createDetails() {
-        const detailsId = this._options.details.templateID, tr = doc.createElement("tr");
-        return new DetailsRow({ grid: this, tr: tr, details_id: detailsId });
+    protected _createDetails(): DetailsRow {
+        const detailsId = this._options.details.templateID;
+        return new DetailsRow({ grid: this, details_id: detailsId });
     }
-    protected _createFillSpace() {
-        const tr: HTMLTableRowElement = doc.createElement("tr");
-        return new FillSpaceRow({ grid: this, tr: tr });
+    protected _createFillSpace(): FillSpaceRow {
+        return new FillSpaceRow({ grid: this });
     }
-    protected _scrollTo(yPos: number, animate: boolean) {
+    protected _scrollTo(yPos: number, animate: boolean): void {
         if (animate) {
             $(this._wrapper).animate({
                 scrollTop: yPos
@@ -967,7 +966,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this._wrapper.scrollTop = yPos;
         }
     }
-    protected setDataSource(v: ICollection<ICollectionItem>) {
+    protected setDataSource(v: ICollection<ICollectionItem>): void {
         this._unbindDS();
         this._options.dataSource = v;
         const fn_init = () => {
@@ -1149,40 +1148,40 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
-    addOnRowExpanded(fn: TEventHandler<DataGrid, { collapsedRow: Row; expandedRow: Row; isExpanded: boolean; }>, nmspace?: string, context?: any) {
+    addOnRowExpanded(fn: TEventHandler<DataGrid, { collapsedRow: Row; expandedRow: Row; isExpanded: boolean; }>, nmspace?: string, context?: any): void {
         this.objEvents.on(GRID_EVENTS.row_expanded, fn, nmspace, context);
     }
-    offOnRowExpanded(nmspace?: string) {
+    offOnRowExpanded(nmspace?: string): void {
         this.objEvents.off(GRID_EVENTS.row_expanded, nmspace);
     }
-    addOnRowSelected(fn: TEventHandler<DataGrid, { row: Row; }>, nmspace?: string, context?: any) {
+    addOnRowSelected(fn: TEventHandler<DataGrid, { row: Row; }>, nmspace?: string, context?: any): void {
         this.objEvents.on(GRID_EVENTS.row_selected, fn, nmspace, context);
     }
-    offOnRowSelected(nmspace?: string) {
+    offOnRowSelected(nmspace?: string): void {
         this.objEvents.off(GRID_EVENTS.row_selected, nmspace);
     }
-    addOnPageChanged(fn: TEventHandler<DataGrid, any>, nmspace?: string, context?: any) {
+    addOnPageChanged(fn: TEventHandler<DataGrid, any>, nmspace?: string, context?: any): void {
         this.objEvents.on(GRID_EVENTS.page_changed, fn, nmspace, context);
     }
-    offOnPageChanged(nmspace?: string) {
+    offOnPageChanged(nmspace?: string): void {
         this.objEvents.off(GRID_EVENTS.page_changed, nmspace);
     }
-    addOnRowStateChanged(fn: TEventHandler<DataGrid, { row: Row; val: any; css: string; }>, nmspace?: string, context?: any) {
+    addOnRowStateChanged(fn: TEventHandler<DataGrid, { row: Row; val: any; css: string; }>, nmspace?: string, context?: any): void {
         this.objEvents.on(GRID_EVENTS.row_state_changed, fn, nmspace, context);
     }
-    offOnRowStateChanged(nmspace?: string) {
+    offOnRowStateChanged(nmspace?: string): void {
         this.objEvents.off(GRID_EVENTS.row_state_changed, nmspace);
     }
-    addOnCellDblClicked(fn: TEventHandler<DataGrid, { cell: BaseCell<BaseColumn>; }>, nmspace?: string, context?: any) {
+    addOnCellDblClicked(fn: TEventHandler<DataGrid, { cell: BaseCell<BaseColumn>; }>, nmspace?: string, context?: any): void {
         this.objEvents.on(GRID_EVENTS.cell_dblclicked, fn, nmspace, context);
     }
-    offOnCellDblClicked(nmspace?: string) {
+    offOnCellDblClicked(nmspace?: string): void {
         this.objEvents.off(GRID_EVENTS.cell_dblclicked, nmspace);
     }
-    addOnRowAction(fn: TEventHandler<DataGrid, { row: Row; action: ROW_ACTION; }>, nmspace?: string, context?: any) {
+    addOnRowAction(fn: TEventHandler<DataGrid, { row: Row; action: ROW_ACTION; }>, nmspace?: string, context?: any): void {
         this.objEvents.on(GRID_EVENTS.row_action, fn, nmspace, context);
     }
-    offOnRowAction(nmspace?: string) {
+    offOnRowAction(nmspace?: string): void {
         this.objEvents.off(GRID_EVENTS.row_action, nmspace);
     }
     get selectable(): ISelectable {
@@ -1191,10 +1190,18 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     get table(): HTMLTableElement {
         return this._table;
     }
-    get options() { return this._options; }
-    get _tBodyEl() { return this.table.tBodies[0]; }
-    get _tHeadEl() { return this.table.tHead; }
-    get _tFootEl() { return this.table.tFoot; }
+    get options(): IDataGridConstructorOptions {
+        return this._options;
+    }
+    get _tBodyEl(): HTMLTableSectionElement {
+        return this.table.tBodies[0];
+    }
+    get _tHeadEl(): HTMLTableSectionElement {
+        return this.table.tHead;
+    }
+    get _tFootEl(): HTMLTableSectionElement {
+        return this.table.tFoot;
+    }
     get _tHeadRow(): HTMLTableRowElement {
         if (!this._tHeadEl) {
             return null;
@@ -1205,12 +1212,16 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         return <HTMLTableRowElement>trs[0];
     }
-    get _tHeadCells() {
+    get _tHeadCells(): HTMLTableHeaderCellElement[] {
         const row = this._tHeadRow;
         return (!row) ? [] : utils.arr.fromList<HTMLTableHeaderCellElement>(row.cells);
     }
-    get uniqueID() { return this._objId; }
-    get name() { return this._name; }
+    get uniqueID(): string {
+        return this._objId;
+    }
+    get name(): string {
+        return this._name;
+    }
     get dataSource(): ICollection<ICollectionItem> {
         return this._options.dataSource;
     }
@@ -1220,24 +1231,28 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this.objEvents.raiseProp("dataSource");
         }
     }
-    get rows() { return this._rows; }
-    get columns() { return this._columns; }
-    get currentItem() {
+    get rows(): Row[] {
+        return this._rows;
+    }
+    get columns(): BaseColumn[] {
+        return this._columns;
+    }
+    get currentItem(): ICollectionItem {
         const ds = this.dataSource;
         return (!ds) ? null : ds.currentItem;
     }
-    set currentItem(item) {
+    set currentItem(item: ICollectionItem) {
         const ds = this.dataSource;
         if (!ds) {
             return;
         }
         ds.currentItem = item;
     }
-    get currentRow() {
+    get currentRow(): Row {
         const cur = this.currentItem;
         return (!cur) ? null : this._rowMap[cur._key];
     }
-    set currentRow(row) {
+    set currentRow(row: Row) {
         if (!!row && !row.getIsStateDirty()) {
             if (row.item !== this.currentItem) {
                 this.currentItem = row.item;
@@ -1246,32 +1261,36 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this.currentItem = null;
         }
     }
-    get editingRow() {
+    get editingRow(): Row {
         return this._editingRow;
     }
-    get isHasEditor() {
-        return (this._options.editor && this._options.editor.templateID);
+    get isHasEditor(): boolean {
+        return (!!this._options.editor && !!this._options.editor.templateID);
     }
-    get isCanEdit() {
+    get isCanEdit(): boolean {
         if (this._options.isCanEdit !== null) {
             return this._options.isCanEdit;
         }
         const ds = this.dataSource;
         return !!ds && ds.permissions.canEditRow;
     }
-    get isCanDelete() {
+    get isCanDelete(): boolean {
         if (this._options.isCanDelete !== null) {
             return this._options.isCanDelete;
         }
         const ds = this.dataSource;
         return !!ds && ds.permissions.canDeleteRow;
     }
-    get isCanAddNew() {
+    get isCanAddNew(): boolean {
         const ds = this.dataSource;
         return !!ds && ds.permissions.canAddRow;
     }
-    get isUseScrollInto() { return this._options.isUseScrollInto; }
-    set isUseScrollInto(v) { this._options.isUseScrollInto = v; }
+    get isUseScrollInto(): boolean {
+        return this._options.isUseScrollInto;
+    }
+    set isUseScrollInto(v: boolean) {
+        this._options.isUseScrollInto = v;
+    }
     get animation(): IDataGridAnimation {
         if (!this.options.animation) {
             this.options.animation = new DefaultAnimation();
@@ -1338,7 +1357,7 @@ export class DataGridElView extends BaseElView implements ISelectableProvider {
     get dataSource(): ICollection<ICollectionItem> {
         return this.grid.dataSource;
     }
-    set dataSource(v) {
+    set dataSource(v: ICollection<ICollectionItem>) {
         this.grid.dataSource = v;
     }
     get grid(): DataGrid {
@@ -1364,7 +1383,7 @@ export class DataGridElView extends BaseElView implements ISelectableProvider {
     get animation(): IDataGridAnimation {
         return this._grid.options.animation;
     }
-    set animation(v) {
+    set animation(v: IDataGridAnimation) {
         if (this.animation !== v) {
             this._grid.options.animation = v;
             this.objEvents.raiseProp("animation");

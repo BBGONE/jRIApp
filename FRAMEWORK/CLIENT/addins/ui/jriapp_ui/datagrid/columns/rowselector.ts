@@ -50,23 +50,7 @@ export class RowSelectorColumn extends BaseColumn {
                 }
             });
     }
-    toString() {
-        return "RowSelectorColumn";
-    }
-    get checked() {
-        if (!!this._chk) {
-            return this._chk.checked;
-        }
-        return checks.undefined;
-    }
-    set checked(v) {
-        const bv = !!v, chk = this._chk;
-        if (bv !== chk.checked) {
-            chk.checked = bv;
-            this.objEvents.raiseProp("checked");
-        }
-    }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -74,5 +58,21 @@ export class RowSelectorColumn extends BaseColumn {
         dom.events.offNS(this._chk, this.uniqueID);
         dom.events.offNS(this.grid.table, this.uniqueID);
         super.dispose();
+    }
+    toString(): string {
+        return "RowSelectorColumn";
+    }
+    get checked(): boolean {
+        if (!!this._chk) {
+            return this._chk.checked;
+        }
+        return checks.undefined;
+    }
+    set checked(v: boolean) {
+        const bv = !!v, chk = this._chk;
+        if (bv !== chk.checked) {
+            chk.checked = bv;
+            this.objEvents.raiseProp("checked");
+        }
     }
 }

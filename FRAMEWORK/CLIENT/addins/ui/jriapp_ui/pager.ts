@@ -114,7 +114,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         this._bindDS();
         selectableProviderWeakMap.set(el, this);
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -130,7 +130,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         this._options = <any>{};
         super.dispose();
     }
-    protected _addToolTip(el: Element, tip: string) {
+    protected _addToolTip(el: Element, tip: string): void {
         addToolTip(el, tip);
         if (!!tip) {
             this._toolTips.push(el);
@@ -257,16 +257,16 @@ export class Pager extends BaseObject implements ISelectableProvider {
         }
         _removeToolTips(oldToolTips);
     }
-    protected _onPageSizeChanged(ds: ICollection<ICollectionItem>) {
+    protected _onPageSizeChanged(ds: ICollection<ICollectionItem>): void {
         this.rowsPerPage = ds.pageSize;
     }
-    protected _onPageIndexChanged(ds: ICollection<ICollectionItem>) {
+    protected _onPageIndexChanged(ds: ICollection<ICollectionItem>): void {
         this.currentPage = ds.pageIndex + 1;
     }
-    protected _onTotalCountChanged(ds: ICollection<ICollectionItem>) {
+    protected _onTotalCountChanged(ds: ICollection<ICollectionItem>): void {
         this.rowCount = ds.totalCount;
     }
-    protected _bindDS() {
+    protected _bindDS(): void {
         const self = this, ds = this.dataSource;
         if (!ds) {
             return;
@@ -287,14 +287,14 @@ export class Pager extends BaseObject implements ISelectableProvider {
         ds.addOnTotalCountChanged(self._onTotalCountChanged, self._objId, self);
         this._reset();
     }
-    protected _unbindDS() {
+    protected _unbindDS(): void {
         const self = this, ds = this.dataSource;
         if (!ds) {
             return;
         }
         ds.objEvents.offNS(self._objId);
     }
-    protected _reset() {
+    protected _reset(): void {
         const ds = this.dataSource;
         if (!ds) {
             this._currentPage = 1;
@@ -308,7 +308,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         this._rowCount = ds.totalCount;
         this.render();
     }
-    protected _createLink(text: string) {
+    protected _createLink(text: string): HTMLElement {
         const a = this._createElement("a");
         a.textContent = ("" + text);
         a.setAttribute("href", "javascript:void(0)");
@@ -318,7 +318,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         el.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this._objId);
         el.setAttribute("data-page", "" + page);
     }
-    protected _createFirst() {
+    protected _createFirst(): HTMLElement {
         const span = this._createElement("span");
 
         if (this.showTip) {
@@ -332,7 +332,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         this._addScope(span, 1);
         return span;
     }
-    protected _createPrevious() {
+    protected _createPrevious(): HTMLElement {
         const span = this._createElement("span");
         let previousPage = this.currentPage - 1;
         if (previousPage < 1) {
@@ -349,7 +349,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         this._addScope(span, previousPage);
         return span;
     }
-    protected _createCurrent() {
+    protected _createCurrent(): HTMLElement {
         const span = this._createElement("span"), currentPage = this.currentPage;
 
         span.textContent = ("" + currentPage);
@@ -361,13 +361,13 @@ export class Pager extends BaseObject implements ISelectableProvider {
         dom.addClass([span], css.currentPage);
         return span;
     }
-    protected _createInterval() {
+    protected _createInterval(): HTMLElement {
         const span = this._createElement("span");
         dom.addClass([span], css.interval);
         span.textContent = ("...");
         return span;
     }
-    protected _createOther(page: number) {
+    protected _createOther(page: number): HTMLElement {
         const span = this._createElement("span");
 
         if (this.showTip) {
@@ -382,7 +382,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         this._addScope(span, page);
         return span;
     }
-    protected _createNext() {
+    protected _createNext(): HTMLElement {
         const span = this._createElement("span"), pageCount = this.pageCount;
         let nextPage = this.currentPage + 1;
         if (nextPage > pageCount) {
@@ -399,7 +399,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         this._addScope(span, nextPage);
         return span;
     }
-    protected _createLast() {
+    protected _createLast(): HTMLElement {
         const span = this._createElement("span");
 
         if (this.showTip) {
@@ -413,7 +413,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         this._addScope(span, this.pageCount);
         return span;
     }
-    protected _buildTip(page: number) {
+    protected _buildTip(page: number): string {
         const rowsPerPage = this.rowsPerPage, rowCount = this.rowCount,
             start = (((page - 1) * rowsPerPage) + 1),
             end = (page === this.pageCount) ? rowCount : (page * rowsPerPage);
@@ -426,7 +426,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         }
         return tip;
     }
-    protected setDataSource(v: ICollection<ICollectionItem>) {
+    protected setDataSource(v: ICollection<ICollectionItem>): void {
         this._unbindDS();
         this._options.dataSource = v;
         this._bindDS();

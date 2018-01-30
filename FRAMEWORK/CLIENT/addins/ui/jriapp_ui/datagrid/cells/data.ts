@@ -25,28 +25,7 @@ export class DataCell extends BaseCell<DataColumn> {
         dom.addClass([this.td], css.dataCell);
         this._initContent();
     }
-    // init cell's content
-    protected _initContent() {
-        const contentType = this.column.contentType;
-        this._content = new contentType({
-            parentEl: this.td,
-            contentOptions: this.column.options.content,
-            dataContext: this.item,
-            isEditing: this.item._aspect.isEditing
-        });
-        this._content.render();
-    }
-    _beginEdit() {
-        if (!this._content.isEditing) {
-            this._content.isEditing = true;
-        }
-    }
-    _endEdit(isCanceled: boolean) {
-        if (this._content.isEditing) {
-            this._content.isEditing = false;
-        }
-    }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -57,7 +36,28 @@ export class DataCell extends BaseCell<DataColumn> {
         }
         super.dispose();
     }
-    toString() {
+    // init cell's content
+    protected _initContent(): void {
+        const contentType = this.column.contentType;
+        this._content = new contentType({
+            parentEl: this.td,
+            contentOptions: this.column.options.content,
+            dataContext: this.item,
+            isEditing: this.item._aspect.isEditing
+        });
+        this._content.render();
+    }
+    _beginEdit(): void {
+        if (!this._content.isEditing) {
+            this._content.isEditing = true;
+        }
+    }
+    _endEdit(isCanceled: boolean): void {
+        if (this._content.isEditing) {
+            this._content.isEditing = false;
+        }
+    }
+    toString(): string {
         return "DataCell";
     }
 }

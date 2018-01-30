@@ -19,6 +19,17 @@ export class DefaultAnimation extends BaseObject implements IDataGridAnimation {
         super();
         this._$el = null;
     }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        try {
+            this.stop();
+        } finally {
+            super.dispose();
+        }
+    }
     beforeShow(el: HTMLElement): void {
         this.stop();
         this._$el = $(el);
@@ -38,17 +49,6 @@ export class DefaultAnimation extends BaseObject implements IDataGridAnimation {
         if (!!this._$el) {
             this._$el.finish();
             this._$el = null;
-        }
-    }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        try {
-            this.stop();
-        } finally {
-            super.dispose();
         }
     }
 }

@@ -738,12 +738,12 @@ declare module "jriapp_ui/datagrid/animation" {
     export class DefaultAnimation extends BaseObject implements IDataGridAnimation {
         private _$el;
         constructor();
+        dispose(): void;
         beforeShow(el: HTMLElement): void;
         show(onEnd: () => void): void;
         beforeHide(el: HTMLElement): void;
         hide(onEnd: () => void): void;
         stop(): void;
-        dispose(): void;
     }
 }
 declare module "jriapp_ui/utils/dblclick" {
@@ -839,12 +839,12 @@ declare module "jriapp_ui/datagrid/columns/data" {
         private _objCache;
         private _contentType;
         constructor(grid: DataGrid, options: ICellInfo);
+        dispose(): void;
         protected _onColumnClicked(): void;
         protected _cacheObject(key: string, obj: IBaseObject): void;
         protected _getCachedObject(key: string): IBaseObject;
         protected _getInitContentFn(): (content: IExternallyCachable) => void;
         updateContentOptions(): void;
-        dispose(): void;
         toString(): string;
         readonly contentType: IContentConstructor;
         readonly isSortable: boolean;
@@ -858,10 +858,10 @@ declare module "jriapp_ui/datagrid/cells/data" {
     export class DataCell extends BaseCell<DataColumn> {
         private _content;
         constructor(options: ICellOptions);
+        dispose(): void;
         protected _initContent(): void;
         _beginEdit(): void;
         _endEdit(isCanceled: boolean): void;
-        dispose(): void;
         toString(): string;
     }
 }
@@ -873,12 +873,12 @@ declare module "jriapp_ui/datagrid/columns/actions" {
     }
     export class ActionsColumn extends BaseColumn {
         constructor(grid: DataGrid, options: ICellInfo);
+        dispose(): void;
         protected _onOk(cell: ActionsCell): void;
         protected _onCancel(cell: ActionsCell): void;
         protected _onDelete(cell: ActionsCell): void;
         protected _onEdit(cell: ActionsCell): void;
         toString(): string;
-        dispose(): void;
     }
 }
 declare module "jriapp_ui/datagrid/cells/actions" {
@@ -906,9 +906,9 @@ declare module "jriapp_ui/datagrid/columns/rowselector" {
     export class RowSelectorColumn extends BaseColumn {
         private _chk;
         constructor(grid: DataGrid, options: ICellInfo);
-        toString(): string;
-        checked: any;
         dispose(): void;
+        toString(): string;
+        checked: boolean;
     }
 }
 declare module "jriapp_ui/datagrid/cells/rowselector" {
@@ -917,8 +917,8 @@ declare module "jriapp_ui/datagrid/cells/rowselector" {
     export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
         private _chk;
         constructor(options: ICellOptions);
-        checked: boolean;
         dispose(): void;
+        checked: boolean;
         toString(): string;
     }
 }
@@ -945,19 +945,20 @@ declare module "jriapp_ui/datagrid/rows/row" {
         private _isDetached;
         private _stateCss;
         constructor(grid: DataGrid, options: {
-            tr: HTMLTableRowElement;
             item: ICollectionItem;
         });
+        dispose(): void;
         private _createCells();
         private _createCell(col, num);
+        protected _loadDOM(): void;
+        protected _unloadDOM(): void;
         _setState(css: string): void;
         _onBeginEdit(): void;
         _onEndEdit(isCanceled: boolean): void;
         beginEdit(): boolean;
         endEdit(): boolean;
         cancelEdit(): boolean;
-        dispose(): void;
-        deleteRow(): void;
+        deleteRow(): boolean;
         updateErrorState(): void;
         updateUIState(): void;
         scrollIntoView(animate?: boolean, pos?: ROW_POSITION): void;
@@ -994,7 +995,6 @@ declare module "jriapp_ui/datagrid/cells/base" {
     import { DataGrid } from "jriapp_ui/datagrid/datagrid";
     export interface ICellOptions {
         row: Row;
-        td: HTMLTableCellElement;
         column: BaseColumn;
         num: number;
     }
@@ -1034,7 +1034,6 @@ declare module "jriapp_ui/datagrid/cells/details" {
         private _template;
         constructor(options: {
             row: DetailsRow;
-            td: HTMLTableCellElement;
             details_id: string;
         });
         dispose(): void;
@@ -1062,15 +1061,14 @@ declare module "jriapp_ui/datagrid/rows/details" {
         private _isFirstShow;
         constructor(options: {
             grid: DataGrid;
-            tr: HTMLTableRowElement;
             details_id: string;
         });
+        dispose(): void;
         private _createCell(detailsId);
         protected _setParentRow(row: Row): void;
         private _initShow();
         private _show(onEnd);
         private _hide(onEnd);
-        dispose(): void;
         toString(): string;
         readonly rect: ClientRect;
         readonly height: number;
@@ -1094,7 +1092,6 @@ declare module "jriapp_ui/datagrid/cells/fillspace" {
         private _div;
         constructor(options: {
             row: FillSpaceRow;
-            td: HTMLTableCellElement;
         });
         dispose(): void;
         toString(): string;
@@ -1115,10 +1112,9 @@ declare module "jriapp_ui/datagrid/rows/fillspace" {
         private _cell;
         constructor(options: {
             grid: DataGrid;
-            tr: HTMLTableRowElement;
         });
-        private _createCell();
         dispose(): void;
+        private _createCell();
         toString(): string;
         attach(): void;
         detach(): void;
@@ -1315,7 +1311,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         currentItem: ICollectionItem;
         currentRow: Row;
         readonly editingRow: Row;
-        readonly isHasEditor: string;
+        readonly isHasEditor: boolean;
         readonly isCanEdit: boolean;
         readonly isCanDelete: boolean;
         readonly isCanAddNew: boolean;

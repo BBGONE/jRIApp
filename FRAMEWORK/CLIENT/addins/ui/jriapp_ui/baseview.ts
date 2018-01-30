@@ -25,6 +25,10 @@ export function addToolTip(el: Element, tip: string, isError?: boolean, pos?: st
     svc.addToolTip(el, tip, isError, pos);
 }
 
+function UIErrorsService(): IUIErrorsService {
+    return boot.getSvc<IUIErrorsService>(UIERRORS_SVC);
+}
+
 export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber, IValidatable {
     private _objId: string;
     private _el: TElement;
@@ -130,7 +134,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
     }
     protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void {
         this._errors = errors;
-        const uierrSvc = boot.getSvc<IUIErrorsService>(UIERRORS_SVC);
+        const uierrSvc = UIErrorsService();
         uierrSvc.setErrors(el, errors, this.toolTip);
     }
     isSubscribed(flag: SubscribeFlags): boolean {

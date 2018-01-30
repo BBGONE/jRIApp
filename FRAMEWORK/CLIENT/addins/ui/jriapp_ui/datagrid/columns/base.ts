@@ -9,7 +9,7 @@ import { selectableProviderWeakMap } from "jriapp/bootstrap";
 import { css } from "../const";
 import { DataGrid } from "../datagrid";
 
-const utils = Utils, dom = DomUtils, doc = dom.document;
+const utils = Utils, dom = DomUtils, doc = dom.document, { getNewID } = utils.core;
 
 export interface IColumnInfo {
     "type"?: string;
@@ -45,7 +45,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         this._th = options.th;
         this._options = options.colInfo;
         this._isSelected = false;
-        this._objId = utils.core.getNewID("th");
+        this._objId = getNewID("th");
         const col = doc.createElement("div");
         this._col = col;
 
@@ -80,7 +80,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
             addToolTip(col, this._options.tip, false, "bottom center");
         }
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -112,29 +112,45 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
     templateUnLoading(template: ITemplate): void {
         // noop
     }
-    scrollIntoView(isUp: boolean) {
+    scrollIntoView(isUp: boolean): void {
         if (this.getIsStateDirty()) {
             return;
         }
         this._col.scrollIntoView(!!isUp);
     }
-    updateWidth() {
+    updateWidth(): void {
         this._col.style.width = this._th.offsetWidth + "px";
     }
-    protected _onColumnClicked() {
+    protected _onColumnClicked(): void {
     }
-    toString() {
+    toString(): string {
         return "BaseColumn";
     }
-    get uniqueID() { return this._objId; }
-    get width() { return this._th.offsetWidth; }
-    get th() { return this._th; }
-    get col() { return this._col; }
-    get grid() { return this._grid; }
-    get options() { return this._options; }
-    get title() { return this._options.title; }
-    get isSelected() { return this._isSelected; }
-    set isSelected(v) {
+    get uniqueID(): string {
+        return this._objId;
+    }
+    get width(): number {
+        return this._th.offsetWidth;
+    }
+    get th(): HTMLTableHeaderCellElement {
+        return this._th;
+    }
+    get col(): HTMLDivElement {
+        return this._col;
+    }
+    get grid(): DataGrid {
+        return this._grid;
+    }
+    get options(): IColumnInfo {
+        return this._options;
+    }
+    get title(): string {
+        return this._options.title;
+    }
+    get isSelected(): boolean {
+        return this._isSelected;
+    }
+    set isSelected(v: boolean) {
         if (!!this._col && this._isSelected !== v) {
             this._isSelected = v;
             dom.setClass([this._col], css.columnSelected, !this._isSelected);
