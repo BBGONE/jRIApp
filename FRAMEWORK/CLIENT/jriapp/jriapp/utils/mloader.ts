@@ -3,8 +3,8 @@ import { Utils, IIndexer, IPromise, IDeferred } from "jriapp_shared";
 import { IModuleLoader } from "../int";
 import { createCssLoader as createCSSLoader } from "./sloader";
 
-const utils = Utils, { forEachProp } = utils.core, strUtils = utils.str, _async = utils.defer,
-    arr = utils.arr, CSSPrefix = "css!";
+const utils = Utils, { forEachProp } = utils.core, { startsWith } = utils.str, _async = utils.defer,
+    arrHelper = utils.arr, CSSPrefix = "css!";
 //ambient require function
 declare var require: any;
 
@@ -101,7 +101,7 @@ class ModuleLoader implements IModuleLoader {
             });
         }
 
-        const loads = arr.merge<IModuleLoad>([modNames.map((name) => {
+        const loads = arrHelper.merge<IModuleLoad>([modNames.map((name) => {
             return self._loads[name];
         }), cssLoads]);
 
@@ -156,7 +156,7 @@ class ModuleLoader implements IModuleLoader {
         return loads;
     }
     private isCSS(name: string): boolean {
-        return !!name && strUtils.startsWith(name, CSSPrefix);
+        return !!name && startsWith(name, CSSPrefix);
     }
     private getUrl(name: string): string {
         if (this.isCSS(name)) {

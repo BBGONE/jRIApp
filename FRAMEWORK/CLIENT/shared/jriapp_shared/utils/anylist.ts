@@ -12,7 +12,8 @@ import { ValidationError } from "../errors";
 
 export { ICollValidateFieldArgs } from "../collection/int";
 
-const { getValue, setValue } = CoreUtils, strUtils = StringUtils, sys = SysUtils;
+const { getValue, setValue } = CoreUtils, { startsWith, trimBrackets } = StringUtils,
+    sys = SysUtils;
 
 export interface IAnyVal {
     val: any;
@@ -57,20 +58,20 @@ export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAn
     // override
     isHasProp(prop: string): boolean {
         // first check for indexed property name
-        if (strUtils.startsWith(prop, "[")) {
+        if (startsWith(prop, "[")) {
             return true;
         }
         return super.isHasProp(prop);
     }
     getProp(name: string): any {
-        const fieldName = strUtils.trimBrackets(name);
+        const fieldName = trimBrackets(name);
         return getValue(this.val, fieldName, "->");
     }
     setProp(name: string, val: any): void {
         const coll = this._aspect.coll, errors = coll.errors, old = this.getProp(name);
         if (old !== val) {
             try {
-                const fieldName = strUtils.trimBrackets(name);
+                const fieldName = trimBrackets(name);
                 setValue(this.val, fieldName, val, false, "->");
                 sys.raiseProp(this, name);
                 errors.removeError(this, name);

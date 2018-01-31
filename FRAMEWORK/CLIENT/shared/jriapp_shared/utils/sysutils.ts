@@ -5,7 +5,7 @@ import {
 import { Checks } from "./checks";
 import { StringUtils } from "./strUtils";
 
-const checks = Checks, strUtils = StringUtils, trim = strUtils.fastTrim;
+const { isFunc, isHasProp, isArray, isNt, undefined } = Checks, { startsWith, fastTrim: trim, trimBrackets } = StringUtils;
 
 function getPropParts(prop: string): string[] {
     let i: number, start = 0, ch: string, test = 0, cnt = 0;
@@ -72,21 +72,21 @@ export class SysUtils {
     }
     static isEditable(obj: any): obj is IEditable {
         const isBO = SysUtils._isBaseObj(obj);
-        return isBO && checks.isFunc(obj.beginEdit) && checks.isFunc(obj.endEdit) && checks.isFunc(obj.cancelEdit) && checks.isHasProp(obj, "isEditing");
+        return isBO && isFunc(obj.beginEdit) && isFunc(obj.endEdit) && isFunc(obj.cancelEdit) && isHasProp(obj, "isEditing");
     }
     static isSubmittable(obj: any): obj is ISubmittable {
         const isBO = SysUtils._isBaseObj(obj);
-        return isBO && checks.isFunc(obj.submitChanges) && checks.isHasProp(obj, "isCanSubmit");
+        return isBO && isFunc(obj.submitChanges) && isHasProp(obj, "isCanSubmit");
     }
     static isErrorNotification(obj: any): obj is IErrorNotification {
         if (!obj) {
              return false;
         }
-        if (!checks.isFunc(obj.getIErrorNotification)) {
+        if (!isFunc(obj.getIErrorNotification)) {
             return false;
         }
         const tmp = obj.getIErrorNotification();
-        return !!tmp && checks.isFunc(tmp.getIErrorNotification);
+        return !!tmp && isFunc(tmp.getIErrorNotification);
     }
     static isValidatable(obj: any): obj is IValidatable {
         if (!obj) {
@@ -157,17 +157,17 @@ export class SysUtils {
         }
 
         if (self.isBaseObj(obj) && obj.getIsStateDirty()) {
-            return checks.undefined;
+            return undefined;
         }
 
-        if (strUtils.startsWith(prop, "[")) {
+        if (startsWith(prop, "[")) {
             if (self.isCollection(obj)) {
                 // it is an indexed property like ['someProp']
-                prop = strUtils.trimBrackets(prop);
+                prop = trimBrackets(prop);
                 return self.getItemByProp(obj, prop);
-            } else if (checks.isArray(obj)) {
+            } else if (isArray(obj)) {
                 // it is an indexed property like ['someProp']
-                prop = strUtils.trimBrackets(prop);
+                prop = trimBrackets(prop);
                 return obj[parseInt(prop, 10)];
             } else if (self.isPropBag(obj)) {
                 return (<IPropertyBag>obj).getProp(prop);
@@ -187,10 +187,10 @@ export class SysUtils {
         }
 
         // it is an indexed property, obj must be an Array
-        if (strUtils.startsWith(prop, "[")) {
-            if (checks.isArray(obj)) {
+        if (startsWith(prop, "[")) {
+            if (isArray(obj)) {
                 // remove brakets from a string like: [index]
-                prop = strUtils.trimBrackets(prop);
+                prop = trimBrackets(prop);
                 obj[parseInt(prop, 10)] = val;
                 return;
             } else if (self.isPropBag(obj)) {
@@ -211,7 +211,7 @@ export class SysUtils {
         let res = root;
         for (let i = 0; i < maxindex; i += 1) {
             res = self.getProp(res, parts[i]);
-            if (checks.isNt(res)) {
+            if (isNt(res)) {
                 return res;
             }
         }
@@ -223,7 +223,7 @@ export class SysUtils {
     }
     static resolvePath2(root: any, srcParts: string[]): any {
         const self = SysUtils;
-        if (checks.isNt(root)) {
+        if (isNt(root)) {
             return root;
         }
 
@@ -234,7 +234,7 @@ export class SysUtils {
         let obj = root;
         for (let i = 0; i < srcParts.length; i += 1) {
             obj = self.getProp(obj, srcParts[i]);
-            if (checks.isNt(obj)) {
+            if (isNt(obj)) {
                 return obj;
             }
         }

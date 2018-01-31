@@ -2,7 +2,7 @@
 import { Utils, LocaleERRS, createWeakMap, IWeakMap } from "jriapp_shared";
 
 const utils = Utils, checks = utils.check, arrHelper = utils.arr,
-    strUtils = utils.str, debug = utils.debug, ERRS = LocaleERRS;
+    { format } = utils.str, debug = utils.debug, ERRS = LocaleERRS;
 
 // stores listener and event name
 export type TEventNode = { fn: THandlerFunc; name: string; useCapture?: boolean };
@@ -102,14 +102,14 @@ class EventHelper {
     static add(ev: TEventList, name: string, handler: THandlerFunc, nmspace: string, useCapture?: boolean): void {
         if (!ev) {
             debug.checkStartDebugger();
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "ev is a valid object"));
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "ev is a valid object"));
         }
         if (!checks.isFunc(handler)) {
             throw new Error(ERRS.ERR_EVENT_INVALID_FUNC);
         }
 
         if (!name) {
-            throw new Error(strUtils.format(ERRS.ERR_EVENT_INVALID, "[Empty]"));
+            throw new Error(format(ERRS.ERR_EVENT_INVALID, "[Empty]"));
         }
 
         const ns = !nmspace ? "*" : "" + nmspace;

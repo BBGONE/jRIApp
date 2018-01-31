@@ -23,7 +23,8 @@ import { DataQuery, TDataQuery } from "./dataquery";
 import { DbContext } from "./dbcontext";
 import { EntityAspect } from "./entity_aspect";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, { getValue, setValue, merge, forEachProp } = utils.core, ERROR = utils.err,
+const utils = Utils, { isArray, isNt } = utils.check, { format } = utils.str,
+    { getValue, setValue, merge, forEachProp } = utils.core, ERROR = utils.err,
     { parseValue, stringifyValue } = ValueUtils, { getPKFields, walkField, walkFields, objToVals, initVals, getObjectField } = CollUtils;
 
 function doFieldDependences(dbSet: TDbSet, info: IFieldInfo) {
@@ -34,10 +35,10 @@ function doFieldDependences(dbSet: TDbSet, info: IFieldInfo) {
     deps.forEach((depOn) => {
         const depOnFld = dbSet.getFieldInfo(depOn);
         if (!depOnFld) {
-            throw new Error(strUtils.format(ERRS.ERR_CALC_FIELD_DEFINE, depOn));
+            throw new Error(format(ERRS.ERR_CALC_FIELD_DEFINE, depOn));
         }
         if (info === depOnFld) {
-            throw new Error(strUtils.format(ERRS.ERR_CALC_FIELD_SELF_DEPEND, depOn));
+            throw new Error(format(ERRS.ERR_CALC_FIELD_SELF_DEPEND, depOn));
         }
         if (depOnFld.dependents.indexOf(info.fullName) < 0) {
             depOnFld.dependents.push(info.fullName);
@@ -237,7 +238,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
             const assoc: IAssociationInfo = trackAssoc[tasKeys[i]], len2 = assoc.fieldRels.length;
             for (let j = 0; j < len2; j += 1) {
                 const frel: { childField: string; parentField: string; } = assoc.fieldRels[j];
-                if (!checks.isArray(trackAssocMap[frel.childField])) {
+                if (!isArray(trackAssocMap[frel.childField])) {
                     trackAssocMap[frel.childField] = [assoc.childToParentName];
                 } else {
                     trackAssocMap[frel.childField].push(assoc.childToParentName);
@@ -262,7 +263,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
         }
 
         if (assocs.length !== 1) {
-            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID_TYPE, "assocs", "Array"));
+            throw new Error(format(ERRS.ERR_PARAM_INVALID_TYPE, "assocs", "Array"));
         }
         const assocName = assocs[0].name;
         fieldInfo.isReadOnly = true;
@@ -288,7 +289,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
                     const assoc = self.dbContext.getAssociation(assocName);
                     if (!!v) {
                         if (((<IEntityItem>v)._aspect.dbSetName !== assoc.parentDS.dbSetName)) {
-                            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID_TYPE, "value", assoc.parentDS.dbSetName));
+                            throw new Error(format(ERRS.ERR_PARAM_INVALID_TYPE, "value", assoc.parentDS.dbSetName));
                         }
 
                         if ((<IEntityItem>v)._aspect.isNew) {
@@ -323,7 +324,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
     }
     protected _doCalculatedField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): ICalcFieldImpl<TItem> {
         const self = this, result: ICalcFieldImpl<TItem> = {
-            getFunc: (item) => { throw new Error(strUtils.format("Calculated field:'{0}' is not initialized", fieldInfo.fieldName)); }
+            getFunc: (item) => { throw new Error(format("Calculated field:'{0}' is not initialized", fieldInfo.fieldName)); }
         };
         fieldInfo.isReadOnly = true;
         if (!!fieldInfo.dependentOn) {
@@ -336,7 +337,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
         values.forEach((value, index) => {
             const name: IFieldName = names[index], fieldName = path + name.n, fld = self.getFieldInfo(fieldName);
             if (!fld) {
-                throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
+                throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
             }
 
             if (fld.fieldType === FIELD_TYPE.Object) {
@@ -354,7 +355,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
             const name: IFieldName = names[index], fieldName = path + name.n,
                 fld = self.getFieldInfo(fieldName);
             if (!fld) {
-                throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
+                throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
             }
 
             if (fld.fieldType === FIELD_TYPE.Object) {
@@ -426,7 +427,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
     protected _defineCalculatedField(fullName: string, getFunc: (item: TItem) => any): void {
         const calcDef: ICalcFieldImpl<TItem> = getValue(this._calcfldMap, fullName);
         if (!calcDef) {
-            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "calculated fieldName", fullName));
+            throw new Error(format(ERRS.ERR_PARAM_INVALID, "calculated fieldName", fullName));
         }
         calcDef.getFunc = getFunc;
     }
@@ -438,7 +439,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
         const pkFlds = this._pkFields, len = pkFlds.length;
         if (len === 1) {
             const val = getValue(vals, pkFlds[0].fieldName);
-            if (checks.isNt(val)) {
+            if (isNt(val)) {
                 throw new Error(`Empty key field value for: ${pkFlds[0].fieldName}`);
             }
             return this._getStrValue(val, pkFlds[0]);
@@ -446,7 +447,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
             const pkVals: string[] = [];
             for (let i = 0; i < len; i += 1) {
                 const val = getValue(vals, pkFlds[i].fieldName);
-                if (checks.isNt(val)) {
+                if (isNt(val)) {
                     throw new Error(`Empty key field value for: ${pkFlds[i].fieldName}`);
                 }
                 const strval = this._getStrValue(val, pkFlds[i]);
@@ -512,7 +513,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
     protected _afterFill(result: IQueryResult<TItem>, isClearAll?: boolean) {
         const self = this;
         // fetchedItems is null when loaded from the data cache
-        if (!checks.isNt(result.fetchedItems)) {
+        if (!isNt(result.fetchedItems)) {
             this._onLoaded(result.fetchedItems);
         }
 
@@ -571,13 +572,13 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
         let arr = fetchedItems;
 
         if (!!query && !query.getIsStateDirty()) {
-            if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
+            if (query.isIncludeTotalCount && !isNt(res.totalCount)) {
                 this.totalCount = res.totalCount;
             }
 
             if (query.loadPageCount > 1 && isPagingEnabled) {
                 const dataCache = query._getInternal().getCache();
-                if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
+                if (query.isIncludeTotalCount && !isNt(res.totalCount)) {
                     dataCache.totalCount = res.totalCount;
                 }
                 dataCache.fill(res.pageIndex, fetchedItems);
@@ -620,10 +621,10 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
     protected _fillFromCache(args: IFillFromCacheArgs): IQueryResult<TItem> {
         const query = args.query;
         if (!query) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query is not null"));
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "query is not null"));
         }
         if (query.getIsStateDirty()) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
         }
         const dataCache = query._getInternal().getCache(), arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
 
@@ -659,7 +660,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
             const oldKey = rowInfo.clientKey, newKey = rowInfo.serverKey,
                 item: TItem = self.getItemByKey(oldKey);
             if (!item) {
-                throw new Error(strUtils.format(ERRS.ERR_KEY_IS_NOTFOUND, oldKey));
+                throw new Error(format(ERRS.ERR_KEY_IS_NOTFOUND, oldKey));
             }
             const itemStatus = item._aspect.status;
             item._aspect._acceptChanges(rowInfo);
@@ -684,7 +685,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
             if (!err.fieldName) {
                 err.fieldName = "*";
             }
-            if (checks.isArray(errors[err.fieldName])) {
+            if (isArray(errors[err.fieldName])) {
                 errors[err.fieldName].push(err.message);
             } else {
                 errors[err.fieldName] = [err.message];
@@ -951,11 +952,11 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
             }
         }
 
-        throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
+        throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
     }
     sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
         const self = this, query = self.query;
-        if (!checks.isNt(query)) {
+        if (!isNt(query)) {
             query.clearSort();
             for (let i = 0; i < fieldNames.length; i += 1) {
                 switch (i) {
@@ -1014,7 +1015,7 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
     createQuery(name: string): DataQuery<TItem, TObj> {
         const queryInfo = this.dbContext._getInternal().getQueryInfo(name);
         if (!queryInfo) {
-            throw new Error(strUtils.format(ERRS.ERR_QUERY_NAME_NOTFOUND, name));
+            throw new Error(format(ERRS.ERR_QUERY_NAME_NOTFOUND, name));
         }
         return new DataQuery<TItem, TObj>(this, queryInfo);
     }

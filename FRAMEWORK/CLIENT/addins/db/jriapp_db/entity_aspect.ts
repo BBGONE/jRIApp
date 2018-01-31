@@ -15,7 +15,7 @@ import { IEntityItem, IValueChange, IRowInfo } from "./int";
 import { DbSet } from "./dbset";
 import { SubmitError } from "./error";
 
-const utils = Utils, { undefined } = utils.check, strUtils = utils.str, { getValue, setValue, uuid } = utils.core,
+const utils = Utils, { undefined } = utils.check, { format } = utils.str, { getValue, setValue, uuid } = utils.core,
     { compareVals, parseValue } = ValueUtils, sys = utils.sys;
 
 // don't submit these types of fields to the server
@@ -266,7 +266,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>,
         changes.forEach((v) => {
             const fld = dbSet.getFieldInfo(v.fieldName);
             if (!fld) {
-                throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
+                throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
             }
             self._onFieldChanged(v.fieldName, fld);
         });
@@ -304,7 +304,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>,
     _refreshValue(val: any, fullName: string, refreshMode: REFRESH_MODE): void {
         const self = this, fld = self.dbSet.getFieldInfo(fullName);
         if (!fld) {
-            throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
+            throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
         }
         const stz = self.serverTimezone, dataType = fld.dataType, dcnv = fld.dateConversion;
         let newVal = parseValue(val, dataType, dcnv, stz), oldVal = self._getValue(fullName, VALS_VERSION.Current);
@@ -348,7 +348,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>,
                 }
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "refreshMode", refreshMode));
+                throw new Error(format(ERRS.ERR_PARAM_INVALID, "refreshMode", refreshMode));
         }
     }
     _refreshValues(rowInfo: IRowInfo, refreshMode: REFRESH_MODE): void {
@@ -407,7 +407,7 @@ export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>,
             oldV = this._getFieldVal(fieldName), fieldInfo = this.getFieldInfo(fieldName);
         let newV = val, res = false;
         if (!fieldInfo) {
-            throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, dbSetName, fieldName));
+            throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, dbSetName, fieldName));
         }
         if (!(this.isEditing || this.isUpdating)) {
             this.beginEdit();

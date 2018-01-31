@@ -9,8 +9,8 @@ import { createTemplate } from "jriapp/template";
 import { bootstrap } from "jriapp/bootstrap";
 import { ViewModel } from "jriapp/mvvm";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str,
-    coreUtils = utils.core, sys = utils.sys, _async = utils.defer, doc = DomUtils.document,
+const utils = Utils, { undefined, isFunc } = utils.check, { format } = utils.str,
+    { extend, getNewID } = utils.core, sys = utils.sys, _async = utils.defer, doc = DomUtils.document,
     ERROR = utils.err, boot = bootstrap;
 
 export const enum DIALOG_ACTION { Default = 0, StayOpen = 1 };
@@ -133,7 +133,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     constructor(options: IDialogConstructorOptions) {
         super();
         const self = this;
-        options = coreUtils.extend({
+        options = extend({
             dataContext: null,
             templateID: null,
             width: 500,
@@ -149,7 +149,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             fn_OnTemplateCreated: null,
             fn_OnTemplateDestroy: null
         }, options);
-        this._objId = coreUtils.getNewID("dlg");
+        this._objId = getNewID("dlg");
         this._dataContext = options.dataContext;
         this._templateID = options.templateID;
         this._submitOnOK = options.submitOnOK;
@@ -344,9 +344,9 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }
         const dctx = this._dataContext;
         if (!!dctx) {
-            if (checks.isFunc(dctx.refresh)) {
+            if (isFunc(dctx.refresh)) {
                 dctx.refresh();
-            } else if (!!dctx._aspect && checks.isFunc(dctx._aspect.refresh)) {
+            } else if (!!dctx._aspect && isFunc(dctx._aspect.refresh)) {
                 dctx._aspect.refresh();
             }
         }
@@ -407,7 +407,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     getOption(name: string) {
         if (!this._$dlgEl) {
-            return checks.undefined;
+            return undefined;
         }
         return (<any>this._$dlgEl).dialog("option", name);
     }
@@ -512,7 +512,7 @@ export class DialogVM extends ViewModel<IApplication> {
     showDialog(name: string, dataContext: any): DataEditDialog {
         const dlg = this.getDialog(name);
         if (!dlg) {
-            throw new Error(strUtils.format("Invalid DataEditDialog name:  {0}", name));
+            throw new Error(format("Invalid DataEditDialog name:  {0}", name));
         }
         dlg.dataContext = dataContext;
         // timeout helps to set dialog properties on returned DataEditDialog before its showing

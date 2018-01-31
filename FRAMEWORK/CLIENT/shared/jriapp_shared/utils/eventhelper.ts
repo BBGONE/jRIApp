@@ -7,7 +7,7 @@ import { Checks } from "./checks";
 import { StringUtils } from "./strutils";
 import { DEBUG } from "./debug";
 
-const checks = Checks, strUtils = StringUtils, debug = DEBUG;
+const { isFunc } = Checks, { format } = StringUtils, debug = DEBUG;
 
 
 export type TEventNode = {
@@ -129,14 +129,14 @@ export class EventHelper {
     static add(ev: IIndexer<IEventList>, name: string, handler: TEventHandler, nmspace?: string, context?: object, priority?: TPriority): void {
         if (!ev) {
             debug.checkStartDebugger();
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "ev is a valid object"));
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "ev is a valid object"));
         }
-        if (!checks.isFunc(handler)) {
+        if (!isFunc(handler)) {
             throw new Error(ERRS.ERR_EVENT_INVALID_FUNC);
         }
 
         if (!name) {
-            throw new Error(strUtils.format(ERRS.ERR_EVENT_INVALID, "[Empty]"));
+            throw new Error(format(ERRS.ERR_EVENT_INVALID, "[Empty]"));
         }
 
         const n = name, ns = !nmspace ? "*" : "" + nmspace;

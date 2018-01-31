@@ -13,7 +13,7 @@ import { IAssocConstructorOptions, IEntityItem } from "./int";
 import { DbContext } from "./dbcontext";
 import { TDbSet } from "./dbset";
 
-const utils = Utils, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
+const utils = Utils, { format } = utils.str, { getNewID, extend } = utils.core, arrHelper = utils.arr;
 
 export class Association extends BaseObject {
     private _objId: string;
@@ -42,8 +42,8 @@ export class Association extends BaseObject {
     constructor(options: IAssocConstructorOptions) {
         super();
         const self = this;
-        this._objId = coreUtils.getNewID("ass");
-        const opts: IAssocConstructorOptions = coreUtils.extend({
+        this._objId = getNewID("ass");
+        const opts: IAssocConstructorOptions = extend({
             dbContext: null,
             parentName: "",
             childName: "",
@@ -160,7 +160,7 @@ export class Association extends BaseObject {
                 }
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
+                throw new Error(format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
         }
         self._notifyParentChanged(changed);
     }
@@ -303,7 +303,7 @@ export class Association extends BaseObject {
                 }
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
+                throw new Error(format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
         }
         self._notifyChildrenChanged(changed);
     }

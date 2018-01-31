@@ -5,7 +5,7 @@ import {
 import { DomUtils } from "./dom";
 import { Config as config } from "../int";
 
-const utils = Utils, doc = DomUtils.document, arrHelper = utils.arr, strUtils = utils.str;
+const utils = Utils, doc = DomUtils.document, arrHelper = utils.arr, { format, ltrim, rtrim } = utils.str;
 export const frameworkJS = config.frameworkJS || "jriapp.js";
 const stylesDir = "css", imageDir = "img";
 
@@ -29,7 +29,7 @@ function fn_getFrameworkPath(): string {
         const script = arr[i];
         if (!!script.src) {
             const parts = PathHelper.getUrlParts(script.src);
-            let pathName = strUtils.rtrim(parts.pathname, "/");
+            let pathName = rtrim(parts.pathname, "/");
             if (!!parts.pathname) {
                 pathName = pathName.toLowerCase();
                 if (!!pathName && pathName.lastIndexOf(name) > -1) {
@@ -55,9 +55,9 @@ export class PathHelper {
         return PathHelper.appendSearch(url, bust);
     }
     static appendSearch(url: string, search: string): string {
-        search = strUtils.ltrim(search, "?");
+        search = ltrim(search, "?");
         const parts = PathHelper.getUrlParts(url);
-        const oldSearch = strUtils.ltrim(parts.search, "?");
+        const oldSearch = ltrim(parts.search, "?");
         if (!!oldSearch && oldSearch.lastIndexOf(search) > -1) {
             return url;
         }
@@ -123,7 +123,7 @@ export class PathHelper {
         }
 
         if (!res) {
-            throw new Error(strUtils.format("Can not resolve {0} framework path", name));
+            throw new Error(format("Can not resolve {0} framework path", name));
         }
 
         return res;

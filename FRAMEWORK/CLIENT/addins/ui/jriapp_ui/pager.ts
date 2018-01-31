@@ -12,7 +12,7 @@ import { ICollection, ICollectionItem } from "jriapp_shared/collection/int";
 import { bootstrap, selectableProviderWeakMap } from "jriapp/bootstrap";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
-    strUtils = utils.str, { getNewID, extend } = utils.core, boot = bootstrap;
+    { format } = utils.str, { getNewID, extend } = utils.core, boot = bootstrap;
 const _STRS = STRS.PAGER;
 
 const enum css {
@@ -239,7 +239,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
                 end = rowCount === 0 ? 0 : ((currentPage === pageCount) ? rowCount : (currentPage * rowsPerPage));
 
             const span = this._createElement("span");
-            const info = strUtils.format(_STRS.pageInfo, start, end, rowCount);
+            const info = format(_STRS.pageInfo, start, end, rowCount);
             dom.addClass([span], css.info);
             span.innerHTML = info;
             const spacer = this._createElement("span");
@@ -339,7 +339,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
             previousPage = 1;
         }
         if (this.showTip) {
-            const tip = strUtils.format(_STRS.prevPageTip, previousPage);
+            const tip = format(_STRS.prevPageTip, previousPage);
             this._addToolTip(span, tip);
         }
         const a = this._createLink(_STRS.previousText);
@@ -389,7 +389,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
             nextPage = pageCount;
         }
         if (this.showTip) {
-            const tip = strUtils.format(_STRS.nextPageTip, nextPage);
+            const tip = format(_STRS.nextPageTip, nextPage);
             this._addToolTip(span, tip);
         }
         const a = this._createLink(_STRS.nextText);
@@ -420,9 +420,9 @@ export class Pager extends BaseObject implements ISelectableProvider {
         let tip = "";
 
         if (page === this.currentPage) {
-            tip = strUtils.format(_STRS.showingTip, start, end, rowCount);
+            tip = format(_STRS.showingTip, start, end, rowCount);
         } else {
-            tip = strUtils.format(_STRS.showTip, start, end, rowCount);
+            tip = format(_STRS.showTip, start, end, rowCount);
         }
         return tip;
     }

@@ -1,10 +1,8 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 const _undefined: any = void (0), trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g;
-
+const ERR_STRING_FORMAT_INVALID = "String format has invalid expression value: ";
 
 export class StringUtils {
-    private static ERR_STRING_FORMAT_INVALID = "String format has invalid expression value: ";
-
     static endsWith(str: string, suffix: string): boolean {
         return (!str || !suffix) ? false : (str.substr(str.length - suffix.length) === suffix);
     }
@@ -46,7 +44,7 @@ export class StringUtils {
             }
             if ((close > 0) && ((close < open) || (open < 0))) {
                 if (formatStr.charAt(close + 1) !== "}") {
-                    throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + formatStr);
+                    throw new Error(ERR_STRING_FORMAT_INVALID + formatStr);
                 }
                 result += formatStr.slice(i, close + 1);
                 i = close + 2;
@@ -60,13 +58,13 @@ export class StringUtils {
                 continue;
             }
             if (close < 0) {
-                throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + formatStr);
+                throw new Error(ERR_STRING_FORMAT_INVALID + formatStr);
             }
             const brace = formatStr.substring(i, close);
             const colonIndex = brace.indexOf(":");
             const argNumber = parseInt((colonIndex < 0) ? brace : brace.substring(0, colonIndex), 10);
             if (isNaN(argNumber)) {
-                throw new Error(StringUtils.ERR_STRING_FORMAT_INVALID + formatStr);
+                throw new Error(ERR_STRING_FORMAT_INVALID + formatStr);
             }
             const argFormat = (colonIndex < 0) ? "" : brace.substring(colonIndex + 1);
             let arg = args[argNumber];
@@ -161,12 +159,14 @@ export class StringUtils {
         if (!val) {
             return "";
         }
-        return StringUtils.fastTrim(val.replace(trimQuotsRX, ""));
+        return fastTrim(val.replace(trimQuotsRX, ""));
     }
     static trimBrackets(val: string) {
         if (!val) {
             return "";
         }
-        return StringUtils.fastTrim(val.replace(trimBracketsRX, ""));
+        return fastTrim(val.replace(trimBracketsRX, ""));
     }
 }
+
+const { fastTrim } = StringUtils;

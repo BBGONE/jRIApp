@@ -11,7 +11,7 @@ import {
 import { BaseCollection, Errors } from "jriapp_shared/collection/base";
 import { ItemAspect } from "jriapp_shared/collection/aspect";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
+const utils = Utils, checks = utils.check, { format } = utils.str, { extend } = utils.core,
     ERROR = utils.err, sys = utils.sys;
 
 const enum VIEW_EVENTS {
@@ -129,7 +129,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         clear: boolean;
         isAppend: boolean;
     }): TItem[] {
-        data = coreUtils.extend({
+        data = extend({
             items: [],
             reason: COLL_CHANGE_REASON.Refresh,
             clear: true,
@@ -222,7 +222,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
                 }
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
+                throw new Error(format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
         }
     }
     protected _onDSStatusChanged(sender: any, args: ICollItemStatusArgs<TItem>): void {

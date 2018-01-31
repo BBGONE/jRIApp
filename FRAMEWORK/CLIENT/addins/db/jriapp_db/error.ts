@@ -3,7 +3,7 @@ import { BaseError, Utils } from "jriapp_shared";
 import { IEntityItem } from "./int";
 import { DATA_OPER } from "./const";
 
-const strUtils = Utils.str;
+const { format } = Utils.str;
 
 export class DataOperationError extends BaseError {
     private _operationName: DATA_OPER;
@@ -46,7 +46,7 @@ export class SubmitError extends DataOperationError {
         if (this._notValidated.length > 0) {
             const res = [message + ":"];
             this._notValidated.forEach(function (item) {
-                res.push(strUtils.format("item key:{0} errors:{1}", item._key, item._aspect.getErrorString()));
+                res.push(format("item key:{0} errors:{1}", item._key, item._aspect.getErrorString()));
            });
             message = res.join("\r\n");
        }

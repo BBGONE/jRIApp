@@ -15,8 +15,8 @@ import { getBindingOptions, Binding } from "./binding";
 import { ViewChecks } from "./utils/viewchecks";
 import { Parser } from "./utils/parser";
 
-const utils = Utils, _async = utils.defer, viewChecks = ViewChecks, dom = DomUtils,
-    strUtils = utils.str, boot = bootstrap, parser = Parser, { forEachProp } = utils.core;
+const utils = Utils, { createDeferred } = utils.defer, viewChecks = ViewChecks, dom = DomUtils,
+    { startsWith, fastTrim } = utils.str, boot = bootstrap, parser = Parser, { forEachProp } = utils.core;
 
 export function createDataBindSvc(root: Document | Element, elViewFactory: IElViewFactory): IDataBindingService {
     return new DataBindingService(root, elViewFactory);
@@ -49,7 +49,7 @@ function toBindable(el: Element): IBindable {
     let dataViewName: string, hasOptions = false;
     for (let i = 0; i < n; i++) {
         attr = allAttrs[i];
-        if (strUtils.startsWith(attr.name, DATA_ATTR.DATA_BIND)) {
+        if (startsWith(attr.name, DATA_ATTR.DATA_BIND)) {
             res.bindings.push(attr.value);
         }
         if (attr.name === DATA_ATTR.DATA_VIEW) {
@@ -91,7 +91,7 @@ function getRequiredModules(el: Element): string[] {
         if (!name) {
             return;
         }
-        name = strUtils.fastTrim(name);
+        name = fastTrim(name);
         if (!!name) {
             hashMap[name] = name;
         }
@@ -180,7 +180,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         return res;
     }
     bindElements(args: IBindArgs): IPromise<ILifeTimeScope> {
-        const self = this, defer = _async.createDeferred<ILifeTimeScope>(true), scope = args.scope,
+        const self = this, defer = createDeferred<ILifeTimeScope>(true), scope = args.scope,
             lftm: ILifeTimeScope = new LifeTimeScope();
 
         let bindElems: IBindable[];

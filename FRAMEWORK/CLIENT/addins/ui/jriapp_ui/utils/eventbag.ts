@@ -4,7 +4,7 @@ import {
 } from "jriapp_shared";
 import { ICommand } from "jriapp/mvvm";
 
-const utils = Utils, strUtils = utils.str;
+const utils = Utils, { trimBrackets } = utils.str;
 export const enum EVENT_CHANGE_TYPE { None = 0, Added = 1, Deleted = 2, Updated = 3 }
 
 export interface IEventChangedArgs {
@@ -33,7 +33,7 @@ export class EventBag extends BaseObject implements IPropertyBag {
         if (!this._dic) {
             return null;
         }
-        const eventName = strUtils.trimBrackets(name), cmd = this._dic[eventName];
+        const eventName = trimBrackets(name), cmd = this._dic[eventName];
         return !cmd ? null : cmd;
     }
     setProp(name: string, command: ICommand): void {
@@ -43,7 +43,7 @@ export class EventBag extends BaseObject implements IPropertyBag {
         if (!this._dic) {
             return;
         }
-        const eventName = strUtils.trimBrackets(name), old = this._dic[eventName];
+        const eventName = trimBrackets(name), old = this._dic[eventName];
         if (!command && !!old) {
             delete this._dic[eventName];
 

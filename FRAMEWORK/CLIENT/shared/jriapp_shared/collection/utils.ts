@@ -5,7 +5,7 @@ import { Utils } from "../utils/utils";
 import { ERRS } from "../lang";
 import { IValueUtils } from "./int";
 
-const utils = Utils, { getTimeZoneOffset, parseBool, getValue, setValue } = utils.core, strUtils = utils.str,
+const utils = Utils, { getTimeZoneOffset, parseBool, getValue, setValue } = utils.core, { format } = utils.str,
     { undefined, isArray, isDate, isString, isBoolean, isNumber, isNt } = utils.check;
 
 function pad(num: number): string {
@@ -46,7 +46,7 @@ export const ValueUtils: IValueUtils = {
                 dt.setMinutes(dt.getMinutes() - clientTZ); // UtcToLocal
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
+                throw new Error(format(ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
         }
         return dt;
     },
@@ -56,7 +56,7 @@ export const ValueUtils: IValueUtils = {
         }
 
         if (!isDate(dt)) {
-            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "dt", dt));
+            throw new Error(format(ERRS.ERR_PARAM_INVALID, "dt", dt));
         }
 
         const clientTZ = getTimeZoneOffset();
@@ -71,7 +71,7 @@ export const ValueUtils: IValueUtils = {
                 dt.setMinutes(dt.getMinutes() + clientTZ); // LocalToUTC
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
+                throw new Error(format(ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
         }
 
         return dateToString(dt);
@@ -149,11 +149,11 @@ export const ValueUtils: IValueUtils = {
                 }
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "dataType", dataType));
+                throw new Error(format(ERRS.ERR_PARAM_INVALID, "dataType", dataType));
         }
 
         if (!isOK) {
-            throw new Error(strUtils.format(ERRS.ERR_FIELD_WRONG_TYPE, v, dataType));
+            throw new Error(format(ERRS.ERR_FIELD_WRONG_TYPE, v, dataType));
         }
         return res;
     },
@@ -190,7 +190,7 @@ export const ValueUtils: IValueUtils = {
                 res = JSON.parse(v);
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "dataType", dataType));
+                throw new Error(format(ERRS.ERR_PARAM_INVALID, "dataType", dataType));
         }
 
         return res;
@@ -225,7 +225,7 @@ export const CollUtils = {
     getObjectField: function (name: string, flds: IFieldInfo[]): IFieldInfo {
         const arrFlds = flds.filter((f) => { return f.fieldName === name; });
         if (!arrFlds || arrFlds.length !== 1) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "arrFlds.length === 1"));
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "arrFlds.length === 1"));
         }
         return arrFlds[0];
     },

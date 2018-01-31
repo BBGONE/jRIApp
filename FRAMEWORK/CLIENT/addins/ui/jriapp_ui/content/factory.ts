@@ -16,7 +16,7 @@ import { LookupContent } from "./lookup";
 
 import { bootstrap } from "jriapp/bootstrap";
 
-const utils = Utils, strUtils = utils.str;
+const utils = Utils, { format } = utils.str;
 let factoryInstance: IContentFactory;
 
 class ContentFactory implements IContentFactory {
@@ -31,7 +31,7 @@ class ContentFactory implements IContentFactory {
             return TemplateContent;
         }
         if (!options.fieldName) {
-            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "options", "fieldName"));
+            throw new Error(format(ERRS.ERR_PARAM_INVALID, "options", "fieldName"));
         }
 
         if (options.name === "lookup") {
@@ -70,7 +70,7 @@ class ContentFactory implements IContentFactory {
                 res = BasicContent;
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_FIELD_DATATYPE, fieldInfo.dataType));
+                throw new Error(format(ERRS.ERR_FIELD_DATATYPE, fieldInfo.dataType));
         }
 
         if (!res) {

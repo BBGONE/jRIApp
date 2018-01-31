@@ -20,8 +20,9 @@ import {
     DataOperationError, SubmitError
 } from "./error";
 
-const utils = Utils, http = utils.http, { isArray, isNt, isFunc, isString } = utils.check, strUtils = utils.str,
-    { getTimeZoneOffset, merge } = utils.core, ERROR = utils.err, { stringifyValue } = ValueUtils, _async = utils.defer;
+const utils = Utils, http = utils.http, { isArray, isNt, isFunc, isString } = utils.check,
+    { format, endsWith } = utils.str, { getTimeZoneOffset, merge } = utils.core, ERROR = utils.err,
+    { stringifyValue } = ValueUtils, { delay, createDeferred } = utils.defer;
 
 const enum DATA_SVC_METH {
     Invoke = "invoke",
@@ -41,13 +42,13 @@ function fn_checkError(svcError: { name: string; message?: string; }, oper: DATA
         case "ConcurrencyException":
             throw new ConcurrencyError(ERRS.ERR_CONCURRENCY, oper);
         case "ValidationException":
-            throw new SvcValidationError(strUtils.format(ERRS.ERR_SVC_VALIDATION,
+            throw new SvcValidationError(format(ERRS.ERR_SVC_VALIDATION,
                 svcError.message), oper);
         case "DomainServiceException":
-            throw new DataOperationError(strUtils.format(ERRS.ERR_SVC_ERROR,
+            throw new DataOperationError(format(ERRS.ERR_SVC_ERROR,
                 svcError.message), oper);
         default:
-            throw new DataOperationError(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR,
+            throw new DataOperationError(format(ERRS.ERR_UNEXPECTED_SVC_ERROR,
                 svcError.message), oper);
     }
 }
@@ -190,7 +191,7 @@ export class DbContext extends BaseObject {
             return self._invokeMethod(methodInfo, args).then((res) => {
                 self._checkDestroy();
                 if (!res) {
-                    throw new Error(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
+                    throw new Error(format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
                 }
                 fn_checkError(res.error, DATA_OPER.Invoke);
                 return res.result;
@@ -237,10 +238,10 @@ export class DbContext extends BaseObject {
             const pinfo: IQueryParamInfo = paramInfos[i];
             let val = args[pinfo.name];
             if (!pinfo.isNullable && !pinfo.isArray && !(pinfo.dataType === DATA_TYPE.String || pinfo.dataType === DATA_TYPE.Binary) && isNt(val)) {
-                throw new Error(strUtils.format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
+                throw new Error(format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
             }
             if (isFunc(val)) {
-                throw new Error(strUtils.format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
+                throw new Error(format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
             }
             if (pinfo.isArray && !isNt(val) && !isArray(val)) {
                 val = [val];
@@ -267,7 +268,7 @@ export class DbContext extends BaseObject {
     }
     protected _invokeMethod(methodInfo: IQueryInfo, args: { [paramName: string]: any; }): IStatefulPromise<IInvokeResponse> {
         const self = this;
-        return _async.delay<string>(() => {
+        return delay<string>(() => {
             self._checkDestroy();
             const data = self._getMethodParams(methodInfo, args);
             return JSON.stringify(data);
@@ -284,7 +285,7 @@ export class DbContext extends BaseObject {
     }
     protected _loadFromCache(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         const self = this;
-        return _async.delay<IQueryResult<IEntityItem>>(() => {
+        return delay<IQueryResult<IEntityItem>>(() => {
             self._checkDestroy();
             const dbSet = query.dbSet;
             return dbSet._getInternal().fillFromCache({ reason: reason, query: query });
@@ -302,14 +303,14 @@ export class DbContext extends BaseObject {
     }
     protected _onLoaded(response: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         const self = this;
-        return _async.delay<IQueryResult<IEntityItem>>(() => {
+        return delay<IQueryResult<IEntityItem>>(() => {
             self._checkDestroy();
             if (isNt(response)) {
-                throw new Error(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
+                throw new Error(format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
             }
             const dbSetName = response.dbSetName, dbSet = self.getDbSet(dbSetName);
             if (isNt(dbSet)) {
-                throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, dbSetName));
+                throw new Error(format(ERRS.ERR_DBSET_NAME_INVALID, dbSetName));
             }
             fn_checkError(response.error, DATA_OPER.Query);
             const isClearAll = (!!query && query.isClearPrevData);
@@ -334,7 +335,7 @@ export class DbContext extends BaseObject {
                     jsDB.rows.forEach((row) => {
                         const item = dbSet.getItemByKey(row.clientKey);
                         if (!item) {
-                            throw new Error(strUtils.format(ERRS.ERR_KEY_IS_NOTFOUND, row.clientKey));
+                            throw new Error(format(ERRS.ERR_KEY_IS_NOTFOUND, row.clientKey));
                         }
                         submitted.push(item);
                         if (!!row.invalid) {
@@ -373,7 +374,7 @@ export class DbContext extends BaseObject {
     }
     protected _getUrl(action: string): string {
         let loadUrl = this.serviceUrl;
-        if (!strUtils.endsWith(loadUrl, "/")) {
+        if (!endsWith(loadUrl, "/")) {
             loadUrl = loadUrl + "/";
         }
         loadUrl = loadUrl + [action, ""].join("/");
@@ -436,7 +437,7 @@ export class DbContext extends BaseObject {
         const self = this;
         context.fn_onStart();
 
-        _async.delay<IQueryResult<IEntityItem>>(() => {
+        delay<IQueryResult<IEntityItem>>(() => {
             self._checkDestroy();
 
             const oldQuery = context.dbSet.query,
@@ -515,7 +516,7 @@ export class DbContext extends BaseObject {
         const self = this;
         args.fn_onStart();
 
-        _async.delay<string>(() => {
+        delay<string>(() => {
             self._checkDestroy();
             const request: IRefreshRowInfo = {
                 dbSetName: args.item._aspect.dbSetName,
@@ -539,7 +540,7 @@ export class DbContext extends BaseObject {
         });
     }
     protected _refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem> {
-        const self = this, deferred = _async.createDeferred<IEntityItem>();
+        const self = this, deferred = createDeferred<IEntityItem>();
         const context = {
             item: item,
             dbSet: item._aspect.dbSet,
@@ -606,7 +607,7 @@ export class DbContext extends BaseObject {
             throw new Error(ERRS.ERR_DB_LOAD_NO_QUERY);
         }
 
-        const self = this, deferred = _async.createDeferred<IQueryResult<IEntityItem>>();
+        const self = this, deferred = createDeferred<IQueryResult<IEntityItem>>();
 
         const context = {
             query: query,
@@ -663,7 +664,7 @@ export class DbContext extends BaseObject {
         const self = this, no_changes = "NO_CHANGES";
         args.fn_onStart();
 
-        _async.delay<IChangeSet>(() => {
+        delay<IChangeSet>(() => {
             self._checkDestroy();
             const res = self._getChanges();
             if (res.dbSets.length === 0) {
@@ -705,12 +706,12 @@ export class DbContext extends BaseObject {
             permissions: <IPermissionsInfo>null
         });
         if (!isString(opts.serviceUrl)) {
-            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "serviceUrl", opts.serviceUrl));
+            throw new Error(format(ERRS.ERR_PARAM_INVALID, "serviceUrl", opts.serviceUrl));
         }
         this._serviceUrl = opts.serviceUrl;
         this._initDbSets();
 
-        this._initState = _async.delay<IPermissionsInfo>(() => {
+        this._initState = delay<IPermissionsInfo>(() => {
             if (!!opts.permissions) {
                 return opts.permissions;
             } else {
@@ -760,7 +761,7 @@ export class DbContext extends BaseObject {
     getAssociation(name: string): Association {
         const name2 = "get" + name, fn = this._assoc[name2];
         if (!fn) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSOC_NAME_INVALID, name));
+            throw new Error(format(ERRS.ERR_ASSOC_NAME_INVALID, name));
         }
         return fn();
     }
@@ -771,7 +772,7 @@ export class DbContext extends BaseObject {
             return this._pendingSubmit.promise;
         }
 
-        const deferred = _async.createDeferred<void>(),
+        const deferred = createDeferred<void>(),
             submitState = { promise: deferred.promise() };
         this._pendingSubmit = submitState;
 
@@ -807,7 +808,7 @@ export class DbContext extends BaseObject {
             }
         };
 
-        _async.getTaskQueue().enque(() => {
+        utils.queue.enque(() => {
             self.waitForNotBusy(() => {
                 try {
                     self._checkDestroy();

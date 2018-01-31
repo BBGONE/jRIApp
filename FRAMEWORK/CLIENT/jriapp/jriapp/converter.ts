@@ -6,7 +6,7 @@ import { IConverter } from "./int";
 import { bootstrap } from "./bootstrap";
 import { IDatepicker } from "jriapp/int";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str,
+const utils = Utils, { isNt, isNumber } = utils.check, { format, stripNonNumeric, formatNumber } = utils.str,
     { round } = utils.core, boot = bootstrap, ERRS = LocaleERRS;
 
 export const NUM_CONV = { None: 0, Integer: 1, Decimal: 2, Float: 3, SmallInt: 4 };
@@ -16,7 +16,7 @@ export class BaseConverter implements IConverter {
         return val;
    }
     convertToTarget(val: any, param: any, dataContext: any): any {
-        return (checks.isNt(val)) ? null : val;
+        return (isNt(val)) ? null : val;
    }
 }
 export let baseConverter = new BaseConverter();
@@ -30,7 +30,7 @@ export class DateConverter implements IConverter {
         return (!!datepicker) ? datepicker.parseDate(val) : dateTimeConverter.convertToSource(val, defaults.dateFormat, dataContext);
    }
     convertToTarget(val: any, param: any, dataContext: any): string {
-        if (checks.isNt(val)) {
+        if (isNt(val)) {
             return "";
         }
         const defaults = boot.defaults, datepicker = boot.getSvc<IDatepicker>("IDatepicker");
@@ -49,12 +49,12 @@ export class DateTimeConverter implements IConverter {
         }
         const m = moment(val, param);
         if (!m.isValid()) {
-            throw new Error(strUtils.format(ERRS.ERR_CONV_INVALID_DATE, val));
+            throw new Error(format(ERRS.ERR_CONV_INVALID_DATE, val));
        }
         return m.toDate();
    }
     convertToTarget(val: any, param: any, dataContext: any): string {
-        if (checks.isNt(val)) {
+        if (isNt(val)) {
             return "";
        }
         const m = moment(val);
@@ -68,14 +68,14 @@ const dateTimeConverter = new DateTimeConverter();
 
 export class NumberConverter implements IConverter {
     convertToSource(val: any, param: any, dataContext: any): number {
-        if (checks.isNt(val)) {
+        if (isNt(val)) {
             return null;
         }
         const defaults = bootstrap.defaults, dp = defaults.decimalPoint, thousandSep = defaults.thousandSep;
         let prec = 4;
         let value = val.replace(thousandSep, "");
         value = value.replace(dp, ".");
-        value = strUtils.stripNonNumeric(value);
+        value = stripNonNumeric(value);
         if (value === "") {
             return null;
        }
@@ -99,13 +99,13 @@ export class NumberConverter implements IConverter {
                 break;
        }
 
-        if (!checks.isNumber(num)) {
-            throw new Error(strUtils.format(ERRS.ERR_CONV_INVALID_NUM, val));
+        if (!isNumber(num)) {
+            throw new Error(format(ERRS.ERR_CONV_INVALID_NUM, val));
        }
         return num;
    }
     convertToTarget(val: any, param: any, dataContext: any): string {
-        if (checks.isNt(val)) {
+        if (isNt(val)) {
             return "";
        }
         const defaults = bootstrap.defaults, dp = defaults.decimalPoint, thousandSep = defaults.thousandSep;
@@ -113,18 +113,18 @@ export class NumberConverter implements IConverter {
         switch (param) {
             case NUM_CONV.Integer:
                 prec = 0;
-                return strUtils.formatNumber(val, prec, dp, thousandSep);
+                return formatNumber(val, prec, dp, thousandSep);
             case NUM_CONV.Decimal:
                 prec = defaults.decPrecision;
-                return strUtils.formatNumber(val, prec, dp, thousandSep);
+                return formatNumber(val, prec, dp, thousandSep);
             case NUM_CONV.SmallInt:
                 prec = 0;
-                return strUtils.formatNumber(val, prec, dp, "");
+                return formatNumber(val, prec, dp, "");
             case NUM_CONV.Float:
                 // float number type preserves all number precision
-                return strUtils.formatNumber(val, null, dp, thousandSep);
+                return formatNumber(val, null, dp, thousandSep);
             default:
-                return strUtils.formatNumber(val, null, dp, thousandSep);
+                return formatNumber(val, null, dp, thousandSep);
        }
    }
     toString() {

@@ -214,7 +214,6 @@ declare module "jriapp_shared/utils/checks" {
 }
 declare module "jriapp_shared/utils/strUtils" {
     export class StringUtils {
-        private static ERR_STRING_FORMAT_INVALID;
         static endsWith(str: string, suffix: string): boolean;
         static startsWith(str: string, prefix: string): boolean;
         static fastTrim(str: string): string;
@@ -260,23 +259,22 @@ declare module "jriapp_shared/utils/coreutils" {
     import { IIndexer } from "jriapp_shared/int";
     import { Checks } from "jriapp_shared/utils/checks";
     export class CoreUtils {
-        private static ERR_OBJ_ALREADY_REGISTERED;
         static getNewID(prefix?: string): string;
-        static getTimeZoneOffset: () => number;
-        static hasProp: typeof Checks.isHasProp;
+        static readonly getTimeZoneOffset: () => number;
+        static readonly hasProp: typeof Checks.isHasProp;
         static setValue(root: any, namePath: string, val: any, checkOverwrite?: boolean, separator?: string): void;
         static getValue(root: any, namePath: string, separator?: string): any;
         static removeValue(root: any, namePath: string, separator?: string): any;
         static uuid(len?: number, radix?: number): string;
         static parseBool(a: any): boolean;
         static round(num: number, decimals: number): number;
-        static clone(obj: any, target?: any): any;
+        static readonly clone: (obj: any, target?: any) => any;
         static merge<S, T>(source: S, target?: T): S & T;
-        static extend<T, U>(target: T, ...source: U[]): T & U;
+        static readonly extend: <T, U>(target: T, ...source: U[]) => T & U;
         static memoize<T>(fn: () => T): () => T;
         static forEachProp<T>(map: IIndexer<T>, fn: (name: string, val?: T) => void): void;
         static toArray<T>(map: IIndexer<T>): T[];
-        static assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: U): T;
+        static readonly assignStrings: <T extends U, U extends IIndexer<any>>(target: T, source: U) => T;
     }
 }
 declare module "jriapp_shared/lang" {

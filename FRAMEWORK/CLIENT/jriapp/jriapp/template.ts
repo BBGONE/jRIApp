@@ -10,7 +10,7 @@ import { ViewChecks } from "./utils/viewchecks";
 import { DomUtils } from "./utils/dom";
 
 const utils = Utils, _async = utils.defer, dom = DomUtils, viewChecks = ViewChecks,
-    doc = dom.document, checks = utils.check, strUtils = utils.str,
+    doc = dom.document, { isFunc, isThenable } = utils.check, { format } = utils.str,
     arrHelper = utils.arr, sys = utils.sys, boot = bootstrap, ERRS = LocaleERRS, ERROR = utils.err;
 
 export const enum css {
@@ -93,7 +93,7 @@ class Template extends BaseObject implements ITemplate {
     private _loadAsync(name: string): IPromise<HTMLElement> {
         const self = this, fnLoader = this.app.getTemplateLoader(name);
         let promise: IPromise<string>;
-        if (checks.isFunc(fnLoader) && checks.isThenable(promise = fnLoader())) {
+        if (isFunc(fnLoader) && isThenable(promise = fnLoader())) {
             return promise.then((html: string) => {
                 const elems = dom.fromHTML(html);
                 return elems[0];
@@ -101,12 +101,12 @@ class Template extends BaseObject implements ITemplate {
                 if (!!err && !!err.message) {
                     throw err;
                 } else {
-                    throw new Error(strUtils.format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+                    throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
                 }
             });
         } else {
             const deferred = _async.createDeferred<HTMLElement>();
-            return deferred.reject(new Error(strUtils.format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
+            return deferred.reject(new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
         }
     }
     private _loadTemplate(): void {
@@ -164,7 +164,7 @@ class Template extends BaseObject implements ITemplate {
             ERROR.abort();
         }
         if (!loadedEl) {
-            throw new Error(strUtils.format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+            throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
         }
 
         if (!!self._loadedElem) {
@@ -207,7 +207,7 @@ class Template extends BaseObject implements ITemplate {
             }
         }
         if (!ex) {
-            ex = new Error(strUtils.format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+            ex = new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
         }
         self.handleError(ex, self);
     }

@@ -8,7 +8,7 @@ import { IEntityItem } from "./int";
 import { EntityAspect } from "./entity_aspect";
 import { DbContext } from "./dbcontext";
 
-const utils = Utils, strUtils = utils.str;
+const utils = Utils, { format } = utils.str;
 
 export abstract class BaseComplexProperty extends BaseObject implements IErrorNotification {
     private _name: string;
@@ -31,7 +31,7 @@ export abstract class BaseComplexProperty extends BaseObject implements IErrorNo
     getPropertyByName(name: string): IFieldInfo {
         const arrProps = this.getProperties().filter((f) => { return f.fieldName === name; });
         if (!arrProps || arrProps.length !== 1) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
         }
         return arrProps[0];
     }
@@ -127,7 +127,7 @@ export class ChildComplexProperty extends BaseComplexProperty {
             parent = (<ChildComplexProperty>parent).getParent();
         }
         if (!parent || !(parent instanceof RootComplexProperty)) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "parent instanceof RootComplexProperty"));
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "parent instanceof RootComplexProperty"));
         }
         return <RootComplexProperty>parent;
     }

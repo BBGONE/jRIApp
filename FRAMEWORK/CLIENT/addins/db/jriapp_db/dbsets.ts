@@ -4,7 +4,7 @@ import { IEntityItem } from "./int";
 import { DbContext } from "./dbcontext";
 import { IDbSetConstructor, TDbSet } from "./dbset";
 
-const utils = Utils, strUtils = utils.str;
+const utils = Utils, { format } = utils.str;
 
 export class DbSets extends BaseObject {
     private _dbContext: DbContext;
@@ -51,7 +51,7 @@ export class DbSets extends BaseObject {
     getDbSet(name: string): TDbSet {
         const dbSet = this.findDbSet(name);
         if (!dbSet) {
-            throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, name));
+            throw new Error(format(ERRS.ERR_DBSET_NAME_INVALID, name));
         }
         return dbSet;
     }

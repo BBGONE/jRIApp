@@ -4,9 +4,10 @@ import { IBindingInfo } from "../int";
 
 import { bootstrap } from "../bootstrap";
 
-const { isNumeric, isBoolString } = Utils.check, strUtils = Utils.str, { parseBool } = Utils.core, sys = Utils.sys;
+const { isNumeric, isBoolString } = Utils.check, { format, fastTrim: trim, startsWith, endsWith } = Utils.str,
+    { parseBool } = Utils.core, sys = Utils.sys;
 
-const trim = strUtils.fastTrim, getRX = /^get[(].+[)]$/g;
+const getRX = /^get[(].+[)]$/g;
 
 const enum TOKEN {
     DELIMETER1 = ":",
@@ -108,7 +109,7 @@ function getBraceParts(val: string): string[] {
     }
 
     if (test !== 0) {
-        throw new Error(strUtils.format(ERRS.ERR_EXPR_BRACES_INVALID, val));
+        throw new Error(format(ERRS.ERR_EXPR_BRACES_INVALID, val));
     }
     return parts;
 }
@@ -156,7 +157,7 @@ function getBraceLen(val: string, start: number, brace: BRACE_TYPE): number {
         }
     }
     if (test !== 0) {
-        throw new Error(strUtils.format(ERRS.ERR_EXPR_BRACES_INVALID, val));
+        throw new Error(format(ERRS.ERR_EXPR_BRACES_INVALID, val));
     }
     return cnt;
 }
@@ -405,7 +406,7 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
     kvals.forEach(function (kv) {
         let isEval = false, evalparts: string[];
 
-        if (parse_type === PARSE_TYPE.BINDING && !kv.val && strUtils.startsWith(kv.key, TOKEN.THIS)) {
+        if (parse_type === PARSE_TYPE.BINDING && !kv.val && startsWith(kv.key, TOKEN.THIS)) {
             kv.val = kv.key.substr(len_this); // extract property
             kv.key = TOKEN.TARGET_PATH;
         }
@@ -457,7 +458,7 @@ function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: any, dataCont
             const id = getBraceContent(str, BRACE_TYPE.SIMPLE);
             str = trim(getOptions(trim(id)));
         }
-        if (strUtils.startsWith(str, "{") && strUtils.endsWith(str, "}")) {
+        if (startsWith(str, "{") && endsWith(str, "}")) {
             const subparts = getBraceParts(str);
             for (let k = 0; k < subparts.length; k += 1) {
                 parts.push(subparts[k]);

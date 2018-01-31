@@ -46,7 +46,7 @@ export { IDataGridAnimation, DefaultAnimation } from "./animation";
 import { $ } from "../utils/jquery";
 
 
-const utils = Utils, strUtils = utils.str, { forEachProp, merge, getNewID, extend } = utils.core, ERROR = utils.err, sys = utils.sys,
+const utils = Utils, { format } = utils.str, { forEachProp, merge, getNewID, extend } = utils.core, ERROR = utils.err, sys = utils.sys,
     dom = DomUtils, parser = Parser, doc = dom.document, win = dom.window, boot = bootstrap;
 
 let _columnWidthInterval: number, _gridsCount: number = 0;
@@ -666,7 +666,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 }
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
+                throw new Error(format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
         }
     }
     protected _updateTableDisplay(): void {
@@ -874,7 +874,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
                 col = new DataColumn(this, cellInfo);
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_GRID_COLTYPE_INVALID, cellInfo.colInfo.type));
+                throw new Error(format(ERRS.ERR_GRID_COLTYPE_INVALID, cellInfo.colInfo.type));
         }
         return col;
     }
@@ -1118,7 +1118,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             this._fillSpace.height = deltaY;
         }
 
-        // console.log(strUtils.format("deltaY: {0} yPos: {1} ScrollTop: {2} offsetDiff: {3} (offsetDiff - yOffset): {4}",
+        // console.log(format("deltaY: {0} yPos: {1} ScrollTop: {2} offsetDiff: {3} (offsetDiff - yOffset): {4}",
             // deltaY, yPos, currentScrollTop, offsetDiff, (offsetDiff - yOffset)));
 
         // no need for scrolling if  the row is visible inside the viewport

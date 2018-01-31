@@ -19,9 +19,10 @@ import { DomUtils } from "./utils/dom";
 import { Promise } from "jriapp_shared/utils/deferred";
 import { createQueue } from "jriapp_shared/utils/queue";
 
-const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document, checks = utils.check,
-    _async = utils.defer, { forEachProp, getNewID, getValue, setValue, removeValue } = utils.core, strUtils = utils.str,
-    ERROR = utils.err, ERRS = LocaleERRS;
+const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document,
+    { isFunc } = utils.check, { createDeferred, delay } = utils.defer,
+    { forEachProp, getNewID, getValue, setValue, removeValue } = utils.core,
+    { format, fastTrim } = utils.str, ERROR = utils.err, ERRS = LocaleERRS;
 
 export const subscribeWeakMap: IWeakMap = createWeakMap(), selectableProviderWeakMap: IWeakMap = createWeakMap();
 
@@ -212,7 +213,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             const fn_name = "handle_" + name;
             dom.events.on(doc, name, (e) => {
                 const obj: any = subscribeMap.get(e.target);
-                if (checks.isFunc(obj[fn_name])) {
+                if (isFunc(obj[fn_name])) {
                     // stop propagation if the handler returns true
                     e.cancelBubble = !!(obj[fn_name](e.originalEvent));
                 }
@@ -288,8 +289,8 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._processTemplates(doc);
     }
     private _processTemplate(name: string, html: string, app: IApplication): void {
-        const self = this, deferred = _async.createDeferred<string>(true),
-            res = strUtils.fastTrim(html);
+        const self = this, deferred = createDeferred<string>(true),
+            res = fastTrim(html);
         const loader = {
             fn_loader: () => deferred.promise()
         };
@@ -316,7 +317,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             self.objEvents.raise(GLOB_EVENTS.initialized, {});
             self.objEvents.off(GLOB_EVENTS.initialized);
 
-            return _async.delay(() => {
+            return delay(() => {
                 if (self.getIsStateDirty()) {
                     throw new Error("Bootstrap is in destroyed state");
                 }
@@ -387,7 +388,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         const name2 = STORE_KEY.CONVERTER + name;
         const res = this._getObject(this, name2);
         if (!res) {
-            throw new Error(strUtils.format(ERRS.ERR_CONVERTER_NOTREGISTERED, name));
+            throw new Error(format(ERRS.ERR_CONVERTER_NOTREGISTERED, name));
         }
         return res;
     }
@@ -411,7 +412,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         if (!this._getObject(this, name2)) {
             this._registerObject(this, name2, options);
         } else {
-            throw new Error(strUtils.format(ERRS.ERR_OPTIONS_ALREADY_REGISTERED, name));
+            throw new Error(format(ERRS.ERR_OPTIONS_ALREADY_REGISTERED, name));
         }
     }
     _getInternal(): IInternalBootstrapMethods {
@@ -467,7 +468,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     // all  that we need to do before setting up databindings
     // returns Promise
     startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<TApp> {
-        const self = this, deferred = _async.createDeferred<TApp>(), promise = deferred.promise();
+        const self = this, deferred = createDeferred<TApp>(), promise = deferred.promise();
 
         self._waitLoaded(() => {
             try {
@@ -528,7 +529,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         if (!this._getObject(this, name2)) {
             this._registerObject(this, name2, obj);
         } else {
-            throw new Error(strUtils.format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
+            throw new Error(format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         }
     }
     getOptions(name: string): string {

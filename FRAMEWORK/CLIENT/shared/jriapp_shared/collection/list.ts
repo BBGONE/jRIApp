@@ -13,7 +13,8 @@ import { BaseCollection } from "./base";
 import { ItemAspect } from "./aspect";
 import { ValidationError } from "../errors";
 
-const utils = Utils, strUtils = utils.str, checks = utils.check, { walkField, initVals } = CollUtils, sys = utils.sys;
+const utils = Utils, { format } = utils.str, { isArray } = utils.check,
+    { walkField, initVals } = CollUtils, sys = utils.sys;
 
 export interface IListItem extends ICollectionItem {
     readonly _aspect: ListItemAspect<IListItem, any>;
@@ -81,8 +82,8 @@ export abstract class BaseList<TItem extends IListItem, TObj extends IIndexer<an
     }
     private _updateFieldMap(props: IPropInfo[]) {
         const self = this;
-        if (!checks.isArray(props) || props.length === 0) {
-            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "props", props));
+        if (!isArray(props) || props.length === 0) {
+            throw new Error(format(ERRS.ERR_PARAM_INVALID, "props", props));
         }
 
         self._fieldMap = {};

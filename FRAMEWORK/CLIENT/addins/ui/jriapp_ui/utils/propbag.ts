@@ -3,7 +3,7 @@ import {
     IIndexer, Utils, BaseObject, IPropertyBag
 } from "jriapp_shared";
 
-const utils = Utils, strUtils = utils.str;
+const utils = Utils, { trimBrackets } = utils.str;
 
 // wraps HTMLElement to get or change property using data binding
 export class PropertyBag extends BaseObject implements IPropertyBag {
@@ -15,16 +15,16 @@ export class PropertyBag extends BaseObject implements IPropertyBag {
     }
     // override
     isHasProp(prop: string) {
-        const propName = strUtils.trimBrackets(prop);
+        const propName = trimBrackets(prop);
         return (propName in this._el);
     }
     // implement IPropertyBag
     getProp(name: string): any {
-        const propName = strUtils.trimBrackets(name);
+        const propName = trimBrackets(name);
         return this._el[propName];
     }
     setProp(name: string, val: any): void {
-        const propName = strUtils.trimBrackets(name);
+        const propName = trimBrackets(name);
         const old = this._el[propName];
         if (old !== val) {
             this._el[propName] = val;
@@ -34,7 +34,6 @@ export class PropertyBag extends BaseObject implements IPropertyBag {
     get isPropertyBag() {
         return true;
     }
-
     toString() {
         return "PropertyBag";
     }

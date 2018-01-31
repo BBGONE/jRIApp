@@ -2,7 +2,7 @@
 import { BaseObject, Utils } from "jriapp_shared";
 import { ButtonCss } from "./int";
 
-const utils = Utils, strUtils = utils.str;
+const utils = Utils, { endsWith } = utils.str;
 
 export class Defaults extends BaseObject {
     private _imagesPath: string;
@@ -56,7 +56,7 @@ export class Defaults extends BaseObject {
             v = "";
         }
         if (this._imagesPath !== v) {
-            if (!strUtils.endsWith(v, "/")) {
+            if (!endsWith(v, "/")) {
                 this._imagesPath = v + "/";
            } else {
                 this._imagesPath = v;
@@ -86,8 +86,7 @@ export class Defaults extends BaseObject {
             this.objEvents.raiseProp("decPrecision");
        }
    }
-
-    get ButtonsCSS() {
+   get ButtonsCSS() {
         return ButtonCss;
    }
 }

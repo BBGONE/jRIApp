@@ -15,8 +15,9 @@ import { BaseElView } from "./baseview";
 import { Binding } from "jriapp/binding";
 import { parseContentAttr } from "./content/int";
 
-const utils = Utils, dom = DomUtils, checks = utils.check, { getNewID } = utils.core, strUtils = utils.str,
-    sys = utils.sys, boot = bootstrap, viewChecks = ViewChecks, _async = utils.defer;
+const utils = Utils, dom = DomUtils, { isFunc } = utils.check, { getNewID } = utils.core,
+    { format } = utils.str, sys = utils.sys, boot = bootstrap, viewChecks = ViewChecks,
+    _async = utils.defer;
 
 viewChecks.isDataForm = (el: Element) => {
     if (!el) {
@@ -98,9 +99,9 @@ function getFieldInfo(obj: any, fieldName: string): IFieldInfo {
     if (!obj) {
         return null;
     }
-    if (!!obj._aspect && checks.isFunc(obj._aspect.getFieldInfo)) {
+    if (!!obj._aspect && isFunc(obj._aspect.getFieldInfo)) {
         return obj._aspect.getFieldInfo(fieldName);
-    } else if (checks.isFunc(obj.getFieldInfo)) {
+    } else if (isFunc(obj.getFieldInfo)) {
         return obj.getFieldInfo(fieldName);
     } else {
         return null;
@@ -208,7 +209,7 @@ export class DataForm extends BaseObject {
             if (!!op.fieldName && !op.fieldInfo) {
                 op.fieldInfo = getFieldInfo(dctx, op.fieldName);
                 if (!op.fieldInfo) {
-                    throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
+                    throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
                 }
             }
 

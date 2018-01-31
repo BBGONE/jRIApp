@@ -14,8 +14,9 @@ import { DomUtils } from "./utils/dom";
 import { createElViewFactory } from "./elview";
 import { createDataBindSvc } from "./databindsvc";
 
-const utils = Utils, dom = DomUtils, doc = dom.document,
-    boot = bootstrap, sys = utils.sys, ERRS = LocaleERRS, { forEachProp } = utils.core;
+const utils = Utils, dom = DomUtils, doc = dom.document, { format } = utils.str,
+    { isThenable } = utils.check, boot = bootstrap, sys = utils.sys, ERRS = LocaleERRS,
+    { forEachProp, getNewID, memoize, extend } = utils.core, { createDeferred } = utils.defer;
 
 const enum APP_EVENTS {
     startup = "startup"
@@ -45,9 +46,9 @@ export class Application extends BaseObject implements IApplication {
         this._appName = appName;
         this._options = options;
         if (!!boot.getApp()) {
-            throw new Error(utils.str.format(ERRS.ERR_APP_NAME_NOT_UNIQUE, appName));
+            throw new Error(format(ERRS.ERR_APP_NAME_NOT_UNIQUE, appName));
         }
-        this._objId = utils.core.getNewID("app");
+        this._objId = getNewID("app");
         this._appState = AppState.None;
         this._moduleInits = moduleInits;
         this._viewFactory = createElViewFactory(boot.elViewRegister);
@@ -127,7 +128,7 @@ export class Application extends BaseObject implements IApplication {
         if (!boot._getInternal().getObject(this, name2)) {
             boot._getInternal().registerObject(this, name2, obj);
         } else {
-            throw new Error(utils.str.format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
+            throw new Error(format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         }
     }
     getConverter(name: string): IConverter {
@@ -137,7 +138,7 @@ export class Application extends BaseObject implements IApplication {
             res = boot._getInternal().getObject(boot, name2);
         }
         if (!res) {
-            throw new Error(utils.str.format(ERRS.ERR_CONVERTER_NOTREGISTERED, name));
+            throw new Error(format(ERRS.ERR_CONVERTER_NOTREGISTERED, name));
         }
         return res;
     }
@@ -183,7 +184,7 @@ export class Application extends BaseObject implements IApplication {
     all  that we need to do before setting up databindings
     */
     startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication> {
-        const self = this, deferred = utils.defer.createDeferred<IApplication>();
+        const self = this, deferred = createDeferred<IApplication>();
 
         if (this._appState !== AppState.None) {
             return deferred.reject(new Error("Application can not be started when state != AppState.None"));
@@ -194,10 +195,10 @@ export class Application extends BaseObject implements IApplication {
                 self._initAppModules();
                 const onStartupRes1: any = self.onStartUp();
                 let setupPromise1: IThenable<void>;
-                if (utils.check.isThenable(onStartupRes1)) {
+                if (isThenable(onStartupRes1)) {
                     setupPromise1 = (<IThenable<any>>onStartupRes1);
                 } else {
-                    setupPromise1 = utils.defer.createDeferred<void>().resolve();
+                    setupPromise1 = createDeferred<void>().resolve();
                 }
 
                 const promise = setupPromise1.then(() => {
@@ -270,10 +271,10 @@ export class Application extends BaseObject implements IApplication {
     }
     // register loading a template from html element by its id value
     registerTemplateById(name: string, templateId: string): void {
-        this.registerTemplateLoader(name, utils.core.memoize(() => {
-            const deferred = utils.defer.createDeferred<string>(true), el = dom.queryOne<Element>(doc, "#" + templateId);
+        this.registerTemplateLoader(name, memoize(() => {
+            const deferred = createDeferred<string>(true), el = dom.queryOne<Element>(doc, "#" + templateId);
             if (!el) {
-                throw new Error(utils.str.format(ERRS.ERR_TEMPLATE_ID_INVALID, templateId));
+                throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, templateId));
             }
             const str = el.innerHTML;
             deferred.resolve(str);
@@ -285,13 +286,13 @@ export class Application extends BaseObject implements IApplication {
         if (!res) {
             res = boot.templateLoader.getTemplateLoader(name);
             if (!res) {
-                return () => { return utils.defer.reject<string>(new Error(utils.str.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
+                return () => { return utils.defer.reject<string>(new Error(format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
             }
         }
         return res;
     }
     registerTemplateGroup(name: string, group: ITemplateGroupInfo): void {
-        const group2: ITemplateGroupInfoEx = utils.core.extend({
+        const group2: ITemplateGroupInfoEx = extend({
             fn_loader: <() => IPromise<string>>null,
             url: <string>null,
             names: <string[]>null,

@@ -9,7 +9,7 @@ import { css, txtMap } from "../const";
 import { BaseCell, ICellOptions } from "./base";
 import { ActionsColumn } from "../columns/actions";
 
-const utils = Utils, dom = DomUtils, strUtils = utils.str; //, checks = utils.check;
+const utils = Utils, dom = DomUtils, { format } = utils.str;
 export const editName = "img_edit", deleteName = "img_delete";
 const actionsSelector = 'span[data-role="row-action"]';
 const _editBtnsHTML = ['<span data-role="row-action" data-name="img_ok" class="{0}"></span>','<span data-role="row-action" data-name="img_cancel" class="{1}"></span>'];
@@ -56,13 +56,13 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
     }
     protected get editBtnsHTML(): string[] {
         if (!editBtnsHTML) {
-            editBtnsHTML = _editBtnsHTML.map((str) => strUtils.format(str, ButtonCss.OK, ButtonCss.Cancel));
+            editBtnsHTML = _editBtnsHTML.map((str) => format(str, ButtonCss.OK, ButtonCss.Cancel));
         }
         return editBtnsHTML;
     }
     protected get viewBtnsHTML(): string[] {
         if (!viewBtnsHTML) {
-            viewBtnsHTML = _viewBtnsHTML.map((str) => strUtils.format(str, ButtonCss.Edit, ButtonCss.Delete));
+            viewBtnsHTML = _viewBtnsHTML.map((str) => format(str, ButtonCss.Edit, ButtonCss.Delete));
         }
         return viewBtnsHTML;
     }

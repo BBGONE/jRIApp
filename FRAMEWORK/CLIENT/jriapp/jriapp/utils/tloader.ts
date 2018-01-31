@@ -2,8 +2,8 @@
 import { IPromise, LocaleERRS, BaseObject, WaitQueue, Utils } from "jriapp_shared";
 import { IApplication, ITemplateGroupInfoEx, ITemplateLoaderInfo } from "../int";
 
-const utils = Utils, checks = utils.check, { getValue, setValue, removeValue, extend } = utils.core,
-    strUtils = utils.str, defer = utils.defer, ERRS = LocaleERRS, DEBUG = utils.debug,
+const utils = Utils, { isFunc } = utils.check, { getValue, setValue, removeValue, extend } = utils.core,
+    { format } = utils.str, { createDeferred } = utils.defer, ERRS = LocaleERRS, DEBUG = utils.debug,
     LOG = utils.log, http = utils.http;
 
 const enum LOADER_EVENTS {
@@ -100,8 +100,8 @@ export class TemplateLoader extends BaseObject {
             groupName: null
         }, loader);
 
-        if (!loader.groupName && !checks.isFunc(loader.fn_loader)) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "fn_loader is Function"));
+        if (!loader.groupName && !isFunc(loader.fn_loader)) {
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "fn_loader is Function"));
         }
         const prevLoader = self._getTemplateLoaderCore(name);
         if (!!prevLoader) {
@@ -109,7 +109,7 @@ export class TemplateLoader extends BaseObject {
             if ((!prevLoader.fn_loader && !!prevLoader.groupName) && (!loader.groupName && !!loader.fn_loader)) {
                 return self._registerTemplateLoaderCore(name, loader);
             }
-            throw new Error(strUtils.format(ERRS.ERR_TEMPLATE_ALREADY_REGISTERED, name));
+            throw new Error(format(ERRS.ERR_TEMPLATE_ALREADY_REGISTERED, name));
         }
         return self._registerTemplateLoaderCore(name, loader);
     }
@@ -122,7 +122,7 @@ export class TemplateLoader extends BaseObject {
         if (!loader.fn_loader && !!loader.groupName) {
             const group = self._getTemplateGroup(loader.groupName);
             if (!group) {
-                throw new Error(strUtils.format(ERRS.ERR_TEMPLATE_GROUP_NOTREGISTERED, loader.groupName));
+                throw new Error(format(ERRS.ERR_TEMPLATE_GROUP_NOTREGISTERED, loader.groupName));
             }
 
             // this function will return promise resolved with the template's html
@@ -133,7 +133,7 @@ export class TemplateLoader extends BaseObject {
                     group.promise = self.loadTemplatesAsync(group.fn_loader, group.app);
                 }
 
-                const deferred = defer.createDeferred<string>(true);
+                const deferred = createDeferred<string>(true);
 
                 group.promise.then(() => {
                     group.promise = null;
@@ -143,7 +143,7 @@ export class TemplateLoader extends BaseObject {
                         }
                         const loader = self._getTemplateLoaderCore(name);
                         if (!loader || !loader.fn_loader) {
-                            const error = strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                            const error = format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
                             if (DEBUG.isDebugging()) {
                                 LOG.error(error);
                             }
@@ -153,7 +153,7 @@ export class TemplateLoader extends BaseObject {
 
                     const loader = self._getTemplateLoaderCore(name);
                     if (!loader || !loader.fn_loader) {
-                        const error = strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                        const error = format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
                         if (DEBUG.isDebugging()) {
                             LOG.error(error);
                         }

@@ -3,14 +3,14 @@ import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import { IConstructorContentOptions, IConverter } from "jriapp/int";
 import { BasicContent } from "./basic";
 
-const utils = Utils, strUtils = utils.str;
+const utils = Utils, { format } = utils.str;
 
 const NAME = "datepicker";
 
 export class DateContent extends BasicContent {
     constructor(options: IConstructorContentOptions) {
         if (options.contentOptions.name !== NAME) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, strUtils.format("contentOptions.name === '{0}'", NAME)));
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, `contentOptions.name === '${NAME}'`));
         }
         super(options);
     }

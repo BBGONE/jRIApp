@@ -8,7 +8,7 @@ import { TextAreaElView } from "../textarea";
 
 import { BasicContent, IContentView, getView, getBindingOption } from "./basic";
 
-const utils = Utils, NAME = "multyline", strUtils = utils.str, dom = DomUtils, document = dom.document;
+const utils = Utils, NAME = "multyline", { format } = utils.str, dom = DomUtils, doc = dom.document;
 
 export class MultyLineContent extends BasicContent {
     static _allowedKeys: number[] = null;
@@ -21,13 +21,13 @@ export class MultyLineContent extends BasicContent {
     }
     constructor(options: IConstructorContentOptions) {
         if (options.contentOptions.name !== NAME) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, strUtils.format("contentOptions.name === '{0}'", NAME)));
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, `contentOptions.name === '${NAME}'`));
         }
         super(options);
     }
     // override
     protected createdEditingView(): IContentView {
-        const name = this.getViewName(true), el = document.createElement("textarea"), options = this.options.options;
+        const name = this.getViewName(true), el = doc.createElement("textarea"), options = this.options.options;
         const view = getView(el, name, options);
         if (!!view) {
             this.lfScope.addObj(view);
@@ -38,7 +38,7 @@ export class MultyLineContent extends BasicContent {
     }
     // override
     protected createdReadingView(): IContentView {
-        const name = this.getViewName(false), el = document.createElement("div");
+        const name = this.getViewName(false), el = doc.createElement("div");
         const view = getView(el, name, {});
         if (!!view) {
             this.lfScope.addObj(view);

@@ -22,7 +22,8 @@ import { ItemAspect } from "./aspect";
 import { ValueUtils, CollUtils } from "./utils";
 import { ValidationError } from "../errors";
 
-const utils = Utils, { forEachProp, getTimeZoneOffset, getNewID } = utils.core, strUtils = utils.str, { undefined, isArray, isUndefined } = utils.check,
+const utils = Utils, { forEachProp, getTimeZoneOffset, getNewID } = utils.core,
+    { format, startsWith } = utils.str, { undefined, isArray, isUndefined } = utils.check,
     sys = utils.sys, { stringifyValue } = ValueUtils, { getObjectField } = CollUtils;
 
 
@@ -604,7 +605,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     // override
     isHasProp(prop: string): boolean {
         // first check for indexed property name
-        if (strUtils.startsWith(prop, "[")) {
+        if (startsWith(prop, "[")) {
             const res = sys.getProp(this, prop);
             return !isUndefined(res);
         }
@@ -624,7 +625,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             return fld;
         }
 
-        throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "fieldName", fieldName));
+        throw new Error(format(ERRS.ERR_PARAM_INVALID, "fieldName", fieldName));
     }
     getFieldNames(): string[] {
         return this.getFieldInfos().map((f) => {

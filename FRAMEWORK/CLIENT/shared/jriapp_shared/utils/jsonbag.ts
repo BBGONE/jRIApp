@@ -8,7 +8,8 @@ import { Checks } from "./checks";
 import { Debounce } from "./debounce";
 import { ValidationError } from "../errors";
 
-const { forEachProp, getValue, setValue } = CoreUtils, strUtils = StringUtils, checks = Checks, sys = SysUtils;
+const { forEachProp, getValue, setValue } = CoreUtils, { startsWith, trimBrackets } = StringUtils,
+    { isArray } = Checks, sys = SysUtils;
 
 const enum BAG_EVENTS {
     errors_changed = "errors_changed",
@@ -61,7 +62,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
     // override
     isHasProp(prop: string) {
         // first check for indexed property name
-        if (strUtils.startsWith(prop, "[")) {
+        if (startsWith(prop, "[")) {
             return true;
         }
         return super.isHasProp(prop);
@@ -144,7 +145,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         if (!fieldName) {
             fieldName = "*";
         }
-        if (!(checks.isArray(errors) && errors.length > 0)) {
+        if (!(isArray(errors) && errors.length > 0)) {
             this._removeError(fieldName, ignoreChangeErrors);
             return;
         }
@@ -260,14 +261,14 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
 
     // implements IPropertyBag
     getProp(name: string): any {
-        const fieldName = strUtils.trimBrackets(name);
+        const fieldName = trimBrackets(name);
         return getValue(this._val, fieldName, "->");
     }
     setProp(name: string, val: any): void {
         const old = this.getProp(name);
         if (old !== val) {
             try {
-                const fieldName = strUtils.trimBrackets(name);
+                const fieldName = trimBrackets(name);
                 setValue(this._val, fieldName, val, false, "->");
                 sys.raiseProp(this, name);
                 this._removeError(name);

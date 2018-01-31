@@ -8,7 +8,7 @@ import { DataCache } from "./datacache";
 import { DbSet } from "./dbset";
 import { DbContext } from "./dbcontext";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, arrHelper = utils.arr,
+const utils = Utils, checks = utils.check, { format } = utils.str, arrHelper = utils.arr,
     valUtils = ValueUtils;
 
 export interface IInternalQueryMethods {
@@ -91,7 +91,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
         const tmpVals = arrHelper.clone(vals);
         const fld = this.getFieldInfo(fieldName);
         if (!fld && checkFieldName) {
-            throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
+            throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
         }
 
         if (!!fld) {
@@ -119,7 +119,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
                 }
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_QUERY_OPERATOR_INVALID, operand));
+                throw new Error(format(ERRS.ERR_QUERY_OPERATOR_INVALID, operand));
         }
 
         const filterItem = { fieldName: fieldName, kind: fkind, values: vals };

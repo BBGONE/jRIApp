@@ -3,25 +3,97 @@ import { IIndexer } from "../int";
 import { StringUtils } from "./strutils";
 import { Checks } from "./checks";
 
-const checks: typeof Checks = Checks, strUtils: typeof StringUtils = StringUtils;
+const { isHasProp, undefined, isBoolean, isArray, isSimpleObject, isNt, isString } = Checks,
+    { format, fastTrim: trim } = StringUtils, { getOwnPropertyNames, getOwnPropertyDescriptor, keys: objectKeys } = Object;
 const UUID_CHARS: string[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
 const NEWID_MAP: IIndexer<number> = {};
 
+function clone(obj: any, target?: any): any {
+    if (!obj) {
+        return obj;
+    }
+
+    let res: any;
+
+    if (isArray(obj)) {
+        res = [];
+        const len = obj.length;
+        for (let i = 0; i < len; i += 1) {
+            res.push(clone(obj[i], null));
+        }
+    } else if (isSimpleObject(obj)) {
+        // clone only simple objects
+        res = target || {};
+        const keys = getOwnPropertyNames(obj), len = keys.length;
+        for (let i = 0; i < len; i += 1) {
+            const p = keys[i];
+            res[p] = clone(obj[p], null);
+        }
+    } else {
+        res = obj;
+    }
+
+    return res;
+}
+
+function extend<T, U>(target: T, ...source: U[]): T & U {
+    if (isNt(target)) {
+        throw new TypeError("extend: Cannot convert first argument to object");
+    }
+
+    const to = Object(target);
+    for (let i = 0; i < source.length; i++) {
+        const nextSource: IIndexer<any> = source[i];
+        if (nextSource === undefined || nextSource === null) {
+            continue;
+        }
+
+        const keys = objectKeys(Object(nextSource)), len = keys.length;
+        for (let nextIndex = 0; nextIndex < len; nextIndex++) {
+            const nextKey = keys[nextIndex], desc = getOwnPropertyDescriptor(nextSource, nextKey);
+            if (desc !== undefined && desc.enumerable) {
+                to[nextKey] = nextSource[nextKey];
+            }
+        }
+    }
+    return to;
+}
+
+function assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: U): T {
+    if (isNt(target)) {
+        target = <any>{};
+    }
+    if (!isSimpleObject(source)) {
+        return target;
+    }
+
+    const keys = objectKeys(source), len = keys.length;
+    for (let i = 0; i < len; i += 1) {
+        const p = keys[i], tval = target[p], sval = source[p];
+        if (isSimpleObject(sval)) {
+            target[p] = assignStrings(tval, sval);
+        } else if (isString(sval)) {
+            target[p] = sval;
+        }
+    }
+
+    return target;
+}
+
+const ERR_OBJ_ALREADY_REGISTERED = "an Object with the name: {0} is already registered and can not be overwritten";
+
 // basic utils
 export class CoreUtils {
-    private static ERR_OBJ_ALREADY_REGISTERED = "an Object with the name: {0} is already registered and can not be overwritten";
-
     static getNewID(prefix: string = "*"): string {
         const id = NEWID_MAP[prefix] || 0;
         NEWID_MAP[prefix] = id + 1;
         return (prefix === "*") ? id.toString(36) : (prefix + "_" + id.toString(36));
     }
-
-    static getTimeZoneOffset = (() => {
+    static readonly getTimeZoneOffset = (() => {
         const dt = new Date(), tz = dt.getTimezoneOffset();
         return () => tz;
     })();
-    static hasProp = checks.isHasProp;
+    static readonly hasProp = isHasProp;
     static setValue(root: any, namePath: string, val: any, checkOverwrite: boolean = false, separator = "."): void {
         const parts: string[] = namePath.split(separator), len = parts.length;
         let parent = root;
@@ -34,8 +106,8 @@ export class CoreUtils {
         }
         // the last part is the name itself
         const n = parts[len - 1];
-        if (!!checkOverwrite && (parent[n] !== checks.undefined)) {
-            throw new Error(strUtils.format(CoreUtils.ERR_OBJ_ALREADY_REGISTERED, namePath));
+        if (!!checkOverwrite && (parent[n] !== undefined)) {
+            throw new Error(format(ERR_OBJ_ALREADY_REGISTERED, namePath));
         }
         parent[n] = val;
     }
@@ -44,7 +116,7 @@ export class CoreUtils {
         let res: any, parent = root;
         for (let i = 0; i < parts.length; i += 1) {
             res = parent[parts[i]];
-            if (res === checks.undefined) {
+            if (res === undefined) {
                 return null;
             }
             parent = res;
@@ -62,7 +134,7 @@ export class CoreUtils {
         }
         // the last part is the object name itself
         const n = parts[parts.length - 1], val = parent[n];
-        if (val !== Checks.undefined) {
+        if (val !== undefined) {
             delete parent[n];
         }
 
@@ -98,48 +170,22 @@ export class CoreUtils {
         return uuid.join("");
     }
     static parseBool(a: any): boolean {
-        if (checks.isBoolean(a)) {
+        if (isBoolean(a)) {
             return a;
         }
-        const v = strUtils.trim(a).toLowerCase();
+        const v = trim(a).toLowerCase();
         if (v === "false") {
             return false;
         } else if (v === "true") {
             return true;
         } else {
-            throw new Error(strUtils.format("parseBool, argument: {0} is not a valid boolean string", a));
+            throw new Error(format("parseBool, argument: {0} is not a valid boolean string", a));
         }
     }
     static round(num: number, decimals: number): number {
         return parseFloat(num.toFixed(decimals));
     }
-    static clone(obj: any, target?: any): any {
-        if (!obj) {
-            return obj;
-        }
-
-        let res: any;
-
-        if (checks.isArray(obj)) {
-            res = [];
-            const len = obj.length;
-            for (let i = 0; i < len; i += 1) {
-                res.push(CoreUtils.clone(obj[i], null));
-            }
-        } else if (checks.isSimpleObject(obj)) {
-            // clone only simple objects
-            res = target || {};
-            const keys = Object.getOwnPropertyNames(obj), len = keys.length;
-            for (let i = 0; i < len; i += 1) {
-                const p = keys[i];
-                res[p] = CoreUtils.clone(obj[p], null);
-            }
-        } else {
-           res = obj;
-        }
-
-        return res;
-    }
+    static readonly clone: (obj: any, target?: any) => any = clone;
     static merge<S, T>(source: S, target?: T): S & T {
         if (!target) {
             target = <any>{};
@@ -147,31 +193,9 @@ export class CoreUtils {
         if (!source) {
             return <any>target;
         }
-        return CoreUtils.extend(target, source);
+        return extend(target, source);
     }
-    static extend<T, U>(target: T, ...source: U[]): T & U {
-        if (checks.isNt(target)) {
-            throw new TypeError("extend: Cannot convert first argument to object");
-        }
-
-        const to = Object(target);
-        for (let i = 0; i < source.length; i++) {
-            const nextSource: IIndexer<any> = source[i];
-            if (nextSource === undefined || nextSource === null) {
-                continue;
-            }
-
-            const keys = Object.keys(Object(nextSource)), len = keys.length;
-            for (let nextIndex = 0; nextIndex < len; nextIndex++) {
-                const nextKey = keys[nextIndex], desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
-                if (desc !== undefined && desc.enumerable) {
-                    to[nextKey] = nextSource[nextKey];
-                }
-            }
-        }
-        return to;
-    }
-    // caches the result of function invocation
+    static readonly extend: <T, U>(target: T, ...source: U[]) => T & U = extend;
     static memoize<T>(fn: () => T): () => T {
         let res: T;
         return () => {
@@ -187,7 +211,7 @@ export class CoreUtils {
         if (!map) {
             return;
         }
-        const names = Object.keys(map), len = names.length;
+        const names = objectKeys(map), len = names.length;
         for (let i = 0; i < len; i += 1) {
             fn(names[i], map[names[i]]);
         }
@@ -197,30 +221,11 @@ export class CoreUtils {
         if (!map) {
             return r;
         }
-        const keys = Object.keys(map), len = keys.length;
+        const keys = objectKeys(map), len = keys.length;
         for (let i = 0; i < len; i += 1) {
             r.push(map[keys[i]]);
         }
         return r;
     }
-    static assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: U): T {
-        if (checks.isNt(target)) {
-            target = <any>{};
-        }
-        if (!checks.isSimpleObject(source)) {
-            return target;
-        }
-
-        const keys = Object.keys(source), len = keys.length;
-        for (let i = 0; i < len; i += 1) {
-            const p = keys[i], tval = target[p], sval = source[p];
-            if (checks.isSimpleObject(sval)) {
-                target[p] = CoreUtils.assignStrings(tval, sval);
-            } else if (checks.isString(sval)) {
-                target[p] = sval;
-            }
-        }
-
-        return target;
-    }
+    static readonly assignStrings: <T extends U, U extends IIndexer<any>>(target: T, source: U) => T = assignStrings;
 }

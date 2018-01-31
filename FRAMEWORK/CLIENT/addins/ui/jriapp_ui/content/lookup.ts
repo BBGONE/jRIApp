@@ -8,8 +8,8 @@ import { IExternallyCachable, IBinding, IBindingOptions, IConstructorContentOpti
 import { ListBoxElView } from "../listbox";
 import { BasicContent, IContentView } from "./basic";
 
-const utils = Utils, dom = DomUtils, doc = dom.document, strUtils = utils.str, coreUtils = utils.core,
-    sys = utils.sys;
+const utils = Utils, dom = DomUtils, doc = dom.document, { format } = utils.str,
+    { getNewID } = utils.core, sys = utils.sys;
 
 export interface ILookupOptions {
     dataSource: string;
@@ -59,14 +59,14 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
 
     constructor(options: IConstructorContentOptions) {
         if (options.contentOptions.name !== "lookup") {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "contentOptions.name === 'lookup'"));
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "contentOptions.name === 'lookup'"));
         }
         super(options);
         this._converter = new LookupConverter(this);
         this._listBox = null;
         this._spanBinding = null;
         this._isListBoxCachedExternally = false;
-        this._objId = coreUtils.getNewID("lkup");
+        this._objId = getNewID("lkup");
         if (!!this.options.initContentFn) {
             this.options.initContentFn(this);
         }

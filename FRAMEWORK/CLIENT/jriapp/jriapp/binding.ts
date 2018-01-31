@@ -9,7 +9,7 @@ import {
 } from "./int";
 import { bootstrap } from "./bootstrap";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, { getNewID, forEachProp } = utils.core,
+const utils = Utils, { isString, isUndefined, isNt, undefined, isHasProp } = utils.check, { format } = utils.str, { getNewID, forEachProp } = utils.core,
     sys = utils.sys, debug = utils.debug, log = utils.log,
     boot = bootstrap, ERRS = LocaleERRS;
 const { resolvePath, getPathParts, getErrorNotification, getProp, setProp } = sys;
@@ -89,7 +89,7 @@ export function getBindingOptions(bindInfo: IBindingInfo, defTarget: IBaseObject
     let converter: IConverter;
     const app = boot.getApp();
 
-    if (checks.isString(bindInfo.converter)) {
+    if (isString(bindInfo.converter)) {
         converter = app.getConverter(bindInfo.converter);
     } else {
         converter = bindInfo.converter;
@@ -123,7 +123,7 @@ export function getBindingOptions(bindInfo: IBindingInfo, defTarget: IBaseObject
     if (!fixedTarget) {
         bindingOpts.target = defTarget;
     } else {
-        if (checks.isString(fixedTarget)) {
+        if (isString(fixedTarget)) {
             if (fixedTarget === "this") {
                 bindingOpts.target = defTarget;
             } else {
@@ -140,7 +140,7 @@ export function getBindingOptions(bindInfo: IBindingInfo, defTarget: IBaseObject
         bindingOpts.source = dataContext;
     } else {
         bindingOpts.isSourceFixed = true;
-        if (checks.isString(fixedSource)) {
+        if (isString(fixedSource)) {
             if (fixedSource === "this") {
                 bindingOpts.source = defTarget;
             } else {
@@ -196,18 +196,18 @@ export class Binding extends BaseObject implements IBinding {
         */
         const opts = options;
 
-        if (checks.isString(opts.mode)) {
+        if (isString(opts.mode)) {
             opts.mode = bindModeMap[opts.mode];
         }
 
-        if (!checks.isString(opts.targetPath)) {
+        if (!isString(opts.targetPath)) {
             debug.checkStartDebugger();
-            throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
+            throw new Error(format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
         }
 
-        if (checks.isNt(opts.mode)) {
+        if (isNt(opts.mode)) {
             debug.checkStartDebugger();
-            throw new Error(strUtils.format(ERRS.ERR_BIND_MODE_INVALID, opts.mode));
+            throw new Error(format(ERRS.ERR_BIND_MODE_INVALID, opts.mode));
         }
 
         if (!opts.target) {
@@ -227,7 +227,7 @@ export class Binding extends BaseObject implements IBinding {
         this._srcPath = getPathParts(opts.sourcePath);
         this._tgtPath = getPathParts(opts.targetPath);
         if (this._tgtPath.length < 1) {
-            throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
+            throw new Error(format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
         }
         this._srcFixed = (!!opts.isSourceFixed);
         this._pathItems = {};
@@ -407,7 +407,7 @@ export class Binding extends BaseObject implements IBinding {
                 const nextObj = getProp(obj, path[0]);
                 if (!!nextObj) {
                     self._parseSrc2(nextObj, path.slice(1), lvl + 1);
-                } else if (checks.isUndefined(nextObj)) {
+                } else if (isUndefined(nextObj)) {
                     fn_reportUnResolved(BindTo.Source, self.source, self._srcPath.join("."), path[0]);
                 }
             }
@@ -415,7 +415,7 @@ export class Binding extends BaseObject implements IBinding {
         }
 
         if (!!obj && path.length === 1) {
-            const isValidProp =  (!debug.isDebugging() ? true : (isBaseObj ? (<IBaseObject>obj).isHasProp(path[0]) : checks.isHasProp(obj, path[0])));
+            const isValidProp =  (!debug.isDebugging() ? true : (isBaseObj ? (<IBaseObject>obj).isHasProp(path[0]) : isHasProp(obj, path[0])));
 
             if (isValidProp) {
                 const updateOnChange = isBaseObj && (self._mode === BINDING_MODE.OneWay || self._mode === BINDING_MODE.TwoWay);
@@ -486,7 +486,7 @@ export class Binding extends BaseObject implements IBinding {
                 const nextObj = getProp(obj, path[0]);
                 if (!!nextObj) {
                     self._parseTgt2(nextObj, path.slice(1), lvl + 1);
-                } else if (checks.isUndefined(nextObj)) {
+                } else if (isUndefined(nextObj)) {
                     fn_reportUnResolved(BindTo.Target, self.target, self._tgtPath.join("."), path[0]);
                 }
             }
@@ -494,7 +494,7 @@ export class Binding extends BaseObject implements IBinding {
         }
 
         if (!!obj && path.length === 1) {
-            const isValidProp = (!debug.isDebugging() ? true : (isBaseObj ? (<IBaseObject>obj).isHasProp(path[0]) : checks.isHasProp(obj, path[0])));
+            const isValidProp = (!debug.isDebugging() ? true : (isBaseObj ? (<IBaseObject>obj).isHasProp(path[0]) : isHasProp(obj, path[0])));
 
             if (isValidProp) {
                 const updateOnChange = isBaseObj && (self._mode === BINDING_MODE.TwoWay || self._mode === BINDING_MODE.BackWay);
@@ -518,7 +518,7 @@ export class Binding extends BaseObject implements IBinding {
         for (let i = lvl; i < len; i += 1) {
             const key = (bindingTo === BindTo.Source) ? ("s" + i) : ((bindingTo === BindTo.Target) ? ("t" + i) : null);
             if (!key) {
-                throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "bindingTo", bindingTo));
+                throw new Error(format(ERRS.ERR_PARAM_INVALID, "bindingTo", bindingTo));
             }
 
             const oldObj = this._pathItems[key];
@@ -611,7 +611,7 @@ export class Binding extends BaseObject implements IBinding {
             this._target = value;
             this._parseTgt(this._target, this._tgtPath, 0);
             if (!!this._target && !this._tgtEnd) {
-                throw new Error(strUtils.format(ERRS.ERR_BIND_TGTPATH_INVALID, this._tgtPath.join(".")));
+                throw new Error(format(ERRS.ERR_BIND_TGTPATH_INVALID, this._tgtPath.join(".")));
             }
 
             return true;
@@ -712,7 +712,7 @@ export class Binding extends BaseObject implements IBinding {
         return res;
     }
     set sourceValue(v: any) {
-        if (this._srcPath.length === 0 || !this._srcEnd || v === checks.undefined) {
+        if (this._srcPath.length === 0 || !this._srcEnd || v === undefined) {
             return;
         }
         const prop = this._srcPath[this._srcPath.length - 1];
@@ -729,7 +729,7 @@ export class Binding extends BaseObject implements IBinding {
         return res;
     }
     set targetValue(v: any) {
-        if (this._tgtPath.length === 0 || !this._tgtEnd || v === checks.undefined) {
+        if (this._tgtPath.length === 0 || !this._tgtEnd || v === undefined) {
             return;
         }
         const prop = this._tgtPath[this._tgtPath.length - 1];
@@ -740,7 +740,7 @@ export class Binding extends BaseObject implements IBinding {
     get converter(): IConverter { return this._converter; }
     get param(): any {
         if (this._isEval) {
-            if (checks.isNt(this._param)) {
+            if (isNt(this._param)) {
                 return this._param;
             } 
             const evalparts = <string[]>this._param;

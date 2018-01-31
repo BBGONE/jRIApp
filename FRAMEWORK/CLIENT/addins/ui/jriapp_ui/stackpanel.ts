@@ -16,7 +16,7 @@ import {
 import { bootstrap, selectableProviderWeakMap } from "jriapp/bootstrap";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
-    strUtils = utils.str, coreUtils = utils.core, boot = bootstrap;
+    { format } = utils.str, { getNewID, extend } = utils.core, boot = bootstrap;
 
 const enum css {
     stackpanel = "ria-stackpanel",
@@ -64,7 +64,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
     constructor(el: HTMLElement, options: IStackPanelConstructorOptions) {
         super();
         const self = this;
-        options = <IStackPanelConstructorOptions>coreUtils.extend(
+        options = <IStackPanelConstructorOptions>extend(
             {
                 el: null,
                 dataSource: null,
@@ -89,7 +89,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             dom.addClass([el], css.horizontal);
         }
         this._debounce = new Debounce();
-        this._objId = coreUtils.getNewID("pnl");
+        this._objId = getNewID("pnl");
         this._isKeyNavigation = false;
         this._currentItem = null;
         this._itemMap = {};
@@ -237,7 +237,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
                 }
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
+                throw new Error(format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
         }
     }
     protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS): void {
@@ -386,7 +386,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         const offset = viewPortSize - contentSize;
         let pos = !isUp ? Math.floor(offsetDiff - offset + 1) : Math.floor(offsetDiff - 1);
 
-        // console.log(strUtils.format("pos: {0} currentPos: {1} offsetDiff: {2} (offsetDiff - offset): {3} offset: {4} viewPortSize: {5} contentSize:{6} isUp: {7}",
+        // console.log(format("pos: {0} currentPos: {1} offsetDiff: {2} (offsetDiff - offset): {3} offset: {4} viewPortSize: {5} contentSize:{6} isUp: {7}",
             // pos, currentPos, offsetDiff, (offsetDiff - offset), offset, viewPortSize, contentSize, isUp));
 
         if (pos < 0) {
