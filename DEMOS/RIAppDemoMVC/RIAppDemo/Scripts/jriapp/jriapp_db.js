@@ -240,7 +240,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function 
 define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/datacache"], function (require, exports, jriapp_shared_2, utils_1, datacache_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_2.Utils, checks = utils.check, strUtils = utils.str, arrHelper = utils.arr, valUtils = utils_1.ValueUtils;
+    var utils = jriapp_shared_2.Utils, checks = utils.check, format = utils.str.format, arrHelper = utils.arr, valUtils = utils_1.ValueUtils;
     var DataQuery = (function (_super) {
         __extends(DataQuery, _super);
         function DataQuery(dbSet, queryInfo) {
@@ -299,7 +299,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             var tmpVals = arrHelper.clone(vals);
             var fld = this.getFieldInfo(fieldName);
             if (!fld && checkFieldName) {
-                throw new Error(strUtils.format(jriapp_shared_2.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
+                throw new Error(format(jriapp_shared_2.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
             }
             if (!!fld) {
                 vals = tmpVals.map(function (v) { return valUtils.stringifyValue(v, fld.dateConversion, fld.dataType, stz); });
@@ -326,7 +326,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                     }
                     break;
                 default:
-                    throw new Error(strUtils.format(jriapp_shared_2.LocaleERRS.ERR_QUERY_OPERATOR_INVALID, operand));
+                    throw new Error(format(jriapp_shared_2.LocaleERRS.ERR_QUERY_OPERATOR_INVALID, operand));
             }
             var filterItem = { fieldName: fieldName, kind: fkind, values: vals };
             this._filterInfo.filterItems.push(filterItem);
@@ -549,7 +549,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
 define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base", "jriapp_shared/collection/utils", "jriapp_db/dataquery", "jriapp_db/entity_aspect"], function (require, exports, jriapp_shared_3, base_1, utils_2, dataquery_1, entity_aspect_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_3.Utils, checks = utils.check, strUtils = utils.str, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, merge = _a.merge, forEachProp = _a.forEachProp, ERROR = utils.err, parseValue = utils_2.ValueUtils.parseValue, stringifyValue = utils_2.ValueUtils.stringifyValue, getPKFields = utils_2.CollUtils.getPKFields, walkField = utils_2.CollUtils.walkField, walkFields = utils_2.CollUtils.walkFields, objToVals = utils_2.CollUtils.objToVals, initVals = utils_2.CollUtils.initVals, getObjectField = utils_2.CollUtils.getObjectField;
+    var utils = jriapp_shared_3.Utils, _a = utils.check, isArray = _a.isArray, isNt = _a.isNt, format = utils.str.format, _b = utils.core, getValue = _b.getValue, setValue = _b.setValue, merge = _b.merge, forEachProp = _b.forEachProp, ERROR = utils.err, parseValue = utils_2.ValueUtils.parseValue, stringifyValue = utils_2.ValueUtils.stringifyValue, getPKFields = utils_2.CollUtils.getPKFields, walkField = utils_2.CollUtils.walkField, walkFields = utils_2.CollUtils.walkFields, objToVals = utils_2.CollUtils.objToVals, initVals = utils_2.CollUtils.initVals, getObjectField = utils_2.CollUtils.getObjectField;
     function doFieldDependences(dbSet, info) {
         if (!info.dependentOn) {
             return;
@@ -558,10 +558,10 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         deps.forEach(function (depOn) {
             var depOnFld = dbSet.getFieldInfo(depOn);
             if (!depOnFld) {
-                throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_CALC_FIELD_DEFINE, depOn));
+                throw new Error(format(jriapp_shared_3.LocaleERRS.ERR_CALC_FIELD_DEFINE, depOn));
             }
             if (info === depOnFld) {
-                throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_CALC_FIELD_SELF_DEPEND, depOn));
+                throw new Error(format(jriapp_shared_3.LocaleERRS.ERR_CALC_FIELD_SELF_DEPEND, depOn));
             }
             if (depOnFld.dependents.indexOf(info.fullName) < 0) {
                 depOnFld.dependents.push(info.fullName);
@@ -698,7 +698,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 var assoc = trackAssoc[tasKeys[i]], len2 = assoc.fieldRels.length;
                 for (var j = 0; j < len2; j += 1) {
                     var frel = assoc.fieldRels[j];
-                    if (!checks.isArray(trackAssocMap[frel.childField])) {
+                    if (!isArray(trackAssocMap[frel.childField])) {
                         trackAssocMap[frel.childField] = [assoc.childToParentName];
                     }
                     else {
@@ -722,7 +722,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 isChild = false;
             }
             if (assocs.length !== 1) {
-                throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_PARAM_INVALID_TYPE, "assocs", "Array"));
+                throw new Error(format(jriapp_shared_3.LocaleERRS.ERR_PARAM_INVALID_TYPE, "assocs", "Array"));
             }
             var assocName = assocs[0].name;
             fieldInfo.isReadOnly = true;
@@ -745,7 +745,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                         var assoc = self.dbContext.getAssociation(assocName);
                         if (!!v) {
                             if ((v._aspect.dbSetName !== assoc.parentDS.dbSetName)) {
-                                throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_PARAM_INVALID_TYPE, "value", assoc.parentDS.dbSetName));
+                                throw new Error(format(jriapp_shared_3.LocaleERRS.ERR_PARAM_INVALID_TYPE, "value", assoc.parentDS.dbSetName));
                             }
                             if (v._aspect.isNew) {
                                 item._aspect._setFieldVal(fieldInfo.fieldName, v._key);
@@ -780,7 +780,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype._doCalculatedField = function (opts, fieldInfo) {
             var self = this, result = {
-                getFunc: function (item) { throw new Error(strUtils.format("Calculated field:'{0}' is not initialized", fieldInfo.fieldName)); }
+                getFunc: function (item) { throw new Error(format("Calculated field:'{0}' is not initialized", fieldInfo.fieldName)); }
             };
             fieldInfo.isReadOnly = true;
             if (!!fieldInfo.dependentOn) {
@@ -793,7 +793,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             values.forEach(function (value, index) {
                 var name = names[index], fieldName = path + name.n, fld = self.getFieldInfo(fieldName);
                 if (!fld) {
-                    throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
+                    throw new Error(format(jriapp_shared_3.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
                 }
                 if (fld.fieldType === 5) {
                     self._refreshValues(fieldName + ".", item, value, name.p, rm);
@@ -808,7 +808,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             values.forEach(function (value, index) {
                 var name = names[index], fieldName = path + name.n, fld = self.getFieldInfo(fieldName);
                 if (!fld) {
-                    throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
+                    throw new Error(format(jriapp_shared_3.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
                 }
                 if (fld.fieldType === 5) {
                     self._applyFieldVals(vals, fieldName + ".", value, name.p);
@@ -874,7 +874,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype._defineCalculatedField = function (fullName, getFunc) {
             var calcDef = getValue(this._calcfldMap, fullName);
             if (!calcDef) {
-                throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_PARAM_INVALID, "calculated fieldName", fullName));
+                throw new Error(format(jriapp_shared_3.LocaleERRS.ERR_PARAM_INVALID, "calculated fieldName", fullName));
             }
             calcDef.getFunc = getFunc;
         };
@@ -886,7 +886,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             var pkFlds = this._pkFields, len = pkFlds.length;
             if (len === 1) {
                 var val = getValue(vals, pkFlds[0].fieldName);
-                if (checks.isNt(val)) {
+                if (isNt(val)) {
                     throw new Error("Empty key field value for: " + pkFlds[0].fieldName);
                 }
                 return this._getStrValue(val, pkFlds[0]);
@@ -895,7 +895,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 var pkVals = [];
                 for (var i = 0; i < len; i += 1) {
                     var val = getValue(vals, pkFlds[i].fieldName);
-                    if (checks.isNt(val)) {
+                    if (isNt(val)) {
                         throw new Error("Empty key field value for: " + pkFlds[i].fieldName);
                     }
                     var strval = this._getStrValue(val, pkFlds[i]);
@@ -958,7 +958,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype._getChildToParentNames = function (childFieldName) { return this._trackAssocMap[childFieldName]; };
         DbSet.prototype._afterFill = function (result, isClearAll) {
             var self = this;
-            if (!checks.isNt(result.fetchedItems)) {
+            if (!isNt(result.fetchedItems)) {
                 this._onLoaded(result.fetchedItems);
             }
             this._onCollectionChanged({
@@ -1006,12 +1006,12 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             });
             var arr = fetchedItems;
             if (!!query && !query.getIsStateDirty()) {
-                if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
+                if (query.isIncludeTotalCount && !isNt(res.totalCount)) {
                     this.totalCount = res.totalCount;
                 }
                 if (query.loadPageCount > 1 && isPagingEnabled) {
                     var dataCache = query._getInternal().getCache();
-                    if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
+                    if (query.isIncludeTotalCount && !isNt(res.totalCount)) {
                         dataCache.totalCount = res.totalCount;
                     }
                     dataCache.fill(res.pageIndex, fetchedItems);
@@ -1051,10 +1051,10 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype._fillFromCache = function (args) {
             var query = args.query;
             if (!query) {
-                throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query is not null"));
+                throw new Error(format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query is not null"));
             }
             if (query.getIsStateDirty()) {
-                throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
+                throw new Error(format(jriapp_shared_3.LocaleERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
             }
             var dataCache = query._getInternal().getCache(), arr = dataCache.getPageItems(query.pageIndex);
             this._replaceItems(args.reason, 1, arr);
@@ -1084,7 +1084,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             rows.forEach(function (rowInfo) {
                 var oldKey = rowInfo.clientKey, newKey = rowInfo.serverKey, item = self.getItemByKey(oldKey);
                 if (!item) {
-                    throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_KEY_IS_NOTFOUND, oldKey));
+                    throw new Error(format(jriapp_shared_3.LocaleERRS.ERR_KEY_IS_NOTFOUND, oldKey));
                 }
                 var itemStatus = item._aspect.status;
                 item._aspect._acceptChanges(rowInfo);
@@ -1108,7 +1108,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 if (!err.fieldName) {
                     err.fieldName = "*";
                 }
-                if (checks.isArray(errors[err.fieldName])) {
+                if (isArray(errors[err.fieldName])) {
                     errors[err.fieldName].push(err.message);
                 }
                 else {
@@ -1351,11 +1351,11 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                     return parentDB.getFieldInfo(parts.slice(1).join("."));
                 }
             }
-            throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
+            throw new Error(format(jriapp_shared_3.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
         };
         DbSet.prototype.sort = function (fieldNames, sortOrder) {
             var self = this, query = self.query;
-            if (!checks.isNt(query)) {
+            if (!isNt(query)) {
                 query.clearSort();
                 for (var i = 0; i < fieldNames.length; i += 1) {
                     switch (i) {
@@ -1411,7 +1411,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype.createQuery = function (name) {
             var queryInfo = this.dbContext._getInternal().getQueryInfo(name);
             if (!queryInfo) {
-                throw new Error(strUtils.format(jriapp_shared_3.LocaleERRS.ERR_QUERY_NAME_NOTFOUND, name));
+                throw new Error(format(jriapp_shared_3.LocaleERRS.ERR_QUERY_NAME_NOTFOUND, name));
             }
             return new dataquery_1.DataQuery(this, queryInfo);
         };
@@ -1481,7 +1481,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
 define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_4.Utils, strUtils = utils.str;
+    var utils = jriapp_shared_4.Utils, format = utils.str.format;
     var DbSets = (function (_super) {
         __extends(DbSets, _super);
         function DbSets(dbContext) {
@@ -1533,7 +1533,7 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (re
         DbSets.prototype.getDbSet = function (name) {
             var dbSet = this.findDbSet(name);
             if (!dbSet) {
-                throw new Error(strUtils.format(jriapp_shared_4.LocaleERRS.ERR_DBSET_NAME_INVALID, name));
+                throw new Error(format(jriapp_shared_4.LocaleERRS.ERR_DBSET_NAME_INVALID, name));
             }
             return dbSet;
         };
@@ -1557,14 +1557,14 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (re
 define("jriapp_db/association", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_5.Utils, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr;
+    var utils = jriapp_shared_5.Utils, format = utils.str.format, _a = utils.core, getNewID = _a.getNewID, extend = _a.extend, arrHelper = utils.arr;
     var Association = (function (_super) {
         __extends(Association, _super);
         function Association(options) {
             var _this = _super.call(this) || this;
             var self = _this;
-            _this._objId = coreUtils.getNewID("ass");
-            var opts = coreUtils.extend({
+            _this._objId = getNewID("ass");
+            var opts = extend({
                 dbContext: null,
                 parentName: "",
                 childName: "",
@@ -1681,7 +1681,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                     }
                     break;
                 default:
-                    throw new Error(strUtils.format(jriapp_shared_5.LocaleERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
+                    throw new Error(format(jriapp_shared_5.LocaleERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
             }
             self._notifyParentChanged(changed);
         };
@@ -1824,7 +1824,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                     }
                     break;
                 default:
-                    throw new Error(strUtils.format(jriapp_shared_5.LocaleERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
+                    throw new Error(format(jriapp_shared_5.LocaleERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
             }
             self._notifyChildrenChanged(changed);
         };
@@ -2209,7 +2209,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
 define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var strUtils = jriapp_shared_6.Utils.str;
+    var format = jriapp_shared_6.Utils.str.format;
     var DataOperationError = (function (_super) {
         __extends(DataOperationError, _super);
         function DataOperationError(originalError, operationName) {
@@ -2280,7 +2280,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
             if (_this._notValidated.length > 0) {
                 var res_1 = [message + ":"];
                 _this._notValidated.forEach(function (item) {
-                    res_1.push(strUtils.format("item key:{0} errors:{1}", item._key, item._aspect.getErrorString()));
+                    res_1.push(format("item key:{0} errors:{1}", item._key, item._aspect.getErrorString()));
                 });
                 message = res_1.join("\r\n");
             }
@@ -2303,7 +2303,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
 define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/association", "jriapp_db/error"], function (require, exports, jriapp_shared_7, utils_3, association_1, error_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_7.Utils, http = utils.http, _a = utils.check, isArray = _a.isArray, isNt = _a.isNt, isFunc = _a.isFunc, isString = _a.isString, strUtils = utils.str, _b = utils.core, getTimeZoneOffset = _b.getTimeZoneOffset, merge = _b.merge, ERROR = utils.err, stringifyValue = utils_3.ValueUtils.stringifyValue, _async = utils.defer;
+    var utils = jriapp_shared_7.Utils, http = utils.http, _a = utils.check, isArray = _a.isArray, isNt = _a.isNt, isFunc = _a.isFunc, isString = _a.isString, _b = utils.str, format = _b.format, endsWith = _b.endsWith, _c = utils.core, getTimeZoneOffset = _c.getTimeZoneOffset, merge = _c.merge, ERROR = utils.err, stringifyValue = utils_3.ValueUtils.stringifyValue, _d = utils.defer, delay = _d.delay, createDeferred = _d.createDeferred;
     var DATA_SVC_METH;
     (function (DATA_SVC_METH) {
         DATA_SVC_METH["Invoke"] = "invoke";
@@ -2322,11 +2322,11 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             case "ConcurrencyException":
                 throw new error_1.ConcurrencyError(jriapp_shared_7.LocaleERRS.ERR_CONCURRENCY, oper);
             case "ValidationException":
-                throw new error_1.SvcValidationError(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_SVC_VALIDATION, svcError.message), oper);
+                throw new error_1.SvcValidationError(format(jriapp_shared_7.LocaleERRS.ERR_SVC_VALIDATION, svcError.message), oper);
             case "DomainServiceException":
-                throw new error_1.DataOperationError(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_SVC_ERROR, svcError.message), oper);
+                throw new error_1.DataOperationError(format(jriapp_shared_7.LocaleERRS.ERR_SVC_ERROR, svcError.message), oper);
             default:
-                throw new error_1.DataOperationError(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, svcError.message), oper);
+                throw new error_1.DataOperationError(format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, svcError.message), oper);
         }
     }
     var DBCTX_EVENTS;
@@ -2436,7 +2436,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 return self._invokeMethod(methodInfo, args).then(function (res) {
                     self._checkDestroy();
                     if (!res) {
-                        throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
+                        throw new Error(format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
                     }
                     fn_checkError(res.error, 3);
                     return res.result;
@@ -2479,10 +2479,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 var pinfo = paramInfos[i];
                 var val = args[pinfo.name];
                 if (!pinfo.isNullable && !pinfo.isArray && !(pinfo.dataType === 1 || pinfo.dataType === 10) && isNt(val)) {
-                    throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
+                    throw new Error(format(jriapp_shared_7.LocaleERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
                 }
                 if (isFunc(val)) {
-                    throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
+                    throw new Error(format(jriapp_shared_7.LocaleERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
                 }
                 if (pinfo.isArray && !isNt(val) && !isArray(val)) {
                     val = [val];
@@ -2508,7 +2508,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._invokeMethod = function (methodInfo, args) {
             var _this = this;
             var self = this;
-            return _async.delay(function () {
+            return delay(function () {
                 self._checkDestroy();
                 var data = self._getMethodParams(methodInfo, args);
                 return JSON.stringify(data);
@@ -2523,7 +2523,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype._loadFromCache = function (query, reason) {
             var self = this;
-            return _async.delay(function () {
+            return delay(function () {
                 self._checkDestroy();
                 var dbSet = query.dbSet;
                 return dbSet._getInternal().fillFromCache({ reason: reason, query: query });
@@ -2541,14 +2541,14 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype._onLoaded = function (response, query, reason) {
             var self = this;
-            return _async.delay(function () {
+            return delay(function () {
                 self._checkDestroy();
                 if (isNt(response)) {
-                    throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
+                    throw new Error(format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
                 }
                 var dbSetName = response.dbSetName, dbSet = self.getDbSet(dbSetName);
                 if (isNt(dbSet)) {
-                    throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_DBSET_NAME_INVALID, dbSetName));
+                    throw new Error(format(jriapp_shared_7.LocaleERRS.ERR_DBSET_NAME_INVALID, dbSetName));
                 }
                 fn_checkError(response.error, 2);
                 var isClearAll = (!!query && query.isClearPrevData);
@@ -2573,7 +2573,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                         jsDB.rows.forEach(function (row) {
                             var item = dbSet.getItemByKey(row.clientKey);
                             if (!item) {
-                                throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_KEY_IS_NOTFOUND, row.clientKey));
+                                throw new Error(format(jriapp_shared_7.LocaleERRS.ERR_KEY_IS_NOTFOUND, row.clientKey));
                             }
                             submitted_1.push(item);
                             if (!!row.invalid) {
@@ -2609,7 +2609,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype._getUrl = function (action) {
             var loadUrl = this.serviceUrl;
-            if (!strUtils.endsWith(loadUrl, "/")) {
+            if (!endsWith(loadUrl, "/")) {
                 loadUrl = loadUrl + "/";
             }
             loadUrl = loadUrl + [action, ""].join("/");
@@ -2658,7 +2658,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._loadInternal = function (context) {
             var self = this;
             context.fn_onStart();
-            _async.delay(function () {
+            delay(function () {
                 self._checkDestroy();
                 var oldQuery = context.dbSet.query, loadPageCount = context.loadPageCount, isPagingEnabled = context.isPagingEnabled;
                 var range, pageCount = 1, pageIndex = context.pageIndex;
@@ -2721,7 +2721,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._loadRefresh = function (args) {
             var self = this;
             args.fn_onStart();
-            _async.delay(function () {
+            delay(function () {
                 self._checkDestroy();
                 var request = {
                     dbSetName: args.item._aspect.dbSetName,
@@ -2742,7 +2742,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             });
         };
         DbContext.prototype._refreshItem = function (item) {
-            var self = this, deferred = _async.createDeferred();
+            var self = this, deferred = createDeferred();
             var context = {
                 item: item,
                 dbSet: item._aspect.dbSet,
@@ -2811,7 +2811,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             if (!query) {
                 throw new Error(jriapp_shared_7.LocaleERRS.ERR_DB_LOAD_NO_QUERY);
             }
-            var self = this, deferred = _async.createDeferred();
+            var self = this, deferred = createDeferred();
             var context = {
                 query: query,
                 reason: reason,
@@ -2861,7 +2861,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._submitChanges = function (args) {
             var self = this, no_changes = "NO_CHANGES";
             args.fn_onStart();
-            _async.delay(function () {
+            delay(function () {
                 self._checkDestroy();
                 var res = self._getChanges();
                 if (res.dbSets.length === 0) {
@@ -2902,11 +2902,11 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 permissions: null
             });
             if (!isString(opts.serviceUrl)) {
-                throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_PARAM_INVALID, "serviceUrl", opts.serviceUrl));
+                throw new Error(format(jriapp_shared_7.LocaleERRS.ERR_PARAM_INVALID, "serviceUrl", opts.serviceUrl));
             }
             this._serviceUrl = opts.serviceUrl;
             this._initDbSets();
-            this._initState = _async.delay(function () {
+            this._initState = delay(function () {
                 if (!!opts.permissions) {
                     return opts.permissions;
                 }
@@ -2955,7 +2955,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype.getAssociation = function (name) {
             var name2 = "get" + name, fn = this._assoc[name2];
             if (!fn) {
-                throw new Error(strUtils.format(jriapp_shared_7.LocaleERRS.ERR_ASSOC_NAME_INVALID, name));
+                throw new Error(format(jriapp_shared_7.LocaleERRS.ERR_ASSOC_NAME_INVALID, name));
             }
             return fn();
         };
@@ -2964,7 +2964,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             if (!!this._pendingSubmit) {
                 return this._pendingSubmit.promise;
             }
-            var deferred = _async.createDeferred(), submitState = { promise: deferred.promise() };
+            var deferred = createDeferred(), submitState = { promise: deferred.promise() };
             this._pendingSubmit = submitState;
             var context = {
                 fn_onStart: function () {
@@ -2998,7 +2998,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     }
                 }
             };
-            _async.getTaskQueue().enque(function () {
+            utils.queue.enque(function () {
                 self.waitForNotBusy(function () {
                     try {
                         self._checkDestroy();
@@ -3117,7 +3117,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
 define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriapp_shared/errors", "jriapp_shared/collection/utils", "jriapp_shared/collection/aspect", "jriapp_db/error"], function (require, exports, jriapp_shared_8, errors_1, utils_4, aspect_1, error_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_8.Utils, undefined = utils.check.undefined, strUtils = utils.str, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, uuid = _a.uuid, compareVals = utils_4.ValueUtils.compareVals, parseValue = utils_4.ValueUtils.parseValue, sys = utils.sys;
+    var utils = jriapp_shared_8.Utils, undefined = utils.check.undefined, format = utils.str.format, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, uuid = _a.uuid, compareVals = utils_4.ValueUtils.compareVals, parseValue = utils_4.ValueUtils.parseValue, sys = utils.sys;
     function fn_isNotSubmittable(fieldInfo) {
         switch (fieldInfo.fieldType) {
             case 1:
@@ -3358,7 +3358,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             changes.forEach(function (v) {
                 var fld = dbSet.getFieldInfo(v.fieldName);
                 if (!fld) {
-                    throw new Error(strUtils.format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
+                    throw new Error(format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
                 }
                 self._onFieldChanged(v.fieldName, fld);
             });
@@ -3396,7 +3396,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
         EntityAspect.prototype._refreshValue = function (val, fullName, refreshMode) {
             var self = this, fld = self.dbSet.getFieldInfo(fullName);
             if (!fld) {
-                throw new Error(strUtils.format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
+                throw new Error(format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
             }
             var stz = self.serverTimezone, dataType = fld.dataType, dcnv = fld.dateConversion;
             var newVal = parseValue(val, dataType, dcnv, stz), oldVal = self._getValue(fullName, 0);
@@ -3439,7 +3439,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                     }
                     break;
                 default:
-                    throw new Error(strUtils.format(jriapp_shared_8.LocaleERRS.ERR_PARAM_INVALID, "refreshMode", refreshMode));
+                    throw new Error(format(jriapp_shared_8.LocaleERRS.ERR_PARAM_INVALID, "refreshMode", refreshMode));
             }
         };
         EntityAspect.prototype._refreshValues = function (rowInfo, refreshMode) {
@@ -3496,7 +3496,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             var dbSetName = this.dbSetName, dbSet = this.dbSet, oldV = this._getFieldVal(fieldName), fieldInfo = this.getFieldInfo(fieldName);
             var newV = val, res = false;
             if (!fieldInfo) {
-                throw new Error(strUtils.format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, dbSetName, fieldName));
+                throw new Error(format(jriapp_shared_8.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, dbSetName, fieldName));
             }
             if (!(this.isEditing || this.isUpdating)) {
                 this.beginEdit();
@@ -3708,7 +3708,7 @@ define("jriapp_db/int", ["require", "exports"], function (require, exports) {
 define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base"], function (require, exports, jriapp_shared_9, base_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_9.Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err, sys = utils.sys;
+    var utils = jriapp_shared_9.Utils, checks = utils.check, format = utils.str.format, extend = utils.core.extend, ERROR = utils.err, sys = utils.sys;
     var VIEW_EVENTS;
     (function (VIEW_EVENTS) {
         VIEW_EVENTS["refreshed"] = "view_refreshed";
@@ -3804,7 +3804,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }
         };
         DataView.prototype._fillItems = function (data) {
-            data = coreUtils.extend({
+            data = extend({
                 items: [],
                 reason: 3,
                 clear: true,
@@ -3889,7 +3889,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                     }
                     break;
                 default:
-                    throw new Error(strUtils.format(jriapp_shared_9.LocaleERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
+                    throw new Error(format(jriapp_shared_9.LocaleERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
             }
         };
         DataView.prototype._onDSStatusChanged = function (sender, args) {
@@ -4255,7 +4255,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
 define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_11.Utils, strUtils = utils.str;
+    var utils = jriapp_shared_11.Utils, format = utils.str.format;
     var BaseComplexProperty = (function (_super) {
         __extends(BaseComplexProperty, _super);
         function BaseComplexProperty(name) {
@@ -4269,7 +4269,7 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
         BaseComplexProperty.prototype.getPropertyByName = function (name) {
             var arrProps = this.getProperties().filter(function (f) { return f.fieldName === name; });
             if (!arrProps || arrProps.length !== 1) {
-                throw new Error(strUtils.format(jriapp_shared_11.LocaleERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
+                throw new Error(format(jriapp_shared_11.LocaleERRS.ERR_ASSERTION_FAILED, "arrProps.length === 1"));
             }
             return arrProps[0];
         };
@@ -4367,7 +4367,7 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
                 parent = parent.getParent();
             }
             if (!parent || !(parent instanceof RootComplexProperty)) {
-                throw new Error(strUtils.format(jriapp_shared_11.LocaleERRS.ERR_ASSERTION_FAILED, "parent instanceof RootComplexProperty"));
+                throw new Error(format(jriapp_shared_11.LocaleERRS.ERR_ASSERTION_FAILED, "parent instanceof RootComplexProperty"));
             }
             return parent;
         };
