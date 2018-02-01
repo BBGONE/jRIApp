@@ -44,7 +44,7 @@ define("jriapp_db/const", ["require", "exports"], function (require, exports) {
 define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_1.Utils, checks = utils.check, forEachProp = utils.core.forEachProp;
+    var utils = jriapp_shared_1.Utils, isNt = utils.check.isNt, forEachProp = utils.core.forEachProp;
     var DataCache = (function (_super) {
         __extends(DataCache, _super);
         function DataCache(query) {
@@ -214,7 +214,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function 
         Object.defineProperty(DataCache.prototype, "totalCount", {
             get: function () { return this._totalCount; },
             set: function (v) {
-                if (checks.isNt(v)) {
+                if (isNt(v)) {
                     v = 0;
                 }
                 if (v !== this._totalCount) {
@@ -240,7 +240,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function 
 define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/datacache"], function (require, exports, jriapp_shared_2, utils_1, datacache_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_2.Utils, checks = utils.check, format = utils.str.format, arrHelper = utils.arr, valUtils = utils_1.ValueUtils;
+    var utils = jriapp_shared_2.Utils, _a = utils.check, isNt = _a.isNt, isArray = _a.isArray, isDate = _a.isDate, format = utils.str.format, arrHelper = utils.arr, valUtils = utils_1.ValueUtils;
     var DataQuery = (function (_super) {
         __extends(DataQuery, _super);
         function DataQuery(dbSet, queryInfo) {
@@ -281,7 +281,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             return _this;
         }
         DataQuery.prototype._addSort = function (fieldName, sortOrder) {
-            var ord = !checks.isNt(sortOrder) ? sortOrder : 0;
+            var ord = !isNt(sortOrder) ? sortOrder : 0;
             var sortItem = { fieldName: fieldName, sortOrder: ord };
             this._sortInfo.sortItems.push(sortItem);
             this._cacheInvalidated = true;
@@ -290,7 +290,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             if (checkFieldName === void 0) { checkFieldName = true; }
             var fkind = 0, vals = [];
             var stz = this.serverTimezone;
-            if (!checks.isArray(value)) {
+            if (!isArray(value)) {
                 vals = [value];
             }
             else {
@@ -305,7 +305,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                 vals = tmpVals.map(function (v) { return valUtils.stringifyValue(v, fld.dateConversion, fld.dataType, stz); });
             }
             else {
-                vals = tmpVals.map(function (v) { return valUtils.stringifyValue(v, 0, checks.isDate(v) ? 7 : 0, stz); });
+                vals = tmpVals.map(function (v) { return valUtils.stringifyValue(v, 0, isDate(v) ? 7 : 0, stz); });
             }
             switch (operand) {
                 case 0:
@@ -3117,7 +3117,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
 define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriapp_shared/errors", "jriapp_shared/collection/utils", "jriapp_shared/collection/aspect", "jriapp_db/error"], function (require, exports, jriapp_shared_8, errors_1, utils_4, aspect_1, error_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_8.Utils, undefined = utils.check.undefined, format = utils.str.format, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, uuid = _a.uuid, compareVals = utils_4.ValueUtils.compareVals, parseValue = utils_4.ValueUtils.parseValue, sys = utils.sys;
+    var utils = jriapp_shared_8.Utils, _undefined = utils.check._undefined, format = utils.str.format, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, uuid = _a.uuid, compareVals = utils_4.ValueUtils.compareVals, parseValue = utils_4.ValueUtils.parseValue, sys = utils.sys;
     function fn_isNotSubmittable(fieldInfo) {
         switch (fieldInfo.fieldType) {
             case 1:
@@ -3425,12 +3425,12 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                     break;
                 case 2:
                     {
-                        var origOldVal = undefined;
+                        var origOldVal = _undefined;
                         if (self.hasOrigVals) {
                             origOldVal = self._getValue(fullName, 2);
                             self._setValue(fullName, newVal, 2);
                         }
-                        if (origOldVal === undefined || compareVals(origOldVal, oldVal, dataType)) {
+                        if (origOldVal === _undefined || compareVals(origOldVal, oldVal, dataType)) {
                             if (!compareVals(newVal, oldVal, dataType)) {
                                 self._setValue(fullName, newVal, 0);
                                 self._onFieldChanged(fullName, fld);
@@ -3708,7 +3708,7 @@ define("jriapp_db/int", ["require", "exports"], function (require, exports) {
 define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base"], function (require, exports, jriapp_shared_9, base_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_9.Utils, checks = utils.check, format = utils.str.format, extend = utils.core.extend, ERROR = utils.err, sys = utils.sys;
+    var utils = jriapp_shared_9.Utils, isFunc = utils.check.isFunc, format = utils.str.format, extend = utils.core.extend, ERROR = utils.err, sys = utils.sys;
     var VIEW_EVENTS;
     (function (VIEW_EVENTS) {
         VIEW_EVENTS["refreshed"] = "view_refreshed";
@@ -3720,7 +3720,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             if (!sys.isCollection(options.dataSource)) {
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_DATAVIEW_DATASRC_INVALID);
             }
-            if (!!options.fn_filter && !checks.isFunc(options.fn_filter)) {
+            if (!!options.fn_filter && !isFunc(options.fn_filter)) {
                 throw new Error(jriapp_shared_9.LocaleERRS.ERR_DATAVIEW_FILTER_INVALID);
             }
             _this._refreshDebounce = new jriapp_shared_9.Debounce(options.refreshTimeout || 0);

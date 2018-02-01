@@ -5,7 +5,6 @@
 /// <reference path="../thirdparty/qtip2.d.ts" />
 declare module "jriapp_ui/int" {
     import { IValidationInfo } from "jriapp_shared";
-    export const UIERRORS_SVC = "IUIErrorsService";
     export interface IUIErrorsService {
         setErrors(el: HTMLElement, errors: IValidationInfo[], toolTip?: string): void;
         setFormErrors(el: HTMLElement, errors: IValidationInfo[]): void;

@@ -1,8 +1,17 @@
 /// <reference path="../thirdparty/moment.d.ts" />
 /// <reference path="jriapp_shared.d.ts" />
 declare module "jriapp/const" {
-    export const TOOLTIP_SVC = "ITooltipService";
-    export const DATEPICKER_SVC = "IDatepickerService";
+    export const enum SERVICES {
+        TOOLTIP_SVC = "ITooltipService",
+        DATEPICKER_SVC = "IDatepicker",
+        UIERRORS_SVC = "IUIErrorsService",
+    }
+    export const enum BINDING_MODE {
+        OneTime = 0,
+        OneWay = 1,
+        TwoWay = 2,
+        BackWay = 3,
+    }
     export const enum STORE_KEY {
         SVC = "svc.",
         CONVERTER = "cnv.",
@@ -52,12 +61,6 @@ declare module "jriapp/const" {
         Source = 0,
         Target = 1,
     }
-    export const enum BINDING_MODE {
-        OneTime = 0,
-        OneWay = 1,
-        TwoWay = 2,
-        BackWay = 3,
-    }
     export const enum SubscribeFlags {
         delegationOn = 0,
         click = 1,
@@ -98,10 +101,6 @@ declare module "jriapp/int" {
         detachFrom(el: HTMLElement): void;
         parseDate(str: string): Date;
         formatDate(date: Date): string;
-    }
-    export interface IConverter {
-        convertToSource(val: any, param: any, dataContext: any): any;
-        convertToTarget(val: any, param: any, dataContext: any): any;
     }
     export interface ISelectable {
         onKeyDown(key: number, event: Event): void;
@@ -188,6 +187,25 @@ declare module "jriapp/int" {
         readonly uniqueID: string;
         viewMounted?: () => void;
     }
+    export interface IConverter {
+        convertToSource(val: any, param: any, dataContext: any): any;
+        convertToTarget(val: any, param: any, dataContext: any): any;
+    }
+    export interface IBinding extends IBaseObject {
+        target: IBaseObject;
+        source: IBaseObject;
+        targetPath: string[];
+        sourcePath: string[];
+        sourceValue: any;
+        targetValue: any;
+        readonly isSourceFixed: boolean;
+        readonly mode: BINDING_MODE;
+        readonly converter: IConverter;
+        readonly param: any;
+        isDisabled: boolean;
+        updateTarget(): void;
+        updateSource(): void;
+    }
     export interface IBindArgs {
         readonly scope: Document | Element;
         readonly bind: BindScope;
@@ -221,21 +239,6 @@ declare module "jriapp/int" {
         converter?: any;
         param?: any;
         isEval?: boolean;
-    }
-    export interface IBinding extends IBaseObject {
-        target: IBaseObject;
-        source: IBaseObject;
-        targetPath: string[];
-        sourcePath: string[];
-        sourceValue: any;
-        targetValue: any;
-        readonly isSourceFixed: boolean;
-        readonly mode: BINDING_MODE;
-        readonly converter: IConverter;
-        readonly param: any;
-        isDisabled: boolean;
-        updateTarget(): void;
-        updateSource(): void;
     }
     export interface IExternallyCachable {
         addOnObjectCreated(fn: (sender: any, args: {
@@ -716,8 +719,9 @@ declare module "jriapp/bootstrap" {
     export const bootstrap: Bootstrap;
 }
 declare module "jriapp/utils/viewchecks" {
+    import { IElView } from "jriapp/int";
     export class ViewChecks {
-        static isElView: (obj: any) => boolean;
+        static isElView: (obj: any) => obj is IElView;
         static isTemplateElView: (obj: any) => boolean;
         static isDataForm: (el: Element) => boolean;
         static isInsideDataForm: (el: Element) => boolean;
@@ -1003,5 +1007,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.11.6";
+    export const VERSION = "2.11.7";
 }
