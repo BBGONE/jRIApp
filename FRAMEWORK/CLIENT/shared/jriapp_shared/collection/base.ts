@@ -23,12 +23,14 @@ import { ValueUtils, CollUtils } from "./utils";
 import { ValidationError } from "../errors";
 
 const utils = Utils, { forEachProp, getTimeZoneOffset, getNewID } = utils.core,
-    { format, startsWith } = utils.str, { undefined, isArray, isUndefined } = utils.check,
+    { format, startsWith } = utils.str, { _undefined, isArray, isUndefined } = utils.check,
     sys = utils.sys, { stringifyValue } = ValueUtils, { getObjectField } = CollUtils;
 
 
 // REPLACE DUMMY IMPLEMENTATIONS
-sys.isCollection = (obj) => { return (!!obj && obj instanceof BaseCollection); };
+sys.isCollection = (obj: any): obj is ICollection<any> => {
+    return (!!obj && obj instanceof BaseCollection);
+};
 
 const enum COLL_EVENTS {
     begin_edit = "beg_edit",
@@ -576,10 +578,10 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
                 fieldName = fieldNames[i];
                 af = sys.resolvePath(a, fieldName);
                 bf = sys.resolvePath(b, fieldName);
-                if (af === undefined) {
+                if (af === _undefined) {
                     af = null;
                 }
-                if (bf === undefined) {
+                if (bf === _undefined) {
                     bf = null;
                 }
 

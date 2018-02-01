@@ -3,7 +3,7 @@ import { BaseObject, Utils, IIndexer } from "jriapp_shared";
 import { TDataQuery } from "./dataquery";
 import { IEntityItem, ICachedPage, IKV } from "./int";
 
-const utils = Utils, checks = utils.check, { forEachProp } = utils.core;
+const utils = Utils, { isNt } = utils.check, { forEachProp } = utils.core;
 
 
 export class DataCache extends BaseObject {
@@ -170,7 +170,7 @@ export class DataCache extends BaseObject {
     get loadPageCount() { return this._query.loadPageCount; }
     get totalCount() { return this._totalCount; }
     set totalCount(v: number) {
-        if (checks.isNt(v)) {
+        if (isNt(v)) {
             v = 0;
         }
         if (v !== this._totalCount) {

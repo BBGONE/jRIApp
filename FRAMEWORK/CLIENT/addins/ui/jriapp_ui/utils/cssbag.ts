@@ -3,7 +3,7 @@ import {
     Utils, BaseObject, IPropertyBag
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-const utils = Utils, { undefined, isArray, isString } = utils.check, dom = DomUtils, { trimBrackets } = utils.str;
+const utils = Utils, { _undefined, isArray, isString } = utils.check, dom = DomUtils, { trimBrackets } = utils.str;
 
 // wraps HTMLElement to add or remove classNames using data binding
 export class CSSBag extends BaseObject implements IPropertyBag {
@@ -20,10 +20,10 @@ export class CSSBag extends BaseObject implements IPropertyBag {
     // implement IPropertyBag
     getProp(name: string): any {
         // no need to get it
-        return undefined;
+        return _undefined;
     }
     setProp(name: string, val: any): void {
-        if (val === undefined) {
+        if (val === _undefined) {
             return;
         }
         const cssName = trimBrackets(name);

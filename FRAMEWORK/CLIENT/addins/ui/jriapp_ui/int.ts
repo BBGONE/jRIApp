@@ -1,7 +1,5 @@
 ﻿import { IValidationInfo } from "jriapp_shared";
 
-export const UIERRORS_SVC = "IUIErrorsService";
-
 export interface IUIErrorsService {
     setErrors(el: HTMLElement, errors: IValidationInfo[], toolTip?: string): void;
     setFormErrors(el: HTMLElement, errors: IValidationInfo[]): void;

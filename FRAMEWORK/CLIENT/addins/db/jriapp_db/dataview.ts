@@ -11,7 +11,7 @@ import {
 import { BaseCollection, Errors } from "jriapp_shared/collection/base";
 import { ItemAspect } from "jriapp_shared/collection/aspect";
 
-const utils = Utils, checks = utils.check, { format } = utils.str, { extend } = utils.core,
+const utils = Utils, { isFunc } = utils.check, { format } = utils.str, { extend } = utils.core,
     ERROR = utils.err, sys = utils.sys;
 
 const enum VIEW_EVENTS {
@@ -39,7 +39,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         if (!sys.isCollection(options.dataSource)) {
             throw new Error(ERRS.ERR_DATAVIEW_DATASRC_INVALID);
         }
-        if (!!options.fn_filter && !checks.isFunc(options.fn_filter)) {
+        if (!!options.fn_filter && !isFunc(options.fn_filter)) {
             throw new Error(ERRS.ERR_DATAVIEW_FILTER_INVALID);
         }
         this._refreshDebounce = new Debounce(options.refreshTimeout || 0);

@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IDatepicker } from "jriapp/int";
-import { DATEPICKER_SVC } from "jriapp/const";
+import { SERVICES } from "jriapp/const";
 import { bootstrap } from "jriapp/bootstrap";
 import { TextBoxElView, ITextBoxOptions } from "./textbox";
 
@@ -13,7 +13,7 @@ export interface IDatePickerOptions extends ITextBoxOptions {
 export class DatePickerElView extends TextBoxElView {
     constructor(el: HTMLInputElement, options: IDatePickerOptions) {
         super(el, options);
-        const datepicker = boot.getSvc<IDatepicker>(DATEPICKER_SVC);
+        const datepicker = boot.getSvc<IDatepicker>(SERVICES.DATEPICKER_SVC);
         if (!datepicker) {
             throw new Error("IDatepicker service is not registered");
         }
@@ -27,7 +27,7 @@ export class DatePickerElView extends TextBoxElView {
             return;
         }
         this.setDisposing();
-        const datepicker = boot.getSvc<IDatepicker>(DATEPICKER_SVC);
+        const datepicker = boot.getSvc<IDatepicker>(SERVICES.DATEPICKER_SVC);
         if (!datepicker) {
             throw new Error("IDatepicker service is not registered");
         }

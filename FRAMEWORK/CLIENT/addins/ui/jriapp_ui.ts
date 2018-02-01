@@ -5,8 +5,7 @@
 /// <reference path="../../thirdparty/qtip2.d.ts" />
 /** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { bootstrap } from "jriapp/bootstrap";
-import { TOOLTIP_SVC, DATEPICKER_SVC } from "jriapp/const";
-import { UIERRORS_SVC } from "./jriapp_ui/int";
+import { SERVICES } from "jriapp/const";
 import { initContentFactory } from "./jriapp_ui/content/factory";
 import { createToolTipSvc } from "./jriapp_ui/utils/tooltip";
 import { createDatepickerSvc } from "./jriapp_ui/utils/datepicker";
@@ -52,9 +51,9 @@ const boot = bootstrap;
 
 initContentFactory();
 
-boot.registerSvc(TOOLTIP_SVC, createToolTipSvc());
-boot.registerSvc(DATEPICKER_SVC, createDatepickerSvc());
-boot.registerSvc(UIERRORS_SVC, createUIErrorsSvc());
+boot.registerSvc(SERVICES.TOOLTIP_SVC, createToolTipSvc());
+boot.registerSvc(SERVICES.DATEPICKER_SVC, createDatepickerSvc());
+boot.registerSvc(SERVICES.UIERRORS_SVC, createUIErrorsSvc());
 
 // Load Stylesheet for all the bundle
 boot.loadOwnStyle("jriapp_ui");

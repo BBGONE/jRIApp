@@ -8,7 +8,7 @@ import { BaseColumn, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 import { RowSelectorCell } from "../cells/rowselector";
 
-const utils = Utils, dom = DomUtils, doc = dom.document, checks = utils.check;
+const utils = Utils, dom = DomUtils, doc = dom.document, { _undefined } = utils.check;
 
 export class RowSelectorColumn extends BaseColumn {
     private _chk: HTMLInputElement;
@@ -66,7 +66,7 @@ export class RowSelectorColumn extends BaseColumn {
         if (!!this._chk) {
             return this._chk.checked;
         }
-        return checks.undefined;
+        return _undefined;
     }
     set checked(v: boolean) {
         const bv = !!v, chk = this._chk;

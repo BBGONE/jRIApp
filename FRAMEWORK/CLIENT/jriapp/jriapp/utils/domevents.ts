@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils, LocaleERRS, createWeakMap, IWeakMap } from "jriapp_shared";
 
-const utils = Utils, checks = utils.check, arrHelper = utils.arr,
+const utils = Utils, { isFunc, isString, isNt } = utils.check, arrHelper = utils.arr,
     { format } = utils.str, debug = utils.debug, ERRS = LocaleERRS;
 
 // stores listener and event name
@@ -104,7 +104,7 @@ class EventHelper {
             debug.checkStartDebugger();
             throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "ev is a valid object"));
         }
-        if (!checks.isFunc(handler)) {
+        if (!isFunc(handler)) {
             throw new Error(ERRS.ERR_EVENT_INVALID_FUNC);
         }
 
@@ -236,7 +236,7 @@ export type TEventsDelegateArgs = {
 export type TEventsArgsOrNamespace = TEventsArgs | string | TEventsDelegateArgs;
 
 function isDelegateArgs(a: any): a is TEventsDelegateArgs {
-    return (!a) ? false : checks.isFunc(a.matchElement);
+    return (!a) ? false : isFunc(a.matchElement);
 }
 
 export type THandlerFunc = (evt: any) => void;
@@ -350,7 +350,7 @@ export class DomEvents {
         }
 
         if (!!args) {
-            if (checks.isString(args)) {
+            if (isString(args)) {
                 ns = args;
             } else if (isDelegateArgs(args)) {
                 ns = args.nmspace;
@@ -372,7 +372,7 @@ export class DomEvents {
         const handlers = helper.remove(ev, evType, nmspace);
         for (let i = 0; i < handlers.length; i += 1) {
             const handler = handlers[i];
-            if (checks.isNt(useCapture) || (useCapture === handler.useCapture)) {
+            if (isNt(useCapture) || (useCapture === handler.useCapture)) {
                 el.removeEventListener(handler.name, handler.fn, handler.useCapture);
             }
         }

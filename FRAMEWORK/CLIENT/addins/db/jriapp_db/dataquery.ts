@@ -8,7 +8,7 @@ import { DataCache } from "./datacache";
 import { DbSet } from "./dbset";
 import { DbContext } from "./dbcontext";
 
-const utils = Utils, checks = utils.check, { format } = utils.str, arrHelper = utils.arr,
+const utils = Utils, { isNt, isArray, isDate } = utils.check, { format } = utils.str, arrHelper = utils.arr,
     valUtils = ValueUtils;
 
 export interface IInternalQueryMethods {
@@ -74,7 +74,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
         };
     }
     private _addSort(fieldName: string, sortOrder: SORT_ORDER) {
-        const ord = !checks.isNt(sortOrder) ? sortOrder : SORT_ORDER.ASC;
+        const ord = !isNt(sortOrder) ? sortOrder : SORT_ORDER.ASC;
         const sortItem = { fieldName: fieldName, sortOrder: ord };
         this._sortInfo.sortItems.push(sortItem);
         this._cacheInvalidated = true;
@@ -82,7 +82,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
     private _addFilterItem(fieldName: string, operand: FILTER_TYPE, value: any[], checkFieldName = true) {
         let fkind = FILTER_TYPE.Equals, vals: any[] = [];
         const stz = this.serverTimezone;
-        if (!checks.isArray(value)) {
+        if (!isArray(value)) {
             vals = [value];
         } else {
             vals = value;
@@ -97,7 +97,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
         if (!!fld) {
             vals = tmpVals.map((v) => valUtils.stringifyValue(v, fld.dateConversion, fld.dataType, stz));
         } else {
-            vals = tmpVals.map((v) => valUtils.stringifyValue(v, DATE_CONVERSION.None, checks.isDate(v) ? DATA_TYPE.Date : DATA_TYPE.None, stz));
+            vals = tmpVals.map((v) => valUtils.stringifyValue(v, DATE_CONVERSION.None, isDate(v) ? DATA_TYPE.Date : DATA_TYPE.None, stz));
         }
 
         switch (operand) {

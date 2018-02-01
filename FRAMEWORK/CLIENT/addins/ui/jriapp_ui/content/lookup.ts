@@ -8,7 +8,7 @@ import { IExternallyCachable, IBinding, IBindingOptions, IConstructorContentOpti
 import { ListBoxElView } from "../listbox";
 import { BasicContent, IContentView } from "./basic";
 
-const utils = Utils, dom = DomUtils, doc = dom.document, { format } = utils.str,
+const utils = Utils, dom = DomUtils, doc = dom.document, { _undefined } = utils.check, { format } = utils.str,
     { getNewID } = utils.core, sys = utils.sys;
 
 export interface ILookupOptions {
@@ -40,7 +40,7 @@ class LookupConverter implements IConverter {
         this._content = content;
     }
     convertToSource(val: any, param: any, dataContext: any): number {
-        return utils.check.undefined;
+        return _undefined;
     }
     convertToTarget(val: any, param: any, dataContext: any): string {
         return this._content.getLookupText(val);

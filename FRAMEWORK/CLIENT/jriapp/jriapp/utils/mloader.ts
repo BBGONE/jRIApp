@@ -3,7 +3,8 @@ import { Utils, IIndexer, IPromise, IDeferred } from "jriapp_shared";
 import { IModuleLoader } from "../int";
 import { createCssLoader as createCSSLoader } from "./sloader";
 
-const utils = Utils, { forEachProp } = utils.core, { startsWith } = utils.str, _async = utils.defer,
+const utils = Utils, { forEachProp } = utils.core, { startsWith } = utils.str,
+    { reject: _reject, resolve: _resolve, whenAll: _whenAll, createDeferred } = utils.defer,
     arrHelper = utils.arr, CSSPrefix = "css!";
 //ambient require function
 declare var require: any;
@@ -30,7 +31,7 @@ interface IModuleLoad {
 
 function whenAll(loads: IModuleLoad[]): IPromise<any> {
     if (!loads || loads.length === 0) {
-        return _async.resolve<void>(void 0, true);
+        return _resolve<void>(void 0, true);
     }
     if (loads.length === 1) {
         return loads[0].defered.promise();
@@ -48,9 +49,9 @@ function whenAll(loads: IModuleLoad[]): IPromise<any> {
     }
 
     if (resolved === cnt) {
-        return !err ? _async.resolve<void>(void 0, true) : _async.reject(err);
+        return !err ? _resolve<void>(void 0, true) : _reject(err);
     } else {
-        return _async.whenAll(loads.map((load) => {
+        return _whenAll(loads.map((load) => {
             return load.defered.promise();
         }));
     }
@@ -80,7 +81,7 @@ class ModuleLoader implements IModuleLoader {
                     name: name,
                     err: null,
                     state: LOAD_STATE.LOADING,
-                    defered: _async.createDeferred<any>(true)
+                    defered: createDeferred<any>(true)
                 };
             });
 
@@ -130,7 +131,7 @@ class ModuleLoader implements IModuleLoader {
                     name: name,
                     err: null,
                     state: LOAD_STATE.LOADING,
-                    defered: _async.createDeferred<any>(true)
+                    defered: createDeferred<any>(true)
                 };
             });
 

@@ -15,7 +15,7 @@ import { IEntityItem, IValueChange, IRowInfo } from "./int";
 import { DbSet } from "./dbset";
 import { SubmitError } from "./error";
 
-const utils = Utils, { undefined } = utils.check, { format } = utils.str, { getValue, setValue, uuid } = utils.core,
+const utils = Utils, { _undefined } = utils.check, { format } = utils.str, { getValue, setValue, uuid } = utils.core,
     { compareVals, parseValue } = ValueUtils, sys = utils.sys;
 
 // don't submit these types of fields to the server
@@ -333,12 +333,12 @@ export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>,
                 break;
             case REFRESH_MODE.MergeIntoCurrent:
                 {
-                    let origOldVal: any = undefined;
+                    let origOldVal: any = _undefined;
                     if (self.hasOrigVals) {
                         origOldVal = self._getValue(fullName, VALS_VERSION.Original);
                         self._setValue(fullName, newVal, VALS_VERSION.Original);
                     }
-                    if (origOldVal === undefined || compareVals(origOldVal, oldVal, dataType)) {
+                    if (origOldVal === _undefined || compareVals(origOldVal, oldVal, dataType)) {
                         // unmodified
                         if (!compareVals(newVal, oldVal, dataType)) {
                             self._setValue(fullName, newVal, VALS_VERSION.Current);

@@ -3,7 +3,7 @@ import { Utils } from "jriapp_shared";
 import { bootstrap } from "jriapp/bootstrap";
 import { CheckBoxElView } from "./checkbox";
 
-const checks = Utils.check;
+const { isNt } = Utils.check;
 
 export class RadioElView extends CheckBoxElView {
     toString(): string {
@@ -13,7 +13,7 @@ export class RadioElView extends CheckBoxElView {
         return this.el.value;
     }
     set value(v: string) {
-        const strv = checks.isNt(v) ? "" : ("" + v);
+        const strv = isNt(v) ? "" : ("" + v);
         if (strv !== this.value) {
             this.el.value = strv;
             this.objEvents.raiseProp("value");

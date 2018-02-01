@@ -9,7 +9,7 @@ import {
     Parser
 } from "jriapp/utils/parser";
 
-const utils = Utils, { parseBool } = utils.core, checks = utils.check, parser = Parser;
+const utils = Utils, { parseBool } = utils.core, { _undefined } = utils.check, parser = Parser;
 
 // the result of parsing of the data-content attribute
 export interface IDataContentAttr {
@@ -49,7 +49,7 @@ export function parseContentAttr(contentAttr: string): IContentOptions {
         if (!!attr.options) {
             contentOptions.options = attr.options;
         }
-        if (attr.readOnly !== checks.undefined) {
+        if (attr.readOnly !== _undefined) {
             contentOptions.readOnly = parseBool(attr.readOnly);
         }
     } else if (!!attr.template) {

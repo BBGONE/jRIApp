@@ -3,7 +3,7 @@ import { IIndexer } from "../int";
 import { StringUtils } from "./strutils";
 import { Checks } from "./checks";
 
-const { isHasProp, undefined, isBoolean, isArray, isSimpleObject, isNt, isString } = Checks,
+const { isHasProp, _undefined, isBoolean, isArray, isSimpleObject, isNt, isString } = Checks,
     { format, fastTrim: trim } = StringUtils, { getOwnPropertyNames, getOwnPropertyDescriptor, keys: objectKeys } = Object;
 const UUID_CHARS: string[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
 const NEWID_MAP: IIndexer<number> = {};
@@ -44,14 +44,14 @@ function extend<T, U>(target: T, ...source: U[]): T & U {
     const to = Object(target);
     for (let i = 0; i < source.length; i++) {
         const nextSource: IIndexer<any> = source[i];
-        if (nextSource === undefined || nextSource === null) {
+        if (nextSource === _undefined || nextSource === null) {
             continue;
         }
 
         const keys = objectKeys(Object(nextSource)), len = keys.length;
         for (let nextIndex = 0; nextIndex < len; nextIndex++) {
             const nextKey = keys[nextIndex], desc = getOwnPropertyDescriptor(nextSource, nextKey);
-            if (desc !== undefined && desc.enumerable) {
+            if (desc !== _undefined && desc.enumerable) {
                 to[nextKey] = nextSource[nextKey];
             }
         }
@@ -106,7 +106,7 @@ export class CoreUtils {
         }
         // the last part is the name itself
         const n = parts[len - 1];
-        if (!!checkOverwrite && (parent[n] !== undefined)) {
+        if (!!checkOverwrite && (parent[n] !== _undefined)) {
             throw new Error(format(ERR_OBJ_ALREADY_REGISTERED, namePath));
         }
         parent[n] = val;
@@ -116,7 +116,7 @@ export class CoreUtils {
         let res: any, parent = root;
         for (let i = 0; i < parts.length; i += 1) {
             res = parent[parts[i]];
-            if (res === undefined) {
+            if (res === _undefined) {
                 return null;
             }
             parent = res;
@@ -134,7 +134,7 @@ export class CoreUtils {
         }
         // the last part is the object name itself
         const n = parts[parts.length - 1], val = parent[n];
-        if (val !== undefined) {
+        if (val !== _undefined) {
             delete parent[n];
         }
 

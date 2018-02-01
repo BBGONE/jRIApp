@@ -42,11 +42,6 @@ export interface IDatepicker {
     formatDate(date: Date): string;
 }
 
-export interface IConverter {
-    convertToSource(val: any, param: any, dataContext: any): any;
-    convertToTarget(val: any, param: any, dataContext: any): any;
-}
-
 export interface ISelectable {
     onKeyDown(key: number, event: Event): void;
     onKeyUp(key: number, event: Event): void;
@@ -153,6 +148,27 @@ export interface IElView extends IBaseObject {
     viewMounted?: () => void;
 }
 
+export interface IConverter {
+    convertToSource(val: any, param: any, dataContext: any): any;
+    convertToTarget(val: any, param: any, dataContext: any): any;
+}
+
+export interface IBinding extends IBaseObject {
+    target: IBaseObject;
+    source: IBaseObject;
+    targetPath: string[];
+    sourcePath: string[];
+    sourceValue: any;
+    targetValue: any;
+    readonly isSourceFixed: boolean;
+    readonly mode: BINDING_MODE;
+    readonly converter: IConverter;
+    readonly param: any;
+    isDisabled: boolean;
+    updateTarget(): void;
+    updateSource(): void;
+}
+
 export interface IBindArgs  {
     readonly scope: Document | Element;
     readonly bind: BindScope;
@@ -192,22 +208,6 @@ export interface IBindingInfo {
     converter?: any;
     param?: any;
     isEval?: boolean;
-}
-
-export interface IBinding extends IBaseObject {
-    target: IBaseObject;
-    source: IBaseObject;
-    targetPath: string[];
-    sourcePath: string[];
-    sourceValue: any;
-    targetValue: any;
-    readonly isSourceFixed: boolean;
-    readonly mode: BINDING_MODE;
-    readonly converter: IConverter;
-    readonly param: any;
-    isDisabled: boolean;
-    updateTarget(): void;
-    updateSource(): void;
 }
 
 // --Content interfaces

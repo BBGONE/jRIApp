@@ -8,7 +8,7 @@ import {
 } from "jriapp_shared/lang";
 import { bootstrap } from "jriapp/bootstrap";
 import { IDatepicker } from "jriapp/int";
-import { DATEPICKER_SVC } from "jriapp/const";
+import { SERVICES } from "jriapp/const";
 
 let PAGER: IPagerText = {
     firstText: "<<",
@@ -133,7 +133,7 @@ assign(STRS, _STRS);
 assign(ERRS, _ERRS);
 
 bootstrap.addOnInitialize((boot) => {
-    let datepicker = boot.getSvc<IDatepicker>(DATEPICKER_SVC);
+    let datepicker = boot.getSvc<IDatepicker>(SERVICES.DATEPICKER_SVC);
     if (!datepicker)
         throw new Error("IDatepicker service is not registered");
 

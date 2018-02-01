@@ -2,31 +2,31 @@
 import { Utils, BaseObject, IPropertyBag, IValidationInfo, IValidatable } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { ViewChecks } from "jriapp/utils/viewchecks";
-import { TOOLTIP_SVC, DATA_ATTR, SubscribeFlags } from "jriapp/const";
+import { SERVICES, DATA_ATTR, SubscribeFlags } from "jriapp/const";
 import { IElView, IElViewStore, IApplication, IViewOptions, ISubscriber, ITooltipService } from "jriapp/int";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { ICommand } from "jriapp/mvvm";
 import { EventBag, EVENT_CHANGE_TYPE, IEventChangedArgs } from "./utils/eventbag";
 import { PropertyBag } from "./utils/propbag";
 import { CSSBag } from "./utils/cssbag";
-import { UIERRORS_SVC, IUIErrorsService } from "./int";
+import { IUIErrorsService } from "./int";
 
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
-const utils = Utils, { getNewID } = utils.core, dom = DomUtils, { undefined } = utils.check,
+const utils = Utils, { getNewID } = utils.core, dom = DomUtils, { _undefined } = utils.check,
     boot = bootstrap, viewChecks = ViewChecks, subscribeMap = subscribeWeakMap;
 
-viewChecks.isElView = (obj: any) => {
+viewChecks.isElView = (obj: any): obj is IElView => {
     return !!obj && obj instanceof BaseElView;
 };
 
 export function addToolTip(el: Element, tip: string, isError?: boolean, pos?: string) {
-    const svc = boot.getSvc<ITooltipService>(TOOLTIP_SVC);
+    const svc = boot.getSvc<ITooltipService>(SERVICES.TOOLTIP_SVC);
     svc.addToolTip(el, tip, isError, pos);
 }
 
 function UIErrorsService(): IUIErrorsService {
-    return boot.getSvc<IUIErrorsService>(UIERRORS_SVC);
+    return boot.getSvc<IUIErrorsService>(SERVICES.UIERRORS_SVC);
 }
 
 export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber, IValidatable {
@@ -195,7 +195,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
     get events(): IPropertyBag {
         if (!this._eventBag) {
             if (this.getIsStateDirty()) {
-                return undefined;
+                return _undefined;
             }
             this._eventBag = new EventBag((s, a) => {
                 this._onEventChanged(a);
@@ -207,7 +207,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
     get props(): IPropertyBag {
         if (!this._propBag) {
             if (this.getIsStateDirty()) {
-                return undefined;
+                return _undefined;
             }
             this._propBag = new PropertyBag(this.el);
         }
@@ -217,7 +217,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
     get classes(): IPropertyBag {
         if (!this._classBag) {
             if (this.getIsStateDirty()) {
-                return undefined;
+                return _undefined;
             }
             this._classBag = new CSSBag(this.el);
         }

@@ -9,12 +9,12 @@ import { Checks } from "./utils/checks";
 import { ERROR } from "./utils/error";
 import { EventHelper, IEventList } from "./utils/eventhelper";
 
-const checks = Checks, evHelper = EventHelper, sys = SysUtils, signature = { signature: "BaseObject" };
+const { isHasProp } = Checks, evHelper = EventHelper, sys = SysUtils, signature = { signature: "BaseObject" };
 
 // it can be used in external IBaseObject implementations
 export const objSignature: object = signature;
 
-sys._isBaseObj = function (obj: any): boolean {
+sys.isBaseObj = (obj: any): obj is IBaseObject => {
     return (!!obj && obj.__objSig === signature);
 };
 
@@ -161,7 +161,7 @@ export class BaseObject implements IBaseObject {
         return new ObjectEvents(this);
     }
     isHasProp(prop: string): boolean {
-        return checks.isHasProp(this, prop);
+        return isHasProp(this, prop);
     }
     handleError(error: any, source: any): boolean {
         if (ERROR.checkIsDummy(error)) {

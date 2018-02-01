@@ -1,6 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { IElView } from "../int";
+
+function dummyIsElView(obj: any): obj is IElView {
+    return false;
+}
+
 export class ViewChecks {
-    static isElView: (obj: any) => boolean = () => { return false; };
+    static isElView: (obj: any) => obj is IElView = dummyIsElView;
 
     // DUMMY implementations template
     static isTemplateElView: (obj: any) => boolean = () => { return false; };

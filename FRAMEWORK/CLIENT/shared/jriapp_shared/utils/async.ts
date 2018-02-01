@@ -7,7 +7,7 @@ import {
 } from "./deferred";
 import { Checks } from "./checks";
 
-const checks = Checks, _whenAll = whenAll, _race = race, _getTaskQueue = getTaskQueue, _createDefer = createDefer;
+const { isString } = Checks, _whenAll = whenAll, _race = race, _getTaskQueue = getTaskQueue, _createDefer = createDefer;
 
 export class AsyncUtils {
     static createDeferred<T>(isSync?: boolean): IStatefulDeferred<T> {
@@ -51,7 +51,7 @@ export class AsyncUtils {
     static parseJSON<T>(res: string | any): IStatefulPromise<T>;
     static parseJSON(res: any): IStatefulPromise<any> {
         return AsyncUtils.delay(() => {
-            return (checks.isString(res)) ? JSON.parse(res) : res;
+            return (isString(res)) ? JSON.parse(res) : res;
         });
     }
 }

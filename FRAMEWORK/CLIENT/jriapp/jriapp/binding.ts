@@ -4,17 +4,15 @@ import {
     BaseObject, Utils
 } from "jriapp_shared";
 import { BINDING_MODE, BindTo } from "./const";
-import {
-    IBindingInfo, IBindingOptions, IBinding, IConverter
-} from "./int";
+import { IBindingInfo, IBindingOptions, IBinding, IConverter } from "./int";
 import { bootstrap } from "./bootstrap";
 
-const utils = Utils, { isString, isUndefined, isNt, undefined, isHasProp } = utils.check, { format } = utils.str, { getNewID, forEachProp } = utils.core,
+const utils = Utils, { isString, isUndefined, isNt, _undefined, isHasProp } = utils.check, { format } = utils.str, { getNewID, forEachProp } = utils.core,
     sys = utils.sys, debug = utils.debug, log = utils.log,
     boot = bootstrap, ERRS = LocaleERRS;
 const { resolvePath, getPathParts, getErrorNotification, getProp, setProp } = sys;
 
-sys.isBinding = (obj: any) => {
+sys.isBinding = (obj: any): boolean => {
     return (!!obj && obj instanceof Binding);
 };
 
@@ -712,7 +710,7 @@ export class Binding extends BaseObject implements IBinding {
         return res;
     }
     set sourceValue(v: any) {
-        if (this._srcPath.length === 0 || !this._srcEnd || v === undefined) {
+        if (this._srcPath.length === 0 || !this._srcEnd || v === _undefined) {
             return;
         }
         const prop = this._srcPath[this._srcPath.length - 1];
@@ -729,7 +727,7 @@ export class Binding extends BaseObject implements IBinding {
         return res;
     }
     set targetValue(v: any) {
-        if (this._tgtPath.length === 0 || !this._tgtEnd || v === undefined) {
+        if (this._tgtPath.length === 0 || !this._tgtEnd || v === _undefined) {
             return;
         }
         const prop = this._tgtPath[this._tgtPath.length - 1];

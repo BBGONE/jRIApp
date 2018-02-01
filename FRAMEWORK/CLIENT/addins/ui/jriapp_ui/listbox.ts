@@ -15,7 +15,7 @@ import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
-    checks = utils.check, { forEachProp, extend, getNewID } = utils.core, boot = bootstrap, subscribeMap = subscribeWeakMap;
+    { _undefined, isString, isNt } = utils.check, { forEachProp, extend, getNewID } = utils.core, boot = bootstrap, subscribeMap = subscribeWeakMap;
 
 export interface IOptionStateProvider {
     getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
@@ -48,7 +48,7 @@ const enum LISTBOX_EVENTS {
 }
 
 function fn_Str(v: any): string {
-    return (checks.isNt(v)) ? "" : ("" + v);
+    return (isNt(v)) ? "" : ("" + v);
 }
 
 export class ListBox extends BaseObject implements ISubscriber {
@@ -99,7 +99,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         this._changeDebounce = new Debounce();
         this._keyMap = {};
         this._valMap = {};
-        this._savedVal = checks.undefined;
+        this._savedVal = _undefined;
         this._fnState = (data: IMappedItem) => {
             if (!data || !data.item || data.item.getIsStateDirty()) {
                 return;
@@ -133,8 +133,8 @@ export class ListBox extends BaseObject implements ISubscriber {
         this._unbindDS();
         this._clear();
         this._el = null;
-        this._selectedValue = checks.undefined;
-        this._savedVal = checks.undefined;
+        this._selectedValue = _undefined;
+        this._savedVal = _undefined;
         this._options = <any>{};
         this._textProvider = null;
         this._stateProvider = null;
@@ -176,7 +176,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         const selEl = this.el;
         let text = "";
         if (!item) {
-            if (checks.isString(this._options.emptyOptionText)) {
+            if (isString(this._options.emptyOptionText)) {
                 text = this._options.emptyOptionText;
             }
         } else {
@@ -282,7 +282,7 @@ export class ListBox extends BaseObject implements ISubscriber {
                 });
             }
 
-            if (this._isDSFilled && !checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
+            if (this._isDSFilled && !isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
                 this.selectedValue = null;
             } else {
                 self.updateSelected(this._selectedValue);
@@ -386,21 +386,21 @@ export class ListBox extends BaseObject implements ISubscriber {
             try {
                 if (!isCanceled) {
                     const oldVal = this._savedVal;
-                    this._savedVal = checks.undefined;
+                    this._savedVal = _undefined;
                     const key = item._key, data = self._keyMap[key];
                     if (!!data) {
                         data.op.text = self._getText(item, data.op.index);
                         const val = this._getValue(item);
                         if (oldVal !== val) {
-                            if (!checks.isNt(oldVal)) {
+                            if (!isNt(oldVal)) {
                                 delete self._valMap[fn_Str(oldVal)];
                             }
-                            if (!checks.isNt(val)) {
+                            if (!isNt(val)) {
                                 self._valMap[fn_Str(val)] = data;
                             }
                         }
                     } else {
-                        if (!checks.isNt(oldVal)) {
+                        if (!isNt(oldVal)) {
                             delete self._valMap[fn_Str(oldVal)];
                         }
                     }
@@ -436,7 +436,7 @@ export class ListBox extends BaseObject implements ISubscriber {
             this._savedVal = this._getValue(item);
         } else {
             const oldVal = this._savedVal;
-            this._savedVal = checks.undefined;
+            this._savedVal = _undefined;
             // delete is rejected
             if (isRejected && status === ITEM_STATUS.Deleted) {
                 this._addOption(item, true);
@@ -447,11 +447,11 @@ export class ListBox extends BaseObject implements ISubscriber {
             try {
                 const val = this._getValue(item), data = self._keyMap[item._key];
                 if (oldVal !== val) {
-                    if (!checks.isNt(oldVal)) {
+                    if (!isNt(oldVal)) {
                         delete self._valMap[fn_Str(oldVal)];
                     }
 
-                    if (!!data && !checks.isNt(val)) {
+                    if (!!data && !isNt(val)) {
                         self._valMap[fn_Str(val)] = data;
                     }
                 }
@@ -472,7 +472,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         return (!data) ? -1 : data.op.index;
     }
     protected getByValue(val: any): IMappedItem {
-        if (checks.isNt(val)) {
+        if (isNt(val)) {
             return null;
         }
         const key = fn_Str(val);
@@ -487,7 +487,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         return null;
     }
     protected updateSelected(v: any): void {
-        const data: IMappedItem = (checks.isNt(v) ? null : this.getByValue(v));
+        const data: IMappedItem = (isNt(v) ? null : this.getByValue(v));
         const index = (!data ? 0 : data.op.index), oldRefreshing = this._isRefreshing;
         this._isRefreshing = true;
         try {
@@ -599,7 +599,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         }
     }
     get selectedValue(): any {
-        return (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) ? checks.undefined : this._selectedValue;
+        return (!isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) ? _undefined : this._selectedValue;
     }
     set selectedValue(v) {
         if (this._selectedValue !== v) {
@@ -758,7 +758,7 @@ export class ListBoxElView extends BaseElView {
         }
     }
     get selectedValue(): any {
-        return (this.getIsStateDirty()) ? checks.undefined : this._listBox.selectedValue;
+        return (this.getIsStateDirty()) ? _undefined : this._listBox.selectedValue;
     }
     set selectedValue(v) {
         if (this._listBox.selectedValue !== v) {
@@ -766,7 +766,7 @@ export class ListBoxElView extends BaseElView {
         }
     }
     get selectedItem(): ICollectionItem {
-        return (this.getIsStateDirty()) ? checks.undefined : this._listBox.selectedItem;
+        return (this.getIsStateDirty()) ? _undefined : this._listBox.selectedItem;
     }
     set selectedItem(v: ICollectionItem) {
         this._listBox.selectedItem = v;

@@ -9,7 +9,7 @@ import { DomUtils } from "jriapp/utils/dom";
 
 import { BaseElView } from "./baseview";
 
-const checks = Utils.check, boot = bootstrap, dom = DomUtils;
+const { isNt } = Utils.check, boot = bootstrap, dom = DomUtils;
 
 export interface IBusyViewOptions extends IViewOptions {
     img?: string;
@@ -33,7 +33,7 @@ export class BusyElView extends BaseElView {
         }
         this._delay = 400;
         this._timeOut = null;
-        if (!checks.isNt(options.delay)) {
+        if (!isNt(options.delay)) {
             this._delay = parseInt("" + options.delay);
         }
         this._loaderPath = bootstrap.getImagePath(img);

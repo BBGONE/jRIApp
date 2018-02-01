@@ -9,7 +9,7 @@ import { Binding } from "binding";
 import { ViewChecks } from "./utils/viewchecks";
 import { DomUtils } from "./utils/dom";
 
-const utils = Utils, _async = utils.defer, dom = DomUtils, viewChecks = ViewChecks,
+const utils = Utils, { createDeferred } = utils.defer, dom = DomUtils, viewChecks = ViewChecks,
     doc = dom.document, { isFunc, isThenable } = utils.check, { format } = utils.str,
     arrHelper = utils.arr, sys = utils.sys, boot = bootstrap, ERRS = LocaleERRS, ERROR = utils.err;
 
@@ -105,7 +105,7 @@ class Template extends BaseObject implements ITemplate {
                 }
             });
         } else {
-            const deferred = _async.createDeferred<HTMLElement>();
+            const deferred = createDeferred<HTMLElement>();
             return deferred.reject(new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
         }
     }

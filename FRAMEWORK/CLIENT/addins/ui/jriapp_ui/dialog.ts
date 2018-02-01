@@ -9,7 +9,7 @@ import { createTemplate } from "jriapp/template";
 import { bootstrap } from "jriapp/bootstrap";
 import { ViewModel } from "jriapp/mvvm";
 
-const utils = Utils, { undefined, isFunc } = utils.check, { format } = utils.str,
+const utils = Utils, { _undefined, isFunc } = utils.check, { format } = utils.str,
     { extend, getNewID } = utils.core, sys = utils.sys, _async = utils.defer, doc = DomUtils.document,
     ERROR = utils.err, boot = bootstrap;
 
@@ -407,7 +407,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     }
     getOption(name: string) {
         if (!this._$dlgEl) {
-            return undefined;
+            return _undefined;
         }
         return (<any>this._$dlgEl).dialog("option", name);
     }

@@ -5,11 +5,11 @@ import {
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { DATA_ATTR, ELVIEW_NM, BindScope } from "jriapp/const";
+import { DATA_ATTR, ELVIEW_NM, BindScope, SERVICES } from "jriapp/const";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { IContent, IElView, ILifeTimeScope, IViewOptions, IApplication } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
-import { cssStyles, UIERRORS_SVC, IUIErrorsService } from "./int";
+import { cssStyles, IUIErrorsService } from "./int";
 import { BaseElView } from "./baseview";
 
 import { Binding } from "jriapp/binding";
@@ -17,7 +17,7 @@ import { parseContentAttr } from "./content/int";
 
 const utils = Utils, dom = DomUtils, { isFunc } = utils.check, { getNewID } = utils.core,
     { format } = utils.str, sys = utils.sys, boot = bootstrap, viewChecks = ViewChecks,
-    _async = utils.defer;
+    { reject: _reject } = utils.defer;
 
 viewChecks.isDataForm = (el: Element) => {
     if (!el) {
@@ -109,7 +109,7 @@ function getFieldInfo(obj: any, fieldName: string): IFieldInfo {
 }
 
 function UIErrorsService(): IUIErrorsService {
-    return boot.getSvc<IUIErrorsService>(UIERRORS_SVC);
+    return boot.getSvc<IUIErrorsService>(SERVICES.UIERRORS_SVC);
 }
 
 export class DataForm extends BaseObject {
@@ -191,7 +191,7 @@ export class DataForm extends BaseObject {
     private _createContent(): IVoidPromise {
         const dctx: any = this._dataContext, self = this;
         if (!dctx) {
-            return _async.reject<void>("DataForm's DataContext is not set");
+            return _reject<void>("DataForm's DataContext is not set");
         }
         const contentElements = utils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_CONTENT_SELECTOR)),
             isEditing = this.isEditing;

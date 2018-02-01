@@ -7,7 +7,7 @@ import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { cssStyles } from "./int";
 import { InputElView } from "./input";
 
-const dom = DomUtils, checks = Utils.check, boot = bootstrap, subscribeMap = subscribeWeakMap;
+const dom = DomUtils, { isNt } = Utils.check, boot = bootstrap, subscribeMap = subscribeWeakMap;
 
 export class CheckBoxElView extends InputElView<HTMLInputElement> {
     private _checked: boolean;
@@ -38,7 +38,7 @@ export class CheckBoxElView extends InputElView<HTMLInputElement> {
         return true;
     }
     protected _updateState(): void {
-        dom.setClass([this.el], cssStyles.checkedNull, !checks.isNt(this.checked));
+        dom.setClass([this.el], cssStyles.checkedNull, !isNt(this.checked));
     }
     // override
     protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void {

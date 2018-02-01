@@ -1,6 +1,16 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-export const TOOLTIP_SVC = "ITooltipService";
-export const DATEPICKER_SVC = "IDatepickerService";
+export const enum SERVICES {
+    TOOLTIP_SVC = "ITooltipService",
+    DATEPICKER_SVC = "IDatepicker",
+    UIERRORS_SVC = "IUIErrorsService"
+}
+
+export const enum BINDING_MODE {
+    OneTime = 0,
+    OneWay = 1,
+    TwoWay = 2,
+    BackWay = 3
+}
 
 export const enum STORE_KEY {
     SVC = "svc.",
@@ -56,13 +66,6 @@ export const enum BindScope {
 export const enum BindTo {
     Source = 0,
     Target = 1
-}
-
-export const enum BINDING_MODE {
-    OneTime = 0,
-    OneWay = 1,
-    TwoWay = 2,
-    BackWay = 3
 }
 
 export const enum SubscribeFlags {

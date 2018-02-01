@@ -6,7 +6,7 @@ import { ERRS } from "../lang";
 import { IValueUtils } from "./int";
 
 const utils = Utils, { getTimeZoneOffset, parseBool, getValue, setValue } = utils.core, { format } = utils.str,
-    { undefined, isArray, isDate, isString, isBoolean, isNumber, isNt } = utils.check;
+    { _undefined, isArray, isDate, isString, isBoolean, isNumber, isNt } = utils.check;
 
 function pad(num: number): string {
     if (num < 10) {
@@ -160,7 +160,7 @@ export const ValueUtils: IValueUtils = {
     parseValue: function (v: string, dataType: DATA_TYPE, dtcnv: DATE_CONVERSION, serverTZ: number) {
         let res: any = null;
 
-        if (v === undefined || v === null) {
+        if (v === _undefined || v === null) {
             return res;
         }
         switch (dataType) {

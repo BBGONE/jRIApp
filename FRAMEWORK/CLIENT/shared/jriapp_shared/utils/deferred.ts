@@ -10,7 +10,7 @@ import { ArrayHelper } from "./arrhelper";
 import { createQueue, IQueue } from "./queue";
 import { TFunc } from "../int";
 
-const checks = Checks, arrHelper = ArrayHelper;
+const { _undefined, isFunc, isThenable, isArray } = Checks, arrHelper = ArrayHelper;
 let taskQueue: TaskQueue = null;
 
 export function createDefer<T>(isSync?: boolean): IStatefulDeferred<T> {
@@ -92,7 +92,7 @@ class Callback {
     }
 
     resolve(value: any, defer: boolean): void {
-        if (!checks.isFunc(this._successCB)) {
+        if (!isFunc(this._successCB)) {
             this._deferred.resolve(value);
             return;
         }
@@ -104,7 +104,7 @@ class Callback {
         }
     }
     reject(error: any, defer: boolean): void {
-        if (!checks.isFunc(this._errorCB)) {
+        if (!isFunc(this._errorCB)) {
             this._deferred.reject(error);
             return;
         }
@@ -139,8 +139,8 @@ class Deferred<T> implements IStatefulDeferred<T> {
 
     constructor(promise: IStatefulPromise<T>, dispatcher: TDispatcher) {
         this._dispatcher = dispatcher;
-        this._value = checks.undefined;
-        this._error = checks.undefined;
+        this._value = _undefined;
+        this._error = _undefined;
         this._state = PromiseState.Pending;
         this._stack = [];
         this._promise = promise;
@@ -149,7 +149,7 @@ class Deferred<T> implements IStatefulDeferred<T> {
     private _resolve(value: any): IStatefulDeferred<T> {
         let pending = true;
         try {
-            if (checks.isThenable(value)) {
+            if (isThenable(value)) {
                 if (value === this._promise) {
                     throw new TypeError("recursive resolution");
                 }
@@ -212,7 +212,7 @@ class Deferred<T> implements IStatefulDeferred<T> {
         return this;
     }
     _then(successCB: any, errorCB: any): any {
-        if (!checks.isFunc(successCB) && !checks.isFunc(errorCB)) {
+        if (!isFunc(successCB) && !isFunc(errorCB)) {
             return this._promise;
         }
 
@@ -308,7 +308,7 @@ export class Promise<T> implements IStatefulPromise<T> {
     catch(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
 
     catch(errorCB: any): any {
-        return this._deferred._then(checks.undefined, errorCB);
+        return this._deferred._then(_undefined, errorCB);
     }
 
     always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
@@ -325,7 +325,7 @@ export class Promise<T> implements IStatefulPromise<T> {
 
     static all<T>(): IStatefulPromise<T[]> {
         const args: any[] = arrHelper.fromList(arguments);
-        return (args.length === 1 && checks.isArray(args[0])) ? whenAll(args[0]) : whenAll(args);
+        return (args.length === 1 && isArray(args[0])) ? whenAll(args[0]) : whenAll(args);
     }
 
     static race<T>(...promises: Array<IPromise<T>>): IPromise<T>;
@@ -334,7 +334,7 @@ export class Promise<T> implements IStatefulPromise<T> {
 
     static race<T>(): IPromise<T> {
         const args: any[] = arrHelper.fromList(arguments);
-        return (args.length === 1 && checks.isArray(args[0])) ? race(args[0]) : race(args);
+        return (args.length === 1 && isArray(args[0])) ? race(args[0]) : race(args);
     }
 
     static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T> {

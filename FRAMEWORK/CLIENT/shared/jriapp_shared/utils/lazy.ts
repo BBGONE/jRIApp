@@ -2,7 +2,7 @@
 import { IDisposable } from "../int";
 import { Checks } from "./checks";
 
-const checks = Checks;
+const { isNt } = Checks;
 
 export type TValueFactory<T> = () => T;
 
@@ -19,7 +19,7 @@ export class Lazy<T> implements IDisposable {
     public get Value(): T {
         if (this._val === null) {
             this._val = this._factory();
-            if (checks.isNt(this._val)) {
+            if (isNt(this._val)) {
                 throw new Error("Lazy: the value factory did'not returned an object");
             }
             // release the reference
@@ -38,7 +38,7 @@ export class Lazy<T> implements IDisposable {
         this._factory = null;
     }
     get IsValueCreated(): boolean {
-        return !checks.isNt(this._val);
+        return !isNt(this._val);
     }
     getIsDisposed(): boolean {
         return this._val === void 0;
