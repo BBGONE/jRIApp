@@ -518,7 +518,7 @@ declare module "jriapp_shared/utils/checks" {
         static isObject(a: any): boolean;
         static isSimpleObject(a: any): boolean;
         static readonly isString: (a: any) => a is string;
-        static readonly isFunc: (a: any) => a is Function;
+        static readonly isFunc: (a: any) => a is (...args: any[]) => any;
         static isBoolean(a: any): a is boolean;
         static isDate(a: any): a is Date;
         static readonly isNumber: (a: any) => a is Number;

@@ -668,7 +668,7 @@ define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared", "jriapp
 define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/bootstrap", "jriapp_ui/utils/eventbag", "jriapp_ui/utils/propbag", "jriapp_ui/utils/cssbag"], function (require, exports, jriapp_shared_6, dom_4, viewchecks_1, bootstrap_3, eventbag_1, propbag_1, cssbag_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_6.Utils, getNewID = utils.core.getNewID, dom = dom_4.DomUtils, _undefined = utils.check._undefined, boot = bootstrap_3.bootstrap, viewChecks = viewchecks_1.ViewChecks, subscribeMap = bootstrap_3.subscribeWeakMap;
+    var utils = jriapp_shared_6.Utils, _a = utils.core, getNewID = _a.getNewID, extend = _a.extend, dom = dom_4.DomUtils, _undefined = utils.check._undefined, boot = bootstrap_3.bootstrap, viewChecks = viewchecks_1.ViewChecks, subscribeMap = bootstrap_3.subscribeWeakMap;
     viewChecks.isElView = function (obj) {
         return !!obj && obj instanceof BaseElView;
     };
@@ -677,26 +677,30 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         svc.addToolTip(el, tip, isError, pos);
     }
     exports.addToolTip = addToolTip;
-    function UIErrorsService() {
+    function getErrorsService() {
         return boot.getSvc("IUIErrorsService");
     }
     var BaseElView = (function (_super) {
         __extends(BaseElView, _super);
         function BaseElView(el, options) {
             var _this = _super.call(this) || this;
-            options = options || {};
             _this._el = el;
-            _this._toolTip = !options.tip ? null : options.tip;
-            _this._css = !options.css ? null : options.css;
-            _this._subscribeFlags = !options.nodelegate ? 1 : 0;
+            var state = extend({
+                tip: null,
+                css: null,
+                nodelegate: false,
+                errorsService: null,
+                _eventBag: null,
+                _propBag: null,
+                _classBag: null,
+                _display: null,
+                _errors: null
+            }, options);
             _this._objId = getNewID("elv");
-            _this._eventBag = null;
-            _this._propBag = null;
-            _this._classBag = null;
-            _this._display = null;
-            _this._errors = null;
-            if (!!_this._css) {
-                dom.addClass([el], _this._css);
+            _this._elViewState = state;
+            _this._subscribeFlags = !state.nodelegate ? 1 : 0;
+            if (!!state.css) {
+                dom.addClass([el], state.css);
             }
             _this._applyToolTip();
             _this._getStore().setElView(el, _this);
@@ -710,25 +714,21 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             try {
                 dom.events.offNS(this.el, this.uniqueID);
                 this.validationErrors = null;
-                this.css = null;
-                this._toolTip = null;
                 addToolTip(this.el, null);
                 if (this._subscribeFlags !== 0) {
                     subscribeMap.delete(this.el);
                     this._subscribeFlags = 0;
                 }
-                if (!!this._eventBag) {
-                    this._eventBag.dispose();
-                    this._eventBag = null;
+                if (!!this._elViewState._eventBag) {
+                    this._elViewState._eventBag.dispose();
                 }
-                if (!!this._propBag) {
-                    this._propBag.dispose();
-                    this._propBag = null;
+                if (!!this._elViewState._propBag) {
+                    this._elViewState._propBag.dispose();
                 }
-                if (!!this._classBag) {
-                    this._classBag.dispose();
-                    this._classBag = null;
+                if (!!this._elViewState._classBag) {
+                    this._elViewState._classBag.dispose();
                 }
+                this._elViewState = {};
             }
             finally {
                 this._getStore().setElView(this.el, null);
@@ -754,8 +754,8 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                 return;
             }
             dom.events.on(this.el, name, function (e) {
-                if (!!self._eventBag) {
-                    self._eventBag.trigger(name, e);
+                if (!!self._elViewState._eventBag) {
+                    self._elViewState._eventBag.trigger(name, e);
                 }
             }, this.uniqueID);
         };
@@ -763,17 +763,17 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             dom.events.off(this.el, name, this.uniqueID);
         };
         BaseElView.prototype._applyToolTip = function () {
-            if (!!this._toolTip) {
-                addToolTip(this.el, this._toolTip);
+            if (!!this.toolTip) {
+                addToolTip(this.el, this.toolTip);
             }
         };
         BaseElView.prototype._setIsSubcribed = function (flag) {
             this._subscribeFlags |= (1 << flag);
         };
         BaseElView.prototype._setErrors = function (el, errors) {
-            this._errors = errors;
-            var uierrSvc = UIErrorsService();
-            uierrSvc.setErrors(el, errors, this.toolTip);
+            this._elViewState._errors = errors;
+            var errSvc = !this._elViewState.errorsService ? getErrorsService() : this._elViewState.errorsService;
+            errSvc.setErrors(el, errors, this.toolTip);
         };
         BaseElView.prototype.isSubscribed = function (flag) {
             return !!(this._subscribeFlags & (1 << flag));
@@ -804,14 +804,14 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                 v = !!v;
                 if (v !== this.isVisible) {
                     if (!v) {
-                        this._display = this.el.style.display;
-                        if (this._display === "none") {
-                            this._display = null;
+                        this._elViewState._display = this.el.style.display;
+                        if (this._elViewState._display === "none") {
+                            this._elViewState._display = null;
                         }
                         this.el.style.display = "none";
                     }
                     else {
-                        this.el.style.display = (!this._display ? "" : this._display);
+                        this.el.style.display = (!this._elViewState._display ? "" : this._elViewState._display);
                     }
                     this.objEvents.raiseProp("isVisible");
                 }
@@ -821,10 +821,10 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         });
         Object.defineProperty(BaseElView.prototype, "validationErrors", {
             get: function () {
-                return this._errors;
+                return this._elViewState._errors;
             },
             set: function (v) {
-                if (this._errors !== v) {
+                if (!this.getIsDisposed() && this._elViewState._errors !== v) {
                     this._setErrors(this.el, v);
                     this.objEvents.raiseProp("validationErrors");
                 }
@@ -841,11 +841,11 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         });
         Object.defineProperty(BaseElView.prototype, "toolTip", {
             get: function () {
-                return this._toolTip;
+                return this._elViewState.tip;
             },
             set: function (v) {
-                if (this._toolTip !== v) {
-                    this._toolTip = v;
+                if (this.toolTip !== v) {
+                    this._elViewState.tip = v;
                     addToolTip(this.el, v);
                     this.objEvents.raiseProp("toolTip");
                 }
@@ -856,41 +856,41 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         Object.defineProperty(BaseElView.prototype, "events", {
             get: function () {
                 var _this = this;
-                if (!this._eventBag) {
+                if (!this._elViewState._eventBag) {
                     if (this.getIsStateDirty()) {
                         return _undefined;
                     }
-                    this._eventBag = new eventbag_1.EventBag(function (s, a) {
+                    this._elViewState._eventBag = new eventbag_1.EventBag(function (s, a) {
                         _this._onEventChanged(a);
                     });
                 }
-                return this._eventBag;
+                return this._elViewState._eventBag;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "props", {
             get: function () {
-                if (!this._propBag) {
+                if (!this._elViewState._propBag) {
                     if (this.getIsStateDirty()) {
                         return _undefined;
                     }
-                    this._propBag = new propbag_1.PropertyBag(this.el);
+                    this._elViewState._propBag = new propbag_1.PropertyBag(this.el);
                 }
-                return this._propBag;
+                return this._elViewState._propBag;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "classes", {
             get: function () {
-                if (!this._classBag) {
+                if (!this._elViewState._classBag) {
                     if (this.getIsStateDirty()) {
                         return _undefined;
                     }
-                    this._classBag = new cssbag_1.CSSBag(this.el);
+                    this._elViewState._classBag = new cssbag_1.CSSBag(this.el);
                 }
-                return this._classBag;
+                return this._elViewState._classBag;
             },
             enumerable: true,
             configurable: true
@@ -904,17 +904,17 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         });
         Object.defineProperty(BaseElView.prototype, "css", {
             get: function () {
-                return this._css;
+                return this._elViewState.css;
             },
             set: function (v) {
                 var arr = [];
-                if (this._css !== v) {
-                    if (!!this._css) {
-                        arr.push("-" + this._css);
+                if (this.css !== v) {
+                    if (!!this.css) {
+                        arr.push("-" + this.css);
                     }
-                    this._css = v;
-                    if (!!this._css) {
-                        arr.push("+" + this._css);
+                    this._elViewState.css = v;
+                    if (!!this.css) {
+                        arr.push("+" + this.css);
                     }
                     dom.setClasses([this._el], arr);
                     this.objEvents.raiseProp("css");
@@ -2850,7 +2850,7 @@ define("jriapp_ui/utils/errors", ["require", "exports", "jriapp_shared", "jriapp
     var UIErrorsService = (function () {
         function UIErrorsService() {
         }
-        UIErrorsService.setErrors = function (el, errors, toolTip) {
+        UIErrorsService.prototype.setErrors = function (el, errors, toolTip) {
             if (!!errors && errors.length > 0) {
                 addToolTip(el, getErrorTipInfo(errors), true);
                 addError(el);
@@ -2860,7 +2860,7 @@ define("jriapp_ui/utils/errors", ["require", "exports", "jriapp_shared", "jriapp
                 removeError(el);
             }
         };
-        UIErrorsService.setFormErrors = function (el, errors) {
+        UIErrorsService.prototype.setFormErrors = function (el, errors) {
             var gliph = formMap.get(el);
             if (!!errors && errors.length > 0) {
                 if (!gliph) {
@@ -2883,7 +2883,7 @@ define("jriapp_ui/utils/errors", ["require", "exports", "jriapp_shared", "jriapp
         return UIErrorsService;
     }());
     function createUIErrorsSvc() {
-        return UIErrorsService;
+        return new UIErrorsService();
     }
     exports.createUIErrorsSvc = createUIErrorsSvc;
 });
@@ -6606,11 +6606,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             var _this = _super.call(this, table, options) || this;
             _this._stateProvider = null;
             _this._stateDebounce = new jriapp_shared_31.Debounce();
-            var opts = extend({
-                dataSource: null,
-                animation: null
-            }, options);
-            _this._grid = new DataGrid(table, opts);
+            _this._grid = new DataGrid(table, options);
             _this._bindGridEvents();
             return _this;
         }
@@ -8284,7 +8280,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             return null;
         }
     }
-    function UIErrorsService() {
+    function getErrorsService() {
         return boot.getSvc("IUIErrorsService");
     }
     var DataForm = (function (_super) {
@@ -8295,6 +8291,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             _this._el = el;
             _this._objId = getNewID("frm");
             _this._dataContext = null;
+            _this._errorsService = !options.formErrorsService ? getErrorsService() : options.formErrorsService;
             dom.addClass([el], "ria-dataform");
             _this._isEditing = false;
             _this._content = [];
@@ -8330,6 +8327,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                 parentDataForm.objEvents.offNS(this._objId);
             }
             this._dataContext = null;
+            this._errorsService = null;
             this._contentCreated = false;
             this._contentPromise = null;
             this._el = null;
@@ -8489,8 +8487,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             this._contentCreated = false;
         };
         DataForm.prototype._setErrors = function (errors) {
-            var uierrSvc = UIErrorsService();
-            uierrSvc.setFormErrors(this.el, errors);
+            this._errorsService.setFormErrors(this.el, errors);
         };
         DataForm.prototype._onIsEditingChanged = function () {
             this.isEditing = this._editable.isEditing;

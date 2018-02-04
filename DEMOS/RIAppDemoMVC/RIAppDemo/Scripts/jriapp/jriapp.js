@@ -121,14 +121,16 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         TOKEN["TARGET_PATH"] = "targetPath";
         TOKEN["GET"] = "get";
         TOKEN["DATE"] = "date";
+        TOKEN["INJECT"] = "inject";
     })(TOKEN || (TOKEN = {}));
     var TAG;
     (function (TAG) {
         TAG["EVAL"] = "1";
         TAG["GET"] = "2";
         TAG["DATE"] = "3";
-        TAG["BRACE"] = "4";
-        TAG["LITERAL"] = "5";
+        TAG["INJECT"] = "4";
+        TAG["BRACE"] = "5";
+        TAG["LITERAL"] = "6";
     })(TAG || (TAG = {}));
     var DATES;
     (function (DATES) {
@@ -339,7 +341,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     literal = ch;
                     start = i + 1;
                     if (!kv.tag) {
-                        kv.tag = "5";
+                        kv.tag = "6";
                     }
                     continue;
                 }
@@ -366,6 +368,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         break;
                     case "get":
                         kv.tag = "2";
+                        break;
+                    case "inject":
+                        kv.tag = "4";
                         break;
                     case "date":
                         kv.tag = "3";
@@ -403,7 +408,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 if (ch === "{" && !isKey) {
                     var braceLen = getBraceLen(val, i, 1);
                     setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
-                    kv.tag = "4";
+                    kv.tag = "5";
                     i += (braceLen - 1);
                     start = -1;
                 }
@@ -434,6 +439,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             throw new Error("Invalid Expression: " + expr);
         }
         return parts.map(function (p) { return trim(p); });
+    }
+    function inject(id) {
+        return bootstrap_1.bootstrap.getSvc(id);
     }
     function getOptions(id) {
         return bootstrap_1.bootstrap.getOptions(id);
@@ -494,14 +502,21 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         break;
                 }
             }
-            else if (kv.tag === "4") {
-                res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
-            }
-            else if (kv.tag === "2") {
-                res[kv.key] = parseById(0, kv.val, app, dataContext);
-            }
             else {
-                res[kv.key] = kv.val;
+                switch (kv.tag) {
+                    case "5":
+                        res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
+                        break;
+                    case "2":
+                        res[kv.key] = parseById(0, kv.val, app, dataContext);
+                        break;
+                    case "4":
+                        res[kv.key] = inject(kv.val);
+                        break;
+                    default:
+                        res[kv.key] = kv.val;
+                        break;
+                }
             }
         });
         return res;
@@ -2311,8 +2326,15 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             return this._unregisterObject(this, name2);
         };
         Bootstrap.prototype.getSvc = function (name) {
-            var name2 = "svc." + name;
-            return this._getObject(this, name2);
+            var name2 = "svc." + name, obj = this._getObject(this, name2);
+            if (!obj) {
+                throw new Error("The service: " + name + " is not registered");
+            }
+            var res = isFunc(obj) ? obj() : obj;
+            if (!res) {
+                throw new Error("The factory for service: " + name + " have not returned the service");
+            }
+            return res;
         };
         Bootstrap.prototype.registerConverter = function (name, obj) {
             var name2 = "cnv." + name;
@@ -4580,6 +4602,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.11.7";
+    exports.VERSION = "2.11.8";
     bootstrap_8.Bootstrap._initFramework();
 });
