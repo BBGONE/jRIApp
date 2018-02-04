@@ -169,7 +169,7 @@ declare module "jriapp_ui/baseview" {
         private _objId;
         private _el;
         private _subscribeFlags;
-        private _elViewState;
+        private _viewState;
         constructor(el: TElement, options?: IViewOptions);
         dispose(): void;
         private _getStore();

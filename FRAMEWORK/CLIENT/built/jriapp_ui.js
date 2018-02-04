@@ -668,7 +668,7 @@ define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared", "jriapp
 define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/bootstrap", "jriapp_ui/utils/eventbag", "jriapp_ui/utils/propbag", "jriapp_ui/utils/cssbag"], function (require, exports, jriapp_shared_6, dom_4, viewchecks_1, bootstrap_3, eventbag_1, propbag_1, cssbag_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_6.Utils, _a = utils.core, getNewID = _a.getNewID, extend = _a.extend, dom = dom_4.DomUtils, _undefined = utils.check._undefined, boot = bootstrap_3.bootstrap, viewChecks = viewchecks_1.ViewChecks, subscribeMap = bootstrap_3.subscribeWeakMap;
+    var utils = jriapp_shared_6.Utils, getNewID = utils.core.getNewID, dom = dom_4.DomUtils, _undefined = utils.check._undefined, boot = bootstrap_3.bootstrap, viewChecks = viewchecks_1.ViewChecks, subscribeMap = bootstrap_3.subscribeWeakMap;
     viewChecks.isElView = function (obj) {
         return !!obj && obj instanceof BaseElView;
     };
@@ -685,20 +685,20 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         function BaseElView(el, options) {
             var _this = _super.call(this) || this;
             _this._el = el;
-            var state = extend({
-                tip: null,
-                css: null,
-                nodelegate: false,
-                errorsService: null,
+            options = options || {};
+            var state = {
+                tip: !options.tip ? null : options.tip,
+                css: !options.css ? null : options.css,
+                errorsService: !options.errorsService ? null : options.errorsService,
                 _eventBag: null,
                 _propBag: null,
                 _classBag: null,
                 _display: null,
                 _errors: null
-            }, options);
+            };
             _this._objId = getNewID("elv");
-            _this._elViewState = state;
-            _this._subscribeFlags = !state.nodelegate ? 1 : 0;
+            _this._viewState = state;
+            _this._subscribeFlags = !options.nodelegate ? 1 : 0;
             if (!!state.css) {
                 dom.addClass([el], state.css);
             }
@@ -719,16 +719,16 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                     subscribeMap.delete(this.el);
                     this._subscribeFlags = 0;
                 }
-                if (!!this._elViewState._eventBag) {
-                    this._elViewState._eventBag.dispose();
+                if (!!this._viewState._eventBag) {
+                    this._viewState._eventBag.dispose();
                 }
-                if (!!this._elViewState._propBag) {
-                    this._elViewState._propBag.dispose();
+                if (!!this._viewState._propBag) {
+                    this._viewState._propBag.dispose();
                 }
-                if (!!this._elViewState._classBag) {
-                    this._elViewState._classBag.dispose();
+                if (!!this._viewState._classBag) {
+                    this._viewState._classBag.dispose();
                 }
-                this._elViewState = {};
+                this._viewState = {};
             }
             finally {
                 this._getStore().setElView(this.el, null);
@@ -754,8 +754,8 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                 return;
             }
             dom.events.on(this.el, name, function (e) {
-                if (!!self._elViewState._eventBag) {
-                    self._elViewState._eventBag.trigger(name, e);
+                if (!!self._viewState._eventBag) {
+                    self._viewState._eventBag.trigger(name, e);
                 }
             }, this.uniqueID);
         };
@@ -771,8 +771,8 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             this._subscribeFlags |= (1 << flag);
         };
         BaseElView.prototype._setErrors = function (el, errors) {
-            this._elViewState._errors = errors;
-            var errSvc = !this._elViewState.errorsService ? getErrorsService() : this._elViewState.errorsService;
+            this._viewState._errors = errors;
+            var errSvc = !this._viewState.errorsService ? getErrorsService() : this._viewState.errorsService;
             errSvc.setErrors(el, errors, this.toolTip);
         };
         BaseElView.prototype.isSubscribed = function (flag) {
@@ -804,14 +804,14 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                 v = !!v;
                 if (v !== this.isVisible) {
                     if (!v) {
-                        this._elViewState._display = this.el.style.display;
-                        if (this._elViewState._display === "none") {
-                            this._elViewState._display = null;
+                        this._viewState._display = this.el.style.display;
+                        if (this._viewState._display === "none") {
+                            this._viewState._display = null;
                         }
                         this.el.style.display = "none";
                     }
                     else {
-                        this.el.style.display = (!this._elViewState._display ? "" : this._elViewState._display);
+                        this.el.style.display = (!this._viewState._display ? "" : this._viewState._display);
                     }
                     this.objEvents.raiseProp("isVisible");
                 }
@@ -821,10 +821,10 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         });
         Object.defineProperty(BaseElView.prototype, "validationErrors", {
             get: function () {
-                return this._elViewState._errors;
+                return this._viewState._errors;
             },
             set: function (v) {
-                if (!this.getIsDisposed() && this._elViewState._errors !== v) {
+                if (!this.getIsDisposed() && this._viewState._errors !== v) {
                     this._setErrors(this.el, v);
                     this.objEvents.raiseProp("validationErrors");
                 }
@@ -841,11 +841,11 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         });
         Object.defineProperty(BaseElView.prototype, "toolTip", {
             get: function () {
-                return this._elViewState.tip;
+                return this._viewState.tip;
             },
             set: function (v) {
                 if (this.toolTip !== v) {
-                    this._elViewState.tip = v;
+                    this._viewState.tip = v;
                     addToolTip(this.el, v);
                     this.objEvents.raiseProp("toolTip");
                 }
@@ -856,41 +856,41 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         Object.defineProperty(BaseElView.prototype, "events", {
             get: function () {
                 var _this = this;
-                if (!this._elViewState._eventBag) {
+                if (!this._viewState._eventBag) {
                     if (this.getIsStateDirty()) {
                         return _undefined;
                     }
-                    this._elViewState._eventBag = new eventbag_1.EventBag(function (s, a) {
+                    this._viewState._eventBag = new eventbag_1.EventBag(function (s, a) {
                         _this._onEventChanged(a);
                     });
                 }
-                return this._elViewState._eventBag;
+                return this._viewState._eventBag;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "props", {
             get: function () {
-                if (!this._elViewState._propBag) {
+                if (!this._viewState._propBag) {
                     if (this.getIsStateDirty()) {
                         return _undefined;
                     }
-                    this._elViewState._propBag = new propbag_1.PropertyBag(this.el);
+                    this._viewState._propBag = new propbag_1.PropertyBag(this.el);
                 }
-                return this._elViewState._propBag;
+                return this._viewState._propBag;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "classes", {
             get: function () {
-                if (!this._elViewState._classBag) {
+                if (!this._viewState._classBag) {
                     if (this.getIsStateDirty()) {
                         return _undefined;
                     }
-                    this._elViewState._classBag = new cssbag_1.CSSBag(this.el);
+                    this._viewState._classBag = new cssbag_1.CSSBag(this.el);
                 }
-                return this._elViewState._classBag;
+                return this._viewState._classBag;
             },
             enumerable: true,
             configurable: true
@@ -904,7 +904,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         });
         Object.defineProperty(BaseElView.prototype, "css", {
             get: function () {
-                return this._elViewState.css;
+                return this._viewState.css;
             },
             set: function (v) {
                 var arr = [];
@@ -912,7 +912,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                     if (!!this.css) {
                         arr.push("-" + this.css);
                     }
-                    this._elViewState.css = v;
+                    this._viewState.css = v;
                     if (!!this.css) {
                         arr.push("+" + this.css);
                     }

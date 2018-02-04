@@ -13,7 +13,7 @@ import { IViewErrorsService } from "jriapp/int";
 
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
-const utils = Utils, { getNewID, extend } = utils.core, dom = DomUtils, { _undefined } = utils.check,
+const utils = Utils, { getNewID } = utils.core, dom = DomUtils, { _undefined } = utils.check,
     boot = bootstrap, viewChecks = ViewChecks, subscribeMap = subscribeWeakMap;
 
 viewChecks.isElView = (obj: any): obj is IElView => {
@@ -41,27 +41,26 @@ export interface IElViewState extends IViewOptions {
 export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber, IValidatable {
     private _objId: string;
     private _el: TElement;
-    private _subscribeFlags: SubscribeFlags;
-    private _elViewState: IElViewState;
+    private _subscribeFlags: number;
+    private _viewState: IElViewState;
 
     constructor(el: TElement, options?: IViewOptions) {
         super();
         this._el = el;
-        const state = <IElViewState>extend(
-            {
-                tip: null,
-                css: null,
-                nodelegate: false,
-                errorsService: null,
-                _eventBag: null,
-                _propBag: null,
-                _classBag: null,
-                _display: null,
-                _errors: null
-            }, options);
+        options = options || {};
+        const state: IElViewState = {
+            tip: !options.tip ? null : options.tip,
+            css: !options.css ? null : options.css,
+            errorsService: !options.errorsService ? null : options.errorsService,
+            _eventBag: null,
+            _propBag: null,
+            _classBag: null,
+            _display: null,
+            _errors: null
+        };
         this._objId = getNewID("elv");
-        this._elViewState = state;
-        this._subscribeFlags = !state.nodelegate ? 1 : 0;
+        this._viewState = state;
+        this._subscribeFlags = !options.nodelegate ? 1 : 0;
 
         if (!!state.css) {
             dom.addClass([el], state.css);
@@ -83,16 +82,16 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
                 subscribeMap.delete(this.el);
                 this._subscribeFlags = 0;
             }
-            if (!!this._elViewState._eventBag) {
-                this._elViewState._eventBag.dispose();
+            if (!!this._viewState._eventBag) {
+                this._viewState._eventBag.dispose();
             }
-            if (!!this._elViewState._propBag) {
-                this._elViewState._propBag.dispose();
+            if (!!this._viewState._propBag) {
+                this._viewState._propBag.dispose();
             }
-            if (!!this._elViewState._classBag) {
-                this._elViewState._classBag.dispose();
+            if (!!this._viewState._classBag) {
+                this._viewState._classBag.dispose();
             }
-            this._elViewState = <any>{};
+            this._viewState = <any>{};
         } finally {
             this._getStore().setElView(this.el, null);
             super.dispose();
@@ -117,8 +116,8 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
             return;
         }
         dom.events.on(this.el, name, (e) => {
-            if (!!self._elViewState._eventBag) {
-                self._elViewState._eventBag.trigger(name, e);
+            if (!!self._viewState._eventBag) {
+                self._viewState._eventBag.trigger(name, e);
             }
         }, this.uniqueID);
     }
@@ -134,8 +133,8 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
         this._subscribeFlags |= (1 << flag);
     }
     protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void {
-        this._elViewState._errors = errors;
-        const errSvc = !this._elViewState.errorsService ? getErrorsService() : this._elViewState.errorsService;
+        this._viewState._errors = errors;
+        const errSvc = !this._viewState.errorsService ? getErrorsService() : this._viewState.errorsService;
         errSvc.setErrors(el, errors, this.toolTip);
     }
     isSubscribed(flag: SubscribeFlags): boolean {
@@ -158,23 +157,23 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
         v = !!v;
         if (v !== this.isVisible) {
             if (!v) {
-                this._elViewState._display = this.el.style.display;
+                this._viewState._display = this.el.style.display;
                 // if saved display is none, then don't store it
-                if (this._elViewState._display === "none") {
-                    this._elViewState._display = null;
+                if (this._viewState._display === "none") {
+                    this._viewState._display = null;
                 }
                 this.el.style.display = "none";
             } else {
-                this.el.style.display = (!this._elViewState._display ? "" : this._elViewState._display);
+                this.el.style.display = (!this._viewState._display ? "" : this._viewState._display);
             }
             this.objEvents.raiseProp("isVisible");
         }
     }
     get validationErrors(): IValidationInfo[] {
-        return this._elViewState._errors;
+        return this._viewState._errors;
     }
     set validationErrors(v: IValidationInfo[]) {
-        if (!this.getIsDisposed() && this._elViewState._errors !== v) {
+        if (!this.getIsDisposed() && this._viewState._errors !== v) {
             this._setErrors(this.el, v);
             this.objEvents.raiseProp("validationErrors");
         }
@@ -183,52 +182,52 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
         return this._el.getAttribute(DATA_ATTR.DATA_NAME);
     }
     get toolTip(): string {
-        return this._elViewState.tip;
+        return this._viewState.tip;
     }
     set toolTip(v: string) {
         if (this.toolTip !== v) {
-            this._elViewState.tip = v;
+            this._viewState.tip = v;
             addToolTip(this.el, v);
             this.objEvents.raiseProp("toolTip");
         }
     }
     // stores commands for data binding to the HtmlElement's events
     get events(): IPropertyBag {
-        if (!this._elViewState._eventBag) {
+        if (!this._viewState._eventBag) {
             if (this.getIsStateDirty()) {
                 return _undefined;
             }
-            this._elViewState._eventBag = new EventBag((s, a) => {
+            this._viewState._eventBag = new EventBag((s, a) => {
                 this._onEventChanged(a);
             });
         }
-        return this._elViewState._eventBag;
+        return this._viewState._eventBag;
     }
     // exposes All HTML Element properties for data binding directly to them
     get props(): IPropertyBag {
-        if (!this._elViewState._propBag) {
+        if (!this._viewState._propBag) {
             if (this.getIsStateDirty()) {
                 return _undefined;
             }
-            this._elViewState._propBag = new PropertyBag(this.el);
+            this._viewState._propBag = new PropertyBag(this.el);
         }
-        return this._elViewState._propBag;
+        return this._viewState._propBag;
     }
     // exposes All CSS Classes for data binding directly to them
     get classes(): IPropertyBag {
-        if (!this._elViewState._classBag) {
+        if (!this._viewState._classBag) {
             if (this.getIsStateDirty()) {
                 return _undefined;
             }
-            this._elViewState._classBag = new CSSBag(this.el);
+            this._viewState._classBag = new CSSBag(this.el);
         }
-        return this._elViewState._classBag;
+        return this._viewState._classBag;
     }
     get isDelegationOn(): boolean {
         return !!(this._subscribeFlags & (1 << SubscribeFlags.delegationOn));
     }
     get css(): string {
-        return this._elViewState.css;
+        return this._viewState.css;
     }
     set css(v: string) {
         const arr: string[] = [];
@@ -236,7 +235,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
             if (!!this.css) {
                 arr.push("-" + this.css);
             }
-            this._elViewState.css = v;
+            this._viewState.css = v;
             if (!!this.css) {
                 arr.push("+" + this.css);
             }
