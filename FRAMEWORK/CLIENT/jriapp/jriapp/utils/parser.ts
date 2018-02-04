@@ -18,15 +18,17 @@ const enum TOKEN {
     PARAM = "param",
     TARGET_PATH = "targetPath",
     GET = "get",
-    DATE = "date"
+    DATE = "date",
+    INJECT = "inject"
 }
 
 const enum TAG {
     EVAL = "1",
     GET = "2",
     DATE = "3",
-    BRACE = "4",
-    LITERAL = "5"
+    INJECT ="4",
+    BRACE = "5",
+    LITERAL = "6"
 }
 
 const enum DATES {
@@ -286,6 +288,9 @@ function getKeyVals(val: string): IKeyVal[] {
                 case TOKEN.GET:
                     kv.tag = TAG.GET;
                     break;
+                case TOKEN.INJECT:
+                    kv.tag = TAG.INJECT;
+                    break;
                 case TOKEN.DATE:
                     kv.tag = TAG.DATE;
                     break;
@@ -367,6 +372,10 @@ function getExprArgs(expr: string): string[] {
     return parts.map((p) => trim(p));
 }
 
+function inject(id: string): string {
+    return bootstrap.getSvc(id);
+}
+
 function getOptions(id: string): string {
     return bootstrap.getOptions(id);
 }
@@ -437,12 +446,21 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
                     res[kv.key] = kv.val;
                     break;
             }
-        } else if (kv.tag === TAG.BRACE) {
-            res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
-        } else if (kv.tag === TAG.GET) {
-            res[kv.key] = parseById(PARSE_TYPE.NONE, kv.val, app, dataContext);
         } else {
-            res[kv.key] = kv.val;
+            switch (kv.tag) {
+                case TAG.BRACE:
+                    res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
+                    break;
+                case TAG.GET:
+                    res[kv.key] = parseById(PARSE_TYPE.NONE, kv.val, app, dataContext);
+                    break;
+                case TAG.INJECT:
+                    res[kv.key] = inject(kv.val);
+                    break;
+                default:
+                    res[kv.key] = kv.val;
+                    break;
+            }
         }
     });
 

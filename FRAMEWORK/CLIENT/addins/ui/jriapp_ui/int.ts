@@ -1,8 +1,11 @@
 ﻿import { IValidationInfo } from "jriapp_shared";
+import { IViewErrorsService } from "jriapp/int";
 
-export interface IUIErrorsService {
-    setErrors(el: HTMLElement, errors: IValidationInfo[], toolTip?: string): void;
+export interface IFormErrorsService {
     setFormErrors(el: HTMLElement, errors: IValidationInfo[]): void;
+}
+
+export interface IUIErrorsService extends IViewErrorsService, IFormErrorsService {
 }
 
 export const enum cssStyles {

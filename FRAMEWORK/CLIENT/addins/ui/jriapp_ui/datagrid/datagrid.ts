@@ -119,6 +119,8 @@ export interface IRowStateProvider {
 }
 
 export interface IDataGridOptions {
+    dataSource?: ICollection<ICollectionItem>;
+    animation?: IDataGridAnimation;
     isUseScrollInto: boolean;
     isUseScrollIntoDetails: boolean;
     containerCss: string;
@@ -140,11 +142,6 @@ export interface IDataGridOptions {
 }
 
 
-export interface IDataGridConstructorOptions extends IDataGridOptions {
-    dataSource: ICollection<ICollectionItem>;
-    animation: IDataGridAnimation;
-}
-
 export interface IInternalDataGridMethods {
     isRowExpanded(row: Row): boolean;
     getHeader(): HTMLElement;
@@ -162,7 +159,7 @@ export interface IInternalDataGridMethods {
 }
 
 export class DataGrid extends BaseObject implements ISelectableProvider {
-    private _options: IDataGridConstructorOptions;
+    private _options: IDataGridOptions;
     private _table: HTMLTableElement;
     private _name: string;
     private _objId: string;
@@ -188,7 +185,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     private _pageDebounce: Debounce;
     private _updateCurrent: () => void;
 
-    constructor(table: HTMLTableElement, options: IDataGridConstructorOptions) {
+    constructor(table: HTMLTableElement, options: IDataGridOptions) {
         super();
         const self = this;
         options = merge(options,
@@ -1190,7 +1187,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     get table(): HTMLTableElement {
         return this._table;
     }
-    get options(): IDataGridConstructorOptions {
+    get options(): IDataGridOptions {
         return this._options;
     }
     get _tBodyEl(): HTMLTableSectionElement {
@@ -1311,13 +1308,7 @@ export class DataGridElView extends BaseElView implements ISelectableProvider {
         super(table, options);
         this._stateProvider = null;
         this._stateDebounce = new Debounce();
-        const opts = <IDataGridConstructorOptions>extend(
-            {
-                dataSource: null,
-                animation: null
-            }, options);
-
-        this._grid = new DataGrid(table, opts);
+        this._grid = new DataGrid(table, options);
         this._bindGridEvents();
     }
     toString(): string {

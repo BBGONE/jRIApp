@@ -521,8 +521,15 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     getSvc<T>(name: string): T;
     getSvc(name: string): any {
-        const name2 = STORE_KEY.SVC + name;
-        return this._getObject(this, name2);
+        const name2 = STORE_KEY.SVC + name, obj = this._getObject(this, name2);
+        if (!obj) {
+            throw new Error(`The service: ${name} is not registered`);
+        }
+        const res = isFunc(obj) ? obj() : obj;
+        if (!res) {
+            throw new Error(`The factory for service: ${name} have not returned the service`);
+        }
+        return res;
     }
     registerConverter(name: string, obj: IConverter): void {
         const name2 = STORE_KEY.CONVERTER + name;

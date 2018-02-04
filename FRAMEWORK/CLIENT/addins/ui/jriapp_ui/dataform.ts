@@ -9,7 +9,7 @@ import { DATA_ATTR, ELVIEW_NM, BindScope, SERVICES } from "jriapp/const";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { IContent, IElView, ILifeTimeScope, IViewOptions, IApplication } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
-import { cssStyles, IUIErrorsService } from "./int";
+import { cssStyles, IFormErrorsService } from "./int";
 import { BaseElView } from "./baseview";
 
 import { Binding } from "jriapp/binding";
@@ -108,8 +108,12 @@ function getFieldInfo(obj: any, fieldName: string): IFieldInfo {
     }
 }
 
-function UIErrorsService(): IUIErrorsService {
-    return boot.getSvc<IUIErrorsService>(SERVICES.UIERRORS_SVC);
+function getErrorsService(): IFormErrorsService {
+    return boot.getSvc(SERVICES.UIERRORS_SVC);
+}
+
+export interface IFormOptions {
+    formErrorsService?: IFormErrorsService;
 }
 
 export class DataForm extends BaseObject {
@@ -118,6 +122,7 @@ export class DataForm extends BaseObject {
     private _el: HTMLElement;
     private _objId: string;
     private _dataContext: IBaseObject;
+    private _errorsService: IFormErrorsService;
     private _isEditing: boolean;
     private _content: IContent[];
     private _lfTime: ILifeTimeScope;
@@ -126,13 +131,14 @@ export class DataForm extends BaseObject {
     private _errNotification: IErrorNotification;
     private _parentDataForm: IElView;
     private _contentPromise: IVoidPromise;
-  
-    constructor(el: HTMLElement, options: IViewOptions) {
+
+    constructor(el: HTMLElement, options: IFormOptions) {
         super();
         const self = this;
         this._el = el;
         this._objId = getNewID("frm");
         this._dataContext = null;
+        this._errorsService = !options.formErrorsService ? getErrorsService() : options.formErrorsService;
         dom.addClass([el], cssStyles.dataform);
         this._isEditing = false;
         this._content = [];
@@ -171,6 +177,7 @@ export class DataForm extends BaseObject {
             parentDataForm.objEvents.offNS(this._objId);
         }
         this._dataContext = null;
+        this._errorsService = null;
         this._contentCreated = false;
         this._contentPromise = null;
         this._el = null;
@@ -339,8 +346,7 @@ export class DataForm extends BaseObject {
         this._contentCreated = false;
     }
     protected _setErrors(errors: IValidationInfo[]): void {
-        const uierrSvc = UIErrorsService();
-        uierrSvc.setFormErrors(this.el, errors);
+        this._errorsService.setFormErrors(this.el, errors);
     }
     protected _onIsEditingChanged(): void {
         this.isEditing = this._editable.isEditing;
@@ -425,10 +431,13 @@ export class DataForm extends BaseObject {
     }
 }
 
+export interface IFormViewOptions extends IFormOptions, IViewOptions {
+}
+
 export class DataFormElView extends BaseElView {
     private _form: DataForm;
 
-    constructor(el: HTMLElement, options: IViewOptions) {
+    constructor(el: HTMLElement, options: IFormViewOptions) {
         super(el, options);
         const self = this;
         this._form = new DataForm(el, options);

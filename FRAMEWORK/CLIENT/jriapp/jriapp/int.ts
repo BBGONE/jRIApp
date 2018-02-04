@@ -2,7 +2,7 @@
 import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "./const";
 import {
     IBaseObject, IDisposable, IIndexer, IPromise,
-    IVoidPromise, IErrorHandler, TEventHandler, IConfig
+    IVoidPromise, IErrorHandler, TEventHandler, IConfig, IValidationInfo
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 
@@ -100,12 +100,17 @@ export interface ITemplateEvents {
     templateUnLoading(template: ITemplate): void;
 }
 
+export interface IViewErrorsService {
+    setErrors(el: HTMLElement, errors: IValidationInfo[], toolTip?: string): void;
+}
+
 // --ElView interfaces
 export interface IViewOptions {
     css?: string;
     tip?: string;
     //use event delegation or not
     nodelegate?: boolean;
+    errorsService?: IViewErrorsService;
 }
 
 export interface IElViewStore {

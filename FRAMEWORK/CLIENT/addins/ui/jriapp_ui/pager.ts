@@ -33,9 +33,6 @@ export interface IPagerOptions {
     useSlider?: boolean;
     hideOnSinglePage?: boolean;
     sliderSize?: number;
-}
-
-export interface IPagerConstructorOptions extends IPagerOptions {
     dataSource?: ICollection<ICollectionItem>;
 }
 
@@ -48,7 +45,7 @@ function _removeToolTips(toolTips: Element[]): void {
 export class Pager extends BaseObject implements ISelectableProvider {
     private _el: HTMLElement;
     private _objId: string;
-    private _options: IPagerConstructorOptions;
+    private _options: IPagerOptions;
     private _rowsPerPage: number;
     private _rowCount: number;
     private _currentPage: number;
@@ -60,7 +57,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
     private _toolTips: Element[];
     private _parentControl: ISelectableProvider;
 
-    constructor(el: HTMLElement, options: IPagerConstructorOptions) {
+    constructor(el: HTMLElement, options: IPagerOptions) {
         super();
         options = extend(
             {
@@ -597,7 +594,7 @@ export class PagerElView extends BaseElView implements ISelectableProvider {
     constructor(el: HTMLElement, options: IPagerViewOptions) {
         super(el, options);
         const self = this;
-        this._pager = new Pager(el, <IPagerConstructorOptions>options);
+        this._pager = new Pager(el, options);
         self._pager.objEvents.onProp("*", (sender, args) => {
             switch (args.property) {
                 case "dataSource":

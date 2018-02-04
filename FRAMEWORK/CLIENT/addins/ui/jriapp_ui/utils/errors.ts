@@ -60,8 +60,8 @@ function removeError(el: HTMLElement): void {
     setError(el, false);
 }
 
-class UIErrorsService {
-    static setErrors(el: HTMLElement, errors: IValidationInfo[], toolTip?: string): void {
+class UIErrorsService implements IUIErrorsService  {
+    setErrors(el: HTMLElement, errors: IValidationInfo[], toolTip?: string): void {
         if (!!errors && errors.length > 0) {
             addToolTip(el, getErrorTipInfo(errors), true);
             addError(el);
@@ -70,7 +70,7 @@ class UIErrorsService {
             removeError(el);
         }
     }
-    static setFormErrors(el: HTMLElement, errors: IValidationInfo[]): void {
+    setFormErrors(el: HTMLElement, errors: IValidationInfo[]): void {
         let gliph: HTMLElement = formMap.get(el);
 
         if (!!errors && errors.length > 0) {
@@ -93,5 +93,5 @@ class UIErrorsService {
 }
 
 export function createUIErrorsSvc(): IUIErrorsService {
-    return UIErrorsService;
+    return new UIErrorsService();
 }

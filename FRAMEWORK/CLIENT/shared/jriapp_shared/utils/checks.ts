@@ -10,7 +10,7 @@ function isNt(a: any): a is void {
     return (a === null || a === _undefined);
 }
 
-function isFunc(a: any): a is Function {
+function isFunc(a: any): a is (...args: any[]) => any {
     return (isNt(a)) ? false : ((typeof a === "function") || (typeof a === "object" && a instanceof Function));
 }
 
@@ -41,7 +41,7 @@ export class Checks {
         return (!a) ? false : ((typeof a === "object") && Object.prototype === Object.getPrototypeOf(a));
     }
     static readonly isString: (a: any) => a is string = isString;
-    static readonly isFunc: (a: any) => a is Function = isFunc;
+    static readonly isFunc: (a: any) => a is (...args: any[]) => any = isFunc;
     static isBoolean(a: any): a is boolean {
         return (isNt(a)) ? false : ((typeof a === "boolean") || (typeof a === "object" && a instanceof Boolean));
     }

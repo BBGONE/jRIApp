@@ -5,9 +5,11 @@
 /// <reference path="../thirdparty/qtip2.d.ts" />
 declare module "jriapp_ui/int" {
     import { IValidationInfo } from "jriapp_shared";
-    export interface IUIErrorsService {
-        setErrors(el: HTMLElement, errors: IValidationInfo[], toolTip?: string): void;
+    import { IViewErrorsService } from "jriapp/int";
+    export interface IFormErrorsService {
         setFormErrors(el: HTMLElement, errors: IValidationInfo[]): void;
+    }
+    export interface IUIErrorsService extends IViewErrorsService, IFormErrorsService {
     }
     export const enum cssStyles {
         fieldError = "ria-field-error",
@@ -153,20 +155,21 @@ declare module "jriapp_ui/baseview" {
     import { SubscribeFlags } from "jriapp/const";
     import { IElView, IApplication, IViewOptions, ISubscriber } from "jriapp/int";
     import { ICommand } from "jriapp/mvvm";
-    import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
+    import { EventBag, EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
     export { IEventChangedArgs, EVENT_CHANGE_TYPE };
     export function addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void;
+    export interface IElViewState extends IViewOptions {
+        _eventBag: EventBag;
+        _propBag: IPropertyBag;
+        _classBag: IPropertyBag;
+        _display: string;
+        _errors: IValidationInfo[];
+    }
     export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber, IValidatable {
         private _objId;
         private _el;
         private _subscribeFlags;
-        private _eventBag;
-        private _propBag;
-        private _classBag;
-        private _display;
-        private _css;
-        private _toolTip;
-        private _errors;
+        private _elViewState;
         constructor(el: TElement, options?: IViewOptions);
         dispose(): void;
         private _getStore();
@@ -1149,6 +1152,8 @@ declare module "jriapp_ui/datagrid/datagrid" {
         getCSS(item: ICollectionItem, val: any): string;
     }
     export interface IDataGridOptions {
+        dataSource?: ICollection<ICollectionItem>;
+        animation?: IDataGridAnimation;
         isUseScrollInto: boolean;
         isUseScrollIntoDetails: boolean;
         containerCss: string;
@@ -1166,10 +1171,6 @@ declare module "jriapp_ui/datagrid/datagrid" {
         isPrependAllRows?: boolean;
         isActionsToolTips?: boolean;
         syncSetDatasource?: boolean;
-    }
-    export interface IDataGridConstructorOptions extends IDataGridOptions {
-        dataSource: ICollection<ICollectionItem>;
-        animation: IDataGridAnimation;
     }
     export interface IInternalDataGridMethods {
         isRowExpanded(row: Row): boolean;
@@ -1212,7 +1213,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _dsDebounce;
         private _pageDebounce;
         private _updateCurrent;
-        constructor(table: HTMLTableElement, options: IDataGridConstructorOptions);
+        constructor(table: HTMLTableElement, options: IDataGridOptions);
         dispose(): void;
         protected _updateContentOptions(): void;
         protected _onKeyDown(key: number, event: Event): void;
@@ -1296,7 +1297,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         offOnRowAction(nmspace?: string): void;
         readonly selectable: ISelectable;
         readonly table: HTMLTableElement;
-        readonly options: IDataGridConstructorOptions;
+        readonly options: IDataGridOptions;
         readonly _tBodyEl: HTMLTableSectionElement;
         readonly _tHeadEl: HTMLTableSectionElement;
         readonly _tFootEl: HTMLTableSectionElement;
@@ -1349,8 +1350,6 @@ declare module "jriapp_ui/pager" {
         useSlider?: boolean;
         hideOnSinglePage?: boolean;
         sliderSize?: number;
-    }
-    export interface IPagerConstructorOptions extends IPagerOptions {
         dataSource?: ICollection<ICollectionItem>;
     }
     export class Pager extends BaseObject implements ISelectableProvider {
@@ -1365,7 +1364,7 @@ declare module "jriapp_ui/pager" {
         private _display;
         private _toolTips;
         private _parentControl;
-        constructor(el: HTMLElement, options: IPagerConstructorOptions);
+        constructor(el: HTMLElement, options: IPagerOptions);
         dispose(): void;
         protected _addToolTip(el: Element, tip: string): void;
         protected _createElement(tag: string): HTMLElement;
@@ -1584,13 +1583,18 @@ declare module "jriapp_ui/template" {
 declare module "jriapp_ui/dataform" {
     import { IBaseObject, IValidationInfo, BaseObject } from "jriapp_shared";
     import { IViewOptions, IApplication } from "jriapp/int";
+    import { IFormErrorsService } from "jriapp_ui/int";
     import { BaseElView } from "jriapp_ui/baseview";
+    export interface IFormOptions {
+        formErrorsService?: IFormErrorsService;
+    }
     export class DataForm extends BaseObject {
         private static _DATA_FORM_SELECTOR;
         private static _DATA_CONTENT_SELECTOR;
         private _el;
         private _objId;
         private _dataContext;
+        private _errorsService;
         private _isEditing;
         private _content;
         private _lfTime;
@@ -1599,7 +1603,7 @@ declare module "jriapp_ui/dataform" {
         private _errNotification;
         private _parentDataForm;
         private _contentPromise;
-        constructor(el: HTMLElement, options: IViewOptions);
+        constructor(el: HTMLElement, options: IFormOptions);
         dispose(): void;
         private _getBindings();
         private _createContent();
@@ -1617,9 +1621,11 @@ declare module "jriapp_ui/dataform" {
         dataContext: IBaseObject;
         isEditing: boolean;
     }
+    export interface IFormViewOptions extends IFormOptions, IViewOptions {
+    }
     export class DataFormElView extends BaseElView {
         private _form;
-        constructor(el: HTMLElement, options: IViewOptions);
+        constructor(el: HTMLElement, options: IFormViewOptions);
         dispose(): void;
         protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         toString(): string;

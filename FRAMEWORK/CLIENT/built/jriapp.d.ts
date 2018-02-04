@@ -72,7 +72,7 @@ declare module "jriapp/const" {
 }
 declare module "jriapp/int" {
     import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "jriapp/const";
-    import { IBaseObject, IDisposable, IIndexer, IPromise, IVoidPromise, IErrorHandler, TEventHandler, IConfig } from "jriapp_shared";
+    import { IBaseObject, IDisposable, IIndexer, IPromise, IVoidPromise, IErrorHandler, TEventHandler, IConfig, IValidationInfo } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     export interface IJRIAppConfig extends IConfig {
         frameworkPath?: string;
@@ -149,10 +149,14 @@ declare module "jriapp/int" {
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
     }
+    export interface IViewErrorsService {
+        setErrors(el: HTMLElement, errors: IValidationInfo[], toolTip?: string): void;
+    }
     export interface IViewOptions {
         css?: string;
         tip?: string;
         nodelegate?: boolean;
+        errorsService?: IViewErrorsService;
     }
     export interface IElViewStore {
         getElView(el: HTMLElement): IElView;
@@ -1007,5 +1011,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.11.7";
+    export const VERSION = "2.11.8";
 }
