@@ -592,12 +592,21 @@
     <span data-bind="this.value,to=Product.Name"></span>
 </script>
 
+<script id="productAutocompleteOptions" type="text/x-options">
+    dbContext:inject($dbContext),
+    fieldName:Name,
+    dbSetName:LookUpProduct,
+    queryName:ReadProductLookUp,
+    templateId:prodAutocompleteTemplate,
+    width:300px
+</script>
+
 <script id="productTemplate2" type="text/x-template">
     <span>
         autocomplete here-->
         <input type="text" style="margin-left: 0px; width: 300px;" data-bind="this.dataContext"
                data-view="productAutocomplete"
-               data-view-options="dbContext:dbContext,fieldName:Name,dbSetName:LookUpProduct,queryName:ReadProductLookUp,templateId:prodAutocompleteTemplate,width:300px" />&nbsp;
+               data-view-options="get(productAutocompleteOptions)" />&nbsp;
         <b>*</b>
     </span>
 </script>

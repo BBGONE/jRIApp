@@ -2754,7 +2754,7 @@ define("app", ["require", "exports", "jriapp", "domainModel", "common", "custome
             this._dbContext.dbSets.Customer.defineComplexProp_NameField(function (item) {
                 return toText(item.ComplexProp.LastName) + '  ' + toText(item.ComplexProp.MiddleName) + '  ' + toText(item.ComplexProp.FirstName);
             });
-            this.registerObject('dbContext', this._dbContext);
+            this.registerSvc("$dbContext", this._dbContext);
             this._errorVM = new common_1.ErrorViewModel(this);
             this._customerVM = new customerVM_1.CustomerVM(this);
             function handleError(sender, data) {

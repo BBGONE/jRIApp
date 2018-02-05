@@ -23,7 +23,10 @@ export class DemoApplication extends RIAPP.Application {
     onStartUp() {
         const self = this, options: IMainOptions = self.options;
         this._dbContext = new DEMODB.DbContext();
-        this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
+        this._dbContext.initialize({
+            serviceUrl: options.service_url,
+            permissions: options.permissionInfo
+        });
         function toText(str: any) {
             if (str === null)
                 return '';
@@ -35,7 +38,7 @@ export class DemoApplication extends RIAPP.Application {
             return toText(item.ComplexProp.LastName) + '  ' + toText(item.ComplexProp.MiddleName) + '  ' + toText(item.ComplexProp.FirstName);
         });
 
-        this.registerObject("dbContext", this._dbContext);
+        this.registerSvc("$dbContext", this._dbContext);
         this._errorVM = new COMMON.ErrorViewModel(this);
         this._customerVM = new CustomerVM(this);
         function handleError(sender: any, data: any) {
@@ -67,9 +70,19 @@ export class DemoApplication extends RIAPP.Application {
             super.dispose();
         }
     }
-    get options() { return <IMainOptions>this._options; }
-    get dbContext() { return this._dbContext; }
-    get errorVM() { return this._errorVM; }
-    get customerVM() { return this._customerVM; }
-    get TEXT() { return RIAPP.LocaleSTRS.TEXT; }
+    get options() {
+        return <IMainOptions>this._options;
+    }
+    get dbContext() {
+        return this._dbContext;
+    }
+    get errorVM() {
+        return this._errorVM;
+    }
+    get customerVM() {
+        return this._customerVM;
+    }
+    get TEXT() {
+        return RIAPP.LocaleSTRS.TEXT;
+    }
 }

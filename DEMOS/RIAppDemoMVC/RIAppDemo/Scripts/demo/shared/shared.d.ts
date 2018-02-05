@@ -60,7 +60,7 @@ declare module "autocomplete" {
     import * as dbMOD from "jriapp_db";
     import * as uiMOD from "jriapp_ui";
     export interface IAutocompleteOptions extends RIAPP.IViewOptions {
-        dbContext: string;
+        dbContext: dbMOD.DbContext;
         templateId: string;
         fieldName: string;
         dbSetName: string;
@@ -87,7 +87,7 @@ declare module "autocomplete" {
         private _lookupGrid;
         private _btnOk;
         private _btnCancel;
-        private _dbContextName;
+        private _dbContext;
         private _minTextLength;
         templateLoading(template: RIAPP.ITemplate): void;
         templateLoaded(template: RIAPP.ITemplate, error?: any): void;
@@ -106,9 +106,9 @@ declare module "autocomplete" {
         protected _onHide(): void;
         protected _open(): void;
         protected _hide(): void;
-        load(str: string): void;
         protected getDataContext(): RIAPP.IBaseObject;
         protected setDataContext(v: RIAPP.IBaseObject): void;
+        load(str: string): void;
         dispose(): void;
         readonly fieldName: string;
         readonly templateId: string;

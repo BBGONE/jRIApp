@@ -335,7 +335,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             _this._fieldName = options.fieldName;
             _this._dbSetName = options.dbSetName;
             _this._queryName = options.queryName;
-            _this._dbContextName = options.dbContext;
+            _this._dbContext = options.dbContext;
             _this._minTextLength = (!!options.minTextLength) ? options.minTextLength : 1;
             _this._template = null;
             _this._gridDataSource = null;
@@ -412,11 +412,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             }
         };
         AutoCompleteElView.prototype._getDbContext = function () {
-            var dbContext = this.app.getObject(this._dbContextName);
-            if (!dbContext) {
-                throw new Error(utils.str.format('dbContext with the name: {0} is not registered', this._dbContextName));
-            }
-            return dbContext;
+            return this._dbContext;
         };
         AutoCompleteElView.prototype._createTemplate = function () {
             var t = RIAPP.createTemplate(this, this);
@@ -520,19 +516,6 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             this._isOpen = false;
             this._onHide();
         };
-        AutoCompleteElView.prototype.load = function (str) {
-            var self = this, query = this.gridDataSource.createQuery(this._queryName);
-            query.pageSize = 50;
-            query.isClearPrevData = true;
-            COMMON.addTextQuery(query, this._fieldName, str + '%');
-            query.orderBy(this._fieldName);
-            this._isLoading = true;
-            this.objEvents.raiseProp('isLoading');
-            query.load().always(function (res) {
-                self._isLoading = false;
-                self.objEvents.raiseProp('isLoading');
-            });
-        };
         AutoCompleteElView.prototype.getDataContext = function () {
             return this._dataContext;
         };
@@ -548,6 +531,19 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
                     this._hideAsync();
                 }
             }
+        };
+        AutoCompleteElView.prototype.load = function (str) {
+            var self = this, query = this.gridDataSource.createQuery(this._queryName);
+            query.pageSize = 50;
+            query.isClearPrevData = true;
+            COMMON.addTextQuery(query, this._fieldName, str + '%');
+            query.orderBy(this._fieldName);
+            this._isLoading = true;
+            this.objEvents.raiseProp('isLoading');
+            query.load().always(function (res) {
+                self._isLoading = false;
+                self.objEvents.raiseProp('isLoading');
+            });
         };
         AutoCompleteElView.prototype.dispose = function () {
             if (this.getIsDisposed())
@@ -568,12 +564,16 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             _super.prototype.dispose.call(this);
         };
         Object.defineProperty(AutoCompleteElView.prototype, "fieldName", {
-            get: function () { return this._fieldName; },
+            get: function () {
+                return this._fieldName;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(AutoCompleteElView.prototype, "templateId", {
-            get: function () { return this._templateId; },
+            get: function () {
+                return this._templateId;
+            },
             enumerable: true,
             configurable: true
         });
@@ -590,12 +590,16 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             configurable: true
         });
         Object.defineProperty(AutoCompleteElView.prototype, "template", {
-            get: function () { return this._template; },
+            get: function () {
+                return this._template;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(AutoCompleteElView.prototype, "dataContext", {
-            get: function () { return this.getDataContext(); },
+            get: function () {
+                return this.getDataContext();
+            },
             set: function (v) {
                 this.setDataContext(v);
             },
@@ -603,7 +607,9 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             configurable: true
         });
         Object.defineProperty(AutoCompleteElView.prototype, "gridDataSource", {
-            get: function () { return this._gridDataSource; },
+            get: function () {
+                return this._gridDataSource;
+            },
             enumerable: true,
             configurable: true
         });

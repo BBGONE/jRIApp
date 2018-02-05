@@ -1857,7 +1857,10 @@ define("manToManDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "comm
         DemoApplication.prototype.onStartUp = function () {
             var self = this, options = self.options;
             this._dbContext = new DEMODB.DbContext();
-            this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
+            this._dbContext.initialize({
+                serviceUrl: options.service_url,
+                permissions: options.permissionInfo
+            });
             function toText(str) {
                 if (str === null)
                     return '';
@@ -1868,7 +1871,7 @@ define("manToManDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "comm
             this._dbContext.dbSets.Customer.defineComplexProp_NameField(function (item) {
                 return toText(item.ComplexProp.LastName) + '  ' + toText(item.ComplexProp.MiddleName) + '  ' + toText(item.ComplexProp.FirstName);
             });
-            this.registerObject("dbContext", this._dbContext);
+            this.registerSvc("$dbContext", this._dbContext);
             this._errorVM = new COMMON.ErrorViewModel(this);
             this._customerVM = new customerVM_1.CustomerVM(this);
             function handleError(sender, data) {
@@ -1900,27 +1903,37 @@ define("manToManDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "comm
             }
         };
         Object.defineProperty(DemoApplication.prototype, "options", {
-            get: function () { return this._options; },
+            get: function () {
+                return this._options;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "dbContext", {
-            get: function () { return this._dbContext; },
+            get: function () {
+                return this._dbContext;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "errorVM", {
-            get: function () { return this._errorVM; },
+            get: function () {
+                return this._errorVM;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "customerVM", {
-            get: function () { return this._customerVM; },
+            get: function () {
+                return this._customerVM;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "TEXT", {
-            get: function () { return RIAPP.LocaleSTRS.TEXT; },
+            get: function () {
+                return RIAPP.LocaleSTRS.TEXT;
+            },
             enumerable: true,
             configurable: true
         });

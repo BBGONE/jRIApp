@@ -17,7 +17,7 @@ function findElemInTemplate(template: RIAPP.ITemplate, name: string) {
 }
 
 export interface IAutocompleteOptions extends RIAPP.IViewOptions {
-    dbContext: string;
+    dbContext: dbMOD.DbContext;
     templateId: string;
     fieldName: string;
     dbSetName: string;
@@ -45,7 +45,7 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
     private _lookupGrid: uiMOD.DataGrid;
     private _btnOk: HTMLElement;
     private _btnCancel: HTMLElement;
-    private _dbContextName: string;
+    private _dbContext: dbMOD.DbContext;
     private _minTextLength: number;
 
     templateLoading(template: RIAPP.ITemplate): void {
@@ -77,7 +77,7 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
         this._fieldName = options.fieldName;
         this._dbSetName = options.dbSetName;
         this._queryName = options.queryName;
-        this._dbContextName = options.dbContext;
+        this._dbContext = options.dbContext;
         this._minTextLength = (!!options.minTextLength) ? options.minTextLength : 1;
         this._template = null;
         this._gridDataSource = null;
@@ -128,27 +128,23 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
 
         dom.document.body.appendChild(this._$dropDown.get(0));
     }
-    protected _createGridDataSource() {
+    protected _createGridDataSource(): void {
         this._gridDataSource = this._getDbContext().getDbSet(this._dbSetName);
         if (!this._gridDataSource) {
             throw new Error(utils.str.format('dbContext does not contain dbSet with the name: {0}', this._dbSetName))
         }
     }
     protected _getDbContext(): dbMOD.DbContext {
-        const dbContext = this.app.getObject<dbMOD.DbContext>(this._dbContextName);
-        if (!dbContext) {
-            throw new Error(utils.str.format('dbContext with the name: {0} is not registered', this._dbContextName))
-        }
-        return dbContext;
+        return this._dbContext;
     }
     protected _createTemplate(): RIAPP.ITemplate {
         const t = RIAPP.createTemplate(this, this);
         t.templateID = this._templateId;
         return t;
     }
-    protected _onTextChange() {
+    protected _onTextChange(): void {
     }
-    protected _onKeyUp(text: string, keyCode: number) {
+    protected _onKeyUp(text: string, keyCode: number): void {
         const self = this;
         clearTimeout(this._loadTimeout);
         if (!!text && text.length >= self._minTextLength) {
@@ -188,10 +184,10 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
             self._hide();
         }, 100);
     }
-    protected _updateSelection() {
+    protected _updateSelection(): void {
         this.value = this.currentSelection;
     }
-    protected _updatePosition() {
+    protected _updatePosition(): void {
         (<any>this._$dropDown).position(<any>{
             my: "left top",
             at: "left bottom",
@@ -199,14 +195,14 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
             offset: "0 0"
         });
     }
-    protected _onShow() {
+    protected _onShow(): void {
         this.objEvents.raise('show', {});
     }
-    protected _onHide() {
+    protected _onHide(): void {
         this.objEvents.raise('hide', {});
         this.objEvents.raiseProp("value");
     }
-    protected _open() {
+    protected _open(): void {
         if (this._isOpen)
             return;
         const self = this;
@@ -238,7 +234,7 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
         this._isOpen = true;
         this._onShow();
     }
-    protected _hide() {
+    protected _hide(): void {
         if (!this._isOpen)
             return;
         $(dom.document).off('.' + this.uniqueID);
@@ -249,23 +245,10 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
         this._isOpen = false;
         this._onHide();
     }
-    load(str: string) {
-        const self = this, query = (<dbMOD.TDbSet>this.gridDataSource).createQuery(this._queryName);
-        query.pageSize = 50;
-        query.isClearPrevData = true;
-        COMMON.addTextQuery(query, this._fieldName, str + '%');
-        query.orderBy(this._fieldName);
-        this._isLoading = true;
-        this.objEvents.raiseProp('isLoading');
-        query.load().always(function (res) {
-            self._isLoading = false;
-            self.objEvents.raiseProp('isLoading');
-        });
-    }
     protected getDataContext(): RIAPP.IBaseObject {
         return this._dataContext;
     }
-    protected setDataContext(v: RIAPP.IBaseObject) {
+    protected setDataContext(v: RIAPP.IBaseObject): void {
         const old: RIAPP.IBaseObject = this._dataContext;
         if (this._dataContext !== v) {
             if (!!old) {
@@ -278,7 +261,20 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
             }
         }
     }
-    dispose() {
+    load(str: string): void {
+        const self = this, query = (<dbMOD.TDbSet>this.gridDataSource).createQuery(this._queryName);
+        query.pageSize = 50;
+        query.isClearPrevData = true;
+        COMMON.addTextQuery(query, this._fieldName, str + '%');
+        query.orderBy(this._fieldName);
+        this._isLoading = true;
+        this.objEvents.raiseProp('isLoading');
+        query.load().always(function (res) {
+            self._isLoading = false;
+            self.objEvents.raiseProp('isLoading');
+        });
+    }
+    dispose(): void {
         if (this.getIsDisposed())
             return;
         this.setDisposing();
@@ -297,8 +293,12 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
         super.dispose();
     }
     //field name for lookup in dbSet
-    get fieldName() { return this._fieldName; }
-    get templateId() { return this._templateId; }
+    get fieldName(): string {
+        return this._fieldName;
+    }
+    get templateId(): string {
+        return this._templateId;
+    }
     get currentSelection(): any {
         if (this._gridDataSource.currentItem) {
             return (<any>this._gridDataSource.currentItem)[this._fieldName];
@@ -307,27 +307,33 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
         }
     }
     //template instance of drop down area (which contains datagrid) under textbox
-    get template(): RIAPP.ITemplate { return this._template; }
+    get template(): RIAPP.ITemplate {
+        return this._template;
+    }
     //Entity which is databound to the textbox
-    get dataContext(): RIAPP.IBaseObject { return this.getDataContext(); }
+    get dataContext(): RIAPP.IBaseObject {
+        return this.getDataContext();
+    }
     set dataContext(v) {
         this.setDataContext(v);
     }
     //dbSet for a datagrid's dataSource (for lookup values)
-    get gridDataSource(): RIAPP.ICollection<RIAPP.ICollectionItem> { return this._gridDataSource; }
+    get gridDataSource(): RIAPP.ICollection<RIAPP.ICollectionItem> {
+        return this._gridDataSource;
+    }
     get value(): string {
         return (<HTMLInputElement>this.el).value;
     }
-    set value(v) {
+    set value(v: string) {
         const x = this.value, str = "" + v;
         v = (!v) ? "" : str;
         if (x !== v) {
-            (<HTMLInputElement>this.el).value = v;
+            this.el.value = v;
             this._prevText = v;
             this.objEvents.raiseProp("value");
         }
     }
-    get isLoading() {
+    get isLoading(): boolean {
         return this._isLoading;
     }
 }

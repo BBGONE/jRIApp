@@ -38,7 +38,7 @@ export class DemoApplication extends RIAPP.Application {
             //executed in the context of the entity
             return toText(item.ComplexProp.LastName) + '  ' + toText(item.ComplexProp.MiddleName) + '  ' + toText(item.ComplexProp.FirstName);
         });
-        this.registerObject('dbContext', this._dbContext);
+        this.registerSvc("$dbContext", this._dbContext);
         this._errorVM = new COMMON.ErrorViewModel(this);
         this._customerVM = new CustomerVM(this);
 
