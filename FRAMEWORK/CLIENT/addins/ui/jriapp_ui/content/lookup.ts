@@ -45,7 +45,7 @@ class LookupConverter implements IConverter {
     convertToTarget(val: any, param: any, dataContext: any): string {
         return this._content.getLookupText(val);
     }
-    toString() {
+    toString(): string {
         return "LookupConverter";
     }
 }
@@ -54,7 +54,6 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
     private _converter: LookupConverter;
     private _listBox: ListBoxElView;
     private _isListBoxCachedExternally: boolean;
-    private _spanBinding: IBinding;
     private _objId: string;
 
     constructor(options: IConstructorContentOptions) {
@@ -64,7 +63,6 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         super(options);
         this._converter = new LookupConverter(this);
         this._listBox = null;
-        this._spanBinding = null;
         this._isListBoxCachedExternally = false;
         this._objId = getNewID("lkup");
         if (!!this.options.initContentFn) {
@@ -85,6 +83,10 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         }
         this._converter = null;
         super.dispose();
+    }
+    // override
+    protected getConverter(isEdit: boolean): IConverter {
+        return (!isEdit) ? this._converter : null;
     }
     protected getListBox(): ListBoxElView {
         if (!!this._listBox) {
@@ -123,9 +125,13 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         return this._listBox;
     }
     protected onListRefreshed(): void {
-        if (!!this._spanBinding) {
-            this._spanBinding.updateTarget();
-        }
+        const bindings = this.lfScope.getObjs().filter((obj) => sys.isBinding(obj)).map((obj) => <IBinding>obj);
+        bindings.forEach((binding) => {
+            if (binding.targetPath.length > 0 && binding.targetPath[0] === "value")
+            {
+                binding.updateTarget();
+            }
+        });
     }
     protected createListBox(lookUpOptions: ILookupOptions): ListBoxElView {
         const el = doc.createElement("select"), options = {
@@ -141,25 +147,10 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
     // override
     protected cleanUp() {
         super.cleanUp();
-        this._spanBinding = null;
         if (!!this._listBox && this._isListBoxCachedExternally) {
             this._listBox.objEvents.offNS(this.uniqueID);
             this._listBox = null;
         }
-    }
-    protected bindToSpan(span: IElView): IBinding {
-        const options: IBindingOptions = {
-            target: span,
-            source: this.dataContext,
-            targetPath: "value",
-            sourcePath: this.options.fieldName,
-            isSourceFixed: false,
-            mode: BINDING_MODE.OneWay,
-            converter: this._converter,
-            param: null,
-            isEval: false
-        };
-        return this.app.bind(options);
     }
     protected bindToList(listBox: IElView): IBinding {
         const options: IBindingOptions = {
@@ -174,13 +165,6 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             isEval: false
         };
         return this.app.bind(options);
-    }
-    // override
-    protected createdReadingView(): IContentView {
-        const span = <IElView>super.createdReadingView();
-        this.lfScope.addObj(span);
-        this.lfScope.addObj(this.bindToSpan(span));
-        return span;
     }
     // override
     protected createdEditingView(): IContentView {

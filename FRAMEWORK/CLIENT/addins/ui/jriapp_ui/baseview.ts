@@ -29,7 +29,7 @@ function getErrorsService(): IViewErrorsService {
     return boot.getSvc(SERVICES.UIERRORS_SVC);
 }
 
-export interface IElViewState extends IViewOptions {
+interface IElViewState extends IViewOptions {
     _eventBag: EventBag;
     _propBag: IPropertyBag;
     _classBag: IPropertyBag;

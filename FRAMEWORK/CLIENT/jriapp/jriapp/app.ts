@@ -15,7 +15,7 @@ import { createElViewFactory } from "./elview";
 import { createDataBindSvc } from "./databindsvc";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, { format } = utils.str,
-    { isThenable } = utils.check, boot = bootstrap, sys = utils.sys, ERRS = LocaleERRS,
+    { isThenable, isFunc } = utils.check, boot = bootstrap, sys = utils.sys, ERRS = LocaleERRS,
     { forEachProp, getNewID, memoize, extend } = utils.core, { createDeferred } = utils.defer;
 
 const enum APP_EVENTS {
@@ -148,10 +148,17 @@ export class Application extends BaseObject implements IApplication {
     }
     getSvc(name: string): any;
     getSvc<T>(name: string): T {
-        const name2 = STORE_KEY.SVC + name;
-        let res = boot._getInternal().getObject(this, name2);
+        const name2 = STORE_KEY.SVC + name, internal = boot._getInternal();
+        let obj = internal.getObject(this, name2);
+        if (!obj) {
+            obj = internal.getObject(boot, name2);
+        }
+        if (!obj) {
+            throw new Error(`The service: ${name} is not registered`);
+        }
+        const res = isFunc(obj) ? obj() : obj;
         if (!res) {
-            res = boot._getInternal().getObject(boot, name2);
+            throw new Error(`The factory for service: ${name} have not returned the service`);
         }
         return res;
     }
@@ -323,12 +330,18 @@ export class Application extends BaseObject implements IApplication {
             super.dispose();
         }
     }
-    toString() {
+    toString(): string {
         return "Application: " + this.appName;
     }
-    get uniqueID() { return this._objId; }
-    get options() { return this._options; }
-    get appName() { return this._appName; }
+    get uniqueID(): string {
+        return this._objId;
+    }
+    get options(): IAppOptions {
+        return this._options;
+    }
+    get appName(): string {
+        return this._appName;
+    }
     get appRoot(): Document | Element {
         return (!this._options || !this._options.appRoot) ? doc : this._options.appRoot;
     }
@@ -336,6 +349,10 @@ export class Application extends BaseObject implements IApplication {
         return this._viewFactory;
     }
     // Namespace for attaching custom user code (functions and objects - anything)
-    get UC() { return this._UC; }
-    get app() { return <IApplication>this; }
+    get UC(): any {
+        return this._UC;
+    }
+    get app(): IApplication {
+        return this;
+    }
 }

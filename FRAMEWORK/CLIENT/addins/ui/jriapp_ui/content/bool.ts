@@ -2,9 +2,7 @@
 import { DomUtils } from "jriapp/utils/dom";
 import { IConstructorContentOptions } from "jriapp/int";
 import { cssStyles } from "../int";
-import { CheckBoxElView } from "../checkbox";
-import { CheckBoxThreeStateElView } from "../checkbox3";
-import { BasicContent, IContentView, getBindingOption } from "./basic";
+import { BasicContent, IContentView, getBindingOption, getView } from "./basic";
 
 
 const dom = DomUtils, doc = dom.document;
@@ -34,7 +32,10 @@ export class BoolContent extends BasicContent {
         const chk = document.createElement("input");
         chk.setAttribute("type", "checkbox");
         dom.addClass([chk], cssStyles.checkbox);
-        const view = isNullable ? new CheckBoxThreeStateElView(chk) : new CheckBoxElView(chk);
+        const view = isNullable ? getView(chk, "checkbox3", {}) : getView(chk, "checkbox", {});
+        if (!!view) {
+            this.lfScope.addObj(view);
+        }
         const label = doc.createElement("label");
         dom.addClass([label], cssStyles.checkbox);
         label.appendChild(view.el);

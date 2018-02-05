@@ -4255,7 +4255,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
 define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/dom", "jriapp/elview", "jriapp/databindsvc"], function (require, exports, jriapp_shared_19, bootstrap_7, dom_6, elview_2, databindsvc_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_19.Utils, dom = dom_6.DomUtils, doc = dom.document, format = utils.str.format, isThenable = utils.check.isThenable, boot = bootstrap_7.bootstrap, sys = utils.sys, ERRS = jriapp_shared_19.LocaleERRS, _a = utils.core, forEachProp = _a.forEachProp, getNewID = _a.getNewID, memoize = _a.memoize, extend = _a.extend, createDeferred = utils.defer.createDeferred;
+    var utils = jriapp_shared_19.Utils, dom = dom_6.DomUtils, doc = dom.document, format = utils.str.format, _a = utils.check, isThenable = _a.isThenable, isFunc = _a.isFunc, boot = bootstrap_7.bootstrap, sys = utils.sys, ERRS = jriapp_shared_19.LocaleERRS, _b = utils.core, forEachProp = _b.forEachProp, getNewID = _b.getNewID, memoize = _b.memoize, extend = _b.extend, createDeferred = utils.defer.createDeferred;
     var APP_EVENTS;
     (function (APP_EVENTS) {
         APP_EVENTS["startup"] = "startup";
@@ -4375,10 +4375,17 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             return boot._getInternal().registerObject(this, name2, obj);
         };
         Application.prototype.getSvc = function (name) {
-            var name2 = "svc." + name;
-            var res = boot._getInternal().getObject(this, name2);
+            var name2 = "svc." + name, internal = boot._getInternal();
+            var obj = internal.getObject(this, name2);
+            if (!obj) {
+                obj = internal.getObject(boot, name2);
+            }
+            if (!obj) {
+                throw new Error("The service: " + name + " is not registered");
+            }
+            var res = isFunc(obj) ? obj() : obj;
             if (!res) {
-                res = boot._getInternal().getObject(boot, name2);
+                throw new Error("The factory for service: " + name + " have not returned the service");
             }
             return res;
         };
@@ -4531,17 +4538,23 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             return "Application: " + this.appName;
         };
         Object.defineProperty(Application.prototype, "uniqueID", {
-            get: function () { return this._objId; },
+            get: function () {
+                return this._objId;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Application.prototype, "options", {
-            get: function () { return this._options; },
+            get: function () {
+                return this._options;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Application.prototype, "appName", {
-            get: function () { return this._appName; },
+            get: function () {
+                return this._appName;
+            },
             enumerable: true,
             configurable: true
         });
@@ -4560,12 +4573,16 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             configurable: true
         });
         Object.defineProperty(Application.prototype, "UC", {
-            get: function () { return this._UC; },
+            get: function () {
+                return this._UC;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Application.prototype, "app", {
-            get: function () { return this; },
+            get: function () {
+                return this;
+            },
             enumerable: true,
             configurable: true
         });
@@ -4602,6 +4619,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.11.9";
+    exports.VERSION = "2.11.10";
     bootstrap_8.Bootstrap._initFramework();
 });

@@ -155,16 +155,9 @@ declare module "jriapp_ui/baseview" {
     import { SubscribeFlags } from "jriapp/const";
     import { IElView, IApplication, IViewOptions, ISubscriber } from "jriapp/int";
     import { ICommand } from "jriapp/mvvm";
-    import { EventBag, EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
+    import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
     export { IEventChangedArgs, EVENT_CHANGE_TYPE };
     export function addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void;
-    export interface IElViewState extends IViewOptions {
-        _eventBag: EventBag;
-        _propBag: IPropertyBag;
-        _classBag: IPropertyBag;
-        _display: string;
-        _errors: IValidationInfo[];
-    }
     export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber, IValidatable {
         private _objId;
         private _el;
@@ -260,34 +253,6 @@ declare module "jriapp_ui/content/multyline" {
         protected createView(): void;
         protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean;
         toString(): string;
-    }
-}
-declare module "jriapp_ui/checkbox" {
-    import { IValidationInfo } from "jriapp_shared";
-    import { IViewOptions } from "jriapp/int";
-    import { InputElView } from "jriapp_ui/input";
-    export class CheckBoxElView extends InputElView<HTMLInputElement> {
-        private _checked;
-        constructor(chk: HTMLInputElement, options?: IViewOptions);
-        handle_change(e: Event): boolean;
-        protected _updateState(): void;
-        protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
-        toString(): string;
-        checked: boolean;
-    }
-}
-declare module "jriapp_ui/checkbox3" {
-    import { IValidationInfo } from "jriapp_shared";
-    import { IViewOptions } from "jriapp/int";
-    import { InputElView } from "jriapp_ui/input";
-    export class CheckBoxThreeStateElView extends InputElView<HTMLInputElement> {
-        private _checked;
-        constructor(chk: HTMLInputElement, options?: IViewOptions);
-        handle_change(e: Event): boolean;
-        protected _updateState(): void;
-        protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
-        toString(): string;
-        checked: boolean;
     }
 }
 declare module "jriapp_ui/content/bool" {
@@ -451,7 +416,7 @@ declare module "jriapp_ui/listbox" {
 }
 declare module "jriapp_ui/content/lookup" {
     import { IBaseObject } from "jriapp_shared";
-    import { IExternallyCachable, IBinding, IConstructorContentOptions, IElView } from "jriapp/int";
+    import { IExternallyCachable, IBinding, IConstructorContentOptions, IConverter, IElView } from "jriapp/int";
     import { ListBoxElView } from "jriapp_ui/listbox";
     import { BasicContent, IContentView } from "jriapp_ui/content/basic";
     export interface ILookupOptions {
@@ -473,17 +438,15 @@ declare module "jriapp_ui/content/lookup" {
         private _converter;
         private _listBox;
         private _isListBoxCachedExternally;
-        private _spanBinding;
         private _objId;
         constructor(options: IConstructorContentOptions);
         dispose(): void;
+        protected getConverter(isEdit: boolean): IConverter;
         protected getListBox(): ListBoxElView;
         protected onListRefreshed(): void;
         protected createListBox(lookUpOptions: ILookupOptions): ListBoxElView;
         protected cleanUp(): void;
-        protected bindToSpan(span: IElView): IBinding;
         protected bindToList(listBox: IElView): IBinding;
-        protected createdReadingView(): IContentView;
         protected createdEditingView(): IContentView;
         protected beforeCreateView(): boolean;
         addOnObjectCreated(fn: (sender: LookupContent, args: TObjCreatedArgs) => void, nmspace?: string): void;
@@ -1717,6 +1680,34 @@ declare module "jriapp_ui/button" {
         value: string;
         text: string;
         html: string;
+    }
+}
+declare module "jriapp_ui/checkbox" {
+    import { IValidationInfo } from "jriapp_shared";
+    import { IViewOptions } from "jriapp/int";
+    import { InputElView } from "jriapp_ui/input";
+    export class CheckBoxElView extends InputElView<HTMLInputElement> {
+        private _checked;
+        constructor(chk: HTMLInputElement, options?: IViewOptions);
+        handle_change(e: Event): boolean;
+        protected _updateState(): void;
+        protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
+        toString(): string;
+        checked: boolean;
+    }
+}
+declare module "jriapp_ui/checkbox3" {
+    import { IValidationInfo } from "jriapp_shared";
+    import { IViewOptions } from "jriapp/int";
+    import { InputElView } from "jriapp_ui/input";
+    export class CheckBoxThreeStateElView extends InputElView<HTMLInputElement> {
+        private _checked;
+        constructor(chk: HTMLInputElement, options?: IViewOptions);
+        handle_change(e: Event): boolean;
+        protected _updateState(): void;
+        protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
+        toString(): string;
+        checked: boolean;
     }
 }
 declare module "jriapp_ui/expander" {

@@ -12,7 +12,7 @@ import { Binding, getBindingOptions } from "jriapp/binding";
 import { LifeTimeScope } from "jriapp/utils/lifetime";
 import { cssStyles } from "../int";
 
-const utils = Utils, dom = DomUtils, doc = dom.document, coreUtils = utils.core,
+const utils = Utils, dom = DomUtils, doc = dom.document, { extend } = utils.core,
     boot = bootstrap, sys = utils.sys;
 
 export interface IContentView extends IBaseObject {
@@ -67,7 +67,7 @@ export class BasicContent extends BaseObject implements IContent {
 
     constructor(options: IConstructorContentOptions) {
         super();
-        options = coreUtils.extend(
+        options = extend(
             {
                 parentEl: null,
                 contentOptions: null,
