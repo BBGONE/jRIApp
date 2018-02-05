@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils, LocaleERRS as ERRS } from "jriapp_shared";
-import { IBindingInfo } from "../int";
+import { IBindingInfo, IApplication } from "../int";
 
 import { bootstrap } from "../bootstrap";
 
@@ -372,8 +372,8 @@ function getExprArgs(expr: string): string[] {
     return parts.map((p) => trim(p));
 }
 
-function inject(id: string): string {
-    return bootstrap.getSvc(id);
+function inject(id: string, app: IApplication): string {
+    return !app ? bootstrap.getSvc(id) : app.getSvc(id);
 }
 
 function getOptions(id: string): string {
@@ -455,7 +455,7 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
                     res[kv.key] = parseById(PARSE_TYPE.NONE, kv.val, app, dataContext);
                     break;
                 case TAG.INJECT:
-                    res[kv.key] = inject(kv.val);
+                    res[kv.key] = inject(kv.val, app);
                     break;
                 default:
                     res[kv.key] = kv.val;

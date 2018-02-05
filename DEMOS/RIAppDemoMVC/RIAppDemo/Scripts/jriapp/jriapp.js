@@ -440,8 +440,8 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
         return parts.map(function (p) { return trim(p); });
     }
-    function inject(id) {
-        return bootstrap_1.bootstrap.getSvc(id);
+    function inject(id, app) {
+        return !app ? bootstrap_1.bootstrap.getSvc(id) : app.getSvc(id);
     }
     function getOptions(id) {
         return bootstrap_1.bootstrap.getOptions(id);
@@ -511,7 +511,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         res[kv.key] = parseById(0, kv.val, app, dataContext);
                         break;
                     case "4":
-                        res[kv.key] = inject(kv.val);
+                        res[kv.key] = inject(kv.val, app);
                         break;
                     default:
                         res[kv.key] = kv.val;
@@ -4619,6 +4619,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.11.10";
+    exports.VERSION = "2.11.11";
     bootstrap_8.Bootstrap._initFramework();
 });
