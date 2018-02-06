@@ -108,8 +108,8 @@ define("jriapp/int", ["require", "exports"], function (require, exports) {
 define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_1, bootstrap_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, endsWith = _b.endsWith, parseBool = jriapp_shared_1.Utils.core.parseBool, sys = jriapp_shared_1.Utils.sys;
-    var getRX = /^get[(].+[)]$/g;
+    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, endsWith = _b.endsWith, trimQuotes = _b.trimQuotes, parseBool = jriapp_shared_1.Utils.core.parseBool, sys = jriapp_shared_1.Utils.sys;
+    var getRX = /^get[(].+[)]$/g, spaceRX = /^\s+$/;
     var TOKEN;
     (function (TOKEN) {
         TOKEN["DELIMETER1"] = ":";
@@ -145,124 +145,49 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         PARSE_TYPE[PARSE_TYPE["BINDING"] = 1] = "BINDING";
         PARSE_TYPE[PARSE_TYPE["VIEW"] = 2] = "VIEW";
     })(PARSE_TYPE || (PARSE_TYPE = {}));
-    var BRACE_TYPE;
-    (function (BRACE_TYPE) {
-        BRACE_TYPE[BRACE_TYPE["SIMPLE"] = 0] = "SIMPLE";
-        BRACE_TYPE[BRACE_TYPE["FIGURE"] = 1] = "FIGURE";
-    })(BRACE_TYPE || (BRACE_TYPE = {}));
     var len_this = "this.".length;
     function getBraceParts(val) {
-        var i, start = 0, cnt = 0, ch, literal, test = 0;
+        var i, ch;
         var parts = [], len = val.length;
         for (i = 0; i < len; i += 1) {
             ch = val.charAt(i);
-            if (ch === "'" || ch === '"') {
-                if (!literal) {
-                    literal = ch;
-                    cnt += 1;
-                    continue;
-                }
-                else if (literal === ch) {
-                    var i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
-                    if (next === ch) {
-                        i += 1;
-                        cnt += 2;
+            switch (ch) {
+                case "{":
+                    var braceLen = sys.getBraceLen(val, i, 1);
+                    parts.push(trim(val.substr(i + 1, braceLen - 2)));
+                    i += (braceLen - 1);
+                    break;
+                default:
+                    if (!spaceRX.test(ch)) {
+                        throw new Error(format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, val));
                     }
-                    else {
-                        literal = null;
-                        cnt += 1;
-                    }
-                    continue;
-                }
+                    break;
             }
-            if (!literal && ch === "{") {
-                if (test === 0) {
-                    start = i;
-                }
-                test += 1;
-                cnt += 1;
-            }
-            else if (!literal && ch === "}") {
-                test -= 1;
-                cnt += 1;
-                if (test === 0) {
-                    if ((cnt - 2) > 0) {
-                        parts.push(val.substr(start + 1, cnt - 2));
-                    }
-                    else {
-                        parts.push("");
-                    }
-                    cnt = 0;
-                    start = 0;
-                }
-            }
-            else {
-                if (test > 0) {
-                    cnt += 1;
-                }
-            }
-        }
-        if (test !== 0) {
-            throw new Error(format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, val));
         }
         return parts;
     }
-    function getBraceLen(val, start, brace) {
-        var i, cnt = 0, ch, literal, test = 0;
-        var len = val.length, br1 = brace === 0 ? "(" : "{", br2 = brace === 0 ? ")" : "}";
-        for (i = start; i < len; i += 1) {
-            ch = val.charAt(i);
-            if (ch === "'" || ch === '"') {
-                if (!literal) {
-                    literal = ch;
-                    cnt += 1;
-                    continue;
-                }
-                else if (literal === ch) {
-                    var i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
-                    if (next === ch) {
-                        i += 1;
-                        cnt += 2;
-                    }
-                    else {
-                        literal = null;
-                        cnt += 1;
-                    }
-                    continue;
-                }
-            }
-            if (!literal && ch === br1) {
-                test += 1;
-                cnt += 1;
-            }
-            else if (!literal && ch === br2) {
-                test -= 1;
-                cnt += 1;
-                if (test === 0) {
-                    return cnt;
-                }
-            }
-            else {
-                if (test > 0) {
-                    cnt += 1;
-                }
-            }
-        }
-        if (test !== 0) {
-            throw new Error(format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, val));
-        }
-        return cnt;
-    }
     function getBraceContent(val, brace) {
         var ch, start = 0;
-        var len = val.length, br1 = brace === 0 ? "(" : "{";
+        var len = val.length;
+        var br1;
+        switch (brace) {
+            case 0:
+                br1 = "(";
+                break;
+            case 1:
+                br1 = "{";
+                break;
+            case 2:
+                br1 = "[";
+                break;
+        }
         for (var i = 0; i < len; i += 1) {
             if (start < 0) {
                 start = i;
             }
             ch = val.charAt(i);
             if (ch === br1) {
-                var braceLen = getBraceLen(val, i, brace);
+                var braceLen = sys.getBraceLen(val, i, brace);
                 return trim(val.substr(i + 1, braceLen - 2));
             }
         }
@@ -281,6 +206,14 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             else {
                 kv.val += v;
             }
+        }
+    }
+    function appendVal(kv, isKey, val) {
+        if (isKey) {
+            kv.key += val;
+        }
+        else {
+            kv.val += val;
         }
     }
     function checkVal(kv) {
@@ -335,94 +268,105 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 start = i;
             }
             ch = val.charAt(i);
-            if (ch === "'" || ch === '"') {
-                if (!literal) {
-                    setVal(kv, start, i, val, isKey, false);
-                    literal = ch;
-                    start = i + 1;
-                    if (!kv.tag) {
-                        kv.tag = "6";
-                    }
-                    continue;
-                }
-                else if (literal === ch) {
-                    var i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
-                    if (next === ch) {
-                        setVal(kv, start, i + 1, val, isKey, true);
-                        i += 1;
-                        start = -1;
-                    }
-                    else {
-                        setVal(kv, start, i, val, isKey, true);
-                        literal = null;
-                        start = -1;
-                    }
-                    continue;
-                }
-            }
-            if (ch === "(" && !literal && !isKey && start < i) {
-                var token = trim(val.substring(start, i));
-                switch (token) {
-                    case "eval":
-                        kv.tag = "1";
-                        break;
-                    case "get":
-                        kv.tag = "2";
-                        break;
-                    case "inject":
-                        kv.tag = "4";
-                        break;
-                    case "date":
-                        kv.tag = "3";
-                        break;
-                    default:
-                        throw new Error("Unknown token: " + token + " in expression " + val);
-                }
-                var braceLen = getBraceLen(val, i, 0);
-                setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
-                i += (braceLen - 1);
-                start = -1;
-                continue;
-            }
-            if (ch === ")" || ch === "}") {
-                if (!literal) {
-                    throw new Error("Invalid: " + ch + " in expression " + val);
-                }
-                continue;
-            }
-            if (ch === "[" && !literal) {
-                setVal(kv, start, i, val, isKey, false);
-                start = i;
-                setVal(kv, start, i + 1, val, isKey, false);
-                start = -1;
-                continue;
-            }
-            if (ch === "]" && !literal) {
-                setVal(kv, start, i, val, isKey, false);
-                start = i;
-                setVal(kv, start, i + 1, val, isKey, false);
-                start = -1;
-                continue;
-            }
             if (!literal) {
-                if (ch === "{" && !isKey) {
-                    var braceLen = getBraceLen(val, i, 1);
-                    setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
-                    kv.tag = "5";
-                    i += (braceLen - 1);
-                    start = -1;
+                switch (ch) {
+                    case "'":
+                    case '"':
+                        setVal(kv, start, i, val, isKey, false);
+                        literal = ch;
+                        start = i + 1;
+                        if (!kv.tag) {
+                            kv.tag = "6";
+                        }
+                        break;
+                    case "(":
+                        if (!isKey && start < i) {
+                            var token = trim(val.substring(start, i));
+                            switch (token) {
+                                case "eval":
+                                    kv.tag = "1";
+                                    break;
+                                case "get":
+                                    kv.tag = "2";
+                                    break;
+                                case "inject":
+                                    kv.tag = "4";
+                                    break;
+                                case "date":
+                                    kv.tag = "3";
+                                    break;
+                                default:
+                                    throw new Error("Unknown token: " + token + " in expression " + val);
+                            }
+                            var braceLen_1 = sys.getBraceLen(val, i, 0);
+                            setVal(kv, i + 1, i + braceLen_1 - 1, val, isKey, false);
+                            i += (braceLen_1 - 1);
+                            start = -1;
+                        }
+                        else {
+                            throw new Error("Invalid: " + ch + " in expression " + val);
+                        }
+                        break;
+                    case "[":
+                        setVal(kv, start, i, val, isKey, false);
+                        var braceLen = sys.getBraceLen(val, i, 2);
+                        var str = trimQuotes(val.substring(i + 1, i + braceLen - 1));
+                        if (!str) {
+                            throw new Error("Invalid: " + ch + " in expression " + val);
+                        }
+                        appendVal(kv, isKey, "[" + str + "]");
+                        i += (braceLen - 1);
+                        start = -1;
+                        break;
+                    case "{":
+                        if (!isKey) {
+                            var braceLen_2 = sys.getBraceLen(val, i, 1);
+                            setVal(kv, i + 1, i + braceLen_2 - 1, val, isKey, false);
+                            kv.tag = "5";
+                            i += (braceLen_2 - 1);
+                            start = -1;
+                        }
+                        else {
+                            throw new Error("Invalid: " + ch + " in expression " + val);
+                        }
+                        break;
+                    case ",":
+                        setVal(kv, start, i, val, isKey, false);
+                        start = -1;
+                        parts.push(kv);
+                        kv = { tag: null, key: "", val: "" };
+                        isKey = true;
+                        break;
+                    case ":":
+                    case "=":
+                        setVal(kv, start, i, val, isKey, false);
+                        start = -1;
+                        isKey = false;
+                        break;
+                    case ")":
+                    case "}":
+                    case "]":
+                        throw new Error("Invalid: " + ch + " in expression " + val);
                 }
-                else if (ch === ",") {
-                    setVal(kv, start, i, val, isKey, false);
-                    start = -1;
-                    parts.push(kv);
-                    kv = { tag: null, key: "", val: "" };
-                    isKey = true;
-                }
-                else if (ch === ":" || ch === "=") {
-                    setVal(kv, start, i, val, isKey, false);
-                    start = -1;
-                    isKey = false;
+            }
+            else {
+                switch (ch) {
+                    case "'":
+                    case '"':
+                        if (literal === ch) {
+                            var i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
+                            if (next === ch) {
+                                setVal(kv, start, i + 1, val, isKey, true);
+                                i += 1;
+                                start = -1;
+                            }
+                            else {
+                                setVal(kv, start, i, val, isKey, true);
+                                literal = null;
+                                start = -1;
+                            }
+                        }
+                        break;
                 }
             }
         }
@@ -1660,7 +1604,7 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/util
             var script = arr[i];
             if (!!script.src) {
                 var parts = PathHelper.getUrlParts(script.src);
-                var pathName = rtrim(parts.pathname, "/");
+                var pathName = rtrim(parts.pathname, ["/"]);
                 if (!!parts.pathname) {
                     pathName = pathName.toLowerCase();
                     if (!!pathName && pathName.lastIndexOf(name) > -1) {
@@ -1684,9 +1628,9 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/util
             return PathHelper.appendSearch(url, bust);
         };
         PathHelper.appendSearch = function (url, search) {
-            search = ltrim(search, "?");
+            search = ltrim(search, ["?", " "]);
             var parts = PathHelper.getUrlParts(url);
-            var oldSearch = ltrim(parts.search, "?");
+            var oldSearch = ltrim(parts.search, ["?", " "]);
             if (!!oldSearch && oldSearch.lastIndexOf(search) > -1) {
                 return url;
             }
@@ -4619,6 +4563,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.11.11";
+    exports.VERSION = "2.12.0";
     bootstrap_8.Bootstrap._initFramework();
 });

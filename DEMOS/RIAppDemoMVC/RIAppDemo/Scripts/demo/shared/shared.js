@@ -16,15 +16,15 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
         var tmp;
         if (!!val) {
             if (utils.str.startsWith(val, '%') && utils.str.endsWith(val, '%')) {
-                tmp = utils.str.trim(val, '% ');
+                tmp = utils.str.trim(val, ['%', ' ']);
                 query.where(fldName, 4, [tmp]);
             }
             else if (utils.str.startsWith(val, '%')) {
-                tmp = utils.str.trim(val, '% ');
+                tmp = utils.str.trim(val, ['%', ' ']);
                 query.where(fldName, 3, [tmp]);
             }
             else if (utils.str.endsWith(val, '%')) {
-                tmp = utils.str.trim(val, '% ');
+                tmp = utils.str.trim(val, ['%', ' ']);
                 query.where(fldName, 2, [tmp]);
             }
             else {

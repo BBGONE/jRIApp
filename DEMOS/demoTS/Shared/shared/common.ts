@@ -20,15 +20,15 @@ export function addTextQuery(query: dbMOD.TDataQuery, fldName: string, val: any)
     let tmp: string;
     if (!!val) {
         if (utils.str.startsWith(val, '%') && utils.str.endsWith(val, '%')) {
-            tmp = utils.str.trim(val, '% ');
+            tmp = utils.str.trim(val, ['%',' ']);
             query.where(fldName, RIAPP.FILTER_TYPE.Contains, [tmp])
         }
         else if (utils.str.startsWith(val, '%')) {
-            tmp = utils.str.trim(val, '% ');
+            tmp = utils.str.trim(val, ['%', ' ']);
             query.where(fldName, RIAPP.FILTER_TYPE.EndsWith, [tmp])
         }
         else if (utils.str.endsWith(val, '%')) {
-            tmp = utils.str.trim(val, '% ');
+            tmp = utils.str.trim(val, ['%', ' ']);
             query.where(fldName, RIAPP.FILTER_TYPE.StartsWith, [tmp])
         }
         else {

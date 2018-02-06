@@ -39,7 +39,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         CustomerBag.prototype.initCustomerValidations = function () {
             var validations = [{
                     fieldName: null, fn: function (bag, errors) {
-                        if (!bag.getProp("[Level1->Level2->Phone]") && !bag.getProp("[Level1->Level2->EmailAddress]")) {
+                        if (!bag.getProp("[Level1.Level2.Phone]") && !bag.getProp("[Level1.Level2.EmailAddress]")) {
                             errors.push('at least Phone or Email address must be filled');
                         }
                     }
@@ -52,15 +52,15 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                     }
                 },
                 {
-                    fieldName: "[Level1->FirstName]", fn: function (bag, errors) {
-                        if (!bag.getProp("[Level1->FirstName]")) {
+                    fieldName: "[Level1.FirstName]", fn: function (bag, errors) {
+                        if (!bag.getProp("[Level1.FirstName]")) {
                             errors.push('First name must be filled');
                         }
                     }
                 },
                 {
-                    fieldName: "[Level1->LastName]", fn: function (bag, errors) {
-                        if (!bag.getProp("[Level1->LastName]")) {
+                    fieldName: "[Level1.LastName]", fn: function (bag, errors) {
+                        if (!bag.getProp("[Level1.LastName]")) {
                             errors.push('Last name must be filled');
                         }
                     }

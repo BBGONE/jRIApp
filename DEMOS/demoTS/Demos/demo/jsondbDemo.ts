@@ -38,7 +38,7 @@ export class CustomerBag extends RIAPP.JsonBag {
     private initCustomerValidations(): void {
         const validations = [{
             fieldName: <string>null, fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
-                if (!bag.getProp("[Level1->Level2->Phone]") && !bag.getProp("[Level1->Level2->EmailAddress]")) {
+                if (!bag.getProp("[Level1.Level2.Phone]") && !bag.getProp("[Level1.Level2.EmailAddress]")) {
                     errors.push('at least Phone or Email address must be filled');
                 }
             }
@@ -51,15 +51,15 @@ export class CustomerBag extends RIAPP.JsonBag {
             }
         },
         {
-            fieldName: "[Level1->FirstName]", fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
-                if (!bag.getProp("[Level1->FirstName]")) {
+            fieldName: "[Level1.FirstName]", fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
+                if (!bag.getProp("[Level1.FirstName]")) {
                     errors.push('First name must be filled');
                 }
             }
         },
         {
-            fieldName: "[Level1->LastName]", fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
-                if (!bag.getProp("[Level1->LastName]")) {
+            fieldName: "[Level1.LastName]", fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
+                if (!bag.getProp("[Level1.LastName]")) {
                     errors.push('Last name must be filled');
                 }
             }

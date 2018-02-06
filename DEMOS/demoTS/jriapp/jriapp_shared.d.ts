@@ -1,8 +1,18 @@
 declare module "jriapp_shared/const" {
-    export enum DEBUG_LEVEL {
+    export const enum DEBUG_LEVEL {
         NONE = 0,
         NORMAL = 1,
         HIGH = 2,
+    }
+    export const enum BRACE_TYPE {
+        SIMPLE = 0,
+        FIGURE = 1,
+        SQUARE = 2,
+    }
+    export const enum TRIM_SIDE {
+        BOTH = 0,
+        LEFT = 1,
+        RIGHT = 2,
     }
     export const APP_NAME = "app";
     export const DUMY_ERROR = "DUMMY_ERROR";
@@ -189,6 +199,196 @@ declare module "jriapp_shared/int" {
     export interface WeakMapConstructor {
         new (): IWeakMap;
     }
+}
+declare module "jriapp_shared/utils/strutils" {
+    import { TRIM_SIDE } from "jriapp_shared/const";
+    export class StringUtils {
+        static endsWith(str: string, suffix: string): boolean;
+        static startsWith(str: string, prefix: string): boolean;
+        static fastTrim(str: string): string;
+        static trim(str: string, chars?: string[], trimside?: TRIM_SIDE): string;
+        static ltrim(str: string, chars?: string[]): string;
+        static rtrim(str: string, chars?: string[]): string;
+        static format(formatStr: string, ...args: any[]): string;
+        static formatNumber(num: any, decimals?: number, decPoint?: string, thousandsSep?: string): string;
+        static stripNonNumeric(str: string): string;
+        static padLeft(val: string, len: number, pad: string): string;
+        static fastPadLeft(val: string, pad: string): string;
+        static trimQuotes(val: string): string;
+        static trimBrackets(val: string): string;
+    }
+}
+declare module "jriapp_shared/utils/checks" {
+    import { IThenable } from "jriapp_shared/utils/ideferred";
+    export class Checks {
+        static readonly _undefined: any;
+        static isHasProp(obj: any, prop: string): boolean;
+        static isNull(a: any): a is void;
+        static isUndefined(a: any): a is void;
+        static readonly isNt: (a: any) => a is void;
+        static isObject(a: any): boolean;
+        static isSimpleObject(a: any): boolean;
+        static readonly isString: (a: any) => a is string;
+        static readonly isFunc: (a: any) => a is (...args: any[]) => any;
+        static isBoolean(a: any): a is boolean;
+        static isDate(a: any): a is Date;
+        static readonly isNumber: (a: any) => a is Number;
+        static isNumeric(a: any): a is Number;
+        static isBoolString(a: any): boolean;
+        static isGuid(a: any): boolean;
+        static isArray<T>(a: any): a is Array<T>;
+        static isThenable(a: any): a is IThenable<any>;
+    }
+}
+declare module "jriapp_shared/utils/coreutils" {
+    import { IIndexer } from "jriapp_shared/int";
+    import { Checks } from "jriapp_shared/utils/checks";
+    export class CoreUtils {
+        static getNewID(prefix?: string): string;
+        static readonly getTimeZoneOffset: () => number;
+        static readonly hasProp: typeof Checks.isHasProp;
+        static setValue(root: any, namePath: string, val: any, checkOverwrite?: boolean): void;
+        static getValue(root: any, namePath: string): any;
+        static removeValue(root: any, namePath: string): any;
+        static uuid(len?: number, radix?: number): string;
+        static parseBool(a: any): boolean;
+        static round(num: number, decimals: number): number;
+        static readonly clone: (obj: any, target?: any) => any;
+        static merge<S, T>(source: S, target?: T): S & T;
+        static readonly extend: <T, U>(target: T, ...source: U[]) => T & U;
+        static memoize<T>(fn: () => T): () => T;
+        static forEachProp<T>(map: IIndexer<T>, fn: (name: string, val?: T) => void): void;
+        static toArray<T>(map: IIndexer<T>): T[];
+        static readonly assignStrings: <T extends U, U extends IIndexer<any>>(target: T, source: U) => T;
+    }
+}
+declare module "jriapp_shared/lang" {
+    import { IIndexer } from "jriapp_shared/int";
+    export function assign<T extends U, U extends IIndexer<any>>(target: T, source: U): T;
+    export interface _IErrors extends IIndexer<string> {
+        ERR_OBJ_ALREADY_REGISTERED: string;
+        ERR_OPTIONS_ALREADY_REGISTERED: string;
+        ERR_APP_NEED_JQUERY: string;
+        ERR_ASSERTION_FAILED: string;
+        ERR_BINDING_CONTENT_NOT_FOUND: string;
+        ERR_DBSET_READONLY: string;
+        ERR_DBSET_INVALID_FIELDNAME: string;
+        ERR_FIELD_READONLY: string;
+        ERR_FIELD_ISNOT_NULLABLE: string;
+        ERR_FIELD_WRONG_TYPE: string;
+        ERR_FIELD_MAXLEN: string;
+        ERR_FIELD_DATATYPE: string;
+        ERR_FIELD_REGEX: string;
+        ERR_FIELD_RANGE: string;
+        ERR_EVENT_INVALID: string;
+        ERR_EVENT_INVALID_FUNC: string;
+        ERR_MODULE_NOT_REGISTERED: string;
+        ERR_MODULE_ALREDY_REGISTERED: string;
+        ERR_PROP_NAME_EMPTY: string;
+        ERR_PROP_NAME_INVALID: string;
+        ERR_GLOBAL_SINGLTON: string;
+        ERR_TEMPLATE_ALREADY_REGISTERED: string;
+        ERR_TEMPLATE_NOTREGISTERED: string;
+        ERR_TEMPLATE_GROUP_NOTREGISTERED: string;
+        ERR_TEMPLATE_HAS_NO_ID: string;
+        ERR_OPTIONS_HAS_NO_ID: string;
+        ERR_CONVERTER_NOTREGISTERED: string;
+        ERR_OPTIONS_NOTREGISTERED: string;
+        ERR_JQUERY_DATEPICKER_NOTFOUND: string;
+        ERR_PARAM_INVALID: string;
+        ERR_PARAM_INVALID_TYPE: string;
+        ERR_KEY_IS_EMPTY: string;
+        ERR_KEY_IS_NOTFOUND: string;
+        ERR_ITEM_IS_ATTACHED: string;
+        ERR_ITEM_IS_DETACHED: string;
+        ERR_ITEM_IS_NOTFOUND: string;
+        ERR_ITEM_NAME_COLLISION: string;
+        ERR_DICTKEY_IS_NOTFOUND: string;
+        ERR_DICTKEY_IS_EMPTY: string;
+        ERR_CONV_INVALID_DATE: string;
+        ERR_CONV_INVALID_NUM: string;
+        ERR_QUERY_NAME_NOTFOUND: string;
+        ERR_QUERY_BETWEEN: string;
+        ERR_QUERY_OPERATOR_INVALID: string;
+        ERR_OPER_REFRESH_INVALID: string;
+        ERR_CALC_FIELD_DEFINE: string;
+        ERR_CALC_FIELD_SELF_DEPEND: string;
+        ERR_DOMAIN_CONTEXT_INITIALIZED: string;
+        ERR_DOMAIN_CONTEXT_NOT_INITIALIZED: string;
+        ERR_SVC_METH_PARAM_INVALID: string;
+        ERR_DB_LOAD_NO_QUERY: string;
+        ERR_DBSET_NAME_INVALID: string;
+        ERR_APP_NAME_NOT_UNIQUE: string;
+        ERR_ELVIEW_NOT_REGISTERED: string;
+        ERR_ELVIEW_NOT_CREATED: string;
+        ERR_BIND_TARGET_EMPTY: string;
+        ERR_BIND_TGTPATH_INVALID: string;
+        ERR_BIND_MODE_INVALID: string;
+        ERR_BIND_TARGET_INVALID: string;
+        ERR_EXPR_BRACES_INVALID: string;
+        ERR_APP_SETUP_INVALID: string;
+        ERR_GRID_DATASRC_INVALID: string;
+        ERR_COLLECTION_CHANGETYPE_INVALID: string;
+        ERR_GRID_COLTYPE_INVALID: string;
+        ERR_PAGER_DATASRC_INVALID: string;
+        ERR_STACKPNL_DATASRC_INVALID: string;
+        ERR_STACKPNL_TEMPLATE_INVALID: string;
+        ERR_LISTBOX_DATASRC_INVALID: string;
+        ERR_DATAFRM_DCTX_INVALID: string;
+        ERR_DCTX_HAS_NO_FIELDINFO: string;
+        ERR_TEMPLATE_ID_INVALID: string;
+        ERR_ITEM_DELETED_BY_ANOTHER_USER: string;
+        ERR_ACCESS_DENIED: string;
+        ERR_CONCURRENCY: string;
+        ERR_VALIDATION: string;
+        ERR_SVC_VALIDATION: string;
+        ERR_SVC_ERROR: string;
+        ERR_UNEXPECTED_SVC_ERROR: string;
+        ERR_ASSOC_NAME_INVALID: string;
+        ERR_DATAVIEW_DATASRC_INVALID: string;
+        ERR_DATAVIEW_FILTER_INVALID: string;
+    }
+    export type IErrors = Partial<_IErrors>;
+    export interface _IPagerText extends IIndexer<string> {
+        firstText: string;
+        lastText: string;
+        previousText: string;
+        nextText: string;
+        pageInfo: string;
+        firstPageTip: string;
+        prevPageTip: string;
+        nextPageTip: string;
+        lastPageTip: string;
+        showingTip: string;
+        showTip: string;
+    }
+    export type IPagerText = Partial<_IPagerText>;
+    export interface _IValidateText extends IIndexer<string> {
+        errorInfo: string;
+        errorField: string;
+    }
+    export type IValidateText = Partial<_IValidateText>;
+    export interface _IText extends IIndexer<string> {
+        txtEdit: string;
+        txtAddNew: string;
+        txtDelete: string;
+        txtCancel: string;
+        txtOk: string;
+        txtRefresh: string;
+        txtAskDelete: string;
+        txtSubmitting: string;
+        txtSave: string;
+        txtClose: string;
+        txtField: string;
+    }
+    export type IText = Partial<_IText>;
+    export interface ILocaleText extends IIndexer<any> {
+        PAGER: IPagerText;
+        VALIDATE: IValidateText;
+        TEXT: IText;
+    }
+    export let ERRS: IErrors;
+    export let STRS: ILocaleText;
 }
 declare module "jriapp_shared/collection/const" {
     export const enum DATE_CONVERSION {
@@ -507,46 +707,8 @@ declare module "jriapp_shared/collection/int" {
         validateItem(args: ICollValidateItemArgs<TItem>): IValidationInfo[];
     }
 }
-declare module "jriapp_shared/utils/checks" {
-    import { IThenable } from "jriapp_shared/utils/ideferred";
-    export class Checks {
-        static readonly _undefined: any;
-        static isHasProp(obj: any, prop: string): boolean;
-        static isNull(a: any): a is void;
-        static isUndefined(a: any): a is void;
-        static readonly isNt: (a: any) => a is void;
-        static isObject(a: any): boolean;
-        static isSimpleObject(a: any): boolean;
-        static readonly isString: (a: any) => a is string;
-        static readonly isFunc: (a: any) => a is (...args: any[]) => any;
-        static isBoolean(a: any): a is boolean;
-        static isDate(a: any): a is Date;
-        static readonly isNumber: (a: any) => a is Number;
-        static isNumeric(a: any): a is Number;
-        static isBoolString(a: any): boolean;
-        static isGuid(a: any): boolean;
-        static isArray<T>(a: any): a is Array<T>;
-        static isThenable(a: any): a is IThenable<any>;
-    }
-}
-declare module "jriapp_shared/utils/strUtils" {
-    export class StringUtils {
-        static endsWith(str: string, suffix: string): boolean;
-        static startsWith(str: string, prefix: string): boolean;
-        static fastTrim(str: string): string;
-        static trim(str: string, chars?: string): string;
-        static ltrim(str: string, chars?: string): string;
-        static rtrim(str: string, chars?: string): string;
-        static format(formatStr: string, ...args: any[]): string;
-        static formatNumber(num: any, decimals?: number, decPoint?: string, thousandsSep?: string): string;
-        static stripNonNumeric(str: string): string;
-        static padLeft(val: string, len: number, pad: string): string;
-        static fastPadLeft(val: string, pad: string): string;
-        static trimQuotes(val: string): string;
-        static trimBrackets(val: string): string;
-    }
-}
 declare module "jriapp_shared/utils/sysutils" {
+    import { BRACE_TYPE } from "jriapp_shared/const";
     import { ISubmittable, IErrorNotification, IEditable, IPropertyBag, IBaseObject, IValidatable } from "jriapp_shared/int";
     import { ICollection } from "jriapp_shared/collection/int";
     export class SysUtils {
@@ -563,6 +725,7 @@ declare module "jriapp_shared/utils/sysutils" {
         static getErrorNotification(obj: any): IErrorNotification;
         static getEditable(obj: any): IEditable;
         static getSubmittable(obj: any): ISubmittable;
+        static getBraceLen(val: string, start: number, brace: BRACE_TYPE): number;
         static getPathParts(path: string): string[];
         static getProp(obj: any, prop: string): any;
         static setProp(obj: any, prop: string, val: any): void;
@@ -571,156 +734,6 @@ declare module "jriapp_shared/utils/sysutils" {
         static resolvePath2(root: any, srcParts: string[]): any;
         static raiseProp(obj: IBaseObject, path: string): void;
     }
-}
-declare module "jriapp_shared/utils/coreutils" {
-    import { IIndexer } from "jriapp_shared/int";
-    import { Checks } from "jriapp_shared/utils/checks";
-    export class CoreUtils {
-        static getNewID(prefix?: string): string;
-        static readonly getTimeZoneOffset: () => number;
-        static readonly hasProp: typeof Checks.isHasProp;
-        static setValue(root: any, namePath: string, val: any, checkOverwrite?: boolean, separator?: string): void;
-        static getValue(root: any, namePath: string, separator?: string): any;
-        static removeValue(root: any, namePath: string, separator?: string): any;
-        static uuid(len?: number, radix?: number): string;
-        static parseBool(a: any): boolean;
-        static round(num: number, decimals: number): number;
-        static readonly clone: (obj: any, target?: any) => any;
-        static merge<S, T>(source: S, target?: T): S & T;
-        static readonly extend: <T, U>(target: T, ...source: U[]) => T & U;
-        static memoize<T>(fn: () => T): () => T;
-        static forEachProp<T>(map: IIndexer<T>, fn: (name: string, val?: T) => void): void;
-        static toArray<T>(map: IIndexer<T>): T[];
-        static readonly assignStrings: <T extends U, U extends IIndexer<any>>(target: T, source: U) => T;
-    }
-}
-declare module "jriapp_shared/lang" {
-    import { IIndexer } from "jriapp_shared/int";
-    export function assign<T extends U, U extends IIndexer<any>>(target: T, source: U): T;
-    export interface _IErrors extends IIndexer<string> {
-        ERR_OBJ_ALREADY_REGISTERED: string;
-        ERR_OPTIONS_ALREADY_REGISTERED: string;
-        ERR_APP_NEED_JQUERY: string;
-        ERR_ASSERTION_FAILED: string;
-        ERR_BINDING_CONTENT_NOT_FOUND: string;
-        ERR_DBSET_READONLY: string;
-        ERR_DBSET_INVALID_FIELDNAME: string;
-        ERR_FIELD_READONLY: string;
-        ERR_FIELD_ISNOT_NULLABLE: string;
-        ERR_FIELD_WRONG_TYPE: string;
-        ERR_FIELD_MAXLEN: string;
-        ERR_FIELD_DATATYPE: string;
-        ERR_FIELD_REGEX: string;
-        ERR_FIELD_RANGE: string;
-        ERR_EVENT_INVALID: string;
-        ERR_EVENT_INVALID_FUNC: string;
-        ERR_MODULE_NOT_REGISTERED: string;
-        ERR_MODULE_ALREDY_REGISTERED: string;
-        ERR_PROP_NAME_EMPTY: string;
-        ERR_PROP_NAME_INVALID: string;
-        ERR_GLOBAL_SINGLTON: string;
-        ERR_TEMPLATE_ALREADY_REGISTERED: string;
-        ERR_TEMPLATE_NOTREGISTERED: string;
-        ERR_TEMPLATE_GROUP_NOTREGISTERED: string;
-        ERR_TEMPLATE_HAS_NO_ID: string;
-        ERR_OPTIONS_HAS_NO_ID: string;
-        ERR_CONVERTER_NOTREGISTERED: string;
-        ERR_OPTIONS_NOTREGISTERED: string;
-        ERR_JQUERY_DATEPICKER_NOTFOUND: string;
-        ERR_PARAM_INVALID: string;
-        ERR_PARAM_INVALID_TYPE: string;
-        ERR_KEY_IS_EMPTY: string;
-        ERR_KEY_IS_NOTFOUND: string;
-        ERR_ITEM_IS_ATTACHED: string;
-        ERR_ITEM_IS_DETACHED: string;
-        ERR_ITEM_IS_NOTFOUND: string;
-        ERR_ITEM_NAME_COLLISION: string;
-        ERR_DICTKEY_IS_NOTFOUND: string;
-        ERR_DICTKEY_IS_EMPTY: string;
-        ERR_CONV_INVALID_DATE: string;
-        ERR_CONV_INVALID_NUM: string;
-        ERR_QUERY_NAME_NOTFOUND: string;
-        ERR_QUERY_BETWEEN: string;
-        ERR_QUERY_OPERATOR_INVALID: string;
-        ERR_OPER_REFRESH_INVALID: string;
-        ERR_CALC_FIELD_DEFINE: string;
-        ERR_CALC_FIELD_SELF_DEPEND: string;
-        ERR_DOMAIN_CONTEXT_INITIALIZED: string;
-        ERR_DOMAIN_CONTEXT_NOT_INITIALIZED: string;
-        ERR_SVC_METH_PARAM_INVALID: string;
-        ERR_DB_LOAD_NO_QUERY: string;
-        ERR_DBSET_NAME_INVALID: string;
-        ERR_APP_NAME_NOT_UNIQUE: string;
-        ERR_ELVIEW_NOT_REGISTERED: string;
-        ERR_ELVIEW_NOT_CREATED: string;
-        ERR_BIND_TARGET_EMPTY: string;
-        ERR_BIND_TGTPATH_INVALID: string;
-        ERR_BIND_MODE_INVALID: string;
-        ERR_BIND_TARGET_INVALID: string;
-        ERR_EXPR_BRACES_INVALID: string;
-        ERR_APP_SETUP_INVALID: string;
-        ERR_GRID_DATASRC_INVALID: string;
-        ERR_COLLECTION_CHANGETYPE_INVALID: string;
-        ERR_GRID_COLTYPE_INVALID: string;
-        ERR_PAGER_DATASRC_INVALID: string;
-        ERR_STACKPNL_DATASRC_INVALID: string;
-        ERR_STACKPNL_TEMPLATE_INVALID: string;
-        ERR_LISTBOX_DATASRC_INVALID: string;
-        ERR_DATAFRM_DCTX_INVALID: string;
-        ERR_DCTX_HAS_NO_FIELDINFO: string;
-        ERR_TEMPLATE_ID_INVALID: string;
-        ERR_ITEM_DELETED_BY_ANOTHER_USER: string;
-        ERR_ACCESS_DENIED: string;
-        ERR_CONCURRENCY: string;
-        ERR_VALIDATION: string;
-        ERR_SVC_VALIDATION: string;
-        ERR_SVC_ERROR: string;
-        ERR_UNEXPECTED_SVC_ERROR: string;
-        ERR_ASSOC_NAME_INVALID: string;
-        ERR_DATAVIEW_DATASRC_INVALID: string;
-        ERR_DATAVIEW_FILTER_INVALID: string;
-    }
-    export type IErrors = Partial<_IErrors>;
-    export interface _IPagerText extends IIndexer<string> {
-        firstText: string;
-        lastText: string;
-        previousText: string;
-        nextText: string;
-        pageInfo: string;
-        firstPageTip: string;
-        prevPageTip: string;
-        nextPageTip: string;
-        lastPageTip: string;
-        showingTip: string;
-        showTip: string;
-    }
-    export type IPagerText = Partial<_IPagerText>;
-    export interface _IValidateText extends IIndexer<string> {
-        errorInfo: string;
-        errorField: string;
-    }
-    export type IValidateText = Partial<_IValidateText>;
-    export interface _IText extends IIndexer<string> {
-        txtEdit: string;
-        txtAddNew: string;
-        txtDelete: string;
-        txtCancel: string;
-        txtOk: string;
-        txtRefresh: string;
-        txtAskDelete: string;
-        txtSubmitting: string;
-        txtSave: string;
-        txtClose: string;
-        txtField: string;
-    }
-    export type IText = Partial<_IText>;
-    export interface ILocaleText extends IIndexer<any> {
-        PAGER: IPagerText;
-        VALIDATE: IValidateText;
-        TEXT: IText;
-    }
-    export let ERRS: IErrors;
-    export let STRS: ILocaleText;
 }
 declare module "jriapp_shared/errors" {
     import { IValidationInfo } from "jriapp_shared/int";
@@ -1050,7 +1063,7 @@ declare module "jriapp_shared/utils/utils" {
     import { SysUtils } from "jriapp_shared/utils/sysutils";
     import { AsyncUtils } from "jriapp_shared/utils/async";
     import { HttpUtils } from "jriapp_shared/utils/http";
-    import { StringUtils } from "jriapp_shared/utils/strUtils";
+    import { StringUtils } from "jriapp_shared/utils/strutils";
     import { Checks } from "jriapp_shared/utils/checks";
     import { ArrayHelper } from "jriapp_shared/utils/arrhelper";
     import { ITaskQueue } from "jriapp_shared/utils/ideferred";

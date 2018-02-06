@@ -136,7 +136,7 @@
                         FirstName:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1->FirstName],mode=TwoWay" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1.FirstName],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -144,7 +144,7 @@
                         MiddleName:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1->MiddleName],mode=TwoWay" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1.MiddleName],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -152,7 +152,7 @@
                         LastName:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1->LastName],mode=TwoWay" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1.LastName],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -176,7 +176,7 @@
                         Email:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1->Level2->EmailAddress],mode=TwoWay" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1.Level2.EmailAddress],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -184,7 +184,7 @@
                         Phone:
                     </td>
                     <td>
-                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1->Level2->Phone],mode=TwoWay" />
+                        <input type="text" style="width:90%;" data-bind="this.value,to=Customer[Level1.Level2.Phone],mode=TwoWay" />
                     </td>
                 </tr>
                 <tr>
@@ -209,18 +209,18 @@
 
 <script id="nameTemplate" type="text/x-template">
     <div style="margin: 0px; width: 100%;">
-        <span data-bind="this.value,to=Customer[Level1->FirstName]"></span>&nbsp;
-        <span data-bind="this.value,to=Customer[Level1->MiddleName]"></span>&nbsp;
-        <span data-bind="this.value,to=Customer[Level1->LastName]"></span>
+        <span data-bind="this.value,to=Customer[Level1.FirstName]"></span>&nbsp;
+        <span data-bind="this.value,to=Customer[Level1.MiddleName]"></span>&nbsp;
+        <span data-bind="this.value,to=Customer[Level1.LastName]"></span>
     </div>
 </script>
 
 <script id="emailTemplate" type="text/x-template">
-    <span data-bind="this.value,to=Customer[Level1->Level2->EmailAddress]"></span>
+    <span data-bind="this.value,to=Customer[Level1.Level2.EmailAddress]"></span>
 </script>
 
 <script id="phoneTemplate" type="text/x-template">
-    <span data-bind="this.value,to=Customer[Level1->Level2->Phone]"></span>
+    <span data-bind="this.value,to=Customer[Level1.Level2.Phone]"></span>
 </script>
 
 <script id="dateTemplate" type="text/x-template">
