@@ -1,58 +1,15 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { BRACE_TYPE } from "../const";
 import {
     ISubmittable, IErrorNotification, IEditable, IPropertyBag, IBaseObject, IValidatable
 } from "../int";
+import { ERRS } from "../lang";
 import { ICollection } from "../collection/int";
 import { Checks } from "./checks";
 import { StringUtils } from "./strUtils";
 
-const { isFunc, isHasProp, isArray, isNt, _undefined } = Checks, { startsWith, fastTrim: trim, trimBrackets } = StringUtils;
-
-function getPropParts(prop: string): string[] {
-    let i: number, start = 0, ch: string, test = 0, cnt = 0;
-    const parts: string[] = [], len = prop.length;
-    for (i = 0; i < len; i += 1) {
-        if (start < 0) {
-            start = i;
-        }
-        ch = prop.charAt(i);
-
-        if (ch === "[") {
-            ++test;
-            ++cnt;
-            if (start < i) {
-                const v = trim(prop.substring(start, i));
-                if (!!v) {
-                    parts.push(v);
-                }
-            }
-            start = -1;
-        } else if (ch === "]") {
-            --test;
-            if (test !== 0) {
-                throw new Error("Invalid Property: " + prop);
-            }
-            if (start < i) {
-                const v = trim(prop.substring(start, i));
-                if (!v) {
-                    throw new Error("Invalid Property: " + prop);
-                }
-                parts.push(`[${v}]`);
-                start = -1;
-            } else {
-                throw new Error("Invalid Property: " + prop);
-            }
-        }
-    }
-
-    if (test !== 0) {
-        throw new Error("Invalid Property: " + prop);
-    }
-    if (cnt === 0) {
-        parts.push(trim(prop));
-    }
-    return parts;
-}
+const { isFunc, isHasProp, isArray, isNt, _undefined } = Checks,
+    { startsWith, fastTrim: trim, trimBrackets, format, trimQuotes } = StringUtils;
 
 function dummyIsBaseObj(obj: any): obj is IBaseObject {
     return false;
@@ -136,25 +93,131 @@ export class SysUtils {
 
         return null;
     }
+    static getBraceLen(val: string, start: number, brace: BRACE_TYPE): number {
+        let i: number, cnt = 0, ch: string, literal: string, test = 0;
+        const len = val.length;
+        let br1: string, br2: string;
+        switch (brace) {
+            case BRACE_TYPE.SIMPLE:
+                br1 = "(";
+                br2 = ")";
+                break;
+            case BRACE_TYPE.FIGURE:
+                br1 = "{";
+                br2 = "}";
+                break;
+            case BRACE_TYPE.SQUARE:
+                br1 = "[";
+                br2 = "]";
+                break;
+        }
 
-    static getPathParts(path: string): string[] {
-        const parts: string[] = (!path) ? [] : path.split("."), parts2: string[] = [];
-        for (let k = 0, l1 = parts.length; k < l1; k += 1) {
-            let part = parts[k];
-            // if empty part
-            if (!part) {
-                throw new Error("Invalid Path: " + path);
-            }
-            if (part.indexOf("[") < 0) {
-                parts2.push(trim(part));
+
+        for (i = start; i < len; i += 1) {
+            ch = val.charAt(i);
+            if (!literal) {
+                switch (ch) {
+                    case "'":
+                    case '"':
+                        literal = ch;
+                        cnt += 1;
+                        break;
+                    case br1:
+                        test += 1;
+                        cnt += 1;
+                        break;
+                    case br2:
+                        test -= 1;
+                        cnt += 1;
+                        if (test === 0) {
+                            return cnt;
+                        }
+                        break;
+                    default:
+                        if (test > 0) {
+                            cnt += 1;
+                        }
+                        break;
+                }
             } else {
-                const arr = getPropParts(part);
-                for (let i = 0, l2 = arr.length; i < l2; i += 1) {
-                    parts2.push(arr[i]);
+                switch (ch) {
+                    case "'":
+                    case '"':
+                        if (literal === ch) {
+                            //check for quotes escape 
+                            const i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
+                            if (next === ch) {
+                                i += 1;
+                                cnt += 2;
+                            } else {
+                                literal = null;
+                                cnt += 1;
+                            }
+                        }
+                        break;
+                    default:
+                        if (test > 0) {
+                            cnt += 1;
+                        }
+                        break;
                 }
             }
         }
-        return parts2;
+
+        if (test !== 0) {
+            throw new Error(format(ERRS.ERR_EXPR_BRACES_INVALID, val));
+        }
+        return cnt;
+    }
+    static getPathParts(path: string): string[] {
+        if (!path) {
+            return [];
+        }
+        let i: number, start = 0, ch: string, val: string;
+        const parts: string[] = [], len = path.length;
+
+        for (i = 0; i < len; i += 1) {
+            if (start < 0) {
+                start = i;
+            }
+            ch = path.charAt(i);
+            switch (ch) {
+                case ".":
+                    val = trim(path.substring(start, i));
+                    if (!val && parts.length === 0) {
+                        throw new Error("Invalid property path: " + path);
+                    }
+                    if (!!val) {
+                        parts.push(val);
+                    }
+                    start = -1;
+                    break;
+                case "[":
+                    val = trim(path.substring(start, i));
+                    if (!!val) {
+                        parts.push(val);     
+                    }
+
+                    const braceLen = sys.getBraceLen(path, i, BRACE_TYPE.SQUARE);
+                    val = trimQuotes(path.substring(i + 1, i + braceLen - 1));
+                    if (!val) {
+                        throw new Error("Invalid property path: " + path);
+                    }
+                    parts.push(`[${val}]`);
+                    i += (braceLen - 1);
+                    start = -1;
+                    break;
+            }
+        }
+
+        if (start > -1 && start < i) {
+            val = trim(path.substring(start, i));
+            if (!!val) {
+                parts.push(val);
+            }
+        }
+
+        return parts;
     }
     static getProp(obj: any, prop: string): any {
         if (!prop) {
@@ -167,11 +230,11 @@ export class SysUtils {
 
         if (startsWith(prop, "[")) {
             if (sys.isCollection(obj)) {
-                // it is an indexed property like ['someProp']
+                // it is an indexed property like [someProp]
                 prop = trimBrackets(prop);
                 return sys.getItemByProp(obj, prop);
             } else if (isArray(obj)) {
-                // it is an indexed property like ['someProp']
+                // it is an indexed property like [someProp]
                 prop = trimBrackets(prop);
                 return obj[parseInt(prop, 10)];
             } else if (sys.isPropBag(obj)) {

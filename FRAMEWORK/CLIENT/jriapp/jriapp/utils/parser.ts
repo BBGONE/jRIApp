@@ -1,13 +1,14 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { Utils, LocaleERRS as ERRS } from "jriapp_shared";
+import { Utils, BRACE_TYPE, LocaleERRS as ERRS } from "jriapp_shared";
 import { IBindingInfo, IApplication } from "../int";
 
 import { bootstrap } from "../bootstrap";
 
-const { isNumeric, isBoolString } = Utils.check, { format, fastTrim: trim, startsWith, endsWith } = Utils.str,
+const { isNumeric, isBoolString } = Utils.check,
+    { format, fastTrim: trim, startsWith, endsWith, trimQuotes } = Utils.str,
     { parseBool } = Utils.core, sys = Utils.sys;
 
-const getRX = /^get[(].+[)]$/g;
+const getRX = /^get[(].+[)]$/g, spaceRX = /^\s+$/;
 
 const enum TOKEN {
     DELIMETER1 = ":",
@@ -45,11 +46,6 @@ const enum PARSE_TYPE {
     VIEW = 2
 }
 
-const enum BRACE_TYPE {
-    SIMPLE = 0,
-    FIGURE = 1
-}
-
 const len_this = TOKEN.THIS.length;
 
 interface IKeyVal {
@@ -58,116 +54,47 @@ interface IKeyVal {
     val: any;
 }
 
-// extract content from inside of top level figure braces
+// extract content from the inside of top level figure braces
 function getBraceParts(val: string): string[] {
-    let i: number, start = 0, cnt = 0, ch: string, literal: string, test = 0;
+    let i: number, ch: string;
     const parts: string[] = [], len = val.length;
 
     for (i = 0; i < len; i += 1) {
         ch = val.charAt(i);
-        // is this content inside '' or "" ?
-        if (ch === "'" || ch === '"') {
-            if (!literal) {
-                literal = ch;
-                cnt += 1;
-                continue;
-            } else if (literal === ch) {
-                //check for quotes escape 
-                const i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
-                if (next === ch) {
-                    i += 1;
-                    cnt += 2;
-                } else {
-                    literal = null;
-                    cnt += 1;
-                }
-                continue;
-            }
-        }
 
-        if (!literal && ch === "{") {
-            if (test === 0) {
-                start = i;
-            }
-            test += 1;
-            cnt += 1;
-        } else if (!literal && ch === "}") {
-            test -= 1;
-            cnt += 1;
-            if (test === 0) {
-                if ((cnt - 2) > 0) {
-                    parts.push(val.substr(start + 1, cnt - 2));
-                } else {
-                    parts.push("");
+        switch (ch) {
+            case "{":
+                const braceLen = sys.getBraceLen(val, i, BRACE_TYPE.FIGURE);
+                parts.push(trim(val.substr(i + 1, braceLen - 2)));
+                i += (braceLen - 1);
+                break;
+            default:
+                if (!spaceRX.test(ch)) {
+                    throw new Error(format(ERRS.ERR_EXPR_BRACES_INVALID, val));
                 }
-                cnt = 0;
-                start = 0;
-            }
-        } else {
-            if (test > 0) {
-                cnt += 1;
-            }
+                break;
         }
     }
 
-    if (test !== 0) {
-        throw new Error(format(ERRS.ERR_EXPR_BRACES_INVALID, val));
-    }
     return parts;
-}
-
-function getBraceLen(val: string, start: number, brace: BRACE_TYPE): number {
-    let i: number, cnt = 0, ch: string, literal: string, test = 0;
-    const len = val.length, br1 = brace === BRACE_TYPE.SIMPLE ? "(" : "{",
-    br2 = brace === BRACE_TYPE.SIMPLE ? ")" : "}";
-
-    for (i = start; i < len; i += 1) {
-        ch = val.charAt(i);
-        // is this content inside '' or "" ?
-        if (ch === "'" || ch === '"') {
-            if (!literal) {
-                literal = ch;
-                cnt += 1;
-                continue;
-            } else if (literal === ch) {
-                //check for quotes escape 
-                const i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
-                if (next === ch) {
-                    i += 1;
-                    cnt += 2;
-                } else {
-                    literal = null;
-                    cnt += 1;
-                }
-                continue;
-            }
-        }
-
-        if (!literal && ch === br1) {
-            test += 1;
-            cnt += 1;
-        } else if (!literal && ch === br2) {
-            test -= 1;
-            cnt += 1;
-            if (test === 0) {
-                return cnt;
-            }
-        } else {
-            if (test > 0) {
-                cnt += 1;
-            }
-        }
-    }
-    if (test !== 0) {
-        throw new Error(format(ERRS.ERR_EXPR_BRACES_INVALID, val));
-    }
-    return cnt;
 }
 
 function getBraceContent(val: string, brace: BRACE_TYPE): string {
     let ch: string, start: number = 0;
 
-    const len = val.length, br1 = brace === BRACE_TYPE.SIMPLE ? "(" : "{";
+    const len = val.length;
+    let br1: string;
+    switch (brace) {
+        case BRACE_TYPE.SIMPLE:
+            br1 = "(";
+            break;
+        case BRACE_TYPE.FIGURE:
+            br1 = "{";
+            break;
+        case BRACE_TYPE.SQUARE:
+            br1 = "[";
+            break;
+    }
 
     for (let i = 0; i < len; i += 1) {
         if (start < 0) {
@@ -175,7 +102,7 @@ function getBraceContent(val: string, brace: BRACE_TYPE): string {
         }
         ch = val.charAt(i);
         if (ch === br1) {
-            const braceLen = getBraceLen(val, i, brace);
+            const braceLen = sys.getBraceLen(val, i, brace);
             return trim(val.substr(i + 1, braceLen - 2));
         }
     }
@@ -195,6 +122,14 @@ function setVal(kv: IKeyVal, start: number, end: number, val: string, isKey: boo
         } else {
             kv.val += v;
         }
+    }
+}
+
+function appendVal(kv: IKeyVal, isKey: boolean, val: string): void {
+    if (isKey) {
+        kv.key += val;
+    } else {
+        kv.val += val;
     }
 }
 
@@ -252,101 +187,109 @@ function getKeyVals(val: string): IKeyVal[] {
             start = i;
         }
         ch = val.charAt(i);
-        // is this a content inside '' or "" ?
-        if (ch === "'" || ch === '"') {
-            if (!literal) {
-                setVal(kv, start, i, val, isKey, false);
-                literal = ch;
-                start = i + 1;
-                if (!kv.tag) {
-                    kv.tag = TAG.LITERAL;
-                }
-                continue;
-            } else if (literal === ch) {
-                //check for quotes escape 
-                const i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
-                if (next === ch) {
-                    setVal(kv, start, i + 1, val, isKey, true);
-                    i += 1;
-                    start = -1;
-                } else {
-                    setVal(kv, start, i, val, isKey, true);
-                    literal = null;
-                    start = -1;
-                }
-                continue;
-            }
-        }
-
-        // is this a content inside eval( ) or get() or date()?
-        if (ch === "(" && !literal && !isKey && start < i) {
-            const token = trim(val.substring(start, i));
-            switch (token) {
-                case TOKEN.EVAL:
-                    kv.tag = TAG.EVAL;
-                    break;
-                case TOKEN.GET:
-                    kv.tag = TAG.GET;
-                    break;
-                case TOKEN.INJECT:
-                    kv.tag = TAG.INJECT;
-                    break;
-                case TOKEN.DATE:
-                    kv.tag = TAG.DATE;
-                    break;
-                default:
-                    throw new Error(`Unknown token: ${token} in expression ${val}`);
-            }
-            const braceLen = getBraceLen(val, i, BRACE_TYPE.SIMPLE);
-            setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
-            i += (braceLen - 1);
-            start = -1;
-            continue;
-        }
-
-        if (ch === ")" || ch === "}") {
-            if (!literal) {
-                throw new Error(`Invalid: ${ch} in expression ${val}`);
-            }
-            continue;
-        }
-
-        // is this a content inside []?
-        if (ch === "[" && !literal) {
-            setVal(kv, start, i, val, isKey, false);
-            start = i;
-            setVal(kv, start, i + 1, val, isKey, false);
-            start = -1;
-            continue;
-        }
-
-        if (ch === "]" && !literal) {
-            setVal(kv, start, i, val, isKey, false);
-            start = i;
-            setVal(kv, start, i + 1, val, isKey, false);
-            start = -1;
-            continue;
-        }
 
         if (!literal) {
-            if (ch === "{" && !isKey) {
-                const braceLen = getBraceLen(val, i, BRACE_TYPE.FIGURE);
-                setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
-                kv.tag = TAG.BRACE;
-                i += (braceLen - 1);
-                start = -1;
-            } else if (ch === TOKEN.COMMA) {
-                setVal(kv, start, i, val, isKey, false);
-                start = -1;
-                parts.push(kv);
-                kv = { tag: null, key: "", val: "" }
-                // switch to parsing the key
-                isKey = true;
-            } else if (ch === TOKEN.DELIMETER1 || ch === TOKEN.DELIMETER2) {
-                setVal(kv, start, i, val, isKey, false);
-                start = -1;
-                // switch to parsing the value
-                isKey = false;
+            switch (ch) {
+                case "'":
+                case '"':
+                    // is this a content inside '' or "" ?
+                    setVal(kv, start, i, val, isKey, false);
+                    literal = ch;
+                    start = i + 1;
+                    if (!kv.tag) {
+                        kv.tag = TAG.LITERAL;
+                    }
+                    break;
+                case "(":
+                    // is this a content inside eval( ) or get() or date() or inject?
+                    if (!isKey && start < i) {
+                        const token = trim(val.substring(start, i));
+                        switch (token) {
+                            case TOKEN.EVAL:
+                                kv.tag = TAG.EVAL;
+                                break;
+                            case TOKEN.GET:
+                                kv.tag = TAG.GET;
+                                break;
+                            case TOKEN.INJECT:
+                                kv.tag = TAG.INJECT;
+                                break;
+                            case TOKEN.DATE:
+                                kv.tag = TAG.DATE;
+                                break;
+                            default:
+                                throw new Error(`Unknown token: ${token} in expression ${val}`);
+                        }
+                        const braceLen = sys.getBraceLen(val, i, BRACE_TYPE.SIMPLE);
+                        setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
+                        i += (braceLen - 1);
+                        start = -1;
+                    } else {
+                        throw new Error(`Invalid: ${ch} in expression ${val}`);
+                    }
+                    break;
+                case "[":
+                    // is this a content inside [], something like customer[address.phone] or [Line1] or this.classes[*]?
+                    setVal(kv, start, i, val, isKey, false);
+                    const braceLen = sys.getBraceLen(val, i, BRACE_TYPE.SQUARE);
+                    const str = trimQuotes(val.substring(i + 1, i + braceLen - 1));
+                    if (!str) {
+                        throw new Error(`Invalid: ${ch} in expression ${val}`);
+                    }
+                    appendVal(kv, isKey, `[${str}]`);
+                    i += (braceLen - 1);
+                    start = -1;
+                    break;
+                case "{":
+                    if (!isKey) {
+                        const braceLen = sys.getBraceLen(val, i, BRACE_TYPE.FIGURE);
+                        setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
+                        kv.tag = TAG.BRACE;
+                        i += (braceLen - 1);
+                        start = -1;
+                    } else {
+                        throw new Error(`Invalid: ${ch} in expression ${val}`);
+                    }
+                    break;
+                case TOKEN.COMMA:
+                    setVal(kv, start, i, val, isKey, false);
+                    start = -1;
+                    parts.push(kv);
+                    kv = { tag: null, key: "", val: "" }
+                    // switch to parsing the key
+                    isKey = true;
+                    break;
+                case TOKEN.DELIMETER1:
+                case TOKEN.DELIMETER2:
+                    setVal(kv, start, i, val, isKey, false);
+                    start = -1;
+                    // switch to parsing the value
+                    isKey = false;
+                    break;
+                case ")":
+                case "}":
+                case "]":
+                    throw new Error(`Invalid: ${ch} in expression ${val}`);
+            }
+        } else {
+            // inside literal content here
+            switch (ch) {
+                case "'":
+                case '"':
+                    if (literal === ch) {
+                        //check for quotes escape 
+                        const i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
+                        if (next === ch) {
+                            setVal(kv, start, i + 1, val, isKey, true);
+                            i += 1;
+                            start = -1;
+                        } else {
+                            setVal(kv, start, i, val, isKey, true);
+                            literal = null;
+                            start = -1;
+                        }
+                    }
+                    break;
             }
         }
     } // for (i = 0; i < val.length; i += 1)

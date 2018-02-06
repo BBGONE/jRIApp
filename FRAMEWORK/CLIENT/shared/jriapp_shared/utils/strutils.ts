@@ -1,5 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-const _undefined: any = void (0), trimQuotsRX = /^(['"])+|(['"])+$/g, trimBracketsRX = /^(\[)+|(\])+$/g, trimSpaceRX = /^\s+|\s+$/g;
+import { TRIM_SIDE } from "../const";
+const _undefined: any = void (0), nativeTrim = !!("".trim), spaceChars = [" ", "\t", "\r", "\n"];
 const ERR_STRING_FORMAT_INVALID = "String format has invalid expression value: ";
 
 export class StringUtils {
@@ -10,24 +11,49 @@ export class StringUtils {
         return (!str || !prefix) ? false : (str.substr(0, prefix.length) === prefix);
     }
     static fastTrim(str: string): string {
-        return (!str) ? str : str.replace(trimSpaceRX, "");
-    }
-    static trim(str: string, chars?: string): string {
-        return (!chars) ? StringUtils.fastTrim(str) : StringUtils.ltrim(StringUtils.rtrim(str, chars), chars);
-    }
-    static ltrim(str: string, chars?: string): string {
         if (!str) {
-            return str;
+            return "";
         }
-        chars = chars || "\\s";
-        return str.replace(new RegExp("^[" + chars + "]+", "g"), "");
+        return nativeTrim ? str.trim() : trim(str, spaceChars, TRIM_SIDE.BOTH);
     }
-    static rtrim(str: string, chars?: string): string {
+    static trim(str: string, chars: string[] = null, trimside = TRIM_SIDE.BOTH): string {
         if (!str) {
-            return str;
+            return "";
         }
-        chars = chars || "\\s";
-        return str.replace(new RegExp("[" + chars + "]+$", "g"), "");
+        const len = str.length, arr: string[] = !chars ? spaceChars : chars;
+        let start = 0, end = len, ch: string;
+        if (trimside === TRIM_SIDE.BOTH || trimside === TRIM_SIDE.LEFT) {
+            for (let i = 0; i < len; i += 1) {
+                ch = str.charAt(i);
+                if (arr.indexOf(ch) > -1) {
+                    start = i + 1;
+                } else {
+                    break;
+                }
+            }
+        }
+        if (trimside === TRIM_SIDE.BOTH || trimside === TRIM_SIDE.RIGHT) {
+            for (let j = len - 1; j >= start; j -= 1) {
+                ch = str.charAt(j);
+                if (arr.indexOf(ch) > -1) {
+                    end = j;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if (start === 0 && end === len) {
+            return str;
+        } else {
+            return (end > start) ? str.substring(start, end) : "";
+        }
+    }
+    static ltrim(str: string, chars?: string[]): string {
+        return trim(str, chars, TRIM_SIDE.LEFT);
+    }
+    static rtrim(str: string, chars?: string[]): string {
+        return trim(str, chars, TRIM_SIDE.RIGHT);
     }
     /*
      *    Usage:     format('test {0}={1}', 'x', 100);
@@ -159,14 +185,58 @@ export class StringUtils {
         if (!val) {
             return "";
         }
-        return fastTrim(val.replace(trimQuotsRX, ""));
+        const len = val.length;
+        let start = 0, end = len, ch: string;
+        for (let i = 0; i < len; i += 1) {
+            ch = val.charAt(i);
+            if (ch === " " || ch === "'" || ch === '"') {
+                start = i + 1;
+            } else {
+                break;
+            }
+        }
+        for (let j = len - 1; j >= start; j -= 1) {
+            ch = val.charAt(j);
+            if (ch === " " || ch === "'" || ch === '"') {
+                end = j;
+            } else {
+                break;
+            }
+        }
+        if (start === 0 && end === len) {
+            return val;
+        } else {
+            return (end > start) ? val.substring(start, end) : "";
+        }
     }
     static trimBrackets(val: string) {
         if (!val) {
             return "";
         }
-        return fastTrim(val.replace(trimBracketsRX, ""));
+        const len = val.length;
+        let start = 0, end = len, ch: string;
+        for (let i = 0; i < len; i += 1) {
+            ch = val.charAt(i);
+            if (ch === " " || ch === "[") {
+                start = i + 1;
+            } else {
+                break;
+            }
+        }
+        for (let j = len - 1; j >= start; j -= 1) {
+            ch = val.charAt(j);
+            if (ch === " " || ch === "]") {
+                end = j;
+            } else {
+                break;
+            }
+        }
+        if (start === 0 && end === len) {
+            return val;
+        } else {
+            return (end > start) ? val.substring(start, end) : "";
+        }
     }
 }
 
-const { fastTrim } = StringUtils;
+const { trim } = StringUtils;

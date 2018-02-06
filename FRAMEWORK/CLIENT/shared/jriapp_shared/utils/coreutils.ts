@@ -94,8 +94,8 @@ export class CoreUtils {
         return () => tz;
     })();
     static readonly hasProp = isHasProp;
-    static setValue(root: any, namePath: string, val: any, checkOverwrite: boolean = false, separator = "."): void {
-        const parts: string[] = namePath.split(separator), len = parts.length;
+    static setValue(root: any, namePath: string, val: any, checkOverwrite: boolean = false): void {
+        const parts: string[] = namePath.split("."), len = parts.length;
         let parent = root;
         for (let i = 0; i < len - 1; i += 1) {
             // create a property if it doesn't exist
@@ -111,8 +111,8 @@ export class CoreUtils {
         }
         parent[n] = val;
     }
-    static getValue(root: any, namePath: string, separator = "."): any {
-        const parts = namePath.split(separator);
+    static getValue(root: any, namePath: string): any {
+        const parts = namePath.split(".");
         let res: any, parent = root;
         for (let i = 0; i < parts.length; i += 1) {
             res = parent[parts[i]];
@@ -123,8 +123,8 @@ export class CoreUtils {
         }
         return res;
     }
-    static removeValue(root: any, namePath: string, separator = "."): any {
-        const parts = namePath.split(separator);
+    static removeValue(root: any, namePath: string): any {
+        const parts = namePath.split(".");
         let parent = root;
         for (let i = 0; i < parts.length - 1; i += 1) {
             if (!parent[parts[i]]) {

@@ -29,7 +29,7 @@ function fn_getFrameworkPath(): string {
         const script = arr[i];
         if (!!script.src) {
             const parts = PathHelper.getUrlParts(script.src);
-            let pathName = rtrim(parts.pathname, "/");
+            let pathName = rtrim(parts.pathname, ["/"]);
             if (!!parts.pathname) {
                 pathName = pathName.toLowerCase();
                 if (!!pathName && pathName.lastIndexOf(name) > -1) {
@@ -55,9 +55,9 @@ export class PathHelper {
         return PathHelper.appendSearch(url, bust);
     }
     static appendSearch(url: string, search: string): string {
-        search = ltrim(search, "?");
+        search = ltrim(search, ["?"," "]);
         const parts = PathHelper.getUrlParts(url);
-        const oldSearch = ltrim(parts.search, "?");
+        const oldSearch = ltrim(parts.search, ["?", " "]);
         if (!!oldSearch && oldSearch.lastIndexOf(search) > -1) {
             return url;
         }

@@ -42,7 +42,7 @@ export class JsonArray extends BaseObject {
         super.dispose();
     }
     protected updateArray(arr: any[]): void {
-        setValue(this._owner.val, this._pathToArray, arr, false, "->");
+        setValue(this._owner.val, this._pathToArray, arr, false);
         this._owner.updateJson();
     }
     addOnValidateBag(fn: TEventHandler<this, IBagValidateArgs<IPropertyBag>>, nmspace?: string, context?: any) {
@@ -79,7 +79,7 @@ export class JsonArray extends BaseObject {
         if (!this._owner) {
             return [];
         }
-        const res = getValue(this._owner.val, this._pathToArray, "->");
+        const res = getValue(this._owner.val, this._pathToArray);
         return (!res) ? [] : res;
     }
     get pathToArray(): string {

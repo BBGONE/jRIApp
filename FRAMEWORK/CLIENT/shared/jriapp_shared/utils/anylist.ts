@@ -65,14 +65,14 @@ export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAn
     }
     getProp(name: string): any {
         const fieldName = trimBrackets(name);
-        return getValue(this.val, fieldName, "->");
+        return getValue(this.val, fieldName);
     }
     setProp(name: string, val: any): void {
         const coll = this._aspect.coll, errors = coll.errors, old = this.getProp(name);
         if (old !== val) {
             try {
                 const fieldName = trimBrackets(name);
-                setValue(this.val, fieldName, val, false, "->");
+                setValue(this.val, fieldName, val, false);
                 sys.raiseProp(this, name);
                 errors.removeError(this, name);
                 const validation: IValidationInfo = this._aspect._validateField(name);

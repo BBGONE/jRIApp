@@ -262,14 +262,14 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
     // implements IPropertyBag
     getProp(name: string): any {
         const fieldName = trimBrackets(name);
-        return getValue(this._val, fieldName, "->");
+        return getValue(this._val, fieldName);
     }
     setProp(name: string, val: any): void {
         const old = this.getProp(name);
         if (old !== val) {
             try {
                 const fieldName = trimBrackets(name);
-                setValue(this._val, fieldName, val, false, "->");
+                setValue(this._val, fieldName, val, false);
                 sys.raiseProp(this, name);
                 this._removeError(name);
                 const validationInfo = this._validateField(name);
