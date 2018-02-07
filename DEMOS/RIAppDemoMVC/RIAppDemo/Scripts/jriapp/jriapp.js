@@ -108,7 +108,7 @@ define("jriapp/int", ["require", "exports"], function (require, exports) {
 define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_1, bootstrap_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, endsWith = _b.endsWith, trimQuotes = _b.trimQuotes, parseBool = jriapp_shared_1.Utils.core.parseBool, sys = jriapp_shared_1.Utils.sys;
+    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, endsWith = _b.endsWith, trimQuotes = _b.trimQuotes, parseBool = jriapp_shared_1.Utils.core.parseBool, _c = jriapp_shared_1.Utils.sys, resolvePath = _c.resolvePath, getBraceLen = _c.getBraceLen;
     var getRX = /^get[(].+[)]$/g, spaceRX = /^\s+$/;
     var TOKEN;
     (function (TOKEN) {
@@ -146,14 +146,14 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         PARSE_TYPE[PARSE_TYPE["VIEW"] = 2] = "VIEW";
     })(PARSE_TYPE || (PARSE_TYPE = {}));
     var len_this = "this.".length;
-    function getBraceParts(val) {
+    function getCurlyBraceParts(val) {
         var i, ch;
         var parts = [], len = val.length;
         for (i = 0; i < len; i += 1) {
             ch = val.charAt(i);
             switch (ch) {
                 case "{":
-                    var braceLen = sys.getBraceLen(val, i, 1);
+                    var braceLen = getBraceLen(val, i, 1);
                     parts.push(trim(val.substr(i + 1, braceLen - 2)));
                     i += (braceLen - 1);
                     break;
@@ -187,7 +187,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             }
             ch = val.charAt(i);
             if (ch === br1) {
-                var braceLen = sys.getBraceLen(val, i, brace);
+                var braceLen = getBraceLen(val, i, brace);
                 return trim(val.substr(i + 1, braceLen - 2));
             }
         }
@@ -298,7 +298,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                                 default:
                                     throw new Error("Unknown token: " + token + " in expression " + val);
                             }
-                            var braceLen_1 = sys.getBraceLen(val, i, 0);
+                            var braceLen_1 = getBraceLen(val, i, 0);
                             setVal(kv, i + 1, i + braceLen_1 - 1, val, isKey, false);
                             i += (braceLen_1 - 1);
                             start = -1;
@@ -309,18 +309,21 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         break;
                     case "[":
                         setVal(kv, start, i, val, isKey, false);
-                        var braceLen = sys.getBraceLen(val, i, 2);
+                        var braceLen = getBraceLen(val, i, 2);
                         var str = trimQuotes(val.substring(i + 1, i + braceLen - 1));
                         if (!str) {
                             throw new Error("Invalid: " + ch + " in expression " + val);
                         }
                         appendVal(kv, isKey, "[" + str + "]");
+                        if (!isKey) {
+                            kv.tag = "6";
+                        }
                         i += (braceLen - 1);
                         start = -1;
                         break;
                     case "{":
                         if (!isKey) {
-                            var braceLen_2 = sys.getBraceLen(val, i, 1);
+                            var braceLen_2 = getBraceLen(val, i, 1);
                             setVal(kv, i + 1, i + braceLen_2 - 1, val, isKey, false);
                             kv.tag = "5";
                             i += (braceLen_2 - 1);
@@ -431,9 +434,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     case 2:
                         var source = dataContext || app;
                         if (evalparts.length > 1) {
-                            source = sys.resolvePath(app, evalparts[1]);
+                            source = resolvePath(app, evalparts[1]);
                         }
-                        res[kv.key] = sys.resolvePath(source, evalparts[0]);
+                        res[kv.key] = resolvePath(source, evalparts[0]);
                         break;
                     case 1:
                         if (evalparts.length > 0 && kv.key === "param") {
@@ -475,7 +478,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 str = trim(getOptions(trim(id)));
             }
             if (startsWith(str, "{") && endsWith(str, "}")) {
-                var subparts = getBraceParts(str);
+                var subparts = getCurlyBraceParts(str);
                 for (var k = 0; k < subparts.length; k += 1) {
                     parts.push(subparts[k]);
                 }
@@ -4563,6 +4566,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.12.0";
+    exports.VERSION = "2.12.1";
     bootstrap_8.Bootstrap._initFramework();
 });

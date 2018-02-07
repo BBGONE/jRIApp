@@ -1,7 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { TRIM_SIDE } from "../const";
+import { SIDE } from "../const";
+import { Checks } from "./checks";
 const _undefined: any = void (0), nativeTrim = !!("".trim), spaceChars = [" ", "\t", "\r", "\n"];
 const ERR_STRING_FORMAT_INVALID = "String format has invalid expression value: ";
+const { isFunc, isNt } = Checks;
 
 export class StringUtils {
     static endsWith(str: string, suffix: string): boolean {
@@ -14,15 +16,18 @@ export class StringUtils {
         if (!str) {
             return "";
         }
-        return nativeTrim ? str.trim() : trim(str, spaceChars, TRIM_SIDE.BOTH);
+        return nativeTrim ? str.trim() : trim(str, spaceChars, SIDE.BOTH);
     }
-    static trim(str: string, chars: string[] = null, trimside = TRIM_SIDE.BOTH): string {
+    static trim(str: string, chars: string[] = null, side = SIDE.BOTH): string {
         if (!str) {
             return "";
         }
+        if (side === SIDE.BOTH && !chars && nativeTrim) {
+            return str.trim();
+        }
         const len = str.length, arr: string[] = !chars ? spaceChars : chars;
         let start = 0, end = len, ch: string;
-        if (trimside === TRIM_SIDE.BOTH || trimside === TRIM_SIDE.LEFT) {
+        if (side === SIDE.BOTH || side === SIDE.LEFT) {
             for (let i = 0; i < len; i += 1) {
                 ch = str.charAt(i);
                 if (arr.indexOf(ch) > -1) {
@@ -32,7 +37,7 @@ export class StringUtils {
                 }
             }
         }
-        if (trimside === TRIM_SIDE.BOTH || trimside === TRIM_SIDE.RIGHT) {
+        if (side === SIDE.BOTH || side === SIDE.RIGHT) {
             for (let j = len - 1; j >= start; j -= 1) {
                 ch = str.charAt(j);
                 if (arr.indexOf(ch) > -1) {
@@ -50,10 +55,10 @@ export class StringUtils {
         }
     }
     static ltrim(str: string, chars?: string[]): string {
-        return trim(str, chars, TRIM_SIDE.LEFT);
+        return trim(str, chars, SIDE.LEFT);
     }
     static rtrim(str: string, chars?: string[]): string {
-        return trim(str, chars, TRIM_SIDE.RIGHT);
+        return trim(str, chars, SIDE.RIGHT);
     }
     /*
      *    Usage:     format('test {0}={1}', 'x', 100);
@@ -94,11 +99,11 @@ export class StringUtils {
             }
             const argFormat = (colonIndex < 0) ? "" : brace.substring(colonIndex + 1);
             let arg = args[argNumber];
-            if (arg === _undefined || arg === null) {
+            if (isNt(arg)) {
                 arg = "";
             }
 
-            if (arg.format) {
+            if (isFunc(arg.format)) {
                 result += arg.format(argFormat);
             } else {
                 result += arg.toString();

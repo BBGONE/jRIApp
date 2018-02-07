@@ -3,13 +3,13 @@ export const enum DEBUG_LEVEL {
     NONE = 0, NORMAL = 1, HIGH = 2
 }
 
-export const enum BRACE_TYPE {
-    SIMPLE = 0,
-    FIGURE = 1,
+export const enum BRACKETS {
+    ROUND = 0,
+    CURLY = 1,
     SQUARE = 2
 }
 
-export const enum TRIM_SIDE {
+export const enum SIDE {
     BOTH = 0,
     LEFT = 1,
     RIGHT = 2

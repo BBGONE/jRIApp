@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { Utils, BRACE_TYPE, LocaleERRS as ERRS } from "jriapp_shared";
+import { Utils, BRACKETS, LocaleERRS as ERRS } from "jriapp_shared";
 import { IBindingInfo, IApplication } from "../int";
 
 import { bootstrap } from "../bootstrap";
 
 const { isNumeric, isBoolString } = Utils.check,
     { format, fastTrim: trim, startsWith, endsWith, trimQuotes } = Utils.str,
-    { parseBool } = Utils.core, sys = Utils.sys;
+    { parseBool } = Utils.core, { resolvePath, getBraceLen } = Utils.sys;
 
 const getRX = /^get[(].+[)]$/g, spaceRX = /^\s+$/;
 
@@ -55,7 +55,7 @@ interface IKeyVal {
 }
 
 // extract content from the inside of top level figure braces
-function getBraceParts(val: string): string[] {
+function getCurlyBraceParts(val: string): string[] {
     let i: number, ch: string;
     const parts: string[] = [], len = val.length;
 
@@ -64,7 +64,7 @@ function getBraceParts(val: string): string[] {
 
         switch (ch) {
             case "{":
-                const braceLen = sys.getBraceLen(val, i, BRACE_TYPE.FIGURE);
+                const braceLen = getBraceLen(val, i, BRACKETS.CURLY);
                 parts.push(trim(val.substr(i + 1, braceLen - 2)));
                 i += (braceLen - 1);
                 break;
@@ -79,19 +79,19 @@ function getBraceParts(val: string): string[] {
     return parts;
 }
 
-function getBraceContent(val: string, brace: BRACE_TYPE): string {
+function getBraceContent(val: string, brace: BRACKETS): string {
     let ch: string, start: number = 0;
 
     const len = val.length;
     let br1: string;
     switch (brace) {
-        case BRACE_TYPE.SIMPLE:
+        case BRACKETS.ROUND:
             br1 = "(";
             break;
-        case BRACE_TYPE.FIGURE:
+        case BRACKETS.CURLY:
             br1 = "{";
             break;
-        case BRACE_TYPE.SQUARE:
+        case BRACKETS.SQUARE:
             br1 = "[";
             break;
     }
@@ -102,7 +102,7 @@ function getBraceContent(val: string, brace: BRACE_TYPE): string {
         }
         ch = val.charAt(i);
         if (ch === br1) {
-            const braceLen = sys.getBraceLen(val, i, brace);
+            const braceLen = getBraceLen(val, i, brace);
             return trim(val.substr(i + 1, braceLen - 2));
         }
     }
@@ -220,7 +220,7 @@ function getKeyVals(val: string): IKeyVal[] {
                             default:
                                 throw new Error(`Unknown token: ${token} in expression ${val}`);
                         }
-                        const braceLen = sys.getBraceLen(val, i, BRACE_TYPE.SIMPLE);
+                        const braceLen = getBraceLen(val, i, BRACKETS.ROUND);
                         setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
                         i += (braceLen - 1);
                         start = -1;
@@ -231,18 +231,21 @@ function getKeyVals(val: string): IKeyVal[] {
                 case "[":
                     // is this a content inside [], something like customer[address.phone] or [Line1] or this.classes[*]?
                     setVal(kv, start, i, val, isKey, false);
-                    const braceLen = sys.getBraceLen(val, i, BRACE_TYPE.SQUARE);
+                    const braceLen = getBraceLen(val, i, BRACKETS.SQUARE);
                     const str = trimQuotes(val.substring(i + 1, i + braceLen - 1));
                     if (!str) {
                         throw new Error(`Invalid: ${ch} in expression ${val}`);
                     }
                     appendVal(kv, isKey, `[${str}]`);
+                    if (!isKey) {
+                        kv.tag = TAG.LITERAL;
+                    }
                     i += (braceLen - 1);
                     start = -1;
                     break;
                 case "{":
                     if (!isKey) {
-                        const braceLen = sys.getBraceLen(val, i, BRACE_TYPE.FIGURE);
+                        const braceLen = getBraceLen(val, i, BRACKETS.CURLY);
                         setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
                         kv.tag = TAG.BRACE;
                         i += (braceLen - 1);
@@ -351,7 +354,7 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
     } : {};
     part = trim(part);
     if (isGetExpr(part)) {
-        const id = getBraceContent(part, BRACE_TYPE.SIMPLE);
+        const id = getBraceContent(part, BRACKETS.ROUND);
         return parseById(parse_type,trim(id), app, dataContext);
     }
     const kvals = getKeyVals(part);
@@ -375,9 +378,9 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
                     let source = dataContext || app;
                     if (evalparts.length > 1) {
                         //resolve source (second path in the array)
-                        source = sys.resolvePath(app, evalparts[1]);
+                        source = resolvePath(app, evalparts[1]);
                     }
-                    res[kv.key] = sys.resolvePath(source, evalparts[0]);
+                    res[kv.key] = resolvePath(source, evalparts[0]);
                     break;
                 case PARSE_TYPE.BINDING:
                     if (evalparts.length > 0 && kv.key === TOKEN.PARAM) {
@@ -416,11 +419,11 @@ function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: any, dataCont
     for (let i = 0; i < strs.length; i += 1) {
         let str = trim(strs[i]);
         if (isGetExpr(str)) {
-            const id = getBraceContent(str, BRACE_TYPE.SIMPLE);
+            const id = getBraceContent(str, BRACKETS.ROUND);
             str = trim(getOptions(trim(id)));
         }
         if (startsWith(str, "{") && endsWith(str, "}")) {
-            const subparts = getBraceParts(str);
+            const subparts = getCurlyBraceParts(str);
             for (let k = 0; k < subparts.length; k += 1) {
                 parts.push(subparts[k]);
             }

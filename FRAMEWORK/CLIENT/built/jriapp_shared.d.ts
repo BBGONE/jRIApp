@@ -4,12 +4,12 @@ declare module "jriapp_shared/const" {
         NORMAL = 1,
         HIGH = 2,
     }
-    export const enum BRACE_TYPE {
-        SIMPLE = 0,
-        FIGURE = 1,
+    export const enum BRACKETS {
+        ROUND = 0,
+        CURLY = 1,
         SQUARE = 2,
     }
-    export const enum TRIM_SIDE {
+    export const enum SIDE {
         BOTH = 0,
         LEFT = 1,
         RIGHT = 2,
@@ -200,24 +200,6 @@ declare module "jriapp_shared/int" {
         new (): IWeakMap;
     }
 }
-declare module "jriapp_shared/utils/strutils" {
-    import { TRIM_SIDE } from "jriapp_shared/const";
-    export class StringUtils {
-        static endsWith(str: string, suffix: string): boolean;
-        static startsWith(str: string, prefix: string): boolean;
-        static fastTrim(str: string): string;
-        static trim(str: string, chars?: string[], trimside?: TRIM_SIDE): string;
-        static ltrim(str: string, chars?: string[]): string;
-        static rtrim(str: string, chars?: string[]): string;
-        static format(formatStr: string, ...args: any[]): string;
-        static formatNumber(num: any, decimals?: number, decPoint?: string, thousandsSep?: string): string;
-        static stripNonNumeric(str: string): string;
-        static padLeft(val: string, len: number, pad: string): string;
-        static fastPadLeft(val: string, pad: string): string;
-        static trimQuotes(val: string): string;
-        static trimBrackets(val: string): string;
-    }
-}
 declare module "jriapp_shared/utils/checks" {
     import { IThenable } from "jriapp_shared/utils/ideferred";
     export class Checks {
@@ -238,6 +220,24 @@ declare module "jriapp_shared/utils/checks" {
         static isGuid(a: any): boolean;
         static isArray<T>(a: any): a is Array<T>;
         static isThenable(a: any): a is IThenable<any>;
+    }
+}
+declare module "jriapp_shared/utils/strutils" {
+    import { SIDE } from "jriapp_shared/const";
+    export class StringUtils {
+        static endsWith(str: string, suffix: string): boolean;
+        static startsWith(str: string, prefix: string): boolean;
+        static fastTrim(str: string): string;
+        static trim(str: string, chars?: string[], side?: SIDE): string;
+        static ltrim(str: string, chars?: string[]): string;
+        static rtrim(str: string, chars?: string[]): string;
+        static format(formatStr: string, ...args: any[]): string;
+        static formatNumber(num: any, decimals?: number, decPoint?: string, thousandsSep?: string): string;
+        static stripNonNumeric(str: string): string;
+        static padLeft(val: string, len: number, pad: string): string;
+        static fastPadLeft(val: string, pad: string): string;
+        static trimQuotes(val: string): string;
+        static trimBrackets(val: string): string;
     }
 }
 declare module "jriapp_shared/utils/coreutils" {
@@ -708,7 +708,7 @@ declare module "jriapp_shared/collection/int" {
     }
 }
 declare module "jriapp_shared/utils/sysutils" {
-    import { BRACE_TYPE } from "jriapp_shared/const";
+    import { BRACKETS } from "jriapp_shared/const";
     import { ISubmittable, IErrorNotification, IEditable, IPropertyBag, IBaseObject, IValidatable } from "jriapp_shared/int";
     import { ICollection } from "jriapp_shared/collection/int";
     export class SysUtils {
@@ -725,7 +725,7 @@ declare module "jriapp_shared/utils/sysutils" {
         static getErrorNotification(obj: any): IErrorNotification;
         static getEditable(obj: any): IEditable;
         static getSubmittable(obj: any): ISubmittable;
-        static getBraceLen(val: string, start: number, brace: BRACE_TYPE): number;
+        static getBraceLen(val: string, start: number, brace: BRACKETS): number;
         static getPathParts(path: string): string[];
         static getProp(obj: any, prop: string): any;
         static setProp(obj: any, prop: string, val: any): void;

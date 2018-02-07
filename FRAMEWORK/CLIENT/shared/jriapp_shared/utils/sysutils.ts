@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { BRACE_TYPE } from "../const";
+import { BRACKETS } from "../const";
 import {
     ISubmittable, IErrorNotification, IEditable, IPropertyBag, IBaseObject, IValidatable
 } from "../int";
@@ -93,20 +93,20 @@ export class SysUtils {
 
         return null;
     }
-    static getBraceLen(val: string, start: number, brace: BRACE_TYPE): number {
+    static getBraceLen(val: string, start: number, brace: BRACKETS): number {
         let i: number, cnt = 0, ch: string, literal: string, test = 0;
         const len = val.length;
         let br1: string, br2: string;
         switch (brace) {
-            case BRACE_TYPE.SIMPLE:
+            case BRACKETS.ROUND:
                 br1 = "(";
                 br2 = ")";
                 break;
-            case BRACE_TYPE.FIGURE:
+            case BRACKETS.CURLY:
                 br1 = "{";
                 br2 = "}";
                 break;
-            case BRACE_TYPE.SQUARE:
+            case BRACKETS.SQUARE:
                 br1 = "[";
                 br2 = "]";
                 break;
@@ -198,7 +198,7 @@ export class SysUtils {
                         parts.push(val);     
                     }
 
-                    const braceLen = sys.getBraceLen(path, i, BRACE_TYPE.SQUARE);
+                    const braceLen = sys.getBraceLen(path, i, BRACKETS.SQUARE);
                     val = trimQuotes(path.substring(i + 1, i + braceLen - 1));
                     if (!val) {
                         throw new Error("Invalid property path: " + path);
