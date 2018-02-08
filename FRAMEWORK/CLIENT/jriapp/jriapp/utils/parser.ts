@@ -211,14 +211,14 @@ function getKeyVals(val: string): IKeyVal[] {
                                 kv.tag = TAG.DATE;
                                 break;
                             default:
-                                throw new Error(`Unknown token: ${token} in expression ${val}`);
+                                throw new Error(`Unknown token: "${token}" in expression ${val}`);
                         }
                         const braceLen = getBraceLen(val, i, BRACKETS.ROUND);
                         setKeyVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
                         i += (braceLen - 1);
                         start = -1;
                     } else {
-                        throw new Error(`Invalid: ${ch} in expression ${val}`);
+                        throw new Error(`Invalid: "${ch}" in expression ${val}`);
                     }
                     break;
                 case "[":
@@ -227,7 +227,7 @@ function getKeyVals(val: string): IKeyVal[] {
                     const braceLen = getBraceLen(val, i, BRACKETS.SQUARE);
                     const str = trimQuotes(val.substring(i + 1, i + braceLen - 1));
                     if (!str) {
-                        throw new Error(`Invalid: ${ch} in expression ${val}`);
+                        throw new Error(`Invalid: "${ch}" in expression ${val}`);
                     }
                     if (isKey) {
                         kv.key += `[${str}]`;
@@ -240,16 +240,17 @@ function getKeyVals(val: string): IKeyVal[] {
                     break;
                 case "{":
                     if (!isKey) {
-                        const braceLen = getBraceLen(val, i, BRACKETS.CURLY);
-                        if (!!kv.val) {
-                            throw new Error(`Invalid: ${ch} in expression ${val}`);
+                        const test = trim(val.substring(start, i));
+                        if (!!test) {
+                            throw new Error(`Invalid word: "${test}" in expression ${val}`);
                         }
+                        const braceLen = getBraceLen(val, i, BRACKETS.CURLY);
                         kv.val = val.substring(i + 1, i + braceLen - 1);
                         kv.tag = TAG.BRACE;
                         i += (braceLen - 1);
                         start = -1;
                     } else {
-                        throw new Error(`Invalid: ${ch} in expression ${val}`);
+                        throw new Error(`Invalid: "${ch}" in expression ${val}`);
                     }
                     break;
                 case TOKEN.COMMA:
@@ -270,7 +271,7 @@ function getKeyVals(val: string): IKeyVal[] {
                 case ")":
                 case "}":
                 case "]":
-                    throw new Error(`Invalid: ${ch} in expression ${val}`);
+                    throw new Error(`Invalid: "${ch}" in expression ${val}`);
             }
         } else {
             // inside literal content here

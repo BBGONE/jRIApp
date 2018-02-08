@@ -289,7 +289,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                                     kv.tag = "3";
                                     break;
                                 default:
-                                    throw new Error("Unknown token: " + token + " in expression " + val);
+                                    throw new Error("Unknown token: \"" + token + "\" in expression " + val);
                             }
                             var braceLen_1 = getBraceLen(val, i, 0);
                             setKeyVal(kv, i + 1, i + braceLen_1 - 1, val, isKey, false);
@@ -297,7 +297,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                             start = -1;
                         }
                         else {
-                            throw new Error("Invalid: " + ch + " in expression " + val);
+                            throw new Error("Invalid: \"" + ch + "\" in expression " + val);
                         }
                         break;
                     case "[":
@@ -305,7 +305,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         var braceLen = getBraceLen(val, i, 2);
                         var str = trimQuotes(val.substring(i + 1, i + braceLen - 1));
                         if (!str) {
-                            throw new Error("Invalid: " + ch + " in expression " + val);
+                            throw new Error("Invalid: \"" + ch + "\" in expression " + val);
                         }
                         if (isKey) {
                             kv.key += "[" + str + "]";
@@ -319,17 +319,18 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         break;
                     case "{":
                         if (!isKey) {
-                            var braceLen_2 = getBraceLen(val, i, 1);
-                            if (!!kv.val) {
-                                throw new Error("Invalid: " + ch + " in expression " + val);
+                            var test = trim(val.substring(start, i));
+                            if (!!test) {
+                                throw new Error("Invalid word: \"" + test + "\" in expression " + val);
                             }
+                            var braceLen_2 = getBraceLen(val, i, 1);
                             kv.val = val.substring(i + 1, i + braceLen_2 - 1);
                             kv.tag = "5";
                             i += (braceLen_2 - 1);
                             start = -1;
                         }
                         else {
-                            throw new Error("Invalid: " + ch + " in expression " + val);
+                            throw new Error("Invalid: \"" + ch + "\" in expression " + val);
                         }
                         break;
                     case ",":
@@ -348,7 +349,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     case ")":
                     case "}":
                     case "]":
-                        throw new Error("Invalid: " + ch + " in expression " + val);
+                        throw new Error("Invalid: \"" + ch + "\" in expression " + val);
                 }
             }
             else {
