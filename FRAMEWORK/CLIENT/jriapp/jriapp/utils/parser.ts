@@ -24,13 +24,14 @@ const enum TOKEN {
 }
 
 const enum TAG {
+    NONE = "",
+    LITERAL = "0",
     EVAL = "1",
     GET = "2",
     DATE = "3",
     INJECT ="4",
     BRACE = "5",
-    LITERAL = "6",
-    INDEXER = "7"
+    INDEXER = "6"
 }
 
 const enum DATES {
@@ -50,7 +51,7 @@ const enum PARSE_TYPE {
 const len_this = TOKEN.THIS.length;
 
 interface IKeyVal {
-    tag?: string;
+    tag?: TAG;
     key: string;
     val: any;
 }
@@ -111,6 +112,27 @@ function getBraceContent(val: string, brace: BRACKETS): string {
     throw new Error("Invalid Expression: " + val);
 }
 
+function tagToString(tag: TAG): string {
+    switch (tag) {
+        case TAG.LITERAL:
+            return "literal";
+        case TAG.EVAL:
+            return TOKEN.EVAL;
+        case TAG.DATE:
+            return TOKEN.DATE;
+        case TAG.GET:
+            return TOKEN.GET;
+        case TAG.INJECT:
+            return TOKEN.INJECT;
+        case TAG.BRACE:
+            return "{}";
+        case TAG.INDEXER:
+            return "[]";
+        default:
+            throw new Error(`Unknown tag: "${tag}"`);
+    }
+}
+
 function setKeyVal(kv: IKeyVal, start: number, end: number, val: string, isKey: boolean, isLit: boolean): void {
     if (start > -1 && start < end) {
         const str = val.substring(start, end);
@@ -121,6 +143,9 @@ function setKeyVal(kv: IKeyVal, start: number, end: number, val: string, isKey: 
         if (isKey) {
             kv.key += v;
         } else {
+            if (!!kv.tag && kv.tag !== TAG.LITERAL) {
+                throw new Error(`Invalid word: "${v}" after ${tagToString(kv.tag)} in expression ${val}`);
+            }
             kv.val += v;
         }
     }
@@ -197,24 +222,26 @@ function getKeyVals(val: string): IKeyVal[] {
                     // is this a content inside eval( ) or get() or date() or inject?
                     if (!isKey && start < i) {
                         const token = trim(val.substring(start, i));
+                        let tag: TAG = TAG.NONE;
                         switch (token) {
                             case TOKEN.EVAL:
-                                kv.tag = TAG.EVAL;
+                                tag = TAG.EVAL;
                                 break;
                             case TOKEN.GET:
-                                kv.tag = TAG.GET;
+                                tag = TAG.GET;
                                 break;
                             case TOKEN.INJECT:
-                                kv.tag = TAG.INJECT;
+                                tag = TAG.INJECT;
                                 break;
                             case TOKEN.DATE:
-                                kv.tag = TAG.DATE;
+                                tag = TAG.DATE;
                                 break;
                             default:
                                 throw new Error(`Unknown token: "${token}" in expression ${val}`);
                         }
                         const braceLen = getBraceLen(val, i, BRACKETS.ROUND);
                         setKeyVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
+                        kv.tag = tag;
                         i += (braceLen - 1);
                         start = -1;
                     } else {
@@ -242,7 +269,7 @@ function getKeyVals(val: string): IKeyVal[] {
                     if (!isKey) {
                         const test = trim(val.substring(start, i));
                         if (!!test) {
-                            throw new Error(`Invalid word: "${test}" in expression ${val}`);
+                            throw new Error(`Invalid word: "${test}{" in expression ${val}`);
                         }
                         const braceLen = getBraceLen(val, i, BRACKETS.CURLY);
                         kv.val = val.substring(i + 1, i + braceLen - 1);

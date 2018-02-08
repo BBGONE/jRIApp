@@ -125,13 +125,14 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
     })(TOKEN || (TOKEN = {}));
     var TAG;
     (function (TAG) {
+        TAG["NONE"] = "";
+        TAG["LITERAL"] = "0";
         TAG["EVAL"] = "1";
         TAG["GET"] = "2";
         TAG["DATE"] = "3";
         TAG["INJECT"] = "4";
         TAG["BRACE"] = "5";
-        TAG["LITERAL"] = "6";
-        TAG["INDEXER"] = "7";
+        TAG["INDEXER"] = "6";
     })(TAG || (TAG = {}));
     var DATES;
     (function (DATES) {
@@ -194,6 +195,26 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
         throw new Error("Invalid Expression: " + val);
     }
+    function tagToString(tag) {
+        switch (tag) {
+            case "0":
+                return "literal";
+            case "1":
+                return "eval";
+            case "3":
+                return "date";
+            case "2":
+                return "get";
+            case "4":
+                return "inject";
+            case "5":
+                return "{}";
+            case "6":
+                return "[]";
+            default:
+                throw new Error("Unknown tag: \"" + tag + "\"");
+        }
+    }
     function setKeyVal(kv, start, end, val, isKey, isLit) {
         if (start > -1 && start < end) {
             var str = val.substring(start, end);
@@ -205,6 +226,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 kv.key += v;
             }
             else {
+                if (!!kv.tag && kv.tag !== "0") {
+                    throw new Error("Invalid word: \"" + v + "\" after " + tagToString(kv.tag) + " in expression " + val);
+                }
                 kv.val += v;
             }
         }
@@ -269,30 +293,32 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         literal = ch;
                         start = i + 1;
                         if (!kv.tag) {
-                            kv.tag = "6";
+                            kv.tag = "0";
                         }
                         break;
                     case "(":
                         if (!isKey && start < i) {
                             var token = trim(val.substring(start, i));
+                            var tag = "";
                             switch (token) {
                                 case "eval":
-                                    kv.tag = "1";
+                                    tag = "1";
                                     break;
                                 case "get":
-                                    kv.tag = "2";
+                                    tag = "2";
                                     break;
                                 case "inject":
-                                    kv.tag = "4";
+                                    tag = "4";
                                     break;
                                 case "date":
-                                    kv.tag = "3";
+                                    tag = "3";
                                     break;
                                 default:
                                     throw new Error("Unknown token: \"" + token + "\" in expression " + val);
                             }
                             var braceLen_1 = getBraceLen(val, i, 0);
                             setKeyVal(kv, i + 1, i + braceLen_1 - 1, val, isKey, false);
+                            kv.tag = tag;
                             i += (braceLen_1 - 1);
                             start = -1;
                         }
@@ -312,7 +338,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         }
                         else {
                             kv.val += "[" + str + "]";
-                            kv.tag = "7";
+                            kv.tag = "6";
                         }
                         i += (braceLen - 1);
                         start = -1;
@@ -321,7 +347,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         if (!isKey) {
                             var test = trim(val.substring(start, i));
                             if (!!test) {
-                                throw new Error("Invalid word: \"" + test + "\" in expression " + val);
+                                throw new Error("Invalid word: \"" + test + "{\" in expression " + val);
                             }
                             var braceLen_2 = getBraceLen(val, i, 1);
                             kv.val = val.substring(i + 1, i + braceLen_2 - 1);
