@@ -131,6 +131,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         TAG["INJECT"] = "4";
         TAG["BRACE"] = "5";
         TAG["LITERAL"] = "6";
+        TAG["INDEXER"] = "7";
     })(TAG || (TAG = {}));
     var DATES;
     (function (DATES) {
@@ -193,7 +194,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
         throw new Error("Invalid Expression: " + val);
     }
-    function setVal(kv, start, end, val, isKey, isLit) {
+    function setKeyVal(kv, start, end, val, isKey, isLit) {
         if (start > -1 && start < end) {
             var str = val.substring(start, end);
             var v = !isLit ? trim(str) : str;
@@ -206,14 +207,6 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             else {
                 kv.val += v;
             }
-        }
-    }
-    function appendVal(kv, isKey, val) {
-        if (isKey) {
-            kv.key += val;
-        }
-        else {
-            kv.val += val;
         }
     }
     function checkVal(kv) {
@@ -272,7 +265,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 switch (ch) {
                     case "'":
                     case '"':
-                        setVal(kv, start, i, val, isKey, false);
+                        setKeyVal(kv, start, i, val, isKey, false);
                         literal = ch;
                         start = i + 1;
                         if (!kv.tag) {
@@ -299,7 +292,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                                     throw new Error("Unknown token: " + token + " in expression " + val);
                             }
                             var braceLen_1 = getBraceLen(val, i, 0);
-                            setVal(kv, i + 1, i + braceLen_1 - 1, val, isKey, false);
+                            setKeyVal(kv, i + 1, i + braceLen_1 - 1, val, isKey, false);
                             i += (braceLen_1 - 1);
                             start = -1;
                         }
@@ -308,15 +301,18 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         }
                         break;
                     case "[":
-                        setVal(kv, start, i, val, isKey, false);
+                        setKeyVal(kv, start, i, val, isKey, false);
                         var braceLen = getBraceLen(val, i, 2);
                         var str = trimQuotes(val.substring(i + 1, i + braceLen - 1));
                         if (!str) {
                             throw new Error("Invalid: " + ch + " in expression " + val);
                         }
-                        appendVal(kv, isKey, "[" + str + "]");
-                        if (!isKey) {
-                            kv.tag = "6";
+                        if (isKey) {
+                            kv.key += "[" + str + "]";
+                        }
+                        else {
+                            kv.val += "[" + str + "]";
+                            kv.tag = "7";
                         }
                         i += (braceLen - 1);
                         start = -1;
@@ -324,7 +320,10 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     case "{":
                         if (!isKey) {
                             var braceLen_2 = getBraceLen(val, i, 1);
-                            setVal(kv, i + 1, i + braceLen_2 - 1, val, isKey, false);
+                            if (!!kv.val) {
+                                throw new Error("Invalid: " + ch + " in expression " + val);
+                            }
+                            kv.val = val.substring(i + 1, i + braceLen_2 - 1);
                             kv.tag = "5";
                             i += (braceLen_2 - 1);
                             start = -1;
@@ -334,7 +333,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         }
                         break;
                     case ",":
-                        setVal(kv, start, i, val, isKey, false);
+                        setKeyVal(kv, start, i, val, isKey, false);
                         start = -1;
                         parts.push(kv);
                         kv = { tag: null, key: "", val: "" };
@@ -342,7 +341,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         break;
                     case ":":
                     case "=":
-                        setVal(kv, start, i, val, isKey, false);
+                        setKeyVal(kv, start, i, val, isKey, false);
                         start = -1;
                         isKey = false;
                         break;
@@ -359,12 +358,12 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         if (literal === ch) {
                             var i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
                             if (next === ch) {
-                                setVal(kv, start, i + 1, val, isKey, true);
+                                setKeyVal(kv, start, i + 1, val, isKey, true);
                                 i += 1;
                                 start = -1;
                             }
                             else {
-                                setVal(kv, start, i, val, isKey, true);
+                                setKeyVal(kv, start, i, val, isKey, true);
                                 literal = null;
                                 start = -1;
                             }
@@ -373,7 +372,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 }
             }
         }
-        setVal(kv, start, i, val, isKey, false);
+        setKeyVal(kv, start, i, val, isKey, false);
         parts.push(kv);
         parts = parts.filter(function (kv) {
             return checkVal(kv);
@@ -4566,6 +4565,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.12.1";
+    exports.VERSION = "2.12.2";
     bootstrap_8.Bootstrap._initFramework();
 });

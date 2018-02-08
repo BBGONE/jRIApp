@@ -29,7 +29,8 @@ const enum TAG {
     DATE = "3",
     INJECT ="4",
     BRACE = "5",
-    LITERAL = "6"
+    LITERAL = "6",
+    INDEXER = "7"
 }
 
 const enum DATES {
@@ -110,7 +111,7 @@ function getBraceContent(val: string, brace: BRACKETS): string {
     throw new Error("Invalid Expression: " + val);
 }
 
-function setVal(kv: IKeyVal, start: number, end: number, val: string, isKey: boolean, isLit: boolean): void {
+function setKeyVal(kv: IKeyVal, start: number, end: number, val: string, isKey: boolean, isLit: boolean): void {
     if (start > -1 && start < end) {
         const str = val.substring(start, end);
         const v = !isLit ? trim(str) : str;
@@ -122,14 +123,6 @@ function setVal(kv: IKeyVal, start: number, end: number, val: string, isKey: boo
         } else {
             kv.val += v;
         }
-    }
-}
-
-function appendVal(kv: IKeyVal, isKey: boolean, val: string): void {
-    if (isKey) {
-        kv.key += val;
-    } else {
-        kv.val += val;
     }
 }
 
@@ -193,7 +186,7 @@ function getKeyVals(val: string): IKeyVal[] {
                 case "'":
                 case '"':
                     // is this a content inside '' or "" ?
-                    setVal(kv, start, i, val, isKey, false);
+                    setKeyVal(kv, start, i, val, isKey, false);
                     literal = ch;
                     start = i + 1;
                     if (!kv.tag) {
@@ -221,7 +214,7 @@ function getKeyVals(val: string): IKeyVal[] {
                                 throw new Error(`Unknown token: ${token} in expression ${val}`);
                         }
                         const braceLen = getBraceLen(val, i, BRACKETS.ROUND);
-                        setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
+                        setKeyVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
                         i += (braceLen - 1);
                         start = -1;
                     } else {
@@ -230,15 +223,17 @@ function getKeyVals(val: string): IKeyVal[] {
                     break;
                 case "[":
                     // is this a content inside [], something like customer[address.phone] or [Line1] or this.classes[*]?
-                    setVal(kv, start, i, val, isKey, false);
+                    setKeyVal(kv, start, i, val, isKey, false);
                     const braceLen = getBraceLen(val, i, BRACKETS.SQUARE);
                     const str = trimQuotes(val.substring(i + 1, i + braceLen - 1));
                     if (!str) {
                         throw new Error(`Invalid: ${ch} in expression ${val}`);
                     }
-                    appendVal(kv, isKey, `[${str}]`);
-                    if (!isKey) {
-                        kv.tag = TAG.LITERAL;
+                    if (isKey) {
+                        kv.key += `[${str}]`;
+                    } else {
+                        kv.val += `[${str}]`;
+                        kv.tag = TAG.INDEXER;
                     }
                     i += (braceLen - 1);
                     start = -1;
@@ -246,7 +241,10 @@ function getKeyVals(val: string): IKeyVal[] {
                 case "{":
                     if (!isKey) {
                         const braceLen = getBraceLen(val, i, BRACKETS.CURLY);
-                        setVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
+                        if (!!kv.val) {
+                            throw new Error(`Invalid: ${ch} in expression ${val}`);
+                        }
+                        kv.val = val.substring(i + 1, i + braceLen - 1);
                         kv.tag = TAG.BRACE;
                         i += (braceLen - 1);
                         start = -1;
@@ -255,7 +253,7 @@ function getKeyVals(val: string): IKeyVal[] {
                     }
                     break;
                 case TOKEN.COMMA:
-                    setVal(kv, start, i, val, isKey, false);
+                    setKeyVal(kv, start, i, val, isKey, false);
                     start = -1;
                     parts.push(kv);
                     kv = { tag: null, key: "", val: "" }
@@ -264,7 +262,7 @@ function getKeyVals(val: string): IKeyVal[] {
                     break;
                 case TOKEN.DELIMETER1:
                 case TOKEN.DELIMETER2:
-                    setVal(kv, start, i, val, isKey, false);
+                    setKeyVal(kv, start, i, val, isKey, false);
                     start = -1;
                     // switch to parsing the value
                     isKey = false;
@@ -283,11 +281,11 @@ function getKeyVals(val: string): IKeyVal[] {
                         //check for quotes escape 
                         const i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
                         if (next === ch) {
-                            setVal(kv, start, i + 1, val, isKey, true);
+                            setKeyVal(kv, start, i + 1, val, isKey, true);
                             i += 1;
                             start = -1;
                         } else {
-                            setVal(kv, start, i, val, isKey, true);
+                            setKeyVal(kv, start, i, val, isKey, true);
                             literal = null;
                             start = -1;
                         }
@@ -297,7 +295,7 @@ function getKeyVals(val: string): IKeyVal[] {
         }
     } // for (i = 0; i < val.length; i += 1)
 
-    setVal(kv, start, i, val, isKey, false);
+    setKeyVal(kv, start, i, val, isKey, false);
     // push the last
     parts.push(kv);
 

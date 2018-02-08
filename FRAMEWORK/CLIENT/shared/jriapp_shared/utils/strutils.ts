@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { SIDE } from "../const";
 import { Checks } from "./checks";
-const _undefined: any = void (0), nativeTrim = !!("".trim), spaceChars = [" ", "\t", "\r", "\n"];
+const _undefined: any = void (0), hasNativeTrim = !!("".trim), spaceChars = [" ", "\t", "\r", "\n"];
 const ERR_STRING_FORMAT_INVALID = "String format has invalid expression value: ";
 const { isFunc, isNt } = Checks;
 
@@ -16,13 +16,13 @@ export class StringUtils {
         if (!str) {
             return "";
         }
-        return nativeTrim ? str.trim() : trim(str, spaceChars, SIDE.BOTH);
+        return hasNativeTrim ? str.trim() : trim(str, spaceChars, SIDE.BOTH);
     }
-    static trim(str: string, chars: string[] = null, side = SIDE.BOTH): string {
+    static trim(str: string, chars: string[] = null, side: SIDE = SIDE.BOTH): string {
         if (!str) {
             return "";
         }
-        if (side === SIDE.BOTH && !chars && nativeTrim) {
+        if (side === SIDE.BOTH && !chars && hasNativeTrim) {
             return str.trim();
         }
         const len = str.length, arr: string[] = !chars ? spaceChars : chars;

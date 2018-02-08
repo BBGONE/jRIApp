@@ -123,7 +123,7 @@ define("jriapp_shared/utils/checks", ["require", "exports"], function (require, 
 define("jriapp_shared/utils/strutils", ["require", "exports", "jriapp_shared/utils/checks"], function (require, exports, checks_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var _undefined = void (0), nativeTrim = !!("".trim), spaceChars = [" ", "\t", "\r", "\n"];
+    var _undefined = void (0), hasNativeTrim = !!("".trim), spaceChars = [" ", "\t", "\r", "\n"];
     var ERR_STRING_FORMAT_INVALID = "String format has invalid expression value: ";
     var isFunc = checks_1.Checks.isFunc, isNt = checks_1.Checks.isNt;
     var StringUtils = (function () {
@@ -139,7 +139,7 @@ define("jriapp_shared/utils/strutils", ["require", "exports", "jriapp_shared/uti
             if (!str) {
                 return "";
             }
-            return nativeTrim ? str.trim() : trim(str, spaceChars, 0);
+            return hasNativeTrim ? str.trim() : trim(str, spaceChars, 0);
         };
         StringUtils.trim = function (str, chars, side) {
             if (chars === void 0) { chars = null; }
@@ -147,7 +147,7 @@ define("jriapp_shared/utils/strutils", ["require", "exports", "jriapp_shared/uti
             if (!str) {
                 return "";
             }
-            if (side === 0 && !chars && nativeTrim) {
+            if (side === 0 && !chars && hasNativeTrim) {
                 return str.trim();
             }
             var len = str.length, arr = !chars ? spaceChars : chars;
