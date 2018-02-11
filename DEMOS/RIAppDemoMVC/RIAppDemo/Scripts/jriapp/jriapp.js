@@ -195,26 +195,6 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
         throw new Error("Invalid Expression: " + val);
     }
-    function tagToString(tag) {
-        switch (tag) {
-            case "0":
-                return "literal";
-            case "1":
-                return "eval";
-            case "3":
-                return "date";
-            case "2":
-                return "get";
-            case "4":
-                return "inject";
-            case "5":
-                return "{}";
-            case "6":
-                return "[]";
-            default:
-                throw new Error("Unknown tag: \"" + tag + "\"");
-        }
-    }
     function setKeyVal(kv, start, end, val, isKey, isLit) {
         if (start > -1 && start < end) {
             var str = val.substring(start, end);
@@ -226,9 +206,6 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 kv.key += v;
             }
             else {
-                if (!!kv.tag && kv.tag !== "0") {
-                    throw new Error("Invalid word: \"" + v + "\" after " + tagToString(kv.tag) + " in expression " + val);
-                }
                 kv.val += v;
             }
         }
@@ -4592,6 +4569,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.13.0";
+    exports.VERSION = "2.13.1";
     bootstrap_8.Bootstrap._initFramework();
 });

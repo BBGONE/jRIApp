@@ -112,27 +112,6 @@ function getBraceContent(val: string, brace: BRACKETS): string {
     throw new Error("Invalid Expression: " + val);
 }
 
-function tagToString(tag: TAG): string {
-    switch (tag) {
-        case TAG.LITERAL:
-            return "literal";
-        case TAG.EVAL:
-            return TOKEN.EVAL;
-        case TAG.DATE:
-            return TOKEN.DATE;
-        case TAG.GET:
-            return TOKEN.GET;
-        case TAG.INJECT:
-            return TOKEN.INJECT;
-        case TAG.BRACE:
-            return "{}";
-        case TAG.INDEXER:
-            return "[]";
-        default:
-            throw new Error(`Unknown tag: "${tag}"`);
-    }
-}
-
 function setKeyVal(kv: IKeyVal, start: number, end: number, val: string, isKey: boolean, isLit: boolean): void {
     if (start > -1 && start < end) {
         const str = val.substring(start, end);
@@ -143,9 +122,6 @@ function setKeyVal(kv: IKeyVal, start: number, end: number, val: string, isKey: 
         if (isKey) {
             kv.key += v;
         } else {
-            if (!!kv.tag && kv.tag !== TAG.LITERAL) {
-                throw new Error(`Invalid word: "${v}" after ${tagToString(kv.tag)} in expression ${val}`);
-            }
             kv.val += v;
         }
     }
