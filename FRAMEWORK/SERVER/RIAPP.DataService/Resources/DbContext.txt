@@ -6,17 +6,15 @@
 {{DBSETS_PROPS}}
 }
 
-export class DbContext extends dbMOD.DbContext
+export class DbContext extends dbMOD.DbContext<DbSets, ISvcMethods, IAssocs>
 {
-	protected _initDbSets(){
-		super._initDbSets();
-		this._dbSets = new DbSets(this);
-		var associations: dbMOD.IAssociationInfo[] ={{ASSOCIATIONS}};
-		this._initAssociations(associations);
-		var methods: dbMOD.IQueryInfo[] ={{METHODS}};
-		this._initMethods(methods);
-	}
-	get associations() { return <IAssocs>this._assoc; }
-	get dbSets() { return <DbSets>this._dbSets; }
-	get serviceMethods() { return <ISvcMethods>this._svcMethods; }
+	protected _createDbSets(): DbSets {
+        return new DbSets(this);
+    }
+	protected _createAssociations(): dbMOD.IAssociationInfo[]  {
+        return {{ASSOCIATIONS}};
+    }
+	protected _createMethods(): dbMOD.IQueryInfo[] {
+        return {{METHODS}};
+    }
 }

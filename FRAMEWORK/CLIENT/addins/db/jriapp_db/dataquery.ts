@@ -198,7 +198,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
     load(): IStatefulPromise<IQueryResult<TItem>> {
         return <IStatefulPromise<IQueryResult<TItem>>>this.dbSet.dbContext.load(this);
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -206,43 +206,73 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
         this._clearCache();
         super.dispose();
     }
-    toString() {
+    toString(): string {
         return "DataQuery";
     }
-    get serverTimezone() { return this._dbSet.dbContext.serverTimezone; }
-    get dbSet() { return this._dbSet; }
-    get dbSetName() { return this._dbSet.dbSetName; }
-    get queryName() { return this._queryInfo.methodName; }
-    get filterInfo() { return this._filterInfo; }
-    get sortInfo() { return this._sortInfo; }
-    get isIncludeTotalCount() { return this._isIncludeTotalCount && !this.isForAppend; }
-    set isIncludeTotalCount(v: boolean) { this._isIncludeTotalCount = v; }
-    get isClearPrevData() { return this._isClearPrevData && !this.isForAppend; }
-    set isClearPrevData(v: boolean) { this._isClearPrevData = v; }
-    get pageSize() { return this._pageSize; }
+    get serverTimezone(): number {
+        return this._dbSet.dbContext.serverTimezone;
+    }
+    get dbSet(): DbSet<TItem, TObj, DbContext> {
+        return this._dbSet;
+    }
+    get dbSetName(): string {
+        return this._dbSet.dbSetName;
+    }
+    get queryName(): string {
+        return this._queryInfo.methodName;
+    }
+    get filterInfo(): IFilterInfo {
+        return this._filterInfo;
+    }
+    get sortInfo(): ISortInfo {
+        return this._sortInfo;
+    }
+    get isIncludeTotalCount(): boolean {
+        return this._isIncludeTotalCount && !this.isForAppend;
+    }
+    set isIncludeTotalCount(v: boolean) {
+        this._isIncludeTotalCount = v;
+    }
+    get isClearPrevData(): boolean {
+        return this._isClearPrevData && !this.isForAppend;
+    }
+    set isClearPrevData(v: boolean) {
+        this._isClearPrevData = v;
+    }
+    get pageSize(): number {
+        return this._pageSize;
+    }
     set pageSize(v: number) {
         if (this._pageSize !== v) {
             this._pageSize = v;
         }
     }
-    get pageIndex() { return this._pageIndex; }
+    get pageIndex(): number {
+        return this._pageIndex;
+    }
     set pageIndex(v: number) {
         if (this._pageIndex !== v) {
             this._pageIndex = v;
         }
     }
-    get params() { return this._params; }
-    set params(v: any) {
+    get params(): { [name: string]: any; } {
+        return this._params;
+    }
+    set params(v: { [name: string]: any; }) {
         if (this._params !== v) {
             this._params = v;
             this._cacheInvalidated = true;
         }
     }
-    get isPagingEnabled() { return this._isPagingEnabled && !this.isForAppend; }
+    get isPagingEnabled(): boolean {
+        return this._isPagingEnabled && !this.isForAppend;
+    }
     set isPagingEnabled(v: boolean) {
         this._isPagingEnabled = v;
     }
-    get loadPageCount() { return this.isForAppend ? 1 : this._loadPageCount; }
+    get loadPageCount(): number {
+        return this.isForAppend ? 1 : this._loadPageCount;
+    }
     set loadPageCount(v: number) {
         if (v < 1) {
             v = 1;
@@ -255,14 +285,18 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
             this.objEvents.raiseProp("loadPageCount");
         }
     }
-    get isClearCacheOnEveryLoad() { return this._isClearCacheOnEveryLoad || this.isForAppend; }
+    get isClearCacheOnEveryLoad(): boolean {
+        return this._isClearCacheOnEveryLoad || this.isForAppend;
+    }
     set isClearCacheOnEveryLoad(v) {
         if (this._isClearCacheOnEveryLoad !== v) {
             this._isClearCacheOnEveryLoad = v;
             this.objEvents.raiseProp("isClearCacheOnEveryLoad");
         }
     }
-    get isForAppend() { return this._isForAppend; }
+    get isForAppend(): boolean {
+        return this._isForAppend;
+    }
     set isForAppend(v) {
         if (this._isForAppend !== v) {
             this._isForAppend = v;

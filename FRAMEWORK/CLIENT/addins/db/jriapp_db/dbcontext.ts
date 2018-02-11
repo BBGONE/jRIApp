@@ -2,7 +2,7 @@
 import { DATA_TYPE, COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
 import {
     IIndexer, IVoidPromise, IBaseObject, TEventHandler, TErrorHandler, LocaleERRS as ERRS,
-    BaseObject, Utils, WaitQueue, Lazy, IStatefulPromise, IAbortablePromise, PromiseState
+    BaseObject, Utils, WaitQueue, Lazy, IStatefulPromise, IPromise, IAbortablePromise, PromiseState
 } from "jriapp_shared";
 import { ValueUtils } from "jriapp_shared/collection/utils";
 import {
@@ -71,15 +71,16 @@ const enum DBCTX_EVENTS {
     submit_err = "submit_error"
 }
 
-export class DbContext extends BaseObject {
+export type TAssociations = IIndexer<() => Association>;
+export type TServiceMethods = IIndexer<(args: IIndexer<any>) => IPromise<any>>;
+
+export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extends TServiceMethods = any, TAssoc extends TAssociations = any> extends BaseObject {
     private _requestHeaders: IIndexer<string>;
     private _requests: IRequestPromise[];
-    protected _initState: IStatefulPromise<any>;
-    protected _dbSets: DbSets;
-    // _svcMethods: { [methodName: string]: (args: { [paramName: string]: any; }) => IStatefulPromise<any>; };
-    protected _svcMethods: any;
-    // _assoc: IIndexer<() => Association>;
-    protected _assoc: any;
+    private _initState: IStatefulPromise<any>;
+    private _dbSets: TDbSets;
+    private _svcMethods: TMethods;
+    private _assoc: TAssoc;
     private _arrAssoc: Association[];
     private _queryInf: { [queryName: string]: IQueryInfo; };
     private _serviceUrl: string;
@@ -97,8 +98,8 @@ export class DbContext extends BaseObject {
         this._requestHeaders = {};
         this._requests = [];
         this._dbSets = null;
-        this._svcMethods = {};
-        this._assoc = {};
+        this._svcMethods = <TMethods>{};
+        this._assoc = <TAssoc>{};
         this._arrAssoc = [];
         this._queryInf = {};
         this._serviceUrl = null;
@@ -129,6 +130,32 @@ export class DbContext extends BaseObject {
             self.objEvents.raiseProp("isBusy");
         });
     }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this.abortRequests();
+        this._waitQueue.dispose();
+        this._waitQueue = null;
+        this._arrAssoc.forEach((assoc) => {
+            assoc.dispose();
+        });
+        this._arrAssoc = [];
+        this._assoc = <TAssoc>{};
+        this._dbSets.dispose();
+        this._dbSets = null;
+        this._svcMethods = <TMethods>{};
+        this._queryInf = {};
+        this._serviceUrl = null;
+        this._initState = null;
+        this._isSubmiting = false;
+        this._isHasChanges = false;
+        super.dispose();
+    }
+    protected abstract _createDbSets(): TDbSets;
+    protected abstract _createAssociations(): IAssociationInfo[];
+    protected abstract _createMethods(): IQueryInfo[];
     protected _checkDestroy() {
         if (this.getIsStateDirty()) {
             ERROR.abort("dbContext destroyed");
@@ -138,6 +165,11 @@ export class DbContext extends BaseObject {
         if (this.isInitialized) {
             throw new Error(ERRS.ERR_DOMAIN_CONTEXT_INITIALIZED);
         }
+        this._dbSets = this._createDbSets();
+        const associations = this._createAssociations();
+        this._initAssociations(associations);
+        const methods = this._createMethods();
+        this._initMethods(methods);
     }
     protected _initAssociations(associations: IAssociationInfo[]) {
         const self = this;
@@ -847,36 +879,14 @@ export class DbContext extends BaseObject {
             promise.req.abort(reason);
         }
     }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        this.abortRequests();
-        this._waitQueue.dispose();
-        this._waitQueue = null;
-        this._arrAssoc.forEach((assoc) => {
-            assoc.dispose();
-        });
-        this._arrAssoc = [];
-        this._assoc = {};
-        this._dbSets.dispose();
-        this._dbSets = null;
-        this._svcMethods = {};
-        this._queryInf = {};
-        this._serviceUrl = null;
-        this._initState = null;
-        this._isSubmiting = false;
-        this._isHasChanges = false;
-        super.dispose();
-    }
+    get associations() { return this._assoc; }
+    get serviceMethods() { return this._svcMethods; }
+    get dbSets() { return this._dbSets; }
     get serviceUrl() { return this._serviceUrl; }
     get isInitialized() { return !!this._initState && this._initState.state() === PromiseState.Resolved; }
     get isBusy() { return (this.requestCount > 0) || this.isSubmiting; }
     get isSubmiting() { return this._isSubmiting; }
     get serverTimezone() { return this._serverTimezone; }
-    get dbSets() { return this._dbSets; }
-    get serviceMethods() { return this._svcMethods; }
     get isHasChanges() { return this._isHasChanges; }
     get requestCount() { return this._requests.length; }
     get requestHeaders() { return this._requestHeaders; }

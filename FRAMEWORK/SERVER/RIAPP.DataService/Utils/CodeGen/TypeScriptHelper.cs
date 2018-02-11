@@ -192,7 +192,7 @@ namespace RIAPP.DataService.Utils.CodeGen
         private string createIAssocs()
         {
             var sb = new StringBuilder(512);
-            sb.AppendLine("export interface IAssocs");
+            sb.AppendLine("export interface IAssocs extends dbMOD.TAssociations");
             sb.AppendLine("{");
             foreach (var assoc in _associations)
             {
@@ -231,7 +231,7 @@ namespace RIAPP.DataService.Utils.CodeGen
         private string createISvcMethods()
         {
             var sbISvcMeth = new StringBuilder(512);
-            sbISvcMeth.AppendLine("export interface ISvcMethods");
+            sbISvcMeth.AppendLine("export interface ISvcMethods extends dbMOD.TServiceMethods");
             sbISvcMeth.AppendLine("{");
             var sbArgs = new StringBuilder(255);
             var svcMethods = _metadata.GetInvokeMethods().OrderBy(m => m.methodName).ToList();

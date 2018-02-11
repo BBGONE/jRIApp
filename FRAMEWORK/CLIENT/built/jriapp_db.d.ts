@@ -122,7 +122,9 @@ declare module "jriapp_db/dataquery" {
         isClearPrevData: boolean;
         pageSize: number;
         pageIndex: number;
-        params: any;
+        params: {
+            [name: string]: any;
+        };
         isPagingEnabled: boolean;
         loadPageCount: number;
         isClearCacheOnEveryLoad: boolean;
@@ -385,7 +387,7 @@ declare module "jriapp_db/error" {
 }
 declare module "jriapp_db/dbcontext" {
     import { COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
-    import { IIndexer, IVoidPromise, IBaseObject, TEventHandler, TErrorHandler, BaseObject, IStatefulPromise, IAbortablePromise } from "jriapp_shared";
+    import { IIndexer, IVoidPromise, IBaseObject, TEventHandler, TErrorHandler, BaseObject, IStatefulPromise, IPromise, IAbortablePromise } from "jriapp_shared";
     import { IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IInvokeResponse, IQueryResponse, IChangeSet } from "jriapp_db/int";
     import { DATA_OPER } from "jriapp_db/const";
     import { TDbSet } from "jriapp_db/dbset";
@@ -399,13 +401,15 @@ declare module "jriapp_db/dbcontext" {
         onDbSetHasChangesChanged(eSet: TDbSet): void;
         load(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
     }
-    export class DbContext extends BaseObject {
+    export type TAssociations = IIndexer<() => Association>;
+    export type TServiceMethods = IIndexer<(args: IIndexer<any>) => IPromise<any>>;
+    export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extends TServiceMethods = any, TAssoc extends TAssociations = any> extends BaseObject {
         private _requestHeaders;
         private _requests;
-        protected _initState: IStatefulPromise<any>;
-        protected _dbSets: DbSets;
-        protected _svcMethods: any;
-        protected _assoc: any;
+        private _initState;
+        private _dbSets;
+        private _svcMethods;
+        private _assoc;
         private _arrAssoc;
         private _queryInf;
         private _serviceUrl;
@@ -416,6 +420,10 @@ declare module "jriapp_db/dbcontext" {
         private _waitQueue;
         private _internal;
         constructor();
+        dispose(): void;
+        protected abstract _createDbSets(): TDbSets;
+        protected abstract _createAssociations(): IAssociationInfo[];
+        protected abstract _createMethods(): IQueryInfo[];
         protected _checkDestroy(): void;
         protected _initDbSets(): void;
         protected _initAssociations(associations: IAssociationInfo[]): void;
@@ -495,14 +503,14 @@ declare module "jriapp_db/dbcontext" {
         acceptChanges(): void;
         rejectChanges(): void;
         abortRequests(reason?: string, operType?: DATA_OPER): void;
-        dispose(): void;
+        readonly associations: TAssoc;
+        readonly serviceMethods: TMethods;
+        readonly dbSets: TDbSets;
         readonly serviceUrl: string;
         readonly isInitialized: boolean;
         readonly isBusy: boolean;
         readonly isSubmiting: boolean;
         readonly serverTimezone: number;
-        readonly dbSets: DbSets;
-        readonly serviceMethods: any;
         readonly isHasChanges: boolean;
         readonly requestCount: number;
         requestHeaders: IIndexer<string>;
