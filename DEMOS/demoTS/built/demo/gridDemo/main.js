@@ -2531,6 +2531,9 @@ define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common",
         DemoApplication.prototype.onStartUp = function () {
             var self = this, options = self.options;
             this._dbContext = new DEMODB.DbContext();
+            this._dbContext.addOnDbSetCreating(function (s, a) {
+                console.log("DbSet: %s is creating", a.name);
+            });
             this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
             this._dbContext.dbSets.Product.defineIsActiveField(function (item) {
                 return !item.SellEndDate;

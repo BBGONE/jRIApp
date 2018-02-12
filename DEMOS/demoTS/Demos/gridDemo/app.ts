@@ -46,6 +46,9 @@ export class DemoApplication extends RIAPP.Application {
     onStartUp() {
         const self = this, options: IMainOptions = self.options;
         this._dbContext = new DEMODB.DbContext();
+        this._dbContext.addOnDbSetCreating((s, a) => {
+            console.log("DbSet: %s is creating", a.name);
+        });
         this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
         this._dbContext.dbSets.Product.defineIsActiveField(function (item) {
             return !item.SellEndDate;

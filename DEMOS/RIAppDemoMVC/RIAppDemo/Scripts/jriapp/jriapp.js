@@ -254,6 +254,27 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
         return true;
     }
+    function getTag(val, start, end) {
+        var token = trim(val.substring(start, end));
+        var tag = "";
+        switch (token) {
+            case "eval":
+                tag = "1";
+                break;
+            case "get":
+                tag = "2";
+                break;
+            case "inject":
+                tag = "4";
+                break;
+            case "date":
+                tag = "3";
+                break;
+            default:
+                throw new Error("Unknown token: \"" + token + "\" in expression " + val);
+        }
+        return tag;
+    }
     function getKeyVals(val) {
         var i, ch, literal, parts = [], kv = { tag: null, key: "", val: "" }, isKey = true, start = -1;
         var len = val.length;
@@ -275,24 +296,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         break;
                     case "(":
                         if (!isKey && start < i) {
-                            var token = trim(val.substring(start, i));
-                            var tag = "";
-                            switch (token) {
-                                case "eval":
-                                    tag = "1";
-                                    break;
-                                case "get":
-                                    tag = "2";
-                                    break;
-                                case "inject":
-                                    tag = "4";
-                                    break;
-                                case "date":
-                                    tag = "3";
-                                    break;
-                                default:
-                                    throw new Error("Unknown token: \"" + token + "\" in expression " + val);
-                            }
+                            var tag = getTag(val, start, i);
                             var braceLen_1 = getBraceLen(val, i, 0);
                             setKeyVal(kv, i + 1, i + braceLen_1 - 1, val, isKey, false);
                             kv.tag = tag;
@@ -4569,6 +4573,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.13.1";
+    exports.VERSION = "2.13.2";
     bootstrap_8.Bootstrap._initFramework();
 });

@@ -267,10 +267,14 @@ declare module "jriapp_db/dbset" {
     export type TDbSet = DbSet<IEntityItem, any, DbContext>;
 }
 declare module "jriapp_db/dbsets" {
-    import { BaseObject } from "jriapp_shared";
+    import { BaseObject, TEventHandler, IBaseObject } from "jriapp_shared";
     import { IEntityItem } from "jriapp_db/int";
     import { DbContext } from "jriapp_db/dbcontext";
     import { IDbSetConstructor, TDbSet } from "jriapp_db/dbset";
+    export type TDbSetCreatingArgs = {
+        name: string;
+        dbSetType: IDbSetConstructor<IEntityItem, any>;
+    };
     export class DbSets extends BaseObject {
         private _dbContext;
         private _dbSets;
@@ -278,6 +282,8 @@ declare module "jriapp_db/dbsets" {
         constructor(dbContext: DbContext);
         protected _dbSetCreated(dbSet: TDbSet): void;
         protected _createDbSet(name: string, dbSetType: IDbSetConstructor<IEntityItem, any>): void;
+        addOnDbSetCreating(fn: TEventHandler<this, TDbSetCreatingArgs>, nmspace?: string, context?: IBaseObject): void;
+        offOnDbSetCreating(nmspace?: string): void;
         readonly dbSetNames: string[];
         readonly arrDbSets: TDbSet[];
         findDbSet(name: string): TDbSet;
@@ -391,7 +397,7 @@ declare module "jriapp_db/dbcontext" {
     import { IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IInvokeResponse, IQueryResponse, IChangeSet } from "jriapp_db/int";
     import { DATA_OPER } from "jriapp_db/const";
     import { TDbSet } from "jriapp_db/dbset";
-    import { DbSets } from "jriapp_db/dbsets";
+    import { DbSets, TDbSetCreatingArgs } from "jriapp_db/dbsets";
     import { Association } from "jriapp_db/association";
     import { TDataQuery } from "jriapp_db/dataquery";
     export interface IInternalDbxtMethods {
@@ -403,7 +409,11 @@ declare module "jriapp_db/dbcontext" {
     }
     export type TAssociations = IIndexer<() => Association>;
     export type TServiceMethods = IIndexer<(args: IIndexer<any>) => IPromise<any>>;
-    export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extends TServiceMethods = any, TAssoc extends TAssociations = any> extends BaseObject {
+    export type TSubmitErrArgs = {
+        error: any;
+        isHandled: boolean;
+    };
+    export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extends TServiceMethods = TServiceMethods, TAssoc extends TAssociations = TAssociations> extends BaseObject {
         private _requestHeaders;
         private _requests;
         private _initState;
@@ -490,11 +500,10 @@ declare module "jriapp_db/dbcontext" {
         offOnDisposed(nmspace?: string): void;
         addOnError(handler: TErrorHandler<DbContext>, nmspace?: string, context?: object): void;
         offOnError(nmspace?: string): void;
-        addOnSubmitError(fn: TEventHandler<DbContext, {
-            error: any;
-            isHandled: boolean;
-        }>, nmspace?: string, context?: IBaseObject): void;
+        addOnSubmitError(fn: TEventHandler<DbContext, TSubmitErrArgs>, nmspace?: string, context?: IBaseObject): void;
         offOnSubmitError(nmspace?: string): void;
+        addOnDbSetCreating(fn: TEventHandler<this, TDbSetCreatingArgs>, nmspace?: string, context?: IBaseObject): void;
+        offOnDbSetCreating(nmspace?: string): void;
         getDbSet(name: string): TDbSet;
         findDbSet(name: string): TDbSet;
         getAssociation(name: string): Association;
