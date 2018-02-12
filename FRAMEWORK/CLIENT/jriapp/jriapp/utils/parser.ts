@@ -170,6 +170,28 @@ function checkVal(kv: IKeyVal): boolean {
     return true;
 }
 
+function getTag(val: string, start: number, end: number): TAG {
+    const token = trim(val.substring(start, end));
+    let tag = TAG.NONE;
+    switch (token) {
+        case TOKEN.EVAL:
+            tag = TAG.EVAL;
+            break;
+        case TOKEN.GET:
+            tag = TAG.GET;
+            break;
+        case TOKEN.INJECT:
+            tag = TAG.INJECT;
+            break;
+        case TOKEN.DATE:
+            tag = TAG.DATE;
+            break;
+        default:
+            throw new Error(`Unknown token: "${token}" in expression ${val}`);
+    }
+    return tag;
+}
+
 // extract key - value pairs
 function getKeyVals(val: string): IKeyVal[] {
     let i: number, ch: string, literal: string, parts: IKeyVal[] = [],
@@ -197,24 +219,7 @@ function getKeyVals(val: string): IKeyVal[] {
                 case "(":
                     // is this a content inside eval( ) or get() or date() or inject?
                     if (!isKey && start < i) {
-                        const token = trim(val.substring(start, i));
-                        let tag: TAG = TAG.NONE;
-                        switch (token) {
-                            case TOKEN.EVAL:
-                                tag = TAG.EVAL;
-                                break;
-                            case TOKEN.GET:
-                                tag = TAG.GET;
-                                break;
-                            case TOKEN.INJECT:
-                                tag = TAG.INJECT;
-                                break;
-                            case TOKEN.DATE:
-                                tag = TAG.DATE;
-                                break;
-                            default:
-                                throw new Error(`Unknown token: "${token}" in expression ${val}`);
-                        }
+                        const tag: TAG = getTag(val, start, i);
                         const braceLen = getBraceLen(val, i, BRACKETS.ROUND);
                         setKeyVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
                         kv.tag = tag;

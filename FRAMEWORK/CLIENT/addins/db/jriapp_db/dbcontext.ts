@@ -12,7 +12,7 @@ import {
 } from "./int";
 import { DATA_OPER, REFRESH_MODE } from "./const";
 import { TDbSet } from "./dbset";
-import { DbSets } from "./dbsets";
+import { DbSets, TDbSetCreatingArgs } from "./dbsets";
 import { Association } from "./association";
 import { TDataQuery } from "./dataquery";
 import {
@@ -68,13 +68,15 @@ interface IRequestPromise {
 }
 
 const enum DBCTX_EVENTS {
-    submit_err = "submit_error"
+    SUBMIT_ERROR = "submit_error",
+    DBSET_CREATING = "dbset_creating"
 }
 
 export type TAssociations = IIndexer<() => Association>;
 export type TServiceMethods = IIndexer<(args: IIndexer<any>) => IPromise<any>>;
+export type TSubmitErrArgs = { error: any, isHandled: boolean };
 
-export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extends TServiceMethods = any, TAssoc extends TAssociations = any> extends BaseObject {
+export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extends TServiceMethods = TServiceMethods, TAssoc extends TAssociations = TAssociations> extends BaseObject {
     private _requestHeaders: IIndexer<string>;
     private _requests: IRequestPromise[];
     private _initState: IStatefulPromise<any>;
@@ -166,6 +168,9 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
             throw new Error(ERRS.ERR_DOMAIN_CONTEXT_INITIALIZED);
         }
         this._dbSets = this._createDbSets();
+        this._dbSets.addOnDbSetCreating((s, args) => {
+            this.objEvents.raise(DBCTX_EVENTS.DBSET_CREATING, args);
+        });
         const associations = this._createAssociations();
         this._initAssociations(associations);
         const methods = this._createMethods();
@@ -423,8 +428,8 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
         if (ERROR.checkIsDummy(error)) {
             return;
         }
-        const args = { error: error, isHandled: false };
-        this.objEvents.raise(DBCTX_EVENTS.submit_err, args);
+        const args: TSubmitErrArgs = { error: error, isHandled: false };
+        this.objEvents.raise(DBCTX_EVENTS.SUBMIT_ERROR, args);
         if (!args.isHandled) {
             //this.rejectChanges();
             this._onDataOperError(error, DATA_OPER.Submit);
@@ -778,11 +783,17 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
     offOnError(nmspace?: string): void {
         this.objEvents.offOnError(nmspace);
     }
-    addOnSubmitError(fn: TEventHandler<DbContext, { error: any; isHandled: boolean; }>, nmspace?: string, context?: IBaseObject): void {
-        this.objEvents.on(DBCTX_EVENTS.submit_err, fn, nmspace, context);
+    addOnSubmitError(fn: TEventHandler<DbContext, TSubmitErrArgs>, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.on(DBCTX_EVENTS.SUBMIT_ERROR, fn, nmspace, context);
     }
     offOnSubmitError(nmspace?: string): void {
-        this.objEvents.off(DBCTX_EVENTS.submit_err, nmspace);
+        this.objEvents.off(DBCTX_EVENTS.SUBMIT_ERROR, nmspace);
+    }
+    addOnDbSetCreating(fn: TEventHandler<this, TDbSetCreatingArgs>, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.on(DBCTX_EVENTS.DBSET_CREATING, fn, nmspace, context);
+    }
+    offOnDbSetCreating(nmspace?: string): void {
+        this.objEvents.off(DBCTX_EVENTS.DBSET_CREATING, nmspace);
     }
     getDbSet(name: string): TDbSet {
         return this._dbSets.getDbSet(name);

@@ -1516,6 +1516,10 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (re
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_4.Utils, format = utils.str.format;
+    var DBSETS_EVENTS;
+    (function (DBSETS_EVENTS) {
+        DBSETS_EVENTS["DBSET_CREATING"] = "dbset_creating";
+    })(DBSETS_EVENTS || (DBSETS_EVENTS = {}));
     var DbSets = (function (_super) {
         __extends(DbSets, _super);
         function DbSets(dbContext) {
@@ -1526,10 +1530,10 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (re
             return _this;
         }
         DbSets.prototype._dbSetCreated = function (dbSet) {
-            var self = this;
+            var _this = this;
             this._arrDbSets.push(dbSet);
             dbSet.objEvents.onProp("isHasChanges", function (sender, args) {
-                self._dbContext._getInternal().onDbSetHasChangesChanged(sender);
+                _this._dbContext._getInternal().onDbSetHasChangesChanged(sender);
             });
         };
         DbSets.prototype._createDbSet = function (name, dbSetType) {
@@ -1538,10 +1542,18 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (re
                 throw new Error(utils.str.format("DbSet: {0} is already created", name));
             }
             self._dbSets[name] = new jriapp_shared_4.Lazy(function () {
-                var res = new dbSetType(dbContext);
+                var args = { name: name, dbSetType: dbSetType };
+                self.objEvents.raise("dbset_creating", args);
+                var res = new args.dbSetType(dbContext);
                 self._dbSetCreated(res);
                 return res;
             });
+        };
+        DbSets.prototype.addOnDbSetCreating = function (fn, nmspace, context) {
+            this.objEvents.on("dbset_creating", fn, nmspace, context);
+        };
+        DbSets.prototype.offOnDbSetCreating = function (nmspace) {
+            this.objEvents.off("dbset_creating", nmspace);
         };
         Object.defineProperty(DbSets.prototype, "dbSetNames", {
             get: function () {
@@ -2365,7 +2377,8 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
     }
     var DBCTX_EVENTS;
     (function (DBCTX_EVENTS) {
-        DBCTX_EVENTS["submit_err"] = "submit_error";
+        DBCTX_EVENTS["SUBMIT_ERROR"] = "submit_error";
+        DBCTX_EVENTS["DBSET_CREATING"] = "dbset_creating";
     })(DBCTX_EVENTS || (DBCTX_EVENTS = {}));
     var DbContext = (function (_super) {
         __extends(DbContext, _super);
@@ -2437,10 +2450,14 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }
         };
         DbContext.prototype._initDbSets = function () {
+            var _this = this;
             if (this.isInitialized) {
                 throw new Error(jriapp_shared_7.LocaleERRS.ERR_DOMAIN_CONTEXT_INITIALIZED);
             }
             this._dbSets = this._createDbSets();
+            this._dbSets.addOnDbSetCreating(function (s, args) {
+                _this.objEvents.raise("dbset_creating", args);
+            });
             var associations = this._createAssociations();
             this._initAssociations(associations);
             var methods = this._createMethods();
@@ -3007,6 +3024,12 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype.offOnSubmitError = function (nmspace) {
             this.objEvents.off("submit_error", nmspace);
+        };
+        DbContext.prototype.addOnDbSetCreating = function (fn, nmspace, context) {
+            this.objEvents.on("dbset_creating", fn, nmspace, context);
+        };
+        DbContext.prototype.offOnDbSetCreating = function (nmspace) {
+            this.objEvents.off("dbset_creating", nmspace);
         };
         DbContext.prototype.getDbSet = function (name) {
             return this._dbSets.getDbSet(name);
