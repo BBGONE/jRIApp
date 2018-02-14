@@ -746,7 +746,11 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
     protected _onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS): void {
         super._onItemStatusChanged(item, oldStatus);
         if (item._aspect.isDeleted && this.isSubmitOnDelete) {
-            this.dbContext.submitChanges();
+            this.dbContext.submitChanges().catch((err) => {
+                utils.queue.enque(() => {
+                    this.dbContext.rejectChanges();
+                });
+            });
         }
     }
     protected _onRemoved(item: TItem, pos: number): void {

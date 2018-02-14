@@ -1200,9 +1200,14 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
         };
         DbSet.prototype._onItemStatusChanged = function (item, oldStatus) {
+            var _this = this;
             _super.prototype._onItemStatusChanged.call(this, item, oldStatus);
             if (item._aspect.isDeleted && this.isSubmitOnDelete) {
-                this.dbContext.submitChanges();
+                this.dbContext.submitChanges().catch(function (err) {
+                    utils.queue.enque(function () {
+                        _this.dbContext.rejectChanges();
+                    });
+                });
             }
         };
         DbSet.prototype._onRemoved = function (item, pos) {
