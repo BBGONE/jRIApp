@@ -184,11 +184,11 @@ export interface IDataBindingService extends IDisposable {
     bindTemplate(templateEl: Element, dataContext: any): IPromise<ILifeTimeScope>;
     bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
     setUpBindings(): IVoidPromise;
-    bind(opts: IBindingOptions): IBinding;
+    bind(opts: TBindingOptions): IBinding;
 }
 
 // --Binding interfaces
-export interface IBindingOptions {
+export type TBindingOptions = {
     targetPath: string;
     sourcePath?: string;
     target?: IBaseObject;
@@ -197,13 +197,13 @@ export interface IBindingOptions {
     mode?: BINDING_MODE;
     converter?: IConverter;
     param?: any;
-    isEval?: boolean;
-}
+    isBind?: boolean;
+};
 
 export type TBindingMode = "OneTime" | "OneWay" | "TwoWay" | "BackWay";
 
-// the result of parsing a data binding expression -typically all properties are strings here
-export interface IBindingInfo {
+// the result of parsing a data binding expression - typically all properties are strings here
+export type TBindingInfo = {
     targetPath: string;
     sourcePath?: string;
     to?: string;
@@ -212,8 +212,8 @@ export interface IBindingInfo {
     mode?: TBindingMode;
     converter?: any;
     param?: any;
-    isEval?: boolean;
-}
+    isBind?: boolean;
+};
 
 // --Content interfaces
 export interface IExternallyCachable {
@@ -317,7 +317,7 @@ export interface IApplication extends IErrorHandler, IExports, IBaseObject {
         url?: string;
         names: string[];
    }): void;
-    bind(opts: IBindingOptions): IBinding;
+    bind(opts: TBindingOptions): IBinding;
     startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
     readonly uniqueID: string;
     readonly appName: string;

@@ -24,8 +24,9 @@ export class DataOperationError extends BaseError {
         this._origError = originalError;
         this._operationName = operationName;
    }
-    get operationName() { return this._operationName; }
-
+    get operationName() {
+        return this._operationName;
+    }
     get origError() {
         return this._origError;
    }

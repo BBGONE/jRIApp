@@ -55,6 +55,14 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function 
             _this._totalCount = 0;
             return _this;
         }
+        DataCache.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            this.clear();
+            _super.prototype.dispose.call(this);
+        };
         DataCache.prototype._getPrevPageIndex = function (currentPageIndex) {
             var pageIndex = -1;
             forEachProp(this._pages, function (index, page) {
@@ -171,14 +179,6 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function 
             }
             return this._query.dbSet.createEntityFromObj(kv.val, kv.key);
         };
-        DataCache.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            this.clear();
-            _super.prototype.dispose.call(this);
-        };
         DataCache.prototype.toString = function () {
             return "DataCache";
         };
@@ -202,17 +202,23 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function 
             configurable: true
         });
         Object.defineProperty(DataCache.prototype, "pageSize", {
-            get: function () { return this._query.pageSize; },
+            get: function () {
+                return this._query.pageSize;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DataCache.prototype, "loadPageCount", {
-            get: function () { return this._query.loadPageCount; },
+            get: function () {
+                return this._query.loadPageCount;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DataCache.prototype, "totalCount", {
-            get: function () { return this._totalCount; },
+            get: function () {
+                return this._totalCount;
+            },
             set: function (v) {
                 if (isNt(v)) {
                     v = 0;
@@ -280,6 +286,14 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             };
             return _this;
         }
+        DataQuery.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            this._clearCache();
+            _super.prototype.dispose.call(this);
+        };
         DataQuery.prototype._addSort = function (fieldName, sortOrder) {
             var ord = !isNt(sortOrder) ? sortOrder : 0;
             var sortItem = { fieldName: fieldName, sortOrder: ord };
@@ -405,14 +419,6 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DataQuery.prototype.load = function () {
             return this.dbSet.dbContext.load(this);
-        };
-        DataQuery.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            this._clearCache();
-            _super.prototype.dispose.call(this);
         };
         DataQuery.prototype.toString = function () {
             return "DataQuery";
@@ -572,7 +578,9 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "isCacheValid", {
-            get: function () { return !!this._dataCache && !this._cacheInvalidated && !this.isForAppend; },
+            get: function () {
+                return !!this._dataCache && !this._cacheInvalidated && !this.isForAppend;
+            },
             enumerable: true,
             configurable: true
         });
@@ -1498,7 +1506,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             configurable: true
         });
         Object.defineProperty(DbSet.prototype, "isSubmitOnDelete", {
-            get: function () { return this._isSubmitOnDelete; },
+            get: function () {
+                return this._isSubmitOnDelete;
+            },
             set: function (v) {
                 if (this._isSubmitOnDelete !== v) {
                     this._isSubmitOnDelete = !!v;
@@ -1509,7 +1519,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             configurable: true
         });
         Object.defineProperty(DbSet.prototype, "isBusy", {
-            get: function () { return this.isLoading || this.dbContext.isSubmiting; },
+            get: function () {
+                return this.isLoading || this.dbContext.isSubmiting;
+            },
             enumerable: true,
             configurable: true
         });
@@ -1534,6 +1546,19 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (re
             _this._dbSets = {};
             return _this;
         }
+        DbSets.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            this._arrDbSets.forEach(function (dbSet) {
+                dbSet.dispose();
+            });
+            this._arrDbSets = [];
+            this._dbSets = null;
+            this._dbContext = null;
+            _super.prototype.dispose.call(this);
+        };
         DbSets.prototype._dbSetCreated = function (dbSet) {
             var _this = this;
             this._arrDbSets.push(dbSet);
@@ -1588,19 +1613,6 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (re
             }
             return dbSet;
         };
-        DbSets.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            this._arrDbSets.forEach(function (dbSet) {
-                dbSet.dispose();
-            });
-            this._arrDbSets = [];
-            this._dbSets = null;
-            this._dbContext = null;
-            _super.prototype.dispose.call(this);
-        };
         return DbSets;
     }(jriapp_shared_4.BaseObject));
     exports.DbSets = DbSets;
@@ -1654,6 +1666,22 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             self._notifyChildrenChanged(changed2);
             return _this;
         }
+        Association.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            this._debounce.dispose();
+            this._debounce = null;
+            this._changed = {};
+            this._unbindParentDS();
+            this._unbindChildDS();
+            this._parentMap = null;
+            this._childMap = null;
+            this._parentFldInfos = null;
+            this._childFldInfos = null;
+            _super.prototype.dispose.call(this);
+        };
         Association.prototype.handleError = function (error, source) {
             return (!this._dbContext) ? _super.prototype.handleError.call(this, error, source) : this._dbContext.handleError(error, source);
         };
@@ -2194,62 +2222,62 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }
             return (!obj) ? null : obj;
         };
-        Association.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            this._debounce.dispose();
-            this._debounce = null;
-            this._changed = {};
-            this._unbindParentDS();
-            this._unbindChildDS();
-            this._parentMap = null;
-            this._childMap = null;
-            this._parentFldInfos = null;
-            this._childFldInfos = null;
-            _super.prototype.dispose.call(this);
-        };
         Association.prototype.toString = function () {
             return this._name;
         };
         Object.defineProperty(Association.prototype, "name", {
-            get: function () { return this._name; },
+            get: function () {
+                return this._name;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Association.prototype, "parentToChildrenName", {
-            get: function () { return this._parentToChildrenName; },
+            get: function () {
+                return this._parentToChildrenName;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Association.prototype, "childToParentName", {
-            get: function () { return this._childToParentName; },
+            get: function () {
+                return this._childToParentName;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Association.prototype, "parentDS", {
-            get: function () { return this._parentDS; },
+            get: function () {
+                return this._parentDS;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Association.prototype, "childDS", {
-            get: function () { return this._childDS; },
+            get: function () {
+                return this._childDS;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Association.prototype, "parentFldInfos", {
-            get: function () { return this._parentFldInfos; },
+            get: function () {
+                return this._parentFldInfos;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Association.prototype, "childFldInfos", {
-            get: function () { return this._childFldInfos; },
+            get: function () {
+                return this._childFldInfos;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Association.prototype, "onDeleteAction", {
-            get: function () { return this._onDeleteAction; },
+            get: function () {
+                return this._onDeleteAction;
+            },
             enumerable: true,
             configurable: true
         });
@@ -2281,7 +2309,9 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
             return _this;
         }
         Object.defineProperty(DataOperationError.prototype, "operationName", {
-            get: function () { return this._operationName; },
+            get: function () {
+                return this._operationName;
+            },
             enumerable: true,
             configurable: true
         });
@@ -2449,9 +2479,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             this._isHasChanges = false;
             _super.prototype.dispose.call(this);
         };
-        DbContext.prototype._checkDestroy = function () {
+        DbContext.prototype._checkDisposed = function () {
             if (this.getIsStateDirty()) {
-                ERROR.abort("dbContext destroyed");
+                ERROR.abort("dbContext is disposed");
             }
         };
         DbContext.prototype._initDbSets = function () {
@@ -2518,7 +2548,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var self = this;
             this._svcMethods[methodInfo.methodName] = function (args) {
                 return self._invokeMethod(methodInfo, args).then(function (res) {
-                    self._checkDestroy();
+                    self._checkDisposed();
                     if (!res) {
                         throw new Error(format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
                     }
@@ -2593,11 +2623,11 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var _this = this;
             var self = this;
             return delay(function () {
-                self._checkDestroy();
+                self._checkDisposed();
                 var data = self._getMethodParams(methodInfo, args);
                 return JSON.stringify(data);
             }).then(function (postData) {
-                self._checkDestroy();
+                self._checkDisposed();
                 var invokeUrl = _this._getUrl("invoke"), reqPromise = http.postAjax(invokeUrl, postData, self.requestHeaders);
                 self._addRequestPromise(reqPromise, 3);
                 return reqPromise;
@@ -2608,7 +2638,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._loadFromCache = function (query, reason) {
             var self = this;
             return delay(function () {
-                self._checkDestroy();
+                self._checkDisposed();
                 var dbSet = query.dbSet;
                 return dbSet._getInternal().fillFromCache({ reason: reason, query: query });
             });
@@ -2626,7 +2656,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._onLoaded = function (response, query, reason) {
             var self = this;
             return delay(function () {
-                self._checkDestroy();
+                self._checkDisposed();
                 if (isNt(response)) {
                     throw new Error(format(jriapp_shared_7.LocaleERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
                 }
@@ -2743,7 +2773,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var self = this;
             context.fn_onStart();
             delay(function () {
-                self._checkDestroy();
+                self._checkDisposed();
                 var oldQuery = context.dbSet.query, loadPageCount = context.loadPageCount, isPagingEnabled = context.isPagingEnabled;
                 var range, pageCount = 1, pageIndex = context.pageIndex;
                 context.query.pageIndex = pageIndex;
@@ -2775,11 +2805,11 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 return reqPromise.then(function (res) {
                     return JSON.parse(res);
                 }).then(function (response) {
-                    self._checkDestroy();
+                    self._checkDisposed();
                     return self._onLoaded(response, context.query, context.reason);
                 });
             }).then(function (loadRes) {
-                self._checkDestroy();
+                self._checkDisposed();
                 context.fn_onOK(loadRes);
             }).catch(function (err) {
                 context.fn_onErr(err);
@@ -2806,7 +2836,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var self = this;
             args.fn_onStart();
             delay(function () {
-                self._checkDestroy();
+                self._checkDisposed();
                 var request = {
                     dbSetName: args.item._aspect.dbSetName,
                     rowInfo: args.item._aspect._getRowInfo(),
@@ -2819,7 +2849,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }).then(function (res) {
                 return JSON.parse(res);
             }).then(function (res) {
-                self._checkDestroy();
+                self._checkDisposed();
                 args.fn_onOK(res);
             }).catch(function (err) {
                 args.fn_onErr(err);
@@ -2859,7 +2889,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             };
             context.dbSet.waitForNotBusy(function () {
                 try {
-                    self._checkDestroy();
+                    self._checkDisposed();
                     self._loadRefresh(context);
                 }
                 catch (err) {
@@ -2933,7 +2963,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }
             context.dbSet.waitForNotBusy(function () {
                 try {
-                    self._checkDestroy();
+                    self._checkDisposed();
                     self._loadInternal(context);
                 }
                 catch (err) {
@@ -2946,7 +2976,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var self = this, no_changes = "NO_CHANGES";
             args.fn_onStart();
             delay(function () {
-                self._checkDestroy();
+                self._checkDisposed();
                 var res = self._getChanges();
                 if (res.dbSets.length === 0) {
                     ERROR.abort(no_changes);
@@ -2959,10 +2989,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }).then(function (res) {
                 return JSON.parse(res);
             }).then(function (res) {
-                self._checkDestroy();
+                self._checkDisposed();
                 self._dataSaved(res);
             }).then(function () {
-                self._checkDestroy();
+                self._checkDisposed();
                 args.fn_onOk();
             }).catch(function (er) {
                 if (!self.getIsStateDirty() && ERROR.checkIsAbort(er) && er.reason === no_changes) {
@@ -3003,7 +3033,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     });
                 }
             }).then(function (res) {
-                self._checkDestroy();
+                self._checkDisposed();
                 self._updatePermissions(res);
                 self.objEvents.raiseProp("isInitialized");
             }).catch(function (err) {
@@ -3091,7 +3121,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             utils.queue.enque(function () {
                 self.waitForNotBusy(function () {
                     try {
-                        self._checkDestroy();
+                        self._checkDisposed();
                         self._submitChanges(context);
                     }
                     catch (err) {
@@ -3127,58 +3157,82 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }
         };
         Object.defineProperty(DbContext.prototype, "associations", {
-            get: function () { return this._assoc; },
+            get: function () {
+                return this._assoc;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "serviceMethods", {
-            get: function () { return this._svcMethods; },
+            get: function () {
+                return this._svcMethods;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "dbSets", {
-            get: function () { return this._dbSets; },
+            get: function () {
+                return this._dbSets;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "serviceUrl", {
-            get: function () { return this._serviceUrl; },
+            get: function () {
+                return this._serviceUrl;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "isInitialized", {
-            get: function () { return !!this._initState && this._initState.state() === 2; },
+            get: function () {
+                return !!this._initState && this._initState.state() === 2;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "isBusy", {
-            get: function () { return (this.requestCount > 0) || this.isSubmiting; },
+            get: function () {
+                return (this.requestCount > 0) || this.isSubmiting;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "isSubmiting", {
-            get: function () { return this._isSubmiting; },
+            get: function () {
+                return this._isSubmiting;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "serverTimezone", {
-            get: function () { return this._serverTimezone; },
+            get: function () {
+                return this._serverTimezone;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "isHasChanges", {
-            get: function () { return this._isHasChanges; },
+            get: function () {
+                return this._isHasChanges;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "requestCount", {
-            get: function () { return this._requests.length; },
+            get: function () {
+                return this._requests.length;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "requestHeaders", {
-            get: function () { return this._requestHeaders; },
-            set: function (v) { this._requestHeaders = v; },
+            get: function () {
+                return this._requestHeaders;
+            },
+            set: function (v) {
+                this._requestHeaders = v;
+            },
             enumerable: true,
             configurable: true
         });
@@ -3804,6 +3858,18 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             _this._bindDS();
             return _this;
         }
+        DataView.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            this._refreshDebounce.dispose();
+            this._unbindDS();
+            this._dataSource = null;
+            this._fn_filter = null;
+            this._fn_sort = null;
+            _super.prototype.dispose.call(this);
+        };
         DataView.prototype._isOwnsItems = function () {
             return false;
         };
@@ -4143,18 +4209,6 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
         DataView.prototype.syncRefresh = function () {
             this._refreshSync(3);
         };
-        DataView.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            this._refreshDebounce.dispose();
-            this._unbindDS();
-            this._dataSource = null;
-            this._fn_filter = null;
-            this._fn_sort = null;
-            _super.prototype.dispose.call(this);
-        };
         Object.defineProperty(DataView.prototype, "errors", {
             get: function () {
                 return this._dataSource.errors;
@@ -4316,7 +4370,9 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             configurable: true
         });
         Object.defineProperty(ChildDataView.prototype, "association", {
-            get: function () { return this._association; },
+            get: function () {
+                return this._association;
+            },
             enumerable: true,
             configurable: true
         });

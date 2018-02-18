@@ -82,10 +82,26 @@ export class Association extends BaseObject {
         self._notifyParentChanged(changed1);
         self._notifyChildrenChanged(changed2);
     }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this._debounce.dispose();
+        this._debounce = null;
+        this._changed = {};
+        this._unbindParentDS();
+        this._unbindChildDS();
+        this._parentMap = null;
+        this._childMap = null;
+        this._parentFldInfos = null;
+        this._childFldInfos = null;
+        super.dispose();
+    }
     public handleError(error: any, source: any): boolean {
         return (!this._dbContext) ? super.handleError(error, source) : this._dbContext.handleError(error, source);
     }
-    protected _bindParentDS() {
+    protected _bindParentDS(): void {
         const self = this, ds = this._parentDS;
         if (!ds) {
             return;
@@ -108,7 +124,7 @@ export class Association extends BaseObject {
             self._onParentCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
         }, self._objId, null, TPriority.High);
     }
-    protected _bindChildDS() {
+    protected _bindChildDS(): void {
         const self = this, ds = this._childDS;
         if (!ds) {
             return;
@@ -129,7 +145,7 @@ export class Association extends BaseObject {
             self._onChildCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
         }, self._objId, null, TPriority.High);
     }
-    protected _onParentCollChanged(args: ICollChangedArgs<IEntityItem>) {
+    protected _onParentCollChanged(args: ICollChangedArgs<IEntityItem>): void {
         const self = this, changedKeys: any = {};
         let item: IEntityItem, changed: string[] = [];
         switch (args.changeType) {
@@ -164,7 +180,7 @@ export class Association extends BaseObject {
         }
         self._notifyParentChanged(changed);
     }
-    protected _onParentEdit(item: IEntityItem, isBegin: boolean, isCanceled: boolean) {
+    protected _onParentEdit(item: IEntityItem, isBegin: boolean, isCanceled: boolean): void {
         const self = this;
         if (isBegin) {
             self._storeParentFKey(item);
@@ -176,7 +192,7 @@ export class Association extends BaseObject {
             }
         }
     }
-    protected _onParentCommitChanges(item: IEntityItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS) {
+    protected _onParentCommitChanges(item: IEntityItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void {
         const self = this;
         let fkey: string;
         if (isBegin) {
@@ -199,13 +215,13 @@ export class Association extends BaseObject {
             self._checkParentFKey(item);
         }
     }
-    protected _storeParentFKey(item: IEntityItem) {
+    protected _storeParentFKey(item: IEntityItem): void {
         const self = this, fkey = self.getParentFKey(item);
         if (fkey !== null && !!self._parentMap[fkey]) {
             self._saveParentFKey = fkey;
         }
     }
-    protected _checkParentFKey(item: IEntityItem) {
+    protected _checkParentFKey(item: IEntityItem): void {
         const self = this, savedKey = self._saveParentFKey;
         let fkey: string;
         self._saveParentFKey = null;
@@ -226,7 +242,7 @@ export class Association extends BaseObject {
             }
         }
     }
-    protected _onParentStatusChanged(item: IEntityItem, oldStatus: ITEM_STATUS) {
+    protected _onParentStatusChanged(item: IEntityItem, oldStatus: ITEM_STATUS): void {
         const self = this, newStatus = item._aspect.status;
         let fkey: string = null;
         let children: IEntityItem[];
@@ -268,7 +284,7 @@ export class Association extends BaseObject {
             }
         }
     }
-    protected _onChildCollChanged(args: ICollChangedArgs<IEntityItem>) {
+    protected _onChildCollChanged(args: ICollChangedArgs<IEntityItem>): void {
         const self = this, items = args.items, changedKeys = {};
         let item: IEntityItem, changed: string[] = [];
         switch (args.changeType) {
@@ -307,13 +323,13 @@ export class Association extends BaseObject {
         }
         self._notifyChildrenChanged(changed);
     }
-    protected _notifyChildrenChanged(changed: string[]) {
+    protected _notifyChildrenChanged(changed: string[]): void {
         this._notifyChanged([], changed);
     }
-    protected _notifyParentChanged(changed: string[]) {
+    protected _notifyParentChanged(changed: string[]): void {
         this._notifyChanged(changed, []);
     }
-    protected _notifyChanged(changedPkeys: string[], changedCkeys: string[]) {
+    protected _notifyChanged(changedPkeys: string[], changedCkeys: string[]): void {
         const self = this;
         if (changedPkeys.length > 0 || changedCkeys.length > 0) {
             // parentToChildren
@@ -340,7 +356,7 @@ export class Association extends BaseObject {
             this._debounce.enque(this._notifyBound);
         }
     }
-    private _notify() {
+    private _notify(): void {
         const self = this, changed = self._changed;
         self._changed = {};
         try {
@@ -460,7 +476,7 @@ export class Association extends BaseObject {
         this._parentMap = {};
         self._notifyParentChanged(fkeys);
     }
-    protected _unMapChildItem(item: IEntityItem) {
+    protected _unMapChildItem(item: IEntityItem): string {
         let fkey: string, arr: IEntityItem[], idx: number, changedKey: string = null;
         fkey = this.getChildFKey(item);
         if (!!fkey) {
@@ -477,7 +493,7 @@ export class Association extends BaseObject {
         }
         return changedKey;
     }
-    protected _unMapParentItem(item: IEntityItem) {
+    protected _unMapParentItem(item: IEntityItem): string {
         let fkey: string, changedKey: string = null;
         fkey = this.getParentFKey(item);
         if (!!fkey && !!this._parentMap[fkey]) {
@@ -486,7 +502,7 @@ export class Association extends BaseObject {
         }
         return changedKey;
     }
-    protected _mapParentItems(items: IEntityItem[]) {
+    protected _mapParentItems(items: IEntityItem[]): string[] {
         const chngedKeys: any = {}, len = items.length;
         for (let i = 0; i < len; i += 1) {
             const item: IEntityItem = items[i];
@@ -506,12 +522,12 @@ export class Association extends BaseObject {
         }
         return Object.keys(chngedKeys);
     }
-    protected _onChildrenChanged(fkey: string, parent: IEntityItem) {
+    protected _onChildrenChanged(fkey: string, parent: IEntityItem): void {
         if (!!fkey && !!this._parentToChildrenName && !parent.getIsStateDirty()) {
             parent.objEvents.raiseProp(this._parentToChildrenName);
         }
     }
-    protected _onParentChanged(fkey: string, map: IIndexer<IEntityItem>) {
+    protected _onParentChanged(fkey: string, map: IIndexer<IEntityItem>): void {
         const self = this;
 
         if (!!fkey && !!this._childToParentName) {
@@ -524,7 +540,7 @@ export class Association extends BaseObject {
             }
         }
     }
-    protected _mapChildren(items: IEntityItem[]) {
+    protected _mapChildren(items: IEntityItem[]): string[] {
         const chngedKeys: any = {}, len = items.length;
 
         for (let i = 0; i < len; i += 1) {
@@ -551,25 +567,25 @@ export class Association extends BaseObject {
         }
         return Object.keys(chngedKeys);
     }
-    protected _unbindParentDS() {
+    protected _unbindParentDS(): void {
         const self = this, ds = this.parentDS;
         if (!ds) {
             return;
         }
         ds.objEvents.offNS(self._objId);
     }
-    protected _unbindChildDS() {
+    protected _unbindChildDS(): void {
         const self = this, ds = this.childDS;
         if (!ds) {
             return;
         }
         ds.objEvents.offNS(self._objId);
     }
-    protected refreshParentMap() {
+    protected refreshParentMap(): string[] {
         this._resetParentMap();
         return this._mapParentItems(this._parentDS.items);
     }
-    protected refreshChildMap() {
+    protected refreshChildMap(): string[] {
         this._resetChildMap();
         return this._mapChildren(this._childDS.items);
     }
@@ -633,31 +649,31 @@ export class Association extends BaseObject {
         }
         return (!obj) ? null : obj;
     }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        this._debounce.dispose();
-        this._debounce = null;
-        this._changed = {};
-        this._unbindParentDS();
-        this._unbindChildDS();
-        this._parentMap = null;
-        this._childMap = null;
-        this._parentFldInfos = null;
-        this._childFldInfos = null;
-        super.dispose();
-    }
-    toString() {
+    toString(): string {
         return this._name;
     }
-    get name() { return this._name; }
-    get parentToChildrenName(): string { return this._parentToChildrenName; }
-    get childToParentName(): string { return this._childToParentName; }
-    get parentDS(): TDbSet { return this._parentDS; }
-    get childDS(): TDbSet { return this._childDS; }
-    get parentFldInfos(): IFieldInfo[] { return this._parentFldInfos; }
-    get childFldInfos(): IFieldInfo[] { return this._childFldInfos; }
-    get onDeleteAction(): DELETE_ACTION { return this._onDeleteAction; }
+    get name(): string {
+        return this._name;
+    }
+    get parentToChildrenName(): string {
+        return this._parentToChildrenName;
+    }
+    get childToParentName(): string {
+        return this._childToParentName;
+    }
+    get parentDS(): TDbSet {
+        return this._parentDS;
+    }
+    get childDS(): TDbSet {
+        return this._childDS;
+    }
+    get parentFldInfos(): IFieldInfo[] {
+        return this._parentFldInfos;
+    }
+    get childFldInfos(): IFieldInfo[] {
+        return this._childFldInfos;
+    }
+    get onDeleteAction(): DELETE_ACTION {
+        return this._onDeleteAction;
+    }
 }

@@ -76,7 +76,7 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
             });
         }
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -85,16 +85,18 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
         this._association = null;
         super.dispose();
     }
-    toString() {
+    toString(): string {
         return !this._association ? "ChildDataView" : ("ChildDataView for " + this._association.toString());
     }
-    get parentItem() {
+    get parentItem(): IEntityItem {
         return this._getParent();
     }
     set parentItem(v: IEntityItem) {
         this._setParent(v);
     }
-    get association() { return this._association; }
+    get association(): Association {
+        return this._association;
+    }
 }
 
 export type TChildDataView = ChildDataView<IEntityItem>;

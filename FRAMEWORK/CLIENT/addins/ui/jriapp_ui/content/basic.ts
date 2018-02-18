@@ -5,7 +5,7 @@ import { IFieldInfo } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
 import {
     IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions,
-    IBindingInfo, IBindingOptions, IApplication, IConverter, IElView, IElViewInfo
+    TBindingInfo, TBindingOptions, IApplication, IConverter, IElView, IElViewInfo
 } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { Binding, getBindingOptions } from "jriapp/binding";
@@ -33,8 +33,8 @@ export function getView(el: HTMLElement, name: string, options: IViewOptions): I
 }
 
 export function getBindingOption(isEdit: boolean, fieldName: string, target: IBaseObject, dataContext: any,
-    targetPath: string, converter: IConverter = null, param: any = null): IBindingOptions {
-    const bindInfo: IBindingInfo = {
+    targetPath: string, converter: IConverter = null, param: any = null): TBindingOptions {
+    const bindInfo: TBindingInfo = {
         target: null,
         source: null,
         targetPath: null,
@@ -42,9 +42,9 @@ export function getBindingOption(isEdit: boolean, fieldName: string, target: IBa
         mode: isEdit ? "TwoWay" : "OneWay",
         converter: null,
         param: null,
-        isEval: false
+        isBind: false
     };
-    const options: IBindingOptions = getBindingOptions(bindInfo, target, dataContext);
+    const options: TBindingOptions = getBindingOptions(bindInfo, target, dataContext);
     if (!!targetPath) {
         options.targetPath = targetPath;
     }

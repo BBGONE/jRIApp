@@ -55,7 +55,7 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
             mode: isEdit ? "TwoWay" : "OneWay",
             converter: null,
             param: null,
-            isEval: false
+            isBind: false
         };
         var options = binding_1.getBindingOptions(bindInfo, target, dataContext);
         if (!!targetPath) {
@@ -2348,7 +2348,7 @@ define("jriapp_ui/content/lookup", ["require", "exports", "jriapp_shared", "jria
                 mode: 2,
                 converter: null,
                 param: null,
-                isEval: false
+                isBind: false
             };
             return this.app.bind(options);
         };

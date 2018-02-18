@@ -5,7 +5,7 @@ import {
 import { DATA_ATTR, ELVIEW_NM, BindScope } from "./const";
 import {
     IElViewFactory, IElView, ILifeTimeScope, IBindArgs,
-    IBindingOptions, IDataBindingService, IModuleLoader
+    TBindingOptions, IDataBindingService, IModuleLoader
 } from "./int";
 import { bootstrap } from "./bootstrap";
 import { LifeTimeScope } from "./utils/lifetime";
@@ -253,7 +253,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             self._objLifeTime = lftm;
         });
     }
-    bind(opts: IBindingOptions): Binding {
+    bind(opts: TBindingOptions): Binding {
         return new Binding(opts);
     }
     dispose() {

@@ -73,13 +73,21 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
             }
         };
     }
-    private _addSort(fieldName: string, sortOrder: SORT_ORDER) {
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this._clearCache();
+        super.dispose();
+    }
+    private _addSort(fieldName: string, sortOrder: SORT_ORDER): void {
         const ord = !isNt(sortOrder) ? sortOrder : SORT_ORDER.ASC;
         const sortItem = { fieldName: fieldName, sortOrder: ord };
         this._sortInfo.sortItems.push(sortItem);
         this._cacheInvalidated = true;
     }
-    private _addFilterItem(fieldName: string, operand: FILTER_TYPE, value: any[], checkFieldName = true) {
+    private _addFilterItem(fieldName: string, operand: FILTER_TYPE, value: any[], checkFieldName = true): void {
         let fkind = FILTER_TYPE.Equals, vals: any[] = [];
         const stz = this.serverTimezone;
         if (!isArray(value)) {
@@ -126,7 +134,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
         this._filterInfo.filterItems.push(filterItem);
         this._cacheInvalidated = true;
     }
-    private _resetCacheInvalidated() {
+    private _resetCacheInvalidated(): void {
         this._cacheInvalidated = false;
     }
     private _clearCache(): void {
@@ -158,33 +166,33 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
     _getInternal(): IInternalQueryMethods {
         return this._internal;
     }
-    where(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName = true) {
+    where(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName = true): this {
         this._addFilterItem(fieldName, operand, value, checkFieldName);
         return this;
     }
-    and(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName = true) {
+    and(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName = true): this {
         this._addFilterItem(fieldName, operand, value, checkFieldName);
         return this;
     }
-    orderBy(fieldName: string, sortOrder?: SORT_ORDER) {
+    orderBy(fieldName: string, sortOrder?: SORT_ORDER): this {
         this._addSort(fieldName, sortOrder);
         return this;
     }
-    thenBy(fieldName: string, sortOrder?: SORT_ORDER) {
+    thenBy(fieldName: string, sortOrder?: SORT_ORDER): this {
         this._addSort(fieldName, sortOrder);
         return this;
     }
-    clearSort() {
+    clearSort(): this {
         this._sortInfo.sortItems = [];
         this._cacheInvalidated = true;
         return this;
     }
-    clearFilter() {
+    clearFilter(): this {
         this._filterInfo.filterItems = [];
         this._cacheInvalidated = true;
         return this;
     }
-    clearParams() {
+    clearParams(): this {
         this._params = {};
         this._cacheInvalidated = true;
         return this;
@@ -192,19 +200,11 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
     getFieldInfo(fieldName: string): IFieldInfo {
         return this._dbSet.getFieldInfo(fieldName);
     }
-    getFieldNames() {
+    getFieldNames(): string[] {
         return this._dbSet.getFieldNames();
     }
     load(): IStatefulPromise<IQueryResult<TItem>> {
         return <IStatefulPromise<IQueryResult<TItem>>>this.dbSet.dbContext.load(this);
-    }
-    dispose(): void {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        this._clearCache();
-        super.dispose();
     }
     toString(): string {
         return "DataQuery";
@@ -303,7 +303,9 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
             this.objEvents.raiseProp("isForAppend");
         }
     }
-    get isCacheValid() { return !!this._dataCache && !this._cacheInvalidated && !this.isForAppend; }
+    get isCacheValid() {
+        return !!this._dataCache && !this._cacheInvalidated && !this.isForAppend;
+    }
 }
 
 export type TDataQuery = DataQuery<IEntityItem, any>;

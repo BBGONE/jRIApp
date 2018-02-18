@@ -23,6 +23,19 @@ export class DbSets extends BaseObject {
         this._arrDbSets = [];
         this._dbSets = {};
     }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this._arrDbSets.forEach((dbSet) => {
+            dbSet.dispose();
+        });
+        this._arrDbSets = [];
+        this._dbSets = null;
+        this._dbContext = null;
+        super.dispose();
+    }
     protected _dbSetCreated(dbSet: TDbSet): void {
         this._arrDbSets.push(dbSet);
         dbSet.objEvents.onProp("isHasChanges", (sender, args) => {
@@ -67,18 +80,5 @@ export class DbSets extends BaseObject {
             throw new Error(format(ERRS.ERR_DBSET_NAME_INVALID, name));
         }
         return dbSet;
-    }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        this._arrDbSets.forEach((dbSet) => {
-            dbSet.dispose();
-        });
-        this._arrDbSets = [];
-        this._dbSets = null;
-        this._dbContext = null;
-        super.dispose();
     }
 }

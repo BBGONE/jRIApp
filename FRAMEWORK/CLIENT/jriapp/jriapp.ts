@@ -11,8 +11,8 @@ export * from "jriapp_shared/utils/jsonbag";
 export { Promise } from "jriapp_shared/utils/deferred";
 export { KEYS, BINDING_MODE, BindTo, SubscribeFlags } from "./jriapp/const";
 export {
-    IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, IBindingInfo,
-    IBindingOptions, IConverter, IContentFactory, IDatepicker, IElView,
+    IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, TBindingInfo,
+    TBindingOptions, IConverter, IContentFactory, IDatepicker, IElView,
     ITooltipService, ISelectable, ISelectableProvider,
     ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo,
     IViewOptions, ISubscriber
@@ -29,6 +29,6 @@ export { ViewModel, BaseCommand, Command, ICommand } from "./jriapp/mvvm";
 
 export { Application } from "./jriapp/app";
 
-export const VERSION = "2.13.3";
+export const VERSION = "2.14.0";
 
 Bootstrap._initFramework();

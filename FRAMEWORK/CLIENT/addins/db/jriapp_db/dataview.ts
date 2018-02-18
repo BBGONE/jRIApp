@@ -50,6 +50,18 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
         this._isAddingNew = false;
         this._bindDS();
     }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this._refreshDebounce.dispose();
+        this._unbindDS();
+        this._dataSource = null;
+        this._fn_filter = null;
+        this._fn_sort = null;
+        super.dispose();
+    }
     // override
     protected _isOwnsItems(): boolean {
         return false;
@@ -405,18 +417,6 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     }
     syncRefresh(): void {
         this._refreshSync(COLL_CHANGE_REASON.Refresh);
-    }
-    dispose(): void {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        this._refreshDebounce.dispose();
-        this._unbindDS();
-        this._dataSource = null;
-        this._fn_filter = null;
-        this._fn_sort = null;
-        super.dispose();
     }
     get errors(): Errors<TItem> {
         return (<BaseCollection<TItem>>this._dataSource).errors;

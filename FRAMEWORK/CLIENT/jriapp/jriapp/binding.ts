@@ -4,7 +4,7 @@ import {
     BaseObject, Utils
 } from "jriapp_shared";
 import { BINDING_MODE, BindTo } from "./const";
-import { IBindingInfo, IBindingOptions, IBinding, IConverter } from "./int";
+import { TBindingInfo, TBindingOptions, IBinding, IConverter } from "./int";
 import { bootstrap } from "./bootstrap";
 
 const utils = Utils, { isString, isUndefined, isNt, _undefined, isHasProp } = utils.check, { format } = utils.str, { getNewID, forEachProp } = utils.core,
@@ -71,8 +71,8 @@ function fn_reportMaxRec(bindTo: BindTo, src: any, tgt: any, spath: string, tpat
     log.error(msg);
 }
 
-export function getBindingOptions(bindInfo: IBindingInfo, defTarget: IBaseObject, dataContext: any): IBindingOptions {
-    const bindingOpts: IBindingOptions = {
+export function getBindingOptions(bindInfo: TBindingInfo, defTarget: IBaseObject, dataContext: any): TBindingOptions {
+    const bindingOpts: TBindingOptions = {
         targetPath: null,
         sourcePath: null,
         target: null,
@@ -81,7 +81,7 @@ export function getBindingOptions(bindInfo: IBindingInfo, defTarget: IBaseObject
         mode: BINDING_MODE.OneWay,
         converter: null,
         param: null,
-        isEval: false
+        isBind: false
     };
 
     let converter: IConverter;
@@ -107,7 +107,7 @@ export function getBindingOptions(bindInfo: IBindingInfo, defTarget: IBaseObject
 
     if (!!bindInfo.param) {
         bindingOpts.param = bindInfo.param;
-        bindingOpts.isEval = bindInfo.isEval;
+        bindingOpts.isBind = bindInfo.isBind;
     }
 
     if (!!bindInfo.mode) {
@@ -160,8 +160,8 @@ export class Binding extends BaseObject implements IBinding {
     private _converter: IConverter;
     // converter Param
     private _param: any;
-    // Is converter Param an eval expression and needs to be evaluated?
-    private _isEval: boolean;
+    // Is converter Param the bind expression and needs to be evaluated?
+    private _isBindParam: boolean;
     private _srcPath: string[];
     private _tgtPath: string[];
     private _srcFixed: boolean;
@@ -177,10 +177,10 @@ export class Binding extends BaseObject implements IBinding {
     private _cntUtgt: number;
     private _cntUSrc: number;
 
-    constructor(options: IBindingOptions) {
+    constructor(options: TBindingOptions) {
         super();
         /*
-        const opts: IBindingOptions = extend({
+        const opts: TBindingOptions = extend({
             target: null,
             source: null,
             targetPath: null,
@@ -189,7 +189,7 @@ export class Binding extends BaseObject implements IBinding {
             mode: BINDING_MODE.OneWay,
             converter: null,
             param: null,
-            isEval: false
+            isBind: false
         }, options);
         */
         const opts = options;
@@ -221,7 +221,7 @@ export class Binding extends BaseObject implements IBinding {
         this._mode = opts.mode;
         this._converter = !opts.converter ? null : opts.converter;
         this._param = opts.param;
-        this._isEval = !!opts.isEval;
+        this._isBindParam = !!opts.isBind;
         this._srcPath = getPathParts(opts.sourcePath);
         this._tgtPath = getPathParts(opts.targetPath);
         if (this._tgtPath.length < 1) {
@@ -685,20 +685,28 @@ export class Binding extends BaseObject implements IBinding {
     get uniqueID(): string {
         return this._objId;
     }
-    get target(): IBaseObject { return this._target; }
+    get target(): IBaseObject {
+        return this._target;
+    }
     set target(v: IBaseObject) {
         if (this._setTarget(v)) {
             this._update();
         }
     }
-    get source(): any { return this._source; }
+    get source(): any {
+        return this._source;
+    }
     set source(v: any) {
         if (this._setSource(v)) {
             this._update();
         }
     }
-    get targetPath(): string[] { return this._tgtPath; }
-    get sourcePath(): string[] { return this._srcPath; }
+    get targetPath(): string[] {
+        return this._tgtPath;
+    }
+    get sourcePath(): string[] {
+        return this._srcPath;
+    }
     get sourceValue():any {
         let res: any = null;
         if (this._srcPath.length === 0) {
@@ -733,27 +741,35 @@ export class Binding extends BaseObject implements IBinding {
         const prop = this._tgtPath[this._tgtPath.length - 1];
         setProp(this._tgtEnd, prop, v);
     }
-    get isSourceFixed(): boolean { return this._srcFixed; }
-    get mode(): BINDING_MODE { return this._mode; }
-    get converter(): IConverter { return this._converter; }
+    get isSourceFixed(): boolean {
+        return this._srcFixed;
+    }
+    get mode(): BINDING_MODE {
+        return this._mode;
+    }
+    get converter(): IConverter {
+        return this._converter;
+    }
     get param(): any {
-        if (this._isEval) {
+        if (this._isBindParam) {
             if (isNt(this._param)) {
                 return this._param;
             } 
-            const evalparts = <string[]>this._param;
+            const bindparts = <string[]>this._param;
             let source = this.source;
-            if (evalparts.length > 1) {
+            if (bindparts.length > 1) {
                 //resolve source (second path relative to the application in the array)
-                source = resolvePath(boot.getApp(), evalparts[1]);
+                source = resolvePath(boot.getApp(), bindparts[1]);
             }
-            return resolvePath(source, evalparts[0]);
+            return resolvePath(source, bindparts[0]);
         } else {
             return this._param;
         }
     }
-    get isDisabled(): boolean { return !!this._state; }
-    set isDisabled(v) {
+    get isDisabled(): boolean {
+        return !!this._state;
+    }
+    set isDisabled(v: boolean) {
         let s: IBindingState;
         v = !!v;
         if (this.isDisabled !== v) {

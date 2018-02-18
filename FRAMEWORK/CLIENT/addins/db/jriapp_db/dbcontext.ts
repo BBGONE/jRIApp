@@ -158,12 +158,12 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
     protected abstract _createDbSets(): TDbSets;
     protected abstract _createAssociations(): IAssociationInfo[];
     protected abstract _createMethods(): IQueryInfo[];
-    protected _checkDestroy() {
+    protected _checkDisposed(): void {
         if (this.getIsStateDirty()) {
-            ERROR.abort("dbContext destroyed");
+            ERROR.abort("dbContext is disposed");
         }
     }
-    protected _initDbSets() {
+    protected _initDbSets(): void {
         if (this.isInitialized) {
             throw new Error(ERRS.ERR_DOMAIN_CONTEXT_INITIALIZED);
         }
@@ -176,13 +176,13 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
         const methods = this._createMethods();
         this._initMethods(methods);
     }
-    protected _initAssociations(associations: IAssociationInfo[]) {
+    protected _initAssociations(associations: IAssociationInfo[]): void {
         const self = this;
         associations.forEach((assoc) => {
             self._initAssociation(assoc);
         });
     }
-    protected _initMethods(methods: IQueryInfo[]) {
+    protected _initMethods(methods: IQueryInfo[]): void {
         const self = this;
         methods.forEach((info) => {
             if (info.isQuery) {
@@ -193,7 +193,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
             }
         });
     }
-    protected _updatePermissions(info: IPermissionsInfo) {
+    protected _updatePermissions(info: IPermissionsInfo): void {
         this._serverTimezone = info.serverTimezone;
         info.permissions.forEach((perms) => {
             const dbSet = this.findDbSet(perms.dbSetName);
@@ -202,7 +202,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
             }
         });
     }
-    protected _initAssociation(assoc: IAssociationInfo) {
+    protected _initAssociation(assoc: IAssociationInfo): void {
         const self = this, options: IAssocConstructorOptions = {
             dbContext: self,
             parentName: assoc.parentDbSetName,
@@ -226,7 +226,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
         // function expects method parameters
         this._svcMethods[methodInfo.methodName] = (args: { [paramName: string]: any; }) => {
             return self._invokeMethod(methodInfo, args).then((res) => {
-                self._checkDestroy();
+                self._checkDisposed();
                 if (!res) {
                     throw new Error(format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
                 }
@@ -238,7 +238,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
             });
         };
     }
-    protected _addRequestPromise(req: IAbortablePromise<any>, operType: DATA_OPER, name?: string) {
+    protected _addRequestPromise(req: IAbortablePromise<any>, operType: DATA_OPER, name?: string): void {
         const self = this, item: IRequestPromise = { req: req, operType: operType, name: name },
             cnt = self._requests.length, oldBusy = this.isBusy;
 
@@ -260,7 +260,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
             self.objEvents.raiseProp("isBusy");
         }
     }
-    protected _tryAbortRequest(operType: DATA_OPER, name: string) {
+    protected _tryAbortRequest(operType: DATA_OPER, name: string): void {
         const reqs = this._requests.filter((req) => { return req.operType === operType && req.name === name; });
         reqs.forEach((r) => { r.req.abort(); });
     }
@@ -306,11 +306,11 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
     protected _invokeMethod(methodInfo: IQueryInfo, args: { [paramName: string]: any; }): IStatefulPromise<IInvokeResponse> {
         const self = this;
         return delay<string>(() => {
-            self._checkDestroy();
+            self._checkDisposed();
             const data = self._getMethodParams(methodInfo, args);
             return JSON.stringify(data);
         }).then((postData) => {
-            self._checkDestroy();
+            self._checkDisposed();
             const invokeUrl = this._getUrl(DATA_SVC_METH.Invoke),
                 reqPromise = http.postAjax(invokeUrl, postData, self.requestHeaders);
             self._addRequestPromise(reqPromise, DATA_OPER.Invoke);
@@ -323,7 +323,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
     protected _loadFromCache(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         const self = this;
         return delay<IQueryResult<IEntityItem>>(() => {
-            self._checkDestroy();
+            self._checkDisposed();
             const dbSet = query.dbSet;
             return dbSet._getInternal().fillFromCache({ reason: reason, query: query });
         });
@@ -341,7 +341,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
     protected _onLoaded(response: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         const self = this;
         return delay<IQueryResult<IEntityItem>>(() => {
-            self._checkDestroy();
+            self._checkDisposed();
             if (isNt(response)) {
                 throw new Error(format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
             }
@@ -475,7 +475,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
         context.fn_onStart();
 
         delay<IQueryResult<IEntityItem>>(() => {
-            self._checkDestroy();
+            self._checkDisposed();
 
             const oldQuery = context.dbSet.query,
                 loadPageCount = context.loadPageCount,
@@ -517,11 +517,11 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
             return reqPromise.then((res: string) => {
                 return <IQueryResponse>JSON.parse(res);
             }).then((response: IQueryResponse) => {
-                self._checkDestroy();
+                self._checkDisposed();
                 return self._onLoaded(response, context.query, context.reason);
             });
         }).then((loadRes) => {
-            self._checkDestroy();
+            self._checkDisposed();
             context.fn_onOK(loadRes);
         }).catch((err) => {
             context.fn_onErr(err);
@@ -554,7 +554,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
         args.fn_onStart();
 
         delay<string>(() => {
-            self._checkDestroy();
+            self._checkDisposed();
             const request: IRefreshRowInfo = {
                 dbSetName: args.item._aspect.dbSetName,
                 rowInfo: args.item._aspect._getRowInfo(),
@@ -570,7 +570,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
         }).then((res: string) => {
             return <IRefreshRowInfo>JSON.parse(res);
         }).then((res: IRefreshRowInfo) => {
-            self._checkDestroy();
+            self._checkDisposed();
             args.fn_onOK(res);
         }).catch((err) => {
             args.fn_onErr(err);
@@ -609,7 +609,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
 
         context.dbSet.waitForNotBusy(() => {
             try {
-                self._checkDestroy();
+                self._checkDisposed();
                 self._loadRefresh(context);
             } catch (err) {
                 context.fn_onErr(err);
@@ -683,7 +683,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
 
         context.dbSet.waitForNotBusy(() => {
             try {
-                self._checkDestroy();
+                self._checkDisposed();
                 self._loadInternal(context);
             } catch (err) {
                 context.fn_onErr(err);
@@ -702,7 +702,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
         args.fn_onStart();
 
         delay<IChangeSet>(() => {
-            self._checkDestroy();
+            self._checkDisposed();
             const res = self._getChanges();
             if (res.dbSets.length === 0) {
                 ERROR.abort(no_changes);
@@ -715,10 +715,10 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
         }).then((res: string) => {
             return <IChangeSet>JSON.parse(res);
         }).then((res: IChangeSet) => {
-            self._checkDestroy();
+            self._checkDisposed();
             self._dataSaved(res);
         }).then(() => {
-            self._checkDestroy();
+            self._checkDisposed();
             args.fn_onOk();
         }).catch((er) => {
             if (!self.getIsStateDirty() && ERROR.checkIsAbort(er) && er.reason === no_changes) {
@@ -761,7 +761,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
                 });
             }
         }).then((res: IPermissionsInfo) => {
-            self._checkDestroy();
+            self._checkDisposed();
             self._updatePermissions(res);
             self.objEvents.raiseProp("isInitialized");
         }).catch((err) => {
@@ -854,7 +854,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
         utils.queue.enque(() => {
             self.waitForNotBusy(() => {
                 try {
-                    self._checkDestroy();
+                    self._checkDisposed();
                     self._submitChanges(context);
                 } catch (err) {
                     context.fn_onErr(err);
@@ -890,16 +890,40 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
             promise.req.abort(reason);
         }
     }
-    get associations() { return this._assoc; }
-    get serviceMethods() { return this._svcMethods; }
-    get dbSets() { return this._dbSets; }
-    get serviceUrl() { return this._serviceUrl; }
-    get isInitialized() { return !!this._initState && this._initState.state() === PromiseState.Resolved; }
-    get isBusy() { return (this.requestCount > 0) || this.isSubmiting; }
-    get isSubmiting() { return this._isSubmiting; }
-    get serverTimezone() { return this._serverTimezone; }
-    get isHasChanges() { return this._isHasChanges; }
-    get requestCount() { return this._requests.length; }
-    get requestHeaders() { return this._requestHeaders; }
-    set requestHeaders(v) { this._requestHeaders = v; }
+    get associations(): TAssoc {
+        return this._assoc;
+    }
+    get serviceMethods(): TMethods {
+        return this._svcMethods;
+    }
+    get dbSets(): TDbSets {
+        return this._dbSets;
+    }
+    get serviceUrl(): string {
+        return this._serviceUrl;
+    }
+    get isInitialized(): boolean {
+        return !!this._initState && this._initState.state() === PromiseState.Resolved;
+    }
+    get isBusy(): boolean {
+        return (this.requestCount > 0) || this.isSubmiting;
+    }
+    get isSubmiting(): boolean {
+        return this._isSubmiting;
+    }
+    get serverTimezone(): number {
+        return this._serverTimezone;
+    }
+    get isHasChanges(): boolean {
+        return this._isHasChanges;
+    }
+    get requestCount(): number {
+        return this._requests.length;
+    }
+    get requestHeaders(): IIndexer<string> {
+        return this._requestHeaders;
+    }
+    set requestHeaders(v: IIndexer<string>) {
+        this._requestHeaders = v;
+    }
 }

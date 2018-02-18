@@ -1046,14 +1046,18 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
         }
         return 0;
     }
-    get isSubmitOnDelete(): boolean { return this._isSubmitOnDelete; }
+    get isSubmitOnDelete(): boolean {
+        return this._isSubmitOnDelete;
+    }
     set isSubmitOnDelete(v: boolean) {
         if (this._isSubmitOnDelete !== v) {
             this._isSubmitOnDelete = !!v;
             this.objEvents.raiseProp("isSubmitOnDelete");
         }
     }
-    get isBusy(): boolean { return this.isLoading || this.dbContext.isSubmiting; }
+    get isBusy(): boolean {
+        return this.isLoading || this.dbContext.isSubmiting;
+    }
 }
 
 export type TDbSet = DbSet<IEntityItem, any, DbContext>;

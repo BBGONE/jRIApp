@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils, BRACKETS, LocaleERRS as ERRS } from "jriapp_shared";
-import { IBindingInfo, IApplication } from "../int";
+import { TBindingInfo, IApplication } from "../int";
 
 import { bootstrap } from "../bootstrap";
 
@@ -14,10 +14,10 @@ const enum TOKEN {
     DELIMETER1 = ":",
     DELIMETER2 = "=",
     COMMA = ",",
-    EVAL = "eval",
     THIS = "this.",
     PARAM = "param",
     TARGET_PATH = "targetPath",
+    BIND = "bind",
     GET = "get",
     DATE = "date",
     INJECT = "inject"
@@ -26,7 +26,7 @@ const enum TOKEN {
 const enum TAG {
     NONE = "",
     LITERAL = "0",
-    EVAL = "1",
+    BIND = "1",
     GET = "2",
     DATE = "3",
     INJECT ="4",
@@ -174,8 +174,8 @@ function getTag(val: string, start: number, end: number): TAG {
     const token = trim(val.substring(start, end));
     let tag = TAG.NONE;
     switch (token) {
-        case TOKEN.EVAL:
-            tag = TAG.EVAL;
+        case TOKEN.BIND:
+            tag = TAG.BIND;
             break;
         case TOKEN.GET:
             tag = TAG.GET;
@@ -217,7 +217,7 @@ function getKeyVals(val: string): IKeyVal[] {
                     }
                     break;
                 case "(":
-                    // is this a content inside eval( ) or get() or date() or inject?
+                    // is this a content inside bind( ) or get() or date() or inject?
                     if (!isKey && start < i) {
                         const tag: TAG = getTag(val, start, i);
                         const braceLen = getBraceLen(val, i, BRACKETS.ROUND);
@@ -347,8 +347,9 @@ function isGetExpr(val: string): boolean {
     return !!val && getRX.test(val);
 }
 
-function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext: any): any {
-    const res: any = parse_type === PARSE_TYPE.BINDING ? {
+
+function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext: any): any | TBindingInfo {
+    const res: any | TBindingInfo = parse_type === PARSE_TYPE.BINDING ? {
         targetPath: "",
         sourcePath: "",
         to: "",
@@ -357,8 +358,9 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
         mode: "OneWay",
         converter: null,
         param: null,
-        isEval: false
+        isBind: false
     } : {};
+
     part = trim(part);
     if (isGetExpr(part)) {
         const id = getBraceContent(part, BRACKETS.ROUND);
@@ -366,33 +368,33 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
     }
     const kvals = getKeyVals(part);
     kvals.forEach(function (kv) {
-        let isEval = false, evalparts: string[];
+        let isBind = false, bindparts: string[];
 
         if (parse_type === PARSE_TYPE.BINDING && !kv.val && startsWith(kv.key, TOKEN.THIS)) {
             kv.val = kv.key.substr(len_this); // extract property
             kv.key = TOKEN.TARGET_PATH;
         }
 
-        const isTryGetEval = parse_type === PARSE_TYPE.VIEW || parse_type === PARSE_TYPE.BINDING;
-        if (isTryGetEval && kv.tag === TAG.EVAL) {
-            evalparts = getExprArgs(kv.val);
-            isEval = evalparts.length > 0;
+        const checkIsBind = parse_type === PARSE_TYPE.VIEW || parse_type === PARSE_TYPE.BINDING;
+        if (checkIsBind && kv.tag === TAG.BIND) {
+            bindparts = getExprArgs(kv.val);
+            isBind = bindparts.length > 0;
         }
 
-        if (isEval) {
+        if (isBind) {
             switch (parse_type) {
                 case PARSE_TYPE.VIEW:
                     let source = dataContext || app;
-                    if (evalparts.length > 1) {
+                    if (bindparts.length > 1) {
                         //resolve source (second path in the array)
-                        source = resolvePath(app, evalparts[1]);
+                        source = resolvePath(app, bindparts[1]);
                     }
-                    res[kv.key] = resolvePath(source, evalparts[0]);
+                    res[kv.key] = resolvePath(source, bindparts[0]);
                     break;
                 case PARSE_TYPE.BINDING:
-                    if (evalparts.length > 0 && kv.key === TOKEN.PARAM) {
-                        res[kv.key] = evalparts;
-                        res.isEval = true;
+                    if (bindparts.length > 0 && kv.key === TOKEN.PARAM) {
+                        res[kv.key] = bindparts;
+                        res.isBind = true;
                     }
                     break;
                 default:
@@ -450,7 +452,7 @@ export class Parser {
     static parseOptions(options: string): any[] {
         return parseOptions(PARSE_TYPE.NONE, [options], null, null);
     }
-    static parseBindings(bindings: string[]): IBindingInfo[] {
+    static parseBindings(bindings: string[]): TBindingInfo[] {
         return parseOptions(PARSE_TYPE.BINDING, bindings, null, null);
     }
     static parseViewOptions(options: string, app: any, dataContext: any): any {

@@ -6,7 +6,7 @@ import {
 import { STORE_KEY } from "./const";
 import {
     IElViewFactory, IViewType, IApplication,
-    IBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo,
+    TBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo,
     ITemplateGroupInfoEx, IDataBindingService, IBinding, IBindArgs
 } from "./int";
 import { bootstrap } from "./bootstrap";
@@ -120,7 +120,7 @@ export class Application extends BaseObject implements IApplication {
     getExports(): IIndexer<any> {
         return this._exports;
     }
-    bind(opts: IBindingOptions): IBinding {
+    bind(opts: TBindingOptions): IBinding {
         return this._dataBindingService.bind(opts);
     }
     registerConverter(name: string, obj: IConverter): void {

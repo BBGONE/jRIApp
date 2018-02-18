@@ -19,6 +19,14 @@ export class DataCache extends BaseObject {
         this._itemsByKey = {};
         this._totalCount = 0;
     }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this.clear();
+        super.dispose();
+    }
     private _getPrevPageIndex(currentPageIndex: number) {
         let pageIndex = -1;
         forEachProp(this._pages, (index, page) => {
@@ -29,7 +37,7 @@ export class DataCache extends BaseObject {
         });
         return pageIndex;
     }
-    getNextRange(pageIndex: number) {
+    getNextRange(pageIndex: number): { start: number; end: number; cnt: number; } {
         const half = Math.floor(((this.loadPageCount - 1) / 2));
         let above = (pageIndex + half) + ((this.loadPageCount - 1) % 2);
         let below = (pageIndex - half);
@@ -66,7 +74,7 @@ export class DataCache extends BaseObject {
         const end = above;
         return { start: start, end: end, cnt: cnt };
     }
-    clear() {
+    clear(): void {
         this._pages = {};
         this._itemsByKey = {};
     }
@@ -85,7 +93,7 @@ export class DataCache extends BaseObject {
         }).filter((item) => { return !!item; });
         return res;
     }
-    setPageItems(pageIndex: number, items: IEntityItem[]) {
+    setPageItems(pageIndex: number, items: IEntityItem[]): void {
         this.deletePage(pageIndex);
         if (items.length === 0) {
             return;
@@ -100,7 +108,7 @@ export class DataCache extends BaseObject {
             keyMap[kv.key] = kv;
         }
     }
-    fill(startIndex: number, items: IEntityItem[]) {
+    fill(startIndex: number, items: IEntityItem[]): void {
         const len = items.length, pageSize = this.pageSize;
         for (let i = 0; i < this.loadPageCount; i += 1) {
             const pageItems: IEntityItem[] = [], pgstart = (i * pageSize);
@@ -118,7 +126,7 @@ export class DataCache extends BaseObject {
             this.setPageItems(startIndex + i, pageItems);
         }
     }
-    deletePage(pageIndex: number) {
+    deletePage(pageIndex: number): void {
         const page: ICachedPage = this.getPage(pageIndex);
         if (!page) {
             return;
@@ -139,18 +147,10 @@ export class DataCache extends BaseObject {
         }
         return this._query.dbSet.createEntityFromObj(kv.val, kv.key);
     }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        this.clear();
-        super.dispose();
-    }
-    toString() {
+    toString(): string {
         return "DataCache";
     }
-    get _pageCount() {
+    get _pageCount(): number {
         const rowCount = this.totalCount, rowPerPage = this.pageSize;
         let result: number = 0;
 
@@ -166,9 +166,15 @@ export class DataCache extends BaseObject {
         }
         return result;
     }
-    get pageSize() { return this._query.pageSize; }
-    get loadPageCount() { return this._query.loadPageCount; }
-    get totalCount() { return this._totalCount; }
+    get pageSize(): number {
+        return this._query.pageSize;
+    }
+    get loadPageCount(): number {
+        return this._query.loadPageCount;
+    }
+    get totalCount(): number {
+        return this._totalCount;
+    }
     set totalCount(v: number) {
         if (isNt(v)) {
             v = 0;
@@ -178,7 +184,7 @@ export class DataCache extends BaseObject {
             this.objEvents.raiseProp("totalCount");
         }
     }
-    get cacheSize() {
+    get cacheSize(): number {
         const indexes = Object.keys(this._pages);
         return indexes.length;
     }

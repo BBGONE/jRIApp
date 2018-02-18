@@ -4,7 +4,7 @@ import {
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { BINDING_MODE } from "jriapp/const";
-import { IExternallyCachable, IBinding, IBindingOptions, IConstructorContentOptions, IConverter, IElView } from "jriapp/int";
+import { IExternallyCachable, IBinding, TBindingOptions, IConstructorContentOptions, IConverter, IElView } from "jriapp/int";
 import { ListBoxElView } from "../listbox";
 import { BasicContent, IContentView } from "./basic";
 
@@ -153,7 +153,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         }
     }
     protected bindToList(listBox: IElView): IBinding {
-        const options: IBindingOptions = {
+        const options: TBindingOptions = {
             target: listBox,
             source: this.dataContext,
             targetPath: "selectedValue",
@@ -162,7 +162,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             mode: BINDING_MODE.TwoWay,
             converter: null,
             param: null,
-            isEval: false
+            isBind: false
         };
         return this.app.bind(options);
     }

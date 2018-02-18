@@ -363,7 +363,7 @@ export class DataForm extends BaseObject {
     get dataContext(): IBaseObject {
         return this._dataContext;
     }
-    set dataContext(v) {
+    set dataContext(v: IBaseObject) {
         if (v === this._dataContext) {
             return;
         }
@@ -391,7 +391,7 @@ export class DataForm extends BaseObject {
     get isEditing(): boolean {
         return this._isEditing;
     }
-    set isEditing(v) {
+    set isEditing(v: boolean) {
         const dataContext = this._dataContext;
         if (!dataContext) {
             return;
