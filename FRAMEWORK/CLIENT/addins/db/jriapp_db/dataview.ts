@@ -26,7 +26,7 @@ export interface IDataViewOptions<TItem extends ICollectionItem> {
     refreshTimeout?: number
 }
 
-export class DataView<TItem extends ICollectionItem> extends BaseCollection<TItem> {
+export class DataView<TItem extends ICollectionItem = ICollectionItem> extends BaseCollection<TItem> {
     private _dataSource: ICollection<TItem>;
     private _fn_filter: (item: TItem) => boolean;
     private _fn_sort: (item1: TItem, item2: TItem) => number;
@@ -427,7 +427,7 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     get isPagingEnabled(): boolean {
         return this.options.enablePaging;
     }
-    set isPagingEnabled(v) {
+    set isPagingEnabled(v: boolean) {
         if (this.options.enablePaging !== v) {
             this.options.enablePaging = v;
             this.objEvents.raiseProp("isPagingEnabled");
@@ -469,4 +469,4 @@ export class DataView<TItem extends ICollectionItem> extends BaseCollection<TIte
     }
 }
 
-export type TDataView = DataView<ICollectionItem>;
+export type TDataView = DataView;

@@ -84,7 +84,7 @@ export interface IDbSetConstructor<TItem extends IEntityItem, TObj> {
     new (dbContext: DbContext): DbSet<TItem, TObj, DbContext>;
 }
 
-export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any>, TDbContext extends DbContext> extends BaseCollection<TItem> {
+export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extends IIndexer<any> = IIndexer<any>, TDbContext extends DbContext = DbContext> extends BaseCollection<TItem> {
     private _dbContext: TDbContext;
     private _isSubmitOnDelete: boolean;
     private _trackAssoc: { [name: string]: IAssociationInfo; };
@@ -1060,4 +1060,4 @@ export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any
     }
 }
 
-export type TDbSet = DbSet<IEntityItem, any, DbContext>;
+export type TDbSet = DbSet;

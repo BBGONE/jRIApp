@@ -20,7 +20,7 @@ export abstract class BaseComplexProperty extends BaseObject implements IErrorNo
     getName(): string {
         return this._name;
     }
-    abstract _addOwnedObject(obj: IBaseObject): void;
+    abstract _addDisposable(obj: IBaseObject): void;
     abstract _getFullPath(path: string): string;
     abstract setValue(fullName: string, value: any): void;
     abstract getValue(fullName: string): any;
@@ -58,14 +58,14 @@ export abstract class BaseComplexProperty extends BaseObject implements IErrorNo
 }
 
 export class RootComplexProperty extends BaseComplexProperty {
-    private _entity: EntityAspect<IEntityItem, any, DbContext>;
+    private _entity: EntityAspect;
 
-    constructor(name: string, owner: EntityAspect<IEntityItem, any, DbContext>) {
+    constructor(name: string, owner: EntityAspect) {
         super(name);
         this._entity = owner;
         this._entity._addDisposable(this);
     }
-    _addOwnedObject(obj: IBaseObject): void {
+    _addDisposable(obj: IBaseObject): void {
         this._entity._addDisposable(obj);
     }
     _getFullPath(path: string): string {
@@ -83,7 +83,7 @@ export class RootComplexProperty extends BaseComplexProperty {
     getProperties(): IFieldInfo[] {
         return this.getFieldInfo().nested;
     }
-    getEntity(): EntityAspect<IEntityItem, any, DbContext> {
+    getEntity(): EntityAspect {
         return this._entity;
     }
     getFullPath(name: string): string {
@@ -97,10 +97,10 @@ export class ChildComplexProperty extends BaseComplexProperty {
     constructor(name: string, parent: BaseComplexProperty) {
         super(name);
         this._parent = parent;
-        this._parent._addOwnedObject(this);
+        this._parent._addDisposable(this);
     }
-    _addOwnedObject(obj: IBaseObject): void {
-        this._parent._addOwnedObject(obj);
+    _addDisposable(obj: IBaseObject): void {
+        this._parent._addDisposable(obj);
     }
     _getFullPath(path: string): string {
         return this._parent._getFullPath(this.getName() + "." + path);
@@ -134,7 +134,7 @@ export class ChildComplexProperty extends BaseComplexProperty {
     getFullPath(name: string): string {
         return this._parent._getFullPath(this.getName() + "." + name);
     }
-    getEntity(): EntityAspect<IEntityItem, any, DbContext> {
+    getEntity(): EntityAspect {
         return this.getRootProperty().getEntity();
     }
 }

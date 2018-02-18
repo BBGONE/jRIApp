@@ -52,7 +52,7 @@ function fn_walkChanges(val: IValueChange, fn: (name: string, val: IValueChange)
     _fn_walkChanges(val.fieldName, val, fn);
 }
 
-export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>, TDbContext extends DbContext> extends ItemAspect<TItem, TObj> {
+export class EntityAspect<TItem extends IEntityItem = IEntityItem, TObj extends IIndexer<any> = IIndexer<any>, TDbContext extends DbContext = DbContext> extends ItemAspect<TItem, TObj> {
     private _srvKey: string;
     private _origVals: TObj;
     private _savedStatus: ITEM_STATUS;

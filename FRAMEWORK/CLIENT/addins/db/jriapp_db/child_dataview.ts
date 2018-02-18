@@ -16,7 +16,7 @@ export interface IChildDataViewOptions<TItem extends IEntityItem> {
     explicitRefresh?: boolean;
 }
 
-export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
+export class ChildDataView<TItem extends IEntityItem = IEntityItem> extends DataView<TItem> {
     private _setParent: (parent: IEntityItem) => void;
     private _getParent: () => IEntityItem;
     private _association: Association;
@@ -99,4 +99,4 @@ export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
     }
 }
 
-export type TChildDataView = ChildDataView<IEntityItem>;
+export type TChildDataView = ChildDataView;

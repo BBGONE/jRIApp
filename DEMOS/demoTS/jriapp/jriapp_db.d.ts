@@ -74,7 +74,7 @@ declare module "jriapp_db/dataquery" {
         updateCache(pageIndex: number, items: IEntityItem[]): void;
         getQueryInfo(): IQueryInfo;
     }
-    export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
+    export class DataQuery<TItem extends IEntityItem = IEntityItem, TObj = any> extends BaseObject {
         private _dbSet;
         private _queryInfo;
         private _filterInfo;
@@ -131,7 +131,7 @@ declare module "jriapp_db/dataquery" {
         isForAppend: boolean;
         readonly isCacheValid: boolean;
     }
-    export type TDataQuery = DataQuery<IEntityItem, any>;
+    export type TDataQuery = DataQuery;
 }
 declare module "jriapp_db/dbset" {
     import { SORT_ORDER, COLL_CHANGE_REASON, COLL_CHANGE_OPER, ITEM_STATUS } from "jriapp_shared/collection/const";
@@ -173,7 +173,7 @@ declare module "jriapp_db/dbset" {
     export interface IDbSetConstructor<TItem extends IEntityItem, TObj> {
         new (dbContext: DbContext): DbSet<TItem, TObj, DbContext>;
     }
-    export abstract class DbSet<TItem extends IEntityItem, TObj extends IIndexer<any>, TDbContext extends DbContext> extends BaseCollection<TItem> {
+    export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extends IIndexer<any> = IIndexer<any>, TDbContext extends DbContext = DbContext> extends BaseCollection<TItem> {
         private _dbContext;
         private _isSubmitOnDelete;
         private _trackAssoc;
@@ -264,7 +264,7 @@ declare module "jriapp_db/dbset" {
         isSubmitOnDelete: boolean;
         readonly isBusy: boolean;
     }
-    export type TDbSet = DbSet<IEntityItem, any, DbContext>;
+    export type TDbSet = DbSet;
 }
 declare module "jriapp_db/dbsets" {
     import { BaseObject, TEventHandler, IBaseObject } from "jriapp_shared";
@@ -534,7 +534,7 @@ declare module "jriapp_db/entity_aspect" {
     import { DbContext } from "jriapp_db/dbcontext";
     import { IEntityItem, IValueChange, IRowInfo } from "jriapp_db/int";
     import { DbSet } from "jriapp_db/dbset";
-    export class EntityAspect<TItem extends IEntityItem, TObj extends IIndexer<any>, TDbContext extends DbContext> extends ItemAspect<TItem, TObj> {
+    export class EntityAspect<TItem extends IEntityItem = IEntityItem, TObj extends IIndexer<any> = IIndexer<any>, TDbContext extends DbContext = DbContext> extends ItemAspect<TItem, TObj> {
         private _srvKey;
         private _origVals;
         private _savedStatus;
@@ -806,7 +806,7 @@ declare module "jriapp_db/dataview" {
         fn_itemsProvider?: (ds: ICollection<TItem>) => TItem[];
         refreshTimeout?: number;
     }
-    export class DataView<TItem extends ICollectionItem> extends BaseCollection<TItem> {
+    export class DataView<TItem extends ICollectionItem = ICollectionItem> extends BaseCollection<TItem> {
         private _dataSource;
         private _fn_filter;
         private _fn_sort;
@@ -859,7 +859,7 @@ declare module "jriapp_db/dataview" {
         fn_itemsProvider: (ds: ICollection<TItem>) => TItem[];
         toString(): string;
     }
-    export type TDataView = DataView<ICollectionItem>;
+    export type TDataView = DataView;
 }
 declare module "jriapp_db/child_dataview" {
     import { IEntityItem } from "jriapp_db/int";
@@ -872,7 +872,7 @@ declare module "jriapp_db/child_dataview" {
         parentItem?: IEntityItem;
         explicitRefresh?: boolean;
     }
-    export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
+    export class ChildDataView<TItem extends IEntityItem = IEntityItem> extends DataView<TItem> {
         private _setParent;
         private _getParent;
         private _association;
@@ -882,7 +882,7 @@ declare module "jriapp_db/child_dataview" {
         parentItem: IEntityItem;
         readonly association: Association;
     }
-    export type TChildDataView = ChildDataView<IEntityItem>;
+    export type TChildDataView = ChildDataView;
 }
 declare module "jriapp_db/complexprop" {
     import { IErrorNotification, IValidationInfo, TEventHandler, BaseObject, IBaseObject } from "jriapp_shared";
@@ -894,7 +894,7 @@ declare module "jriapp_db/complexprop" {
         private _name;
         constructor(name: string);
         getName(): string;
-        abstract _addOwnedObject(obj: IBaseObject): void;
+        abstract _addDisposable(obj: IBaseObject): void;
         abstract _getFullPath(path: string): string;
         abstract setValue(fullName: string, value: any): void;
         abstract getValue(fullName: string): any;
@@ -912,20 +912,20 @@ declare module "jriapp_db/complexprop" {
     }
     export class RootComplexProperty extends BaseComplexProperty {
         private _entity;
-        constructor(name: string, owner: EntityAspect<IEntityItem, any, DbContext>);
-        _addOwnedObject(obj: IBaseObject): void;
+        constructor(name: string, owner: EntityAspect);
+        _addDisposable(obj: IBaseObject): void;
         _getFullPath(path: string): string;
         setValue(fullName: string, value: any): void;
         getValue(fullName: string): any;
         getFieldInfo(): IFieldInfo;
         getProperties(): IFieldInfo[];
-        getEntity(): EntityAspect<IEntityItem, any, DbContext>;
+        getEntity(): EntityAspect;
         getFullPath(name: string): string;
     }
     export class ChildComplexProperty extends BaseComplexProperty {
         private _parent;
         constructor(name: string, parent: BaseComplexProperty);
-        _addOwnedObject(obj: IBaseObject): void;
+        _addDisposable(obj: IBaseObject): void;
         _getFullPath(path: string): string;
         setValue(fullName: string, value: any): void;
         getValue(fullName: string): any;
@@ -934,7 +934,7 @@ declare module "jriapp_db/complexprop" {
         getParent(): BaseComplexProperty;
         getRootProperty(): RootComplexProperty;
         getFullPath(name: string): string;
-        getEntity(): EntityAspect<IEntityItem, any, DbContext>;
+        getEntity(): EntityAspect;
     }
 }
 declare module "jriapp_db" {

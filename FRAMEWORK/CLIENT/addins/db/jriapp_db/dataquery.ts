@@ -19,7 +19,7 @@ export interface IInternalQueryMethods {
     getQueryInfo(): IQueryInfo;
 }
 
-export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
+export class DataQuery<TItem extends IEntityItem = IEntityItem, TObj = any> extends BaseObject {
     private _dbSet: DbSet<TItem, TObj, DbContext>;
     private _queryInfo: IQueryInfo;
     private _filterInfo: IFilterInfo;
@@ -288,7 +288,7 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
     get isClearCacheOnEveryLoad(): boolean {
         return this._isClearCacheOnEveryLoad || this.isForAppend;
     }
-    set isClearCacheOnEveryLoad(v) {
+    set isClearCacheOnEveryLoad(v: boolean) {
         if (this._isClearCacheOnEveryLoad !== v) {
             this._isClearCacheOnEveryLoad = v;
             this.objEvents.raiseProp("isClearCacheOnEveryLoad");
@@ -297,15 +297,15 @@ export class DataQuery<TItem extends IEntityItem, TObj> extends BaseObject {
     get isForAppend(): boolean {
         return this._isForAppend;
     }
-    set isForAppend(v) {
+    set isForAppend(v: boolean) {
         if (this._isForAppend !== v) {
             this._isForAppend = v;
             this.objEvents.raiseProp("isForAppend");
         }
     }
-    get isCacheValid() {
+    get isCacheValid(): boolean {
         return !!this._dataCache && !this._cacheInvalidated && !this.isForAppend;
     }
 }
 
-export type TDataQuery = DataQuery<IEntityItem, any>;
+export type TDataQuery = DataQuery;

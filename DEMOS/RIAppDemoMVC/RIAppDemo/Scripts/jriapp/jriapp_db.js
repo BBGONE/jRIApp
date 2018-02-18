@@ -4432,7 +4432,7 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
             _this._entity._addDisposable(_this);
             return _this;
         }
-        RootComplexProperty.prototype._addOwnedObject = function (obj) {
+        RootComplexProperty.prototype._addDisposable = function (obj) {
             this._entity._addDisposable(obj);
         };
         RootComplexProperty.prototype._getFullPath = function (path) {
@@ -4464,11 +4464,11 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
         function ChildComplexProperty(name, parent) {
             var _this = _super.call(this, name) || this;
             _this._parent = parent;
-            _this._parent._addOwnedObject(_this);
+            _this._parent._addDisposable(_this);
             return _this;
         }
-        ChildComplexProperty.prototype._addOwnedObject = function (obj) {
-            this._parent._addOwnedObject(obj);
+        ChildComplexProperty.prototype._addDisposable = function (obj) {
+            this._parent._addDisposable(obj);
         };
         ChildComplexProperty.prototype._getFullPath = function (path) {
             return this._parent._getFullPath(this.getName() + "." + path);

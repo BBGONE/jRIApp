@@ -23,11 +23,11 @@ export class DataOperationError extends BaseError {
         super(message);
         this._origError = originalError;
         this._operationName = operationName;
-   }
-    get operationName() {
+    }
+    get operationName(): DATA_OPER {
         return this._operationName;
     }
-    get origError() {
+    get origError(): any {
         return this._origError;
    }
 }
