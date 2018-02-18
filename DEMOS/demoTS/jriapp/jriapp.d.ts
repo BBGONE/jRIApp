@@ -219,9 +219,9 @@ declare module "jriapp/int" {
         bindTemplate(templateEl: Element, dataContext: any): IPromise<ILifeTimeScope>;
         bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
         setUpBindings(): IVoidPromise;
-        bind(opts: IBindingOptions): IBinding;
+        bind(opts: TBindingOptions): IBinding;
     }
-    export interface IBindingOptions {
+    export type TBindingOptions = {
         targetPath: string;
         sourcePath?: string;
         target?: IBaseObject;
@@ -230,10 +230,10 @@ declare module "jriapp/int" {
         mode?: BINDING_MODE;
         converter?: IConverter;
         param?: any;
-        isEval?: boolean;
-    }
+        isBind?: boolean;
+    };
     export type TBindingMode = "OneTime" | "OneWay" | "TwoWay" | "BackWay";
-    export interface IBindingInfo {
+    export type TBindingInfo = {
         targetPath: string;
         sourcePath?: string;
         to?: string;
@@ -242,8 +242,8 @@ declare module "jriapp/int" {
         mode?: TBindingMode;
         converter?: any;
         param?: any;
-        isEval?: boolean;
-    }
+        isBind?: boolean;
+    };
     export interface IExternallyCachable {
         addOnObjectCreated(fn: (sender: any, args: {
             objectKey: string;
@@ -333,7 +333,7 @@ declare module "jriapp/int" {
             url?: string;
             names: string[];
         }): void;
-        bind(opts: IBindingOptions): IBinding;
+        bind(opts: TBindingOptions): IBinding;
         startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
         readonly uniqueID: string;
         readonly appName: string;
@@ -346,10 +346,10 @@ declare module "jriapp/int" {
     }
 }
 declare module "jriapp/utils/parser" {
-    import { IBindingInfo } from "jriapp/int";
+    import { TBindingInfo } from "jriapp/int";
     export class Parser {
         static parseOptions(options: string): any[];
-        static parseBindings(bindings: string[]): IBindingInfo[];
+        static parseBindings(bindings: string[]): TBindingInfo[];
         static parseViewOptions(options: string, app: any, dataContext: any): any;
     }
 }
@@ -790,14 +790,14 @@ declare module "jriapp/converter" {
 declare module "jriapp/binding" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
     import { BINDING_MODE } from "jriapp/const";
-    import { IBindingInfo, IBindingOptions, IBinding, IConverter } from "jriapp/int";
-    export function getBindingOptions(bindInfo: IBindingInfo, defTarget: IBaseObject, dataContext: any): IBindingOptions;
+    import { TBindingInfo, TBindingOptions, IBinding, IConverter } from "jriapp/int";
+    export function getBindingOptions(bindInfo: TBindingInfo, defTarget: IBaseObject, dataContext: any): TBindingOptions;
     export class Binding extends BaseObject implements IBinding {
         private _state;
         private _mode;
         private _converter;
         private _param;
-        private _isEval;
+        private _isBindParam;
         private _srcPath;
         private _tgtPath;
         private _srcFixed;
@@ -810,7 +810,7 @@ declare module "jriapp/binding" {
         private _umask;
         private _cntUtgt;
         private _cntUSrc;
-        constructor(options: IBindingOptions);
+        constructor(options: TBindingOptions);
         dispose(): void;
         private _update();
         private _onSrcErrChanged(errNotif);
@@ -942,7 +942,7 @@ declare module "jriapp/databindsvc" {
 }
 declare module "jriapp/app" {
     import { IIndexer, TEventHandler, IPromise, TErrorHandler, IBaseObject, BaseObject } from "jriapp_shared";
-    import { IElViewFactory, IViewType, IApplication, IBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo, IBinding } from "jriapp/int";
+    import { IElViewFactory, IViewType, IApplication, TBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo, IBinding } from "jriapp/int";
     export class Application extends BaseObject implements IApplication {
         private _UC;
         private _moduleInits;
@@ -967,7 +967,7 @@ declare module "jriapp/app" {
         addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
         offOnStartUp(nmspace?: string): void;
         getExports(): IIndexer<any>;
-        bind(opts: IBindingOptions): IBinding;
+        bind(opts: TBindingOptions): IBinding;
         registerConverter(name: string, obj: IConverter): void;
         getConverter(name: string): IConverter;
         registerSvc(name: string, obj: any): void;
@@ -1000,7 +1000,7 @@ declare module "jriapp" {
     export * from "jriapp_shared/utils/jsonbag";
     export { Promise } from "jriapp_shared/utils/deferred";
     export { KEYS, BINDING_MODE, BindTo, SubscribeFlags } from "jriapp/const";
-    export { IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, IBindingInfo, IBindingOptions, IConverter, IContentFactory, IDatepicker, IElView, ITooltipService, ISelectable, ISelectableProvider, ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo, IViewOptions, ISubscriber } from "jriapp/int";
+    export { IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, TBindingInfo, TBindingOptions, IConverter, IContentFactory, IDatepicker, IElView, ITooltipService, ISelectable, ISelectableProvider, ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo, IViewOptions, ISubscriber } from "jriapp/int";
     export { DomUtils as DOM } from "jriapp/utils/dom";
     export { ViewChecks } from "jriapp/utils/viewchecks";
     export { BaseConverter } from "jriapp/converter";
@@ -1011,5 +1011,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.13.2";
+    export const VERSION = "2.14.0";
 }

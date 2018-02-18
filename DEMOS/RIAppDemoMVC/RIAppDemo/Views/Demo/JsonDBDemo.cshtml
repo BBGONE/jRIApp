@@ -224,10 +224,10 @@
 </script>
 
 <script id="dateTemplate" type="text/x-template">
-    @*testing eval expression for the param value*@
-    @*get value exposed from the datacontext: eval(Customer.dateFormat)*@
-    @*get value exposed as the app property: eval(dateFormat,app)*@
-    <span data-bind="this.value,to=Customer[ModifiedDate],converter=dateTimeConverter,param=eval(Customer.dateFormat)"></span>
+    @*testing the bind expression for the param value*@
+    @*the source is from the datacontext: bind(Customer.dateFormat)*@
+    @*can be tested here with the explicit source as the app property: bind(dateFormat,app)*@
+    <span data-bind="this.value,to=Customer[ModifiedDate],converter=dateTimeConverter,param=bind(Customer.dateFormat)"></span>
 </script>
 
 <script id="custDetTemplate" type="text/x-template">

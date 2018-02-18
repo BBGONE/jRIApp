@@ -29,13 +29,13 @@ declare module "jriapp_ui/int" {
 declare module "jriapp_ui/content/basic" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
-    import { IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions, IBindingOptions, IApplication, IConverter, IElView } from "jriapp/int";
+    import { IContent, IContentOptions, IConstructorContentOptions, ILifeTimeScope, IViewOptions, TBindingOptions, IApplication, IConverter, IElView } from "jriapp/int";
     import { Binding } from "jriapp/binding";
     export interface IContentView extends IBaseObject {
         readonly el: HTMLElement;
     }
     export function getView(el: HTMLElement, name: string, options: IViewOptions): IElView;
-    export function getBindingOption(isEdit: boolean, fieldName: string, target: IBaseObject, dataContext: any, targetPath: string, converter?: IConverter, param?: any): IBindingOptions;
+    export function getBindingOption(isEdit: boolean, fieldName: string, target: IBaseObject, dataContext: any, targetPath: string, converter?: IConverter, param?: any): TBindingOptions;
     export class BasicContent extends BaseObject implements IContent {
         private _parentEl;
         private _options;

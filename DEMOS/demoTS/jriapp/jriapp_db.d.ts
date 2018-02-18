@@ -36,6 +36,7 @@ declare module "jriapp_db/datacache" {
         private _itemsByKey;
         private _totalCount;
         constructor(query: TDataQuery);
+        dispose(): void;
         private _getPrevPageIndex(currentPageIndex);
         getNextRange(pageIndex: number): {
             start: number;
@@ -50,7 +51,6 @@ declare module "jriapp_db/datacache" {
         deletePage(pageIndex: number): void;
         hasPage(pageIndex: number): boolean;
         getItemByKey(key: string): IEntityItem;
-        dispose(): void;
         toString(): string;
         readonly _pageCount: number;
         readonly pageSize: number;
@@ -92,6 +92,7 @@ declare module "jriapp_db/dataquery" {
         private _internal;
         private _isPagingEnabled;
         constructor(dbSet: DbSet<TItem, TObj, DbContext>, queryInfo: IQueryInfo);
+        dispose(): void;
         private _addSort(fieldName, sortOrder);
         private _addFilterItem(fieldName, operand, value, checkFieldName?);
         private _resetCacheInvalidated();
@@ -110,7 +111,6 @@ declare module "jriapp_db/dataquery" {
         getFieldInfo(fieldName: string): IFieldInfo;
         getFieldNames(): string[];
         load(): IStatefulPromise<IQueryResult<TItem>>;
-        dispose(): void;
         toString(): string;
         readonly serverTimezone: number;
         readonly dbSet: DbSet<TItem, TObj, DbContext>;
@@ -280,6 +280,7 @@ declare module "jriapp_db/dbsets" {
         private _dbSets;
         private _arrDbSets;
         constructor(dbContext: DbContext);
+        dispose(): void;
         protected _dbSetCreated(dbSet: TDbSet): void;
         protected _createDbSet(name: string, dbSetType: IDbSetConstructor<IEntityItem, any>): void;
         addOnDbSetCreating(fn: TEventHandler<this, TDbSetCreatingArgs>, nmspace?: string, context?: IBaseObject): void;
@@ -288,7 +289,6 @@ declare module "jriapp_db/dbsets" {
         readonly arrDbSets: TDbSet[];
         findDbSet(name: string): TDbSet;
         getDbSet(name: string): TDbSet;
-        dispose(): void;
     }
 }
 declare module "jriapp_db/association" {
@@ -317,6 +317,7 @@ declare module "jriapp_db/association" {
         private _notifyBound;
         private _changed;
         constructor(options: IAssocConstructorOptions);
+        dispose(): void;
         handleError(error: any, source: any): boolean;
         protected _bindParentDS(): void;
         protected _bindChildDS(): void;
@@ -354,7 +355,6 @@ declare module "jriapp_db/association" {
         isParentChild(parent: IEntityItem, child: IEntityItem): boolean;
         getChildItems(parent: IEntityItem): IEntityItem[];
         getParentItem(item: IEntityItem): IEntityItem;
-        dispose(): void;
         toString(): string;
         readonly name: string;
         readonly parentToChildrenName: string;
@@ -434,7 +434,7 @@ declare module "jriapp_db/dbcontext" {
         protected abstract _createDbSets(): TDbSets;
         protected abstract _createAssociations(): IAssociationInfo[];
         protected abstract _createMethods(): IQueryInfo[];
-        protected _checkDestroy(): void;
+        protected _checkDisposed(): void;
         protected _initDbSets(): void;
         protected _initAssociations(associations: IAssociationInfo[]): void;
         protected _initMethods(methods: IQueryInfo[]): void;
@@ -814,6 +814,7 @@ declare module "jriapp_db/dataview" {
         private _isAddingNew;
         private _refreshDebounce;
         constructor(options: IDataViewOptions<TItem>);
+        dispose(): void;
         protected _isOwnsItems(): boolean;
         protected _onAddNew(item: TItem, pos: number): void;
         protected _filterForPaging(items: TItem[]): TItem[];
@@ -849,7 +850,6 @@ declare module "jriapp_db/dataview" {
         clear(): void;
         refresh(): void;
         syncRefresh(): void;
-        dispose(): void;
         readonly errors: Errors<TItem>;
         readonly dataSource: ICollection<TItem>;
         isPagingEnabled: boolean;

@@ -115,10 +115,10 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         TOKEN["DELIMETER1"] = ":";
         TOKEN["DELIMETER2"] = "=";
         TOKEN["COMMA"] = ",";
-        TOKEN["EVAL"] = "eval";
         TOKEN["THIS"] = "this.";
         TOKEN["PARAM"] = "param";
         TOKEN["TARGET_PATH"] = "targetPath";
+        TOKEN["BIND"] = "bind";
         TOKEN["GET"] = "get";
         TOKEN["DATE"] = "date";
         TOKEN["INJECT"] = "inject";
@@ -127,7 +127,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
     (function (TAG) {
         TAG["NONE"] = "";
         TAG["LITERAL"] = "0";
-        TAG["EVAL"] = "1";
+        TAG["BIND"] = "1";
         TAG["GET"] = "2";
         TAG["DATE"] = "3";
         TAG["INJECT"] = "4";
@@ -258,7 +258,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         var token = trim(val.substring(start, end));
         var tag = "";
         switch (token) {
-            case "eval":
+            case "bind":
                 tag = "1";
                 break;
             case "get":
@@ -417,7 +417,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             mode: "OneWay",
             converter: null,
             param: null,
-            isEval: false
+            isBind: false
         } : {};
         part = trim(part);
         if (isGetExpr(part)) {
@@ -426,29 +426,29 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
         var kvals = getKeyVals(part);
         kvals.forEach(function (kv) {
-            var isEval = false, evalparts;
+            var isBind = false, bindparts;
             if (parse_type === 1 && !kv.val && startsWith(kv.key, "this.")) {
                 kv.val = kv.key.substr(len_this);
                 kv.key = "targetPath";
             }
-            var isTryGetEval = parse_type === 2 || parse_type === 1;
-            if (isTryGetEval && kv.tag === "1") {
-                evalparts = getExprArgs(kv.val);
-                isEval = evalparts.length > 0;
+            var checkIsBind = parse_type === 2 || parse_type === 1;
+            if (checkIsBind && kv.tag === "1") {
+                bindparts = getExprArgs(kv.val);
+                isBind = bindparts.length > 0;
             }
-            if (isEval) {
+            if (isBind) {
                 switch (parse_type) {
                     case 2:
                         var source = dataContext || app;
-                        if (evalparts.length > 1) {
-                            source = resolvePath(app, evalparts[1]);
+                        if (bindparts.length > 1) {
+                            source = resolvePath(app, bindparts[1]);
                         }
-                        res[kv.key] = resolvePath(source, evalparts[0]);
+                        res[kv.key] = resolvePath(source, bindparts[0]);
                         break;
                     case 1:
-                        if (evalparts.length > 0 && kv.key === "param") {
-                            res[kv.key] = evalparts;
-                            res.isEval = true;
+                        if (bindparts.length > 0 && kv.key === "param") {
+                            res[kv.key] = bindparts;
+                            res.isBind = true;
                         }
                         break;
                     default:
@@ -2688,7 +2688,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
             mode: 1,
             converter: null,
             param: null,
-            isEval: false
+            isBind: false
         };
         var converter;
         var app = boot.getApp();
@@ -2710,7 +2710,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
         }
         if (!!bindInfo.param) {
             bindingOpts.param = bindInfo.param;
-            bindingOpts.isEval = bindInfo.isEval;
+            bindingOpts.isBind = bindInfo.isBind;
         }
         if (!!bindInfo.mode) {
             bindingOpts.mode = bindModeMap[bindInfo.mode];
@@ -2780,7 +2780,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
             _this._mode = opts.mode;
             _this._converter = !opts.converter ? null : opts.converter;
             _this._param = opts.param;
-            _this._isEval = !!opts.isEval;
+            _this._isBindParam = !!opts.isBind;
             _this._srcPath = getPathParts(opts.sourcePath);
             _this._tgtPath = getPathParts(opts.targetPath);
             if (_this._tgtPath.length < 1) {
@@ -3187,7 +3187,9 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
             configurable: true
         });
         Object.defineProperty(Binding.prototype, "target", {
-            get: function () { return this._target; },
+            get: function () {
+                return this._target;
+            },
             set: function (v) {
                 if (this._setTarget(v)) {
                     this._update();
@@ -3197,7 +3199,9 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
             configurable: true
         });
         Object.defineProperty(Binding.prototype, "source", {
-            get: function () { return this._source; },
+            get: function () {
+                return this._source;
+            },
             set: function (v) {
                 if (this._setSource(v)) {
                     this._update();
@@ -3207,12 +3211,16 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
             configurable: true
         });
         Object.defineProperty(Binding.prototype, "targetPath", {
-            get: function () { return this._tgtPath; },
+            get: function () {
+                return this._tgtPath;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Binding.prototype, "sourcePath", {
-            get: function () { return this._srcPath; },
+            get: function () {
+                return this._srcPath;
+            },
             enumerable: true,
             configurable: true
         });
@@ -3261,32 +3269,38 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
             configurable: true
         });
         Object.defineProperty(Binding.prototype, "isSourceFixed", {
-            get: function () { return this._srcFixed; },
+            get: function () {
+                return this._srcFixed;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Binding.prototype, "mode", {
-            get: function () { return this._mode; },
+            get: function () {
+                return this._mode;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Binding.prototype, "converter", {
-            get: function () { return this._converter; },
+            get: function () {
+                return this._converter;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Binding.prototype, "param", {
             get: function () {
-                if (this._isEval) {
+                if (this._isBindParam) {
                     if (isNt(this._param)) {
                         return this._param;
                     }
-                    var evalparts = this._param;
+                    var bindparts = this._param;
                     var source = this.source;
-                    if (evalparts.length > 1) {
-                        source = resolvePath(boot.getApp(), evalparts[1]);
+                    if (bindparts.length > 1) {
+                        source = resolvePath(boot.getApp(), bindparts[1]);
                     }
-                    return resolvePath(source, evalparts[0]);
+                    return resolvePath(source, bindparts[0]);
                 }
                 else {
                     return this._param;
@@ -3296,7 +3310,9 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
             configurable: true
         });
         Object.defineProperty(Binding.prototype, "isDisabled", {
-            get: function () { return !!this._state; },
+            get: function () {
+                return !!this._state;
+            },
             set: function (v) {
                 var s;
                 v = !!v;
@@ -4573,6 +4589,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.13.3";
+    exports.VERSION = "2.14.0";
     bootstrap_8.Bootstrap._initFramework();
 });

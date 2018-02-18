@@ -227,12 +227,12 @@
                 <select id="prodMCat" size="1" class="span3" data-bind="get(prodMCatDataBind)"
     @*
     Providing the datasource through the options - not using databinding
-    eval(ParentCategories,productVM.filter) takes two arguments - the first is the path, the second is the source
+    bind(ParentCategories,productVM.filter) takes two arguments - the first is the path, the second is the source
     the second parameter is optional. Their semantics is the same as in the usual databinding.
     We could write it without the source argument, like that -
-    data-view-options="valuePath=ProductCategoryID,textPath=Name,dataSource=eval(filter.ParentCategories)"></select>
+    data-view-options="valuePath=ProductCategoryID,textPath=Name,dataSource=bind(filter.ParentCategories)"></select>
     *@
-                 data-view-options="valuePath=ProductCategoryID,textPath=Name,dataSource=eval(ParentCategories,productVM.filter)"></select>
+                 data-view-options="valuePath=ProductCategoryID,textPath=Name,dataSource=bind(ParentCategories,productVM.filter)"></select>
             </td>
             <td>
                 <label for="prodSCat">Sub Category:</label>
@@ -305,7 +305,7 @@
     rowStateField:IsActive,
     isHandleAddNew:true,
     isCanEdit:true,
-    editor:eval(dialogOptions,productVM),
+    editor:bind(dialogOptions,productVM),
     details:{templateID:productDetailsTemplate}
 </script>
 
