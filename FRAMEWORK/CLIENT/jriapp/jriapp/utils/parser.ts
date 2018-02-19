@@ -348,8 +348,8 @@ function isGetExpr(val: string): boolean {
 }
 
 
-function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext: any): any | TBindingInfo {
-    const res: any | TBindingInfo = parse_type === PARSE_TYPE.BINDING ? {
+function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext: any): any {
+    const res: any = parse_type === PARSE_TYPE.BINDING ? {
         targetPath: "",
         sourcePath: "",
         to: "",
