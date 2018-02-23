@@ -16,7 +16,7 @@ import { TDbSet } from "./dbset";
 const utils = Utils, { format } = utils.str, { getNewID, extend } = utils.core, arrHelper = utils.arr;
 
 export class Association extends BaseObject {
-    private _objId: string;
+    private _uniqueID: string;
     private _name: string;
     private _dbContext: DbContext;
     private _onDeleteAction: DELETE_ACTION;
@@ -42,7 +42,7 @@ export class Association extends BaseObject {
     constructor(options: IAssocConstructorOptions) {
         super();
         const self = this;
-        this._objId = getNewID("ass");
+        this._uniqueID = getNewID("ass");
         const opts: IAssocConstructorOptions = extend({
             dbContext: null,
             parentName: "",
@@ -51,7 +51,7 @@ export class Association extends BaseObject {
             childKeyFields: [],
             parentToChildrenName: null,
             childToParentName: null,
-            name: this._objId,
+            name: this._uniqueID,
             onDeleteAction: DELETE_ACTION.NoAction
         }, options);
 
@@ -108,21 +108,21 @@ export class Association extends BaseObject {
         }
         ds.addOnCollChanged((sender, args) => {
             self._onParentCollChanged(args);
-        }, self._objId, null, TPriority.High);
+        }, self._uniqueID, null, TPriority.High);
         ds.addOnBeginEdit((sender, args) => {
             self._onParentEdit(args.item, true, false);
-        }, self._objId, null, TPriority.High);
+        }, self._uniqueID, null, TPriority.High);
         ds.addOnEndEdit((sender, args) => {
             self._onParentEdit(args.item, false, args.isCanceled);
-        }, self._objId, null, TPriority.High);
+        }, self._uniqueID, null, TPriority.High);
         ds.addOnItemDeleting((sender, args) => {
-        }, self._objId, null, TPriority.High);
+        }, self._uniqueID, null, TPriority.High);
         ds.addOnStatusChanged((sender, args) => {
             self._onParentStatusChanged(args.item, args.oldStatus);
-        }, self._objId, null, TPriority.High);
+        }, self._uniqueID, null, TPriority.High);
         ds.addOnCommitChanges((sender, args) => {
             self._onParentCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
-        }, self._objId, null, TPriority.High);
+        }, self._uniqueID, null, TPriority.High);
     }
     protected _bindChildDS(): void {
         const self = this, ds = this._childDS;
@@ -131,19 +131,19 @@ export class Association extends BaseObject {
         }
         ds.addOnCollChanged((sender, args) => {
             self._onChildCollChanged(args);
-        }, self._objId, null, TPriority.High);
+        }, self._uniqueID, null, TPriority.High);
         ds.addOnBeginEdit((sender, args) => {
             self._onChildEdit(args.item, true, false);
-        }, self._objId, null, TPriority.High);
+        }, self._uniqueID, null, TPriority.High);
         ds.addOnEndEdit((sender, args) => {
             self._onChildEdit(args.item, false, args.isCanceled);
-        }, self._objId, null, TPriority.High);
+        }, self._uniqueID, null, TPriority.High);
         ds.addOnStatusChanged((sender, args) => {
             self._onChildStatusChanged(args.item, args.oldStatus);
-        }, self._objId, null, TPriority.High);
+        }, self._uniqueID, null, TPriority.High);
         ds.addOnCommitChanges((sender, args) => {
             self._onChildCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
-        }, self._objId, null, TPriority.High);
+        }, self._uniqueID, null, TPriority.High);
     }
     protected _onParentCollChanged(args: ICollChangedArgs<IEntityItem>): void {
         const self = this, changedKeys: any = {};
@@ -572,14 +572,14 @@ export class Association extends BaseObject {
         if (!ds) {
             return;
         }
-        ds.objEvents.offNS(self._objId);
+        ds.objEvents.offNS(self._uniqueID);
     }
     protected _unbindChildDS(): void {
         const self = this, ds = this.childDS;
         if (!ds) {
             return;
         }
-        ds.objEvents.offNS(self._objId);
+        ds.objEvents.offNS(self._uniqueID);
     }
     protected refreshParentMap(): string[] {
         this._resetParentMap();

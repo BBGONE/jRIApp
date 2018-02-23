@@ -31,7 +31,7 @@ export class Row extends BaseObject {
     private _tr: HTMLTableRowElement;
     private _item: ICollectionItem;
     private _cells: BaseCell<BaseColumn>[];
-    private _objId: string;
+    private _uniqueID: string;
     private _expanderCell: ExpanderCell;
     private _actionsCell: ActionsCell;
     private _rowSelectorCell: RowSelectorCell;
@@ -49,7 +49,7 @@ export class Row extends BaseObject {
         this._tr = null;
         this._item = item;
         this._cells = [];
-        this._objId = getNewID("tr");
+        this._uniqueID = getNewID("tr");
         this._expanderCell = null;
         this._actionsCell = null;
         this._rowSelectorCell = null;
@@ -114,7 +114,7 @@ export class Row extends BaseObject {
             if (!!this.isHasStateField) {
                 this._item.objEvents.onProp(this._grid.options.rowStateField, () => {
                     fnState(self);
-                }, this._objId);
+                }, this._uniqueID);
             }
             fnState(self);
         }
@@ -123,7 +123,7 @@ export class Row extends BaseObject {
         if (!this._tr) {
             return;
         }
-        this._item.objEvents.offNS(this._objId);
+        this._item.objEvents.offNS(this._uniqueID);
         dom.removeNode(this._tr);
         const cells = this._cells, len = cells.length;
         for (let i = 0; i < len; i += 1) {
@@ -219,7 +219,7 @@ export class Row extends BaseObject {
         return this._grid.columns;
     }
     get uniqueID(): string {
-        return this._objId;
+        return this._uniqueID;
     }
     get itemKey(): string {
         return (!this._item) ? null : this._item._key;

@@ -120,7 +120,7 @@ export class DataForm extends BaseObject {
     private static _DATA_FORM_SELECTOR = ["*[", DATA_ATTR.DATA_VIEW, "='", ELVIEW_NM.DataForm, "']"].join("");
     private static _DATA_CONTENT_SELECTOR = ["*[", DATA_ATTR.DATA_CONTENT, "]:not([", DATA_ATTR.DATA_COLUMN, "])"].join("");
     private _el: HTMLElement;
-    private _objId: string;
+    private _uniqueID: string;
     private _dataContext: IBaseObject;
     private _errorsService: IFormErrorsService;
     private _isEditing: boolean;
@@ -136,7 +136,7 @@ export class DataForm extends BaseObject {
         super();
         const self = this;
         this._el = el;
-        this._objId = getNewID("frm");
+        this._uniqueID = getNewID("frm");
         this._dataContext = null;
         this._errorsService = !options.formErrorsService ? getErrorsService() : options.formErrorsService;
         dom.addClass([el], cssStyles.dataform);
@@ -159,7 +159,7 @@ export class DataForm extends BaseObject {
                 if (!self.getIsStateDirty()) {
                     self.dispose();
                 }
-            }, self._objId);
+            }, self._uniqueID);
         }
     }
     dispose(): void {
@@ -174,7 +174,7 @@ export class DataForm extends BaseObject {
         const parentDataForm = this._parentDataForm;
         this._parentDataForm = null;
         if (!!parentDataForm && !parentDataForm.getIsStateDirty()) {
-            parentDataForm.objEvents.offNS(this._objId);
+            parentDataForm.objEvents.offNS(this._uniqueID);
         }
         this._dataContext = null;
         this._errorsService = null;
@@ -309,26 +309,26 @@ export class DataForm extends BaseObject {
 
         dataContext.objEvents.addOnDisposed(() => {
             self.dataContext = null;
-        }, self._objId);
+        }, self._uniqueID);
 
         if (!!this._editable) {
-            this._editable.objEvents.onProp("isEditing", self._onIsEditingChanged, self._objId, self);
+            this._editable.objEvents.onProp("isEditing", self._onIsEditingChanged, self._uniqueID, self);
         }
 
         if (!!this._errNotification) {
-            this._errNotification.addOnErrorsChanged(self._onDSErrorsChanged, self._objId, self);
+            this._errNotification.addOnErrorsChanged(self._onDSErrorsChanged, self._uniqueID, self);
         }
     }
     private _unbindDS(): void {
         const dataContext = this._dataContext;
         this._setErrors(null);
         if (!!dataContext && !dataContext.getIsStateDirty()) {
-            dataContext.objEvents.offNS(this._objId);
+            dataContext.objEvents.offNS(this._uniqueID);
             if (!!this._editable) {
-                this._editable.objEvents.offNS(this._objId);
+                this._editable.objEvents.offNS(this._uniqueID);
             }
             if (!!this._errNotification) {
-                this._errNotification.offOnErrorsChanged(this._objId);
+                this._errNotification.offOnErrorsChanged(this._uniqueID);
             }
         }
         this._editable = null;

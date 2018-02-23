@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { BRACKETS } from "../const";
 import {
-    ISubmittable, IErrorNotification, IEditable, IPropertyBag, IBaseObject, IValidatable
+    ISubmittable, IErrorNotification, IEditable, IPropertyBag, IBaseObject, IValidatable, IValidationError
 } from "../int";
 import { ERRS } from "../lang";
 import { ICollection } from "../collection/int";
@@ -19,6 +19,10 @@ function dummyIsCollection(obj: any): obj is ICollection<any> {
     return false;
 }
 
+function dummyIsValidationError(obj: any): obj is IValidationError {
+    return false;
+}
+
 function isPropBag(obj: any): obj is IPropertyBag {
     return !!obj && obj.isPropertyBag;
 }
@@ -31,8 +35,7 @@ export class SysUtils {
     // DUMMY implementations collection
     static isCollection: (obj: any) => obj is ICollection<any> = dummyIsCollection;
     static getItemByProp: (obj: any, prop: string) => any = (obj: any, prop: string) => { return null; };
-    static isValidationError: (obj: any) => boolean = (obj: any) => { return false; };
-
+    static isValidationError: (obj: any) => obj is IValidationError = dummyIsValidationError;
     // System  Helper functions
     static isBaseObj: (obj: any) => obj is IBaseObject = dummyIsBaseObj;
     static isEditable(obj: any): obj is IEditable {

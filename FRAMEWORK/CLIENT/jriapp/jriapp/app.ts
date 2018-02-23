@@ -27,7 +27,7 @@ const enum AppState { None, Starting, Started, Disposed, Error }
 export class Application extends BaseObject implements IApplication {
     private _UC: any;
     private _moduleInits: IIndexer<(app: IApplication) => void>;
-    private _objId: string;
+    private _uniqueID: string;
     private _objMaps: any[];
     private _appName: string;
     private _exports: IIndexer<any>;
@@ -48,7 +48,7 @@ export class Application extends BaseObject implements IApplication {
         if (!!boot.getApp()) {
             throw new Error(format(ERRS.ERR_APP_NAME_NOT_UNIQUE, appName));
         }
-        this._objId = getNewID("app");
+        this._uniqueID = getNewID("app");
         this._appState = AppState.None;
         this._moduleInits = moduleInits;
         this._viewFactory = createElViewFactory(boot.elViewRegister);
@@ -95,6 +95,28 @@ export class Application extends BaseObject implements IApplication {
     it can return a promise when it's needed
     */
     protected onStartUp(): any {
+    }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        const self = this;
+        try {
+            self._appState = AppState.Disposed;
+            boot._getInternal().unregisterApp(<IApplication>self);
+            self._cleanUpObjMaps();
+            self._dataBindingService.dispose();
+            self._dataBindingService = null;
+            self._viewFactory.dispose();
+            self._exports = {};
+            self._moduleInits = {};
+            self._UC = {};
+            self._options = null;
+            self._viewFactory = null;
+        } finally {
+            super.dispose();
+        }
     }
     _getInternal(): IInternalAppMethods {
         return this._internal;
@@ -308,33 +330,11 @@ export class Application extends BaseObject implements IApplication {
         }, group);
         boot.templateLoader.registerTemplateGroup(this.appName + "." + name, group2);
     }
-    dispose(): void {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        const self = this;
-        try {
-            self._appState = AppState.Disposed;
-            boot._getInternal().unregisterApp(<IApplication>self);
-            self._cleanUpObjMaps();
-            self._dataBindingService.dispose();
-            self._dataBindingService = null;
-            self._viewFactory.dispose();
-            self._exports = {};
-            self._moduleInits = {};
-            self._UC = {};
-            self._options = null;
-            self._viewFactory = null;
-        } finally {
-            super.dispose();
-        }
-    }
     toString(): string {
         return "Application: " + this.appName;
     }
     get uniqueID(): string {
-        return this._objId;
+        return this._uniqueID;
     }
     get options(): IAppOptions {
         return this._options;

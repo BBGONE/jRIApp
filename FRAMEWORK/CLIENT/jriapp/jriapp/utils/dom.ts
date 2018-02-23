@@ -66,7 +66,7 @@ export class DomUtils {
             delete map[key];
         }
     }
-    static isContained(oNode: any, oCont: any) {
+    static isContained(oNode: any, oCont: any): boolean {
         if (!oNode) {
             return false;
         }
@@ -109,7 +109,7 @@ export class DomUtils {
             parent.insertBefore(child, firstChild);
         }
     }
-    static removeNode(node: Node) {
+    static removeNode(node: Node): void {
         if (!node) {
             return;
         }
@@ -118,7 +118,7 @@ export class DomUtils {
             pnd.removeChild(node);
         }
     }
-    static insertAfter(node: Node, refNode: Node) {
+    static insertAfter(node: Node, refNode: Node): void {
         const parent = refNode.parentNode;
         if (parent.lastChild === refNode) {
             parent.appendChild(node);
@@ -126,11 +126,11 @@ export class DomUtils {
             parent.insertBefore(node, refNode.nextSibling);
         }
     }
-    static insertBefore(node: Node, refNode: Node) {
+    static insertBefore(node: Node, refNode: Node): Node {
         const parent = refNode.parentNode;
-        parent.insertBefore(node, refNode);
+        return parent.insertBefore(node, refNode);
     }
-    static wrap(elem: Element, wrapper: Element) {
+    static wrap(elem: Element, wrapper: Element): void {
         const parent = elem.parentElement, nsibling = elem.nextSibling;
         if (!parent) {
             return;
@@ -138,7 +138,7 @@ export class DomUtils {
         wrapper.appendChild(elem);
         (!nsibling) ? parent.appendChild(wrapper) : parent.insertBefore(wrapper, nsibling);
     }
-    static unwrap(elem: Element) {
+    static unwrap(elem: Element): void {
         const wrapper = elem.parentElement;
         if (!wrapper) {
             return;

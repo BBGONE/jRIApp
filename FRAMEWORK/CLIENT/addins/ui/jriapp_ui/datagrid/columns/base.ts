@@ -34,7 +34,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
     private _th: HTMLTableHeaderCellElement;
     private _options: IColumnInfo;
     private _isSelected: boolean;
-    private _objId: string;
+    private _uniqueID: string;
     private _col: HTMLDivElement;
     private _template: ITemplate;
 
@@ -45,7 +45,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         this._th = options.th;
         this._options = options.colInfo;
         this._isSelected = false;
-        this._objId = getNewID("th");
+        this._uniqueID = getNewID("th");
         const col = doc.createElement("div");
         this._col = col;
 
@@ -127,7 +127,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         return "BaseColumn";
     }
     get uniqueID(): string {
-        return this._objId;
+        return this._uniqueID;
     }
     get width(): number {
         return this._th.offsetWidth;

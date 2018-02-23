@@ -2,6 +2,8 @@
 import { IIndexer } from "../int";
 import { CoreUtils } from "./coreutils";
 
+const { toArray } = CoreUtils;
+ 
 export interface IArrayLikeList<T> {
     length: number;
     [index: number]: T;
@@ -19,11 +21,9 @@ export class ArrayHelper {
     public static fromList<T extends U, U>(list: IArrayLikeList<U>): T[];
     public static fromList<T>(list: IArrayLikeList<any>): T[];
     public static fromList<T>(list: IArrayLikeList<T>): T[];
-
     public static fromList(list: IArrayLikeList<any>): any[] {
         return [].slice.call(list);
     }
-
     public static merge<T>(arrays: Array<Array<T>>): Array<T> {
         return [].concat.apply([], arrays);
     }
@@ -35,7 +35,7 @@ export class ArrayHelper {
         for (let i = 0; i < len; i += 1) {
             map["" + arr[i]] = arr[i];
         }
-        return CoreUtils.toArray(map);
+        return toArray(map);
     }
     public static toMap<T extends object>(arr: T[], key: (obj: T) => string): IIndexer<T> {
         const map = <IIndexer<any>>{}, len = arr.length;

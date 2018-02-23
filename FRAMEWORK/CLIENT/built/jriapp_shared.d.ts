@@ -182,6 +182,10 @@ declare module "jriapp_shared/int" {
     export interface IValidatable {
         validationErrors: IValidationInfo[];
     }
+    export interface IValidationError {
+        readonly item: any;
+        readonly validations: IValidationInfo[];
+    }
     export interface IErrorNotification extends IBaseObject {
         getIsHasErrors(): boolean;
         addOnErrorsChanged(fn: TEventHandler, nmspace?: string, context?: any): void;
@@ -709,14 +713,14 @@ declare module "jriapp_shared/collection/int" {
 }
 declare module "jriapp_shared/utils/sysutils" {
     import { BRACKETS } from "jriapp_shared/const";
-    import { ISubmittable, IErrorNotification, IEditable, IPropertyBag, IBaseObject, IValidatable } from "jriapp_shared/int";
+    import { ISubmittable, IErrorNotification, IEditable, IPropertyBag, IBaseObject, IValidatable, IValidationError } from "jriapp_shared/int";
     import { ICollection } from "jriapp_shared/collection/int";
     export class SysUtils {
         static isBinding: (obj: any) => boolean;
         static readonly isPropBag: (obj: any) => obj is IPropertyBag;
         static isCollection: (obj: any) => obj is ICollection<any>;
         static getItemByProp: (obj: any, prop: string) => any;
-        static isValidationError: (obj: any) => boolean;
+        static isValidationError: (obj: any) => obj is IValidationError;
         static isBaseObj: (obj: any) => obj is IBaseObject;
         static isEditable(obj: any): obj is IEditable;
         static isSubmittable(obj: any): obj is ISubmittable;
@@ -736,7 +740,7 @@ declare module "jriapp_shared/utils/sysutils" {
     }
 }
 declare module "jriapp_shared/errors" {
-    import { IValidationInfo } from "jriapp_shared/int";
+    import { IValidationInfo, IValidationError } from "jriapp_shared/int";
     export class BaseError {
         private _message;
         constructor(message?: string);
@@ -764,7 +768,7 @@ declare module "jriapp_shared/errors" {
         readonly message: string;
         toString(): string;
     }
-    export class ValidationError extends BaseError {
+    export class ValidationError extends BaseError implements IValidationError {
         private _validations;
         private _item;
         constructor(validations: IValidationInfo[], item: any);
@@ -1093,13 +1097,13 @@ declare module "jriapp_shared/utils/waitqueue" {
         lastWins?: boolean;
     }
     export class WaitQueue extends BaseObject {
-        private _objId;
+        private _uniqueID;
         private _owner;
         private _queue;
         constructor(owner: IBaseObject);
+        dispose(): void;
         protected _checkQueue(prop: string, value: any): void;
         enQueue(item: IWaitQueueItem): void;
-        dispose(): void;
         toString(): string;
         readonly uniqueID: string;
         readonly owner: IBaseObject;
@@ -1146,7 +1150,7 @@ declare module "jriapp_shared/collection/base" {
         getItemsWithErrors(): TItem[];
     }
     export abstract class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
-        private _objId;
+        private _uniqueID;
         private _perms;
         private _options;
         private _errors;
@@ -1389,9 +1393,9 @@ declare module "jriapp_shared/collection/item" {
     export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> extends BaseObject implements ICollectionItem {
         private __aspect;
         constructor(aspect: TAspect);
+        dispose(): void;
         readonly _aspect: TAspect;
         readonly _key: string;
-        dispose(): void;
         toString(): string;
     }
 }
@@ -1446,12 +1450,13 @@ declare module "jriapp_shared/utils/anylist" {
         protected _validateFields(): IValidationInfo[];
         _getProp(name: string): any;
         _setProp(name: string, val: any): void;
+        toString(): string;
     }
     export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAnyValItem {
-        val: any;
         isHasProp(prop: string): boolean;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
+        val: any;
         readonly isPropertyBag: boolean;
         readonly list: AnyList;
         toString(): string;
@@ -1478,7 +1483,7 @@ declare module "jriapp_shared/utils/jsonarray" {
         private _owner;
         private _pathToArray;
         private _list;
-        private _objId;
+        private _uniqueID;
         constructor(owner: JsonBag, pathToArray: string);
         dispose(): void;
         protected updateArray(arr: any[]): void;

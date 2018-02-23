@@ -44,7 +44,7 @@ function _removeToolTips(toolTips: Element[]): void {
 
 export class Pager extends BaseObject implements ISelectableProvider {
     private _el: HTMLElement;
-    private _objId: string;
+    private _uniqueID: string;
     private _options: IPagerOptions;
     private _rowsPerPage: number;
     private _rowCount: number;
@@ -80,7 +80,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         options.sliderSize = options.sliderSize < 3 ? 3 : options.sliderSize;
 
         this._el = el;
-        this._objId = getNewID("pgr");
+        this._uniqueID = getNewID("pgr");
         this._rowsPerPage = 0;
         this._rowCount = 0;
         this._currentPage = 1;
@@ -100,11 +100,11 @@ export class Pager extends BaseObject implements ISelectableProvider {
                 });
             });
         }, {
-                nmspace: this._objId,
+                nmspace: this._uniqueID,
                 // using delegation
                 matchElement: (el: Element) => {
                     const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE);
-                    return self._objId === attr;
+                    return self._uniqueID === attr;
                 }
             });
 
@@ -122,7 +122,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         this._dsDebounce.dispose();
         this._unbindDS();
         this._clearContent();
-        dom.events.offNS(this._el, this._objId);
+        dom.events.offNS(this._el, this._uniqueID);
         this._el = null;
         this._options = <any>{};
         super.dispose();
@@ -278,10 +278,10 @@ export class Pager extends BaseObject implements ISelectableProvider {
                     }
                     break;
             }
-        }, self._objId);
-        ds.addOnPageIndexChanged(self._onPageIndexChanged, self._objId, self);
-        ds.addOnPageSizeChanged(self._onPageSizeChanged, self._objId, self);
-        ds.addOnTotalCountChanged(self._onTotalCountChanged, self._objId, self);
+        }, self._uniqueID);
+        ds.addOnPageIndexChanged(self._onPageIndexChanged, self._uniqueID, self);
+        ds.addOnPageSizeChanged(self._onPageSizeChanged, self._uniqueID, self);
+        ds.addOnTotalCountChanged(self._onTotalCountChanged, self._uniqueID, self);
         this._reset();
     }
     protected _unbindDS(): void {
@@ -289,7 +289,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         if (!ds) {
             return;
         }
-        ds.objEvents.offNS(self._objId);
+        ds.objEvents.offNS(self._uniqueID);
     }
     protected _reset(): void {
         const ds = this.dataSource;
@@ -312,7 +312,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         return a;
     }
     private _addScope(el: Element, page: number): void {
-        el.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this._objId);
+        el.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, this._uniqueID);
         el.setAttribute("data-page", "" + page);
     }
     protected _createFirst(): HTMLElement {

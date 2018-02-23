@@ -52,7 +52,7 @@ const enum PNL_EVENTS {
 
 export class StackPanel extends BaseObject implements ISelectableProvider {
     private _el: HTMLElement;
-    private _objId: string;
+    private _uniqueID: string;
     private _currentItem: ICollectionItem;
     private _itemMap: { [key: string]: IMappedItem; };
     private _options: IStackPanelConstructorOptions;
@@ -89,7 +89,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             dom.addClass([el], css.horizontal);
         }
         this._debounce = new Debounce();
-        this._objId = getNewID("pnl");
+        this._uniqueID = getNewID("pnl");
         this._isKeyNavigation = false;
         this._currentItem = null;
         this._itemMap = {};
@@ -283,18 +283,18 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         if (!ds) {
             return;
         }
-        ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
-        ds.addOnCurrentChanged(self._onDSCurrentChanged, self._objId, self);
+        ds.addOnCollChanged(self._onDSCollectionChanged, self._uniqueID, self);
+        ds.addOnCurrentChanged(self._onDSCurrentChanged, self._uniqueID, self);
         ds.addOnStatusChanged((sender, args) => {
             self._onItemStatusChanged(args.item, args.oldStatus);
-        }, self._objId);
+        }, self._uniqueID);
     }
     protected _unbindDS():void {
         const self = this, ds = this.dataSource;
         if (!ds) {
             return;
         }
-        ds.objEvents.offNS(self._objId);
+        ds.objEvents.offNS(self._uniqueID);
     }
     protected _onItemClicked(div: HTMLElement, item: ICollectionItem): void {
         this._updateCurrent(item, false);
@@ -420,7 +420,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         return this._el;
     }
     get uniqueID(): string {
-        return this._objId;
+        return this._uniqueID;
     }
     get orientation(): TOrientation {
         return this._options.orientation;

@@ -839,6 +839,9 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lan
     function dummyIsCollection(obj) {
         return false;
     }
+    function dummyIsValidationError(obj) {
+        return false;
+    }
     function isPropBag(obj) {
         return !!obj && obj.isPropertyBag;
     }
@@ -1115,7 +1118,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lan
         SysUtils.isPropBag = isPropBag;
         SysUtils.isCollection = dummyIsCollection;
         SysUtils.getItemByProp = function (obj, prop) { return null; };
-        SysUtils.isValidationError = function (obj) { return false; };
+        SysUtils.isValidationError = dummyIsValidationError;
         SysUtils.isBaseObj = dummyIsBaseObj;
         return SysUtils;
     }());
@@ -1792,6 +1795,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
 define("jriapp_shared/utils/arrhelper", ["require", "exports", "jriapp_shared/utils/coreutils"], function (require, exports, coreutils_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var toArray = coreutils_2.CoreUtils.toArray;
     var ArrayHelper = (function () {
         function ArrayHelper() {
         }
@@ -1814,7 +1818,7 @@ define("jriapp_shared/utils/arrhelper", ["require", "exports", "jriapp_shared/ut
             for (var i = 0; i < len; i += 1) {
                 map["" + arr[i]] = arr[i];
             }
-            return coreutils_2.CoreUtils.toArray(map);
+            return toArray(map);
         };
         ArrayHelper.toMap = function (arr, key) {
             var map = {}, len = arr.length;
@@ -2727,11 +2731,21 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
         __extends(WaitQueue, _super);
         function WaitQueue(owner) {
             var _this = _super.call(this) || this;
-            _this._objId = coreUtils.getNewID("wq");
+            _this._uniqueID = coreUtils.getNewID("wq");
             _this._owner = owner;
             _this._queue = {};
             return _this;
         }
+        WaitQueue.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            this._owner.objEvents.offNS(this.uniqueID);
+            this._queue = {};
+            this._owner = null;
+            _super.prototype.dispose.call(this);
+        };
         WaitQueue.prototype._checkQueue = function (prop, value) {
             if (!this._owner || this._owner.getIsStateDirty()) {
                 return;
@@ -2850,22 +2864,12 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
                 self._checkQueue(property, self._owner[property]);
             }, 0);
         };
-        WaitQueue.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            this._owner.objEvents.offNS(this.uniqueID);
-            this._queue = {};
-            this._owner = null;
-            _super.prototype.dispose.call(this);
-        };
         WaitQueue.prototype.toString = function () {
-            return "WaitQueue " + this._objId;
+            return "WaitQueue " + this._uniqueID;
         };
         Object.defineProperty(WaitQueue.prototype, "uniqueID", {
             get: function () {
-                return this._objId;
+                return this._uniqueID;
             },
             enumerable: true,
             configurable: true
@@ -3270,7 +3274,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         function BaseCollection() {
             var _this = _super.call(this) || this;
             var self = _this;
-            _this._objId = getNewID("coll");
+            _this._uniqueID = getNewID("coll");
             _this._options = { enablePaging: false, pageSize: 50 };
             _this._isLoading = false;
             _this._isUpdating = false;
@@ -4231,7 +4235,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         });
         Object.defineProperty(BaseCollection.prototype, "uniqueID", {
             get: function () {
-                return this._objId;
+                return this._uniqueID;
             },
             enumerable: true,
             configurable: true
@@ -4998,6 +5002,17 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
             _this.__aspect = aspect;
             return _this;
         }
+        CollectionItem.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            var aspect = this.__aspect;
+            if (!aspect.getIsStateDirty()) {
+                aspect.dispose();
+            }
+            _super.prototype.dispose.call(this);
+        };
         Object.defineProperty(CollectionItem.prototype, "_aspect", {
             get: function () {
                 return this.__aspect;
@@ -5012,17 +5027,6 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
             enumerable: true,
             configurable: true
         });
-        CollectionItem.prototype.dispose = function () {
-            if (this.getIsDisposed()) {
-                return;
-            }
-            this.setDisposing();
-            var aspect = this.__aspect;
-            if (!aspect.getIsStateDirty()) {
-                aspect.dispose();
-            }
-            _super.prototype.dispose.call(this);
-        };
         CollectionItem.prototype.toString = function () {
             return "CollectionItem";
         };
@@ -5082,7 +5086,9 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             return this.item.toString() + "Aspect";
         };
         Object.defineProperty(ListItemAspect.prototype, "list", {
-            get: function () { return this.coll; },
+            get: function () {
+                return this.coll;
+            },
             enumerable: true,
             configurable: true
         });
@@ -5234,6 +5240,9 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                 sys.raiseProp(this.item, name);
             }
         };
+        AnyItemAspect.prototype.toString = function () {
+            return "AnyItemAspect";
+        };
         return AnyItemAspect;
     }(list_1.ListItemAspect));
     exports.AnyItemAspect = AnyItemAspect;
@@ -5242,12 +5251,6 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
         function AnyValListItem() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        Object.defineProperty(AnyValListItem.prototype, "val", {
-            get: function () { return this._aspect._getProp("val"); },
-            set: function (v) { this._aspect._setProp("val", v); },
-            enumerable: true,
-            configurable: true
-        });
         AnyValListItem.prototype.isHasProp = function (prop) {
             if (startsWith(prop, "[")) {
                 return true;
@@ -5286,6 +5289,16 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                 }
             }
         };
+        Object.defineProperty(AnyValListItem.prototype, "val", {
+            get: function () {
+                return this._aspect._getProp("val");
+            },
+            set: function (v) {
+                this._aspect._setProp("val", v);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(AnyValListItem.prototype, "isPropertyBag", {
             get: function () {
                 return true;
@@ -5403,14 +5416,14 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
         function JsonArray(owner, pathToArray) {
             var _this = _super.call(this) || this;
             _this._list = null;
-            _this._objId = getNewID("jsn");
+            _this._uniqueID = getNewID("jsn");
             _this._owner = owner;
             _this._pathToArray = pathToArray;
             _this.owner.objEvents.onProp("val", function () {
                 if (!!_this._list) {
                     _this._list.setValues(_this.getArray());
                 }
-            }, _this._objId);
+            }, _this._uniqueID);
             return _this;
         }
         JsonArray.prototype.dispose = function () {
@@ -5418,7 +5431,7 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
                 return;
             }
             this.setDisposing();
-            this._owner.objEvents.offNS(this._objId);
+            this._owner.objEvents.offNS(this._uniqueID);
             this._list.dispose();
             this._list = null;
             this._owner = null;
@@ -5490,11 +5503,11 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
                         if (!!validationInfo && validationInfo.errors.length > 0) {
                             args.errors = validationInfo.errors;
                         }
-                    }, this._objId);
+                    }, this._uniqueID);
                     this._list.addOnValidateItem(function (s, args) {
                         var validationInfos = _this._validateBag(args.item);
                         args.result = validationInfos;
-                    }, this._objId);
+                    }, this._uniqueID);
                     this._list.setValues(this.getArray());
                 }
                 return this._list;

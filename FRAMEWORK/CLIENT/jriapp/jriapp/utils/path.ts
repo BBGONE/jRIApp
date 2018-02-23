@@ -128,7 +128,7 @@ export class PathHelper {
 
         return res;
     }
-    static getFrameworkCssPath() {
+    static getFrameworkCssPath(): string {
         let res = _cache["css"];
         if (!res) {
             res = PathHelper.getFrameworkPath() + [stylesDir, "/"].join("");
@@ -136,7 +136,7 @@ export class PathHelper {
         }
         return res;
     }
-    static getFrameworkImgPath() {
+    static getFrameworkImgPath(): string {
         let res = _cache["img"];
         if (!res) {
             res = PathHelper.getFrameworkPath() + [imageDir, "/"].join("");

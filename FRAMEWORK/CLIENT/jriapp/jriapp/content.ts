@@ -14,8 +14,6 @@ export function createContentFactoryList(): IContentFactoryList {
 
 // the base content factory It is always the last in the chain of factories
 class LastFactory implements IContentFactory {
-    constructor() {
-    }
     getContentType(options: IContentOptions): IContentConstructor {
         throw new Error(ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
     }
@@ -30,7 +28,7 @@ class FactoryList implements IContentFactoryList {
     constructor() {
         this._factory = new LastFactory();
     }
-    addFactory(factoryGetter: TFactoryGetter) {
+    addFactory(factoryGetter: TFactoryGetter): void {
         this._factory = factoryGetter(this._factory);
     }
     getContentType(options: IContentOptions): IContentConstructor {

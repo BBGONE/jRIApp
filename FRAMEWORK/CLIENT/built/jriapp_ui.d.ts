@@ -159,7 +159,7 @@ declare module "jriapp_ui/baseview" {
     export { IEventChangedArgs, EVENT_CHANGE_TYPE };
     export function addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void;
     export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber, IValidatable {
-        private _objId;
+        private _uniqueID;
         private _el;
         private _subscribeFlags;
         private _viewState;
@@ -332,7 +332,7 @@ declare module "jriapp_ui/listbox" {
     }
     export class ListBox extends BaseObject implements ISubscriber {
         private _el;
-        private _objId;
+        private _uniqueID;
         private _isRefreshing;
         private _selectedValue;
         private _keyMap;
@@ -438,7 +438,7 @@ declare module "jriapp_ui/content/lookup" {
         private _converter;
         private _listBox;
         private _isListBoxCachedExternally;
-        private _objId;
+        private _uniqueID;
         constructor(options: IConstructorContentOptions);
         dispose(): void;
         protected getConverter(isEdit: boolean): IConverter;
@@ -515,7 +515,7 @@ declare module "jriapp_ui/dialog" {
         click: () => void;
     }
     export class DataEditDialog extends BaseObject implements ITemplateEvents {
-        private _objId;
+        private _uniqueID;
         private _dataContext;
         private _templateID;
         private _submitOnOK;
@@ -752,7 +752,7 @@ declare module "jriapp_ui/datagrid/columns/base" {
         private _th;
         private _options;
         private _isSelected;
-        private _objId;
+        private _uniqueID;
         private _col;
         private _template;
         constructor(grid: DataGrid, options: ICellInfo);
@@ -901,7 +901,7 @@ declare module "jriapp_ui/datagrid/rows/row" {
         private _tr;
         private _item;
         private _cells;
-        private _objId;
+        private _uniqueID;
         private _expanderCell;
         private _actionsCell;
         private _rowSelectorCell;
@@ -1022,7 +1022,7 @@ declare module "jriapp_ui/datagrid/rows/details" {
         private _item;
         private _cell;
         private _parentRow;
-        private _objId;
+        private _uniqueID;
         private _isFirstShow;
         constructor(options: {
             grid: DataGrid;
@@ -1154,7 +1154,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         private _options;
         private _table;
         private _name;
-        private _objId;
+        private _uniqueID;
         private _rowMap;
         private _rows;
         private _columns;
@@ -1317,7 +1317,7 @@ declare module "jriapp_ui/pager" {
     }
     export class Pager extends BaseObject implements ISelectableProvider {
         private _el;
-        private _objId;
+        private _uniqueID;
         private _options;
         private _rowsPerPage;
         private _rowCount;
@@ -1399,7 +1399,7 @@ declare module "jriapp_ui/stackpanel" {
     }
     export class StackPanel extends BaseObject implements ISelectableProvider {
         private _el;
-        private _objId;
+        private _uniqueID;
         private _currentItem;
         private _itemMap;
         private _options;
@@ -1555,7 +1555,7 @@ declare module "jriapp_ui/dataform" {
         private static _DATA_FORM_SELECTOR;
         private static _DATA_CONTENT_SELECTOR;
         private _el;
-        private _objId;
+        private _uniqueID;
         private _dataContext;
         private _errorsService;
         private _isEditing;

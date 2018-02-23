@@ -162,7 +162,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     private _options: IDataGridOptions;
     private _table: HTMLTableElement;
     private _name: string;
-    private _objId: string;
+    private _uniqueID: string;
     private _rowMap: IIndexer<Row>;
     private _rows: Row[];
     private _columns: BaseColumn[];
@@ -214,7 +214,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._table = table;
         dom.addClass([table], css.dataTable);
         this._name = table.getAttribute(DATA_ATTR.DATA_NAME);
-        this._objId = getNewID("grd");
+        this._uniqueID = getNewID("grd");
         this._rowMap = {};
         this._rows = [];
         this._columns = [];
@@ -745,24 +745,24 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             oldCurrent = coll.currentItem;
         };
 
-        ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
+        ds.addOnCollChanged(self._onDSCollectionChanged, self._uniqueID, self);
         ds.addOnCurrentChanged(() => {
             self._updateCurrent();
-        }, self._objId, self);
+        }, self._uniqueID, self);
         ds.addOnBeginEdit((sender, args) => {
             self._onItemEdit(args.item, true, false);
-        }, self._objId);
+        }, self._uniqueID);
         ds.addOnEndEdit((sender, args) => {
             self._onItemEdit(args.item, false, args.isCanceled);
-        }, self._objId);
-        ds.addOnErrorsChanged(self._onDSErrorsChanged, self._objId, self);
+        }, self._uniqueID);
+        ds.addOnErrorsChanged(self._onDSErrorsChanged, self._uniqueID, self);
         ds.addOnStatusChanged((sender, args) => {
             self._onItemStatusChanged(args.item, args.oldStatus);
-        }, self._objId);
-        ds.addOnItemAdded(self._onItemAdded, self._objId, self);
+        }, self._uniqueID);
+        ds.addOnItemAdded(self._onItemAdded, self._uniqueID, self);
         ds.addOnItemAdding((s, a) => {
             self.collapseDetails();
-        }, self._objId);
+        }, self._uniqueID);
     }
     protected _unbindDS(): void {
         const self = this, ds = this.dataSource;
@@ -770,7 +770,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         if (!ds) {
             return;
         }
-        ds.objEvents.offNS(self._objId);
+        ds.objEvents.offNS(self._uniqueID);
     }
     protected _clearGrid(): void {
         if (this._rows.length === 0) {
@@ -1214,7 +1214,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         return (!row) ? [] : utils.arr.fromList<HTMLTableHeaderCellElement>(row.cells);
     }
     get uniqueID(): string {
-        return this._objId;
+        return this._uniqueID;
     }
     get name(): string {
         return this._name;

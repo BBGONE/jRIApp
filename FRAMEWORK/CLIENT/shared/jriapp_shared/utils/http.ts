@@ -10,11 +10,11 @@ import { AsyncUtils } from "./async";
 const { forEachProp, merge } = CoreUtils, { startsWith, format } = StringUtils, { createDeferred } = AsyncUtils;
 
 export class HttpUtils {
-    public static isStatusOK(status: string | number) {
+    public static isStatusOK(status: string | number): boolean {
         const chk = "" + status;
         return chk.length === 3 && startsWith(chk, "2");
     }
-    private static _getXMLRequest(url: string, method: string, deferred: IDeferred<string>, headers?: IIndexer<string>) {
+    private static _getXMLRequest(url: string, method: string, deferred: IDeferred<string>, headers?: IIndexer<string>): XMLHttpRequest {
         const req = new XMLHttpRequest();
         req.open(method, url, true);
         req.responseType = "text";

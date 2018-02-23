@@ -90,6 +90,11 @@ export interface IValidatable {
     validationErrors: IValidationInfo[];
 }
 
+export interface IValidationError {
+    readonly item: any;
+    readonly validations: IValidationInfo[];
+}
+
 export interface IErrorNotification extends IBaseObject {
     getIsHasErrors(): boolean;
     addOnErrorsChanged(fn: TEventHandler, nmspace?: string, context?: any): void;

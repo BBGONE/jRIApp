@@ -141,7 +141,7 @@ export class Errors<TItem extends ICollectionItem> {
 }
 
 export abstract class BaseCollection<TItem extends ICollectionItem> extends BaseObject implements ICollection<TItem> {
-    private _objId: string;
+    private _uniqueID: string;
     private _perms: IPermissions;
     private _options: ICollectionOptions;
     private _errors: Errors<TItem>;
@@ -160,7 +160,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     constructor() {
         super();
         const self = this;
-        this._objId = getNewID("coll");
+        this._uniqueID = getNewID("coll");
         this._options = { enablePaging: false, pageSize: 50 };
         this._isLoading = false;
         this._isUpdating = false;
@@ -1071,6 +1071,6 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         return this._perms;
     }
     get uniqueID(): string {
-        return this._objId;
+        return this._uniqueID;
     }
 }

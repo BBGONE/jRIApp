@@ -16,21 +16,7 @@ export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
         super();
         this._objs = [];
     }
-    static create() {
-        return new LifeTimeScope();
-    }
-    addObj(b: IBaseObject) {
-        if (this._objs.indexOf(b) < 0) {
-            this._objs.push(b);
-        }
-    }
-    removeObj(b: IBaseObject) {
-        utils.arr.remove(this._objs, b);
-    }
-    getObjs() {
-        return this._objs;
-    }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -43,7 +29,21 @@ export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
         this._objs = [];
         super.dispose();
     }
-    toString() {
+    static create(): LifeTimeScope {
+        return new LifeTimeScope();
+    }
+    addObj(b: IBaseObject): void {
+        if (this._objs.indexOf(b) < 0) {
+            this._objs.push(b);
+        }
+    }
+    removeObj(b: IBaseObject): void {
+        utils.arr.remove(this._objs, b);
+    }
+    getObjs(): IBaseObject[] {
+        return this._objs;
+    }
+    toString(): string {
         return "LifeTimeScope";
     }
 }

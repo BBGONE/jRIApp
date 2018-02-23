@@ -16,7 +16,7 @@ export class Lazy<T> implements IDisposable {
             throw new Error("Lazy: Invalid value factory");
         }
     }
-    public get Value(): T {
+    get Value(): T {
         if (this._val === null) {
             this._val = this._factory();
             if (isNt(this._val)) {
@@ -28,7 +28,7 @@ export class Lazy<T> implements IDisposable {
 
         return this._val;
     }
-    public dispose() {
+    dispose(): void {
         if (this.IsValueCreated) {
             if ("dispose" in this._val) {
                 (<any>this._val).dispose();

@@ -1,9 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { FIELD_TYPE, DATA_TYPE, ITEM_STATUS, VALS_VERSION } from "jriapp_shared/collection/const";
 import {
-    FIELD_TYPE, DATA_TYPE, ITEM_STATUS, VALS_VERSION
-} from "jriapp_shared/collection/const";
-import {
-    IBaseObject, IVoidPromise, IIndexer, IStatefulPromise, LocaleERRS as ERRS, Utils
+    IBaseObject, IVoidPromise, IIndexer, IStatefulPromise, LocaleERRS as ERRS, Utils, IValidationError
 } from "jriapp_shared";
 import { ValidationError } from "jriapp_shared/errors";
 import { ICancellableArgs, IFieldInfo } from "jriapp_shared/collection/int";
@@ -441,7 +439,7 @@ export class EntityAspect<TItem extends IEntityItem = IEntityItem, TObj extends 
                 }
             }
         } catch (ex) {
-            let error: ValidationError;
+            let error: IValidationError;
             if (sys.isValidationError(ex)) {
                 error = ex;
             } else {

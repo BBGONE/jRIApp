@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { BaseObject, Utils, LocaleERRS, IPromise } from "jriapp_shared";
+import { BaseObject, Utils, LocaleERRS, IPromise, IBaseObject } from "jriapp_shared";
 import { DATA_ATTR } from "./const";
 import {
     ITemplate, ILifeTimeScope, ITemplateEvents, IApplication, IElView
@@ -9,7 +9,7 @@ import { Binding } from "binding";
 import { ViewChecks } from "./utils/viewchecks";
 import { DomUtils } from "./utils/dom";
 
-const utils = Utils, { createDeferred } = utils.defer, dom = DomUtils, viewChecks = ViewChecks,
+const utils = Utils, { reject } = utils.defer, dom = DomUtils, viewChecks = ViewChecks,
     doc = dom.document, { isFunc, isThenable } = utils.check, { format } = utils.str,
     arrHelper = utils.arr, sys = utils.sys, boot = bootstrap, ERRS = LocaleERRS, ERROR = utils.err;
 
@@ -21,6 +21,19 @@ export const enum css {
 export interface ITemplateOptions {
     dataContext?: any;
     templEvents?: ITemplateEvents;
+}
+
+function getObjects<TObj extends IBaseObject>(lfTime: ILifeTimeScope, predicate: (obj: any) => boolean): TObj[] {
+    if (!lfTime) {
+        return [];
+    }
+    const arr = lfTime.getObjs(), res: TObj[] = [], len = arr.length;
+    for (let i = 0; i < len; i += 1) {
+        if (predicate(arr[i])) {
+            res.push(<TObj>arr[i]);
+        }
+    }
+    return res;
 }
 
 export function createTemplate(dataContext ?: any, templEvents?: ITemplateEvents): ITemplate {
@@ -51,29 +64,25 @@ class Template extends BaseObject implements ITemplate {
         this._el = doc.createElement("div");
         this._el.className = css.templateContainer;
     }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this._unloadTemplate();
+        if (!!this._el) {
+            dom.removeNode(this._el);
+            this._el = null;
+        }
+        this._dataContext = null;
+        this._templEvents = null;
+        super.dispose();
+    }
     private _getBindings(): Binding[] {
-        if (!this._lfTime) {
-            return [];
-        }
-        const arr = this._lfTime.getObjs(), res: Binding[] = [], len = arr.length;
-        for (let i = 0; i < len; i += 1) {
-            if (sys.isBinding(arr[i])) {
-                res.push(<Binding>arr[i]);
-            }
-        }
-        return res;
+        return getObjects(this._lfTime, sys.isBinding);
     }
     private _getElViews(): IElView[] {
-        if (!this._lfTime) {
-            return [];
-        }
-        const arr = this._lfTime.getObjs(), res: IElView[] = [], len = arr.length;
-        for (let i = 0; i < len; i += 1) {
-            if (viewChecks.isElView(arr[i])) {
-                res.push(<IElView>arr[i]);
-            }
-        }
-        return res;
+        return getObjects(this._lfTime, viewChecks.isElView);
     }
     private _getTemplateElView(): ITemplateEvents {
         if (!this._lfTime) {
@@ -97,7 +106,7 @@ class Template extends BaseObject implements ITemplate {
             return promise.then((html: string) => {
                 const elems = dom.fromHTML(html);
                 return elems[0];
-            }, (err) => {
+            }).catch((err) => {
                 if (!!err && !!err.message) {
                     throw err;
                 } else {
@@ -105,8 +114,7 @@ class Template extends BaseObject implements ITemplate {
                 }
             });
         } else {
-            const deferred = createDeferred<HTMLElement>();
-            return deferred.reject(new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
+            return reject<HTMLElement>(new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
         }
     }
     private _loadTemplate(): void {
@@ -132,12 +140,12 @@ class Template extends BaseObject implements ITemplate {
             self._onFail(templateEl, ex);
         }
     }
-    private _onLoading() {
+    private _onLoading(): void {
         if (!!this._templEvents) {
             this._templEvents.templateLoading(this);
         }
     }
-    private _onLoaded(error?: any) {
+    private _onLoaded(error?: any): void {
         this._templElView = this._getTemplateElView();
         if (!!this._templEvents) {
             this._templEvents.templateLoaded(this, error);
@@ -146,7 +154,7 @@ class Template extends BaseObject implements ITemplate {
             this._templElView.templateLoaded(this, error);
         }
     }
-    private _unloadTemplate() {
+    private _unloadTemplate(): void {
         try {
             if (!!this._templEvents) {
                 this._templEvents.templateUnLoading(this);
@@ -211,7 +219,7 @@ class Template extends BaseObject implements ITemplate {
         }
         self.handleError(ex, self);
     }
-    private _updateBindingSource() {
+    private _updateBindingSource(): void {
         const bindings = this._getBindings(), len = bindings.length;
         for (let i = 0; i < len; i += 1) {
             const binding = bindings[i];
@@ -220,7 +228,7 @@ class Template extends BaseObject implements ITemplate {
             }
         }
     }
-    private _cleanUp() {
+    private _cleanUp(): void {
         if (!!this._lfTime) {
             this._lfTime.dispose();
             this._lfTime = null;
@@ -232,20 +240,6 @@ class Template extends BaseObject implements ITemplate {
             dom.removeNode(this._loadedElem);
             this._loadedElem = null;
         }
-    }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        this._unloadTemplate();
-        if (!!this._el) {
-            dom.removeNode(this._el);
-            this._el = null;
-        }
-        this._dataContext = null;
-        this._templEvents = null;
-        super.dispose();
     }
     // find elements which has specific data-name attribute value
     // returns plain array of elements, or empty array
@@ -264,7 +258,7 @@ class Template extends BaseObject implements ITemplate {
         });
         return res;
     }
-    toString() {
+    toString(): string {
         return "ITemplate";
     }
     get loadedElem(): HTMLElement {

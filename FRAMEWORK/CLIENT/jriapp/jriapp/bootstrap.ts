@@ -127,7 +127,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     private _moduleInits: { (app: IApplication): void; }[];
     private _elViewRegister: IElViewRegister;
     private _contentFactory: IContentFactoryList;
-    private _objId: string;
+    private _uniqueID: string;
 
     constructor() {
         super();
@@ -138,7 +138,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._bootState = BootstrapState.None;
         this._app = null;
         this._selectedControl = null;
-        this._objId = getNewID("app");
+        this._uniqueID = getNewID("app");
 
         // exported types
         this._exports = {};
@@ -188,6 +188,30 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         _stylesLoader.loadOwnStyle();
         ERROR.addHandler("*", this);
     }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        const self = this;
+        self.objEvents.off();
+        self._destroyApp();
+        self._exports = {};
+        if (self._templateLoader !== null) {
+            self._templateLoader.dispose();
+            self._templateLoader = null;
+        }
+        self._elViewRegister.dispose();
+        self._elViewRegister = null;
+        self._contentFactory = null;
+        self._moduleInits = [];
+        dom.events.offNS(doc, this._uniqueID);
+        dom.events.offNS(win, this._uniqueID);
+        win.onerror = null;
+        ERROR.removeHandler("*");
+        this._bootState = BootstrapState.Disposed;
+        super.dispose();
+    }
     private _bindGlobalEvents(): void {
         const self = this, subscribeMap = subscribeWeakMap, selectableMap = selectableProviderWeakMap;
 
@@ -206,7 +230,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             }
             // set to null if it's not inside a selectable
             self.selectedControl = null;
-        }, this._objId);
+        }, this._uniqueID);
 
         // event delegation - capturing delegated events
         forEachProp(eventNames, ((name, flag) => {
@@ -218,7 +242,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
                     e.cancelBubble = !!(obj[fn_name](e.originalEvent));
                 }
             }, {
-                    nmspace: this._objId,
+                    nmspace: this._uniqueID,
                     matchElement: (el: Element) => {
                         const obj: ISubscriber = subscribeMap.get(el);
                         return !!obj && !!obj.isSubscribed(flag);
@@ -233,7 +257,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
                     selectable.onKeyDown(e.which, e);
                 }
             }
-        }, this._objId);
+        }, this._uniqueID);
         dom.events.on(doc, "keyup", (e) => {
             if (!!self._selectedControl) {
                 const selectable = self._selectedControl.selectable;
@@ -241,11 +265,11 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
                     selectable.onKeyUp(e.which, e);
                 }
             }
-        }, this._objId);
+        }, this._uniqueID);
 
         dom.events.on(win, "beforeunload", () => {
             self.objEvents.raise(GLOB_EVENTS.unload, {});
-        }, this._objId);
+        }, this._uniqueID);
 
         // this is a way to attach for correct work in firefox
         win.onerror = (msg: any, url: string, linenumber: number) => {
@@ -487,30 +511,6 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
 
         return res;
     }
-    dispose(): void {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        const self = this;
-        self.objEvents.off();
-        self._destroyApp();
-        self._exports = {};
-        if (self._templateLoader !== null) {
-            self._templateLoader.dispose();
-            self._templateLoader = null;
-        }
-        self._elViewRegister.dispose();
-        self._elViewRegister = null;
-        self._contentFactory = null;
-        self._moduleInits = [];
-        dom.events.offNS(doc, this._objId);
-        dom.events.offNS(win, this._objId);
-        win.onerror = null;
-        ERROR.removeHandler("*");
-        this._bootState = BootstrapState.Disposed;
-        super.dispose();
-    }
     registerSvc(name: string, obj: any) {
         const name2 = STORE_KEY.SVC + name;
         return this._registerObject(this, name2, obj);
@@ -583,13 +583,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             this.objEvents.raiseProp("selectedControl");
         }
     }
-    get defaults() {
+    get defaults(): Defaults {
         return this._defaults;
     }
-    get isReady() {
+    get isReady(): boolean {
         return this._bootState === BootstrapState.Ready;
     }
-    get state() {
+    get state(): BootstrapState {
         return this._bootState;
     }
 }

@@ -109,7 +109,7 @@ class SubmitInfo
 }
 
 export class DataEditDialog extends BaseObject implements ITemplateEvents {
-    private _objId: string;
+    private _uniqueID: string;
     private _dataContext: any;
     private _templateID: string;
     private _submitOnOK: boolean;
@@ -149,7 +149,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             fn_OnTemplateCreated: null,
             fn_OnTemplateDestroy: null
         }, options);
-        this._objId = getNewID("dlg");
+        this._uniqueID = getNewID("dlg");
         this._dataContext = options.dataContext;
         this._templateID = options.templateID;
         this._submitOnOK = options.submitOnOK;
@@ -236,7 +236,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     protected _getButtons(): IButton[] {
         const self = this, buttons = [
             {
-                "id": self._objId + "_Refresh",
+                "id": self._uniqueID + "_Refresh",
                 "text": STRS.TEXT.txtRefresh,
                 "class": "btn btn-info",
                 "click": () => {
@@ -244,7 +244,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
                 }
             },
             {
-                "id": self._objId + "_Ok",
+                "id": self._uniqueID + "_Ok",
                 "text": STRS.TEXT.txtOk,
                 "class": "btn btn-info",
                 "click": () => {
@@ -252,7 +252,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
                 }
             },
             {
-                "id": self._objId + "_Cancel",
+                "id": self._uniqueID + "_Cancel",
                 "text": STRS.TEXT.txtCancel,
                 "class": "btn btn-info",
                 "click": () => {
@@ -269,13 +269,13 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         return buttons;
     }
     protected _getOkButton() {
-        return $("#" + this._objId + "_Ok");
+        return $("#" + this._uniqueID + "_Ok");
     }
     protected _getCancelButton() {
-        return $("#" + this._objId + "_Cancel");
+        return $("#" + this._uniqueID + "_Cancel");
     }
     protected _getRefreshButton() {
-        return $("#" + this._objId + "_Refresh");
+        return $("#" + this._uniqueID + "_Refresh");
     }
     protected _getAllButtons() {
         return [this._getOkButton(), this._getCancelButton(), this._getRefreshButton()];

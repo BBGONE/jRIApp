@@ -421,7 +421,7 @@ export class AbortablePromise<T> implements IAbortablePromise<T> {
         self._aborted = true;
         setTimeout(() => { self._abortable.abort(); }, 0);
     }
-    state() {
+    state(): PromiseState {
         return this._deferred.state();
     }
 }

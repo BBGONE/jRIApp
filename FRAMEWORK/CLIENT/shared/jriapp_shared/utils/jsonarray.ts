@@ -17,25 +17,25 @@ export class JsonArray extends BaseObject {
     private _owner: JsonBag;
     private _pathToArray: string;
     private _list: AnyList = null;
-    private _objId: string;
+    private _uniqueID: string;
 
     constructor(owner: JsonBag, pathToArray: string) {
         super();
-        this._objId = getNewID("jsn");
+        this._uniqueID = getNewID("jsn");
         this._owner = owner;
         this._pathToArray = pathToArray;
         this.owner.objEvents.onProp("val", () => {
             if (!!this._list) {
                 this._list.setValues(this.getArray());
             }
-        }, this._objId);
+        }, this._uniqueID);
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
         this.setDisposing();
-        this._owner.objEvents.offNS(this._objId);
+        this._owner.objEvents.offNS(this._uniqueID);
         this._list.dispose();
         this._list = null;
         this._owner = null;
@@ -88,7 +88,7 @@ export class JsonArray extends BaseObject {
     get owner(): JsonBag {
         return this._owner;
     }
-    get list() {
+    get list(): AnyList {
         if (!!this._owner && !this._list) {
             this._list = new AnyList((vals: any[]) => {
                 this.updateArray(vals);
@@ -99,12 +99,12 @@ export class JsonArray extends BaseObject {
                 if (!!validationInfo && validationInfo.errors.length > 0) {
                     args.errors = validationInfo.errors;
                 }
-            }, this._objId);
+            }, this._uniqueID);
 
             this._list.addOnValidateItem((s, args) => {
                 const validationInfos = this._validateBag(args.item);
                 args.result = validationInfos;
-            }, this._objId);
+            }, this._uniqueID);
 
             this._list.setValues(this.getArray());
         }

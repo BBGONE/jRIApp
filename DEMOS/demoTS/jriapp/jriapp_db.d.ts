@@ -299,7 +299,7 @@ declare module "jriapp_db/association" {
     import { IAssocConstructorOptions, IEntityItem } from "jriapp_db/int";
     import { TDbSet } from "jriapp_db/dbset";
     export class Association extends BaseObject {
-        private _objId;
+        private _uniqueID;
         private _name;
         private _dbContext;
         private _onDeleteAction;

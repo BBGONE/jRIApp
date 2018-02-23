@@ -365,6 +365,7 @@ declare module "jriapp/content" {
 declare module "jriapp/defaults" {
     import { BaseObject } from "jriapp_shared";
     import { ButtonCss } from "jriapp/int";
+    export type TButtonCss = typeof ButtonCss;
     export class Defaults extends BaseObject {
         private _imagesPath;
         private _dateFormat;
@@ -382,7 +383,7 @@ declare module "jriapp/defaults" {
         decimalPoint: string;
         thousandSep: string;
         decPrecision: number;
-        readonly ButtonsCSS: typeof ButtonCss;
+        readonly ButtonsCSS: TButtonCss;
     }
 }
 declare module "jriapp/utils/tloader" {
@@ -411,7 +412,7 @@ declare module "jriapp/utils/tloader" {
         registerTemplateLoader(name: string, loader: ITemplateLoaderInfo): void;
         getTemplateLoader(name: string): () => IPromise<string>;
         registerTemplateGroup(groupName: string, group: ITemplateGroupInfoEx): void;
-        loadTemplates(url: string): void;
+        loadTemplates(url: string): IPromise<any>;
         readonly isLoading: boolean;
     }
 }
@@ -426,11 +427,22 @@ declare module "jriapp/utils/domevents" {
         [ns: string]: TEventNodeArray;
     }
     export type TEventList = INamespaceMap;
-    export class EventWrap {
+    export type TDomElement = Element | Document | Window;
+    export type TEventsArgs = {
+        nmspace?: string;
+        useCapture?: boolean;
+    };
+    export type TEventsDelegateArgs = {
+        nmspace: string;
+        matchElement: (el: Element) => boolean;
+    };
+    export type TEventsArgsOrNamespace = TEventsArgs | string | TEventsDelegateArgs;
+    export type THandlerFunc = (evt: any) => void;
+    export class EventWrap<TEvent extends Event = Event> {
         private _ev;
         private _target;
         private _cancelBubble;
-        constructor(ev: Event, target: TDomElement);
+        constructor(ev: TEvent, target: TDomElement);
         readonly type: string;
         readonly target: TDomElement;
         readonly bubbles: boolean;
@@ -443,7 +455,7 @@ declare module "jriapp/utils/domevents" {
         cancelBubble: boolean;
         readonly timeStamp: number;
         readonly currentTarget: EventTarget;
-        readonly originalEvent: Event;
+        readonly originalEvent: TEvent;
         readonly AT_TARGET: number;
         readonly BUBBLING_PHASE: number;
         readonly CAPTURING_PHASE: number;
@@ -451,17 +463,6 @@ declare module "jriapp/utils/domevents" {
         stopPropagation(): void;
         stopImmediatePropagation(): void;
     }
-    export type TDomElement = Element | Document | Window;
-    export type TEventsArgs = {
-        nmspace?: string;
-        useCapture?: boolean;
-    };
-    export type TEventsDelegateArgs = {
-        nmspace: string;
-        matchElement: (el: Element) => boolean;
-    };
-    export type TEventsArgsOrNamespace = TEventsArgs | string | TEventsDelegateArgs;
-    export type THandlerFunc = (evt: any) => void;
     export class DomEvents {
         static on(el: TDomElement, evType: "MSContentZoom", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, evType: "MSGestureChange", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
@@ -586,7 +587,7 @@ declare module "jriapp/utils/dom" {
         static prepend(parent: Node, child: Node): void;
         static removeNode(node: Node): void;
         static insertAfter(node: Node, refNode: Node): void;
-        static insertBefore(node: Node, refNode: Node): void;
+        static insertBefore(node: Node, refNode: Node): Node;
         static wrap(elem: Element, wrapper: Element): void;
         static unwrap(elem: Element): void;
         private static getClassMap(el);
@@ -668,8 +669,9 @@ declare module "jriapp/bootstrap" {
         private _moduleInits;
         private _elViewRegister;
         private _contentFactory;
-        private _objId;
+        private _uniqueID;
         constructor();
+        dispose(): void;
         private _bindGlobalEvents();
         private _onTemplateLoaded(html, app);
         private _processOptions(root, app?);
@@ -701,7 +703,6 @@ declare module "jriapp/bootstrap" {
         getApp(): IApplication;
         init(onInit: (bootstrap: Bootstrap) => void): void;
         startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<TApp>;
-        dispose(): void;
         registerSvc(name: string, obj: any): void;
         unregisterSvc(name: string): any;
         getSvc<T>(name: string): T;
@@ -802,7 +803,7 @@ declare module "jriapp/binding" {
         private _tgtPath;
         private _srcFixed;
         private _pathItems;
-        private _objId;
+        private _uniqueID;
         private _srcEnd;
         private _tgtEnd;
         private _source;
@@ -860,25 +861,25 @@ declare module "jriapp/utils/lifetime" {
     export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
         private _objs;
         constructor();
+        dispose(): void;
         static create(): LifeTimeScope;
         addObj(b: IBaseObject): void;
         removeObj(b: IBaseObject): void;
         getObjs(): IBaseObject[];
-        dispose(): void;
         toString(): string;
     }
 }
 declare module "jriapp/utils/propwatcher" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
     export class PropWatcher extends BaseObject {
-        private _objId;
+        private _uniqueID;
         private _objs;
         constructor();
+        dispose(): void;
         static create(): PropWatcher;
         addPropWatch(obj: IBaseObject, prop: string, fnOnChange: (prop: string) => void): void;
         addWatch(obj: IBaseObject, props: string[], fnOnChange: (prop: string) => void): void;
         removeWatch(obj: IBaseObject): void;
-        dispose(): void;
         toString(): string;
         readonly uniqueID: string;
     }
@@ -895,19 +896,22 @@ declare module "jriapp/mvvm" {
     }
     export type Action<TParam = any, TThis = any> = (this: TThis, sender: any, param: TParam) => void;
     export type Predicate<TParam = any, TThis = any> = (this: TThis, sender: any, param: TParam) => boolean;
-    export class Command<TParam = any, TThis = any> extends BaseObject implements ICommand<TParam> {
-        protected _action: Action<TParam, TThis>;
-        protected _thisObj: TThis;
-        protected _predicate: Predicate<TParam, TThis>;
-        private _objId;
-        constructor(fnAction: Action<TParam, TThis>, thisObj?: TThis, fnCanExecute?: Predicate<TParam, TThis>);
-        protected _canExecute(sender: any, param: TParam, context: any): boolean;
-        protected _execute(sender: any, param: TParam, context: any): void;
+    export class Command<TParam = any, TContext = any> extends BaseObject implements ICommand<TParam> {
+        private _action;
+        private _context;
+        private _predicate;
+        private _uniqueID;
+        constructor(fnAction: Action<TParam, TContext>, context?: TContext, fnCanExecute?: Predicate<TParam, TContext>);
+        dispose(): void;
+        protected _canExecute(sender: any, param: TParam): boolean;
+        protected _execute(sender: any, param: TParam): void;
+        protected _getAction(): Action<TParam, TContext>;
+        protected _getPredicate(): Predicate<TParam, TContext>;
+        protected _getContext(): TContext;
         addOnCanExecuteChanged(fn: (sender: ICommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
         offOnCanExecuteChanged(nmspace?: string): void;
         canExecute(sender: any, param: TParam): boolean;
         execute(sender: any, param: TParam): void;
-        dispose(): void;
         raiseCanExecuteChanged(): void;
         toString(): string;
         readonly uniqueID: string;
@@ -915,12 +919,15 @@ declare module "jriapp/mvvm" {
     export abstract class BaseCommand<TParam = any, TOwner = any> extends Command<TParam, any> {
         private _owner;
         constructor(owner: TOwner);
+        protected _getAction(): Action<TParam, BaseCommand>;
+        protected _getPredicate(): Predicate<TParam, BaseCommand>;
+        protected _getContext(): this;
         protected abstract action(sender: any, param: TParam): void;
         protected abstract isCanExecute(sender: any, param: TParam): boolean;
         readonly owner: TOwner;
     }
     export class ViewModel<TApp extends IApplication = IApplication> extends BaseObject {
-        private _objId;
+        private _uniqueID;
         private _app;
         constructor(app: TApp);
         addOnDisposed(handler: TEventHandler<ViewModel<TApp>, any>, nmspace?: string, context?: object): void;
@@ -946,7 +953,7 @@ declare module "jriapp/app" {
     export class Application extends BaseObject implements IApplication {
         private _UC;
         private _moduleInits;
-        private _objId;
+        private _uniqueID;
         private _objMaps;
         private _appName;
         private _exports;
@@ -959,6 +966,7 @@ declare module "jriapp/app" {
         private _cleanUpObjMaps();
         private _initAppModules();
         protected onStartUp(): any;
+        dispose(): void;
         _getInternal(): IInternalAppMethods;
         addOnDisposed(handler: TEventHandler<IApplication, any>, nmspace?: string, context?: object): void;
         offOnDisposed(nmspace?: string): void;
@@ -982,7 +990,6 @@ declare module "jriapp/app" {
         registerTemplateById(name: string, templateId: string): void;
         getTemplateLoader(name: string): () => IPromise<string>;
         registerTemplateGroup(name: string, group: ITemplateGroupInfo): void;
-        dispose(): void;
         toString(): string;
         readonly uniqueID: string;
         readonly options: IAppOptions;
@@ -1011,5 +1018,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.14.1";
+    export const VERSION = "2.14.2";
 }

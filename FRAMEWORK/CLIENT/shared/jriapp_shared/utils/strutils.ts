@@ -116,7 +116,7 @@ export class StringUtils {
      *    Usage:     formatNumber(123456.789, 2, '.', ',');
      *    result:    123,456.79
     **/
-    static formatNumber(num: any, decimals?: number, decPoint?: string, thousandsSep?: string) {
+    static formatNumber(num: any, decimals?: number, decPoint?: string, thousandsSep?: string): string {
         num = (num + "").replace(/[^0-9+-Ee.]/g, "");
         const n = !isFinite(+num) ? 0 : +num, dec = (decPoint === _undefined) ? "." : decPoint,
         sep = (thousandsSep === _undefined) ? "," : thousandsSep;
@@ -152,7 +152,7 @@ export class StringUtils {
         }
         return s.join(dec);
     }
-    static stripNonNumeric(str: string) {
+    static stripNonNumeric(str: string): string {
         str += "";
         const rgx = /^\d|\.|-$/;
         let out = "";
@@ -166,7 +166,7 @@ export class StringUtils {
         }
         return out;
     }
-    static padLeft(val: string, len: number, pad: string) {
+    static padLeft(val: string, len: number, pad: string): string {
         if (!val) {
             val = "";
         }
@@ -177,7 +177,7 @@ export class StringUtils {
         const str = new Array(len).join(pad[0]);
         return (str + val).slice(-len);
     }
-    static fastPadLeft(val: string, pad: string) {
+    static fastPadLeft(val: string, pad: string): string {
         if (!val) {
             val = "";
         }
@@ -186,7 +186,7 @@ export class StringUtils {
         }
         return (pad + val).slice(-pad.length);
     }
-    static trimQuotes(val: string) {
+    static trimQuotes(val: string): string {
         if (!val) {
             return "";
         }
@@ -214,7 +214,7 @@ export class StringUtils {
             return (end > start) ? val.substring(start, end) : "";
         }
     }
-    static trimBrackets(val: string) {
+    static trimBrackets(val: string): string {
         if (!val) {
             return "";
         }

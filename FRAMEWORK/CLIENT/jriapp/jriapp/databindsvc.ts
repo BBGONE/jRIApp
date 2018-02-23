@@ -130,13 +130,19 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         this._objLifeTime = null;
         this._mloader = createModulesLoader();
     }
-    private _cleanUp() {
+    dispose(): void {
+        this._cleanUp();
+        this._elViewFactory = null;
+        this._mloader = null;
+        super.dispose();
+    }
+    private _cleanUp(): void {
         if (!!this._objLifeTime) {
             this._objLifeTime.dispose();
             this._objLifeTime = null;
         }
     }
-    private _bindElView(args: IBindElViewArgs) {
+    private _bindElView(args: IBindElViewArgs): void {
         const self = this;
         args.lftm.addObj(args.elView);
      
@@ -256,10 +262,4 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
     bind(opts: TBindingOptions): Binding {
         return new Binding(opts);
     }
-    dispose() {
-        this._cleanUp();
-        this._elViewFactory = null;
-        this._mloader = null;
-        super.dispose();
-    }
-}
+ }

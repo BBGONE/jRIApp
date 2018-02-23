@@ -6,6 +6,7 @@ import { StringUtils } from "./strutils";
 import { SysUtils } from "./sysutils";
 import { Checks } from "./checks";
 import { Debounce } from "./debounce";
+import { IValidationError } from "../int";
 import { ValidationError } from "../errors";
 
 const { forEachProp, getValue, setValue } = CoreUtils, { startsWith, trimBrackets } = StringUtils,
@@ -48,7 +49,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         this._jsonChanged = jsonChanged;
         this._errors = {};
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -60,7 +61,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         super.dispose();
     }
     // override
-    isHasProp(prop: string) {
+    isHasProp(prop: string): boolean {
         // first check for indexed property name
         if (startsWith(prop, "[")) {
             return true;
@@ -86,7 +87,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         this.objEvents.off(BAG_EVENTS.errors_changed, nmspace);
     }
 
-    protected onChanged() {
+    protected onChanged(): void {
         this._debounce.enque(() => {
             if (!!this._jsonChanged) {
                 this._jsonChanged(this._json);
@@ -176,7 +177,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
         this._errors = {};
         this._onErrorsChanged();
     }
-    getIsHasErrors() {
+    getIsHasErrors(): boolean {
         return !!this._errors && Object.keys(this._errors).length > 0;
     }
     getFieldErrors(fieldName: string): IValidationInfo[] {
@@ -277,7 +278,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
                     throw new ValidationError([validationInfo], this);
                 }
             } catch (ex) {
-                let error: ValidationError;
+                let error: IValidationError;
                 if (sys.isValidationError(ex)) {
                     error = ex;
                 } else {
@@ -290,7 +291,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
             }
         }
     }
-    get isPropertyBag() {
+    get isPropertyBag(): boolean {
         return true;
     }
 
@@ -300,7 +301,7 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
     get json(): string {
         return this._json;
     }
-    toString() {
+    toString(): string {
         return "JsonBag";
     }
 }

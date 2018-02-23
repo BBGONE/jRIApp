@@ -16,7 +16,7 @@ export class DetailsRow extends BaseObject {
     private _item: ICollectionItem;
     private _cell: DetailsCell;
     private _parentRow: Row;
-    private _objId: string;
+    private _uniqueID: string;
     private _isFirstShow: boolean;
 
     constructor(options: { grid: DataGrid; details_id: string; }) {
@@ -28,21 +28,21 @@ export class DetailsRow extends BaseObject {
         this._cell = null;
         this._parentRow = null;
         this._isFirstShow = true;
-        this._objId = getNewID("drow");
+        this._uniqueID = getNewID("drow");
         this._createCell(options.details_id);
         dom.addClass([tr], css.rowDetails);
         this._grid.addOnRowExpanded((sender, args) => {
             if (!args.isExpanded && !!args.collapsedRow) {
                 self._setParentRow(null);
             }
-        }, this._objId);
+        }, this._uniqueID);
     }
     dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
         this.setDisposing();
-        this._grid.objEvents.offNS(this._objId);
+        this._grid.objEvents.offNS(this._uniqueID);
         if (!!this._cell) {
             this._cell.dispose();
             this._cell = null;
@@ -127,7 +127,7 @@ export class DetailsRow extends BaseObject {
         return this._cell;
     }
     get uniqueID(): string {
-        return this._objId;
+        return this._uniqueID;
     }
     get itemKey(): string {
         return (!this._item) ? null : this._item._key;

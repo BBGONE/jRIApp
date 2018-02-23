@@ -2,12 +2,12 @@
 import { DebugLevel } from "../int";
 
 export class DEBUG {
-    static checkStartDebugger() {
+    static checkStartDebugger(): void {
         if (DebugLevel === DEBUG_LEVEL.HIGH) {
             debugger;
         }
     }
-    static isDebugging() {
+    static isDebugging(): boolean {
         return DebugLevel > DEBUG_LEVEL.NONE;
     }
 }

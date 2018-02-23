@@ -1626,7 +1626,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
         function Association(options) {
             var _this = _super.call(this) || this;
             var self = _this;
-            _this._objId = getNewID("ass");
+            _this._uniqueID = getNewID("ass");
             var opts = extend({
                 dbContext: null,
                 parentName: "",
@@ -1635,7 +1635,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                 childKeyFields: [],
                 parentToChildrenName: null,
                 childToParentName: null,
-                name: _this._objId,
+                name: _this._uniqueID,
                 onDeleteAction: 0
             }, options);
             _this._name = opts.name;
@@ -1692,21 +1692,21 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }
             ds.addOnCollChanged(function (sender, args) {
                 self._onParentCollChanged(args);
-            }, self._objId, null, 2);
+            }, self._uniqueID, null, 2);
             ds.addOnBeginEdit(function (sender, args) {
                 self._onParentEdit(args.item, true, false);
-            }, self._objId, null, 2);
+            }, self._uniqueID, null, 2);
             ds.addOnEndEdit(function (sender, args) {
                 self._onParentEdit(args.item, false, args.isCanceled);
-            }, self._objId, null, 2);
+            }, self._uniqueID, null, 2);
             ds.addOnItemDeleting(function (sender, args) {
-            }, self._objId, null, 2);
+            }, self._uniqueID, null, 2);
             ds.addOnStatusChanged(function (sender, args) {
                 self._onParentStatusChanged(args.item, args.oldStatus);
-            }, self._objId, null, 2);
+            }, self._uniqueID, null, 2);
             ds.addOnCommitChanges(function (sender, args) {
                 self._onParentCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
-            }, self._objId, null, 2);
+            }, self._uniqueID, null, 2);
         };
         Association.prototype._bindChildDS = function () {
             var self = this, ds = this._childDS;
@@ -1715,19 +1715,19 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }
             ds.addOnCollChanged(function (sender, args) {
                 self._onChildCollChanged(args);
-            }, self._objId, null, 2);
+            }, self._uniqueID, null, 2);
             ds.addOnBeginEdit(function (sender, args) {
                 self._onChildEdit(args.item, true, false);
-            }, self._objId, null, 2);
+            }, self._uniqueID, null, 2);
             ds.addOnEndEdit(function (sender, args) {
                 self._onChildEdit(args.item, false, args.isCanceled);
-            }, self._objId, null, 2);
+            }, self._uniqueID, null, 2);
             ds.addOnStatusChanged(function (sender, args) {
                 self._onChildStatusChanged(args.item, args.oldStatus);
-            }, self._objId, null, 2);
+            }, self._uniqueID, null, 2);
             ds.addOnCommitChanges(function (sender, args) {
                 self._onChildCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
-            }, self._objId, null, 2);
+            }, self._uniqueID, null, 2);
         };
         Association.prototype._onParentCollChanged = function (args) {
             var self = this, changedKeys = {};
@@ -2148,14 +2148,14 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             if (!ds) {
                 return;
             }
-            ds.objEvents.offNS(self._objId);
+            ds.objEvents.offNS(self._uniqueID);
         };
         Association.prototype._unbindChildDS = function () {
             var self = this, ds = this.childDS;
             if (!ds) {
                 return;
             }
-            ds.objEvents.offNS(self._objId);
+            ds.objEvents.offNS(self._uniqueID);
         };
         Association.prototype.refreshParentMap = function () {
             this._resetParentMap();

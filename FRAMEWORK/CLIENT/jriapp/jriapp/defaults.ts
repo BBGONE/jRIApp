@@ -3,6 +3,7 @@ import { BaseObject, Utils } from "jriapp_shared";
 import { ButtonCss } from "./int";
 
 const utils = Utils, { endsWith } = utils.str;
+export type TButtonCss = typeof ButtonCss;
 
 export class Defaults extends BaseObject {
     private _imagesPath: string;
@@ -22,12 +23,14 @@ export class Defaults extends BaseObject {
         this._decimalPoint = ",";
         this._thousandSep = " ";
         this._decPrecision = 2;
-   }
-    toString() {
+    }
+    toString(): string {
         return "Defaults";
    }
     // uses moment.js format
-    get dateFormat() { return this._dateFormat; }
+    get dateFormat(): string {
+        return this._dateFormat;
+    }
     set dateFormat(v) {
         if (this._dateFormat !== v) {
             this._dateFormat = v;
@@ -35,14 +38,18 @@ export class Defaults extends BaseObject {
        }
    }
     // uses moment.js format
-    get timeFormat() { return this._timeFormat; }
+    get timeFormat(): string {
+        return this._timeFormat;
+    }
     set timeFormat(v) {
         if (this._timeFormat !== v) {
             this._timeFormat = v;
             this.objEvents.raiseProp("timeFormat");
        }
-   }
-    get dateTimeFormat() { return this._dateTimeFormat; }
+    }
+    get dateTimeFormat(): string {
+        return this._dateTimeFormat;
+    }
     set dateTimeFormat(v) {
         if (this._dateTimeFormat !== v) {
             this._dateTimeFormat = v;
@@ -50,7 +57,9 @@ export class Defaults extends BaseObject {
        }
    }
     // path to where application images are stored
-    get imagesPath() { return this._imagesPath; }
+    get imagesPath(): string {
+        return this._imagesPath;
+    }
     set imagesPath(v) {
         if (!v) {
             v = "";
@@ -63,15 +72,19 @@ export class Defaults extends BaseObject {
            }
            this.objEvents.raiseProp("imagesPath");
        }
-   }
-    get decimalPoint() { return this._decimalPoint; }
+    }
+    get decimalPoint(): string {
+        return this._decimalPoint;
+    }
     set decimalPoint(v) {
         if (this._decimalPoint !== v) {
             this._decimalPoint = v;
             this.objEvents.raiseProp("decimalPoint");
        }
-   }
-    get thousandSep() { return this._thousandSep; }
+    }
+    get thousandSep(): string {
+        return this._thousandSep;
+    }
     set thousandSep(v) {
         if (this._thousandSep !== v) {
             this._thousandSep = v;
@@ -79,14 +92,16 @@ export class Defaults extends BaseObject {
        }
    }
     // money decimal presision: defaults to 2
-    get decPrecision() { return this._decPrecision; }
+    get decPrecision(): number {
+        return this._decPrecision;
+    }
     set decPrecision(v) {
         if (this._decPrecision !== v) {
             this._decPrecision = v;
             this.objEvents.raiseProp("decPrecision");
        }
-   }
-   get ButtonsCSS() {
+    }
+    get ButtonsCSS(): TButtonCss {
         return ButtonCss;
    }
 }

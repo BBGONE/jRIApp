@@ -76,7 +76,7 @@ class StylesLoader implements IStylesLoader {
 
         return false;
     }
-    private loadByLink(url: string, fnOnload: (err: any) => void) {
+    private loadByLink(url: string, fnOnload: (err: any) => void): void {
         const link = createLink(url);
         link.onload = function () {
             fnOnload(null);

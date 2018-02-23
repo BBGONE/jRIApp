@@ -54,7 +54,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
     private _converter: LookupConverter;
     private _listBox: ListBoxElView;
     private _isListBoxCachedExternally: boolean;
-    private _objId: string;
+    private _uniqueID: string;
 
     constructor(options: IConstructorContentOptions) {
         if (options.contentOptions.name !== "lookup") {
@@ -64,7 +64,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         this._converter = new LookupConverter(this);
         this._listBox = null;
         this._isListBoxCachedExternally = false;
-        this._objId = getNewID("lkup");
+        this._uniqueID = getNewID("lkup");
         if (!!this.options.initContentFn) {
             this.options.initContentFn(this);
         }
@@ -197,6 +197,6 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
         return "LookupContent";
     }
     get uniqueID(): string {
-        return this._objId;
+        return this._uniqueID;
     }
 }

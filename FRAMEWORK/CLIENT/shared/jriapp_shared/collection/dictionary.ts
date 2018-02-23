@@ -52,7 +52,7 @@ export abstract class BaseDictionary<TItem extends IListItem, TObj extends IInde
         return aspect.item;
     }
     // override
-    protected _onItemAdded(item: TItem) {
+    protected _onItemAdded(item: TItem): void {
         super._onItemAdded(item);
         const key = (<any>item)[this._keyName], self = this;
         if (isNt(key)) {
@@ -73,15 +73,15 @@ export abstract class BaseDictionary<TItem extends IListItem, TObj extends IInde
         this.objEvents.raiseProp(<any>`[${item._key}]`);
     }
     // override
-    protected _onRemoved(item: TItem, pos: number) {
+    protected _onRemoved(item: TItem, pos: number): void {
         const key = (<any>item)[this._keyName];
         super._onRemoved(item, pos);
         this.objEvents.raiseProp(<any>`[${key}]`);
     }
-    get keyName() {
+    get keyName(): string {
         return this._keyName;
     }
-    toString() {
+    toString(): string {
         return "BaseDictionary";
     }
 }

@@ -24,7 +24,7 @@ export class TemplateLoader extends BaseObject {
         this._promises = [];
         this._waitQueue = new WaitQueue(self);
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -39,10 +39,10 @@ export class TemplateLoader extends BaseObject {
         }
         super.dispose();
     }
-    addOnLoaded(fn: (sender: TemplateLoader, args: { html: string; app: IApplication; }) => void, nmspace?: string) {
+    addOnLoaded(fn: (sender: TemplateLoader, args: { html: string; app: IApplication; }) => void, nmspace?: string): void {
         this.objEvents.on(LOADER_EVENTS.loaded, fn, nmspace);
     }
-    offOnLoaded(nmspace?: string) {
+    offOnLoaded(nmspace?: string): void {
         this.objEvents.off(LOADER_EVENTS.loaded, nmspace);
     }
     public waitForNotLoading(callback: (...args: any[]) => any, callbackArgs: any): void {
@@ -54,7 +54,7 @@ export class TemplateLoader extends BaseObject {
             actionArgs: callbackArgs
         });
     }
-    private _onLoaded(html: string, app: IApplication) {
+    private _onLoaded(html: string, app: IApplication): void {
         this.objEvents.raise(LOADER_EVENTS.loaded, { html: html, app: app });
     }
     private _getTemplateGroup(name: string): ITemplateGroupInfoEx {
@@ -87,10 +87,10 @@ export class TemplateLoader extends BaseObject {
     /*
      fn_loader must load template and return promise which resolves with the loaded HTML string
     */
-    public unRegisterTemplateLoader(name: string) {
+    public unRegisterTemplateLoader(name: string): void {
         removeValue(this._templateLoaders, name);
     }
-    public unRegisterTemplateGroup(name: string) {
+    public unRegisterTemplateGroup(name: string): void {
         removeValue(this._templateGroups, name);
     }
     public registerTemplateLoader(name: string, loader: ITemplateLoaderInfo): void {
@@ -207,10 +207,10 @@ export class TemplateLoader extends BaseObject {
             });
         });
     }
-    public loadTemplates(url: string) {
-        this.loadTemplatesAsync(() => http.getAjax(url), null);
+    public loadTemplates(url: string): IPromise<any> {
+        return this.loadTemplatesAsync(() => http.getAjax(url), null);
     }
-    get isLoading() {
+    get isLoading(): boolean {
         return this._promises.length > 0;
     }
 }

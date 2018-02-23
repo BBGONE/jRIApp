@@ -2,15 +2,12 @@
 import { Utils } from "../utils/utils";
 import { ERRS } from "../lang";
 import { IIndexer } from "../int";
-import {
-    COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER, VALS_VERSION
-} from "./const";
-import {
-    ICollectionItem, IPropInfo, IFieldInfo
-} from "./int";
+import { COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER, VALS_VERSION } from "./const";
+import { ICollectionItem, IPropInfo, IFieldInfo } from "./int";
 import { CollUtils } from "./utils";
 import { BaseCollection } from "./base";
 import { ItemAspect } from "./aspect";
+import { IValidationError } from "../int";
 import { ValidationError } from "../errors";
 
 const utils = Utils, { format } = utils.str, { isArray } = utils.check,
@@ -21,11 +18,11 @@ export interface IListItem extends ICollectionItem {
 }
 
 export class ListItemAspect<TItem extends IListItem, TObj extends IIndexer<any>> extends ItemAspect<TItem, TObj> {
-    _setProp(name: string, val: any) {
+    _setProp(name: string, val: any): void {
         if (this.isCancelling) {
             return;
         }
-        let error: ValidationError;
+        let error: IValidationError;
         const coll = this.coll, item = this.item, fieldInfo = this.getFieldInfo(name),
             errors = coll.errors;
         if (this._getProp(name) !== val) {
@@ -62,7 +59,9 @@ export class ListItemAspect<TItem extends IListItem, TObj extends IIndexer<any>>
         }
         return this.item.toString() + "Aspect";
     }
-    get list(): BaseList<TItem, TObj> { return <BaseList<TItem, TObj>>this.coll; }
+    get list(): BaseList<TItem, TObj> {
+        return <BaseList<TItem, TObj>>this.coll;
+    }
 }
 
 export abstract class BaseList<TItem extends IListItem, TObj extends IIndexer<any>> extends BaseCollection<TItem> {
@@ -109,7 +108,7 @@ export abstract class BaseList<TItem extends IListItem, TObj extends IIndexer<an
         const aspect = new ListItemAspect<TItem, TObj>(this, vals, key, isNew);
         return aspect.item;
     }
-    protected _getNewKey() {
+    protected _getNewKey(): string {
         // client side item ID
         const key = "clkey_" + this._newKey;
         this._newKey += 1;

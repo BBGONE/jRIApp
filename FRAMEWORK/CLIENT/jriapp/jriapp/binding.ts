@@ -166,7 +166,7 @@ export class Binding extends BaseObject implements IBinding {
     private _tgtPath: string[];
     private _srcFixed: boolean;
     private _pathItems: IIndexer<IBaseObject>;
-    private _objId: string;
+    private _uniqueID: string;
     // the last object in the source path
     private _srcEnd: any;
     // the last object in the target path
@@ -229,7 +229,7 @@ export class Binding extends BaseObject implements IBinding {
         }
         this._srcFixed = (!!opts.isSourceFixed);
         this._pathItems = {};
-        this._objId = getNewID("bnd");
+        this._uniqueID = getNewID("bnd");
         this._srcEnd = null;
         this._tgtEnd = null;
         this._source = null;
@@ -352,10 +352,10 @@ export class Binding extends BaseObject implements IBinding {
         };
     }
     private _addOnPropChanged(obj: IBaseObject, prop: string, fn: (s: any, a: any) => void) {
-        obj.objEvents.onProp(prop, fn, this._objId);
+        obj.objEvents.onProp(prop, fn, this._uniqueID);
         // for PropertyBag also listen for all property changes notification
         if (prop !== "[*]" && sys.isPropBag(obj)) {
-            obj.objEvents.onProp("[*]", fn, this._objId);
+            obj.objEvents.onProp("[*]", fn, this._uniqueID);
         }
     }
     private _parseSrc(obj: any, path: string[], lvl: number): void {
@@ -390,7 +390,7 @@ export class Binding extends BaseObject implements IBinding {
                 return;
             }
             /*
-            (<IBaseObject>obj).addOnDisposed(self._onSrcDestroyed, self._objId, self);
+            (<IBaseObject>obj).addOnDisposed(self._onSrcDestroyed, self._uniqueID, self);
             */
             self._setPathItem(obj, BindTo.Source, lvl, path);
         }
@@ -429,7 +429,7 @@ export class Binding extends BaseObject implements IBinding {
 
                 const errNotif = getErrorNotification(obj);
                 if (!!errNotif) {
-                    errNotif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
+                    errNotif.addOnErrorsChanged(self._onSrcErrChanged, self._uniqueID, self);
                 }
                 self._srcEnd = obj;
             } else {
@@ -469,7 +469,7 @@ export class Binding extends BaseObject implements IBinding {
                 return;
             }
             /*
-            (<IBaseObject>obj).addOnDisposed(self._onTgtDestroyed, self._objId, self);
+            (<IBaseObject>obj).addOnDisposed(self._onTgtDestroyed, self._uniqueID, self);
             */
             self._setPathItem(obj, BindTo.Target, lvl, path);
         }
@@ -532,10 +532,10 @@ export class Binding extends BaseObject implements IBinding {
     }
     private _cleanUp(obj: IBaseObject): void {
         if (!!obj) {
-            obj.objEvents.offNS(this._objId);
+            obj.objEvents.offNS(this._uniqueID);
             const errNotif = getErrorNotification(obj);
             if (!!errNotif) {
-                errNotif.offOnErrorsChanged(this._objId);
+                errNotif.offOnErrorsChanged(this._uniqueID);
             }
         }
     }
@@ -671,7 +671,7 @@ export class Binding extends BaseObject implements IBinding {
         } catch (ex) {
             if (!sys.isValidationError(ex) || !sys.isValidatable(this._tgtEnd)) {
                 // BaseElView is notified about errors in _onSrcErrChanged event handler
-                // err_notif.addOnErrorsChanged(self._onSrcErrChanged, self._objId, self);
+                // err_notif.addOnErrorsChanged(self._onSrcErrChanged, self._uniqueID, self);
                 // we only need to rethrow in other cases:
                 // 1) when target is not a IValidatable
                 // 2) when error is not a ValidationError
@@ -683,7 +683,7 @@ export class Binding extends BaseObject implements IBinding {
         return "Binding";
     }
     get uniqueID(): string {
-        return this._objId;
+        return this._uniqueID;
     }
     get target(): IBaseObject {
         return this._target;

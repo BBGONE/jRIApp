@@ -15,7 +15,7 @@ function pad(num: number): string {
     return "" + num;
 }
 
-function dateToString(dt: Date) {
+function dateToString(dt: Date): string {
     return ("" + dt.getFullYear()) +
         "-" + pad(dt.getMonth() + 1) +
         "-" + pad(dt.getDate()) +
@@ -157,7 +157,7 @@ export const ValueUtils: IValueUtils = {
         }
         return res;
     },
-    parseValue: function (v: string, dataType: DATA_TYPE, dtcnv: DATE_CONVERSION, serverTZ: number) {
+    parseValue: function (v: string, dataType: DATA_TYPE, dtcnv: DATE_CONVERSION, serverTZ: number): any {
         let res: any = null;
 
         if (v === _undefined || v === null) {

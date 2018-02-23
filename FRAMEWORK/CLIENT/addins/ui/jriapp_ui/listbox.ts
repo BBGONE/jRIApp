@@ -53,7 +53,7 @@ function fn_Str(v: any): string {
 
 export class ListBox extends BaseObject implements ISubscriber {
     private _el: HTMLSelectElement;
-    private _objId: string;
+    private _uniqueID: string;
     private _isRefreshing: boolean;
     private _selectedValue: any;
     private _keyMap: { [key: string]: IMappedItem; };
@@ -87,7 +87,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         }
         this._el = el;
         this._options = options;
-        this._objId = getNewID("lst");
+        this._uniqueID = getNewID("lst");
         this._isDSFilled = false;
         this._textProvider = null;
         this._stateProvider = null;
@@ -111,7 +111,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         if (!this._options.nodelegate) {
             subscribeMap.set(el, this);
         } else {
-            dom.events.on(el, "change", (e) => this.handle_change(e), this._objId);            
+            dom.events.on(el, "change", (e) => this.handle_change(e), this._uniqueID);            
         }
         const ds = this._options.dataSource;
         this.setDataSource(ds);
@@ -124,7 +124,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         if (!this._options.nodelegate) {
             subscribeMap.delete(this._el);
         }
-        dom.events.offNS(this._el, this._objId);
+        dom.events.offNS(this._el, this._uniqueID);
         this._dsDebounce.dispose();
         this._stDebounce.dispose();
         this._txtDebounce.dispose();
@@ -146,26 +146,26 @@ export class ListBox extends BaseObject implements ISubscriber {
         if (!ds) {
             return;
         }
-        ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
+        ds.addOnCollChanged(self._onDSCollectionChanged, self._uniqueID, self);
         ds.addOnBeginEdit((sender, args) => {
             self._onEdit(args.item, true, false);
-        }, self._objId);
+        }, self._uniqueID);
         ds.addOnEndEdit((sender, args) => {
             self._onEdit(args.item, false, args.isCanceled);
-        }, self._objId);
+        }, self._uniqueID);
         ds.addOnStatusChanged((sender, args) => {
             self._onStatusChanged(args.item, args.oldStatus);
-        }, self._objId);
+        }, self._uniqueID);
         ds.addOnCommitChanges((sender, args) => {
             self._onCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
-        }, self._objId);
+        }, self._uniqueID);
     }
     private _unbindDS(): void {
         const self = this, ds = this.dataSource;
         if (!ds) {
             return;
         }
-        ds.objEvents.offNS(self._objId);
+        ds.objEvents.offNS(self._uniqueID);
     }
     private _addOption(item: ICollectionItem, first: boolean): IMappedItem {
         const key = !item ? "" : item._key;
@@ -204,7 +204,7 @@ export class ListBox extends BaseObject implements ISubscriber {
 
         if (!!item) {
             if (!!this.statePath) {
-                item.objEvents.onProp(this.statePath, this._fnState, this._objId);
+                item.objEvents.onProp(this.statePath, this._fnState, this._uniqueID);
             }
             this._fnState(data);
         }
@@ -241,7 +241,7 @@ export class ListBox extends BaseObject implements ISubscriber {
                 return;
             }
 
-            item.objEvents.offNS(this._objId);
+            item.objEvents.offNS(this._uniqueID);
             this.el.remove(data.op.index);
             const val = fn_Str(this._getValue(item));
             delete this._keyMap[key];
@@ -260,7 +260,7 @@ export class ListBox extends BaseObject implements ISubscriber {
         keys.forEach((key) => {
             const data = self._keyMap[key];
             if (!!data && !!data.item) {
-                data.item.objEvents.offNS(self._objId);
+                data.item.objEvents.offNS(self._uniqueID);
             }
         });
         this.el.options.length = 0;

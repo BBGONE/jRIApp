@@ -10,12 +10,6 @@ export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> ex
         super();
         this.__aspect = aspect;
     }
-    get _aspect(): TAspect {
-        return this.__aspect;
-    }
-    get _key(): string {
-        return this.__aspect.key;
-    }
     dispose(): void {
         if (this.getIsDisposed()) {
             return;
@@ -26,6 +20,12 @@ export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> ex
             aspect.dispose();
         }
         super.dispose();
+    }
+    get _aspect(): TAspect {
+        return this.__aspect;
+    }
+    get _key(): string {
+        return this.__aspect.key;
     }
     toString(): string {
         return "CollectionItem";

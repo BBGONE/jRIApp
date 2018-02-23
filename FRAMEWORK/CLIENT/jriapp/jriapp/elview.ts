@@ -28,6 +28,9 @@ class ElViewRegister implements IElViewRegister, IExports {
         this._exports = {};
         this._next = next;
     }
+    dispose(): void {
+        this._exports = {};
+    }
     registerElView(name: string, vwType: IViewType): void {
         if (!bootstrap._getInternal().getObject(this, name)) {
             bootstrap._getInternal().registerObject(this, name, vwType);
@@ -42,9 +45,6 @@ class ElViewRegister implements IElViewRegister, IExports {
         }
         return res;
     }
-    dispose(): void {
-        this._exports = {};
-    }
     getExports(): IIndexer<any> {
         return this._exports;
     }
@@ -56,8 +56,7 @@ class ElViewStore implements IElViewStore {
     constructor() {
         this._weakmap = createWeakMap();
     }
-
-    public dispose(): void {
+    dispose(): void {
     }
     // get element view associated with HTML element(if any)
     getElView(el: HTMLElement): IElView {
@@ -82,7 +81,7 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
         this._store = new ElViewStore();
         this._register = createElViewRegister(register);
     }
-    public dispose(): void {
+    dispose(): void {
         if (!this._store) {
             return;
         }
@@ -162,10 +161,10 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
        
         return { el: el, name: viewName, options: options };
     }
-    get store() {
+    get store(): IElViewStore {
         return this._store;
     }
-    get register() {
+    get register(): IElViewRegister {
         return this._register;
     }
 }

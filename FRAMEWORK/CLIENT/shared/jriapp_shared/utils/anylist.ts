@@ -8,6 +8,7 @@ import { COLL_CHANGE_TYPE, VALS_VERSION } from "../collection/const";
 import { CollectionItem } from "../collection/item";
 import { Validations } from "../collection/validation";
 import { IListItem, ListItemAspect, BaseList } from "../collection/list";
+import { IValidationError } from "../int";
 import { ValidationError } from "../errors";
 
 export { ICollValidateFieldArgs } from "../collection/int";
@@ -38,23 +39,24 @@ export class AnyItemAspect extends ListItemAspect<IAnyValItem, IAnyVal> {
     protected _validateFields(): IValidationInfo[] {
         return Validations.distinct(this._validateItem());
     }
-    // override List's methods
-    _getProp(name: string) {
+    // override
+    _getProp(name: string): any {
         return this._getValue(name, VALS_VERSION.Current);
     }
      // override
-    _setProp(name: string, val: any) {
+    _setProp(name: string, val: any): void {
         if (this._getProp(name) !== val) {
             this._setValue(name, val, VALS_VERSION.Current);
             sys.raiseProp(this.item, name);
         }
     }
+    toString(): string {
+        return "AnyItemAspect";
+    }
 }
 
 
 export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAnyValItem {
-    get val(): any { return <any>this._aspect._getProp("val"); }
-    set val(v: any) { this._aspect._setProp("val", v); }
     // override
     isHasProp(prop: string): boolean {
         // first check for indexed property name
@@ -80,7 +82,7 @@ export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAn
                     throw new ValidationError([validation], this);
                 }
             } catch (ex) {
-                let error: ValidationError;
+                let error: IValidationError;
                 if (sys.isValidationError(ex)) {
                     error = ex;
                 } else {
@@ -93,13 +95,19 @@ export class AnyValListItem extends CollectionItem<AnyItemAspect> implements IAn
             }
         }
     }
-    get isPropertyBag() {
+    get val(): any {
+        return <any>this._aspect._getProp("val");
+    }
+    set val(v: any) {
+        this._aspect._setProp("val", v);
+    }
+    get isPropertyBag(): boolean {
         return true;
     }
     get list(): AnyList {
         return <AnyList>this._aspect.list;
     }
-    toString() {
+    toString(): string {
         return "AnyValListItem";
     }
 }
@@ -170,7 +178,7 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
         const aspect = new AnyItemAspect(this, vals, key, isNew);
         return aspect.item;
     }
-    protected onChanged() {
+    protected onChanged(): void {
         this._debounce.enque(() => {
             if (!!this._onChanged) {
                 const arr = this.items.map((item) => {
@@ -186,7 +194,7 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
         });
         this.fillItems(vals, true);
     }
-    toString() {
+    toString(): string {
         return "AnyList";
     }
 }

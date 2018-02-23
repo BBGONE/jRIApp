@@ -29,16 +29,26 @@ interface IWaitQueueTask {
    if the predicate returns true, invokes the task's action
 */
 export class WaitQueue extends BaseObject {
-    private _objId: string;
+    private _uniqueID: string;
     private _owner: IBaseObject;
     private _queue: { [property: string]: IWaitQueueTask[] };
     constructor(owner: IBaseObject) {
         super();
-        this._objId = coreUtils.getNewID("wq");
+        this._uniqueID = coreUtils.getNewID("wq");
         this._owner = owner;
         this._queue = {};
     }
-    protected _checkQueue(prop: string, value: any) {
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this._owner.objEvents.offNS(this.uniqueID);
+        this._queue = {};
+        this._owner = null;
+        super.dispose();
+    }
+    protected _checkQueue(prop: string, value: any): void {
         if (!this._owner || this._owner.getIsStateDirty()) {
             return;
         }
@@ -119,7 +129,7 @@ export class WaitQueue extends BaseObject {
             }
         }
     }
-    enQueue(item: IWaitQueueItem) {
+    enQueue(item: IWaitQueueItem): void {
         const opts: IWaitQueueItem = coreUtils.extend({
             prop: "",
             groupName: null,
@@ -164,23 +174,13 @@ export class WaitQueue extends BaseObject {
             self._checkQueue(property, (<any>self._owner)[property]);
         }, 0);
     }
-    dispose() {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        this._owner.objEvents.offNS(this.uniqueID);
-        this._queue = {};
-        this._owner = null;
-        super.dispose();
+    toString(): string {
+        return "WaitQueue " + this._uniqueID;
     }
-    toString() {
-        return "WaitQueue " + this._objId;
+    get uniqueID(): string {
+        return this._uniqueID;
     }
-    get uniqueID() {
-        return this._objId;
-    }
-    get owner() {
+    get owner(): IBaseObject {
         return this._owner;
     }
 }

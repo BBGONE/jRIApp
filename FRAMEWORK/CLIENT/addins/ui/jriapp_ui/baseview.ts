@@ -39,7 +39,7 @@ interface IElViewState extends IViewOptions {
 }
 
 export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber, IValidatable {
-    private _objId: string;
+    private _uniqueID: string;
     private _el: TElement;
     private _subscribeFlags: number;
     private _viewState: IElViewState;
@@ -58,7 +58,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
             _display: null,
             _errors: null
         };
-        this._objId = getNewID("elv");
+        this._uniqueID = getNewID("elv");
         this._viewState = state;
         this._subscribeFlags = !options.nodelegate ? 1 : 0;
 
@@ -147,7 +147,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
         return this._el;
     }
     get uniqueID(): string {
-        return this._objId;
+        return this._uniqueID;
     }
     get isVisible(): boolean {
         const v = this.el.style.display;

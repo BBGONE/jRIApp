@@ -14,48 +14,62 @@ export interface INamespaceMap {
 }
 
 export type TEventList = INamespaceMap;
+export type TDomElement = Element | Document | Window;
+export type TEventsArgs = {
+    nmspace?: string;
+    useCapture?: boolean;
+};
 
-export class EventWrap {
-    private _ev: Event;
+// used for delegation to match the element
+export type TEventsDelegateArgs = {
+    nmspace: string;
+    matchElement: (el: Element) => boolean;
+};
+
+export type TEventsArgsOrNamespace = TEventsArgs | string | TEventsDelegateArgs;
+export type THandlerFunc = (evt: any) => void;
+
+export class EventWrap<TEvent extends Event = Event> {
+    private _ev: TEvent;
     private _target: TDomElement;
     private _cancelBubble: boolean;
 
-    constructor(ev: Event, target: TDomElement) {
+    constructor(ev: TEvent, target: TDomElement) {
         this._ev = ev;
         this._target = target;
         this._cancelBubble = false;
     }
-    get type() {
+    get type(): string {
         return this._ev.type;
     }
-    get target() {
+    get target(): TDomElement {
         return this._target;
     }
-    get bubbles() {
+    get bubbles(): boolean {
         return this._ev.bubbles;
     }
-    get defaultPrevented() {
+    get defaultPrevented(): boolean {
         return this._ev.defaultPrevented;
     }
-    get cancelable() {
+    get cancelable(): boolean {
         return this._ev.cancelable;
     }
-    get isTrusted() {
+    get isTrusted(): boolean {
         return this._ev.isTrusted;
     }
-    get returnValue() {
+    get returnValue(): boolean {
         return this._ev.returnValue;
     }
     set returnValue(v: boolean) {
         this._ev.returnValue = v;
     }
-    get srcElement() {
+    get srcElement(): Element {
         return this._ev.srcElement;
     }
-    get eventPhase() {
+    get eventPhase(): number {
         return this._ev.eventPhase;
     }
-    get cancelBubble() {
+    get cancelBubble(): boolean {
         return this._cancelBubble;
     }
     set cancelBubble(v: boolean) {
@@ -64,33 +78,33 @@ export class EventWrap {
             this._ev.stopPropagation();
         }
     }
-    get timeStamp() {
+    get timeStamp(): number {
         return this._ev.timeStamp;
     }
-    get currentTarget() {
+    get currentTarget(): EventTarget {
         return this._ev.currentTarget;
     }
-    get originalEvent() {
+    get originalEvent(): TEvent {
         return this._ev;
     }
-    get AT_TARGET() {
+    get AT_TARGET(): number {
         return this._ev.AT_TARGET;
     }
-    get BUBBLING_PHASE() {
+    get BUBBLING_PHASE(): number {
         return this._ev.BUBBLING_PHASE;
     }
-    get CAPTURING_PHASE() {
+    get CAPTURING_PHASE(): number {
         return this._ev.CAPTURING_PHASE;
     }
 
-    preventDefault() {
+    preventDefault(): void {
         this._ev.preventDefault();
     }
-    stopPropagation() {
+    stopPropagation(): void {
         this._ev.stopPropagation();
         this._cancelBubble = true;
     }
-    stopImmediatePropagation() {
+    stopImmediatePropagation(): void {
         this._ev.stopImmediatePropagation();
     }
 }
@@ -220,26 +234,9 @@ const helper = EventHelper;
 
 const weakmap: IWeakMap = createWeakMap();
 
-export type TDomElement = Element | Document | Window;
-
-export type TEventsArgs = {
-    nmspace?: string;
-    useCapture?: boolean;
-};
-
-// used for delegation to match the element
-export type TEventsDelegateArgs = {
-    nmspace: string;
-    matchElement: (el: Element) => boolean;
-};
-
-export type TEventsArgsOrNamespace = TEventsArgs | string | TEventsDelegateArgs;
-
 function isDelegateArgs(a: any): a is TEventsDelegateArgs {
     return (!a) ? false : isFunc(a.matchElement);
 }
-
-export type THandlerFunc = (evt: any) => void;
 
 export class DomEvents {
     static on(el: TDomElement, evType: "MSContentZoom", listener: (ev: UIEvent) => any, args?: TEventsArgsOrNamespace): void;

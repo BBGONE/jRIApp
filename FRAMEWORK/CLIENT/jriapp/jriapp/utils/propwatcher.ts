@@ -6,42 +6,14 @@ import {
 const coreUtils = Utils.core;
 
 export class PropWatcher extends BaseObject {
-    private _objId: string;
+    private _uniqueID: string;
     private _objs: IBaseObject[];
     constructor() {
         super();
-        this._objId = coreUtils.getNewID("prw");
+        this._uniqueID = coreUtils.getNewID("prw");
         this._objs = [];
     }
-    static create() {
-        return new PropWatcher();
-    }
-    addPropWatch(obj: IBaseObject, prop: string, fnOnChange: (prop: string) => void) {
-        const self = this;
-        obj.objEvents.onProp(prop, function (s, a) {
-            fnOnChange(a.property);
-        }, self.uniqueID);
-
-        if (self._objs.indexOf(obj) < 0) {
-            self._objs.push(obj);
-        }
-    }
-    addWatch(obj: IBaseObject, props: string[], fnOnChange: (prop: string) => void) {
-        const self = this;
-        obj.objEvents.onProp("*", function (s, a) {
-            if (props.indexOf(a.property) > -1) {
-                fnOnChange(a.property);
-            }
-        }, self.uniqueID);
-
-        if (self._objs.indexOf(obj) < 0) {
-            self._objs.push(obj);
-        }
-    }
-    removeWatch(obj: IBaseObject) {
-        obj.objEvents.offNS(this.uniqueID);
-    }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -53,10 +25,38 @@ export class PropWatcher extends BaseObject {
         this._objs = [];
         super.dispose();
     }
-    toString() {
-        return "PropWatcher " + this._objId;
+    static create(): PropWatcher {
+        return new PropWatcher();
     }
-    get uniqueID() {
-        return this._objId;
+    addPropWatch(obj: IBaseObject, prop: string, fnOnChange: (prop: string) => void): void {
+        const self = this;
+        obj.objEvents.onProp(prop, function (s, a) {
+            fnOnChange(a.property);
+        }, self.uniqueID);
+
+        if (self._objs.indexOf(obj) < 0) {
+            self._objs.push(obj);
+        }
+    }
+    addWatch(obj: IBaseObject, props: string[], fnOnChange: (prop: string) => void): void {
+        const self = this;
+        obj.objEvents.onProp("*", function (s, a) {
+            if (props.indexOf(a.property) > -1) {
+                fnOnChange(a.property);
+            }
+        }, self.uniqueID);
+
+        if (self._objs.indexOf(obj) < 0) {
+            self._objs.push(obj);
+        }
+    }
+    removeWatch(obj: IBaseObject): void {
+        obj.objEvents.offNS(this.uniqueID);
+    }
+    toString(): string {
+        return "PropWatcher " + this._uniqueID;
+    }
+    get uniqueID(): string {
+        return this._uniqueID;
     }
 }
