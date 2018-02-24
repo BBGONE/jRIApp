@@ -1529,7 +1529,7 @@ declare module "jriapp_ui/template" {
         template: ITemplate;
         isLoaded: boolean;
     };
-    export class TemplateCommand<TThis> extends Command<TemplateCommandParam, TThis> {
+    export class TemplateCommand extends Command<TemplateCommandParam> {
     }
     export class TemplateElView extends CommandElView implements ITemplateEvents {
         private _template;

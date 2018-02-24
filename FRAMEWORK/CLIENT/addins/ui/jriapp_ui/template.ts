@@ -19,7 +19,7 @@ export interface ITemplateOptions {
 
 // for strongly typed parameters
 export type TemplateCommandParam = { template: ITemplate; isLoaded: boolean; };
-export class TemplateCommand<TThis> extends Command<TemplateCommandParam, TThis>
+export class TemplateCommand extends Command<TemplateCommandParam>
 {
 }
 
@@ -65,7 +65,9 @@ export class TemplateElView extends CommandElView implements ITemplateEvents {
     toString(): string {
         return "TemplateElView";
     }
-    get isEnabled(): boolean { return this._isEnabled; }
+    get isEnabled(): boolean {
+        return this._isEnabled;
+    }
     set isEnabled(v: boolean) {
         if (this._isEnabled !== v) {
             this._isEnabled = v;

@@ -18,20 +18,18 @@ const enum CMD_EVENTS {
     can_execute_changed = "canExecute_changed"
 }
 
-export type Action<TParam = any, TThis = any> = (this: TThis, sender: any, param: TParam) => void;
-export type Predicate<TParam = any, TThis = any> = (this: TThis, sender: any, param: TParam) => boolean;
+export type Action<TParam = any> = (sender: any, param: TParam) => void;
+export type Predicate<TParam = any> = (sender: any, param: TParam) => boolean;
 
-export class Command<TParam = any, TContext = any> extends BaseObject implements ICommand<TParam> {
-    private _action: Action<TParam, TContext>;
-    private _context: TContext;
-    private _predicate: Predicate<TParam, TContext>;
+export class Command<TParam = any> extends BaseObject implements ICommand<TParam> {
+    private _action: Action<TParam>;
+    private _predicate: Predicate<TParam>;
     private _uniqueID: string;
 
-    constructor(fnAction: Action<TParam, TContext>, context?: TContext, fnCanExecute?: Predicate<TParam, TContext>) {
+    constructor(fnAction: Action<TParam>, fnCanExecute?: Predicate<TParam>) {
         super();
         this._uniqueID = getNewID("cmd");
         this._action = fnAction;
-        this._context = context;
         this._predicate = fnCanExecute;
     }
     dispose(): void {
@@ -40,30 +38,20 @@ export class Command<TParam = any, TContext = any> extends BaseObject implements
         }
         this.setDisposing();
         this._action = null;
-        this._context = null;
         this._predicate = null;
         super.dispose();
     }
     protected _canExecute(sender: any, param: TParam): boolean {
-        const predicate = this._getPredicate(), context = this._getContext();
-        return !predicate ? true : predicate.apply(context, [sender, param]);
+        const predicate = this._predicate;
+        return !predicate ? true : predicate(sender, param);
     }
     protected _execute(sender: any, param: TParam): void {
-        const action = this._getAction(), context = this._getContext();
+        const action = this._action;
         if (!!action) {
-            action.apply(context, [sender, param]);
+            action(sender, param);
         }
     }
-    protected _getAction(): Action<TParam, TContext> {
-        return this._action;
-    }
-    protected _getPredicate(): Predicate<TParam, TContext> {
-        return this._predicate;
-    }
-    protected _getContext(): TContext {
-        return this._context;
-    }
-    addOnCanExecuteChanged(fn: (sender: ICommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void {
+    addOnCanExecuteChanged(fn: (sender: this, args: any) => void, nmspace?: string, context?: IBaseObject): void {
         this.objEvents.on(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
     }
     offOnCanExecuteChanged(nmspace?: string): void {
@@ -86,27 +74,31 @@ export class Command<TParam = any, TContext = any> extends BaseObject implements
     }
 }
 
-export abstract class BaseCommand<TParam = any, TOwner = any> extends Command<TParam, any> {
+export abstract class BaseCommand<TOwner> extends Command {
     private _owner: TOwner;
 
     constructor(owner: TOwner) {
-        super(null, null, null);
+        super(null, null);
         this._owner = owner;
     }
-    // override
-    protected _getAction(): Action<TParam, BaseCommand> {
-        return this.action;
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this._owner = null;
+        super.dispose();
     }
     // override
-    protected _getPredicate(): Predicate<TParam, BaseCommand> {
-        return this.isCanExecute;
+    protected _canExecute(sender: any, param: any): boolean {
+        return this.isCanExecute(sender, param);
     }
     // override
-    protected _getContext(): this {
-        return this;
+    protected _execute(sender: any, param: any): void {
+        this.action(sender, param);
     }
-    protected abstract action(sender: any, param: TParam): void;
-    protected abstract isCanExecute(sender: any, param: TParam): boolean;
+    protected abstract action(sender: any, param: any): void;
+    protected abstract isCanExecute(sender: any, param: any): boolean;
     get owner(): TOwner {
         return this._owner;
     }

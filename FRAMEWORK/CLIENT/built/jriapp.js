@@ -3762,11 +3762,10 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
     })(CMD_EVENTS || (CMD_EVENTS = {}));
     var Command = (function (_super) {
         __extends(Command, _super);
-        function Command(fnAction, context, fnCanExecute) {
+        function Command(fnAction, fnCanExecute) {
             var _this = _super.call(this) || this;
             _this._uniqueID = getNewID("cmd");
             _this._action = fnAction;
-            _this._context = context;
             _this._predicate = fnCanExecute;
             return _this;
         }
@@ -3776,28 +3775,18 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             }
             this.setDisposing();
             this._action = null;
-            this._context = null;
             this._predicate = null;
             _super.prototype.dispose.call(this);
         };
         Command.prototype._canExecute = function (sender, param) {
-            var predicate = this._getPredicate(), context = this._getContext();
-            return !predicate ? true : predicate.apply(context, [sender, param]);
+            var predicate = this._predicate;
+            return !predicate ? true : predicate(sender, param);
         };
         Command.prototype._execute = function (sender, param) {
-            var action = this._getAction(), context = this._getContext();
+            var action = this._action;
             if (!!action) {
-                action.apply(context, [sender, param]);
+                action(sender, param);
             }
-        };
-        Command.prototype._getAction = function () {
-            return this._action;
-        };
-        Command.prototype._getPredicate = function () {
-            return this._predicate;
-        };
-        Command.prototype._getContext = function () {
-            return this._context;
         };
         Command.prototype.addOnCanExecuteChanged = function (fn, nmspace, context) {
             this.objEvents.on("canExecute_changed", fn, nmspace, context);
@@ -3830,18 +3819,23 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
     var BaseCommand = (function (_super) {
         __extends(BaseCommand, _super);
         function BaseCommand(owner) {
-            var _this = _super.call(this, null, null, null) || this;
+            var _this = _super.call(this, null, null) || this;
             _this._owner = owner;
             return _this;
         }
-        BaseCommand.prototype._getAction = function () {
-            return this.action;
+        BaseCommand.prototype.dispose = function () {
+            if (this.getIsDisposed()) {
+                return;
+            }
+            this.setDisposing();
+            this._owner = null;
+            _super.prototype.dispose.call(this);
         };
-        BaseCommand.prototype._getPredicate = function () {
-            return this.isCanExecute;
+        BaseCommand.prototype._canExecute = function (sender, param) {
+            return this.isCanExecute(sender, param);
         };
-        BaseCommand.prototype._getContext = function () {
-            return this;
+        BaseCommand.prototype._execute = function (sender, param) {
+            this.action(sender, param);
         };
         Object.defineProperty(BaseCommand.prototype, "owner", {
             get: function () {
@@ -4610,6 +4604,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.14.2";
+    exports.VERSION = "2.15.0";
     bootstrap_8.Bootstrap._initFramework();
 });
