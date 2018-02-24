@@ -28,17 +28,17 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         // this._dbSet.isSubmitOnDelete = true;
         this._propWatcher = new RIAPP.PropWatcher();
 
-        this._dbSet.addOnItemDeleting(function (sender, args) {
+        this._dbSet.addOnItemDeleting(function (_s, args) {
             if (!confirm('Are you sure that you want to delete customer ?'))
                 args.isCancel = true;
         }, self.uniqueID);
 
-        this._dbSet.addOnPageIndexChanged(function (sender, args) {
+        this._dbSet.addOnPageIndexChanged(function (_s, args) {
             self.objEvents.raise('page_changed', {});
         }, self.uniqueID);
 
         //example of using custom validation on client (in addition to a built-in validation)
-        this._dbSet.addOnValidateField(function (sender, args) {
+        this._dbSet.addOnValidateField(function (_s, args) {
             let item = args.item;
             //check complex property value
             if (args.fieldName == "ComplexProp.ComplexProp.Phone") {
@@ -55,43 +55,40 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         });
 
         //adds new customer - uses dialog to enter the data
-        this._addNewCommand = new RIAPP.Command(function (sender, param) {
+        this._addNewCommand = new RIAPP.Command(function () {
             //showing of the dialog is handled by the datagrid
             self._dbSet.addNew();
-        }, self, function (sender, param) {
-            //the command is always enabled
-            return true;
         });
 
         //saves changes (submitts them to the service)
-        this._saveCommand = new RIAPP.Command(function (sender, param) {
+        this._saveCommand = new RIAPP.Command(function () {
             self.dbContext.submitChanges();
-        }, self, function (s, p) {
+        }, function () {
             //the command is enabled when there are pending changes
             return self.dbContext.isHasChanges;
         });
 
 
-        this._undoCommand = new RIAPP.Command(function (sender, param) {
+        this._undoCommand = new RIAPP.Command(function () {
             self.dbContext.rejectChanges();
-        }, self, function (s, p) {
+        }, function () {
             //the command is enabled when there are pending changes
             return self.dbContext.isHasChanges;
         });
 
         //load data from the server
-        this._loadCommand = new RIAPP.Command(function (sender, args) {
+        this._loadCommand = new RIAPP.Command(function () {
             self.load();
-        }, self, null);
+        });
 
         //the property watcher helps us handling properties changes
         //more convenient than using addOnPropertyChange
-        this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (prop) {
+        this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (_prop) {
             self._saveCommand.raiseCanExecuteChanged();
             self._undoCommand.raiseCanExecuteChanged();
         });
 
-        this._propWatcher.addPropWatch(this._dbSet, 'currentItem', function (prop) {
+        this._propWatcher.addPropWatch(this._dbSet, 'currentItem', function (_prop) {
             self._onCurrentChanged();
         });
 

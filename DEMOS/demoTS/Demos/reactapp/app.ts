@@ -15,7 +15,7 @@ export class DemoApplication extends RIAPP.Application {
         this._testObj = new TestObject(this);
 
         //here we could process application's errors
-        this.objEvents.addOnError(function (sender, args) {
+        this.objEvents.addOnError(function (_s, args) {
             debugger;
             args.isHandled = true;
             alert(args.error.message);

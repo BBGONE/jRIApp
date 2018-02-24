@@ -45,7 +45,7 @@ export class DemoApplication extends RIAPP.Application {
         this._errorVM = new ErrorViewModel(this);
         this._customerVM = new CustomerVM(this);
 
-        function handleError(sender:any, data:any) {
+        function handleError(sender: any, data:any) {
             self._handleError(sender, data);
         };
         //here we could process application's errors

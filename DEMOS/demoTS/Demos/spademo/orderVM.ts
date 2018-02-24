@@ -38,7 +38,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
         this._tabs = null;
 
         //loads the data only when customer's row is expanded
-        this._customerVM.objEvents.on('row_expanded', function (sender, args) {
+        this._customerVM.objEvents.on('row_expanded', function (_s, args) {
             if (args.isExpanded) {
                 self.currentCustomer = args.customer;
             }
@@ -47,17 +47,17 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
             }
         }, self.uniqueID);
 
-        this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
+        this._dbSet.objEvents.onProp('currentItem', function (_s, args) {
             self._onCurrentChanged();
         }, self.uniqueID);
 
-        this._dbSet.addOnItemDeleting(function (sender, args) {
+        this._dbSet.addOnItemDeleting(function (_s, args) {
             if (!confirm('Are you sure that you want to delete the order?'))
                 args.isCancel = true;
         }, self.uniqueID);
 
 
-        this._dbSet.addOnItemAdded(function (sender, args) {
+        this._dbSet.addOnItemAdded(function (_s, args) {
             let item = args.item;
             item.Customer = self.currentCustomer;
             item.OrderDate = moment().toDate();
@@ -67,11 +67,9 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
 
 
         //adds new order - uses dialog to fill the data
-        this._addNewCommand = new RIAPP.Command(function (sender, param) {
+        this._addNewCommand = new RIAPP.Command(function () {
             //the dialog shown by the datagrid
             self._dbSet.addNew();
-        }, self, function (sender, param) {
-            return true;
         });
 
         this._addressVM = new AddressVM(this);

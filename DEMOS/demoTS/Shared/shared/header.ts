@@ -16,7 +16,6 @@ export class HeaderVM extends RIAPP.ViewModel<RIAPP.IApplication> {
 
     constructor(app: RIAPP.IApplication) {
         super(app);
-        const self = this;
         this._$topPanel = $(topPanel);
         this._$contentPanel = $(contentPanel);
         this._contentPanelHeight = 0;
@@ -24,13 +23,13 @@ export class HeaderVM extends RIAPP.ViewModel<RIAPP.IApplication> {
             this._contentPanelHeight = this._$contentPanel.height();
 
         //uses strongly typed "this"
-        this._expanderCommand = new RIAPP.Command<any, HeaderVM>(function (sender: uiMOD.ExpanderElView, param) {
+        this._expanderCommand = new RIAPP.Command((sender: uiMOD.ExpanderElView)  => {
             if (sender.isExpanded) {
                 this.expand();
             } else {
                 this.collapse();
             }
-        }, self);
+        });
 
     }
     addOnUpdateUI(fn: (sender: HeaderVM, args: { isHandled: boolean; isUp: boolean; }) => void, namespace?: string) {

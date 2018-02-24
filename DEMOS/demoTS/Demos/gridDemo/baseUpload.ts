@@ -40,13 +40,13 @@ export class BaseUploadVM<TApp extends RIAPP.IApplication> extends RIAPP.ViewMod
         this._id = null;
         this._fileUploaded = false;
 
-        this._uploadCommand = new RIAPP.Command(function (this: BaseUploadVM<TApp>, sender, param) {
+        this._uploadCommand = new RIAPP.Command(() => {
             try {
                 self.uploadFiles(self._fileEl.files);
             } catch (ex) {
                 self.handleError(ex, this);
             }
-        }, self, function (sender, param) {
+        }, () => {
             return self._canUpload();
         });
     }

@@ -8035,7 +8035,9 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/mvv
             return "TemplateElView";
         };
         Object.defineProperty(TemplateElView.prototype, "isEnabled", {
-            get: function () { return this._isEnabled; },
+            get: function () {
+                return this._isEnabled;
+            },
             set: function (v) {
                 if (this._isEnabled !== v) {
                     this._isEnabled = v;

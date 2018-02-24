@@ -80,13 +80,13 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             if (!!currentValue)
                 _this.radioValue = currentValue;
             _this._historyList = new DEMODB.HistoryList();
-            _this._historyList.objEvents.onProp('count', function (s, a) {
+            _this._historyList.objEvents.onProp('count', function () {
                 self._clearListCommand.raiseCanExecuteChanged();
             }, _this.uniqueID);
-            _this._clearListCommand = new RIAPP.Command(function (sender, param) {
+            _this._clearListCommand = new RIAPP.Command(function () {
                 self.clearList();
                 self.radioValue = null;
-            }, self, function (sender, param) {
+            }, function (_s, param) {
                 return self._historyList.count > 0;
             });
             return _this;
@@ -128,7 +128,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             var self = this;
             this._errorVM = new COMMON.ErrorViewModel(this);
             this._demoVM = new RadioDemo2VM(this);
-            this.objEvents.addOnError(function (sender, data) {
+            this.objEvents.addOnError(function (_s, data) {
                 debugger;
                 data.isHandled = true;
                 self.errorVM.error = data.error;
@@ -167,7 +167,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         return DemoApplication;
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
-    bootstrap.objEvents.addOnError(function (sender, args) {
+    bootstrap.objEvents.addOnError(function (_s, args) {
         debugger;
         alert(args.error.message);
     });

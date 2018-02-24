@@ -38,7 +38,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
                 _this._childView = _this.createChildView();
             }
             _this._dbSet = item._aspect.dbSet;
-            self._toggleCommand = new RIAPP.Command(function (s, a) {
+            self._toggleCommand = new RIAPP.Command(function () {
                 if (!self.childView)
                     return;
                 if (self.childView.count <= 0) {
@@ -51,10 +51,10 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
                     self._dbSet.acceptChanges();
                     self.refreshCss();
                 }
-            }, self, function (s, a) {
+            }, function () {
                 return !!self.childView;
             });
-            self._clickCommand = new RIAPP.Command(function (s, a) {
+            self._clickCommand = new RIAPP.Command(function () {
                 if (!!self._clickTimeOut) {
                     clearTimeout(self._clickTimeOut);
                     self._clickTimeOut = null;
@@ -66,7 +66,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
                         self.objEvents.raise('clicked', { item: self._item });
                     }, 350);
                 }
-            }, self, null);
+            });
             return _this;
         }
         ExProps.prototype.addOnClicked = function (fn, nmspace) {
@@ -172,15 +172,11 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             var _this = _super.call(this, app) || this;
             var self = _this;
             self._dbSet = self.dbContext.dbSets.FileSystemObject;
-            self._collapseCommand = new RIAPP.Command(function (s, a) {
+            self._collapseCommand = new RIAPP.Command(function () {
                 self.collapse();
-            }, self, function (s, a) {
-                return true;
             });
-            self._reloadCommand = new RIAPP.Command(function (s, a) {
+            self._reloadCommand = new RIAPP.Command(function () {
                 self.loadAll();
-            }, self, function (s, a) {
-                return true;
             });
             self.dbContext.dbSets.FileSystemObject.definefullPathField(function (item) {
                 return self.getFullPath(item);
@@ -315,7 +311,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             });
             this._errorVM = new COMMON.ErrorViewModel(this);
             this._fbrowserVM = new FolderBrowser(this, { service_url: options.service_url, permissionInfo: options.permissionInfo });
-            this.objEvents.addOnError(function (sender, data) {
+            this.objEvents.addOnError(function (_s, data) {
                 debugger;
                 data.isHandled = true;
                 self.errorVM.error = data.error;
@@ -364,7 +360,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
         return DemoApplication;
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
-    RIAPP.bootstrap.objEvents.addOnError(function (sender, args) {
+    RIAPP.bootstrap.objEvents.addOnError(function (_s, args) {
         debugger;
         alert(args.error.message);
     });

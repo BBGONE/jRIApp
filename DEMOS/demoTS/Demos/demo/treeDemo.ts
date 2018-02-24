@@ -40,7 +40,7 @@ export class ExProps extends RIAPP.BaseObject {
 
     constructor(item: FOLDERBROWSER_SVC.FileSystemObject, dbContext: FOLDERBROWSER_SVC.DbContext) {
         super();
-        const self: ExProps = this;
+        const self = this;
         this._item = item;
         this._dbContext = dbContext;
         this._childView = null;
@@ -49,7 +49,7 @@ export class ExProps extends RIAPP.BaseObject {
         }
 
         this._dbSet = <FOLDERBROWSER_SVC.FileSystemObjectDb>item._aspect.dbSet;
-        self._toggleCommand = new RIAPP.Command(function (s, a) {
+        self._toggleCommand = new RIAPP.Command(() => {
             if (!self.childView)
                 return;
             if (self.childView.count <= 0) {
@@ -62,12 +62,11 @@ export class ExProps extends RIAPP.BaseObject {
                 self._dbSet.acceptChanges();
                 self.refreshCss();
             }
-        }, self,
-            function (s, a) {
+        }, () => {
                 return !!self.childView;
             });
 
-        self._clickCommand = new RIAPP.Command(function (s, a) {
+        self._clickCommand = new RIAPP.Command(() => {
             if (!!self._clickTimeOut) {
                 clearTimeout(self._clickTimeOut);
                 self._clickTimeOut = null;
@@ -78,7 +77,7 @@ export class ExProps extends RIAPP.BaseObject {
                     self.objEvents.raise('clicked', { item: self._item });
                 }, 350);
             }
-        }, self, null);
+        });
     }
     addOnClicked(fn: (sender: ExProps, args: { item: FOLDERBROWSER_SVC.FileSystemObject; }) => void, nmspace?: string) {
         this.objEvents.on('clicked', fn, nmspace);
@@ -172,19 +171,13 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         const self = this;
         self._dbSet = self.dbContext.dbSets.FileSystemObject;
 
-        self._collapseCommand = new RIAPP.Command(function (s, a) {
+        self._collapseCommand = new RIAPP.Command(() => {
             self.collapse();
-        }, self,
-            function (s, a) {
-                return true;
-            });
+        });
 
-        self._reloadCommand = new RIAPP.Command(function (s, a) {
+        self._reloadCommand = new RIAPP.Command(() => {
             self.loadAll();
-        }, self,
-            function (s, a) {
-                return true;
-            });
+        });
 
         self.dbContext.dbSets.FileSystemObject.definefullPathField(function (item) {
             return self.getFullPath(item);
@@ -310,7 +303,7 @@ export class DemoApplication extends RIAPP.Application {
         this._fbrowserVM = new FolderBrowser(this, { service_url: options.service_url, permissionInfo: options.permissionInfo });
 
         //here we could process application's errors
-        this.objEvents.addOnError(function (sender, data) {
+        this.objEvents.addOnError(function (_s, data) {
             debugger;
             data.isHandled = true;
             self.errorVM.error = data.error;
@@ -339,7 +332,7 @@ export class DemoApplication extends RIAPP.Application {
 }
 
 //bootstrap error handler - the last resort (typically display message to the user)
-RIAPP.bootstrap.objEvents.addOnError(function (sender, args) {
+RIAPP.bootstrap.objEvents.addOnError(function (_s, args) {
     debugger;
     alert(args.error.message);
 });

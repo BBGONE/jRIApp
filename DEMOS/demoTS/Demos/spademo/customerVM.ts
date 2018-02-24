@@ -35,9 +35,9 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         this._propWatcher = new RIAPP.PropWatcher();
         this._uiMainRoute = new MainRoute();
         this._uiCustDetRoute = new CustDetRoute();
-        this._uiMainRoute.objEvents.onProp('viewName', function (sender, a) {
+        this._uiMainRoute.objEvents.onProp('viewName', function (sender) {
             self._uiCustDetRoute.reset();
-            if (sender.viewName == sender.custTemplName) {
+            if (sender.viewName === sender.custTemplName) {
                 setTimeout(function () {
                     if (!!self._gridEvents) {
                         self._gridEvents.focusGrid();
@@ -48,12 +48,12 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         this._gridEvents = new CustomerGridEvents(this);
 
 
-        this._dbSet.addOnItemDeleting(function (sender, args) {
+        this._dbSet.addOnItemDeleting(function (_s, args) {
             if (!confirm('Are you sure that you want to delete customer?'))
                 args.isCancel = true;
         }, self.uniqueID);
 
-        this._dbSet.addOnPageIndexChanged(function (sender, args) {
+        this._dbSet.addOnPageIndexChanged(function (_s, args) {
             self.objEvents.raise('page_changed', {});
         }, self.uniqueID);
 
@@ -63,84 +63,78 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
             args.item.ComplexProp.FirstName = "Dummy2";
         });
 
-        this._editCommand = new RIAPP.Command(function (sender, param) {
+        this._editCommand = new RIAPP.Command(function () {
             self.currentItem._aspect.beginEdit();
-        }, self,
-            function (sender, param) {
+        }, function () {
                 return !!self.currentItem;
             });
 
 
-        this._endEditCommand = new RIAPP.Command(function (sender, param) {
+        this._endEditCommand = new RIAPP.Command(function () {
             if (self.currentItem._aspect.endEdit())
                 self.dbContext.submitChanges();
-        }, self,
-            function (sender, param) {
+        }, function () {
                 return !!self.currentItem;
             });
 
-        this._cancelEditCommand = new RIAPP.Command(function (sender, param) {
+        this._cancelEditCommand = new RIAPP.Command(function () {
             self.currentItem._aspect.cancelEdit();
             self.dbContext.rejectChanges();
-        }, self,
-            function (sender, param) {
+        }, function () {
                 return !!self.currentItem;
             });
 
         //adds new customer - uses dialog to enter the data
-        this._addNewCommand = new RIAPP.Command(function (sender, param) {
+        this._addNewCommand = new RIAPP.Command(function () {
             //showing of the dialog is handled by the datagrid
             self._dbSet.addNew();
-        }, self, function (sender, param) {
-            //the command is always enabled
-            return true;
         });
 
         //saves changes (submitts them to the service)
-        this._saveCommand = new RIAPP.Command(function (sender, param) {
+        this._saveCommand = new RIAPP.Command(function () {
             self.dbContext.submitChanges();
-        }, self, function (s, p) {
+        }, function () {
             //the command is enabled when there are pending changes
             return self.dbContext.isHasChanges;
         });
 
 
-        this._undoCommand = new RIAPP.Command(function (sender, param) {
+        this._undoCommand = new RIAPP.Command(function () {
             self.dbContext.rejectChanges();
-        }, self, function (s, p) {
+        }, function () {
             //the command is enabled when there are pending changes
             return self.dbContext.isHasChanges;
         });
 
         //load data from the server
-        this._loadCommand = new RIAPP.Command(function (sender, args) {
+        this._loadCommand = new RIAPP.Command(function () {
             self.load();
-        }, self, null);
+        });
 
-        this._switchViewCommand = new RIAPP.Command(function (sender, param) {
+        this._switchViewCommand = new RIAPP.Command<string>(function (_s, param) {
             self.uiMainRoute.viewName = param;
-        }, self, null);
+        });
 
-        this._switchDetViewCommand = new RIAPP.Command(function (sender, param) {
+        this._switchDetViewCommand = new RIAPP.Command<string>(function (_s, param) {
             self.uiCustDetRoute.viewName = param;
-        }, self, null);
+        });
 
 
         //the property watcher helps us handling properties changes
         //more convenient than using addOnPropertyChange
-        this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (prop) {
+        this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (_prop) {
             self._saveCommand.raiseCanExecuteChanged();
             self._undoCommand.raiseCanExecuteChanged();
         });
 
-        this._propWatcher.addPropWatch(this._dbSet, 'currentItem', function (prop) {
+        this._propWatcher.addPropWatch(this._dbSet, 'currentItem', function (_prop) {
             self._editCommand.raiseCanExecuteChanged();
             self._endEditCommand.raiseCanExecuteChanged();
             self._cancelEditCommand.raiseCanExecuteChanged();
             self._onCurrentChanged();
         });
 
-        this._dbSet.addOnCleared(function (s, a) {
+        this._dbSet.addOnCleared(function () {
             self.dbSets.CustomerAddress.clear();
             self.dbSets.Address.clear();
         }, self.uniqueID);

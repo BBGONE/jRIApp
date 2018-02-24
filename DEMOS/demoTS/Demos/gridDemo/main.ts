@@ -53,7 +53,7 @@ export class SizeConverter extends RIAPP.BaseConverter {
 }
 
 //bootstrap error handler - the last resort (typically display message to the user)
-bootstrap.objEvents.addOnError(function (sender, args) {
+bootstrap.objEvents.addOnError(function (_s, args) {
     debugger;
     alert(args.error.message);
     args.isHandled = true;

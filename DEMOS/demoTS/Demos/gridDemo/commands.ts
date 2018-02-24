@@ -5,7 +5,7 @@ import { ProductViewModel } from "./productVM";
 import { ProductsFilter } from "./filters";
 
 //an example how to define a strongly typed command
-export class TestInvokeCommand extends RIAPP.BaseCommand<DEMODB.Product, ProductViewModel>
+export class TestInvokeCommand extends RIAPP.BaseCommand<ProductViewModel>
 {
     protected action(sender: RIAPP.IBaseObject, param: DEMODB.Product) {
         const viewModel = this.owner;
@@ -24,7 +24,7 @@ export class TestInvokeCommand extends RIAPP.BaseCommand<DEMODB.Product, Product
 }
 
 //an example how to define a strongly typed command
-export class ResetCommand extends RIAPP.BaseCommand<any, ProductsFilter>
+export class ResetCommand extends RIAPP.BaseCommand<ProductsFilter>
 {
     protected action(sender: RIAPP.IBaseObject, param: any) {
         this.owner.reset();

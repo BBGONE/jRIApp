@@ -37,17 +37,15 @@ export class UploadThumbnailVM extends BaseUploadVM<RIAPP.Application> {
         //dialogs are distinguished by their given names
         this._dialogVM.createDialog('uploadDialog', dialogOptions);
         //shows dialog when executed
-        this._dialogCommand = new RIAPP.Command(function (sender, param) {
+        this._dialogCommand = new RIAPP.Command<DEMODB.Product>(function (_s, product) {
             try {
                 //using command parameter to provide the product item
-                self._product = param;
+                self._product = product;
                 self.id = self._product.ProductID.toString();
                 self._dialogVM.showDialog('uploadDialog', self);
             } catch (ex) {
                 self.handleError(ex, self);
             }
-        }, self, function (sender, param) {
-            return true;
         });
     }
     protected _onDialogClose() {

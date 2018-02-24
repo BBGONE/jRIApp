@@ -23,12 +23,12 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
         this._addressesDb = this.dbSets.Address;
         this._custAdressDb = this.dbSets.CustomerAddress;
 
-        this._custAdressDb.addOnItemDeleting(function (sender, args) {
+        this._custAdressDb.addOnItemDeleting(function (_s, args) {
             if (!confirm('Are you sure that you want to unlink Address from this customer?'))
                 args.isCancel = true;
         }, self.uniqueID);
 
-        this._custAdressDb.addOnBeginEdit(function (sender, args) {
+        this._custAdressDb.addOnBeginEdit(function (_s, args) {
             let item = args.item;
             //start editing Address entity, when CustomerAddress begins editing
             //p.s.- Address is navigation property
@@ -37,7 +37,7 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
                 address._aspect.beginEdit();
         }, self.uniqueID);
 
-        this._custAdressDb.addOnEndEdit(function (sender, args) {
+        this._custAdressDb.addOnEndEdit(function (_s, args) {
             let item = args.item;
             let address = item.Address;
             if (!args.isCanceled) {
@@ -50,7 +50,7 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
             }
         }, self.uniqueID);
 
-        this._addressesDb.addOnItemDeleting(function (sender, args) {
+        this._addressesDb.addOnItemDeleting(function (_s, args) {
             if (!confirm('Are you sure that you want to delete the Customer\'s Address?'))
                 args.isCancel = true;
         }, self.uniqueID);
@@ -81,13 +81,13 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
         /*
         this._addressesView.addOnEndEdit((s, a) => {
             self.dbContext.submitChanges();
-        }, self.uniqueID, self, false);
+        }, self.uniqueID, false);
         */
         this._custAdressView.addOnViewRefreshed(function (s, a) {
             self._addressesView.refresh();
         }, self.uniqueID);
 
-        this._customerVM.objEvents.onProp('currentItem', function (sender, args) {
+        this._customerVM.objEvents.onProp('currentItem', function (_s, args) {
             self._currentCustomer = self._customerVM.currentItem;
             self.objEvents.raiseProp('currentCustomer');
         }, self.uniqueID);

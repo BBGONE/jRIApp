@@ -23,16 +23,16 @@ export class WebSocketsVM extends RIAPP.BaseObject {
         this._clientID = null;
         this._deffered = null;
         this._url = url;
-        this._openWsCommand = new RIAPP.Command<any, WebSocketsVM>(function (sender, data) {
+        this._openWsCommand = new RIAPP.Command(() => {
             this.open().catch((res) => {
                 self.handleError(res, self);
             });
-        }, self, () => {
+        }, () => {
             return !self._ws;
         });
-        this._closeWsCommand = new RIAPP.Command<any, WebSocketsVM>(function (sender, data) {
+        this._closeWsCommand = new RIAPP.Command(() => {
             this.close();
-        }, self, () => {
+        }, () => {
             return !!this._ws;
         });
         bootstrap.addOnUnLoad((s, a) => self.close());

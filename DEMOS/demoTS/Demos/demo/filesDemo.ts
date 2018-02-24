@@ -42,12 +42,9 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         this._infotype = null;
         self._dbSet = self.dbContext.dbSets.FileSystemObject;
 
-        self._loadRootCommand = new RIAPP.Command(function (s, a) {
+        self._loadRootCommand = new RIAPP.Command(() => {
             self.loadRootFolder();
-        }, self,
-            function (s, a) {
-                return true;
-            });
+        });
 
         this._createDynaTree();
     }
@@ -199,14 +196,12 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
 
         this._dialogVM.createDialog('folderBrowser', dialogOptions);
 
-        this._dialogCommand = new RIAPP.Command(function (sender, param) {
+        this._dialogCommand = new RIAPP.Command(() => {
             try {
                 self.showDialog();
             } catch (ex) {
                 self.handleError(ex, self);
             }
-        }, self, function (sender, param) {
-            return true;
         });
     }
     addOnItemSelected(fn: (sender: FolderBrowserVM, args: { fullPath: string }) => void, namespace?: string) {
@@ -290,7 +285,7 @@ export class DemoApplication extends RIAPP.Application {
             self.objEvents.raiseProp('selectedPath');
         });
         //here we could process application's errors
-        this.objEvents.addOnError(function (sender, data) {
+        this.objEvents.addOnError(function (_s, data) {
             debugger;
             data.isHandled = true;
             self.errorVM.error = data.error;
@@ -342,7 +337,7 @@ export class DemoApplication extends RIAPP.Application {
 }
 
 //bootstrap error handler - the last resort (typically display message to the user)
-RIAPP.bootstrap.objEvents.addOnError(function (sender, args) {
+RIAPP.bootstrap.objEvents.addOnError(function (_s, args) {
     debugger;
     alert(args.error.message);
 });

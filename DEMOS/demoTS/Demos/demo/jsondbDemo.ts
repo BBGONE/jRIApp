@@ -165,12 +165,12 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         this._propWatcher = new RIAPP.PropWatcher();
      
         //when currentItem property changes, invoke our viewmodel's method
-        this._dbSet.objEvents.onProp('currentItem', function (sender, data) {
+        this._dbSet.objEvents.onProp('currentItem', function (_s, data) {
             self._onCurrentChanged();
         }, self.uniqueID);
 
         //if we need to confirm the deletion, this is how it is done
-        this._dbSet.addOnItemDeleting(function (sender, args) {
+        this._dbSet.addOnItemDeleting(function (_s, args) {
             if (!confirm('Are you sure that you want to delete ' + args.item.CustomerID + ' ?'))
                 args.isCancel = true;
         }, self.uniqueID);
@@ -180,7 +180,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         this._dbSet.isSubmitOnDelete = true;
 
         //adds new product - uses dialog to enter the data
-        this._addNewCommand = new RIAPP.Command<any, CustomerViewModel>(function (sender, param) {
+        this._addNewCommand = new RIAPP.Command(function (_s, param) {
             //grid will show the edit dialog, because we set grid options isHandleAddNew:true
             //see the options for the grid on the HTML demo page
             let item = self._dbSet.addNew();
@@ -189,24 +189,24 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
             //on clicking OK button all changes are submitted to the service
         });
 
-        this._addNewAddrCommand = new RIAPP.Command<any, CustomerViewModel>(function (sender, param) {
+        this._addNewAddrCommand = new RIAPP.Command(() => {
             const curCustomer = <CustomerBag>self.currentItem.Customer;
             curCustomer.Addresses.addNew();
-        }, self, function (s, p) {
+        }, () => {
             return !!self.currentItem;
         });
 
-        this._saveCommand = new RIAPP.Command(function (sender, param) {
+        this._saveCommand = new RIAPP.Command(() => {
             self.dbContext.submitChanges();
-        }, self, function (s, p) {
+        }, () => {
             //the command is enabled when there are pending changes
             return self.dbContext.isHasChanges;
         });
 
         //with typed "this" inside the callbacks
-        this._undoCommand = new RIAPP.Command<any, CustomerViewModel>(function (sender, param) {
+        this._undoCommand = new RIAPP.Command(() => {
             this.dbContext.rejectChanges();
-        }, self, function (s, p) {
+        }, () => {
             //the command is enabled when there are pending changes
             return this.dbContext.isHasChanges;
         });
@@ -219,9 +219,9 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         });
 
         //loads data from the server for the products (with typed "this" inside the callback)
-        this._loadCommand = new RIAPP.Command<any, CustomerViewModel>(function (sender, data) {
+        this._loadCommand = new RIAPP.Command(() => {
             this.load();
-        }, self);
+        });
 
         this._dbSet.defineCustomerField(function (item) {
             let bag = <CustomerBag>item._aspect.getCustomVal("jsonBag");
@@ -325,7 +325,7 @@ export class DemoApplication extends RIAPP.Application {
 }
 
 //bootstrap error handler - the last resort (typically display message to the user)
-bootstrap.objEvents.addOnError(function (sender, args) {
+bootstrap.objEvents.addOnError(function (_s, args) {
     debugger;
     alert(args.error.message);
     args.isHandled = true;

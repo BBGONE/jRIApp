@@ -654,20 +654,19 @@ define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (requir
         __extends(HeaderVM, _super);
         function HeaderVM(app) {
             var _this = _super.call(this, app) || this;
-            var self = _this;
             _this._$topPanel = $(exports.topPanel);
             _this._$contentPanel = $(exports.contentPanel);
             _this._contentPanelHeight = 0;
             if (!!_this._$contentPanel)
                 _this._contentPanelHeight = _this._$contentPanel.height();
-            _this._expanderCommand = new RIAPP.Command(function (sender, param) {
+            _this._expanderCommand = new RIAPP.Command(function (sender) {
                 if (sender.isExpanded) {
-                    this.expand();
+                    _this.expand();
                 }
                 else {
-                    this.collapse();
+                    _this.collapse();
                 }
-            }, self);
+            });
             return _this;
         }
         HeaderVM.prototype.addOnUpdateUI = function (fn, namespace) {
@@ -764,19 +763,19 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
             _this._url = _this._baseUrl + "?id=" + clientID;
             _this._closeClientUrl = _this._baseUrl + "/CloseClient?id=" + clientID;
             _this._postMsgUrl = _this._baseUrl + "/PostMessage";
-            _this._openESCommand = new RIAPP.Command(function (sender, data) {
-                this.open().catch(function (res) {
+            _this._openESCommand = new RIAPP.Command(function () {
+                self.open().catch(function (res) {
                     self.handleError(res, self);
                 });
-            }, self, function () {
+            }, function () {
                 return !_this._es;
             });
-            _this._closeESCommand = new RIAPP.Command(function (sender, data) {
-                this.close();
-            }, self, function () {
+            _this._closeESCommand = new RIAPP.Command(function () {
+                self.close();
+            }, function () {
                 return !!_this._es;
             });
-            bootstrap.addOnUnLoad(function (s, a) { return self.close(); });
+            bootstrap.addOnUnLoad(function () { return self.close(); });
             return _this;
         }
         SSEventsVM.isSupported = function () {
@@ -1008,16 +1007,16 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
             _this._clientID = null;
             _this._deffered = null;
             _this._url = url;
-            _this._openWsCommand = new RIAPP.Command(function (sender, data) {
-                this.open().catch(function (res) {
+            _this._openWsCommand = new RIAPP.Command(function () {
+                _this.open().catch(function (res) {
                     self.handleError(res, self);
                 });
-            }, self, function () {
+            }, function () {
                 return !self._ws;
             });
-            _this._closeWsCommand = new RIAPP.Command(function (sender, data) {
-                this.close();
-            }, self, function () {
+            _this._closeWsCommand = new RIAPP.Command(function () {
+                _this.close();
+            }, function () {
                 return !!_this._ws;
             });
             bootstrap.addOnUnLoad(function (s, a) { return self.close(); });

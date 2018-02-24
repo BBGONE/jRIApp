@@ -1519,10 +1519,10 @@ define("addressVM", ["require", "exports", "jriapp"], function (require, exports
             var self = _this;
             _this._orderVM = orderVM;
             _this._dbSet = _this.dbSets.Address;
-            _this._orderVM.dbSet.addOnFill(function (sender, args) {
+            _this._orderVM.dbSet.addOnFill(function (_s, args) {
                 self.loadAddressesForOrders(args.items);
             }, self.uniqueID);
-            _this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
+            _this._dbSet.objEvents.onProp('currentItem', function (_s, args) {
                 self._onCurrentChanged();
             }, self.uniqueID);
             return _this;
@@ -1609,10 +1609,10 @@ define("productVM", ["require", "exports", "jriapp"], function (require, exports
             _this._customerDbSet.addOnCleared(function (s, a) {
                 self.clear();
             }, self.uniqueID);
-            _this._orderDetailVM.dbSet.addOnFill(function (sender, args) {
+            _this._orderDetailVM.dbSet.addOnFill(function (_s, args) {
                 self.loadProductsForOrderDetails(args.items);
             }, self.uniqueID);
-            _this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
+            _this._dbSet.objEvents.onProp('currentItem', function (_s, args) {
                 self._onCurrentChanged();
             }, self.uniqueID);
             return _this;
@@ -1692,7 +1692,7 @@ define("orderDetVM", ["require", "exports", "jriapp", "productVM"], function (re
             _this._orderVM.dbSet.addOnCleared(function (s, a) {
                 self.clear();
             }, self.uniqueID);
-            _this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
+            _this._dbSet.objEvents.onProp('currentItem', function (_s, args) {
                 self._onCurrentChanged();
             }, self.uniqueID);
             _this._productVM = new productVM_1.ProductVM(_this);
@@ -1790,7 +1790,7 @@ define("orderVM", ["require", "exports", "jriapp", "domainModel", "gridEvents", 
                 { key: 2, val: 'Status 2' }, { key: 3, val: 'Status 3' },
                 { key: 4, val: 'Status 4' }, { key: 5, val: 'Completed Order' }], true);
             _this._tabs = null;
-            _this._customerVM.objEvents.on('row_expanded', function (sender, args) {
+            _this._customerVM.objEvents.on('row_expanded', function (_s, args) {
                 if (args.isExpanded) {
                     self.currentCustomer = args.customer;
                 }
@@ -1798,24 +1798,22 @@ define("orderVM", ["require", "exports", "jriapp", "domainModel", "gridEvents", 
                     self.currentCustomer = null;
                 }
             }, self.uniqueID);
-            _this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
+            _this._dbSet.objEvents.onProp('currentItem', function (_s, args) {
                 self._onCurrentChanged();
             }, self.uniqueID);
-            _this._dbSet.addOnItemDeleting(function (sender, args) {
+            _this._dbSet.addOnItemDeleting(function (_s, args) {
                 if (!confirm('Are you sure that you want to delete the order?'))
                     args.isCancel = true;
             }, self.uniqueID);
-            _this._dbSet.addOnItemAdded(function (sender, args) {
+            _this._dbSet.addOnItemAdded(function (_s, args) {
                 var item = args.item;
                 item.Customer = self.currentCustomer;
                 item.OrderDate = moment().toDate();
                 item.DueDate = moment().add(7, 'days').toDate();
                 item.OnlineOrderFlag = false;
             }, self.uniqueID);
-            _this._addNewCommand = new RIAPP.Command(function (sender, param) {
+            _this._addNewCommand = new RIAPP.Command(function () {
                 self._dbSet.addNew();
-            }, self, function (sender, param) {
-                return true;
             });
             _this._addressVM = new addressVM_1.AddressVM(_this);
             _this._orderDetailVM = new orderDetVM_1.OrderDetailVM(_this);
@@ -2318,17 +2316,17 @@ define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "addAddres
             _this._currentCustomer = self._customerVM.currentItem;
             _this._addressesDb = _this.dbSets.Address;
             _this._custAdressDb = _this.dbSets.CustomerAddress;
-            _this._custAdressDb.addOnItemDeleting(function (sender, args) {
+            _this._custAdressDb.addOnItemDeleting(function (_s, args) {
                 if (!confirm('Are you sure that you want to unlink Address from this customer?'))
                     args.isCancel = true;
             }, self.uniqueID);
-            _this._custAdressDb.addOnBeginEdit(function (sender, args) {
+            _this._custAdressDb.addOnBeginEdit(function (_s, args) {
                 var item = args.item;
                 var address = item.Address;
                 if (!!address)
                     address._aspect.beginEdit();
             }, self.uniqueID);
-            _this._custAdressDb.addOnEndEdit(function (sender, args) {
+            _this._custAdressDb.addOnEndEdit(function (_s, args) {
                 var item = args.item;
                 var address = item.Address;
                 if (!args.isCanceled) {
@@ -2340,7 +2338,7 @@ define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "addAddres
                         address._aspect.cancelEdit();
                 }
             }, self.uniqueID);
-            _this._addressesDb.addOnItemDeleting(function (sender, args) {
+            _this._addressesDb.addOnItemDeleting(function (_s, args) {
                 if (!confirm('Are you sure that you want to delete the Customer\'s Address?'))
                     args.isCancel = true;
             }, self.uniqueID);
@@ -2368,7 +2366,7 @@ define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "addAddres
             _this._custAdressView.addOnViewRefreshed(function (s, a) {
                 self._addressesView.refresh();
             }, self.uniqueID);
-            _this._customerVM.objEvents.onProp('currentItem', function (sender, args) {
+            _this._customerVM.objEvents.onProp('currentItem', function (_s, args) {
                 self._currentCustomer = self._customerVM.currentItem;
                 self.objEvents.raiseProp('currentCustomer');
             }, self.uniqueID);
@@ -2489,9 +2487,9 @@ define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "gridEvents",
             _this._propWatcher = new RIAPP.PropWatcher();
             _this._uiMainRoute = new routes_1.MainRoute();
             _this._uiCustDetRoute = new routes_1.CustDetRoute();
-            _this._uiMainRoute.objEvents.onProp('viewName', function (sender, a) {
+            _this._uiMainRoute.objEvents.onProp('viewName', function (sender) {
                 self._uiCustDetRoute.reset();
-                if (sender.viewName == sender.custTemplName) {
+                if (sender.viewName === sender.custTemplName) {
                     setTimeout(function () {
                         if (!!self._gridEvents) {
                             self._gridEvents.focusGrid();
@@ -2500,11 +2498,11 @@ define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "gridEvents",
                 }
             });
             _this._gridEvents = new gridEvents_2.CustomerGridEvents(_this);
-            _this._dbSet.addOnItemDeleting(function (sender, args) {
+            _this._dbSet.addOnItemDeleting(function (_s, args) {
                 if (!confirm('Are you sure that you want to delete customer?'))
                     args.isCancel = true;
             }, self.uniqueID);
-            _this._dbSet.addOnPageIndexChanged(function (sender, args) {
+            _this._dbSet.addOnPageIndexChanged(function (_s, args) {
                 self.objEvents.raise('page_changed', {});
             }, self.uniqueID);
             _this._dbSet.addOnItemAdded(function (s, args) {
@@ -2512,58 +2510,56 @@ define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "gridEvents",
                 args.item.ComplexProp.LastName = "Dummy1";
                 args.item.ComplexProp.FirstName = "Dummy2";
             });
-            _this._editCommand = new RIAPP.Command(function (sender, param) {
+            _this._editCommand = new RIAPP.Command(function () {
                 self.currentItem._aspect.beginEdit();
-            }, self, function (sender, param) {
+            }, function () {
                 return !!self.currentItem;
             });
-            _this._endEditCommand = new RIAPP.Command(function (sender, param) {
+            _this._endEditCommand = new RIAPP.Command(function () {
                 if (self.currentItem._aspect.endEdit())
                     self.dbContext.submitChanges();
-            }, self, function (sender, param) {
+            }, function () {
                 return !!self.currentItem;
             });
-            _this._cancelEditCommand = new RIAPP.Command(function (sender, param) {
+            _this._cancelEditCommand = new RIAPP.Command(function () {
                 self.currentItem._aspect.cancelEdit();
                 self.dbContext.rejectChanges();
-            }, self, function (sender, param) {
+            }, function () {
                 return !!self.currentItem;
             });
-            _this._addNewCommand = new RIAPP.Command(function (sender, param) {
+            _this._addNewCommand = new RIAPP.Command(function () {
                 self._dbSet.addNew();
-            }, self, function (sender, param) {
-                return true;
             });
-            _this._saveCommand = new RIAPP.Command(function (sender, param) {
+            _this._saveCommand = new RIAPP.Command(function () {
                 self.dbContext.submitChanges();
-            }, self, function (s, p) {
+            }, function () {
                 return self.dbContext.isHasChanges;
             });
-            _this._undoCommand = new RIAPP.Command(function (sender, param) {
+            _this._undoCommand = new RIAPP.Command(function () {
                 self.dbContext.rejectChanges();
-            }, self, function (s, p) {
+            }, function () {
                 return self.dbContext.isHasChanges;
             });
-            _this._loadCommand = new RIAPP.Command(function (sender, args) {
+            _this._loadCommand = new RIAPP.Command(function () {
                 self.load();
-            }, self, null);
-            _this._switchViewCommand = new RIAPP.Command(function (sender, param) {
+            });
+            _this._switchViewCommand = new RIAPP.Command(function (_s, param) {
                 self.uiMainRoute.viewName = param;
-            }, self, null);
-            _this._switchDetViewCommand = new RIAPP.Command(function (sender, param) {
+            });
+            _this._switchDetViewCommand = new RIAPP.Command(function (_s, param) {
                 self.uiCustDetRoute.viewName = param;
-            }, self, null);
-            _this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (prop) {
+            });
+            _this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (_prop) {
                 self._saveCommand.raiseCanExecuteChanged();
                 self._undoCommand.raiseCanExecuteChanged();
             });
-            _this._propWatcher.addPropWatch(_this._dbSet, 'currentItem', function (prop) {
+            _this._propWatcher.addPropWatch(_this._dbSet, 'currentItem', function (_prop) {
                 self._editCommand.raiseCanExecuteChanged();
                 self._endEditCommand.raiseCanExecuteChanged();
                 self._cancelEditCommand.raiseCanExecuteChanged();
                 self._onCurrentChanged();
             });
-            _this._dbSet.addOnCleared(function (s, a) {
+            _this._dbSet.addOnCleared(function () {
                 self.dbSets.CustomerAddress.clear();
                 self.dbSets.Address.clear();
             }, self.uniqueID);
@@ -2869,19 +2865,19 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             });
             _this._addressInfosView.isPagingEnabled = true;
             _this._addressInfosView.pageSize = 50;
-            _this._addressInfosView.objEvents.onProp('currentItem', function (sender, args) {
+            _this._addressInfosView.objEvents.onProp('currentItem', function (_s, args) {
                 self.objEvents.raiseProp('currentAddressInfo');
                 self._linkCommand.raiseCanExecuteChanged();
             }, self.uniqueID);
-            _this._customerAddressVM.objEvents.onProp('currentCustomer', function (sender, args) {
+            _this._customerAddressVM.objEvents.onProp('currentCustomer', function (_s, args) {
                 self._currentCustomer = self._customerAddressVM.currentCustomer;
                 self.objEvents.raiseProp('customer');
                 self._addNewCommand.raiseCanExecuteChanged();
             }, self.uniqueID);
-            _this.custAdressView.objEvents.onProp('currentItem', function (sender, args) {
+            _this.custAdressView.objEvents.onProp('currentItem', function (_s, args) {
                 self._unLinkCommand.raiseCanExecuteChanged();
             }, self.uniqueID);
-            _this._addNewCommand = new RIAPP.Command(function (sender, param) {
+            _this._addNewCommand = new RIAPP.Command(function (_s, param) {
                 try {
                     var opts = utils.core.merge(param, { width: 950, height: 600 });
                     var dialog = self._dialogVM.showDialog('addressDialog', self);
@@ -2889,25 +2885,25 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
                     dialog.height = opts.height;
                 }
                 catch (ex) {
-                    self.handleError(ex, this);
+                    self.handleError(ex, self);
                 }
-            }, self, function (sender, param) {
+            }, function () {
                 return !!self.customer;
             });
-            _this._execSearchCommand = new RIAPP.Command(function (sender, args) {
+            _this._execSearchCommand = new RIAPP.Command(function () {
                 self.loadAddressInfos();
-            }, self, null);
-            _this._addNewAddressCommand = new RIAPP.Command(function (sender, args) {
+            });
+            _this._addNewAddressCommand = new RIAPP.Command(function () {
                 self._addNewAddress();
-            }, self, null);
-            _this._linkCommand = new RIAPP.Command(function (sender, args) {
+            });
+            _this._linkCommand = new RIAPP.Command(function () {
                 self._linkAddress();
-            }, self, function (s, a) {
+            }, function () {
                 return !!self._addressInfosView.currentItem;
             });
-            _this._unLinkCommand = new RIAPP.Command(function (sender, args) {
+            _this._unLinkCommand = new RIAPP.Command(function () {
                 self._unLinkAddress();
-            }, self, function (s, a) {
+            }, function () {
                 return !!self.custAdressView.currentItem;
             });
             return _this;
@@ -3230,7 +3226,7 @@ define("prodAutocomplete", ["require", "exports", "autocomplete"], function (req
             var self = _this;
             _this._lastLoadedID = null;
             _this._lookupSource = _this._getDbContext().getDbSet('Product');
-            _this._lookupSource.addOnCollChanged(function (sender, args) {
+            _this._lookupSource.addOnCollChanged(function (_s, args) {
                 self._updateValue();
             }, self.uniqueID);
             return _this;
@@ -3269,7 +3265,7 @@ define("prodAutocomplete", ["require", "exports", "autocomplete"], function (req
             if (old !== v) {
                 var dxt = v;
                 if (!!dxt) {
-                    dxt.objEvents.onProp('ProductID', function (sender, a) {
+                    dxt.objEvents.onProp('ProductID', function (_s, a) {
                         self._updateValue();
                     }, this.uniqueID);
                 }
@@ -3302,7 +3298,7 @@ define("prodAutocomplete", ["require", "exports", "autocomplete"], function (req
 define("main", ["require", "exports", "jriapp", "app", "common", "autocomplete", "gridElView", "prodAutocomplete"], function (require, exports, RIAPP, app_1, COMMON, AUTOCOMPLETE, GRIDELVIEW, PRODAUTOCOMPLETE) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    RIAPP.bootstrap.objEvents.addOnError(function (sender, args) {
+    RIAPP.bootstrap.objEvents.addOnError(function (_s, args) {
         debugger;
         alert(args.error.message);
     });

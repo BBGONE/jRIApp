@@ -55,7 +55,7 @@ define("app", ["require", "exports", "jriapp", "testobject"], function (require,
         DemoApplication.prototype.onStartUp = function () {
             var self = this;
             this._testObj = new testobject_1.TestObject(this);
-            this.objEvents.addOnError(function (sender, args) {
+            this.objEvents.addOnError(function (_s, args) {
                 debugger;
                 args.isHandled = true;
                 alert(args.error.message);
@@ -179,7 +179,7 @@ define("main", ["require", "exports", "jriapp", "app", "components/reactview"], 
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
-    bootstrap.objEvents.addOnError(function (sender, args) {
+    bootstrap.objEvents.addOnError(function (_s, args) {
         debugger;
         alert(args.error.message);
         args.isHandled = true;

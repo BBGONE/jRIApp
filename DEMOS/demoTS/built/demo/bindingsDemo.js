@@ -90,14 +90,14 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
             _this._testProperty3 = null;
             _this._boolProperty = null;
             _this._yearmonth = null;
-            _this._testCommand = new RIAPP.Command(function (sender, args) {
+            _this._testCommand = new RIAPP.Command(function () {
                 self._onTestCommandExecuted();
-            }, self, function (sender, args) {
+            }, function () {
                 return self.isEnabled;
             });
-            _this._paramCommand = new RIAPP.Command(function (sender, args) {
+            _this._paramCommand = new RIAPP.Command(function (_s, args) {
                 alert(args.color + ": #" + RGBToHex(args.r, args.g, args.b));
-            }, self);
+            });
             _this._month = new Date().getMonth() + 1;
             _this._months = new DEMODB.KeyValDictionary();
             _this._fillMonths();
@@ -260,7 +260,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
             var self = this;
             this._errorVM = new COMMON.ErrorViewModel(this);
             this._testObject = new TestObject('some initial text');
-            this.objEvents.addOnError(function (sender, data) {
+            this.objEvents.addOnError(function (_s, data) {
                 debugger;
                 data.isHandled = true;
                 self.errorVM.error = data.error;
@@ -301,7 +301,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
         return DemoApplication;
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
-    bootstrap.objEvents.addOnError(function (sender, args) {
+    bootstrap.objEvents.addOnError(function (_s, args) {
         debugger;
         alert(args.error.message);
     });

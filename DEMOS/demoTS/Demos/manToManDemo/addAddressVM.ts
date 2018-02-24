@@ -98,55 +98,54 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         this._addressInfosView.isPagingEnabled = true;
         this._addressInfosView.pageSize = 50;
 
-        this._addressInfosView.objEvents.onProp('currentItem', function (sender, args) {
+        this._addressInfosView.objEvents.onProp('currentItem', function () {
             self.objEvents.raiseProp('currentAddressInfo');
             self._linkCommand.raiseCanExecuteChanged();
         }, self.uniqueID);
 
-        this._customerAddressVM.objEvents.onProp('currentCustomer', function (sender, args) {
+        this._customerAddressVM.objEvents.onProp('currentCustomer', function () {
             self._currentCustomer = self._customerAddressVM.currentCustomer;
             self.objEvents.raiseProp('customer');
             self._addNewCommand.raiseCanExecuteChanged();
         }, self.uniqueID);
 
         //this data is displayed on the left panel - addresses currently linked to the customer
-        this.custAdressView.objEvents.onProp('currentItem', function (sender, args) {
+        this.custAdressView.objEvents.onProp('currentItem', function () {
             self._unLinkCommand.raiseCanExecuteChanged();
         }, self.uniqueID);
 
         //add new or existing address
-        this._addNewCommand = new RIAPP.Command(function (this: typeof self, sender, param) {
+        this._addNewCommand = new RIAPP.Command(function () {
             try {
                 self._dialogVM.showDialog('addressDialog', self);
             } catch (ex) {
-                self.handleError(ex, this);
+                self.handleError(ex, self);
             }
-        }, self,
-            function (sender, param) {
+        }, function () {
                 //enable this command when customer is not null
                 return !!self.customer;
             });
 
         //load searched address data from the server
-        this._execSearchCommand = new RIAPP.Command(function (sender, args) {
+        this._execSearchCommand = new RIAPP.Command(function () {
             self.loadAddressInfos();
-        }, self, null);
+        });
 
         //adds new address to the customer
-        this._addNewAddressCommand = new RIAPP.Command(function (sender, args) {
+        this._addNewAddressCommand = new RIAPP.Command(function () {
             self._addNewAddress();
-        }, self, null);
+        });
 
         //adds existed address to the customer
-        this._linkCommand = new RIAPP.Command(function (sender, args) {
+        this._linkCommand = new RIAPP.Command(function () {
             self._linkAddress();
-        }, self, function (s, a) {
+        }, function () {
             return !!self._addressInfosView.currentItem;
         });
 
-        this._unLinkCommand = new RIAPP.Command(function (sender, args) {
+        this._unLinkCommand = new RIAPP.Command(function () {
             self._unLinkAddress();
-        }, self, function (s, a) {
+        }, function () {
             return !!self.custAdressView.currentItem;
         });
     }

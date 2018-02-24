@@ -38,25 +38,24 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
         { key: 4, val: 'Status 4' }, { key: 5, val: 'Completed Order' }], true);
 
         //loads the data only when customer's row is expanded
-        this._customerVM.objEvents.on('row_expanded', function (sender, args) {
+        this._customerVM.objEvents.on('row_expanded', function (_s, args) {
             if (args.isExpanded) {
                 self.currentCustomer = args.customer;
-            }
-            else {
+            } else {
                 self.currentCustomer = null;
             }
         }, self.uniqueID);
 
-        this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
+        this._dbSet.objEvents.onProp('currentItem', function () {
             self._onCurrentChanged();
         }, self.uniqueID);
 
-        this._dbSet.addOnItemDeleting(function (sender, args) {
+        this._dbSet.addOnItemDeleting(function (_s, args) {
             if (!confirm('Are you sure that you want to delete order ?'))
                 args.isCancel = true;
         }, self.uniqueID);
 
-        this._dbSet.addOnItemAdded(function (sender, args) {
+        this._dbSet.addOnItemAdded(function (_s, args) {
             //can be solved soon with generics
             let item = args.item;
             item.Customer = self.currentCustomer;
@@ -67,11 +66,9 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
         }, self.uniqueID);
 
         //adds new order - uses dialog to fill the data
-        this._addNewCommand = new RIAPP.Command(function (sender, param) {
+        this._addNewCommand = new RIAPP.Command(function () {
             //the dialog shown by the datagrid
             self._dbSet.addNew();
-        }, self, function (sender, param) {
-            return true;
         });
 
         this._addressVM = new AddressVM(this);
@@ -82,7 +79,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
         if (!!this._dataGrid)
             this._removeGrid();
         this._dataGrid = grid;
-        this._dataGrid.addOnRowExpanded(function (s, args) {
+        this._dataGrid.addOnRowExpanded(function (_s, args) {
             if (args.isExpanded)
                 self.onRowExpanded(args.expandedRow);
             else
@@ -97,8 +94,9 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
     }
     protected onRowExpanded(row: uiMOD.DataGridRow): void {
         this.objEvents.raise('row_expanded', { order: row.item, isExpanded: true });
-        if (!!this._tabs)
+        if (!!this._tabs) {
             this.onTabSelected(this._tabs);
+        }
     }
     protected onRowCollapsed(row: uiMOD.DataGridRow): void {
         this.objEvents.raise('row_expanded', { order: row.item, isExpanded: false });

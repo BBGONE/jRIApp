@@ -56,30 +56,30 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
             });
 
         //when currentItem property changes, invoke our viewmodel's method
-        this._dbSet.objEvents.onProp('currentItem', function (sender, data) {
+        this._dbSet.objEvents.onProp('currentItem', function (_s, data) {
             self._onCurrentChanged();
         }, self.uniqueID);
 
         //if we need to confirm the deletion, this is how it is done
-        this._dbSet.addOnItemDeleting(function (sender, args) {
+        this._dbSet.addOnItemDeleting(function (_s, args) {
             if (!confirm('Are you sure that you want to delete ' + args.item.Name + ' ?'))
                 args.isCancel = true;
         }, self.uniqueID);
 
-        this._dbSet.addOnCleared((sender, args) => {
+        this._dbSet.addOnCleared((_s, args) => {
             this.dbContext.dbSets.SalesOrderDetail.clear();
         }, self.uniqueID);
 
         //the end edit event- the entity potentially changed its data. we can recheck conditions based on
         //entities data here
-        this._dbSet.addOnEndEdit(function (sender, args) {
+        this._dbSet.addOnEndEdit(function (_s, args) {
             if (!args.isCanceled) {
                 //at the end of the editing, let the command will check: can it be executed?
                 self._testInvokeCommand.raiseCanExecuteChanged();
             }
         }, self.uniqueID);
 
-        this._dbSet.addOnFill(function (sender, args) {
+        this._dbSet.addOnFill(function (_s, args) {
             if (args.reason === RIAPP.COLL_CHANGE_REASON.Sorting)
                 setTimeout(() => {
                     self._updateSelection();
@@ -108,7 +108,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         }];
 
         //example of using custom validation on client (in addition to a built-in validation)
-        this._dbSet.addOnValidateField(function (sender, args) {
+        this._dbSet.addOnValidateField(function (_s, args) {
             let item = args.item;
             validations.filter((val) => {
                 return args.fieldName === val.fieldName;
@@ -117,7 +117,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
             });
         }, self.uniqueID);
 
-        this._dbSet.addOnValidateItem(function (sender, args) {
+        this._dbSet.addOnValidateItem(function (_s, args) {
             let item = args.item;
             validations.filter((val) => {
                 return !val.fieldName;
@@ -131,7 +131,7 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         }, self.uniqueID);
 
         //adds new product - uses dialog to enter the data
-        this._addNewCommand = new RIAPP.Command<any, ProductViewModel>(function (sender, param) {
+        this._addNewCommand = new RIAPP.Command(function () {
             //grid will show the edit dialog, because we set grid options isHandleAddNew:true
             //see the options for the grid on the HTML demo page
             self._dbSet.addNew();
@@ -140,9 +140,9 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         });
 
         //loads data from the server for the products
-        this._loadCommand = new RIAPP.Command<any, ProductViewModel>(function (sender, data) {
-            this.load();
-        }, self);
+        this._loadCommand = new RIAPP.Command(function () {
+            self.load();
+        });
 
         //example of using a method invocation on the service
         //invokes test service method with parameters and displays result with alert
@@ -150,15 +150,15 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
 
 
         //for testing templates in datagrid columns
-        this._columnCommand = new RIAPP.Command<DEMODB.Product, ProductViewModel>(function (sender, cmdParam) {
+        this._columnCommand = new RIAPP.Command<DEMODB.Product>(function (sender, product) {
             let dataName = "";
             if (sender instanceof uiMOD.BaseElView) {
                 dataName = (<uiMOD.BaseElView>sender).dataName;
             }
 
-            alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", dataName, (!cmdParam ? "Not selected" : cmdParam.ProductID)));
-        }, self, function (sender, param) {
-            return !!this.currentItem;
+            alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", dataName, (!product ? "Not selected" : product.ProductID)));
+        }, function () {
+            return !!self.currentItem;
         });
 
         //the property watcher helps us handling properties changes

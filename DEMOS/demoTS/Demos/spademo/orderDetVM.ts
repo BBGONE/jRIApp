@@ -25,7 +25,7 @@ export class OrderDetailVM extends RIAPP.ViewModel<DemoApplication> {
             self.clear();
         }, self.uniqueID);
 
-        this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
+        this._dbSet.objEvents.onProp('currentItem', function (_s, args) {
             self._onCurrentChanged();
         }, self.uniqueID);
 

@@ -16,11 +16,11 @@ export class AddressVM extends RIAPP.ViewModel<DemoApplication> {
         const self = this;
         this._orderVM = orderVM;
         this._dbSet = this.dbSets.Address;
-        this._orderVM.dbSet.addOnFill(function (sender, args) {
+        this._orderVM.dbSet.addOnFill(function (_s, args) {
             self.loadAddressesForOrders(args.items);
         }, self.uniqueID);
 
-        this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
+        this._dbSet.objEvents.onProp('currentItem', function (_s, args) {
             self._onCurrentChanged();
         }, self.uniqueID);
     }

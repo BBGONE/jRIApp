@@ -156,41 +156,41 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             var self = _this;
             _this._dbSet = _this.dbSets.CustomerJSON;
             _this._propWatcher = new RIAPP.PropWatcher();
-            _this._dbSet.objEvents.onProp('currentItem', function (sender, data) {
+            _this._dbSet.objEvents.onProp('currentItem', function (_s, data) {
                 self._onCurrentChanged();
             }, self.uniqueID);
-            _this._dbSet.addOnItemDeleting(function (sender, args) {
+            _this._dbSet.addOnItemDeleting(function (_s, args) {
                 if (!confirm('Are you sure that you want to delete ' + args.item.CustomerID + ' ?'))
                     args.isCancel = true;
             }, self.uniqueID);
             _this._dbSet.isSubmitOnDelete = true;
-            _this._addNewCommand = new RIAPP.Command(function (sender, param) {
+            _this._addNewCommand = new RIAPP.Command(function (_s, param) {
                 var item = self._dbSet.addNew();
                 item.Data = JSON.stringify({});
             });
-            _this._addNewAddrCommand = new RIAPP.Command(function (sender, param) {
+            _this._addNewAddrCommand = new RIAPP.Command(function () {
                 var curCustomer = self.currentItem.Customer;
                 curCustomer.Addresses.addNew();
-            }, self, function (s, p) {
+            }, function () {
                 return !!self.currentItem;
             });
-            _this._saveCommand = new RIAPP.Command(function (sender, param) {
+            _this._saveCommand = new RIAPP.Command(function () {
                 self.dbContext.submitChanges();
-            }, self, function (s, p) {
+            }, function () {
                 return self.dbContext.isHasChanges;
             });
-            _this._undoCommand = new RIAPP.Command(function (sender, param) {
-                this.dbContext.rejectChanges();
-            }, self, function (s, p) {
-                return this.dbContext.isHasChanges;
+            _this._undoCommand = new RIAPP.Command(function () {
+                _this.dbContext.rejectChanges();
+            }, function () {
+                return _this.dbContext.isHasChanges;
             });
             _this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (prop) {
                 self._saveCommand.raiseCanExecuteChanged();
                 self._undoCommand.raiseCanExecuteChanged();
             });
-            _this._loadCommand = new RIAPP.Command(function (sender, data) {
-                this.load();
-            }, self);
+            _this._loadCommand = new RIAPP.Command(function () {
+                _this.load();
+            });
             _this._dbSet.defineCustomerField(function (item) {
                 var bag = item._aspect.getCustomVal("jsonBag");
                 if (!bag) {
@@ -341,7 +341,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         return DemoApplication;
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
-    bootstrap.objEvents.addOnError(function (sender, args) {
+    bootstrap.objEvents.addOnError(function (_s, args) {
         debugger;
         alert(args.error.message);
         args.isHandled = true;

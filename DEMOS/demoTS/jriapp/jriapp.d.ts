@@ -894,21 +894,17 @@ declare module "jriapp/mvvm" {
         addOnCanExecuteChanged(fn: (sender: ICommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
         offOnCanExecuteChanged(nmspace?: string): void;
     }
-    export type Action<TParam = any, TThis = any> = (this: TThis, sender: any, param: TParam) => void;
-    export type Predicate<TParam = any, TThis = any> = (this: TThis, sender: any, param: TParam) => boolean;
-    export class Command<TParam = any, TContext = any> extends BaseObject implements ICommand<TParam> {
+    export type Action<TParam = any> = (sender: any, param: TParam) => void;
+    export type Predicate<TParam = any> = (sender: any, param: TParam) => boolean;
+    export class Command<TParam = any> extends BaseObject implements ICommand<TParam> {
         private _action;
-        private _context;
         private _predicate;
         private _uniqueID;
-        constructor(fnAction: Action<TParam, TContext>, context?: TContext, fnCanExecute?: Predicate<TParam, TContext>);
+        constructor(fnAction: Action<TParam>, fnCanExecute?: Predicate<TParam>);
         dispose(): void;
         protected _canExecute(sender: any, param: TParam): boolean;
         protected _execute(sender: any, param: TParam): void;
-        protected _getAction(): Action<TParam, TContext>;
-        protected _getPredicate(): Predicate<TParam, TContext>;
-        protected _getContext(): TContext;
-        addOnCanExecuteChanged(fn: (sender: ICommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
+        addOnCanExecuteChanged(fn: (sender: this, args: any) => void, nmspace?: string, context?: IBaseObject): void;
         offOnCanExecuteChanged(nmspace?: string): void;
         canExecute(sender: any, param: TParam): boolean;
         execute(sender: any, param: TParam): void;
@@ -916,14 +912,14 @@ declare module "jriapp/mvvm" {
         toString(): string;
         readonly uniqueID: string;
     }
-    export abstract class BaseCommand<TParam = any, TOwner = any> extends Command<TParam, any> {
+    export abstract class BaseCommand<TOwner> extends Command {
         private _owner;
         constructor(owner: TOwner);
-        protected _getAction(): Action<TParam, BaseCommand>;
-        protected _getPredicate(): Predicate<TParam, BaseCommand>;
-        protected _getContext(): this;
-        protected abstract action(sender: any, param: TParam): void;
-        protected abstract isCanExecute(sender: any, param: TParam): boolean;
+        dispose(): void;
+        protected _canExecute(sender: any, param: any): boolean;
+        protected _execute(sender: any, param: any): void;
+        protected abstract action(sender: any, param: any): void;
+        protected abstract isCanExecute(sender: any, param: any): boolean;
         readonly owner: TOwner;
     }
     export class ViewModel<TApp extends IApplication = IApplication> extends BaseObject {
@@ -1018,5 +1014,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.14.2";
+    export const VERSION = "2.15.0";
 }

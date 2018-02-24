@@ -21,10 +21,8 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
             self._$tree = options.$tree;
             _this._infotype = null;
             self._dbSet = self.dbContext.dbSets.FileSystemObject;
-            self._loadRootCommand = new RIAPP.Command(function (s, a) {
+            self._loadRootCommand = new RIAPP.Command(function () {
                 self.loadRootFolder();
-            }, self, function (s, a) {
-                return true;
             });
             _this._createDynaTree();
             return _this;
@@ -185,15 +183,13 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
                 }
             };
             _this._dialogVM.createDialog('folderBrowser', dialogOptions);
-            _this._dialogCommand = new RIAPP.Command(function (sender, param) {
+            _this._dialogCommand = new RIAPP.Command(function () {
                 try {
                     self.showDialog();
                 }
                 catch (ex) {
                     self.handleError(ex, self);
                 }
-            }, self, function (sender, param) {
-                return true;
             });
             return _this;
         }
@@ -295,7 +291,7 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
                 self._selectedPath = s.infotype + '\\' + a.fullPath;
                 self.objEvents.raiseProp('selectedPath');
             });
-            this.objEvents.addOnError(function (sender, data) {
+            this.objEvents.addOnError(function (_s, data) {
                 debugger;
                 data.isHandled = true;
                 self.errorVM.error = data.error;
@@ -375,7 +371,7 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
         return DemoApplication;
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
-    RIAPP.bootstrap.objEvents.addOnError(function (sender, args) {
+    RIAPP.bootstrap.objEvents.addOnError(function (_s, args) {
         debugger;
         alert(args.error.message);
     });

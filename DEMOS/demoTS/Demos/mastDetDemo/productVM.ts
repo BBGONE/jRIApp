@@ -22,11 +22,11 @@ export class ProductVM extends RIAPP.ViewModel<DemoApplication> {
         }, self.uniqueID);
 
         //here we load products which are referenced in order details
-        this._orderDetailVM.dbSet.addOnFill(function (sender, args) {
+        this._orderDetailVM.dbSet.addOnFill(function (_s, args) {
             self.loadProductsForOrderDetails(args.items);
         }, self.uniqueID);
 
-        this._dbSet.objEvents.onProp('currentItem', function (sender, args) {
+        this._dbSet.objEvents.onProp('currentItem', function (_s, args) {
             self._onCurrentChanged();
         }, self.uniqueID);
     }

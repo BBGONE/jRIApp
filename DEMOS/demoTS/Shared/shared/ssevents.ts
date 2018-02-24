@@ -29,20 +29,20 @@ export class SSEventsVM extends RIAPP.BaseObject {
         this._closeClientUrl = this._baseUrl + "/CloseClient?id=" + clientID;
         this._postMsgUrl = this._baseUrl + "/PostMessage";
 
-        this._openESCommand = new RIAPP.Command<any, SSEventsVM>(function (sender, data) {
-            this.open().catch((res) => {
+        this._openESCommand = new RIAPP.Command(function () {
+            self.open().catch((res) => {
                 self.handleError(res, self);
             });
-        }, self, () => {
+        }, () => {
             return !this._es;
         });
-        this._closeESCommand = new RIAPP.Command<any, SSEventsVM>(function (sender, data) {
-            this.close();
-        }, self, () => {
+        this._closeESCommand = new RIAPP.Command(function () {
+            self.close();
+        }, () => {
             return !!this._es;
         });
 
-        bootstrap.addOnUnLoad((s, a) => self.close());
+        bootstrap.addOnUnLoad(() => self.close());
     }
     static isSupported(): boolean {
         try {

@@ -1840,22 +1840,22 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                 association: sodAssoc,
                 fn_sort: function (a, b) { return a.SalesOrderDetailID - b.SalesOrderDetailID; }
             });
-            _this._dbSet.objEvents.onProp('currentItem', function (sender, data) {
+            _this._dbSet.objEvents.onProp('currentItem', function (_s, data) {
                 self._onCurrentChanged();
             }, self.uniqueID);
-            _this._dbSet.addOnItemDeleting(function (sender, args) {
+            _this._dbSet.addOnItemDeleting(function (_s, args) {
                 if (!confirm('Are you sure that you want to delete ' + args.item.Name + ' ?'))
                     args.isCancel = true;
             }, self.uniqueID);
-            _this._dbSet.addOnCleared(function (sender, args) {
+            _this._dbSet.addOnCleared(function (_s, args) {
                 _this.dbContext.dbSets.SalesOrderDetail.clear();
             }, self.uniqueID);
-            _this._dbSet.addOnEndEdit(function (sender, args) {
+            _this._dbSet.addOnEndEdit(function (_s, args) {
                 if (!args.isCanceled) {
                     self._testInvokeCommand.raiseCanExecuteChanged();
                 }
             }, self.uniqueID);
-            _this._dbSet.addOnFill(function (sender, args) {
+            _this._dbSet.addOnFill(function (_s, args) {
                 if (args.reason === 2)
                     setTimeout(function () {
                         self._updateSelection();
@@ -1878,7 +1878,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                         }
                     }
                 }];
-            _this._dbSet.addOnValidateField(function (sender, args) {
+            _this._dbSet.addOnValidateField(function (_s, args) {
                 var item = args.item;
                 validations.filter(function (val) {
                     return args.fieldName === val.fieldName;
@@ -1886,7 +1886,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                     val.fn(item, args.errors);
                 });
             }, self.uniqueID);
-            _this._dbSet.addOnValidateItem(function (sender, args) {
+            _this._dbSet.addOnValidateItem(function (_s, args) {
                 var item = args.item;
                 validations.filter(function (val) {
                     return !val.fieldName;
@@ -1898,21 +1898,21 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                     }
                 });
             }, self.uniqueID);
-            _this._addNewCommand = new RIAPP.Command(function (sender, param) {
+            _this._addNewCommand = new RIAPP.Command(function () {
                 self._dbSet.addNew();
             });
-            _this._loadCommand = new RIAPP.Command(function (sender, data) {
-                this.load();
-            }, self);
+            _this._loadCommand = new RIAPP.Command(function () {
+                self.load();
+            });
             _this._testInvokeCommand = new commands_2.TestInvokeCommand(_this);
-            _this._columnCommand = new RIAPP.Command(function (sender, cmdParam) {
+            _this._columnCommand = new RIAPP.Command(function (sender, product) {
                 var dataName = "";
                 if (sender instanceof uiMOD.BaseElView) {
                     dataName = sender.dataName;
                 }
-                alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", dataName, (!cmdParam ? "Not selected" : cmdParam.ProductID)));
-            }, self, function (sender, param) {
-                return !!this.currentItem;
+                alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", dataName, (!product ? "Not selected" : product.ProductID)));
+            }, function () {
+                return !!self.currentItem;
             });
             _this._propWatcher.addWatch(self, ['currentItem'], function (property) {
                 self._testInvokeCommand.raiseCanExecuteChanged();
@@ -2236,14 +2236,14 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp", "jriapp_ui", "upl
             _this._fileInfo = null;
             _this._id = null;
             _this._fileUploaded = false;
-            _this._uploadCommand = new RIAPP.Command(function (sender, param) {
+            _this._uploadCommand = new RIAPP.Command(function () {
                 try {
                     self.uploadFiles(self._fileEl.files);
                 }
                 catch (ex) {
-                    self.handleError(ex, this);
+                    self.handleError(ex, _this);
                 }
-            }, self, function (sender, param) {
+            }, function () {
                 return self._canUpload();
             });
             return _this;
@@ -2469,17 +2469,15 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
                 }
             };
             _this._dialogVM.createDialog('uploadDialog', dialogOptions);
-            _this._dialogCommand = new RIAPP.Command(function (sender, param) {
+            _this._dialogCommand = new RIAPP.Command(function (_s, product) {
                 try {
-                    self._product = param;
+                    self._product = product;
                     self.id = self._product.ProductID.toString();
                     self._dialogVM.showDialog('uploadDialog', self);
                 }
                 catch (ex) {
                     self.handleError(ex, self);
                 }
-            }, self, function (sender, param) {
-                return true;
             });
             return _this;
         }
@@ -3026,7 +3024,7 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
         return SizeConverter;
     }(RIAPP.BaseConverter));
     exports.SizeConverter = SizeConverter;
-    bootstrap.objEvents.addOnError(function (sender, args) {
+    bootstrap.objEvents.addOnError(function (_s, args) {
         debugger;
         alert(args.error.message);
         args.isHandled = true;

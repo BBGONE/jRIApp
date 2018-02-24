@@ -11,7 +11,7 @@ export class ProductAutoComplete extends AUTOCOMPLETE.AutoCompleteElView {
         const self = this;
         this._lastLoadedID = null;
         this._lookupSource = <DEMODB.ProductDb>this._getDbContext().getDbSet('Product');
-        this._lookupSource.addOnCollChanged(function (sender, args) {
+        this._lookupSource.addOnCollChanged(function (_s, args) {
             self._updateValue();
         }, self.uniqueID);
     }
@@ -53,7 +53,7 @@ export class ProductAutoComplete extends AUTOCOMPLETE.AutoCompleteElView {
         if (old !== v) {
             const dxt = v;
             if (!!dxt) {
-                dxt.objEvents.onProp('ProductID', (sender, a) => {
+                dxt.objEvents.onProp('ProductID', (_s, a) => {
                     self._updateValue();
                 }, this.uniqueID);
             }

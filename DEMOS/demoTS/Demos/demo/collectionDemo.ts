@@ -64,13 +64,13 @@ export class RadioDemo2VM extends RadioDemoVM {
         if (!!currentValue)
             this.radioValue = currentValue;
         this._historyList = new DEMODB.HistoryList();
-        this._historyList.objEvents.onProp('count', function (s, a) {
+        this._historyList.objEvents.onProp('count', () => {
             self._clearListCommand.raiseCanExecuteChanged();
         }, this.uniqueID);
-        this._clearListCommand = new RIAPP.Command(function (sender, param) {
+        this._clearListCommand = new RIAPP.Command(() => {
             self.clearList();
             self.radioValue = null;
-        }, self, function (sender, param) {
+        }, function (_s, param) {
             return self._historyList.count > 0;
         });
     }
@@ -115,7 +115,7 @@ export class DemoApplication extends RIAPP.Application {
         this._demoVM = new RadioDemo2VM(this);
 
         //here we could process application's errors
-        this.objEvents.addOnError(function (sender, data) {
+        this.objEvents.addOnError(function (_s, data) {
             debugger;
             data.isHandled = true;
             self.errorVM.error = data.error;
@@ -141,7 +141,7 @@ export class DemoApplication extends RIAPP.Application {
 }
 
 //bootstrap error handler - the last resort (typically display message to the user)
-bootstrap.objEvents.addOnError(function (sender, args) {
+bootstrap.objEvents.addOnError(function (_s, args) {
     debugger;
     alert(args.error.message);
 });
