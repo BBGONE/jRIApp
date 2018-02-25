@@ -867,7 +867,7 @@ declare module "jriapp/utils/lifetime" {
         addObj(b: IBaseObject): void;
         removeObj(b: IBaseObject): void;
         getObjs(): IBaseObject[];
-        filterObjs<TObj extends IBaseObject>(predicate: (obj: any) => boolean): TObj[];
+        filterObjs<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj[];
         toString(): string;
     }
 }

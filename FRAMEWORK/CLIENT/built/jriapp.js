@@ -3659,9 +3659,7 @@ define("jriapp/utils/lifetime", ["require", "exports", "jriapp_shared"], functio
             return new LifeTimeScope();
         };
         LifeTimeScope.prototype.addObj = function (b) {
-            if (this._objs.indexOf(b) < 0) {
-                this._objs.push(b);
-            }
+            this._objs.push(b);
         };
         LifeTimeScope.prototype.removeObj = function (b) {
             utils.arr.remove(this._objs, b);
@@ -3670,13 +3668,7 @@ define("jriapp/utils/lifetime", ["require", "exports", "jriapp_shared"], functio
             return this._objs;
         };
         LifeTimeScope.prototype.filterObjs = function (predicate) {
-            var arr = this._objs, res = [], len = arr.length;
-            for (var i = 0; i < len; i += 1) {
-                if (predicate(arr[i])) {
-                    res.push(arr[i]);
-                }
-            }
-            return res;
+            return this._objs.filter(predicate);
         };
         LifeTimeScope.prototype.toString = function () {
             return "LifeTimeScope";
