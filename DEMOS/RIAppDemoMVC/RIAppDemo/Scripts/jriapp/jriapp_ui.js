@@ -7813,21 +7813,13 @@ define("jriapp_ui/tabs", ["require", "exports", "jriapp_shared", "jriapp_ui/util
     exports.TabsElView = TabsElView;
     bootstrap_19.bootstrap.registerElView("tabs", TabsElView);
 });
-define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/mvvm", "jriapp/utils/viewchecks", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, jriapp_shared_33, mvvm_2, viewchecks_2, bootstrap_20, baseview_11) {
+define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/utils/viewchecks", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, jriapp_shared_33, viewchecks_2, bootstrap_20, baseview_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_33.Utils, viewChecks = viewchecks_2.ViewChecks, boot = bootstrap_20.bootstrap, ERROR = utils.err;
     viewChecks.isTemplateElView = function (obj) {
         return !!obj && obj instanceof TemplateElView;
     };
-    var TemplateCommand = (function (_super) {
-        __extends(TemplateCommand, _super);
-        function TemplateCommand() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return TemplateCommand;
-    }(mvvm_2.Command));
-    exports.TemplateCommand = TemplateCommand;
     var TemplateElView = (function (_super) {
         __extends(TemplateElView, _super);
         function TemplateElView(el, options) {
@@ -7836,7 +7828,7 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/mvv
             return _this;
         }
         TemplateElView.prototype.invokeCommand = function (args) {
-            var cmd = this.command;
+            var cmd = this._command;
             if (!!cmd) {
                 cmd.execute(args);
             }
@@ -9321,7 +9313,6 @@ define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/conten
     exports.BaseElView = baseview_17.BaseElView;
     exports.addToolTip = baseview_17.addToolTip;
     exports.TemplateElView = template_9.TemplateElView;
-    exports.TemplateCommand = template_9.TemplateCommand;
     exports.DataForm = dataform_1.DataForm;
     exports.DataFormElView = dataform_1.DataFormElView;
     exports.DatePickerElView = datepicker_2.DatePickerElView;

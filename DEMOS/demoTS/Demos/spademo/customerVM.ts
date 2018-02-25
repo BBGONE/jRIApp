@@ -84,17 +84,17 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
                 return !!self.currentItem;
             });
 
-        //adds new customer - uses dialog to enter the data
+        // adds new customer - uses dialog to enter the data
         this._addNewCommand = new RIAPP.Command(function () {
             //showing of the dialog is handled by the datagrid
             self._dbSet.addNew();
         });
 
-        //saves changes (submitts them to the service)
+        // saves changes (submitts them to the service)
         this._saveCommand = new RIAPP.Command(function () {
             self.dbContext.submitChanges();
         }, function () {
-            //the command is enabled when there are pending changes
+            // the command is enabled when there are pending changes
             return self.dbContext.isHasChanges;
         });
 
@@ -102,11 +102,11 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         this._undoCommand = new RIAPP.Command(function () {
             self.dbContext.rejectChanges();
         }, function () {
-            //the command is enabled when there are pending changes
+            // the command is enabled when there are pending changes
             return self.dbContext.isHasChanges;
         });
 
-        //load data from the server
+        // load data from the server
         this._loadCommand = new RIAPP.Command(function () {
             self.load();
         });
@@ -120,14 +120,14 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         });
 
 
-        //the property watcher helps us handling properties changes
-        //more convenient than using addOnPropertyChange
-        this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (_prop) {
+        // the property watcher helps us handling properties changes
+        // more convenient than using addOnPropertyChange
+        this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function () {
             self._saveCommand.raiseCanExecuteChanged();
             self._undoCommand.raiseCanExecuteChanged();
         });
 
-        this._propWatcher.addPropWatch(this._dbSet, 'currentItem', function (_prop) {
+        this._propWatcher.addPropWatch(this._dbSet, 'currentItem', function () {
             self._editCommand.raiseCanExecuteChanged();
             self._endEditCommand.raiseCanExecuteChanged();
             self._cancelEditCommand.raiseCanExecuteChanged();
@@ -166,11 +166,11 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     _onGridRowCollapsed(item: DEMODB.Customer) {
         this.objEvents.raise('row_expanded', { customer: item, isExpanded: false });
     }
-    //returns promise
+    // returns promise
     load() {
-        let query = this._dbSet.createReadCustomerQuery({ includeNav: true });
+        const query = this._dbSet.createReadCustomerQuery({ includeNav: true });
         query.pageSize = 50;
-        //load without filtering
+        // load without filtering
         query.orderBy('ComplexProp.LastName').thenBy('ComplexProp.MiddleName').thenBy('ComplexProp.FirstName');
         return this.dbContext.load(query);
     }

@@ -2549,11 +2549,11 @@ define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "gridEvents",
             _this._switchDetViewCommand = new RIAPP.Command(function (param) {
                 self.uiCustDetRoute.viewName = param;
             });
-            _this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (_prop) {
+            _this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function () {
                 self._saveCommand.raiseCanExecuteChanged();
                 self._undoCommand.raiseCanExecuteChanged();
             });
-            _this._propWatcher.addPropWatch(_this._dbSet, 'currentItem', function (_prop) {
+            _this._propWatcher.addPropWatch(_this._dbSet, 'currentItem', function () {
                 self._editCommand.raiseCanExecuteChanged();
                 self._endEditCommand.raiseCanExecuteChanged();
                 self._cancelEditCommand.raiseCanExecuteChanged();

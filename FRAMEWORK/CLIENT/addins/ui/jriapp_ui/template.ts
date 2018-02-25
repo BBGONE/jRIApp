@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
 import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
-import { Command, ICommand } from "jriapp/mvvm";
+import { IExecutor } from "jriapp/mvvm";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
@@ -19,20 +19,16 @@ export interface ITemplateOptions {
 
 // for strongly typed parameters
 export type TemplateCommandParam = { template: ITemplate; isLoaded: boolean; };
-export class TemplateCommand extends Command<TemplateCommandParam>
-{
-}
-
 
 export class TemplateElView extends BaseElView implements ITemplateEvents {
-    private _command: ICommand;
+    private _command: IExecutor;
 
     constructor(el: HTMLElement, options: IViewOptions) {
         super(el, options);
         this._command = null;
     }
-    protected invokeCommand(args: any): void {
-        const cmd = this.command;
+    private invokeCommand(args: any): void {
+        const cmd = this._command;
         if (!!cmd) {
             cmd.execute(args);
         }
@@ -64,10 +60,10 @@ export class TemplateElView extends BaseElView implements ITemplateEvents {
     toString(): string {
         return "TemplateElView";
     }
-    get command(): ICommand {
+    get command(): IExecutor {
         return this._command;
     }
-    set command(v: ICommand) {
+    set command(v: IExecutor) {
         if (v !== this._command) {
             this._command = v;
             this.objEvents.raiseProp("command");

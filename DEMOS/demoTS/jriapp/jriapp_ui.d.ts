@@ -1492,7 +1492,7 @@ declare module "jriapp_ui/tabs" {
 }
 declare module "jriapp_ui/template" {
     import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
-    import { Command, ICommand } from "jriapp/mvvm";
+    import { IExecutor } from "jriapp/mvvm";
     import { BaseElView } from "jriapp_ui/baseview";
     export interface ITemplateOptions {
         dataContext?: any;
@@ -1502,17 +1502,15 @@ declare module "jriapp_ui/template" {
         template: ITemplate;
         isLoaded: boolean;
     };
-    export class TemplateCommand extends Command<TemplateCommandParam> {
-    }
     export class TemplateElView extends BaseElView implements ITemplateEvents {
         private _command;
         constructor(el: HTMLElement, options: IViewOptions);
-        protected invokeCommand(args: any): void;
+        private invokeCommand(args);
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
         toString(): string;
-        command: ICommand;
+        command: IExecutor;
     }
 }
 declare module "jriapp_ui/dataform" {
@@ -1777,7 +1775,7 @@ declare module "jriapp_ui" {
     export * from "jriapp_ui/stackpanel";
     export * from "jriapp_ui/tabs";
     export { BaseElView, addToolTip } from "jriapp_ui/baseview";
-    export { TemplateElView, TemplateCommand, TemplateCommandParam } from "jriapp_ui/template";
+    export { TemplateElView, TemplateCommandParam } from "jriapp_ui/template";
     export { DataForm, DataFormElView } from "jriapp_ui/dataform";
     export { DatePickerElView } from "jriapp_ui/datepicker";
     export { AnchorElView, IAncorOptions } from "jriapp_ui/anchor";

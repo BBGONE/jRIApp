@@ -887,9 +887,11 @@ declare module "jriapp/utils/propwatcher" {
 declare module "jriapp/mvvm" {
     import { BaseObject, IBaseObject, TEventHandler, TErrorHandler } from "jriapp_shared";
     import { IApplication } from "jriapp/int";
-    export interface ICommand<TParam = any> {
-        canExecute: (param: TParam) => boolean;
+    export interface IExecutor<TParam = any> {
         execute: (param: TParam) => void;
+    }
+    export interface ICommand<TParam = any> extends IExecutor<TParam> {
+        canExecute: (param: TParam) => boolean;
         raiseCanExecuteChanged: () => void;
         addOnCanExecuteChanged(fn: (sender: ICommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
         offOnCanExecuteChanged(nmspace?: string): void;
@@ -1014,5 +1016,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.16.0";
+    export const VERSION = "2.16.1";
 }

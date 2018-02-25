@@ -6,9 +6,12 @@ import { IApplication } from "./int";
 
 const { getNewID } = Utils.core;
 
-export interface ICommand<TParam = any> {
-    canExecute: (param: TParam) => boolean;
+export interface IExecutor<TParam = any> {
     execute: (param: TParam) => void;
+}
+
+export interface ICommand<TParam = any> extends IExecutor<TParam> {
+    canExecute: (param: TParam) => boolean;
     raiseCanExecuteChanged: () => void;
     addOnCanExecuteChanged(fn: (sender: ICommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
     offOnCanExecuteChanged(nmspace?: string): void;
