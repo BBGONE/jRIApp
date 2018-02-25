@@ -63,7 +63,7 @@ function toBindable(el: Element): IBindable {
     if (dataViewName === ELVIEW_NM.DataForm) {
         res.dataForm = true;
     }
-    res.needToBind = !!dataViewName || hasOptions || res.bindings.length > 0
+    res.needToBind = !!dataViewName || hasOptions || res.bindings.length > 0;
     return res.needToBind? res : null;
  }
 
