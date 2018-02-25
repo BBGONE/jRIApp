@@ -7,8 +7,8 @@ import { IApplication } from "./int";
 const { getNewID } = Utils.core;
 
 export interface ICommand<TParam = any> {
-    canExecute: (sender: any, param: TParam) => boolean;
-    execute: (sender: any, param: TParam) => void;
+    canExecute: (param: TParam) => boolean;
+    execute: (param: TParam) => void;
     raiseCanExecuteChanged: () => void;
     addOnCanExecuteChanged(fn: (sender: ICommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
     offOnCanExecuteChanged(nmspace?: string): void;
@@ -18,8 +18,8 @@ const enum CMD_EVENTS {
     can_execute_changed = "canExecute_changed"
 }
 
-export type Action<TParam = any> = (sender: any, param: TParam) => void;
-export type Predicate<TParam = any> = (sender: any, param: TParam) => boolean;
+export type Action<TParam = any> = (param: TParam) => void;
+export type Predicate<TParam = any> = (param: TParam) => boolean;
 
 export class Command<TParam = any> extends BaseObject implements ICommand<TParam> {
     private _action: Action<TParam>;
@@ -41,14 +41,14 @@ export class Command<TParam = any> extends BaseObject implements ICommand<TParam
         this._predicate = null;
         super.dispose();
     }
-    protected _canExecute(sender: any, param: TParam): boolean {
+    protected _canExecute(param: TParam): boolean {
         const predicate = this._predicate;
-        return !predicate ? true : predicate(sender, param);
+        return !predicate ? true : predicate(param);
     }
-    protected _execute(sender: any, param: TParam): void {
+    protected _execute(param: TParam): void {
         const action = this._action;
         if (!!action) {
-            action(sender, param);
+            action(param);
         }
     }
     addOnCanExecuteChanged(fn: (sender: this, args: any) => void, nmspace?: string, context?: IBaseObject): void {
@@ -57,11 +57,11 @@ export class Command<TParam = any> extends BaseObject implements ICommand<TParam
     offOnCanExecuteChanged(nmspace?: string): void {
         this.objEvents.off(CMD_EVENTS.can_execute_changed, nmspace);
     }
-    canExecute(sender: any, param: TParam): boolean {
-        return this._canExecute(sender, param);
+    canExecute(param: TParam): boolean {
+        return this._canExecute(param);
     }
-    execute(sender: any, param: TParam): void {
-        this._execute(sender, param);
+    execute(param: TParam): void {
+        this._execute(param);
     }
     raiseCanExecuteChanged(): void {
         this.objEvents.raise(CMD_EVENTS.can_execute_changed, {});
@@ -74,7 +74,7 @@ export class Command<TParam = any> extends BaseObject implements ICommand<TParam
     }
 }
 
-export abstract class BaseCommand<TOwner> extends Command {
+export abstract class BaseCommand<TOwner, TParam = any> extends Command<TParam> {
     private _owner: TOwner;
 
     constructor(owner: TOwner) {
@@ -90,15 +90,15 @@ export abstract class BaseCommand<TOwner> extends Command {
         super.dispose();
     }
     // override
-    protected _canExecute(sender: any, param: any): boolean {
-        return this.isCanExecute(sender, param);
+    protected _canExecute(param: TParam): boolean {
+        return this.isCanExecute(param);
     }
     // override
-    protected _execute(sender: any, param: any): void {
-        this.action(sender, param);
+    protected _execute(param: TParam): void {
+        this.action(param);
     }
-    protected abstract action(sender: any, param: any): void;
-    protected abstract isCanExecute(sender: any, param: any): boolean;
+    protected abstract action(param: TParam): void;
+    protected abstract isCanExecute(param: TParam): boolean;
     get owner(): TOwner {
         return this._owner;
     }

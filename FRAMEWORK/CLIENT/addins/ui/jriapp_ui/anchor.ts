@@ -44,6 +44,16 @@ export class AnchorElView extends CommandElView<HTMLAnchorElement> {
             }, this.uniqueID);
         }
     }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        dom.removeClass([this.el], cssStyles.commandLink);
+        this.imageSrc = null;
+        this.glyph = null;
+        super.dispose();
+    }
     handle_click(e: Event): boolean {
         if (this.stopPropagation) {
             e.stopPropagation();
@@ -55,7 +65,7 @@ export class AnchorElView extends CommandElView<HTMLAnchorElement> {
         return this.stopPropagation;
     }
     protected onClick(): void {
-        this.invokeCommand(null, true);
+        this.invokeCommand();
     }
     protected _updateImage(src: string): void {
         const el = this.el;
@@ -106,16 +116,6 @@ export class AnchorElView extends CommandElView<HTMLAnchorElement> {
             }
             dom.addClass([this._span], glyph);
         }
-    }
-    dispose(): void {
-        if (this.getIsDisposed()) {
-            return;
-        }
-        this.setDisposing();
-        dom.removeClass([this.el], cssStyles.commandLink);
-        this.imageSrc = null;
-        this.glyph = null;
-        super.dispose();
     }
     toString(): string {
         return "AnchorElView";

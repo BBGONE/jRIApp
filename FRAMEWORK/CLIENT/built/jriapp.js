@@ -3778,14 +3778,14 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             this._predicate = null;
             _super.prototype.dispose.call(this);
         };
-        Command.prototype._canExecute = function (sender, param) {
+        Command.prototype._canExecute = function (param) {
             var predicate = this._predicate;
-            return !predicate ? true : predicate(sender, param);
+            return !predicate ? true : predicate(param);
         };
-        Command.prototype._execute = function (sender, param) {
+        Command.prototype._execute = function (param) {
             var action = this._action;
             if (!!action) {
-                action(sender, param);
+                action(param);
             }
         };
         Command.prototype.addOnCanExecuteChanged = function (fn, nmspace, context) {
@@ -3794,11 +3794,11 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
         Command.prototype.offOnCanExecuteChanged = function (nmspace) {
             this.objEvents.off("canExecute_changed", nmspace);
         };
-        Command.prototype.canExecute = function (sender, param) {
-            return this._canExecute(sender, param);
+        Command.prototype.canExecute = function (param) {
+            return this._canExecute(param);
         };
-        Command.prototype.execute = function (sender, param) {
-            this._execute(sender, param);
+        Command.prototype.execute = function (param) {
+            this._execute(param);
         };
         Command.prototype.raiseCanExecuteChanged = function () {
             this.objEvents.raise("canExecute_changed", {});
@@ -3831,11 +3831,11 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             this._owner = null;
             _super.prototype.dispose.call(this);
         };
-        BaseCommand.prototype._canExecute = function (sender, param) {
-            return this.isCanExecute(sender, param);
+        BaseCommand.prototype._canExecute = function (param) {
+            return this.isCanExecute(param);
         };
-        BaseCommand.prototype._execute = function (sender, param) {
-            this.action(sender, param);
+        BaseCommand.prototype._execute = function (param) {
+            this.action(param);
         };
         Object.defineProperty(BaseCommand.prototype, "owner", {
             get: function () {
@@ -4604,6 +4604,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.15.0";
+    exports.VERSION = "2.16.0";
     bootstrap_8.Bootstrap._initFramework();
 });

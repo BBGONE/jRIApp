@@ -91,8 +91,8 @@ export class EventBag extends BaseObject implements IPropertyBag {
             return false;
         }
         args = args || {};
-        if (command.canExecute(this, args)) {
-            command.execute(this, args);
+        if (command.canExecute(args)) {
+            command.execute(args);
             return true;
         } else {
             return false;

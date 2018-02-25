@@ -45,9 +45,13 @@ export class ExpanderElView extends AnchorElView {
         this.isExpanded = !this.isExpanded;
     }
     // override
+    protected _getCommandParam(): any {
+        return { isExpanded: this.isExpanded };
+    }
+    // override
     invokeCommand(): void {
         this.refresh();
-        super.invokeCommand(null, true);
+        super.invokeCommand();
     }
     toString(): string {
         return "ExpanderElView";

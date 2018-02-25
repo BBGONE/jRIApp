@@ -34,7 +34,7 @@ export class ButtonElView extends CommandElView<HTMLButtonElement | HTMLInputEle
         return this.stopPropagation;
     }
     onClick(): void {
-        this.invokeCommand(null, true);
+        this.invokeCommand();
     }
     toString(): string {
         return "ButtonElView";
