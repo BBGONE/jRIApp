@@ -86,7 +86,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             _this._clearListCommand = new RIAPP.Command(function () {
                 self.clearList();
                 self.radioValue = null;
-            }, function (_s, param) {
+            }, function () {
                 return self._historyList.count > 0;
             });
             return _this;

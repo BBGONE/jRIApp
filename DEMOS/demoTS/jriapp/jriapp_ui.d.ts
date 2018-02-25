@@ -1490,37 +1490,10 @@ declare module "jriapp_ui/tabs" {
         tabIndex: number;
     }
 }
-declare module "jriapp_ui/command" {
-    import { IViewOptions } from "jriapp/int";
-    import { ICommand } from "jriapp/mvvm";
-    import { BaseElView } from "jriapp_ui/baseview";
-    export interface ICommandViewOptions extends IViewOptions {
-        preventDefault?: boolean;
-        stopPropagation?: boolean;
-    }
-    export class CommandElView<TElement extends HTMLElement = HTMLElement> extends BaseElView<TElement> {
-        private _command;
-        private _commandParam;
-        private _flags;
-        constructor(el: TElement, options: ICommandViewOptions);
-        private _getFlag(flag);
-        private _setFlag(v, flag);
-        private _onCanExecuteChanged(cmd, args);
-        protected _onCommandChanged(): void;
-        protected invokeCommand(args: any, isAsync: boolean): void;
-        dispose(): void;
-        toString(): string;
-        command: ICommand;
-        commandParam: any;
-        isEnabled: boolean;
-        readonly preventDefault: boolean;
-        readonly stopPropagation: boolean;
-    }
-}
 declare module "jriapp_ui/template" {
     import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
-    import { Command } from "jriapp/mvvm";
-    import { CommandElView } from "jriapp_ui/command";
+    import { Command, ICommand } from "jriapp/mvvm";
+    import { BaseElView } from "jriapp_ui/baseview";
     export interface ITemplateOptions {
         dataContext?: any;
         templEvents?: ITemplateEvents;
@@ -1531,16 +1504,15 @@ declare module "jriapp_ui/template" {
     };
     export class TemplateCommand extends Command<TemplateCommandParam> {
     }
-    export class TemplateElView extends CommandElView implements ITemplateEvents {
-        private _template;
-        private _isEnabled;
+    export class TemplateElView extends BaseElView implements ITemplateEvents {
+        private _command;
         constructor(el: HTMLElement, options: IViewOptions);
+        protected invokeCommand(args: any): void;
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
         toString(): string;
-        isEnabled: boolean;
-        readonly template: ITemplate;
+        command: ICommand;
     }
 }
 declare module "jriapp_ui/dataform" {
@@ -1607,6 +1579,36 @@ declare module "jriapp_ui/datepicker" {
         toString(): string;
     }
 }
+declare module "jriapp_ui/command" {
+    import { IViewOptions } from "jriapp/int";
+    import { ICommand } from "jriapp/mvvm";
+    import { BaseElView } from "jriapp_ui/baseview";
+    export interface ICommandViewOptions extends IViewOptions {
+        preventDefault?: boolean;
+        stopPropagation?: boolean;
+    }
+    export class CommandElView<TElement extends HTMLElement = HTMLElement> extends BaseElView<TElement> {
+        private _command;
+        private _commandParam;
+        private _commandFlags;
+        private _debounce;
+        constructor(el: TElement, options: ICommandViewOptions);
+        dispose(): void;
+        private _getCommandFlag(flag);
+        private _setCommandFlag(v, flag);
+        private _onCanExecuteChanged(cmd, args);
+        protected _getCommandParam(): any;
+        protected _onCommandChanged(): void;
+        protected invokeCommand(): void;
+        viewMounted(): void;
+        toString(): string;
+        command: ICommand;
+        commandParam: any;
+        isEnabled: boolean;
+        readonly preventDefault: boolean;
+        readonly stopPropagation: boolean;
+    }
+}
 declare module "jriapp_ui/anchor" {
     import { CommandElView, ICommandViewOptions } from "jriapp_ui/command";
     export interface IAncorOptions extends ICommandViewOptions {
@@ -1619,11 +1621,11 @@ declare module "jriapp_ui/anchor" {
         private _image;
         private _span;
         constructor(el: HTMLAnchorElement, options: IAncorOptions);
+        dispose(): void;
         handle_click(e: Event): boolean;
         protected onClick(): void;
         protected _updateImage(src: string): void;
         protected _updateGlyph(glyph: string): void;
-        dispose(): void;
         toString(): string;
         imageSrc: string;
         glyph: string;
@@ -1728,6 +1730,7 @@ declare module "jriapp_ui/expander" {
         protected refresh(): void;
         protected _onCommandChanged(): void;
         protected onClick(): void;
+        protected _getCommandParam(): any;
         invokeCommand(): void;
         toString(): string;
         isExpanded: boolean;

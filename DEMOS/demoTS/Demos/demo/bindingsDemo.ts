@@ -85,8 +85,8 @@ export class TestObject extends RIAPP.BaseObject {
                 return self.isEnabled;
         });
 
-        this._paramCommand = new RIAPP.Command<{ color: string; r: number; g: number; b: number; }>((_s, args) => {
-            alert(`${args.color}: #${RGBToHex(args.r, args.g, args.b)}`);
+        this._paramCommand = new RIAPP.Command<{ color: string; r: number; g: number; b: number; }>((param) => {
+            alert(`${param.color}: #${RGBToHex(param.r, param.g, param.b)}`);
         });
 
         this._month = new Date().getMonth() + 1;

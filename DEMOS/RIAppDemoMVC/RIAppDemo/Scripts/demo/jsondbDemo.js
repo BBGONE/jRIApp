@@ -164,7 +164,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                     args.isCancel = true;
             }, self.uniqueID);
             _this._dbSet.isSubmitOnDelete = true;
-            _this._addNewCommand = new RIAPP.Command(function (_s, param) {
+            _this._addNewCommand = new RIAPP.Command(function () {
                 var item = self._dbSet.addNew();
                 item.Data = JSON.stringify({});
             });

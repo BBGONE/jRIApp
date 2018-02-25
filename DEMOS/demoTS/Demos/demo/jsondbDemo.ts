@@ -180,7 +180,7 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         this._dbSet.isSubmitOnDelete = true;
 
         //adds new product - uses dialog to enter the data
-        this._addNewCommand = new RIAPP.Command(function (_s, param) {
+        this._addNewCommand = new RIAPP.Command(function () {
             //grid will show the edit dialog, because we set grid options isHandleAddNew:true
             //see the options for the grid on the HTML demo page
             let item = self._dbSet.addNew();

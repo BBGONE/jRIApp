@@ -1738,7 +1738,7 @@ define("manToManDemo/customerVM", ["require", "exports", "jriapp", "manToManDemo
             _this._loadCommand = new RIAPP.Command(function () {
                 self.load();
             });
-            _this._helpCommand = new RIAPP.Command(function (_s, param) {
+            _this._helpCommand = new RIAPP.Command(function (param) {
                 alert('Help command executed for AddressID: ' + (!!param ? param.AddressID : '???'));
             }, null);
             _this._customerAddressVM = null;

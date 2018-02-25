@@ -5,9 +5,9 @@ import { ProductViewModel } from "./productVM";
 import { ProductsFilter } from "./filters";
 
 //an example how to define a strongly typed command
-export class TestInvokeCommand extends RIAPP.BaseCommand<ProductViewModel>
+export class TestInvokeCommand extends RIAPP.BaseCommand<ProductViewModel, DEMODB.Product>
 {
-    protected action(sender: RIAPP.IBaseObject, param: DEMODB.Product) {
+    protected action(param: DEMODB.Product) {
         const viewModel = this.owner;
         viewModel.invokeResult = null;
         const promise = viewModel.dbContext.serviceMethods.TestInvoke({ param1: [10, 11, 12, 13, 14], param2: param.Name });
@@ -16,7 +16,7 @@ export class TestInvokeCommand extends RIAPP.BaseCommand<ProductViewModel>
             viewModel.showDialog();
         });
     }
-    protected isCanExecute(sender: RIAPP.IBaseObject, param: DEMODB.Product): boolean {
+    protected isCanExecute(param: DEMODB.Product): boolean {
         const viewModel = this.owner;
         //just for the test: this command can be executed only when this condition is true!
         return viewModel.currentItem !== null;
@@ -26,10 +26,10 @@ export class TestInvokeCommand extends RIAPP.BaseCommand<ProductViewModel>
 //an example how to define a strongly typed command
 export class ResetCommand extends RIAPP.BaseCommand<ProductsFilter>
 {
-    protected action(sender: RIAPP.IBaseObject, param: any) {
+    protected action(param: any) {
         this.owner.reset();
     }
-    protected isCanExecute(sender: RIAPP.IBaseObject, param: any): boolean {
+    protected isCanExecute(param: any): boolean {
         return true;
     }
 }

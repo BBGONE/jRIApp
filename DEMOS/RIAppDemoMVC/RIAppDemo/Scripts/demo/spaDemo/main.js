@@ -2543,10 +2543,10 @@ define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "gridEvents",
             _this._loadCommand = new RIAPP.Command(function () {
                 self.load();
             });
-            _this._switchViewCommand = new RIAPP.Command(function (_s, param) {
+            _this._switchViewCommand = new RIAPP.Command(function (param) {
                 self.uiMainRoute.viewName = param;
             });
-            _this._switchDetViewCommand = new RIAPP.Command(function (_s, param) {
+            _this._switchDetViewCommand = new RIAPP.Command(function (param) {
                 self.uiCustDetRoute.viewName = param;
             });
             _this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (_prop) {
@@ -2877,7 +2877,7 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             _this.custAdressView.objEvents.onProp('currentItem', function (_s, args) {
                 self._unLinkCommand.raiseCanExecuteChanged();
             }, self.uniqueID);
-            _this._addNewCommand = new RIAPP.Command(function (_s, param) {
+            _this._addNewCommand = new RIAPP.Command(function (param) {
                 try {
                     var opts = utils.core.merge(param, { width: 950, height: 600 });
                     var dialog = self._dialogVM.showDialog('addressDialog', self);

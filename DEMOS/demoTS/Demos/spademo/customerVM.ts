@@ -111,11 +111,11 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
             self.load();
         });
 
-        this._switchViewCommand = new RIAPP.Command<string>(function (_s, param) {
+        this._switchViewCommand = new RIAPP.Command<string>(function (param) {
             self.uiMainRoute.viewName = param;
         });
 
-        this._switchDetViewCommand = new RIAPP.Command<string>(function (_s, param) {
+        this._switchDetViewCommand = new RIAPP.Command<string>(function (param) {
             self.uiCustDetRoute.viewName = param;
         });
 

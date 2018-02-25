@@ -657,10 +657,11 @@ define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (requir
             _this._$topPanel = $(exports.topPanel);
             _this._$contentPanel = $(exports.contentPanel);
             _this._contentPanelHeight = 0;
-            if (!!_this._$contentPanel)
+            if (!!_this._$contentPanel) {
                 _this._contentPanelHeight = _this._$contentPanel.height();
-            _this._expanderCommand = new RIAPP.Command(function (sender) {
-                if (sender.isExpanded) {
+            }
+            _this._expanderCommand = new RIAPP.Command(function (param) {
+                if (param.isExpanded) {
                     _this.expand();
                 }
                 else {

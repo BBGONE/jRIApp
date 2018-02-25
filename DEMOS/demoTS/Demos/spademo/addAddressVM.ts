@@ -117,13 +117,13 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
             self._unLinkCommand.raiseCanExecuteChanged();
         }, self.uniqueID);
 
-        //add new or existing address
-        this._addNewCommand = new RIAPP.Command <{ width?: number; height?: number; }>(function (_s, param) {
+        // add new or existing address
+        this._addNewCommand = new RIAPP.Command <{ width?: number; height?: number; }>(function (param) {
             try {
-                //can override default width and height
-                //we pass the width and height in the command parameter(it is not needed - only for example)
-                let opts = utils.core.merge(param, { width: 950, height: 600 });
-                let dialog = self._dialogVM.showDialog('addressDialog', self);
+                // can override default width and height
+                // we pass the width and height in the command parameter(it is not needed - only for example)
+                const opts = utils.core.merge(param, { width: 950, height: 600 });
+                const dialog = self._dialogVM.showDialog('addressDialog', self);
                 dialog.width = opts.width;
                 dialog.height = opts.height;
             } catch (ex) {

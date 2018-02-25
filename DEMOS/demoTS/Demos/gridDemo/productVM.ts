@@ -150,13 +150,8 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
 
 
         //for testing templates in datagrid columns
-        this._columnCommand = new RIAPP.Command<DEMODB.Product>(function (sender, product) {
-            let dataName = "";
-            if (sender instanceof uiMOD.BaseElView) {
-                dataName = (<uiMOD.BaseElView>sender).dataName;
-            }
-
-            alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", dataName, (!product ? "Not selected" : product.ProductID)));
+        this._columnCommand = new RIAPP.Command<DEMODB.Product>(function (product) {
+            alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", "Product Column", (!product ? "Not selected" : product.ProductID)));
         }, function () {
             return !!self.currentItem;
         });

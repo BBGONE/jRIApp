@@ -1517,7 +1517,7 @@ define("gridDemo/commands", ["require", "exports", "jriapp"], function (require,
         function TestInvokeCommand() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        TestInvokeCommand.prototype.action = function (sender, param) {
+        TestInvokeCommand.prototype.action = function (param) {
             var viewModel = this.owner;
             viewModel.invokeResult = null;
             var promise = viewModel.dbContext.serviceMethods.TestInvoke({ param1: [10, 11, 12, 13, 14], param2: param.Name });
@@ -1526,7 +1526,7 @@ define("gridDemo/commands", ["require", "exports", "jriapp"], function (require,
                 viewModel.showDialog();
             });
         };
-        TestInvokeCommand.prototype.isCanExecute = function (sender, param) {
+        TestInvokeCommand.prototype.isCanExecute = function (param) {
             var viewModel = this.owner;
             return viewModel.currentItem !== null;
         };
@@ -1538,10 +1538,10 @@ define("gridDemo/commands", ["require", "exports", "jriapp"], function (require,
         function ResetCommand() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        ResetCommand.prototype.action = function (sender, param) {
+        ResetCommand.prototype.action = function (param) {
             this.owner.reset();
         };
-        ResetCommand.prototype.isCanExecute = function (sender, param) {
+        ResetCommand.prototype.isCanExecute = function (param) {
             return true;
         };
         return ResetCommand;
@@ -1905,12 +1905,8 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                 self.load();
             });
             _this._testInvokeCommand = new commands_2.TestInvokeCommand(_this);
-            _this._columnCommand = new RIAPP.Command(function (sender, product) {
-                var dataName = "";
-                if (sender instanceof uiMOD.BaseElView) {
-                    dataName = sender.dataName;
-                }
-                alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", dataName, (!product ? "Not selected" : product.ProductID)));
+            _this._columnCommand = new RIAPP.Command(function (product) {
+                alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", "Product Column", (!product ? "Not selected" : product.ProductID)));
             }, function () {
                 return !!self.currentItem;
             });
@@ -2469,7 +2465,7 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
                 }
             };
             _this._dialogVM.createDialog('uploadDialog', dialogOptions);
-            _this._dialogCommand = new RIAPP.Command(function (_s, product) {
+            _this._dialogCommand = new RIAPP.Command(function (product) {
                 try {
                     self._product = product;
                     self.id = self._product.ProductID.toString();

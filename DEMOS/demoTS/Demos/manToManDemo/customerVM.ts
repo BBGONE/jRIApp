@@ -80,7 +80,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
 
 
         //an example of using command parameter for a command
-        this._helpCommand = new RIAPP.Command<{ readonly AddressID: number }>(function (_s, param) {
+        this._helpCommand = new RIAPP.Command<{ readonly AddressID: number }>(function (param) {
             alert('Help command executed for AddressID: ' + (!!param ? param.AddressID : '???'));
         }, null);
 

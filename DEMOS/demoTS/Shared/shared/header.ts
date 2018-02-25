@@ -19,12 +19,12 @@ export class HeaderVM extends RIAPP.ViewModel<RIAPP.IApplication> {
         this._$topPanel = $(topPanel);
         this._$contentPanel = $(contentPanel);
         this._contentPanelHeight = 0;
-        if (!!this._$contentPanel)
+        if (!!this._$contentPanel) {
             this._contentPanelHeight = this._$contentPanel.height();
+        }
 
-        //uses strongly typed "this"
-        this._expanderCommand = new RIAPP.Command((sender: uiMOD.ExpanderElView)  => {
-            if (sender.isExpanded) {
+        this._expanderCommand = new RIAPP.Command<{ isExpanded: boolean; }>((param) => {
+            if (param.isExpanded) {
                 this.expand();
             } else {
                 this.collapse();

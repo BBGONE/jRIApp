@@ -70,7 +70,7 @@ export class RadioDemo2VM extends RadioDemoVM {
         this._clearListCommand = new RIAPP.Command(() => {
             self.clearList();
             self.radioValue = null;
-        }, function (_s, param) {
+        }, function () {
             return self._historyList.count > 0;
         });
     }
