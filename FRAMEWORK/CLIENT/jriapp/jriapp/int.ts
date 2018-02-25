@@ -27,6 +27,7 @@ export interface ILifeTimeScope extends IBaseObject {
     addObj(b: IBaseObject): void;
     removeObj(b: IBaseObject): void;
     getObjs(): IBaseObject[];
+    filterObjs<TObj extends IBaseObject>(predicate: (obj: any) => boolean): TObj[];
 }
 
 export interface ISubscriber {

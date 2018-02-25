@@ -184,16 +184,7 @@ export class DataForm extends BaseObject {
         super.dispose();
     }
     private _getBindings(): Binding[] {
-        if (!this._lfTime) {
-            return [];
-        }
-        const arr: any[] = this._lfTime.getObjs(), res: Binding[] = [], len = arr.length;
-        for (let i = 0; i < len; i += 1) {
-            if (sys.isBinding(arr[i])) {
-                res.push(arr[i]);
-            }
-        }
-        return res;
+        return !this._lfTime ? [] : this._lfTime.filterObjs(sys.isBinding);
     }
     private _createContent(): IVoidPromise {
         const dctx: any = this._dataContext, self = this;

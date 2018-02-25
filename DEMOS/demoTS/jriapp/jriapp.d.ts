@@ -90,6 +90,7 @@ declare module "jriapp/int" {
         addObj(b: IBaseObject): void;
         removeObj(b: IBaseObject): void;
         getObjs(): IBaseObject[];
+        filterObjs<TObj extends IBaseObject>(predicate: (obj: any) => boolean): TObj[];
     }
     export interface ISubscriber {
         isSubscribed(flag: SubscribeFlags): boolean;
@@ -866,6 +867,7 @@ declare module "jriapp/utils/lifetime" {
         addObj(b: IBaseObject): void;
         removeObj(b: IBaseObject): void;
         getObjs(): IBaseObject[];
+        filterObjs<TObj extends IBaseObject>(predicate: (obj: any) => boolean): TObj[];
         toString(): string;
     }
 }
@@ -1016,5 +1018,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.16.1";
+    export const VERSION = "2.16.2";
 }

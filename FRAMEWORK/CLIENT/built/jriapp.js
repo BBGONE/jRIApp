@@ -3366,18 +3366,6 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
         css["templateContainer"] = "ria-template-container";
         css["templateError"] = "ria-template-error";
     })(css = exports.css || (exports.css = {}));
-    function getObjects(lfTime, predicate) {
-        if (!lfTime) {
-            return [];
-        }
-        var arr = lfTime.getObjs(), res = [], len = arr.length;
-        for (var i = 0; i < len; i += 1) {
-            if (predicate(arr[i])) {
-                res.push(arr[i]);
-            }
-        }
-        return res;
-    }
     function createTemplate(dataContext, templEvents) {
         var options = {
             dataContext: dataContext,
@@ -3415,17 +3403,17 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
             _super.prototype.dispose.call(this);
         };
         Template.prototype._getBindings = function () {
-            return getObjects(this._lfTime, sys.isBinding);
+            return !this._lfTime ? [] : this._lfTime.filterObjs(sys.isBinding);
         };
         Template.prototype._getElViews = function () {
-            return getObjects(this._lfTime, viewChecks.isElView);
+            return !this._lfTime ? [] : this._lfTime.filterObjs(viewChecks.isElView);
         };
         Template.prototype._getTemplateElView = function () {
             if (!this._lfTime) {
                 return null;
             }
-            var arr = this._getElViews(), j = arr.length;
-            for (var i = 0; i < j; i += 1) {
+            var arr = this._getElViews(), len = arr.length;
+            for (var i = 0; i < len; i += 1) {
                 if (viewChecks.isTemplateElView(arr[i])) {
                     return arr[i];
                 }
@@ -3680,6 +3668,15 @@ define("jriapp/utils/lifetime", ["require", "exports", "jriapp_shared"], functio
         };
         LifeTimeScope.prototype.getObjs = function () {
             return this._objs;
+        };
+        LifeTimeScope.prototype.filterObjs = function (predicate) {
+            var arr = this._objs, res = [], len = arr.length;
+            for (var i = 0; i < len; i += 1) {
+                if (predicate(arr[i])) {
+                    res.push(arr[i]);
+                }
+            }
+            return res;
         };
         LifeTimeScope.prototype.toString = function () {
             return "LifeTimeScope";
@@ -4604,6 +4601,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.16.1";
+    exports.VERSION = "2.16.2";
     bootstrap_8.Bootstrap._initFramework();
 });

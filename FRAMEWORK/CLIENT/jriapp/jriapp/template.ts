@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { BaseObject, Utils, LocaleERRS, IPromise, IBaseObject } from "jriapp_shared";
+import { BaseObject, Utils, LocaleERRS, IPromise } from "jriapp_shared";
 import { DATA_ATTR } from "./const";
 import {
     ITemplate, ILifeTimeScope, ITemplateEvents, IApplication, IElView
@@ -21,19 +21,6 @@ export const enum css {
 export interface ITemplateOptions {
     dataContext?: any;
     templEvents?: ITemplateEvents;
-}
-
-function getObjects<TObj extends IBaseObject>(lfTime: ILifeTimeScope, predicate: (obj: any) => boolean): TObj[] {
-    if (!lfTime) {
-        return [];
-    }
-    const arr = lfTime.getObjs(), res: TObj[] = [], len = arr.length;
-    for (let i = 0; i < len; i += 1) {
-        if (predicate(arr[i])) {
-            res.push(<TObj>arr[i]);
-        }
-    }
-    return res;
 }
 
 export function createTemplate(dataContext ?: any, templEvents?: ITemplateEvents): ITemplate {
@@ -79,17 +66,17 @@ class Template extends BaseObject implements ITemplate {
         super.dispose();
     }
     private _getBindings(): Binding[] {
-        return getObjects(this._lfTime, sys.isBinding);
+        return !this._lfTime ? [] : this._lfTime.filterObjs(sys.isBinding);
     }
     private _getElViews(): IElView[] {
-        return getObjects(this._lfTime, viewChecks.isElView);
+        return !this._lfTime ? [] : this._lfTime.filterObjs(viewChecks.isElView);
     }
     private _getTemplateElView(): ITemplateEvents {
         if (!this._lfTime) {
             return null;
         }
-        const arr = this._getElViews(), j = arr.length;
-        for (let i = 0; i < j; i += 1) {
+        const arr = this._getElViews(), len = arr.length;
+        for (let i = 0; i < len; i += 1) {
             if (viewChecks.isTemplateElView(arr[i])) {
                 return <ITemplateEvents><any>arr[i];
             }

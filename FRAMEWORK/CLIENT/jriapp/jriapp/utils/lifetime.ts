@@ -43,6 +43,15 @@ export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
     getObjs(): IBaseObject[] {
         return this._objs;
     }
+    filterObjs<TObj extends IBaseObject>(predicate: (obj: any) => boolean): TObj[] {
+        const arr = this._objs, res: TObj[] = [], len = arr.length;
+        for (let i = 0; i < len; i += 1) {
+            if (predicate(arr[i])) {
+                res.push(<TObj>arr[i]);
+            }
+        }
+        return res;
+    }
     toString(): string {
         return "LifeTimeScope";
     }
