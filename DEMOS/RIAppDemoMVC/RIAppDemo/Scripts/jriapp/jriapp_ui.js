@@ -8011,7 +8011,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             _super.prototype.dispose.call(this);
         };
         DataForm.prototype._getBindings = function () {
-            return !this._lfTime ? [] : this._lfTime.filterObjs(sys.isBinding);
+            return !this._lfTime ? [] : this._lfTime.findAll(sys.isBinding);
         };
         DataForm.prototype._createContent = function () {
             var dctx = this._dataContext, self = this;

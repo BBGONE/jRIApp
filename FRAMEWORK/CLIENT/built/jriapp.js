@@ -2407,11 +2407,14 @@ define("jriapp/utils/viewchecks", ["require", "exports"], function (require, exp
     function dummyIsElView(obj) {
         return false;
     }
+    function dummyIsTemplateElView(obj) {
+        return false;
+    }
     var ViewChecks = (function () {
         function ViewChecks() {
         }
         ViewChecks.isElView = dummyIsElView;
-        ViewChecks.isTemplateElView = function () { return false; };
+        ViewChecks.isTemplateElView = dummyIsTemplateElView;
         ViewChecks.isDataForm = function () { return false; };
         ViewChecks.isInsideDataForm = function () { return false; };
         ViewChecks.isInNestedForm = function () { return false; };
@@ -3403,22 +3406,10 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
             _super.prototype.dispose.call(this);
         };
         Template.prototype._getBindings = function () {
-            return !this._lfTime ? [] : this._lfTime.filterObjs(sys.isBinding);
-        };
-        Template.prototype._getElViews = function () {
-            return !this._lfTime ? [] : this._lfTime.filterObjs(viewChecks.isElView);
+            return !this._lfTime ? [] : this._lfTime.findAll(sys.isBinding);
         };
         Template.prototype._getTemplateElView = function () {
-            if (!this._lfTime) {
-                return null;
-            }
-            var arr = this._getElViews(), len = arr.length;
-            for (var i = 0; i < len; i += 1) {
-                if (viewChecks.isTemplateElView(arr[i])) {
-                    return arr[i];
-                }
-            }
-            return null;
+            return !this._lfTime ? null : this._lfTime.findFirst(viewChecks.isTemplateElView);
         };
         Template.prototype._loadAsync = function (name) {
             var self = this, fnLoader = this.app.getTemplateLoader(name);
@@ -3655,9 +3646,6 @@ define("jriapp/utils/lifetime", ["require", "exports", "jriapp_shared"], functio
             this._objs = [];
             _super.prototype.dispose.call(this);
         };
-        LifeTimeScope.create = function () {
-            return new LifeTimeScope();
-        };
         LifeTimeScope.prototype.addObj = function (b) {
             this._objs.push(b);
         };
@@ -3667,8 +3655,17 @@ define("jriapp/utils/lifetime", ["require", "exports", "jriapp_shared"], functio
         LifeTimeScope.prototype.getObjs = function () {
             return this._objs;
         };
-        LifeTimeScope.prototype.filterObjs = function (predicate) {
+        LifeTimeScope.prototype.findAll = function (predicate) {
             return this._objs.filter(predicate);
+        };
+        LifeTimeScope.prototype.findFirst = function (predicate) {
+            var arr = this._objs, len = arr.length;
+            for (var i = 0; i < len; i += 1) {
+                if (predicate(arr[i])) {
+                    return arr[i];
+                }
+            }
+            return null;
         };
         LifeTimeScope.prototype.toString = function () {
             return "LifeTimeScope";
@@ -4593,6 +4590,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.16.2";
+    exports.VERSION = "2.16.3";
     bootstrap_8.Bootstrap._initFramework();
 });

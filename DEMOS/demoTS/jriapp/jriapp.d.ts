@@ -90,7 +90,8 @@ declare module "jriapp/int" {
         addObj(b: IBaseObject): void;
         removeObj(b: IBaseObject): void;
         getObjs(): IBaseObject[];
-        filterObjs<TObj extends IBaseObject>(predicate: (obj: any) => boolean): TObj[];
+        findAll<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj[];
+        findFirst<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj;
     }
     export interface ISubscriber {
         isSubscribed(flag: SubscribeFlags): boolean;
@@ -191,6 +192,8 @@ declare module "jriapp/int" {
         readonly app: IApplication;
         readonly uniqueID: string;
         viewMounted?: () => void;
+    }
+    export interface ITemplateElView extends IElView, ITemplateEvents {
     }
     export interface IConverter {
         convertToSource(val: any, param: any, dataContext: any): any;
@@ -725,10 +728,10 @@ declare module "jriapp/bootstrap" {
     export const bootstrap: Bootstrap;
 }
 declare module "jriapp/utils/viewchecks" {
-    import { IElView } from "jriapp/int";
+    import { IElView, ITemplateElView } from "jriapp/int";
     export class ViewChecks {
         static isElView: (obj: any) => obj is IElView;
-        static isTemplateElView: (obj: any) => boolean;
+        static isTemplateElView: (obj: any) => obj is ITemplateElView;
         static isDataForm: (el: Element) => boolean;
         static isInsideDataForm: (el: Element) => boolean;
         static isInNestedForm: (root: any, forms: Element[], el: Element) => boolean;
@@ -863,11 +866,11 @@ declare module "jriapp/utils/lifetime" {
         private _objs;
         constructor();
         dispose(): void;
-        static create(): LifeTimeScope;
         addObj(b: IBaseObject): void;
         removeObj(b: IBaseObject): void;
         getObjs(): IBaseObject[];
-        filterObjs<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj[];
+        findAll<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj[];
+        findFirst<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj;
         toString(): string;
     }
 }
@@ -1018,5 +1021,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.16.2";
+    export const VERSION = "2.16.3";
 }

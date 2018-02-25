@@ -184,7 +184,7 @@ export class DataForm extends BaseObject {
         super.dispose();
     }
     private _getBindings(): Binding[] {
-        return !this._lfTime ? [] : this._lfTime.filterObjs(sys.isBinding);
+        return !this._lfTime ? [] : this._lfTime.findAll<Binding>(sys.isBinding);
     }
     private _createContent(): IVoidPromise {
         const dctx: any = this._dataContext, self = this;

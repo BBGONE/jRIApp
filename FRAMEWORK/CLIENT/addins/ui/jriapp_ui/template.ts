@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
-import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
+import { ITemplate, ITemplateEvents, IViewOptions, ITemplateElView } from "jriapp/int";
 import { IExecutor } from "jriapp/mvvm";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { bootstrap } from "jriapp/bootstrap";
@@ -8,7 +8,7 @@ import { BaseElView } from "./baseview";
 
 const utils = Utils, viewChecks = ViewChecks, boot = bootstrap, ERROR = utils.err;
 
-viewChecks.isTemplateElView = (obj: any) => {
+viewChecks.isTemplateElView = (obj: any): obj is ITemplateElView =>  {
     return !!obj && obj instanceof TemplateElView;
 };
 

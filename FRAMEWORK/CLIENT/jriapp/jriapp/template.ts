@@ -2,7 +2,7 @@
 import { BaseObject, Utils, LocaleERRS, IPromise } from "jriapp_shared";
 import { DATA_ATTR } from "./const";
 import {
-    ITemplate, ILifeTimeScope, ITemplateEvents, IApplication, IElView
+    ITemplate, ILifeTimeScope, ITemplateEvents, IApplication, IElView, ITemplateElView
 } from "./int";
 import { bootstrap } from "./bootstrap";
 import { Binding } from "binding";
@@ -66,22 +66,10 @@ class Template extends BaseObject implements ITemplate {
         super.dispose();
     }
     private _getBindings(): Binding[] {
-        return !this._lfTime ? [] : this._lfTime.filterObjs(sys.isBinding);
-    }
-    private _getElViews(): IElView[] {
-        return !this._lfTime ? [] : this._lfTime.filterObjs(viewChecks.isElView);
+        return !this._lfTime ? [] : this._lfTime.findAll<Binding>(sys.isBinding);
     }
     private _getTemplateElView(): ITemplateEvents {
-        if (!this._lfTime) {
-            return null;
-        }
-        const arr = this._getElViews(), len = arr.length;
-        for (let i = 0; i < len; i += 1) {
-            if (viewChecks.isTemplateElView(arr[i])) {
-                return <ITemplateEvents><any>arr[i];
-            }
-        }
-        return null;
+        return !this._lfTime ? null : this._lfTime.findFirst<ITemplateElView>(viewChecks.isTemplateElView);
     }
     /**
        * returns a promise which resolves with the loaded template's DOM element

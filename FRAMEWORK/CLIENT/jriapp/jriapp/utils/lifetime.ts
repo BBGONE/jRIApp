@@ -29,9 +29,6 @@ export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
         this._objs = [];
         super.dispose();
     }
-    static create(): LifeTimeScope {
-        return new LifeTimeScope();
-    }
     addObj(b: IBaseObject): void {
         this._objs.push(b);
     }
@@ -41,8 +38,17 @@ export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
     getObjs(): IBaseObject[] {
         return this._objs;
     }
-    filterObjs<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj[] {
+    findAll<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj[] {
         return <TObj[]>this._objs.filter(predicate);
+    }
+    findFirst<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj {
+        const arr = this._objs, len = arr.length;
+        for (let i = 0; i < len; i += 1) {
+            if (predicate(arr[i])) {
+                return <TObj>arr[i];
+            }
+        }
+        return null;
     }
     toString(): string {
         return "LifeTimeScope";

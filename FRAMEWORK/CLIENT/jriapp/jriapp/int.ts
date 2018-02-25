@@ -27,7 +27,8 @@ export interface ILifeTimeScope extends IBaseObject {
     addObj(b: IBaseObject): void;
     removeObj(b: IBaseObject): void;
     getObjs(): IBaseObject[];
-    filterObjs<TObj extends IBaseObject>(predicate: (obj: any) => boolean): TObj[];
+    findAll<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj[];
+    findFirst<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj;
 }
 
 export interface ISubscriber {
@@ -152,6 +153,9 @@ export interface IElView extends IBaseObject {
     readonly app: IApplication;
     readonly uniqueID: string;
     viewMounted?: () => void;
+}
+
+export interface ITemplateElView extends IElView, ITemplateEvents {
 }
 
 export interface IConverter {
