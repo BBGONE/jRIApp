@@ -69,18 +69,20 @@ export class CommandElView<TElement extends HTMLElement = HTMLElement> extends B
         return this._commandParam;
     }
     protected _onCommandChanged(): void {
-        this.isEnabled = !!this._command && this._command.canExecute(this._getCommandParam());
+        if (!!this._command) {
+            this.isEnabled = this._command.canExecute(this._getCommandParam());
+        }
     }
     protected invokeCommand(): void {
         const self = this;
-        if (self.isEnabled) {
+        if (!!self.command && self.isEnabled) {
             utils.queue.enque(() => {
                 if (self.getIsStateDirty()) {
                     return;
                 }
                 // repeat the check after timeout
                 try {
-                    if (self.isEnabled) {
+                    if (!!self.command && self.isEnabled) {
                         self.command.execute(self._getCommandParam());
                     }
                 } catch (ex) {
