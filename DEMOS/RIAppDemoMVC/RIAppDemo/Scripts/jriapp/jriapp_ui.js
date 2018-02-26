@@ -8398,17 +8398,19 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
             return this._commandParam;
         };
         CommandElView.prototype._onCommandChanged = function () {
-            this.isEnabled = !!this._command && this._command.canExecute(this._getCommandParam());
+            if (!!this._command) {
+                this.isEnabled = this._command.canExecute(this._getCommandParam());
+            }
         };
         CommandElView.prototype.invokeCommand = function () {
             var self = this;
-            if (self.isEnabled) {
+            if (!!self.command && self.isEnabled) {
                 utils.queue.enque(function () {
                     if (self.getIsStateDirty()) {
                         return;
                     }
                     try {
-                        if (self.isEnabled) {
+                        if (!!self.command && self.isEnabled) {
                             self.command.execute(self._getCommandParam());
                         }
                     }
