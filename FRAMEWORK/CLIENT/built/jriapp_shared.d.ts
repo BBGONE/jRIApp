@@ -959,12 +959,11 @@ declare module "jriapp_shared/utils/debounce" {
         private _interval;
         private _fn;
         constructor(interval?: number);
+        dispose(): void;
         enque(fn: TFunc): void;
         cancel(): void;
-        dispose(): void;
         readonly interval: number;
         getIsDisposed(): boolean;
-        getIsStateDirty(): boolean;
     }
 }
 declare module "jriapp_shared/utils/jsonbag" {
@@ -1524,8 +1523,8 @@ declare module "jriapp_shared/utils/lazy" {
         private _val;
         private _factory;
         constructor(factory: TValueFactory<T>);
-        readonly Value: T;
         dispose(): void;
+        readonly Value: T;
         readonly IsValueCreated: boolean;
         getIsDisposed(): boolean;
     }

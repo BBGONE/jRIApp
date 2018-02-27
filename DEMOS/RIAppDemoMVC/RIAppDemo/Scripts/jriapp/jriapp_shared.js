@@ -2214,9 +2214,13 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
             this._interval = interval;
             this._fn = null;
         }
+        Debounce.prototype.dispose = function () {
+            this.cancel();
+            this._timer = void 0;
+        };
         Debounce.prototype.enque = function (fn) {
             var _this = this;
-            if (this.getIsStateDirty()) {
+            if (this.getIsDisposed()) {
                 return;
             }
             if (!fn) {
@@ -2261,10 +2265,6 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
             this._timer = null;
             this._fn = null;
         };
-        Debounce.prototype.dispose = function () {
-            this.cancel();
-            this._timer = void 0;
-        };
         Object.defineProperty(Debounce.prototype, "interval", {
             get: function () {
                 return this._interval;
@@ -2273,9 +2273,6 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
             configurable: true
         });
         Debounce.prototype.getIsDisposed = function () {
-            return this._timer === void 0;
-        };
-        Debounce.prototype.getIsStateDirty = function () {
             return this._timer === void 0;
         };
         return Debounce;
@@ -5666,6 +5663,15 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
                 throw new Error("Lazy: Invalid value factory");
             }
         }
+        Lazy.prototype.dispose = function () {
+            if (this.IsValueCreated) {
+                if ("dispose" in this._val) {
+                    this._val.dispose();
+                }
+            }
+            this._val = void 0;
+            this._factory = null;
+        };
         Object.defineProperty(Lazy.prototype, "Value", {
             get: function () {
                 if (this._val === null) {
@@ -5680,15 +5686,6 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
             enumerable: true,
             configurable: true
         });
-        Lazy.prototype.dispose = function () {
-            if (this.IsValueCreated) {
-                if ("dispose" in this._val) {
-                    this._val.dispose();
-                }
-            }
-            this._val = void 0;
-            this._factory = null;
-        };
         Object.defineProperty(Lazy.prototype, "IsValueCreated", {
             get: function () {
                 return !isNt(this._val);

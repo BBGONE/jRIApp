@@ -15,9 +15,13 @@ export class Debounce implements IDisposable {
         this._interval = interval;
         this._fn = null;
     }
+    dispose(): void {
+        this.cancel();
+        this._timer = void 0;
+    }
     enque(fn: TFunc): void {
         // important, no error (just return with no action)!!!
-        if (this.getIsStateDirty()) {
+        if (this.getIsDisposed()) {
             return;
         }
         if (!fn) {
@@ -65,17 +69,10 @@ export class Debounce implements IDisposable {
         this._timer = null;
         this._fn = null;
     }
-    dispose(): void {
-        this.cancel();
-        this._timer = void 0;
-    }
     get interval(): number {
         return this._interval;
     }
     getIsDisposed(): boolean {
-        return this._timer === void 0;
-    }
-    getIsStateDirty(): boolean {
         return this._timer === void 0;
     }
 }
