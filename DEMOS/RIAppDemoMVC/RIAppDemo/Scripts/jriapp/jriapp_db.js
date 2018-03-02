@@ -2936,8 +2936,14 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 dbSet: self.getDbSet(query.dbSetName),
                 fn_onStart: function () {
                     context.dbSet._getInternal().setIsLoading(true);
+                    if (context.query.isForAppend && !!context.dbSet.query) {
+                        context.dbSet.query.isForAppend = true;
+                    }
                 },
                 fn_onEnd: function () {
+                    if (!!context.dbSet.query) {
+                        context.dbSet.query.isForAppend = false;
+                    }
                     context.dbSet._getInternal().setIsLoading(false);
                 },
                 fn_onOK: function (res) {
