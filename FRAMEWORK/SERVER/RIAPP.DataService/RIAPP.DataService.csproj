@@ -171,11 +171,6 @@
     <Compile Include="DomainService\Types\SortInfo.cs" />
     <Compile Include="DomainService\Types\ChangeSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utils\STAThreadSync\BlockingQueue.cs" />
-    <Compile Include="Utils\STAThreadSync\SendOrPostCallbackItem.cs" />
-    <Compile Include="Utils\STAThreadSync\StaSynchronizationContext.cs" />
-    <Compile Include="Utils\STAThreadSync\StaThread.cs" />
-    <Compile Include="Utils\STAThreadSync\SyncronizationQueue.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\ErrorStrings.resx">

@@ -22,8 +22,7 @@ namespace RIAPP.DataService.Utils.CodeGen
 
         public virtual string GetScript(string comment = null, bool isDraft = false)
         {
-            Metadata metadata = null;
-            MetadataHelper.ExecuteOnSTA(state => { metadata = this._owner.GetMetadata(isDraft); }, this);
+            Metadata metadata = this._owner.GetMetadata(isDraft);
             return metadata.ToXML();
         }
     }

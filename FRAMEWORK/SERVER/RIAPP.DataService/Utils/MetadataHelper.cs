@@ -14,53 +14,32 @@ using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils.CodeGen;
 using RIAPP.DataService.Utils.Extensions;
-using RIAPP.DataService.Utils.STAThreadSync;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RIAPP.DataService.Utils
 {
     public static class MetadataHelper
     {
-        private static readonly StaSynchronizationContext _synchronizer = new StaSynchronizationContext();
         private static readonly MetadataCache _metadataCache = new MetadataCache();
-
-        private class AsyncState
-        {
-            public BaseDomainService domainService;
-            public CachedMetadata cachedMetadata;
-        }
 
         public static CachedMetadata GetInitializedMetadata(BaseDomainService domainService)
         {
-            var result = _metadataCache.GetOrAdd(domainService.GetType(), (svcType) => {
-                AsyncState asyncState = new AsyncState() { domainService = domainService };
-
-                ExecuteOnSTA(state =>
+            CachedMetadata result = _metadataCache.GetOrAdd(domainService.GetType(), (svcType) => {
+                CachedMetadata metadata = null;
+                try
                 {
-                    AsyncState data = (AsyncState)state;
-                    try
-                    {
-                        data.cachedMetadata = InitMetadata(data.domainService);
-                    }
-                    catch (Exception ex)
-                    {
-                        data.domainService._OnError(ex);
-                        throw new DummyException(ex.Message, ex);
-                    }
-
-                }, asyncState);
-
-                var metadata = asyncState.cachedMetadata;
+                    metadata = InitMetadata(domainService);
+                }
+                catch (Exception ex)
+                {
+                    domainService._OnError(ex);
+                    throw new DummyException(ex.Message, ex);
+                }
                 return metadata;
             });
 
             domainService.Config = result.Config;
             return result;
-        }
-
-        public static void ExecuteOnSTA(SendOrPostCallback action, object state)
-        {
-            _synchronizer.Send(action, state);
         }
 
         private static CachedMetadata InitMetadata(BaseDomainService domainService)
@@ -86,9 +65,9 @@ namespace RIAPP.DataService.Utils
 
         private static void InitCachedMetadata(BaseDomainService domainService, CachedMetadata cachedMetadata)
         {
-            var metadata = domainService.GetMetadata(false);
+            Metadata metadata = domainService.GetMetadata(false);
 
-            foreach (var dbSetInfo in metadata.DbSets)
+            foreach (DbSetInfo dbSetInfo in metadata.DbSets)
             {
               // indexed by dbSetName
                 cachedMetadata.dbSets.Add(dbSetInfo.dbSetName, dbSetInfo);
@@ -98,7 +77,7 @@ namespace RIAPP.DataService.Utils
             domainService.Bootstrap(cachedMetadata.Config);
             domainService.Config = cachedMetadata.Config;
 
-            foreach (var dbSetInfo in cachedMetadata.dbSets.Values)
+            foreach (DbSetInfo dbSetInfo in cachedMetadata.dbSets.Values)
             {
                 dbSetInfo.Initialize(domainService.ServiceContainer);
             }
