@@ -74,6 +74,7 @@ export interface IInternalDbSetMethods<TItem extends IEntityItem, TObj> extends 
     addToChanged(item: TItem): void;
     removeFromChanged(key: string): void;
     onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS): void;
+    setQuery(query: DataQuery<TItem, TObj>): void;
 }
 
 const enum DBSET_EVENTS {
@@ -199,6 +200,9 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
             },
             onItemStatusChanged: (item: TItem, oldStatus: ITEM_STATUS) => {
                 self._onItemStatusChanged(item, oldStatus);
+            },
+            setQuery: (query: DataQuery<TItem, TObj>) => {
+                self._setQuery(query);
             }
         };
         let internal = this._getInternal();
@@ -474,39 +478,41 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
     }
     protected _beforeLoad(query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>): void {
         if (!!query.isForAppend) {
-            return;
-        }
-
-        if (!!query && oldQuery !== query) {
+            query.pageSize = this.pageSize;
+            query.pageIndex = this.pageIndex;
             this._query = query;
-            this._query.pageIndex = 0;
-        }
+        } else {
+            if (oldQuery !== query) {
+                query.pageIndex = 0;
+                this._query = query;
 
-        if (!!oldQuery && oldQuery !== query) {
-            oldQuery.dispose();
-        }
-
-        if (query.pageSize !== this.pageSize) {
-            this._ignorePageChanged = true;
-            try {
-                this.pageIndex = 0;
-                this.pageSize = query.pageSize;
-            } finally {
-                this._ignorePageChanged = false;
+                if (!!oldQuery) {
+                    oldQuery.dispose();
+                }
             }
-        }
 
-        if (query.pageIndex !== this.pageIndex) {
-            this._ignorePageChanged = true;
-            try {
-                this.pageIndex = query.pageIndex;
-            } finally {
-                this._ignorePageChanged = false;
+            if (query.pageSize !== this.pageSize) {
+                this._ignorePageChanged = true;
+                try {
+                    this.pageIndex = 0;
+                    this.pageSize = query.pageSize;
+                } finally {
+                    this._ignorePageChanged = false;
+                }
             }
-        }
 
-        if (!query.isCacheValid) {
-            query._getInternal().clearCache();
+            if (query.pageIndex !== this.pageIndex) {
+                this._ignorePageChanged = true;
+                try {
+                    this.pageIndex = query.pageIndex;
+                } finally {
+                    this._ignorePageChanged = false;
+                }
+            }
+
+            if (!query.isCacheValid) {
+                query._getInternal().clearCache();
+            }
         }
     }
     protected _getChildToParentNames(childFieldName: string): string[] { return this._trackAssocMap[childFieldName]; }
@@ -741,6 +747,9 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
                 this.objEvents.raiseProp("isHasChanges");
             }
         }
+    }
+    protected _setQuery(query: DataQuery<TItem, TObj>): void {
+        this._query = query;
     }
     // occurs when item Status Changed (not used in simple collections)
     protected _onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS): void {

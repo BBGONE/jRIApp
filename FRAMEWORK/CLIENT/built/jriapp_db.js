@@ -701,6 +701,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 },
                 onItemStatusChanged: function (item, oldStatus) {
                     self._onItemStatusChanged(item, oldStatus);
+                },
+                setQuery: function (query) {
+                    self._setQuery(query);
                 }
             };
             var internal = _this._getInternal();
@@ -965,36 +968,40 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype._beforeLoad = function (query, oldQuery) {
             if (!!query.isForAppend) {
-                return;
-            }
-            if (!!query && oldQuery !== query) {
+                query.pageSize = this.pageSize;
+                query.pageIndex = this.pageIndex;
                 this._query = query;
-                this._query.pageIndex = 0;
             }
-            if (!!oldQuery && oldQuery !== query) {
-                oldQuery.dispose();
-            }
-            if (query.pageSize !== this.pageSize) {
-                this._ignorePageChanged = true;
-                try {
-                    this.pageIndex = 0;
-                    this.pageSize = query.pageSize;
+            else {
+                if (oldQuery !== query) {
+                    query.pageIndex = 0;
+                    this._query = query;
+                    if (!!oldQuery) {
+                        oldQuery.dispose();
+                    }
                 }
-                finally {
-                    this._ignorePageChanged = false;
+                if (query.pageSize !== this.pageSize) {
+                    this._ignorePageChanged = true;
+                    try {
+                        this.pageIndex = 0;
+                        this.pageSize = query.pageSize;
+                    }
+                    finally {
+                        this._ignorePageChanged = false;
+                    }
                 }
-            }
-            if (query.pageIndex !== this.pageIndex) {
-                this._ignorePageChanged = true;
-                try {
-                    this.pageIndex = query.pageIndex;
+                if (query.pageIndex !== this.pageIndex) {
+                    this._ignorePageChanged = true;
+                    try {
+                        this.pageIndex = query.pageIndex;
+                    }
+                    finally {
+                        this._ignorePageChanged = false;
+                    }
                 }
-                finally {
-                    this._ignorePageChanged = false;
+                if (!query.isCacheValid) {
+                    query._getInternal().clearCache();
                 }
-            }
-            if (!query.isCacheValid) {
-                query._getInternal().clearCache();
             }
         };
         DbSet.prototype._getChildToParentNames = function (childFieldName) { return this._trackAssocMap[childFieldName]; };
@@ -1206,6 +1213,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                     this.objEvents.raiseProp("isHasChanges");
                 }
             }
+        };
+        DbSet.prototype._setQuery = function (query) {
+            this._query = query;
         };
         DbSet.prototype._onItemStatusChanged = function (item, oldStatus) {
             var _this = this;
@@ -2926,6 +2936,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 throw new Error(jriapp_shared_7.LocaleERRS.ERR_DB_LOAD_NO_QUERY);
             }
             var self = this, deferred = createDeferred();
+            var prevQuery = null;
             var context = {
                 query: query,
                 reason: reason,
@@ -2936,13 +2947,14 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 dbSet: self.getDbSet(query.dbSetName),
                 fn_onStart: function () {
                     context.dbSet._getInternal().setIsLoading(true);
-                    if (context.query.isForAppend && !!context.dbSet.query) {
-                        context.dbSet.query.isForAppend = true;
+                    if (context.query.isForAppend) {
+                        prevQuery = context.dbSet.query;
                     }
                 },
                 fn_onEnd: function () {
-                    if (!!context.dbSet.query) {
-                        context.dbSet.query.isForAppend = false;
+                    if (context.query.isForAppend) {
+                        context.dbSet._getInternal().setQuery(prevQuery);
+                        context.query.dispose();
                     }
                     context.dbSet._getInternal().setIsLoading(false);
                 },

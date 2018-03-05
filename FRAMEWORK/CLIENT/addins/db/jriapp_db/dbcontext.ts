@@ -645,6 +645,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
         }
 
         const self = this, deferred = createDeferred<IQueryResult<IEntityItem>>();
+        let prevQuery: any = null;
 
         const context = {
             query: query,
@@ -656,13 +657,14 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
             dbSet: self.getDbSet(query.dbSetName),
             fn_onStart: () => {
                 context.dbSet._getInternal().setIsLoading(true);
-                if (context.query.isForAppend && !!context.dbSet.query) {
-                    context.dbSet.query.isForAppend = true;
+                if (context.query.isForAppend) {
+                    prevQuery = context.dbSet.query;
                 }
             },
             fn_onEnd: () => {
-                if (!!context.dbSet.query) {
-                    context.dbSet.query.isForAppend = false;
+                if (context.query.isForAppend) {
+                    context.dbSet._getInternal().setQuery(prevQuery);
+                    context.query.dispose();
                 }
                 context.dbSet._getInternal().setIsLoading(false);
             },

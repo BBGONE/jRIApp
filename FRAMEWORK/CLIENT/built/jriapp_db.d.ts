@@ -169,6 +169,7 @@ declare module "jriapp_db/dbset" {
         addToChanged(item: TItem): void;
         removeFromChanged(key: string): void;
         onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS): void;
+        setQuery(query: DataQuery<TItem, TObj>): void;
     }
     export interface IDbSetConstructor<TItem extends IEntityItem, TObj> {
         new (dbContext: DbContext): DbSet<TItem, TObj, DbContext>;
@@ -230,6 +231,7 @@ declare module "jriapp_db/dbset" {
         protected _getTrackAssocInfo(): ITrackAssoc[];
         protected _addToChanged(item: TItem): void;
         protected _removeFromChanged(key: string): void;
+        protected _setQuery(query: DataQuery<TItem, TObj>): void;
         protected _onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS): void;
         protected _onRemoved(item: TItem, pos: number): void;
         protected _onLoaded(items: TItem[]): void;
