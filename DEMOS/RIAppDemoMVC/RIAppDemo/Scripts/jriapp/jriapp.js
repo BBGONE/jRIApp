@@ -845,11 +845,27 @@ define("jriapp/defaults", ["require", "exports", "jriapp_shared", "jriapp/int"],
 define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_5.Utils, isFunc = utils.check.isFunc, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, removeValue = _a.removeValue, extend = _a.extend, format = utils.str.format, createDeferred = utils.defer.createDeferred, ERRS = jriapp_shared_5.LocaleERRS, DEBUG = utils.debug, LOG = utils.log, http = utils.http;
+    var utils = jriapp_shared_5.Utils, isFunc = utils.check.isFunc, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, removeValue = _a.removeValue, format = utils.str.format, _b = utils.defer, createDeferred = _b.createDeferred, reject = _b.reject, ERRS = jriapp_shared_5.LocaleERRS, DEBUG = utils.debug, LOG = utils.log, http = utils.http;
     var LOADER_EVENTS;
     (function (LOADER_EVENTS) {
         LOADER_EVENTS["loaded"] = "loaded";
     })(LOADER_EVENTS || (LOADER_EVENTS = {}));
+    function getTemplateGroupAndName(fullName) {
+        var parts = fullName.split(".");
+        if (parts.length > 2) {
+            throw new Error("Invalid template name: " + fullName);
+        }
+        var res = ["", ""];
+        if (parts.length === 1) {
+            res[1] = parts[0];
+        }
+        else {
+            res[0] = parts[0];
+            res[1] = parts[1];
+        }
+        return res;
+    }
+    exports.getTemplateGroupAndName = getTemplateGroupAndName;
     var TemplateLoader = (function (_super) {
         __extends(TemplateLoader, _super);
         function TemplateLoader() {
@@ -891,8 +907,8 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
                 actionArgs: callbackArgs
             });
         };
-        TemplateLoader.prototype._onLoaded = function (html, app) {
-            this.objEvents.raise("loaded", { html: html, app: app });
+        TemplateLoader.prototype._onLoaded = function (html) {
+            this.objEvents.raise("loaded", { html: html });
         };
         TemplateLoader.prototype._getTemplateGroup = function (name) {
             return getValue(this._templateGroups, name);
@@ -903,14 +919,14 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
         TemplateLoader.prototype._getTemplateLoaderCore = function (name) {
             return getValue(this._templateLoaders, name);
         };
-        TemplateLoader.prototype.loadTemplatesAsync = function (fnLoader, app) {
-            var self = this, promise = fnLoader(), old = self.isLoading;
+        TemplateLoader.prototype.loadTemplatesAsync = function (loader) {
+            var self = this, promise = loader(), old = self.isLoading;
             self._promises.push(promise);
             if (self.isLoading !== old) {
                 self.objEvents.raiseProp("isLoading");
             }
             var res = promise.then(function (html) {
-                self._onLoaded(html, app);
+                self._onLoaded(html);
             });
             res.always(function () {
                 utils.arr.remove(self._promises, promise);
@@ -928,104 +944,67 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
         };
         TemplateLoader.prototype.registerTemplateLoader = function (name, loader) {
             var self = this;
-            loader = extend({
-                fn_loader: null,
-                groupName: null
-            }, loader);
-            if (!loader.groupName && !isFunc(loader.fn_loader)) {
-                throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "fn_loader is Function"));
-            }
-            var prevLoader = self._getTemplateLoaderCore(name);
-            if (!!prevLoader) {
-                if ((!prevLoader.fn_loader && !!prevLoader.groupName) && (!loader.groupName && !!loader.fn_loader)) {
-                    return self._registerTemplateLoaderCore(name, loader);
-                }
-                throw new Error(format(ERRS.ERR_TEMPLATE_ALREADY_REGISTERED, name));
+            if (!isFunc(loader)) {
+                throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "loader is Function"));
             }
             return self._registerTemplateLoaderCore(name, loader);
         };
         TemplateLoader.prototype.getTemplateLoader = function (name) {
-            var self = this, loader = self._getTemplateLoaderCore(name);
-            if (!loader) {
-                return null;
+            var self = this;
+            var loader = self._getTemplateLoaderCore(name);
+            if (!!loader) {
+                return loader;
             }
-            if (!loader.fn_loader && !!loader.groupName) {
-                var group_1 = self._getTemplateGroup(loader.groupName);
-                if (!group_1) {
-                    throw new Error(format(ERRS.ERR_TEMPLATE_GROUP_NOTREGISTERED, loader.groupName));
+            else {
+                var parts = getTemplateGroupAndName(name), groupName = parts[0];
+                if (!groupName) {
+                    return null;
                 }
-                return function () {
-                    if (!group_1.promise) {
-                        group_1.promise = self.loadTemplatesAsync(group_1.fn_loader, group_1.app);
+                else {
+                    var group_1 = self._getTemplateGroup(groupName);
+                    if (!group_1) {
+                        throw new Error(format(ERRS.ERR_TEMPLATE_GROUP_NOTREGISTERED, groupName));
                     }
-                    var deferred = createDeferred(true);
-                    group_1.promise.then(function () {
-                        group_1.promise = null;
-                        group_1.names.forEach(function (name) {
-                            if (!!group_1.app) {
-                                name = group_1.app.appName + "." + name;
-                            }
+                    return function () {
+                        if (!group_1.promise) {
+                            group_1.promise = self.loadTemplatesAsync(group_1.loader);
+                        }
+                        var deferred = createDeferred(true);
+                        group_1.promise.then(function () {
                             var loader = self._getTemplateLoaderCore(name);
-                            if (!loader || !loader.fn_loader) {
-                                var error = format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
+                            if (!loader) {
+                                var error = format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name), rejected_1 = reject(error, true);
+                                self.registerTemplateLoader(name, function () { return rejected_1; });
                                 if (DEBUG.isDebugging()) {
                                     LOG.error(error);
                                 }
                                 throw new Error(error);
                             }
-                        });
-                        var loader = self._getTemplateLoaderCore(name);
-                        if (!loader || !loader.fn_loader) {
-                            var error = format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
-                            if (DEBUG.isDebugging()) {
-                                LOG.error(error);
-                            }
-                            throw new Error(error);
-                        }
-                        delete self._templateGroups[loader.groupName];
-                        var promise = loader.fn_loader();
-                        promise.then(function (html) {
-                            deferred.resolve(html);
-                        }, function (err) {
+                            var promise = loader();
+                            promise.then(function (html) {
+                                deferred.resolve(html);
+                            }, function (err) {
+                                deferred.reject(err);
+                            });
+                        }).catch(function (err) {
                             deferred.reject(err);
                         });
-                    }).catch(function (err) {
-                        group_1.promise = null;
-                        deferred.reject(err);
-                    });
-                    return deferred.promise();
-                };
-            }
-            else {
-                return loader.fn_loader;
+                        return deferred.promise();
+                    };
+                }
             }
         };
-        TemplateLoader.prototype.registerTemplateGroup = function (groupName, group) {
-            var self = this, group2 = extend({
-                fn_loader: null,
-                url: null,
-                names: null,
-                promise: null,
-                app: null
-            }, group);
-            if (!!group2.url && !group2.fn_loader) {
-                group2.fn_loader = function () {
-                    return http.getAjax(group2.url);
+        TemplateLoader.prototype.registerTemplateGroup = function (group) {
+            var self = this;
+            if (!!group.url && !group.loader) {
+                group.loader = function () {
+                    return http.getAjax(group.url);
                 };
             }
-            setValue(self._templateGroups, groupName, group2, true);
-            group2.names.forEach(function (name) {
-                if (!!group2.app) {
-                    name = group2.app.appName + "." + name;
-                }
-                self.registerTemplateLoader(name, {
-                    groupName: groupName,
-                    fn_loader: null
-                });
-            });
+            setValue(self._templateGroups, group.name, group, true);
         };
         TemplateLoader.prototype.loadTemplates = function (url) {
-            return this.loadTemplatesAsync(function () { return http.getAjax(url); }, null);
+            return this.loadTemplatesAsync(function () { return http.getAjax(url); });
         };
         Object.defineProperty(TemplateLoader.prototype, "isLoading", {
             get: function () {
@@ -1854,7 +1833,7 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
 define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/dom", "jriapp_shared/utils/deferred", "jriapp_shared/utils/queue"], function (require, exports, jriapp_shared_10, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, dom_3, deferred_1, queue_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_10.Utils, dom = dom_3.DomUtils, win = dom.window, doc = win.document, isFunc = utils.check.isFunc, _a = utils.defer, createDeferred = _a.createDeferred, delay = _a.delay, _b = utils.core, forEachProp = _b.forEachProp, getNewID = _b.getNewID, getValue = _b.getValue, setValue = _b.setValue, removeValue = _b.removeValue, _c = utils.str, format = _c.format, fastTrim = _c.fastTrim, ERROR = utils.err, ERRS = jriapp_shared_10.LocaleERRS;
+    var utils = jriapp_shared_10.Utils, dom = dom_3.DomUtils, win = dom.window, doc = win.document, isFunc = utils.check.isFunc, _a = utils.defer, createDeferred = _a.createDeferred, delay = _a.delay, resolve = _a.resolve, _b = utils.core, forEachProp = _b.forEachProp, getNewID = _b.getNewID, getValue = _b.getValue, setValue = _b.setValue, removeValue = _b.removeValue, _c = utils.str, format = _c.format, fastTrim = _c.fastTrim, ERROR = utils.err, ERRS = jriapp_shared_10.LocaleERRS;
     exports.subscribeWeakMap = jriapp_shared_10.createWeakMap(), exports.selectableProviderWeakMap = jriapp_shared_10.createWeakMap();
     (function () {
         var win = dom.window;
@@ -1935,16 +1914,10 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             _this._moduleInits = [];
             _this._templateLoader = null;
             _this._templateLoader = new tloader_1.TemplateLoader();
-            _this._templateLoader.addOnLoaded(function (s, a) {
-                if (!s) {
-                    throw new Error("Invalid Operation");
-                }
-                self._onTemplateLoaded(a.html, a.app);
+            _this._templateLoader.addOnLoaded(function (_, a) {
+                self._onTemplateLoaded(a.html);
             });
-            _this._templateLoader.objEvents.addOnError(function (s, a) {
-                if (!s) {
-                    throw new Error("Invalid Operation");
-                }
+            _this._templateLoader.objEvents.addOnError(function (_, a) {
                 return self.handleError(a.error, a.source);
             });
             _this._elViewRegister = elview_1.createElViewRegister(null);
@@ -2064,14 +2037,13 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                 return false;
             };
         };
-        Bootstrap.prototype._onTemplateLoaded = function (html, app) {
+        Bootstrap.prototype._onTemplateLoaded = function (html) {
             var divEl = doc.createElement("div");
             divEl.innerHTML = html;
-            this._processOptions(divEl, app);
-            this._processTemplates(divEl, app);
+            this._processOptions(divEl);
+            this._processTemplates(divEl);
         };
-        Bootstrap.prototype._processOptions = function (root, app) {
-            if (app === void 0) { app = null; }
+        Bootstrap.prototype._processOptions = function (root) {
             var self = this, jsons = dom.queryAll(root, _OPTION_SELECTOR);
             jsons.forEach(function (el) {
                 var name = el.getAttribute("id");
@@ -2082,8 +2054,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                 self._registerOptions(name, text);
             });
         };
-        Bootstrap.prototype._processTemplates = function (root, app) {
-            if (app === void 0) { app = null; }
+        Bootstrap.prototype._processTemplates = function (root) {
             var self = this, templates = dom.queryAll(root, _TEMPLATE_SELECTOR);
             templates.forEach(function (el) {
                 var name = el.getAttribute("id");
@@ -2091,19 +2062,15 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                     throw new Error(ERRS.ERR_TEMPLATE_HAS_NO_ID);
                 }
                 var html = el.innerHTML;
-                self._processTemplate(name, html, app);
+                self._processTemplate(name, html);
             });
         };
         Bootstrap.prototype._processHTMLTemplates = function () {
             this._processTemplates(doc);
         };
-        Bootstrap.prototype._processTemplate = function (name, html, app) {
-            var self = this, deferred = createDeferred(true), res = fastTrim(html);
-            var loader = {
-                fn_loader: function () { return deferred.promise(); }
-            };
-            self.templateLoader.registerTemplateLoader(!app ? name : (app.appName + "." + name), loader);
-            deferred.resolve(res);
+        Bootstrap.prototype._processTemplate = function (name, html) {
+            var res = resolve(fastTrim(html), true), loader = function () { return res; };
+            this.templateLoader.registerTemplateLoader(name, loader);
         };
         Bootstrap.prototype._createObjEvents = function () {
             return new _ObjectEvents(this);
@@ -4226,7 +4193,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/boo
 define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/dom", "jriapp/elview", "jriapp/databindsvc"], function (require, exports, jriapp_shared_19, bootstrap_7, dom_6, elview_2, databindsvc_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_19.Utils, dom = dom_6.DomUtils, doc = dom.document, format = utils.str.format, _a = utils.check, isThenable = _a.isThenable, isFunc = _a.isFunc, boot = bootstrap_7.bootstrap, sys = utils.sys, ERRS = jriapp_shared_19.LocaleERRS, _b = utils.core, forEachProp = _b.forEachProp, getNewID = _b.getNewID, memoize = _b.memoize, extend = _b.extend, createDeferred = utils.defer.createDeferred;
+    var utils = jriapp_shared_19.Utils, dom = dom_6.DomUtils, doc = dom.document, format = utils.str.format, _a = utils.check, isThenable = _a.isThenable, isFunc = _a.isFunc, boot = bootstrap_7.bootstrap, sys = utils.sys, ERRS = jriapp_shared_19.LocaleERRS, _b = utils.core, forEachProp = _b.forEachProp, getNewID = _b.getNewID, memoize = _b.memoize, _c = utils.defer, createDeferred = _c.createDeferred, reject = _c.reject;
     var APP_EVENTS;
     (function (APP_EVENTS) {
         APP_EVENTS["startup"] = "startup";
@@ -4466,13 +4433,11 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
         Application.prototype.loadTemplates = function (url) {
             return this.loadTemplatesAsync(function () { return utils.http.getAjax(url); });
         };
-        Application.prototype.loadTemplatesAsync = function (fnLoader) {
-            return boot.templateLoader.loadTemplatesAsync(fnLoader, this);
+        Application.prototype.loadTemplatesAsync = function (loader) {
+            return boot.templateLoader.loadTemplatesAsync(loader);
         };
-        Application.prototype.registerTemplateLoader = function (name, fnLoader) {
-            boot.templateLoader.registerTemplateLoader(this.appName + "." + name, {
-                fn_loader: fnLoader
-            });
+        Application.prototype.registerTemplateLoader = function (name, loader) {
+            boot.templateLoader.registerTemplateLoader(name, loader);
         };
         Application.prototype.registerTemplateById = function (name, templateId) {
             this.registerTemplateLoader(name, memoize(function () {
@@ -4486,24 +4451,20 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             }));
         };
         Application.prototype.getTemplateLoader = function (name) {
-            var res = boot.templateLoader.getTemplateLoader(this.appName + "." + name);
+            var res = boot.templateLoader.getTemplateLoader(name);
             if (!res) {
-                res = boot.templateLoader.getTemplateLoader(name);
-                if (!res) {
-                    return function () { return utils.defer.reject(new Error(format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
-                }
+                return function () { return reject(new Error(format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
             }
             return res;
         };
-        Application.prototype.registerTemplateGroup = function (name, group) {
-            var group2 = extend({
-                fn_loader: null,
-                url: null,
-                names: null,
-                promise: null,
-                app: this
-            }, group);
-            boot.templateLoader.registerTemplateGroup(this.appName + "." + name, group2);
+        Application.prototype.registerTemplateGroup = function (name, url) {
+            var group = {
+                name: name,
+                url: url,
+                loader: null,
+                promise: null
+            };
+            boot.templateLoader.registerTemplateGroup(group);
         };
         Application.prototype.toString = function () {
             return "Application: " + this.appName;
@@ -4590,6 +4551,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.16.7";
+    exports.VERSION = "2.17.0";
     bootstrap_8.Bootstrap._initFramework();
 });

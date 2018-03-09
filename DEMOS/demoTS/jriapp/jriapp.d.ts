@@ -119,17 +119,10 @@ declare module "jriapp/int" {
         getSvc(name: string): any;
     }
     export interface ITemplateGroupInfo {
-        fn_loader?: () => IPromise<string>;
-        url?: string;
-        names: string[];
-    }
-    export interface ITemplateGroupInfoEx extends ITemplateGroupInfo {
+        name: string;
+        url: string;
+        loader?: () => IPromise<string>;
         promise?: IPromise<string>;
-        app?: IApplication;
-    }
-    export interface ITemplateLoaderInfo {
-        fn_loader: () => IPromise<string>;
-        groupName?: string;
     }
     export interface IUnResolvedBindingArgs {
         bindTo: BindTo;
@@ -332,11 +325,7 @@ declare module "jriapp/int" {
         loadTemplatesAsync(fnLoader: () => IPromise<string>): IPromise<any>;
         registerTemplateLoader(name: string, fnLoader: () => IPromise<string>): void;
         getTemplateLoader(name: string): () => IPromise<string>;
-        registerTemplateGroup(name: string, group: {
-            fn_loader?: () => IPromise<string>;
-            url?: string;
-            names: string[];
-        }): void;
+        registerTemplateGroup(name: string, url: string): void;
         bind(opts: TBindingOptions): IBinding;
         startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
         readonly uniqueID: string;
@@ -392,7 +381,8 @@ declare module "jriapp/defaults" {
 }
 declare module "jriapp/utils/tloader" {
     import { IPromise, BaseObject } from "jriapp_shared";
-    import { IApplication, ITemplateGroupInfoEx, ITemplateLoaderInfo } from "jriapp/int";
+    import { ITemplateGroupInfo } from "jriapp/int";
+    export function getTemplateGroupAndName(fullName: string): string[];
     export class TemplateLoader extends BaseObject {
         private _templateLoaders;
         private _templateGroups;
@@ -402,20 +392,19 @@ declare module "jriapp/utils/tloader" {
         dispose(): void;
         addOnLoaded(fn: (sender: TemplateLoader, args: {
             html: string;
-            app: IApplication;
         }) => void, nmspace?: string): void;
         offOnLoaded(nmspace?: string): void;
         waitForNotLoading(callback: (...args: any[]) => any, callbackArgs: any): void;
-        private _onLoaded(html, app);
+        private _onLoaded(html);
         private _getTemplateGroup(name);
         private _registerTemplateLoaderCore(name, loader);
         private _getTemplateLoaderCore(name);
-        loadTemplatesAsync(fnLoader: () => IPromise<string>, app: IApplication): IPromise<any>;
+        loadTemplatesAsync(loader: () => IPromise<string>): IPromise<any>;
         unRegisterTemplateLoader(name: string): void;
         unRegisterTemplateGroup(name: string): void;
-        registerTemplateLoader(name: string, loader: ITemplateLoaderInfo): void;
+        registerTemplateLoader(name: string, loader: () => IPromise<string>): void;
         getTemplateLoader(name: string): () => IPromise<string>;
-        registerTemplateGroup(groupName: string, group: ITemplateGroupInfoEx): void;
+        registerTemplateGroup(group: ITemplateGroupInfo): void;
         loadTemplates(url: string): IPromise<any>;
         readonly isLoading: boolean;
     }
@@ -677,11 +666,11 @@ declare module "jriapp/bootstrap" {
         constructor();
         dispose(): void;
         private _bindGlobalEvents();
-        private _onTemplateLoaded(html, app);
-        private _processOptions(root, app?);
-        private _processTemplates(root, app?);
+        private _onTemplateLoaded(html);
+        private _processOptions(root);
+        private _processTemplates(root);
         private _processHTMLTemplates();
-        private _processTemplate(name, html, app);
+        private _processTemplate(name, html);
         protected _createObjEvents(): IObjectEvents;
         private _init();
         private _initialize();
@@ -952,7 +941,7 @@ declare module "jriapp/databindsvc" {
 }
 declare module "jriapp/app" {
     import { IIndexer, TEventHandler, IPromise, TErrorHandler, IBaseObject, BaseObject } from "jriapp_shared";
-    import { IElViewFactory, IViewType, IApplication, TBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo, IBinding } from "jriapp/int";
+    import { IElViewFactory, IViewType, IApplication, TBindingOptions, IAppOptions, IInternalAppMethods, IConverter, IBinding } from "jriapp/int";
     export class Application extends BaseObject implements IApplication {
         private _UC;
         private _moduleInits;
@@ -988,11 +977,11 @@ declare module "jriapp/app" {
         getObject(name: string): any;
         startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
         loadTemplates(url: string): IPromise<any>;
-        loadTemplatesAsync(fnLoader: () => IPromise<string>): IPromise<any>;
-        registerTemplateLoader(name: string, fnLoader: () => IPromise<string>): void;
+        loadTemplatesAsync(loader: () => IPromise<string>): IPromise<any>;
+        registerTemplateLoader(name: string, loader: () => IPromise<string>): void;
         registerTemplateById(name: string, templateId: string): void;
         getTemplateLoader(name: string): () => IPromise<string>;
-        registerTemplateGroup(name: string, group: ITemplateGroupInfo): void;
+        registerTemplateGroup(name: string, url: string): void;
         toString(): string;
         readonly uniqueID: string;
         readonly options: IAppOptions;
@@ -1010,7 +999,7 @@ declare module "jriapp" {
     export * from "jriapp_shared/utils/jsonbag";
     export { Promise } from "jriapp_shared/utils/deferred";
     export { KEYS, BINDING_MODE, BindTo, SubscribeFlags } from "jriapp/const";
-    export { IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, TBindingInfo, TBindingOptions, IConverter, IContentFactory, IDatepicker, IElView, ITooltipService, ISelectable, ISelectableProvider, ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo, IViewOptions, ISubscriber } from "jriapp/int";
+    export { IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, TBindingInfo, TBindingOptions, IConverter, IContentFactory, IDatepicker, IElView, ITooltipService, ISelectable, ISelectableProvider, ILifeTimeScope, ITemplateGroupInfo, ITemplateInfo, IViewOptions, ISubscriber } from "jriapp/int";
     export { DomUtils as DOM } from "jriapp/utils/dom";
     export { ViewChecks } from "jriapp/utils/viewchecks";
     export { BaseConverter } from "jriapp/converter";
@@ -1021,5 +1010,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.16.7";
+    export const VERSION = "2.17.0";
 }

@@ -5,11 +5,11 @@
 }
 
 @*just for testing using GET in the options*@
-<script id="customerEditorOptions" type="text/x-options">
-    templateID:customerEditTemplate,width:500,height:550,title:'Customer editing'
+<script id="custGroup.customerEditorOptions" type="text/x-options">
+    templateID:custGroup.customerEditTemplate,width:500,height:550,title:'Customer editing'
 </script>
 
-<script id="SPAcustTemplate" type="text/x-template">
+<script id="custGroup.SPAcustTemplate" type="text/x-template">
 @*first page view of customers*@
 <div>
     <div style="height: 85%; vertical-align: top;">
@@ -17,12 +17,12 @@
                data-bind-1="this.dataSource,to=dbSet,source=customerVM"
                data-bind-2="this.myGridEvents,to=gridEvents,source=customerVM"
                data-view="my_grid"
-               data-view-options="wrapCss:customerTableWrap,isHandleAddNew:true,editor:get(customerEditorOptions),details:{templateID:customerDetailsTemplate}">
+               data-view-options="wrapCss:customerTableWrap,isHandleAddNew:true,editor:get(custGroup.customerEditorOptions),details:{templateID:custGroup.customerDetailsTemplate}">
             <thead>
                 <tr>
                     <th data-column="width:35px,type:row_expander"></th>
                     <th data-column="width:40px,type:row_actions"></th>
-                    <th data-column="width:30px,title:***" data-content="template={readID=goToInfoColTemplate}"></th>
+                    <th data-column="width:30px,title:***" data-content="template={readID=custGroup.goToInfoColTemplate}"></th>
                     <th data-column="width:40px,sortable:true,title:Title" data-content="fieldName:Title,readOnly:true"></th>
                     <th data-column="width:150px,sortable:true,title:Customer Name,sortMemberName=ComplexProp.LastName;ComplexProp.MiddleName;ComplexProp.FirstName" data-content="fieldName:ComplexProp.Name,readOnly:true"></th>
                     <th data-column="width:50%,sortable:true,title:CompanyName" data-content="fieldName:CompanyName,readOnly:true"></th>
@@ -53,20 +53,20 @@
 </div>
 </script>
 
-<script id="goToInfoColTemplate" type="text/x-template">
+<script id="custGroup.goToInfoColTemplate" type="text/x-template">
     <a style="display: inline-block; padding: 2px;" data-bind-1="this.command,to=switchViewCommand,source=customerVM"
        data-bind-2="this.commandParam,to=uiMainRoute.custDetTemplName,source=customerVM" data-view-options="tip:'Go to details'">
         <i class="icon-user"></i>
     </a>
 </script>
 
-<script id="SPAcustDetailTemplate" type="text/x-template">
-    <!--for switching views between customerInfo and customerAddr-->
+<script id="custGroup.SPAcustDetailTemplate" type="text/x-template">
+    <!--for switching views between custInfoGroup.customerInfo and custAdrGroup.customerAddr-->
     <div id="infoDynaContent" data-bind-1="this.templateID,to=uiCustDetRoute.viewName"  data-bind-2="this.dataContext"
          data-bind-3="this.animation,to=uiCustDetRoute.animation" data-view="dynacontent"></div>
 </script>
 
-<script id="customerEditTemplate" type="text/x-template">
+<script id="custGroup.customerEditTemplate" type="text/x-template">
     <div style="width: 100%;" data-bind="this.dataContext,mode=OneWay" data-view="dataform">
         <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
             <colgroup>
@@ -159,7 +159,7 @@
     </div>
 </script>
 
-<script id="customerDetailsTemplate" type="text/x-template">
+<script id="custGroup.customerDetailsTemplate" type="text/x-template">
     @*Grid details template for customer's orders*@
     <div data-name="tabs" style="min-height: 400px; margin: 5px; padding: 5px; width: 95%;" data-view="tabs"
          data-view-options="hide:{effect:clip,duration:500},show:{effect:clip,duration:500}">
@@ -233,7 +233,7 @@
                        data-bind-1="this.dataSource,to=dbSet,source=customerVM.ordersVM"
                        data-bind-2="this.myGridEvents,to=gridEvents,source=customerVM.ordersVM"
                        data-view="my_grid"
-                       data-view-options="isUseScrollIntoDetails:false,isHandleAddNew:true,editor:{templateID:orderEditTemplate,width:650,height:550,title:'Order editing'},details:{templateID:orderDetailsTemplate}">
+                       data-view-options="isUseScrollIntoDetails:false,isHandleAddNew:true,editor:{templateID:custGroup.orderEditTemplate,width:650,height:550,title:'Order editing'},details:{templateID:custGroup.orderDetailsTemplate}">
                     <thead>
                         <tr>
                             <th data-column="width:20px,type:row_expander"></th>
@@ -259,7 +259,7 @@
     </div>
 </script>
 
-<script id="orderEditTemplate" type="text/x-template">
+<script id="custGroup.orderEditTemplate" type="text/x-template">
     <div style="width: 100%" data-bind="this.dataContext,mode=OneWay" data-view="dataform">
         <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
             <colgroup>
@@ -400,7 +400,7 @@
     </div>
 </script>
 
-<script id="orderDetEditTemplate" type="text/x-template">
+<script id="custGroup.orderDetEditTemplate" type="text/x-template">
     <div style="width: 100%" data-bind="this.dataContext,mode=OneWay" data-view="dataform">
         <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
             <colgroup>
@@ -429,7 +429,7 @@
                         Product:
                     </td>
                     <td>
-                        <span data-content="template={readID=productTemplate1,editID=productTemplate2}"></span>
+                        <span data-content="template={readID=custGroup.productTemplate1,editID=custGroup.productTemplate2}"></span>
                     </td>
                 </tr>
                 <tr>
@@ -461,7 +461,7 @@
     </div>
 </script>
 
-<script id="orderDetailsTemplate" type="text/x-template">
+<script id="custGroup.orderDetailsTemplate" type="text/x-template">
     @*Grid details template for order Details*@
     <div style="margin: 0px; width: 100%;">
         <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-bind="this.tabsEvents,to=tabsEvents,source=customerVM.ordersVM" 
@@ -568,7 +568,7 @@
                 <div id="ode">
                     <table style="font-size: 9pt;" data-name="tblOrderDetails"
                            data-bind="this.dataSource,to=dbSet,source=customerVM.ordersVM.orderDetailsVM"
-                           data-view-options="wrapCss:orderDetailTableWrap,isHandleAddNew:true,editor:{templateID:orderDetEditTemplate,width:650,height:550,title:'Order Detail editing'}">
+                           data-view-options="wrapCss:orderDetailTableWrap,isHandleAddNew:true,editor:{templateID:custGroup.orderDetEditTemplate,width:650,height:550,title:'Order Detail editing'}">
                         <thead>
                             <tr>
                                 <th data-column="width:50px,type:row_actions"></th>
@@ -588,30 +588,30 @@
     </div>
 </script>
 
-<script id="productTemplate1" type="text/x-template">
+<script id="custGroup.productTemplate1" type="text/x-template">
     <span data-bind="this.value,to=Product.Name"></span>
 </script>
 
-<script id="productAutocompleteOptions" type="text/x-options">
+<script id="custGroup.productAutocompleteOptions" type="text/x-options">
     dbContext:inject($dbContext),
     fieldName:Name,
     dbSetName:LookUpProduct,
     queryName:ReadProductLookUp,
-    templateId:prodAutocompleteTemplate,
+    templateId:custGroup.prodAutocompleteTemplate,
     width:300px
 </script>
 
-<script id="productTemplate2" type="text/x-template">
+<script id="custGroup.productTemplate2" type="text/x-template">
     <span>
         autocomplete here-->
         <input type="text" style="margin-left: 0px; width: 300px;" data-bind="this.dataContext"
                data-view="productAutocomplete"
-               data-view-options="get(productAutocompleteOptions)" />&nbsp;
+               data-view-options="get(custGroup.productAutocompleteOptions)" />&nbsp;
         <b>*</b>
     </span>
 </script>
 
-<script id="prodAutocompleteTemplate" type="text/x-template">
+<script id="custGroup.prodAutocompleteTemplate" type="text/x-template">
     @*an example of autocomplete implementation*@
     <div style="height: 98%; margin: 0px; padding: 2px; position: relative;">
         <div style="margin-left: 1px; position: relative; vertical-align: top;"

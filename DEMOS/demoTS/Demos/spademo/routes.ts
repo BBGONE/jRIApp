@@ -10,8 +10,8 @@ export class MainRoute extends RIAPP.BaseObject {
 
     constructor() {
         super();
-        this._custTemplName = 'SPAcustTemplate';
-        this._custDetTemplName = 'SPAcustDetailTemplate';
+        this._custTemplName = 'custGroup.SPAcustTemplate';
+        this._custDetTemplName = 'custGroup.SPAcustDetailTemplate';
         this._viewName = this._custTemplName;
         this._animation = new ANIMATION.FadeAnimation(true);
     }
@@ -50,8 +50,8 @@ export class CustDetRoute extends RIAPP.BaseObject {
 
     constructor() {
         super();
-        this._infoTemplName = 'customerInfo';
-        this._adrTemplName = 'customerAddr';
+        this._infoTemplName = 'custInfoGroup.customerInfo';
+        this._adrTemplName = 'custAdrGroup.customerAddr';
         this._viewName = this._infoTemplName;
         this._animation = new ANIMATION.SlideAnimation(false);
     }
@@ -88,8 +88,8 @@ export class AddressRoute extends RIAPP.BaseObject {
     private _viewName: string;
     constructor() {
         super();
-        this._linkAdrTemplate = 'linkAdrTemplate';
-        this._newAdrTemplate = 'newAdrTemplate';
+        this._linkAdrTemplate = 'custAdrGroup.linkAdrTemplate';
+        this._newAdrTemplate = 'custAdrGroup.newAdrTemplate';
         this._viewName = this._linkAdrTemplate;
     }
     goToLinkAdr() {

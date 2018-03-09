@@ -3,7 +3,7 @@
     Layout = null;
 }
 
-<script id="customerInfo" type="text/x-template">
+<script id="custInfoGroup.customerInfo" type="text/x-template">
     <div style="max-width: 800px;" data-bind="this.dataContext,to=currentItem" data-view="dataform" data-require="test1,test3,css!css/test1.css">
         <fieldset>
             <legend><span style="color: Blue; font-weight: bold;" data-bind="this.value,to=ComplexProp.Name"></span></legend>
@@ -71,7 +71,7 @@
                     <tr>
                         <td>SalesPerson:</td>
                         <td>
-                            <span data-content="template={readID=salespersonTemplate1,editID=salespersonTemplate2},css:{readCss:'custInfo'}"></span>
+                            <span data-content="template={readID=custInfoGroup.salespersonTemplate1,editID=custInfoGroup.salespersonTemplate2},css:{readCss:'custInfo'}"></span>
                         </td>
                     </tr>
                     <tr>
@@ -104,32 +104,32 @@
     </div>
 </script>
 
-<script id="salespersonTemplate1" type="text/x-template">
+<script id="custInfoGroup.salespersonTemplate1" type="text/x-template">
     <span data-bind="this.value,to=SalesPerson"></span>
 </script>
 
-<script id="salespersonAutocompleteOptions" type="text/x-options">
+<script id="custInfoGroup.salespersonAutocompleteOptions" type="text/x-options">
     dbContext:inject($dbContext),
     fieldName:SalesPerson,
     dbSetName:SalesInfo,
     queryName:ReadSalesInfo,
-    templateId:salePerAutocompleteTemplate,
+    templateId:custInfoGroup.salePerAutocompleteTemplate,
     width:200px,
     height:200px
 </script>
 
-<script  id="salespersonTemplate2" type="text/x-template">
+<script  id="custInfoGroup.salespersonTemplate2" type="text/x-template">
     <span>
         <input type="text" style="margin-left: 0px; width: 200px;" 
                data-bind-1="this.value,to=SalesPerson,mode=TwoWay"
                data-bind-2="this.dataContext"
                data-view="autocomplete" 
-               data-view-options="get(salespersonAutocompleteOptions)" />
+               data-view-options="get(custInfoGroup.salespersonAutocompleteOptions)" />
         &nbsp;<span style="color: Gray;">&lt;--autocomplete here</span>
     </span>
 </script>
 
-<script id="salePerAutocompleteTemplate" type="text/x-template">
+<script id="custInfoGroup.salePerAutocompleteTemplate" type="text/x-template">
     @*example of autocomplete implementation*@
     <div style="height: 97%; margin: 0px; padding: 2px; position: relative;">
         <div style="margin-left: 1px; position: relative; vertical-align: top;"

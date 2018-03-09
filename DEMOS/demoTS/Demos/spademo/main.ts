@@ -29,25 +29,12 @@ export function start(options: IMainOptions) {
     return RIAPP.bootstrap.startApp(() => {
         return new DemoApplication(options);
     }, (app) => {
-        app.registerTemplateGroup('custGroup',
-            {
-                url: options.spa_template1_url,
-                names: ["SPAcustTemplate", "goToInfoColTemplate", "SPAcustDetailTemplate", "customerEditTemplate", "customerDetailsTemplate", "orderEditTemplate",
-                    "orderDetEditTemplate", "orderDetailsTemplate", "productTemplate1", "productTemplate2",
-                    "prodAutocompleteTemplate"]
-            });
+        app.registerTemplateGroup('custGroup', options.spa_template1_url);
 
-        app.registerTemplateGroup('custInfoGroup',
-            {
-                url: options.spa_template2_url,
-                names: ["customerInfo", "salespersonTemplate1", "salespersonTemplate2", "salePerAutocompleteTemplate"]
-            });
+        app.registerTemplateGroup('custInfoGroup', options.spa_template2_url);
 
-        app.registerTemplateGroup('custAdrGroup',
-            {
-                url: options.spa_template3_url,
-                names: ["customerAddr", "addressTemplate", "addAddressTemplate", "linkAdrTemplate", "newAdrTemplate"]
-            });
+        app.registerTemplateGroup('custAdrGroup', options.spa_template3_url);
+            
         }).then((app) => {
             return app.customerVM.load();
         });

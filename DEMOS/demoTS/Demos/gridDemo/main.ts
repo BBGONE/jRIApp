@@ -67,32 +67,32 @@ export function start(options: IMainOptions) {
     };
 
     bootstrap.init((bootstrap) => {
-        //replace default buttons styles with something custom
-        let ButtonsCSS = bootstrap.defaults.ButtonsCSS;
+        // replace default buttons styles with something custom
+        const ButtonsCSS = bootstrap.defaults.ButtonsCSS;
         ButtonsCSS.Edit = 'icon icon-pencil';
         ButtonsCSS.Delete = 'icon icon-trash';
         ButtonsCSS.OK = 'icon icon-ok';
         ButtonsCSS.Cancel = 'icon icon-remove';
     });
 
-    //create and start application here
+    // create and start application here
     return bootstrap.startApp(() => {
         return new DemoApplication(options);
     }, (app) => {
         app.registerConverter('sizeConverter', new SizeConverter());
 
-        //an example of how to load a file with templates from the server (for loading group of templates- see spaDEMO.ts)
+        // an example of how to load a file with templates from the server (for loading group of templates- see spaDEMO.ts)
         app.loadTemplates(options.templates_url);
 
-        //this registered function will be invoked every  time when the template with that name is needed
-        //P.S. - but a better way how to load templates is to register templates' groups
-        //see the Single Page RIAPP.Application Demo (spaDEMO.ts) how it is done there
+        // this registered function will be invoked every  time when the template with that name is needed
+        // P.S. - but a better way how to load templates is to register templates' groups
+        // see the Single Page RIAPP.Application Demo (spaDEMO.ts) how it is done there
         app.registerTemplateLoader('productEditTemplate', coreUtils.memoize(() => {
             return utils.http.getAjax(options.productEditTemplate_url); })
         );
     }).then((app) => {
         if (!!options.modelData && !!options.categoryData) {
-            //the data was embedded into HTML page as json, just use it
+            // the data was embedded into HTML page as json, just use it
             app.productVM.filter.modelData = options.modelData;
             app.productVM.filter.categoryData = options.categoryData;
             return null;

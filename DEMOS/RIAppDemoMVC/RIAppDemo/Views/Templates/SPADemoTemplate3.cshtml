@@ -4,7 +4,7 @@
     Layout = null;
 }
 
-<script id="customerAddr" type="text/x-template">
+<script id="custAdrGroup.customerAddr" type="text/x-template">
     <div style="margin: 4px; padding-top:10px; width: 95%;" data-require="test3,test1,test2,css!css/test2.css">
         <fieldset>
             <legend>Addresses of <span data-name="test2" data-bind="this.value,to=currentItem.ComplexProp.Name"></span></legend>
@@ -46,9 +46,9 @@
     </div>
 </script>
 
-<script id="addressTemplate" type="text/x-template">
+<script id="custAdrGroup.addressTemplate" type="text/x-template">
     @*used for display of customer's address*@
-    <div class="addressTemplate" style="margin: 4px; width: 95%;">
+    <div class="custAdrGroup.addressTemplate" style="margin: 4px; width: 95%;">
         <fieldset>
             <legend style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">
                 <span class="address" data-bind="this.value,to=AddressType"></span>
@@ -101,20 +101,20 @@
     </div>
 </script>
 
-<script id="addAddressTemplate" type="text/x-template">
-    <!--addressTemplate-->
+<script id="custAdrGroup.addAddressTemplate" type="text/x-template">
+    <!--custAdrGroup.addressTemplate-->
     @*used for managing of customer's addresses in many to many relationship*@
     <div style="margin: 4px; width: 95%;">
         <div style="margin-bottom: 4px;">
             <span>Customer:</span>&nbsp;<span style="color: Blue; font-weight: bold;" data-bind="this.value,to=customer.ComplexProp.Name"></span>
         </div>
-        <!--for switching views between linkAdrTemplate and newAdrTemplate-->
+        <!--for switching views between custAdrGroup.linkAdrTemplate and custAdrGroup.newAdrTemplate-->
         <div id="addrDynaContent" data-bind-1="this.templateID,to=uiAddressRoute.viewName"
              data-bind-2="this.dataContext" data-view="dynacontent"></div>
     </div>
 </script>
 
-<script id="linkAdrTemplate" type="text/x-template">
+<script id="custAdrGroup.linkAdrTemplate" type="text/x-template">
     <div data-name="search">
         <div style="margin: 5px 0px 5px 0px;">
             <span class="addressLabel">Search existing Address:</span>
@@ -205,7 +205,7 @@
     </div>
 </script>
 
-<script id="newAdrTemplate" type="text/x-template">
+<script id="custAdrGroup.newAdrTemplate" type="text/x-template">
     <div data-name="newAddress" style="margin: 4px; max-width: 500px; width: 95%;">
         <form action="#" style="width: 100%" data-bind="this.dataContext,to=newAddress"
               data-view="dataform">

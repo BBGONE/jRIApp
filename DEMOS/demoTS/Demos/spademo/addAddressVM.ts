@@ -42,7 +42,7 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
 
         this._dialogVM = new uiMOD.DialogVM(self.app);
         let dialogOptions: uiMOD.IDialogConstructorOptions = {
-            templateID: 'addAddressTemplate',
+            templateID: 'custAdrGroup.addAddressTemplate',
             width: 950,
             height: 600,
             title: 'add new customer address',

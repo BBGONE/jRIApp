@@ -2159,8 +2159,8 @@ define("routes", ["require", "exports", "jriapp", "animation"], function (requir
         __extends(MainRoute, _super);
         function MainRoute() {
             var _this = _super.call(this) || this;
-            _this._custTemplName = 'SPAcustTemplate';
-            _this._custDetTemplName = 'SPAcustDetailTemplate';
+            _this._custTemplName = 'custGroup.SPAcustTemplate';
+            _this._custDetTemplName = 'custGroup.SPAcustDetailTemplate';
             _this._viewName = _this._custTemplName;
             _this._animation = new ANIMATION.FadeAnimation(true);
             return _this;
@@ -2213,8 +2213,8 @@ define("routes", ["require", "exports", "jriapp", "animation"], function (requir
         __extends(CustDetRoute, _super);
         function CustDetRoute() {
             var _this = _super.call(this) || this;
-            _this._infoTemplName = 'customerInfo';
-            _this._adrTemplName = 'customerAddr';
+            _this._infoTemplName = 'custInfoGroup.customerInfo';
+            _this._adrTemplName = 'custAdrGroup.customerAddr';
             _this._viewName = _this._infoTemplName;
             _this._animation = new ANIMATION.SlideAnimation(false);
             return _this;
@@ -2267,8 +2267,8 @@ define("routes", ["require", "exports", "jriapp", "animation"], function (requir
         __extends(AddressRoute, _super);
         function AddressRoute() {
             var _this = _super.call(this) || this;
-            _this._linkAdrTemplate = 'linkAdrTemplate';
-            _this._newAdrTemplate = 'newAdrTemplate';
+            _this._linkAdrTemplate = 'custAdrGroup.linkAdrTemplate';
+            _this._newAdrTemplate = 'custAdrGroup.newAdrTemplate';
             _this._viewName = _this._linkAdrTemplate;
             return _this;
         }
@@ -2815,7 +2815,7 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             _this._uiAddressRoute = new routes_2.AddressRoute();
             _this._dialogVM = new uiMOD.DialogVM(self.app);
             var dialogOptions = {
-                templateID: 'addAddressTemplate',
+                templateID: 'custAdrGroup.addAddressTemplate',
                 width: 950,
                 height: 600,
                 title: 'add new customer address',
@@ -3312,20 +3312,9 @@ define("main", ["require", "exports", "jriapp", "app", "common", "autocomplete",
         return RIAPP.bootstrap.startApp(function () {
             return new app_1.DemoApplication(options);
         }, function (app) {
-            app.registerTemplateGroup('custGroup', {
-                url: options.spa_template1_url,
-                names: ["SPAcustTemplate", "goToInfoColTemplate", "SPAcustDetailTemplate", "customerEditTemplate", "customerDetailsTemplate", "orderEditTemplate",
-                    "orderDetEditTemplate", "orderDetailsTemplate", "productTemplate1", "productTemplate2",
-                    "prodAutocompleteTemplate"]
-            });
-            app.registerTemplateGroup('custInfoGroup', {
-                url: options.spa_template2_url,
-                names: ["customerInfo", "salespersonTemplate1", "salespersonTemplate2", "salePerAutocompleteTemplate"]
-            });
-            app.registerTemplateGroup('custAdrGroup', {
-                url: options.spa_template3_url,
-                names: ["customerAddr", "addressTemplate", "addAddressTemplate", "linkAdrTemplate", "newAdrTemplate"]
-            });
+            app.registerTemplateGroup('custGroup', options.spa_template1_url);
+            app.registerTemplateGroup('custInfoGroup', options.spa_template2_url);
+            app.registerTemplateGroup('custAdrGroup', options.spa_template3_url);
         }).then(function (app) {
             return app.customerVM.load();
         });
