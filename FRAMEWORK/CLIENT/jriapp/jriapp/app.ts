@@ -7,7 +7,7 @@ import { STORE_KEY } from "./const";
 import {
     IElViewFactory, IViewType, IApplication,
     TBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo,
-    ITemplateGroupInfoEx, IDataBindingService, IBinding, IBindArgs
+    IDataBindingService, IBinding, IBindArgs
 } from "./int";
 import { bootstrap } from "./bootstrap";
 import { DomUtils } from "./utils/dom";
@@ -16,7 +16,7 @@ import { createDataBindSvc } from "./databindsvc";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, { format } = utils.str,
     { isThenable, isFunc } = utils.check, boot = bootstrap, sys = utils.sys, ERRS = LocaleERRS,
-    { forEachProp, getNewID, memoize, extend } = utils.core, { createDeferred } = utils.defer;
+    { forEachProp, getNewID, memoize } = utils.core, { createDeferred, reject } = utils.defer;
 
 const enum APP_EVENTS {
     startup = "startup"
@@ -289,14 +289,12 @@ export class Application extends BaseObject implements IApplication {
         return this.loadTemplatesAsync(() => utils.http.getAjax(url));
     }
     // loads a group of templates from the server
-    loadTemplatesAsync(fnLoader: () => IPromise<string>): IPromise<any> {
-        return boot.templateLoader.loadTemplatesAsync(fnLoader, <IApplication>this);
+    loadTemplatesAsync(loader: () => IPromise<string>): IPromise<any> {
+        return boot.templateLoader.loadTemplatesAsync(loader);
     }
     // fn_loader must load template and return promise which resolves with the loaded HTML string
-    registerTemplateLoader(name: string, fnLoader: () => IPromise<string>): void {
-        boot.templateLoader.registerTemplateLoader(this.appName + "." + name, {
-            fn_loader: fnLoader
-        });
+    registerTemplateLoader(name: string, loader: () => IPromise<string>): void {
+        boot.templateLoader.registerTemplateLoader(name, loader);
     }
     // register loading a template from html element by its id value
     registerTemplateById(name: string, templateId: string): void {
@@ -311,24 +309,20 @@ export class Application extends BaseObject implements IApplication {
         }));
     }
     getTemplateLoader(name: string): () => IPromise<string> {
-        let res = boot.templateLoader.getTemplateLoader(this.appName + "." + name);
+        let res = boot.templateLoader.getTemplateLoader(name);
         if (!res) {
-            res = boot.templateLoader.getTemplateLoader(name);
-            if (!res) {
-                return () => { return utils.defer.reject<string>(new Error(format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
-            }
+            return () => { return reject<string>(new Error(format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
         }
         return res;
     }
-    registerTemplateGroup(name: string, group: ITemplateGroupInfo): void {
-        const group2: ITemplateGroupInfoEx = extend({
-            fn_loader: <() => IPromise<string>>null,
-            url: <string>null,
-            names: <string[]>null,
-            promise: <IPromise<string>>null,
-            app: <IApplication>this
-        }, group);
-        boot.templateLoader.registerTemplateGroup(this.appName + "." + name, group2);
+    registerTemplateGroup(name: string, url: string): void {
+        const group: ITemplateGroupInfo = {
+            name: name,
+            url: url,
+            loader: <() => IPromise<string>>null,
+            promise: <IPromise<string>>null
+        };
+        boot.templateLoader.registerTemplateGroup(group);
     }
     toString(): string {
         return "Application: " + this.appName;

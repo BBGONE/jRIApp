@@ -63,19 +63,10 @@ export interface ISvcStore {
 }
 
 export interface ITemplateGroupInfo {
-    fn_loader?: () => IPromise<string>;
-    url?: string;
-    names: string[];
-}
-
-export interface ITemplateGroupInfoEx extends ITemplateGroupInfo {
+    name: string;
+    url: string;
+    loader?: () => IPromise<string>;
     promise?: IPromise<string>;
-    app?: IApplication;
-}
-
-export interface ITemplateLoaderInfo {
-    fn_loader: () => IPromise<string>;
-    groupName?: string;
 }
 
 export interface IUnResolvedBindingArgs {
@@ -317,11 +308,7 @@ export interface IApplication extends IErrorHandler, IExports, IBaseObject {
     loadTemplatesAsync(fnLoader: () => IPromise<string>): IPromise<any>;
     registerTemplateLoader(name: string, fnLoader: () => IPromise<string>): void;
     getTemplateLoader(name: string): () => IPromise<string>;
-    registerTemplateGroup(name: string, group: {
-        fn_loader?: () => IPromise<string>;
-        url?: string;
-        names: string[];
-   }): void;
+    registerTemplateGroup(name: string, url: string): void;
     bind(opts: TBindingOptions): IBinding;
     startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
     readonly uniqueID: string;

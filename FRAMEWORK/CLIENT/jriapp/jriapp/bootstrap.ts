@@ -20,7 +20,7 @@ import { Promise } from "jriapp_shared/utils/deferred";
 import { createQueue } from "jriapp_shared/utils/queue";
 
 const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document,
-    { isFunc } = utils.check, { createDeferred, delay } = utils.defer,
+    { isFunc } = utils.check, { createDeferred, delay, resolve } = utils.defer,
     { forEachProp, getNewID, getValue, setValue, removeValue } = utils.core,
     { format, fastTrim } = utils.str, ERROR = utils.err, ERRS = LocaleERRS;
 
@@ -145,16 +145,10 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._moduleInits = [];
         this._templateLoader = null;
         this._templateLoader = new TemplateLoader();
-        this._templateLoader.addOnLoaded((s, a) => {
-            if (!s) {
-                throw new Error("Invalid Operation");
-            }
-            self._onTemplateLoaded(a.html, a.app);
+        this._templateLoader.addOnLoaded((_, a) => {
+            self._onTemplateLoaded(a.html);
         });
-        this._templateLoader.objEvents.addOnError((s, a) => {
-            if (!s) {
-                throw new Error("Invalid Operation");
-            }
+        this._templateLoader.objEvents.addOnError((_, a) => {
             return self.handleError(a.error, a.source);
         });
         this._elViewRegister = createElViewRegister(null);
@@ -280,13 +274,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             return false;
         };
     }
-    private _onTemplateLoaded(html: string, app: IApplication) {
+    private _onTemplateLoaded(html: string) {
         const divEl = doc.createElement("div");
         divEl.innerHTML = html;
-        this._processOptions(divEl, app);
-        this._processTemplates(divEl, app);
+        this._processOptions(divEl);
+        this._processTemplates(divEl);
     }
-    private _processOptions(root: HTMLElement | HTMLDocument, app: IApplication = null): void {
+    private _processOptions(root: HTMLElement | HTMLDocument): void {
         const self = this, jsons = dom.queryAll<Element>(root, _OPTION_SELECTOR);
         jsons.forEach((el) => {
             const name = el.getAttribute("id");
@@ -297,7 +291,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             self._registerOptions(name, text);
         });
     }
-    private _processTemplates(root: HTMLElement | HTMLDocument, app: IApplication = null): void {
+    private _processTemplates(root: HTMLElement | HTMLDocument): void {
         const self = this, templates = dom.queryAll<Element>(root, _TEMPLATE_SELECTOR);
         templates.forEach((el) => {
             const name = el.getAttribute("id");
@@ -305,22 +299,17 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
                 throw new Error(ERRS.ERR_TEMPLATE_HAS_NO_ID);
             }
             const html = el.innerHTML;
-            self._processTemplate(name, html, app);
+            self._processTemplate(name, html);
         });
     }
     // process templates in HTML Document
     private _processHTMLTemplates(): void {
         this._processTemplates(doc);
     }
-    private _processTemplate(name: string, html: string, app: IApplication): void {
-        const self = this, deferred = createDeferred<string>(true),
-            res = fastTrim(html);
-        const loader = {
-            fn_loader: () => deferred.promise()
-        };
+    private _processTemplate(name: string, html: string): void {
+        const res = resolve<string>(fastTrim(html), true), loader = () => res;
         // template already loaded, register function which returns the template immediately
-        self.templateLoader.registerTemplateLoader(!app ? name : (app.appName + "." + name), loader);
-        deferred.resolve(res);
+        this.templateLoader.registerTemplateLoader(name, loader);
     }
     // override
     protected _createObjEvents(): IObjectEvents {

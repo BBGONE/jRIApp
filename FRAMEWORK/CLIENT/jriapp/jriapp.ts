@@ -14,8 +14,7 @@ export {
     IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, TBindingInfo,
     TBindingOptions, IConverter, IContentFactory, IDatepicker, IElView,
     ITooltipService, ISelectable, ISelectableProvider,
-    ILifeTimeScope, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateInfo, ITemplateLoaderInfo,
-    IViewOptions, ISubscriber
+    ILifeTimeScope, ITemplateGroupInfo, ITemplateInfo, IViewOptions, ISubscriber
 } from "./jriapp/int";
 export { DomUtils as DOM } from "./jriapp/utils/dom";
 export { ViewChecks } from "./jriapp/utils/viewchecks";
@@ -29,6 +28,6 @@ export { ViewModel, BaseCommand, Command, ICommand } from "./jriapp/mvvm";
 
 export { Application } from "./jriapp/app";
 
-export const VERSION = "2.16.7";
+export const VERSION = "2.17.0";
 
 Bootstrap._initFramework();
