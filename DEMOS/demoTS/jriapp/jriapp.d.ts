@@ -382,7 +382,6 @@ declare module "jriapp/defaults" {
 declare module "jriapp/utils/tloader" {
     import { IPromise, BaseObject } from "jriapp_shared";
     import { ITemplateGroupInfo } from "jriapp/int";
-    export function getTemplateGroupAndName(fullName: string): string[];
     export class TemplateLoader extends BaseObject {
         private _templateLoaders;
         private _templateGroups;
@@ -397,8 +396,8 @@ declare module "jriapp/utils/tloader" {
         waitForNotLoading(callback: (...args: any[]) => any, callbackArgs: any): void;
         private _onLoaded(html);
         private _getTemplateGroup(name);
-        private _registerTemplateLoaderCore(name, loader);
-        private _getTemplateLoaderCore(name);
+        private _registerTemplateLoader(name, loader);
+        private _getTemplateLoader(name);
         loadTemplatesAsync(loader: () => IPromise<string>): IPromise<any>;
         unRegisterTemplateLoader(name: string): void;
         unRegisterTemplateGroup(name: string): void;
@@ -677,12 +676,8 @@ declare module "jriapp/bootstrap" {
         private _registerApp(app);
         private _unregisterApp(app);
         private _destroyApp();
-        private _registerObject(root, name, obj);
-        private _unregisterObject(root, name);
-        private _getObject(root, name);
         private _getConverter(name);
         private _waitLoaded(onLoad);
-        private _registerOptions(name, options);
         _getInternal(): IInternalBootstrapMethods;
         addOnDisposed(handler: TEventHandler<Bootstrap, any>, nmspace?: string, context?: object): void;
         offOnDisposed(nmspace?: string): void;
@@ -698,7 +693,7 @@ declare module "jriapp/bootstrap" {
         startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<TApp>;
         registerSvc(name: string, obj: any): void;
         unregisterSvc(name: string): any;
-        getSvc<T>(name: string): T;
+        getSvc<T = any>(name: string): T;
         registerConverter(name: string, obj: IConverter): void;
         getOptions(name: string): string;
         registerElView(name: string, elViewType: any): void;
@@ -955,10 +950,10 @@ declare module "jriapp/app" {
         private _internal;
         private _appState;
         constructor(options?: IAppOptions);
+        dispose(): void;
         private _cleanUpObjMaps();
         private _initAppModules();
         protected onStartUp(): any;
-        dispose(): void;
         _getInternal(): IInternalAppMethods;
         addOnDisposed(handler: TEventHandler<IApplication, any>, nmspace?: string, context?: object): void;
         offOnDisposed(nmspace?: string): void;
@@ -974,7 +969,7 @@ declare module "jriapp/app" {
         getSvc(name: string): any;
         registerElView(name: string, vwType: IViewType): void;
         registerObject(name: string, obj: any): void;
-        getObject(name: string): any;
+        getObject<T = any>(name: string): T;
         startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
         loadTemplates(url: string): IPromise<any>;
         loadTemplatesAsync(loader: () => IPromise<string>): IPromise<any>;
@@ -1010,5 +1005,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.17.0";
+    export const VERSION = "2.17.1";
 }

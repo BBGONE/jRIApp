@@ -69,33 +69,6 @@ export class Application extends BaseObject implements IApplication {
 
         boot._getInternal().registerApp(<IApplication>this);
     }
-    private _cleanUpObjMaps() {
-        const self = this;
-        this._objMaps.forEach((objMap) => {
-            forEachProp(objMap, (name) => {
-                const obj = objMap[name];
-                if (sys.isBaseObj(obj)) {
-                    if (!obj.getIsDisposed()) {
-                        obj.objEvents.offNS(self.uniqueID);
-                    }
-                }
-            });
-        });
-        this._objMaps = [];
-    }
-    private _initAppModules() {
-        const self = this, keys = Object.keys(self._moduleInits);
-        keys.forEach((key) => {
-            const initFn = self._moduleInits[key];
-            initFn(<IApplication>self);
-        });
-    }
-    /**
-    can be overriden in derived classes
-    it can return a promise when it's needed
-    */
-    protected onStartUp(): any {
-    }
     dispose(): void {
         if (this.getIsDisposed()) {
             return;
@@ -117,6 +90,33 @@ export class Application extends BaseObject implements IApplication {
         } finally {
             super.dispose();
         }
+    }
+    private _cleanUpObjMaps(): void {
+        const self = this;
+        this._objMaps.forEach((objMap) => {
+            forEachProp(objMap, (name) => {
+                const obj = objMap[name];
+                if (sys.isBaseObj(obj)) {
+                    if (!obj.getIsDisposed()) {
+                        obj.objEvents.offNS(self.uniqueID);
+                    }
+                }
+            });
+        });
+        this._objMaps = [];
+    }
+    private _initAppModules() : void {
+        const self = this, keys = Object.keys(self._moduleInits);
+        keys.forEach((key) => {
+            const initFn = self._moduleInits[key];
+            initFn(<IApplication>self);
+        });
+    }
+    /**
+    can be overriden in derived classes
+    it can return a promise when it's needed
+    */
+    protected onStartUp(): any {
     }
     _getInternal(): IInternalAppMethods {
         return this._internal;
@@ -188,23 +188,22 @@ export class Application extends BaseObject implements IApplication {
         this._viewFactory.register.registerElView(name, vwType);
     }
     /**
-    registers instances of objects, so they can be retrieved later anywhere in the application's code
-    very similar to the dependency injection container - you can later obtain the registerd object with the getObject function
+      registers instances of objects, so they can be retrieved later anywhere in the application's code
+      similar to the dependency injection container - you can later obtain the registerd object with the getObject function
     */
     registerObject(name: string, obj: any): void {
-        const self = this, name2 = STORE_KEY.OBJECT + name;
+        const self = this, name2 = STORE_KEY.OBJECT + name, internal = boot._getInternal();
         if (sys.isBaseObj(obj)) {
             obj.objEvents.addOnDisposed(() => {
-                boot._getInternal().unregisterObject(self, name2);
+                internal.unregisterObject(self, name2);
             }, self.uniqueID);
         }
-        const objMap = boot._getInternal().registerObject(this, name2, obj);
+        const objMap = internal.registerObject(self, name2, obj);
         if (this._objMaps.indexOf(objMap) < 0) {
             this._objMaps.push(objMap);
         }
     }
-    getObject(name: string): any;
-    getObject<T>(name: string): T {
+    getObject<T = any>(name: string): T {
         const name2 = STORE_KEY.OBJECT + name, res = boot._getInternal().getObject(this, name2);
         return res;
     }
@@ -235,7 +234,7 @@ export class Application extends BaseObject implements IApplication {
                     const onStartupRes2: any = (!!onStartUp) ? onStartUp.apply(self, [self]) : null;
                     let setupPromise2: IThenable<void>;
 
-                    if (utils.check.isThenable(onStartupRes2)) {
+                    if (isThenable(onStartupRes2)) {
                         setupPromise2 = (<IThenable<any>>onStartupRes2).then(() => {
                             return self._dataBindingService.setUpBindings();
                         }, (err) => {

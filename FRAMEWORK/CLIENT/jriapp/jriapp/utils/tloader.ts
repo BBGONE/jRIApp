@@ -11,20 +11,14 @@ const enum LOADER_EVENTS {
     loaded = "loaded"
 }
 
-export function getTemplateGroupAndName(fullName: string): string[] {
+function getGroupName(fullName: string): string {
     const parts: string[] = fullName.split(".");
     if (parts.length > 2) {
         throw new Error(`Invalid template name: ${fullName}`);
     }
-    const res = ["", ""];
-    if (parts.length === 1) {
-        res[1] = parts[0];
-    } else {
-        res[0] = parts[0];
-        res[1] = parts[1];
-    }
-    return res;
+    return (parts.length === 1) ? "" : parts[0];
 }
+
 
 export class TemplateLoader extends BaseObject {
     private _templateLoaders: any;
@@ -76,10 +70,10 @@ export class TemplateLoader extends BaseObject {
     private _getTemplateGroup(name: string): ITemplateGroupInfo {
         return getValue(this._templateGroups, name);
     }
-    private _registerTemplateLoaderCore(name: string, loader: () => IPromise<string>): void {
+    private _registerTemplateLoader(name: string, loader: () => IPromise<string>): void {
         setValue(this._templateLoaders, name, loader, false);
     }
-    private _getTemplateLoaderCore(name: string): () => IPromise<string> {
+    private _getTemplateLoader(name: string): () => IPromise<string> {
         return getValue(this._templateLoaders, name);
     }
     public loadTemplatesAsync(loader: () => IPromise<string>): IPromise<any> {
@@ -114,16 +108,16 @@ export class TemplateLoader extends BaseObject {
         if (!isFunc(loader)) {
             throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "loader is Function"));
         }
-        return self._registerTemplateLoaderCore(name, loader);
+        return self._registerTemplateLoader(name, loader);
     }
     // this function will return a promise resolved with the template's html
     public getTemplateLoader(name: string): () => IPromise<string> {
         const self = this;
-        const loader = self._getTemplateLoaderCore(name);
+        const loader = self._getTemplateLoader(name);
         if (!!loader) {
             return loader;
         } else {
-            const parts = getTemplateGroupAndName(name), groupName = parts[0];
+            const groupName = getGroupName(name);
             if (!groupName) {
                 return null;
             } else {
@@ -143,7 +137,7 @@ export class TemplateLoader extends BaseObject {
                     const deferred = createDeferred<string>(true);
 
                     group.promise.then(() => {
-                        const loader = self._getTemplateLoaderCore(name);
+                        const loader = self._getTemplateLoader(name);
                         if (!loader) {
                             const error = format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name), rejected = reject<string>(error, true);
                             // template failed to load, register function which rejects immediately
@@ -179,7 +173,7 @@ export class TemplateLoader extends BaseObject {
             };
         }
 
-        setValue(self._templateGroups, group.name, group, true);
+        setValue(self._templateGroups, group.name, group, false);
     }
     public loadTemplates(url: string): IPromise<any> {
         return this.loadTemplatesAsync(() => http.getAjax(url));

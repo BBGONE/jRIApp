@@ -105,6 +105,15 @@ class _ObjectEvents extends ObjectEvents {
     }
 }
 
+ function registerObject(root: IExports, name: string, obj: any): void {
+    setValue(root.getExports(), name, obj, false);
+}
+function unregisterObject(root: IExports, name: string): any {
+    return removeValue(root.getExports(), name);
+}
+function getObject(root: IExports, name: string): any {
+    return getValue(root.getExports(), name);
+}
 /**
   * This class  has nothing to do with the twitter bootstrap
   * it is used as the Root object of the JRIApp framework
@@ -164,13 +173,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
                 self._unregisterApp(app);
             },
             registerObject: (root: IExports, name: string, obj: any) => {
-                self._registerObject(root, name, obj);
+                registerObject(root, name, obj);
             },
             unregisterObject: (root: IExports, name: string) => {
-                self._unregisterObject(root, name);
+                unregisterObject(root, name);
             },
             getObject: (root: IExports, name: string) => {
-                return self._getObject(root, name);
+                return getObject(root, name);
             },
             getConverter: (name: string) => {
                 return self._getConverter(name);
@@ -281,14 +290,14 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._processTemplates(divEl);
     }
     private _processOptions(root: HTMLElement | HTMLDocument): void {
-        const self = this, jsons = dom.queryAll<Element>(root, _OPTION_SELECTOR);
+        const jsons = dom.queryAll<Element>(root, _OPTION_SELECTOR);
         jsons.forEach((el) => {
             const name = el.getAttribute("id");
             if (!name) {
                 throw new Error(ERRS.ERR_OPTIONS_HAS_NO_ID);
             }
-            const text = el.innerHTML;
-            self._registerOptions(name, text);
+            const text = el.innerHTML, name2 = STORE_KEY.OPTION + name;
+            registerObject(this, name2, text);
         });
     }
     private _processTemplates(root: HTMLElement | HTMLDocument): void {
@@ -376,8 +385,6 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
 
         try {
             ERROR.removeHandler(app.appName);
-            this.templateLoader.unRegisterTemplateGroup(app.appName);
-            this.templateLoader.unRegisterTemplateLoader(app.appName);
         } finally {
             this._app = null;
         }
@@ -388,18 +395,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             app.dispose();
         }
     }
-    private _registerObject(root: IExports, name: string, obj: any): void {
-        setValue(root.getExports(), name, obj, true);
-    }
-    private _unregisterObject(root: IExports, name: string): any {
-        return removeValue(root.getExports(), name);
-    }
-    private _getObject(root: IExports, name: string): any {
-        return getValue(root.getExports(), name);
-    }
     private _getConverter(name: string): IConverter {
         const name2 = STORE_KEY.CONVERTER + name;
-        const res = this._getObject(this, name2);
+        const res = getObject(this, name2);
         if (!res) {
             throw new Error(format(ERRS.ERR_CONVERTER_NOTREGISTERED, name));
         }
@@ -419,14 +417,6 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
                 }, 0);
             });
         });
-    }
-    private _registerOptions(name: string, options: string): void {
-        const name2 = STORE_KEY.OPTION + name;
-        if (!this._getObject(this, name2)) {
-            this._registerObject(this, name2, options);
-        } else {
-            throw new Error(format(ERRS.ERR_OPTIONS_ALREADY_REGISTERED, name));
-        }
     }
     _getInternal(): IInternalBootstrapMethods {
         return this._internal;
@@ -502,15 +492,14 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     registerSvc(name: string, obj: any) {
         const name2 = STORE_KEY.SVC + name;
-        return this._registerObject(this, name2, obj);
+        return registerObject(this, name2, obj);
     }
     unregisterSvc(name: string) {
         const name2 = STORE_KEY.SVC + name;
-        return this._unregisterObject(this, name2);
+        return unregisterObject(this, name2);
     }
-    getSvc<T>(name: string): T;
-    getSvc(name: string): any {
-        const name2 = STORE_KEY.SVC + name, obj = this._getObject(this, name2);
+    getSvc<T = any>(name: string): T {
+        const name2 = STORE_KEY.SVC + name, obj = getObject(this, name2);
         if (!obj) {
             throw new Error(`The service: ${name} is not registered`);
         }
@@ -522,15 +511,15 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     registerConverter(name: string, obj: IConverter): void {
         const name2 = STORE_KEY.CONVERTER + name;
-        if (!this._getObject(this, name2)) {
-            this._registerObject(this, name2, obj);
+        if (!getObject(this, name2)) {
+            registerObject(this, name2, obj);
         } else {
             throw new Error(format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         }
     }
     getOptions(name: string): string {
         const name2 = STORE_KEY.OPTION + name;
-        let res = this._getObject(this, name2);
+        let res = getObject(this, name2);
         if (!res) {
             throw new Error(utils.str.format(ERRS.ERR_OPTIONS_NOTREGISTERED, name));
         }

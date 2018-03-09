@@ -850,22 +850,13 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
     (function (LOADER_EVENTS) {
         LOADER_EVENTS["loaded"] = "loaded";
     })(LOADER_EVENTS || (LOADER_EVENTS = {}));
-    function getTemplateGroupAndName(fullName) {
+    function getGroupName(fullName) {
         var parts = fullName.split(".");
         if (parts.length > 2) {
             throw new Error("Invalid template name: " + fullName);
         }
-        var res = ["", ""];
-        if (parts.length === 1) {
-            res[1] = parts[0];
-        }
-        else {
-            res[0] = parts[0];
-            res[1] = parts[1];
-        }
-        return res;
+        return (parts.length === 1) ? "" : parts[0];
     }
-    exports.getTemplateGroupAndName = getTemplateGroupAndName;
     var TemplateLoader = (function (_super) {
         __extends(TemplateLoader, _super);
         function TemplateLoader() {
@@ -913,10 +904,10 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
         TemplateLoader.prototype._getTemplateGroup = function (name) {
             return getValue(this._templateGroups, name);
         };
-        TemplateLoader.prototype._registerTemplateLoaderCore = function (name, loader) {
+        TemplateLoader.prototype._registerTemplateLoader = function (name, loader) {
             setValue(this._templateLoaders, name, loader, false);
         };
-        TemplateLoader.prototype._getTemplateLoaderCore = function (name) {
+        TemplateLoader.prototype._getTemplateLoader = function (name) {
             return getValue(this._templateLoaders, name);
         };
         TemplateLoader.prototype.loadTemplatesAsync = function (loader) {
@@ -947,16 +938,16 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
             if (!isFunc(loader)) {
                 throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "loader is Function"));
             }
-            return self._registerTemplateLoaderCore(name, loader);
+            return self._registerTemplateLoader(name, loader);
         };
         TemplateLoader.prototype.getTemplateLoader = function (name) {
             var self = this;
-            var loader = self._getTemplateLoaderCore(name);
+            var loader = self._getTemplateLoader(name);
             if (!!loader) {
                 return loader;
             }
             else {
-                var parts = getTemplateGroupAndName(name), groupName = parts[0];
+                var groupName = getGroupName(name);
                 if (!groupName) {
                     return null;
                 }
@@ -971,7 +962,7 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
                         }
                         var deferred = createDeferred(true);
                         group_1.promise.then(function () {
-                            var loader = self._getTemplateLoaderCore(name);
+                            var loader = self._getTemplateLoader(name);
                             if (!loader) {
                                 var error = format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name), rejected_1 = reject(error, true);
                                 self.registerTemplateLoader(name, function () { return rejected_1; });
@@ -1001,7 +992,7 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
                     return http.getAjax(group.url);
                 };
             }
-            setValue(self._templateGroups, group.name, group, true);
+            setValue(self._templateGroups, group.name, group, false);
         };
         TemplateLoader.prototype.loadTemplates = function (url) {
             return this.loadTemplatesAsync(function () { return http.getAjax(url); });
@@ -1898,6 +1889,15 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
         };
         return _ObjectEvents;
     }(jriapp_shared_10.ObjectEvents));
+    function registerObject(root, name, obj) {
+        setValue(root.getExports(), name, obj, false);
+    }
+    function unregisterObject(root, name) {
+        return removeValue(root.getExports(), name);
+    }
+    function getObject(root, name) {
+        return getValue(root.getExports(), name);
+    }
     var Bootstrap = (function (_super) {
         __extends(Bootstrap, _super);
         function Bootstrap() {
@@ -1933,13 +1933,13 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                     self._unregisterApp(app);
                 },
                 registerObject: function (root, name, obj) {
-                    self._registerObject(root, name, obj);
+                    registerObject(root, name, obj);
                 },
                 unregisterObject: function (root, name) {
-                    self._unregisterObject(root, name);
+                    unregisterObject(root, name);
                 },
                 getObject: function (root, name) {
-                    return self._getObject(root, name);
+                    return getObject(root, name);
                 },
                 getConverter: function (name) {
                     return self._getConverter(name);
@@ -2044,14 +2044,15 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             this._processTemplates(divEl);
         };
         Bootstrap.prototype._processOptions = function (root) {
-            var self = this, jsons = dom.queryAll(root, _OPTION_SELECTOR);
+            var _this = this;
+            var jsons = dom.queryAll(root, _OPTION_SELECTOR);
             jsons.forEach(function (el) {
                 var name = el.getAttribute("id");
                 if (!name) {
                     throw new Error(ERRS.ERR_OPTIONS_HAS_NO_ID);
                 }
-                var text = el.innerHTML;
-                self._registerOptions(name, text);
+                var text = el.innerHTML, name2 = "opt." + name;
+                registerObject(_this, name2, text);
             });
         };
         Bootstrap.prototype._processTemplates = function (root) {
@@ -2130,8 +2131,6 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             }
             try {
                 ERROR.removeHandler(app.appName);
-                this.templateLoader.unRegisterTemplateGroup(app.appName);
-                this.templateLoader.unRegisterTemplateLoader(app.appName);
             }
             finally {
                 this._app = null;
@@ -2143,18 +2142,9 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                 app.dispose();
             }
         };
-        Bootstrap.prototype._registerObject = function (root, name, obj) {
-            setValue(root.getExports(), name, obj, true);
-        };
-        Bootstrap.prototype._unregisterObject = function (root, name) {
-            return removeValue(root.getExports(), name);
-        };
-        Bootstrap.prototype._getObject = function (root, name) {
-            return getValue(root.getExports(), name);
-        };
         Bootstrap.prototype._getConverter = function (name) {
             var name2 = "cnv." + name;
-            var res = this._getObject(this, name2);
+            var res = getObject(this, name2);
             if (!res) {
                 throw new Error(format(ERRS.ERR_CONVERTER_NOTREGISTERED, name));
             }
@@ -2174,15 +2164,6 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                     }, 0);
                 });
             });
-        };
-        Bootstrap.prototype._registerOptions = function (name, options) {
-            var name2 = "opt." + name;
-            if (!this._getObject(this, name2)) {
-                this._registerObject(this, name2, options);
-            }
-            else {
-                throw new Error(format(ERRS.ERR_OPTIONS_ALREADY_REGISTERED, name));
-            }
         };
         Bootstrap.prototype._getInternal = function () {
             return this._internal;
@@ -2254,14 +2235,14 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
         };
         Bootstrap.prototype.registerSvc = function (name, obj) {
             var name2 = "svc." + name;
-            return this._registerObject(this, name2, obj);
+            return registerObject(this, name2, obj);
         };
         Bootstrap.prototype.unregisterSvc = function (name) {
             var name2 = "svc." + name;
-            return this._unregisterObject(this, name2);
+            return unregisterObject(this, name2);
         };
         Bootstrap.prototype.getSvc = function (name) {
-            var name2 = "svc." + name, obj = this._getObject(this, name2);
+            var name2 = "svc." + name, obj = getObject(this, name2);
             if (!obj) {
                 throw new Error("The service: " + name + " is not registered");
             }
@@ -2273,8 +2254,8 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
         };
         Bootstrap.prototype.registerConverter = function (name, obj) {
             var name2 = "cnv." + name;
-            if (!this._getObject(this, name2)) {
-                this._registerObject(this, name2, obj);
+            if (!getObject(this, name2)) {
+                registerObject(this, name2, obj);
             }
             else {
                 throw new Error(format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
@@ -2282,7 +2263,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
         };
         Bootstrap.prototype.getOptions = function (name) {
             var name2 = "opt." + name;
-            var res = this._getObject(this, name2);
+            var res = getObject(this, name2);
             if (!res) {
                 throw new Error(utils.str.format(ERRS.ERR_OPTIONS_NOTREGISTERED, name));
             }
@@ -4238,29 +4219,6 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             boot._getInternal().registerApp(_this);
             return _this;
         }
-        Application.prototype._cleanUpObjMaps = function () {
-            var self = this;
-            this._objMaps.forEach(function (objMap) {
-                forEachProp(objMap, function (name) {
-                    var obj = objMap[name];
-                    if (sys.isBaseObj(obj)) {
-                        if (!obj.getIsDisposed()) {
-                            obj.objEvents.offNS(self.uniqueID);
-                        }
-                    }
-                });
-            });
-            this._objMaps = [];
-        };
-        Application.prototype._initAppModules = function () {
-            var self = this, keys = Object.keys(self._moduleInits);
-            keys.forEach(function (key) {
-                var initFn = self._moduleInits[key];
-                initFn(self);
-            });
-        };
-        Application.prototype.onStartUp = function () {
-        };
         Application.prototype.dispose = function () {
             if (this.getIsDisposed()) {
                 return;
@@ -4283,6 +4241,29 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             finally {
                 _super.prototype.dispose.call(this);
             }
+        };
+        Application.prototype._cleanUpObjMaps = function () {
+            var self = this;
+            this._objMaps.forEach(function (objMap) {
+                forEachProp(objMap, function (name) {
+                    var obj = objMap[name];
+                    if (sys.isBaseObj(obj)) {
+                        if (!obj.getIsDisposed()) {
+                            obj.objEvents.offNS(self.uniqueID);
+                        }
+                    }
+                });
+            });
+            this._objMaps = [];
+        };
+        Application.prototype._initAppModules = function () {
+            var self = this, keys = Object.keys(self._moduleInits);
+            keys.forEach(function (key) {
+                var initFn = self._moduleInits[key];
+                initFn(self);
+            });
+        };
+        Application.prototype.onStartUp = function () {
         };
         Application.prototype._getInternal = function () {
             return this._internal;
@@ -4354,13 +4335,13 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             this._viewFactory.register.registerElView(name, vwType);
         };
         Application.prototype.registerObject = function (name, obj) {
-            var self = this, name2 = "obj." + name;
+            var self = this, name2 = "obj." + name, internal = boot._getInternal();
             if (sys.isBaseObj(obj)) {
                 obj.objEvents.addOnDisposed(function () {
-                    boot._getInternal().unregisterObject(self, name2);
+                    internal.unregisterObject(self, name2);
                 }, self.uniqueID);
             }
-            var objMap = boot._getInternal().registerObject(this, name2, obj);
+            var objMap = internal.registerObject(self, name2, obj);
             if (this._objMaps.indexOf(objMap) < 0) {
                 this._objMaps.push(objMap);
             }
@@ -4389,7 +4370,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
                         self.objEvents.raise("startup", {});
                         var onStartupRes2 = (!!onStartUp) ? onStartUp.apply(self, [self]) : null;
                         var setupPromise2;
-                        if (utils.check.isThenable(onStartupRes2)) {
+                        if (isThenable(onStartupRes2)) {
                             setupPromise2 = onStartupRes2.then(function () {
                                 return self._dataBindingService.setUpBindings();
                             }, function (err) {
@@ -4551,6 +4532,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.17.0";
+    exports.VERSION = "2.17.1";
     bootstrap_8.Bootstrap._initFramework();
 });
