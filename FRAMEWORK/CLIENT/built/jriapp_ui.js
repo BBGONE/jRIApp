@@ -32,7 +32,7 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_1.Utils, dom = dom_1.DomUtils, doc = dom.document, extend = utils.core.extend, boot = bootstrap_1.bootstrap, sys = utils.sys;
     function getView(el, name, options) {
-        var factory = boot.getApp().viewFactory, elView = factory.store.getElView(el);
+        var factory = boot.app.viewFactory, elView = factory.store.getElView(el);
         if (!!elView) {
             return elView;
         }
@@ -321,7 +321,7 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
         });
         Object.defineProperty(BasicContent.prototype, "app", {
             get: function () {
-                return boot.getApp();
+                return boot.app;
             },
             enumerable: true,
             configurable: true
@@ -456,7 +456,7 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
         });
         Object.defineProperty(TemplateContent.prototype, "app", {
             get: function () {
-                return boot.getApp();
+                return boot.app;
             },
             enumerable: true,
             configurable: true
@@ -736,7 +736,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             }
         };
         BaseElView.prototype._getStore = function () {
-            return boot.getApp().viewFactory.store;
+            return this.app.viewFactory.store;
         };
         BaseElView.prototype._onEventChanged = function (args) {
             switch (args.changeType) {
@@ -925,7 +925,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
         });
         Object.defineProperty(BaseElView.prototype, "app", {
             get: function () {
-                return boot.getApp();
+                return boot.app;
             },
             enumerable: true,
             configurable: true
@@ -8167,7 +8167,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
         };
         Object.defineProperty(DataForm.prototype, "app", {
             get: function () {
-                return boot.getApp();
+                return boot.app;
             },
             enumerable: true,
             configurable: true

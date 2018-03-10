@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IPromise, LocaleERRS, BaseObject, WaitQueue, Utils } from "jriapp_shared";
-import { ITemplateGroupInfo, ITemplateLoaderInfo, IExports } from "../int";
+import { ITemplateGroupInfo, ITemplateLoaderInfo, IDataProvider } from "../int";
 import { STORE_KEY } from "../const";
 
 
@@ -12,25 +12,25 @@ const enum LOADER_EVENTS {
     loaded = "loaded"
 }
 
-export function getLoader(root: IExports, name: string): ITemplateLoaderInfo {
+export function getLoader(root: IDataProvider, name: string): ITemplateLoaderInfo {
     const name2 = STORE_KEY.LOADER + name;
-    return getValue(root.getExports(), name2);
+    return getValue(root.getData(), name2);
 }
-export function registerLoader(root: IExports, name: string, loader: () => IPromise<string>): void {
+export function registerLoader(root: IDataProvider, name: string, loader: () => IPromise<string>): void {
     if (!isFunc(loader)) {
         throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "loader must be a Function"));
     }
     const name2 = STORE_KEY.LOADER + name;
     const info: ITemplateLoaderInfo = { loader: loader, owner: root };
-    setValue(root.getExports(), name2, info, true);
+    setValue(root.getData(), name2, info, true);
 }
-export function registerTemplateGroup(root: IExports, name: string, obj: ITemplateGroupInfo): void {
+export function registerTemplateGroup(root: IDataProvider, name: string, obj: ITemplateGroupInfo): void {
     const name2 = STORE_KEY.TGROUP + name;
-    setValue(root.getExports(), name2, obj, true);
+    setValue(root.getData(), name2, obj, true);
 }
-function getTemplateGroup(root: IExports, name: string): ITemplateGroupInfo {
+function getTemplateGroup(root: IDataProvider, name: string): ITemplateGroupInfo {
     const name2 = STORE_KEY.TGROUP + name;
-    return getValue(root.getExports(), name2);
+    return getValue(root.getData(), name2);
 }
 
 function getGroupName(fullName: string): string {
@@ -41,7 +41,7 @@ function getGroupName(fullName: string): string {
     return (parts.length === 1) ? "" : parts[0];
 }
 
-export interface ILoaderContext extends IExports {
+export interface ILoaderContext extends IDataProvider {
     getTemplateLoaderInfo: (name: string) => ITemplateLoaderInfo;
 }
 
@@ -68,7 +68,7 @@ export class TemplateLoader extends BaseObject {
         }
         super.dispose();
     }
-    addOnLoaded(fn: (sender: TemplateLoader, args: { html: string; owner: IExports }) => void, nmspace?: string): void {
+    addOnLoaded(fn: (sender: TemplateLoader, args: { html: string; owner: IDataProvider }) => void, nmspace?: string): void {
         this.objEvents.on(LOADER_EVENTS.loaded, fn, nmspace);
     }
     offOnLoaded(nmspace?: string): void {
@@ -83,10 +83,10 @@ export class TemplateLoader extends BaseObject {
             actionArgs: callbackArgs
         });
     }
-    private _onLoaded(html: string, owner: IExports): void {
+    private _onLoaded(html: string, owner: IDataProvider): void {
         this.objEvents.raise(LOADER_EVENTS.loaded, { html: html, owner: owner });
     }
-    public loadTemplatesAsync(owner: IExports, loader: () => IPromise<string>): IPromise < any > {
+    public loadTemplatesAsync(owner: IDataProvider, loader: () => IPromise<string>): IPromise < any > {
         const self = this, promise = loader(), old = self.isLoading;
         self._promises.push(promise);
         if (self.isLoading !== old) {

@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils, BRACKETS, LocaleERRS as ERRS } from "jriapp_shared";
-import { TBindingInfo, IApplication } from "../int";
+import { TBindingInfo } from "../int";
 
 import { bootstrap } from "../bootstrap";
 
@@ -325,12 +325,12 @@ function getExprArgs(expr: string): string[] {
     return parts.map((p) => trim(p));
 }
 
-function inject(id: string, app: IApplication): string {
-    return !app ? bootstrap.getSvc(id) : app.getSvc(id);
+function inject(id: string): string {
+    return bootstrap.app.getSvc(id);
 }
 
-function getOptions(id: string, app: IApplication): string {
-    return !app ? bootstrap.getOptions(id) : app.getOptions(id);
+function getOptions(id: string): string {
+    return bootstrap.app.getOptions(id);
 }
 
 /**
@@ -338,9 +338,9 @@ function getOptions(id: string, app: IApplication): string {
     * where id  is an ID of a script tag which contains options
     * as in: get(gridOptions)
 */
-function parseById(parse_type: PARSE_TYPE, id: string, app: IApplication, dataContext: any): any {
-    const options = getOptions(id, app);
-    return parseOption(parse_type, options, app, dataContext);
+function parseById(parse_type: PARSE_TYPE, id: string, dataContext: any): any {
+    const options = getOptions(id);
+    return parseOption(parse_type, options, dataContext);
 }
 
 function isGetExpr(val: string): boolean {
@@ -348,7 +348,7 @@ function isGetExpr(val: string): boolean {
 }
 
 
-function parseOption(parse_type: PARSE_TYPE, part: string, app: IApplication, dataContext: any): any {
+function parseOption(parse_type: PARSE_TYPE, part: string, dataContext: any): any {
     const res: any = parse_type === PARSE_TYPE.BINDING ? {
         targetPath: "",
         sourcePath: "",
@@ -364,7 +364,7 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: IApplication, da
     part = trim(part);
     if (isGetExpr(part)) {
         const id = getBraceContent(part, BRACKETS.ROUND);
-        return parseById(parse_type,trim(id), app, dataContext);
+        return parseById(parse_type,trim(id), dataContext);
     }
     const kvals = getKeyVals(part);
     kvals.forEach(function (kv) {
@@ -384,10 +384,10 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: IApplication, da
         if (isBind) {
             switch (parse_type) {
                 case PARSE_TYPE.VIEW:
-                    let source = dataContext || app;
+                    let source = dataContext || bootstrap.app;
                     if (bindparts.length > 1) {
                         //resolve source (second path in the array)
-                        source = resolvePath(app, bindparts[1]);
+                        source = resolvePath(bootstrap.app, bindparts[1]);
                     }
                     res[kv.key] = resolvePath(source, bindparts[0]);
                     break;
@@ -404,13 +404,13 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: IApplication, da
         } else {
             switch (kv.tag) {
                 case TAG.BRACE:
-                    res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
+                    res[kv.key] = parseOption(parse_type, kv.val, dataContext);
                     break;
                 case TAG.GET:
-                    res[kv.key] = parseById(PARSE_TYPE.NONE, kv.val, app, dataContext);
+                    res[kv.key] = parseById(PARSE_TYPE.NONE, kv.val, dataContext);
                     break;
                 case TAG.INJECT:
-                    res[kv.key] = inject(kv.val, app);
+                    res[kv.key] = inject(kv.val);
                     break;
                 default:
                     res[kv.key] = kv.val;
@@ -422,14 +422,14 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: IApplication, da
     return res;
 }
 
-function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: IApplication, dataContext: any): any[] {
+function parseOptions(parse_type: PARSE_TYPE, strs: string[], dataContext: any): any[] {
     const res: any[] = [];
     let parts: string[] = [];
     for (let i = 0; i < strs.length; i += 1) {
         let str = trim(strs[i]);
         if (isGetExpr(str)) {
             const id = getBraceContent(str, BRACKETS.ROUND);
-            str = trim(getOptions(trim(id), app));
+            str = trim(getOptions(trim(id)));
         }
         if (startsWith(str, "{") && endsWith(str, "}")) {
             const subparts = getCurlyBraceParts(str);
@@ -442,7 +442,7 @@ function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: IApplication,
     }
 
     for (let j = 0; j < parts.length; j += 1) {
-        res.push(parseOption(parse_type, parts[j], app, dataContext));
+        res.push(parseOption(parse_type, parts[j],dataContext));
     }
 
     return res;
@@ -450,13 +450,13 @@ function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: IApplication,
 
 export class Parser {
     static parseOptions(options: string): any[] {
-        return parseOptions(PARSE_TYPE.NONE, [options], null, null);
+        return parseOptions(PARSE_TYPE.NONE, [options], null);
     }
-    static parseBindings(bindings: string[], app: IApplication): TBindingInfo[] {
-        return parseOptions(PARSE_TYPE.BINDING, bindings, app, null);
+    static parseBindings(bindings: string[]): TBindingInfo[] {
+        return parseOptions(PARSE_TYPE.BINDING, bindings, null);
     }
-    static parseViewOptions(options: string, app: IApplication, dataContext: any): any {
-        const res = parseOptions(PARSE_TYPE.VIEW, [options], app, dataContext);
+    static parseViewOptions(options: string, dataContext: any): any {
+        const res = parseOptions(PARSE_TYPE.VIEW, [options], dataContext);
         return (!!res && res.length > 0) ? res[0] : {};
     }
 }

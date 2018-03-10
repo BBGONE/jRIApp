@@ -122,6 +122,6 @@ export class TemplateContent extends BaseObject implements IContent {
         }
     }
     get app(): IApplication {
-        return boot.getApp();
+        return boot.app;
     }
 }

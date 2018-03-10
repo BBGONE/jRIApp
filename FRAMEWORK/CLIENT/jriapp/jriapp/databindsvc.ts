@@ -151,7 +151,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         // then create databinding if element has data-bind attribute
         const bindings = args.bind.bindings;
         if (!!bindings && bindings.length > 0) {
-            const bindInfos = parser.parseBindings(bindings, this._app),
+            const bindInfos = parser.parseBindings(bindings),
                 len = bindInfos.length;
             for (let j = 0; j < len; j += 1) {
                 const op = getBindingOptions(bindInfos[j], args.elView, args.dataContext);

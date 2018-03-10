@@ -98,7 +98,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
         }
     }
     private _getStore(): IElViewStore {
-        return boot.getApp().viewFactory.store;
+        return this.app.viewFactory.store;
     }
     protected _onEventChanged(args: IEventChangedArgs): void {
         switch (args.changeType) {
@@ -245,7 +245,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
         }
     }
     get app(): IApplication {
-        return boot.getApp();
+        return boot.app;
     }
 }
 

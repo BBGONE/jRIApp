@@ -53,8 +53,8 @@ export interface ISelectableProvider {
     readonly selectable: ISelectable;
 }
 
-export interface IExports {
-    getExports(): IIndexer<any>;
+export interface IDataProvider {
+    getData(): IIndexer<any>;
 }
 
 export interface ISvcStore {
@@ -64,7 +64,7 @@ export interface ISvcStore {
 
 export interface ITemplateLoaderInfo {
     loader: () => IPromise<string>;
-    owner: IExports;
+    owner: IDataProvider;
 }
 
 export interface ITemplateGroupInfo {
@@ -72,7 +72,7 @@ export interface ITemplateGroupInfo {
     url: string;
     loader: () => IPromise<string>;
     promise: IPromise<string>;
-    owner: IExports;
+    owner: IDataProvider;
 }
 
 export interface IUnResolvedBindingArgs {
@@ -292,13 +292,13 @@ export interface IModuleLoader {
 }
 
 // --Application interfaces
-export interface IInternalAppMethods extends IExports {
+export interface IInternalAppMethods extends IDataProvider {
     bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
     bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
     getTemplateLoaderInfo(name: string): ITemplateLoaderInfo;
 }
 
-export interface IApplication extends IErrorHandler, IExports, IBaseObject {
+export interface IApplication extends IErrorHandler, IDataProvider, IBaseObject {
     _getInternal(): IInternalAppMethods;
     addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
     offOnStartUp(nmspace?: string): void;

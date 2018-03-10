@@ -83,7 +83,7 @@ export function getBindingOptions(bindInfo: TBindingInfo, defTarget: IBaseObject
         param: null,
         isBind: false
     };
-    const app = boot.getApp();
+    const app = boot.app;
     let converter: IConverter;
     if (isString(bindInfo.converter)) {
         converter = app.getConverter(bindInfo.converter);
@@ -776,6 +776,6 @@ export class Binding extends BaseObject implements IBinding {
         }
     }
     get app(): IApplication {
-        return boot.getApp();
+        return boot.app;
     }
 }

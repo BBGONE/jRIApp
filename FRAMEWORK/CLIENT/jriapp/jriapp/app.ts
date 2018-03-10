@@ -34,7 +34,7 @@ export class Application extends BaseObject implements IApplication {
     private _uniqueID: string;
     private _objMaps: any[];
     private _appName: string;
-    private _exports: IIndexer<any>;
+    private _extraData: IIndexer<any>;
     protected _options: IAppOptions;
     private _dataBindingService: IDataBindingService;
     private _viewFactory: IElViewFactory;
@@ -49,18 +49,18 @@ export class Application extends BaseObject implements IApplication {
         const self = this, moduleInits = options.modulesInits || <IIndexer<(app: IApplication) => void>>{}, appName = APP_NAME;
         this._appName = appName;
         this._options = options;
-        if (!!boot.getApp()) {
+        if (!!boot.app) {
             throw new Error(format(ERRS.ERR_APP_NAME_NOT_UNIQUE, appName));
         }
         this._uniqueID = getNewID("app");
         this._appState = AppState.None;
         this._moduleInits = moduleInits;
-        this._viewFactory = createElViewFactory(this, boot.elViewRegister);
+        this._viewFactory = createElViewFactory(boot.elViewRegister);
         this._dataBindingService = createDataBindSvc(this);
 
         this._objMaps = [];
         // registered exported types
-        this._exports = {};
+        this._extraData = {};
         this._UC = {};
         this._internal = {
             bindTemplate: (templateEl: HTMLElement, dataContext: any) => {
@@ -72,8 +72,8 @@ export class Application extends BaseObject implements IApplication {
             getTemplateLoaderInfo: (name: string) => {
                 return self._getTemplateLoaderInfo(name);
             },
-            getExports: () => {
-                return self._exports;
+            getData: () => {
+                return self._extraData;
             }
         };
 
@@ -92,7 +92,7 @@ export class Application extends BaseObject implements IApplication {
             self._dataBindingService.dispose();
             self._dataBindingService = null;
             self._viewFactory.dispose();
-            self._exports = {};
+            self._extraData = {};
             self._moduleInits = {};
             self._UC = {};
             self._options = null;
@@ -156,8 +156,8 @@ export class Application extends BaseObject implements IApplication {
     offOnStartUp(nmspace?: string): void {
         this.objEvents.off(APP_EVENTS.startup, nmspace);
     }
-    getExports(): IIndexer<any> {
-        return this._exports;
+    getData(): IIndexer<any> {
+        return this._extraData;
     }
     bind(opts: TBindingOptions): IBinding {
         return this._dataBindingService.bind(opts);

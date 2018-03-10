@@ -224,7 +224,7 @@ class Template extends BaseObject implements ITemplate {
     findElViewsByDataName(name: string): IElView[] {
         // first return elements with the needed data attributes those are inside template
         const els = this.findElByDataName(name), res: IElView[] = [],
-            viewStore = boot.getApp().viewFactory.store;
+            viewStore = boot.app.viewFactory.store;
         els.forEach((el) => {
             const elView = viewStore.getElView(el);
             if (!!elView) {
@@ -263,6 +263,6 @@ class Template extends BaseObject implements ITemplate {
         return this._el;
     }
     get app(): IApplication {
-        return bootstrap.getApp();
+        return bootstrap.app;
     }
 }

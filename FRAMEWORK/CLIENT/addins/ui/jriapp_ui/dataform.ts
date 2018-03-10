@@ -346,7 +346,7 @@ export class DataForm extends BaseObject {
         return "DataForm";
     }
     get app(): IApplication {
-        return boot.getApp();
+        return boot.app;
     }
     get el(): HTMLElement {
         return this._el;

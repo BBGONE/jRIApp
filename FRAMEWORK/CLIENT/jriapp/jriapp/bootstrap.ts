@@ -6,7 +6,7 @@ import {
 } from "jriapp_shared";
 import { STORE_KEY, SubscribeFlags } from "./const";
 import {
-    IApplication, ISelectableProvider, IExports, IConverter, ISvcStore,
+    IApplication, ISelectableProvider, IDataProvider, IConverter, ISvcStore,
     IContentFactoryList, IElViewRegister, IStylesLoader, ISubscriber
 } from "./int";
 import { createElViewRegister } from "./elview";
@@ -101,7 +101,7 @@ class _ObjectEvents extends ObjectEvents {
     }
 }
 
-export function registerConverter(root: IExports, name: string, obj: IConverter): void {
+export function registerConverter(root: IDataProvider, name: string, obj: IConverter): void {
     const name2 = STORE_KEY.CONVERTER + name;
     if(!getObject(root, name2)) {
         registerObject(root, name2, obj);
@@ -109,19 +109,19 @@ export function registerConverter(root: IExports, name: string, obj: IConverter)
         throw new Error(format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
     }
 }
-export function getConverter(root: IExports, name: string): IConverter {
+export function getConverter(root: IDataProvider, name: string): IConverter {
     const name2 = STORE_KEY.CONVERTER + name;
     return getObject(root, name2);
 }
-export function registerSvc(root: IExports, name: string, obj: any): void {
+export function registerSvc(root: IDataProvider, name: string, obj: any): void {
     const name2 = STORE_KEY.SVC + name;
     registerObject(root, name2, obj);
 }
-export function unregisterSvc(root: IExports, name: string): any {
+export function unregisterSvc(root: IDataProvider, name: string): any {
     const name2 = STORE_KEY.SVC + name;
     return unregisterObject(root, name2);
 }
-export function getSvc<T = any>(root: IExports, name: string): T {
+export function getSvc<T = any>(root: IDataProvider, name: string): T {
     const name2 = STORE_KEY.SVC + name, obj = getObject(root, name2);
     if (!obj) {
         return null;
@@ -132,20 +132,20 @@ export function getSvc<T = any>(root: IExports, name: string): T {
     }
     return res;
 }
-export function getOptions(root: IExports, name: string): string {
+export function getOptions(root: IDataProvider, name: string): string {
     const name2 = STORE_KEY.OPTION + name;
     return getObject(root, name2);
 }
-export function registerObject(root: IExports, name: string, obj: any): void {
-    setValue(root.getExports(), name, obj, true);
+export function registerObject(root: IDataProvider, name: string, obj: any): void {
+    setValue(root.getData(), name, obj, true);
 }
-export function unregisterObject(root: IExports, name: string): any {
-    return removeValue(root.getExports(), name);
+export function unregisterObject(root: IDataProvider, name: string): any {
+    return removeValue(root.getData(), name);
 }
-export function getObject(root: IExports, name: string): any {
-    return getValue(root.getExports(), name);
+export function getObject(root: IDataProvider, name: string): any {
+    return getValue(root.getData(), name);
 }
-function registerOptions(root: IExports, name: string, options: string): void {
+function registerOptions(root: IDataProvider, name: string, options: string): void {
     const name2 = STORE_KEY.OPTION + name;
     registerObject(root, name2, options);
 }
@@ -156,7 +156,7 @@ function registerOptions(root: IExports, name: string, options: string): void {
   * it is created when this module is loaded and is a Singleton object
   * its lifetime spans the lifetime of the HTML page
 */
-export class Bootstrap extends BaseObject implements IExports, ISvcStore {
+export class Bootstrap extends BaseObject implements IDataProvider, ISvcStore {
     public static _initFramework() {
         dom.ready(() => {
             bootstrap._getInternal().initialize();
@@ -167,7 +167,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     private _defaults: Defaults;
     private _templateLoader: TemplateLoader;
     private _bootState: BootstrapState;
-    private _exports: IIndexer<any>;
+    private _extraData: IIndexer<any>;
     private _internal: IInternalBootstrapMethods;
     private _moduleInits: { (app: IApplication): void; }[];
     private _elViewRegister: IElViewRegister;
@@ -186,7 +186,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         this._uniqueID = getNewID("app");
 
         // exported types
-        this._exports = {};
+        this._extraData = {};
         this._moduleInits = [];
         this._templateLoader = null;
         this._templateLoader = new TemplateLoader();
@@ -223,7 +223,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         const self = this;
         self.objEvents.off();
         self._destroyApp();
-        self._exports = {};
+        self._extraData = {};
         if (self._templateLoader !== null) {
             self._templateLoader.dispose();
             self._templateLoader = null;
@@ -307,13 +307,13 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             return false;
         };
     }
-    private _onTemplateLoaded(html: string, owner: IExports): void {
+    private _onTemplateLoaded(html: string, owner: IDataProvider): void {
         const divEl = doc.createElement("div");
         divEl.innerHTML = html;
         this._processOptions(owner, divEl);
         this._processTemplates(owner, divEl);
     }
-    private _processOptions(owner: IExports, root: HTMLElement | HTMLDocument): void {
+    private _processOptions(owner: IDataProvider, root: HTMLElement | HTMLDocument): void {
         const jsons = dom.queryAll<Element>(root, _OPTION_SELECTOR);
         jsons.forEach((el) => {
             const name = el.getAttribute("id");
@@ -323,7 +323,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             registerOptions(owner, name, el.innerHTML);
         });
     }
-    private _processTemplates(owner: IExports, root: HTMLElement | HTMLDocument): void {
+    private _processTemplates(owner: IDataProvider, root: HTMLElement | HTMLDocument): void {
         const self = this, templates = dom.queryAll<Element>(root, _TEMPLATE_SELECTOR);
         templates.forEach((el) => {
             const name = el.getAttribute("id");
@@ -334,7 +334,7 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
             self._processTemplate(owner, name, html);
         });
     }
-    private _processTemplate(owner: IExports, name: string, html: string): void {
+    private _processTemplate(owner: IDataProvider, name: string, html: string): void {
         const res = resolve<string>(fastTrim(html), true), loader = () => res;
         // template already loaded, register function which returns the template immediately
         registerLoader(owner, name, loader);
@@ -460,11 +460,8 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         }
         return false;
     }
-    getExports(): IIndexer<any> {
-        return this._exports;
-    }
-    getApp(): IApplication {
-        return this._app;
+    getData(): IIndexer<any> {
+        return this._extraData;
     }
     init(onInit: (bootstrap: Bootstrap) => void): void {
         const self = this;
@@ -538,6 +535,9 @@ export class Bootstrap extends BaseObject implements IExports, ISvcStore {
     }
     toString(): string {
         return "JRIApp Bootstrap";
+    }
+    get app(): IApplication {
+        return this._app;
     }
     get stylesLoader(): IStylesLoader {
         return _stylesLoader;

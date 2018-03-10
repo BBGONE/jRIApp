@@ -113,8 +113,8 @@ declare module "jriapp/int" {
     export interface ISelectableProvider {
         readonly selectable: ISelectable;
     }
-    export interface IExports {
-        getExports(): IIndexer<any>;
+    export interface IDataProvider {
+        getData(): IIndexer<any>;
     }
     export interface ISvcStore {
         getSvc<T>(name: string): T;
@@ -122,14 +122,14 @@ declare module "jriapp/int" {
     }
     export interface ITemplateLoaderInfo {
         loader: () => IPromise<string>;
-        owner: IExports;
+        owner: IDataProvider;
     }
     export interface ITemplateGroupInfo {
         name: string;
         url: string;
         loader: () => IPromise<string>;
         promise: IPromise<string>;
-        owner: IExports;
+        owner: IDataProvider;
     }
     export interface IUnResolvedBindingArgs {
         bindTo: BindTo;
@@ -311,12 +311,12 @@ declare module "jriapp/int" {
         load(names: string[]): IPromise<void>;
         whenAllLoaded(): IPromise<void>;
     }
-    export interface IInternalAppMethods extends IExports {
+    export interface IInternalAppMethods extends IDataProvider {
         bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
         bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
         getTemplateLoaderInfo(name: string): ITemplateLoaderInfo;
     }
-    export interface IApplication extends IErrorHandler, IExports, IBaseObject {
+    export interface IApplication extends IErrorHandler, IDataProvider, IBaseObject {
         _getInternal(): IInternalAppMethods;
         addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
         offOnStartUp(nmspace?: string): void;
@@ -347,16 +347,16 @@ declare module "jriapp/int" {
     }
 }
 declare module "jriapp/utils/parser" {
-    import { TBindingInfo, IApplication } from "jriapp/int";
+    import { TBindingInfo } from "jriapp/int";
     export class Parser {
         static parseOptions(options: string): any[];
-        static parseBindings(bindings: string[], app: IApplication): TBindingInfo[];
-        static parseViewOptions(options: string, app: IApplication, dataContext: any): any;
+        static parseBindings(bindings: string[]): TBindingInfo[];
+        static parseViewOptions(options: string, dataContext: any): any;
     }
 }
 declare module "jriapp/elview" {
-    import { IElViewFactory, IElViewRegister, IApplication } from "jriapp/int";
-    export function createElViewFactory(app: IApplication, register: IElViewRegister): IElViewFactory;
+    import { IElViewFactory, IElViewRegister } from "jriapp/int";
+    export function createElViewFactory(register: IElViewRegister): IElViewFactory;
     export function createElViewRegister(next?: IElViewRegister): IElViewRegister;
 }
 declare module "jriapp/content" {
@@ -389,11 +389,11 @@ declare module "jriapp/defaults" {
 }
 declare module "jriapp/utils/tloader" {
     import { IPromise, BaseObject } from "jriapp_shared";
-    import { ITemplateGroupInfo, ITemplateLoaderInfo, IExports } from "jriapp/int";
-    export function getLoader(root: IExports, name: string): ITemplateLoaderInfo;
-    export function registerLoader(root: IExports, name: string, loader: () => IPromise<string>): void;
-    export function registerTemplateGroup(root: IExports, name: string, obj: ITemplateGroupInfo): void;
-    export interface ILoaderContext extends IExports {
+    import { ITemplateGroupInfo, ITemplateLoaderInfo, IDataProvider } from "jriapp/int";
+    export function getLoader(root: IDataProvider, name: string): ITemplateLoaderInfo;
+    export function registerLoader(root: IDataProvider, name: string, loader: () => IPromise<string>): void;
+    export function registerTemplateGroup(root: IDataProvider, name: string, obj: ITemplateGroupInfo): void;
+    export interface ILoaderContext extends IDataProvider {
         getTemplateLoaderInfo: (name: string) => ITemplateLoaderInfo;
     }
     export class TemplateLoader extends BaseObject {
@@ -403,12 +403,12 @@ declare module "jriapp/utils/tloader" {
         dispose(): void;
         addOnLoaded(fn: (sender: TemplateLoader, args: {
             html: string;
-            owner: IExports;
+            owner: IDataProvider;
         }) => void, nmspace?: string): void;
         offOnLoaded(nmspace?: string): void;
         waitForNotLoading(callback: (...args: any[]) => any, callbackArgs: any): void;
         private _onLoaded(html, owner);
-        loadTemplatesAsync(owner: IExports, loader: () => IPromise<string>): IPromise<any>;
+        loadTemplatesAsync(owner: IDataProvider, loader: () => IPromise<string>): IPromise<any>;
         getTemplateLoader(context: ILoaderContext, name: string): () => IPromise<string>;
         readonly isLoading: boolean;
     }
@@ -633,7 +633,7 @@ declare module "jriapp/utils/sloader" {
 }
 declare module "jriapp/bootstrap" {
     import { IIndexer, IBaseObject, IPromise, TErrorHandler, TEventHandler, BaseObject, IObjectEvents, IWeakMap } from "jriapp_shared";
-    import { IApplication, ISelectableProvider, IExports, IConverter, ISvcStore, IContentFactoryList, IElViewRegister, IStylesLoader } from "jriapp/int";
+    import { IApplication, ISelectableProvider, IDataProvider, IConverter, ISvcStore, IContentFactoryList, IElViewRegister, IStylesLoader } from "jriapp/int";
     import { Defaults } from "jriapp/defaults";
     import { TemplateLoader } from "jriapp/utils/tloader";
     export const subscribeWeakMap: IWeakMap, selectableProviderWeakMap: IWeakMap;
@@ -650,23 +650,23 @@ declare module "jriapp/bootstrap" {
         Error = 4,
         Disposed = 5,
     }
-    export function registerConverter(root: IExports, name: string, obj: IConverter): void;
-    export function getConverter(root: IExports, name: string): IConverter;
-    export function registerSvc(root: IExports, name: string, obj: any): void;
-    export function unregisterSvc(root: IExports, name: string): any;
-    export function getSvc<T = any>(root: IExports, name: string): T;
-    export function getOptions(root: IExports, name: string): string;
-    export function registerObject(root: IExports, name: string, obj: any): void;
-    export function unregisterObject(root: IExports, name: string): any;
-    export function getObject(root: IExports, name: string): any;
-    export class Bootstrap extends BaseObject implements IExports, ISvcStore {
+    export function registerConverter(root: IDataProvider, name: string, obj: IConverter): void;
+    export function getConverter(root: IDataProvider, name: string): IConverter;
+    export function registerSvc(root: IDataProvider, name: string, obj: any): void;
+    export function unregisterSvc(root: IDataProvider, name: string): any;
+    export function getSvc<T = any>(root: IDataProvider, name: string): T;
+    export function getOptions(root: IDataProvider, name: string): string;
+    export function registerObject(root: IDataProvider, name: string, obj: any): void;
+    export function unregisterObject(root: IDataProvider, name: string): any;
+    export function getObject(root: IDataProvider, name: string): any;
+    export class Bootstrap extends BaseObject implements IDataProvider, ISvcStore {
         static _initFramework(): void;
         private _app;
         private _selectedControl;
         private _defaults;
         private _templateLoader;
         private _bootState;
-        private _exports;
+        private _extraData;
         private _internal;
         private _moduleInits;
         private _elViewRegister;
@@ -695,8 +695,7 @@ declare module "jriapp/bootstrap" {
         addOnUnLoad(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject): void;
         addOnInitialize(fn: TEventHandler<Bootstrap, any>, nmspace?: string, context?: IBaseObject): void;
         addModuleInit(fn: (app: IApplication) => void): boolean;
-        getExports(): IIndexer<any>;
-        getApp(): IApplication;
+        getData(): IIndexer<any>;
         init(onInit: (bootstrap: Bootstrap) => void): void;
         startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<TApp>;
         registerSvc(name: string, obj: any): void;
@@ -708,6 +707,7 @@ declare module "jriapp/bootstrap" {
         getImagePath(imageName: string): string;
         loadOwnStyle(name: string): IPromise<string>;
         toString(): string;
+        readonly app: IApplication;
         readonly stylesLoader: IStylesLoader;
         readonly elViewRegister: IElViewRegister;
         readonly contentFactory: IContentFactoryList;
@@ -952,7 +952,7 @@ declare module "jriapp/app" {
         private _uniqueID;
         private _objMaps;
         private _appName;
-        private _exports;
+        private _extraData;
         protected _options: IAppOptions;
         private _dataBindingService;
         private _viewFactory;
@@ -971,7 +971,7 @@ declare module "jriapp/app" {
         offOnError(nmspace?: string): void;
         addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
         offOnStartUp(nmspace?: string): void;
-        getExports(): IIndexer<any>;
+        getData(): IIndexer<any>;
         bind(opts: TBindingOptions): IBinding;
         registerConverter(name: string, obj: IConverter): void;
         getConverter(name: string): IConverter;

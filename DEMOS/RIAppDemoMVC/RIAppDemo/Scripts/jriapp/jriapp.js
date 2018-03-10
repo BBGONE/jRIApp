@@ -396,20 +396,20 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
         return parts.map(function (p) { return trim(p); });
     }
-    function inject(id, app) {
-        return !app ? bootstrap_1.bootstrap.getSvc(id) : app.getSvc(id);
+    function inject(id) {
+        return bootstrap_1.bootstrap.app.getSvc(id);
     }
-    function getOptions(id, app) {
-        return !app ? bootstrap_1.bootstrap.getOptions(id) : app.getOptions(id);
+    function getOptions(id) {
+        return bootstrap_1.bootstrap.app.getOptions(id);
     }
-    function parseById(parse_type, id, app, dataContext) {
-        var options = getOptions(id, app);
-        return parseOption(parse_type, options, app, dataContext);
+    function parseById(parse_type, id, dataContext) {
+        var options = getOptions(id);
+        return parseOption(parse_type, options, dataContext);
     }
     function isGetExpr(val) {
         return !!val && getRX.test(val);
     }
-    function parseOption(parse_type, part, app, dataContext) {
+    function parseOption(parse_type, part, dataContext) {
         var res = parse_type === 1 ? {
             targetPath: "",
             sourcePath: "",
@@ -424,7 +424,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         part = trim(part);
         if (isGetExpr(part)) {
             var id = getBraceContent(part, 0);
-            return parseById(parse_type, trim(id), app, dataContext);
+            return parseById(parse_type, trim(id), dataContext);
         }
         var kvals = getKeyVals(part);
         kvals.forEach(function (kv) {
@@ -441,9 +441,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             if (isBind) {
                 switch (parse_type) {
                     case 2:
-                        var source = dataContext || app;
+                        var source = dataContext || bootstrap_1.bootstrap.app;
                         if (bindparts.length > 1) {
-                            source = resolvePath(app, bindparts[1]);
+                            source = resolvePath(bootstrap_1.bootstrap.app, bindparts[1]);
                         }
                         res[kv.key] = resolvePath(source, bindparts[0]);
                         break;
@@ -461,13 +461,13 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             else {
                 switch (kv.tag) {
                     case "5":
-                        res[kv.key] = parseOption(parse_type, kv.val, app, dataContext);
+                        res[kv.key] = parseOption(parse_type, kv.val, dataContext);
                         break;
                     case "2":
-                        res[kv.key] = parseById(0, kv.val, app, dataContext);
+                        res[kv.key] = parseById(0, kv.val, dataContext);
                         break;
                     case "4":
-                        res[kv.key] = inject(kv.val, app);
+                        res[kv.key] = inject(kv.val);
                         break;
                     default:
                         res[kv.key] = kv.val;
@@ -477,14 +477,14 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         });
         return res;
     }
-    function parseOptions(parse_type, strs, app, dataContext) {
+    function parseOptions(parse_type, strs, dataContext) {
         var res = [];
         var parts = [];
         for (var i = 0; i < strs.length; i += 1) {
             var str = trim(strs[i]);
             if (isGetExpr(str)) {
                 var id = getBraceContent(str, 0);
-                str = trim(getOptions(trim(id), app));
+                str = trim(getOptions(trim(id)));
             }
             if (startsWith(str, "{") && endsWith(str, "}")) {
                 var subparts = getCurlyBraceParts(str);
@@ -497,7 +497,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             }
         }
         for (var j = 0; j < parts.length; j += 1) {
-            res.push(parseOption(parse_type, parts[j], app, dataContext));
+            res.push(parseOption(parse_type, parts[j], dataContext));
         }
         return res;
     }
@@ -505,13 +505,13 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         function Parser() {
         }
         Parser.parseOptions = function (options) {
-            return parseOptions(0, [options], null, null);
+            return parseOptions(0, [options], null);
         };
-        Parser.parseBindings = function (bindings, app) {
-            return parseOptions(1, bindings, app, null);
+        Parser.parseBindings = function (bindings) {
+            return parseOptions(1, bindings, null);
         };
-        Parser.parseViewOptions = function (options, app, dataContext) {
-            var res = parseOptions(2, [options], app, dataContext);
+        Parser.parseViewOptions = function (options, dataContext) {
+            var res = parseOptions(2, [options], dataContext);
             return (!!res && res.length > 0) ? res[0] : {};
         };
         return Parser;
@@ -522,8 +522,8 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstra
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_2.Utils, format = utils.str.format, parser = parser_1.Parser, ERRS = jriapp_shared_2.LocaleERRS;
-    function createElViewFactory(app, register) {
-        return new ElViewFactory(app, register);
+    function createElViewFactory(register) {
+        return new ElViewFactory(register);
     }
     exports.createElViewFactory = createElViewFactory;
     function createElViewRegister(next) {
@@ -553,7 +553,7 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstra
             }
             return res;
         };
-        ElViewRegister.prototype.getExports = function () {
+        ElViewRegister.prototype.getData = function () {
             return this._exports;
         };
         return ElViewRegister;
@@ -579,9 +579,8 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstra
     }());
     var ElViewFactory = (function (_super) {
         __extends(ElViewFactory, _super);
-        function ElViewFactory(app, register) {
+        function ElViewFactory(register) {
             var _this = _super.call(this) || this;
-            _this._app = app;
             _this._store = new ElViewStore();
             _this._register = createElViewRegister(register);
             return _this;
@@ -656,7 +655,7 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstra
             var options;
             if (el.hasAttribute("data-view-options")) {
                 var attr = el.getAttribute("data-view-options");
-                options = parser.parseViewOptions(attr, this._app, dataContext);
+                options = parser.parseViewOptions(attr, dataContext);
             }
             else {
                 options = {};
@@ -855,7 +854,7 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
     })(LOADER_EVENTS || (LOADER_EVENTS = {}));
     function getLoader(root, name) {
         var name2 = "ldr." + name;
-        return getValue(root.getExports(), name2);
+        return getValue(root.getData(), name2);
     }
     exports.getLoader = getLoader;
     function registerLoader(root, name, loader) {
@@ -864,17 +863,17 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
         }
         var name2 = "ldr." + name;
         var info = { loader: loader, owner: root };
-        setValue(root.getExports(), name2, info, true);
+        setValue(root.getData(), name2, info, true);
     }
     exports.registerLoader = registerLoader;
     function registerTemplateGroup(root, name, obj) {
         var name2 = "tgrp." + name;
-        setValue(root.getExports(), name2, obj, true);
+        setValue(root.getData(), name2, obj, true);
     }
     exports.registerTemplateGroup = registerTemplateGroup;
     function getTemplateGroup(root, name) {
         var name2 = "tgrp." + name;
-        return getValue(root.getExports(), name2);
+        return getValue(root.getData(), name2);
     }
     function getGroupName(fullName) {
         var parts = fullName.split(".");
@@ -1920,15 +1919,15 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
     }
     exports.getOptions = getOptions;
     function registerObject(root, name, obj) {
-        setValue(root.getExports(), name, obj, true);
+        setValue(root.getData(), name, obj, true);
     }
     exports.registerObject = registerObject;
     function unregisterObject(root, name) {
-        return removeValue(root.getExports(), name);
+        return removeValue(root.getData(), name);
     }
     exports.unregisterObject = unregisterObject;
     function getObject(root, name) {
-        return getValue(root.getExports(), name);
+        return getValue(root.getData(), name);
     }
     exports.getObject = getObject;
     function registerOptions(root, name, options) {
@@ -1947,7 +1946,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             _this._app = null;
             _this._selectedControl = null;
             _this._uniqueID = getNewID("app");
-            _this._exports = {};
+            _this._extraData = {};
             _this._moduleInits = [];
             _this._templateLoader = null;
             _this._templateLoader = new tloader_1.TemplateLoader();
@@ -1989,7 +1988,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             var self = this;
             self.objEvents.off();
             self._destroyApp();
-            self._exports = {};
+            self._extraData = {};
             if (self._templateLoader !== null) {
                 self._templateLoader.dispose();
                 self._templateLoader = null;
@@ -2208,11 +2207,8 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             }
             return false;
         };
-        Bootstrap.prototype.getExports = function () {
-            return this._exports;
-        };
-        Bootstrap.prototype.getApp = function () {
-            return this._app;
+        Bootstrap.prototype.getData = function () {
+            return this._extraData;
         };
         Bootstrap.prototype.init = function (onInit) {
             var self = this;
@@ -2281,6 +2277,13 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
         Bootstrap.prototype.toString = function () {
             return "JRIApp Bootstrap";
         };
+        Object.defineProperty(Bootstrap.prototype, "app", {
+            get: function () {
+                return this._app;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Bootstrap.prototype, "stylesLoader", {
             get: function () {
                 return _stylesLoader;
@@ -2654,7 +2657,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
             param: null,
             isBind: false
         };
-        var app = boot.getApp();
+        var app = boot.app;
         var converter;
         if (isString(bindInfo.converter)) {
             converter = app.getConverter(bindInfo.converter);
@@ -3304,7 +3307,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
         });
         Object.defineProperty(Binding.prototype, "app", {
             get: function () {
-                return boot.getApp();
+                return boot.app;
             },
             enumerable: true,
             configurable: true
@@ -3511,7 +3514,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
             return arrHelper.fromList(this._el.querySelectorAll(["*[", "data-name", '="', name, '"]'].join("")));
         };
         Template.prototype.findElViewsByDataName = function (name) {
-            var els = this.findElByDataName(name), res = [], viewStore = boot.getApp().viewFactory.store;
+            var els = this.findElByDataName(name), res = [], viewStore = boot.app.viewFactory.store;
             els.forEach(function (el) {
                 var elView = viewStore.getElView(el);
                 if (!!elView) {
@@ -3567,7 +3570,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
         });
         Object.defineProperty(Template.prototype, "app", {
             get: function () {
-                return bootstrap_5.bootstrap.getApp();
+                return bootstrap_5.bootstrap.app;
             },
             enumerable: true,
             configurable: true
@@ -4071,7 +4074,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
             args.lftm.addObj(args.elView);
             var bindings = args.bind.bindings;
             if (!!bindings && bindings.length > 0) {
-                var bindInfos = parser.parseBindings(bindings, this._app), len = bindInfos.length;
+                var bindInfos = parser.parseBindings(bindings), len = bindInfos.length;
                 for (var j = 0; j < len; j += 1) {
                     var op = binding_1.getBindingOptions(bindInfos[j], args.elView, args.dataContext);
                     var binding = self.bind(op);
@@ -4204,16 +4207,16 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             var self = _this, moduleInits = options.modulesInits || {}, appName = jriapp_shared_19.APP_NAME;
             _this._appName = appName;
             _this._options = options;
-            if (!!boot.getApp()) {
+            if (!!boot.app) {
                 throw new Error(format(ERRS.ERR_APP_NAME_NOT_UNIQUE, appName));
             }
             _this._uniqueID = getNewID("app");
             _this._appState = 0;
             _this._moduleInits = moduleInits;
-            _this._viewFactory = elview_2.createElViewFactory(_this, boot.elViewRegister);
+            _this._viewFactory = elview_2.createElViewFactory(boot.elViewRegister);
             _this._dataBindingService = databindsvc_1.createDataBindSvc(_this);
             _this._objMaps = [];
-            _this._exports = {};
+            _this._extraData = {};
             _this._UC = {};
             _this._internal = {
                 bindTemplate: function (templateEl, dataContext) {
@@ -4225,8 +4228,8 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
                 getTemplateLoaderInfo: function (name) {
                     return self._getTemplateLoaderInfo(name);
                 },
-                getExports: function () {
-                    return self._exports;
+                getData: function () {
+                    return self._extraData;
                 }
             };
             boot._getInternal().registerApp(_this);
@@ -4245,7 +4248,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
                 self._dataBindingService.dispose();
                 self._dataBindingService = null;
                 self._viewFactory.dispose();
-                self._exports = {};
+                self._extraData = {};
                 self._moduleInits = {};
                 self._UC = {};
                 self._options = null;
@@ -4306,8 +4309,8 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
         Application.prototype.offOnStartUp = function (nmspace) {
             this.objEvents.off("startup", nmspace);
         };
-        Application.prototype.getExports = function () {
-            return this._exports;
+        Application.prototype.getData = function () {
+            return this._extraData;
         };
         Application.prototype.bind = function (opts) {
             return this._dataBindingService.bind(opts);

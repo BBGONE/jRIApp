@@ -20,7 +20,7 @@ export interface IContentView extends IBaseObject {
 }
 
 export function getView(el: HTMLElement, name: string, options: IViewOptions): IElView {
-    const factory = boot.getApp().viewFactory, elView = factory.store.getElView(el);
+    const factory = boot.app.viewFactory, elView = factory.store.getElView(el);
     if (!!elView) {
         return elView;
     }
@@ -283,6 +283,6 @@ export class BasicContent extends BaseObject implements IContent {
         return this._options;
     }
     get app(): IApplication {
-        return boot.getApp();
+        return boot.app;
     }
 }

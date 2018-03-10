@@ -4,23 +4,23 @@ import {
 } from "jriapp_shared";
 import { DATA_ATTR } from "./const";
 import {
-    IElViewStore, IElView, IViewType, IExports, IViewOptions, IElViewInfo,
-    IElViewFactory, IElViewRegister, IApplication
+    IElViewStore, IElView, IViewType, IDataProvider, IViewOptions, IElViewInfo,
+    IElViewFactory, IElViewRegister
 } from "./int";
 import { getObject, registerObject } from "./bootstrap";
 import { Parser } from "./utils/parser";
 
 const utils = Utils, { format } = utils.str, parser = Parser, ERRS = LocaleERRS;
 
-export function createElViewFactory(app: IApplication, register: IElViewRegister): IElViewFactory {
-    return new ElViewFactory(app, register);
+export function createElViewFactory(register: IElViewRegister): IElViewFactory {
+    return new ElViewFactory(register);
 }
 
 export function createElViewRegister(next?: IElViewRegister): IElViewRegister {
     return new ElViewRegister(next);
 }
 
-class ElViewRegister implements IElViewRegister, IExports {
+class ElViewRegister implements IElViewRegister, IDataProvider {
     private _exports: IIndexer<any>;
     private _next: IElViewRegister;
 
@@ -45,7 +45,7 @@ class ElViewRegister implements IElViewRegister, IExports {
         }
         return res;
     }
-    getExports(): IIndexer<any> {
+    getData(): IIndexer<any> {
         return this._exports;
     }
 }
@@ -73,13 +73,11 @@ class ElViewStore implements IElViewStore {
 }
 
 class ElViewFactory extends BaseObject implements IElViewFactory {
-    private _app: IApplication;
     private _store: IElViewStore;
     private _register: IElViewRegister;
 
-    constructor(app: IApplication, register: IElViewRegister) {
+    constructor(register: IElViewRegister) {
         super();
-        this._app = app;
         this._store = new ElViewStore();
         this._register = createElViewRegister(register);
     }
@@ -156,7 +154,7 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
         let options: IViewOptions;
         if (el.hasAttribute(DATA_ATTR.DATA_VIEW_OPTIONS)) {
             const attr = el.getAttribute(DATA_ATTR.DATA_VIEW_OPTIONS);
-            options = <IViewOptions>parser.parseViewOptions(attr, this._app, dataContext);
+            options = <IViewOptions>parser.parseViewOptions(attr, dataContext);
         } else {
             options = {};
         }
