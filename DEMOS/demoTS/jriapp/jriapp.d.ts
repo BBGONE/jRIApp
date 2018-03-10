@@ -17,6 +17,8 @@ declare module "jriapp/const" {
         CONVERTER = "cnv.",
         OBJECT = "obj.",
         OPTION = "opt.",
+        LOADER = "ldr.",
+        TGROUP = "tgrp.",
     }
     export const enum DATA_ATTR {
         DATA_BIND = "data-bind",
@@ -118,11 +120,16 @@ declare module "jriapp/int" {
         getSvc<T>(name: string): T;
         getSvc(name: string): any;
     }
+    export interface ITemplateLoaderInfo {
+        loader: () => IPromise<string>;
+        owner: IExports;
+    }
     export interface ITemplateGroupInfo {
         name: string;
         url: string;
-        loader?: () => IPromise<string>;
-        promise?: IPromise<string>;
+        loader: () => IPromise<string>;
+        promise: IPromise<string>;
+        owner: IExports;
     }
     export interface IUnResolvedBindingArgs {
         bindTo: BindTo;
@@ -304,9 +311,10 @@ declare module "jriapp/int" {
         load(names: string[]): IPromise<void>;
         whenAllLoaded(): IPromise<void>;
     }
-    export interface IInternalAppMethods {
+    export interface IInternalAppMethods extends IExports {
         bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
         bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
+        getTemplateLoaderInfo(name: string): ITemplateLoaderInfo;
     }
     export interface IApplication extends IErrorHandler, IExports, IBaseObject {
         _getInternal(): IInternalAppMethods;
@@ -322,10 +330,10 @@ declare module "jriapp/int" {
         getObject<T>(name: string): T;
         getObject(name: string): any;
         loadTemplates(url: string): IPromise<any>;
-        loadTemplatesAsync(fnLoader: () => IPromise<string>): IPromise<any>;
-        registerTemplateLoader(name: string, fnLoader: () => IPromise<string>): void;
+        registerTemplateLoader(name: string, loader: () => IPromise<string>): void;
         getTemplateLoader(name: string): () => IPromise<string>;
         registerTemplateGroup(name: string, url: string): void;
+        getOptions(name: string): string;
         bind(opts: TBindingOptions): IBinding;
         startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
         readonly uniqueID: string;
@@ -339,16 +347,16 @@ declare module "jriapp/int" {
     }
 }
 declare module "jriapp/utils/parser" {
-    import { TBindingInfo } from "jriapp/int";
+    import { TBindingInfo, IApplication } from "jriapp/int";
     export class Parser {
         static parseOptions(options: string): any[];
-        static parseBindings(bindings: string[]): TBindingInfo[];
-        static parseViewOptions(options: string, app: any, dataContext: any): any;
+        static parseBindings(bindings: string[], app: IApplication): TBindingInfo[];
+        static parseViewOptions(options: string, app: IApplication, dataContext: any): any;
     }
 }
 declare module "jriapp/elview" {
-    import { IElViewFactory, IElViewRegister } from "jriapp/int";
-    export function createElViewFactory(register: IElViewRegister): IElViewFactory;
+    import { IElViewFactory, IElViewRegister, IApplication } from "jriapp/int";
+    export function createElViewFactory(app: IApplication, register: IElViewRegister): IElViewFactory;
     export function createElViewRegister(next?: IElViewRegister): IElViewRegister;
 }
 declare module "jriapp/content" {
@@ -381,30 +389,27 @@ declare module "jriapp/defaults" {
 }
 declare module "jriapp/utils/tloader" {
     import { IPromise, BaseObject } from "jriapp_shared";
-    import { ITemplateGroupInfo } from "jriapp/int";
+    import { ITemplateGroupInfo, ITemplateLoaderInfo, IExports } from "jriapp/int";
+    export function getLoader(root: IExports, name: string): ITemplateLoaderInfo;
+    export function registerLoader(root: IExports, name: string, loader: () => IPromise<string>): void;
+    export function registerTemplateGroup(root: IExports, name: string, obj: ITemplateGroupInfo): void;
+    export interface ILoaderContext extends IExports {
+        getTemplateLoaderInfo: (name: string) => ITemplateLoaderInfo;
+    }
     export class TemplateLoader extends BaseObject {
-        private _templateLoaders;
-        private _templateGroups;
         private _promises;
         private _waitQueue;
         constructor();
         dispose(): void;
         addOnLoaded(fn: (sender: TemplateLoader, args: {
             html: string;
+            owner: IExports;
         }) => void, nmspace?: string): void;
         offOnLoaded(nmspace?: string): void;
         waitForNotLoading(callback: (...args: any[]) => any, callbackArgs: any): void;
-        private _onLoaded(html);
-        private _getTemplateGroup(name);
-        private _registerTemplateLoader(name, loader);
-        private _getTemplateLoader(name);
-        loadTemplatesAsync(loader: () => IPromise<string>): IPromise<any>;
-        unRegisterTemplateLoader(name: string): void;
-        unRegisterTemplateGroup(name: string): void;
-        registerTemplateLoader(name: string, loader: () => IPromise<string>): void;
-        getTemplateLoader(name: string): () => IPromise<string>;
-        registerTemplateGroup(group: ITemplateGroupInfo): void;
-        loadTemplates(url: string): IPromise<any>;
+        private _onLoaded(html, owner);
+        loadTemplatesAsync(owner: IExports, loader: () => IPromise<string>): IPromise<any>;
+        getTemplateLoader(context: ILoaderContext, name: string): () => IPromise<string>;
         readonly isLoading: boolean;
     }
 }
@@ -636,10 +641,6 @@ declare module "jriapp/bootstrap" {
         initialize(): IPromise<Bootstrap>;
         registerApp(app: IApplication): void;
         unregisterApp(app: IApplication): void;
-        registerObject(root: IExports, name: string, obj: any): void;
-        unregisterObject(root: IExports, name: string): void;
-        getObject(root: IExports, name: string): any;
-        getConverter(name: string): IConverter;
     }
     export const enum BootstrapState {
         None = 0,
@@ -649,6 +650,15 @@ declare module "jriapp/bootstrap" {
         Error = 4,
         Disposed = 5,
     }
+    export function registerConverter(root: IExports, name: string, obj: IConverter): void;
+    export function getConverter(root: IExports, name: string): IConverter;
+    export function registerSvc(root: IExports, name: string, obj: any): void;
+    export function unregisterSvc(root: IExports, name: string): any;
+    export function getSvc<T = any>(root: IExports, name: string): T;
+    export function getOptions(root: IExports, name: string): string;
+    export function registerObject(root: IExports, name: string, obj: any): void;
+    export function unregisterObject(root: IExports, name: string): any;
+    export function getObject(root: IExports, name: string): any;
     export class Bootstrap extends BaseObject implements IExports, ISvcStore {
         static _initFramework(): void;
         private _app;
@@ -665,18 +675,16 @@ declare module "jriapp/bootstrap" {
         constructor();
         dispose(): void;
         private _bindGlobalEvents();
-        private _onTemplateLoaded(html);
-        private _processOptions(root);
-        private _processTemplates(root);
-        private _processHTMLTemplates();
-        private _processTemplate(name, html);
+        private _onTemplateLoaded(html, owner);
+        private _processOptions(owner, root);
+        private _processTemplates(owner, root);
+        private _processTemplate(owner, name, html);
         protected _createObjEvents(): IObjectEvents;
         private _init();
         private _initialize();
         private _registerApp(app);
         private _unregisterApp(app);
         private _destroyApp();
-        private _getConverter(name);
         private _waitLoaded(onLoad);
         _getInternal(): IInternalBootstrapMethods;
         addOnDisposed(handler: TEventHandler<Bootstrap, any>, nmspace?: string, context?: object): void;
@@ -692,10 +700,10 @@ declare module "jriapp/bootstrap" {
         init(onInit: (bootstrap: Bootstrap) => void): void;
         startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<TApp>;
         registerSvc(name: string, obj: any): void;
-        unregisterSvc(name: string): any;
+        unregisterSvc(name: string): void;
         getSvc<T = any>(name: string): T;
-        registerConverter(name: string, obj: IConverter): void;
         getOptions(name: string): string;
+        registerConverter(name: string, obj: IConverter): void;
         registerElView(name: string, elViewType: any): void;
         getImagePath(imageName: string): string;
         loadOwnStyle(name: string): IPromise<string>;
@@ -779,7 +787,7 @@ declare module "jriapp/converter" {
 declare module "jriapp/binding" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
     import { BINDING_MODE } from "jriapp/const";
-    import { TBindingInfo, TBindingOptions, IBinding, IConverter } from "jriapp/int";
+    import { TBindingInfo, TBindingOptions, IBinding, IConverter, IApplication } from "jriapp/int";
     export function getBindingOptions(bindInfo: TBindingInfo, defTarget: IBaseObject, dataContext: any): TBindingOptions;
     export class Binding extends BaseObject implements IBinding {
         private _state;
@@ -829,6 +837,7 @@ declare module "jriapp/binding" {
         readonly converter: IConverter;
         readonly param: any;
         isDisabled: boolean;
+        readonly app: IApplication;
     }
 }
 declare module "jriapp/template" {
@@ -931,8 +940,8 @@ declare module "jriapp/utils/mloader" {
     export function create(): IModuleLoader;
 }
 declare module "jriapp/databindsvc" {
-    import { IElViewFactory, IDataBindingService } from "jriapp/int";
-    export function createDataBindSvc(root: Document | Element, elViewFactory: IElViewFactory): IDataBindingService;
+    import { IDataBindingService, IApplication } from "jriapp/int";
+    export function createDataBindSvc(app: IApplication): IDataBindingService;
 }
 declare module "jriapp/app" {
     import { IIndexer, TEventHandler, IPromise, TErrorHandler, IBaseObject, BaseObject } from "jriapp_shared";
@@ -953,6 +962,7 @@ declare module "jriapp/app" {
         dispose(): void;
         private _cleanUpObjMaps();
         private _initAppModules();
+        private _getTemplateLoaderInfo(name);
         protected onStartUp(): any;
         _getInternal(): IInternalAppMethods;
         addOnDisposed(handler: TEventHandler<IApplication, any>, nmspace?: string, context?: object): void;
@@ -966,17 +976,18 @@ declare module "jriapp/app" {
         registerConverter(name: string, obj: IConverter): void;
         getConverter(name: string): IConverter;
         registerSvc(name: string, obj: any): void;
-        getSvc(name: string): any;
+        unregisterSvc(name: string): void;
+        getSvc<T = any>(name: string): T;
         registerElView(name: string, vwType: IViewType): void;
         registerObject(name: string, obj: any): void;
         getObject<T = any>(name: string): T;
         startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
         loadTemplates(url: string): IPromise<any>;
-        loadTemplatesAsync(loader: () => IPromise<string>): IPromise<any>;
         registerTemplateLoader(name: string, loader: () => IPromise<string>): void;
         registerTemplateById(name: string, templateId: string): void;
         getTemplateLoader(name: string): () => IPromise<string>;
         registerTemplateGroup(name: string, url: string): void;
+        getOptions(name: string): string;
         toString(): string;
         readonly uniqueID: string;
         readonly options: IAppOptions;
@@ -1005,5 +1016,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.17.1";
+    export const VERSION = "2.17.2";
 }
