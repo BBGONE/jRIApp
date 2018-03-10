@@ -6,17 +6,21 @@ import {
 import { STORE_KEY } from "./const";
 import {
     IElViewFactory, IViewType, IApplication,
-    TBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo,
+    TBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo, ITemplateLoaderInfo,
     IDataBindingService, IBinding, IBindArgs
 } from "./int";
-import { bootstrap } from "./bootstrap";
+import {
+    bootstrap, getOptions, registerSvc, unregisterSvc, getSvc, registerConverter, getConverter,
+    getObject, registerObject, unregisterObject
+} from "./bootstrap";
 import { DomUtils } from "./utils/dom";
+import { getLoader, registerLoader, registerTemplateGroup } from "./utils/tloader";
 import { createElViewFactory } from "./elview";
 import { createDataBindSvc } from "./databindsvc";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, { format } = utils.str,
-    { isThenable, isFunc } = utils.check, boot = bootstrap, sys = utils.sys, ERRS = LocaleERRS,
-    { forEachProp, getNewID, memoize } = utils.core, { createDeferred, reject } = utils.defer;
+    { isThenable } = utils.check, boot = bootstrap, sys = utils.sys, ERRS = LocaleERRS,
+    { forEachProp, getNewID, memoize } = utils.core, { createDeferred, resolve, reject } = utils.defer, http = utils.http;
 
 const enum APP_EVENTS {
     startup = "startup"
@@ -51,8 +55,8 @@ export class Application extends BaseObject implements IApplication {
         this._uniqueID = getNewID("app");
         this._appState = AppState.None;
         this._moduleInits = moduleInits;
-        this._viewFactory = createElViewFactory(boot.elViewRegister);
-        this._dataBindingService = createDataBindSvc(this.appRoot, this._viewFactory);
+        this._viewFactory = createElViewFactory(this, boot.elViewRegister);
+        this._dataBindingService = createDataBindSvc(this);
 
         this._objMaps = [];
         // registered exported types
@@ -64,6 +68,12 @@ export class Application extends BaseObject implements IApplication {
             },
             bindElements: (args: IBindArgs) => {
                 return self._dataBindingService.bindElements(args);
+            },
+            getTemplateLoaderInfo: (name: string) => {
+                return self._getTemplateLoaderInfo(name);
+            },
+            getExports: () => {
+                return self._exports;
             }
         };
 
@@ -112,6 +122,13 @@ export class Application extends BaseObject implements IApplication {
             initFn(<IApplication>self);
         });
     }
+    private _getTemplateLoaderInfo(name: string): ITemplateLoaderInfo {
+        let res: ITemplateLoaderInfo = getLoader(this, name);
+        if (!res) {
+            res = getLoader(boot, name);
+        }
+        return res;
+    }
     /**
     can be overriden in derived classes
     it can return a promise when it's needed
@@ -146,18 +163,12 @@ export class Application extends BaseObject implements IApplication {
         return this._dataBindingService.bind(opts);
     }
     registerConverter(name: string, obj: IConverter): void {
-        const name2 = STORE_KEY.CONVERTER + name;
-        if (!boot._getInternal().getObject(this, name2)) {
-            boot._getInternal().registerObject(this, name2, obj);
-        } else {
-            throw new Error(format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
-        }
+        registerConverter(this, name, obj);
     }
     getConverter(name: string): IConverter {
-        const name2 = STORE_KEY.CONVERTER + name;
-        let res = boot._getInternal().getObject(this, name2);
+        let res = getConverter(this, name);
         if (!res) {
-            res = boot._getInternal().getObject(boot, name2);
+            res = getConverter(boot, name);
         }
         if (!res) {
             throw new Error(format(ERRS.ERR_CONVERTER_NOTREGISTERED, name));
@@ -165,24 +176,20 @@ export class Application extends BaseObject implements IApplication {
         return res;
     }
     registerSvc(name: string, obj: any): void {
-        const name2 = STORE_KEY.SVC + name;
-        return boot._getInternal().registerObject(this, name2, obj);
+        registerSvc(this, name, obj);
     }
-    getSvc(name: string): any;
-    getSvc<T>(name: string): T {
-        const name2 = STORE_KEY.SVC + name, internal = boot._getInternal();
-        let obj = internal.getObject(this, name2);
+    unregisterSvc(name: string): void {
+        unregisterSvc(this, name);
+    }
+    getSvc<T = any>(name: string): T {
+        let obj = getSvc(this, name);
         if (!obj) {
-            obj = internal.getObject(boot, name2);
+            obj = getSvc(boot, name);
         }
         if (!obj) {
             throw new Error(`The service: ${name} is not registered`);
         }
-        const res = isFunc(obj) ? obj() : obj;
-        if (!res) {
-            throw new Error(`The factory for service: ${name} have not returned the service`);
-        }
-        return res;
+        return obj;
     }
     registerElView(name: string, vwType: IViewType): void {
         this._viewFactory.register.registerElView(name, vwType);
@@ -192,19 +199,19 @@ export class Application extends BaseObject implements IApplication {
       similar to the dependency injection container - you can later obtain the registerd object with the getObject function
     */
     registerObject(name: string, obj: any): void {
-        const self = this, name2 = STORE_KEY.OBJECT + name, internal = boot._getInternal();
+        const self = this, name2 = STORE_KEY.OBJECT + name;
         if (sys.isBaseObj(obj)) {
             obj.objEvents.addOnDisposed(() => {
-                internal.unregisterObject(self, name2);
+                unregisterObject(self, name2);
             }, self.uniqueID);
         }
-        const objMap = internal.registerObject(self, name2, obj);
+        const objMap = registerObject(self, name2, obj);
         if (this._objMaps.indexOf(objMap) < 0) {
             this._objMaps.push(objMap);
         }
     }
     getObject<T = any>(name: string): T {
-        const name2 = STORE_KEY.OBJECT + name, res = boot._getInternal().getObject(this, name2);
+        const name2 = STORE_KEY.OBJECT + name, res = getObject(this, name2);
         return res;
     }
     /**
@@ -285,32 +292,26 @@ export class Application extends BaseObject implements IApplication {
     }
     // loads a group of templates from the server
     loadTemplates(url: string): IPromise<any> {
-        return this.loadTemplatesAsync(() => utils.http.getAjax(url));
+        return boot.templateLoader.loadTemplatesAsync(this, () => http.getAjax(url));
     }
-    // loads a group of templates from the server
-    loadTemplatesAsync(loader: () => IPromise<string>): IPromise<any> {
-        return boot.templateLoader.loadTemplatesAsync(loader);
-    }
-    // fn_loader must load template and return promise which resolves with the loaded HTML string
+    // loader must load template and return promise which resolves with the loaded HTML string
     registerTemplateLoader(name: string, loader: () => IPromise<string>): void {
-        boot.templateLoader.registerTemplateLoader(name, loader);
+        registerLoader(this, name, loader);
     }
     // register loading a template from html element by its id value
     registerTemplateById(name: string, templateId: string): void {
         this.registerTemplateLoader(name, memoize(() => {
-            const deferred = createDeferred<string>(true), el = dom.queryOne<Element>(doc, "#" + templateId);
+            const el = dom.queryOne<Element>(doc, "#" + templateId);
             if (!el) {
                 throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, templateId));
             }
-            const str = el.innerHTML;
-            deferred.resolve(str);
-            return deferred.promise();
+            return resolve<string>(el.innerHTML, true);
         }));
     }
     getTemplateLoader(name: string): () => IPromise<string> {
-        let res = boot.templateLoader.getTemplateLoader(name);
+        let res = boot.templateLoader.getTemplateLoader(this._getInternal(), name);
         if (!res) {
-            return () => { return reject<string>(new Error(format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
+            res = () => { return reject<string>(new Error(format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
         }
         return res;
     }
@@ -318,10 +319,23 @@ export class Application extends BaseObject implements IApplication {
         const group: ITemplateGroupInfo = {
             name: name,
             url: url,
-            loader: <() => IPromise<string>>null,
-            promise: <IPromise<string>>null
+            loader: () => {
+                return http.getAjax(group.url);
+            },
+            promise: null,
+            owner: this
         };
-        boot.templateLoader.registerTemplateGroup(group);
+        registerTemplateGroup(this, name, group);
+    }
+    getOptions(name: string): string {
+        let res = getOptions(this, name);
+        if (!res) {
+            res = getOptions(boot, name);
+        }
+        if (!res) {
+            throw new Error(format(ERRS.ERR_OPTIONS_NOTREGISTERED, name));
+        }
+        return res;
     }
     toString(): string {
         return "Application: " + this.appName;

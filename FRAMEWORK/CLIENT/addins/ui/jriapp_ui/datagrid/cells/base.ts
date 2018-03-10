@@ -83,7 +83,9 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject implements 
     get td(): HTMLTableCellElement { return this._td; }
     get row(): Row { return this._row; }
     get column(): TColumn { return this._column; }
-    get grid(): DataGrid { return this._row.grid; }
+    get grid(): DataGrid {
+        return this._row.grid;
+    }
     get item(): ICollectionItem { return this._row.item; }
     get uniqueID(): string { return this._row.uniqueID + "_" + this._num; }
     get num(): number { return this._num; }

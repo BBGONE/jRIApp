@@ -329,8 +329,8 @@ function inject(id: string, app: IApplication): string {
     return !app ? bootstrap.getSvc(id) : app.getSvc(id);
 }
 
-function getOptions(id: string): string {
-    return bootstrap.getOptions(id);
+function getOptions(id: string, app: IApplication): string {
+    return !app ? bootstrap.getOptions(id) : app.getOptions(id);
 }
 
 /**
@@ -338,8 +338,8 @@ function getOptions(id: string): string {
     * where id  is an ID of a script tag which contains options
     * as in: get(gridOptions)
 */
-function parseById(parse_type: PARSE_TYPE, id: string, app: any, dataContext: any): any {
-    const options = getOptions(id);
+function parseById(parse_type: PARSE_TYPE, id: string, app: IApplication, dataContext: any): any {
+    const options = getOptions(id, app);
     return parseOption(parse_type, options, app, dataContext);
 }
 
@@ -348,7 +348,7 @@ function isGetExpr(val: string): boolean {
 }
 
 
-function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext: any): any {
+function parseOption(parse_type: PARSE_TYPE, part: string, app: IApplication, dataContext: any): any {
     const res: any = parse_type === PARSE_TYPE.BINDING ? {
         targetPath: "",
         sourcePath: "",
@@ -422,14 +422,14 @@ function parseOption(parse_type: PARSE_TYPE, part: string, app: any, dataContext
     return res;
 }
 
-function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: any, dataContext: any): any[] {
+function parseOptions(parse_type: PARSE_TYPE, strs: string[], app: IApplication, dataContext: any): any[] {
     const res: any[] = [];
     let parts: string[] = [];
     for (let i = 0; i < strs.length; i += 1) {
         let str = trim(strs[i]);
         if (isGetExpr(str)) {
             const id = getBraceContent(str, BRACKETS.ROUND);
-            str = trim(getOptions(trim(id)));
+            str = trim(getOptions(trim(id), app));
         }
         if (startsWith(str, "{") && endsWith(str, "}")) {
             const subparts = getCurlyBraceParts(str);
@@ -452,10 +452,10 @@ export class Parser {
     static parseOptions(options: string): any[] {
         return parseOptions(PARSE_TYPE.NONE, [options], null, null);
     }
-    static parseBindings(bindings: string[]): TBindingInfo[] {
-        return parseOptions(PARSE_TYPE.BINDING, bindings, null, null);
+    static parseBindings(bindings: string[], app: IApplication): TBindingInfo[] {
+        return parseOptions(PARSE_TYPE.BINDING, bindings, app, null);
     }
-    static parseViewOptions(options: string, app: any, dataContext: any): any {
+    static parseViewOptions(options: string, app: IApplication, dataContext: any): any {
         const res = parseOptions(PARSE_TYPE.VIEW, [options], app, dataContext);
         return (!!res && res.length > 0) ? res[0] : {};
     }

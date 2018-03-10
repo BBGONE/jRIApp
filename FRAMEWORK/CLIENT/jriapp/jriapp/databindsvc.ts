@@ -5,9 +5,8 @@ import {
 import { DATA_ATTR, ELVIEW_NM, BindScope } from "./const";
 import {
     IElViewFactory, IElView, ILifeTimeScope, IBindArgs,
-    TBindingOptions, IDataBindingService, IModuleLoader
+    TBindingOptions, IDataBindingService, IModuleLoader, IApplication
 } from "./int";
-import { bootstrap } from "./bootstrap";
 import { LifeTimeScope } from "./utils/lifetime";
 import { DomUtils } from "./utils/dom";
 import { create as createModulesLoader } from "./utils/mloader";
@@ -16,10 +15,10 @@ import { ViewChecks } from "./utils/viewchecks";
 import { Parser } from "./utils/parser";
 
 const utils = Utils, { createDeferred } = utils.defer, viewChecks = ViewChecks, dom = DomUtils,
-    { startsWith, fastTrim } = utils.str, boot = bootstrap, parser = Parser, { forEachProp } = utils.core;
+    { startsWith, fastTrim } = utils.str, parser = Parser, { forEachProp } = utils.core;
 
-export function createDataBindSvc(root: Document | Element, elViewFactory: IElViewFactory): IDataBindingService {
-    return new DataBindingService(root, elViewFactory);
+export function createDataBindSvc(app: IApplication): IDataBindingService {
+    return new DataBindingService(app);
 }
 
 interface IBindable {
@@ -122,11 +121,13 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
     private _elViewFactory: IElViewFactory;
     private _objLifeTime: ILifeTimeScope;
     private _mloader: IModuleLoader;
+    private _app: IApplication;
 
-    constructor(root: Document | Element, elViewFactory: IElViewFactory) {
+    constructor(app: IApplication) {
         super();
-        this._root = root;
-        this._elViewFactory = elViewFactory;
+        this._app = app;
+        this._root = app.appRoot;
+        this._elViewFactory = app.viewFactory;
         this._objLifeTime = null;
         this._mloader = createModulesLoader();
     }
@@ -134,6 +135,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         this._cleanUp();
         this._elViewFactory = null;
         this._mloader = null;
+        this._app = null;
         super.dispose();
     }
     private _cleanUp(): void {
@@ -149,7 +151,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         // then create databinding if element has data-bind attribute
         const bindings = args.bind.bindings;
         if (!!bindings && bindings.length > 0) {
-            const bindInfos = parser.parseBindings(bindings),
+            const bindInfos = parser.parseBindings(bindings, this._app),
                 len = bindInfos.length;
             for (let j = 0; j < len; j += 1) {
                 const op = getBindingOptions(bindInfos[j], args.elView, args.dataContext);
@@ -243,7 +245,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         return defer.promise();
     }
     setUpBindings(): IVoidPromise {
-        const bindScope = this._root, dataContext = boot.getApp(), self = this;
+        const bindScope = this._root, dataContext = this._app, self = this;
         this._cleanUp();
         const promise = this.bindElements({
             scope: bindScope,

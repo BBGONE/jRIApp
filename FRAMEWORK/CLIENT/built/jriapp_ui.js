@@ -4783,7 +4783,9 @@ define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_shared", 
             configurable: true
         });
         Object.defineProperty(BaseCell.prototype, "grid", {
-            get: function () { return this._row.grid; },
+            get: function () {
+                return this._row.grid;
+            },
             enumerable: true,
             configurable: true
         });

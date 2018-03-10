@@ -5,15 +5,15 @@ import {
 import { DATA_ATTR } from "./const";
 import {
     IElViewStore, IElView, IViewType, IExports, IViewOptions, IElViewInfo,
-    IElViewFactory, IElViewRegister
+    IElViewFactory, IElViewRegister, IApplication
 } from "./int";
-import { bootstrap } from "./bootstrap";
+import { getObject, registerObject } from "./bootstrap";
 import { Parser } from "./utils/parser";
 
-const utils = Utils, parser = Parser, ERRS = LocaleERRS;
+const utils = Utils, { format } = utils.str, parser = Parser, ERRS = LocaleERRS;
 
-export function createElViewFactory(register: IElViewRegister): IElViewFactory {
-    return new ElViewFactory(register);
+export function createElViewFactory(app: IApplication, register: IElViewRegister): IElViewFactory {
+    return new ElViewFactory(app, register);
 }
 
 export function createElViewRegister(next?: IElViewRegister): IElViewRegister {
@@ -32,14 +32,14 @@ class ElViewRegister implements IElViewRegister, IExports {
         this._exports = {};
     }
     registerElView(name: string, vwType: IViewType): void {
-        if (!bootstrap._getInternal().getObject(this, name)) {
-            bootstrap._getInternal().registerObject(this, name, vwType);
+        if (!getObject(this, name)) {
+            registerObject(this, name, vwType);
         } else {
             throw new Error(utils.str.format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
         }
     }
     getElViewType(name: string): IViewType {
-        let res = bootstrap._getInternal().getObject(this, name);
+        let res = getObject(this, name);
         if (!res && !!this._next) {
             res = this._next.getElViewType(name);
         }
@@ -73,11 +73,13 @@ class ElViewStore implements IElViewStore {
 }
 
 class ElViewFactory extends BaseObject implements IElViewFactory {
+    private _app: IApplication;
     private _store: IElViewStore;
     private _register: IElViewRegister;
 
-    constructor(register: IElViewRegister) {
+    constructor(app: IApplication, register: IElViewRegister) {
         super();
+        this._app = app;
         this._store = new ElViewStore();
         this._register = createElViewRegister(register);
     }
@@ -98,7 +100,7 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
         if (!!name) {
             viewType = this._register.getElViewType(name);
             if (!viewType) {
-                throw new Error(utils.str.format(ERRS.ERR_ELVIEW_NOT_REGISTERED, name));
+                throw new Error(format(ERRS.ERR_ELVIEW_NOT_REGISTERED, name));
             }
         }
         if (!viewType) {
@@ -117,7 +119,7 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
             }
 
             if (!viewType) {
-                throw new Error(utils.str.format(ERRS.ERR_ELVIEW_NOT_CREATED, nodeNm));
+                throw new Error(format(ERRS.ERR_ELVIEW_NOT_CREATED, nodeNm));
             }
         }
 
@@ -154,7 +156,7 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
         let options: IViewOptions;
         if (el.hasAttribute(DATA_ATTR.DATA_VIEW_OPTIONS)) {
             const attr = el.getAttribute(DATA_ATTR.DATA_VIEW_OPTIONS);
-            options = <IViewOptions>parser.parseViewOptions(attr, bootstrap.getApp(), dataContext);
+            options = <IViewOptions>parser.parseViewOptions(attr, this._app, dataContext);
         } else {
             options = {};
         }

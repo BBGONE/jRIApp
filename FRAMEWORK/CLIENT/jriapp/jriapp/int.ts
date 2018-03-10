@@ -62,11 +62,17 @@ export interface ISvcStore {
     getSvc(name: string): any;
 }
 
+export interface ITemplateLoaderInfo {
+    loader: () => IPromise<string>;
+    owner: IExports;
+}
+
 export interface ITemplateGroupInfo {
     name: string;
     url: string;
-    loader?: () => IPromise<string>;
-    promise?: IPromise<string>;
+    loader: () => IPromise<string>;
+    promise: IPromise<string>;
+    owner: IExports;
 }
 
 export interface IUnResolvedBindingArgs {
@@ -286,9 +292,10 @@ export interface IModuleLoader {
 }
 
 // --Application interfaces
-export interface IInternalAppMethods {
+export interface IInternalAppMethods extends IExports {
     bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
     bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
+    getTemplateLoaderInfo(name: string): ITemplateLoaderInfo;
 }
 
 export interface IApplication extends IErrorHandler, IExports, IBaseObject {
@@ -305,10 +312,10 @@ export interface IApplication extends IErrorHandler, IExports, IBaseObject {
     getObject<T>(name: string): T;
     getObject(name: string): any;
     loadTemplates(url: string): IPromise<any>;
-    loadTemplatesAsync(fnLoader: () => IPromise<string>): IPromise<any>;
-    registerTemplateLoader(name: string, fnLoader: () => IPromise<string>): void;
+    registerTemplateLoader(name: string, loader: () => IPromise<string>): void;
     getTemplateLoader(name: string): () => IPromise<string>;
     registerTemplateGroup(name: string, url: string): void;
+    getOptions(name: string): string;
     bind(opts: TBindingOptions): IBinding;
     startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
     readonly uniqueID: string;

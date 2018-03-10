@@ -4,13 +4,13 @@ import {
     BaseObject, Utils
 } from "jriapp_shared";
 import { BINDING_MODE, BindTo } from "./const";
-import { TBindingInfo, TBindingOptions, IBinding, IConverter } from "./int";
-import { bootstrap } from "./bootstrap";
+import { TBindingInfo, TBindingOptions, IBinding, IConverter, IApplication } from "./int";
+import { bootstrap } from "jriapp/bootstrap";
 
 const utils = Utils, { isString, isUndefined, isNt, _undefined, isHasProp } = utils.check, { format } = utils.str, { getNewID, forEachProp } = utils.core,
     sys = utils.sys, debug = utils.debug, log = utils.log,
-    boot = bootstrap, ERRS = LocaleERRS;
-const { resolvePath, getPathParts, getErrorNotification, getProp, setProp } = sys;
+    ERRS = LocaleERRS;
+const { resolvePath, getPathParts, getErrorNotification, getProp, setProp } = sys, boot = bootstrap;
 
 sys.isBinding = (obj: any): boolean => {
     return (!!obj && obj instanceof Binding);
@@ -83,10 +83,8 @@ export function getBindingOptions(bindInfo: TBindingInfo, defTarget: IBaseObject
         param: null,
         isBind: false
     };
-
-    let converter: IConverter;
     const app = boot.getApp();
-
+    let converter: IConverter;
     if (isString(bindInfo.converter)) {
         converter = app.getConverter(bindInfo.converter);
     } else {
@@ -179,55 +177,40 @@ export class Binding extends BaseObject implements IBinding {
 
     constructor(options: TBindingOptions) {
         super();
-        /*
-        const opts: TBindingOptions = extend({
-            target: null,
-            source: null,
-            targetPath: null,
-            sourcePath: null,
-            isSourceFixed: false,
-            mode: BINDING_MODE.OneWay,
-            converter: null,
-            param: null,
-            isBind: false
-        }, options);
-        */
-        const opts = options;
-
-        if (isString(opts.mode)) {
-            opts.mode = bindModeMap[opts.mode];
+        if (isString(options.mode)) {
+            options.mode = bindModeMap[options.mode];
         }
 
-        if (!isString(opts.targetPath)) {
+        if (!isString(options.targetPath)) {
             debug.checkStartDebugger();
-            throw new Error(format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
+            throw new Error(format(ERRS.ERR_BIND_TGTPATH_INVALID, options.targetPath));
         }
 
-        if (isNt(opts.mode)) {
+        if (isNt(options.mode)) {
             debug.checkStartDebugger();
-            throw new Error(format(ERRS.ERR_BIND_MODE_INVALID, opts.mode));
+            throw new Error(format(ERRS.ERR_BIND_MODE_INVALID, options.mode));
         }
 
-        if (!opts.target) {
+        if (!options.target) {
             throw new Error(ERRS.ERR_BIND_TARGET_EMPTY);
         }
 
-        if (!sys.isBaseObj(opts.target)) {
+        if (!sys.isBaseObj(options.target)) {
             throw new Error(ERRS.ERR_BIND_TARGET_INVALID);
         }
 
         // save the state - source and target, when the binding is disabled
         this._state = null;
-        this._mode = opts.mode;
-        this._converter = !opts.converter ? null : opts.converter;
-        this._param = opts.param;
-        this._isBindParam = !!opts.isBind;
-        this._srcPath = getPathParts(opts.sourcePath);
-        this._tgtPath = getPathParts(opts.targetPath);
+        this._mode = options.mode;
+        this._converter = !options.converter ? null : options.converter;
+        this._param = options.param;
+        this._isBindParam = !!options.isBind;
+        this._srcPath = getPathParts(options.sourcePath);
+        this._tgtPath = getPathParts(options.targetPath);
         if (this._tgtPath.length < 1) {
-            throw new Error(format(ERRS.ERR_BIND_TGTPATH_INVALID, opts.targetPath));
+            throw new Error(format(ERRS.ERR_BIND_TGTPATH_INVALID, options.targetPath));
         }
-        this._srcFixed = (!!opts.isSourceFixed);
+        this._srcFixed = (!!options.isSourceFixed);
         this._pathItems = {};
         this._uniqueID = getNewID("bnd");
         this._srcEnd = null;
@@ -238,8 +221,8 @@ export class Binding extends BaseObject implements IBinding {
         this._umask = 0;
         this._cntUtgt = 0;
         this._cntUSrc = 0;
-        this._setTarget(opts.target);
-        this._setSource(opts.source);
+        this._setTarget(options.target);
+        this._setSource(options.source);
         this._update();
 
         const errNotif = getErrorNotification(this._srcEnd);
@@ -759,7 +742,7 @@ export class Binding extends BaseObject implements IBinding {
             let source = this.source;
             if (bindparts.length > 1) {
                 //resolve source (second path relative to the application in the array)
-                source = resolvePath(boot.getApp(), bindparts[1]);
+                source = resolvePath(this.app, bindparts[1]);
             }
             return resolvePath(source, bindparts[0]);
         } else {
@@ -791,5 +774,8 @@ export class Binding extends BaseObject implements IBinding {
                 this._update();
             }
         }
+    }
+    get app(): IApplication {
+        return boot.getApp();
     }
 }

@@ -16,7 +16,9 @@ export const enum STORE_KEY {
     SVC = "svc.",
     CONVERTER = "cnv.",
     OBJECT = "obj.",
-    OPTION = "opt."
+    OPTION = "opt.",
+    LOADER = "ldr.",
+    TGROUP = "tgrp."
 }
 
 export const enum DATA_ATTR {
