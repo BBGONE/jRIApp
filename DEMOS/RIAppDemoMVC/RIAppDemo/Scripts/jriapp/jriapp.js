@@ -1303,7 +1303,7 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
 define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils/domevents"], function (require, exports, jriapp_shared_7, domevents_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var arrHelper = jriapp_shared_7.Utils.arr, fastTrim = jriapp_shared_7.Utils.str.fastTrim, win = window, doc = win.document, queue = jriapp_shared_7.Utils.queue, hasClassList = ("classList" in window.document.documentElement), weakmap = jriapp_shared_7.createWeakMap();
+    var fromList = jriapp_shared_7.Utils.arr.fromList, fastTrim = jriapp_shared_7.Utils.str.fastTrim, win = window, doc = win.document, queue = jriapp_shared_7.Utils.queue, hasClassList = ("classList" in window.document.documentElement), weakmap = jriapp_shared_7.createWeakMap();
     var _checkDOMReady = (function () {
         var funcs = [], hack = doc.documentElement.doScroll, domContentLoaded = "DOMContentLoaded";
         var isDOMloaded = (hack ? /^loaded|^c/ : /^loaded|^i|^c/).test(doc.readyState);
@@ -1366,11 +1366,11 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
         DomUtils.fromHTML = function (html) {
             var div = doc.createElement("div");
             div.innerHTML = html;
-            return arrHelper.fromList(div.children);
+            return fromList(div.children);
         };
         DomUtils.queryAll = function (root, selector) {
             var res = root.querySelectorAll(selector);
-            return arrHelper.fromList(res);
+            return fromList(res);
         };
         DomUtils.queryOne = function (root, selector) {
             return root.querySelector(selector);
@@ -3339,7 +3339,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
             var _this = _super.call(this) || this;
             _this._dataContext = options.dataContext;
             _this._templEvents = options.templEvents;
-            _this._loadedElem = null;
+            _this._isLoaded = false;
             _this._lfTime = null;
             _this._templateID = null;
             _this._templElView = null;
@@ -3368,20 +3368,10 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
             return !this._lfTime ? null : this._lfTime.findFirst(viewChecks.isTemplateElView);
         };
         Template.prototype._loadAsync = function (name) {
-            var self = this, fnLoader = this.app.getTemplateLoader(name);
+            var self = this, loader = this.app.getTemplateLoader(name);
             var promise;
-            if (isFunc(fnLoader) && isThenable(promise = fnLoader())) {
-                return promise.then(function (html) {
-                    var elems = dom.fromHTML(html);
-                    return elems[0];
-                }).catch(function (err) {
-                    if (!!err && !!err.message) {
-                        throw err;
-                    }
-                    else {
-                        throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
-                    }
-                });
+            if (isFunc(loader) && isThenable(promise = loader())) {
+                return promise;
             }
             else {
                 return reject(new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
@@ -3390,23 +3380,27 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
         Template.prototype._loadTemplate = function () {
             var self = this, id = self.templateID, templateEl = self.el;
             try {
-                if (!!self._loadedElem) {
+                if (self._isLoaded) {
                     self._unloadTemplate();
                 }
                 if (!!id) {
-                    var loadPromise = self._loadAsync(id), bindPromise = loadPromise.then(function (loadedEl) {
-                        return self._dataBind(templateEl, loadedEl);
-                    });
-                    bindPromise.catch(function (err) {
-                        if (self.getIsStateDirty()) {
-                            return;
+                    return self._loadAsync(id).then(function (html) {
+                        return self._dataBind(templateEl, html);
+                    }).catch(function (err) {
+                        if (!!err && !!err.message) {
+                            throw err;
                         }
-                        self._onFail(templateEl, err);
+                        else {
+                            throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+                        }
                     });
+                }
+                else {
+                    return reject(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
                 }
             }
             catch (ex) {
-                self._onFail(templateEl, ex);
+                return reject(ex);
             }
         };
         Template.prototype._onLoading = function () {
@@ -3436,22 +3430,22 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
                 this._cleanUp();
             }
         };
-        Template.prototype._dataBind = function (templateEl, loadedEl) {
+        Template.prototype._dataBind = function (templateEl, html) {
             var self = this;
             if (self.getIsStateDirty()) {
                 ERROR.abort();
             }
-            if (!loadedEl) {
-                throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
-            }
-            if (!!self._loadedElem) {
+            if (self._isLoaded) {
                 self._unloadTemplate();
             }
+            if (!html) {
+                throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+            }
+            templateEl.innerHTML = html;
+            self._isLoaded = true;
             dom.setClass([templateEl], "ria-template-error", true);
-            self._loadedElem = loadedEl;
             self._onLoading();
-            templateEl.appendChild(loadedEl);
-            var promise = self.app._getInternal().bindTemplate(loadedEl, this.dataContext);
+            var promise = self.app._getInternal().bindTemplate(templateEl, this.dataContext);
             return promise.then(function (lftm) {
                 if (self.getIsStateDirty()) {
                     lftm.dispose();
@@ -3460,7 +3454,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
                 self._lfTime = lftm;
                 self._updateBindingSource();
                 self._onLoaded(null);
-                return loadedEl;
+                return templateEl;
             });
         };
         Template.prototype._onFail = function (templateEl, err) {
@@ -3505,9 +3499,9 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
                 this._lfTime = null;
             }
             this._templElView = null;
-            if (!!this._loadedElem) {
-                dom.removeNode(this._loadedElem);
-                this._loadedElem = null;
+            if (this._isLoaded) {
+                this.el.innerHTML = "";
+                this._isLoaded = false;
             }
         };
         Template.prototype.findElByDataName = function (name) {
@@ -3526,9 +3520,9 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
         Template.prototype.toString = function () {
             return "ITemplate";
         };
-        Object.defineProperty(Template.prototype, "loadedElem", {
+        Object.defineProperty(Template.prototype, "isLoaded", {
             get: function () {
-                return this._loadedElem;
+                return this._isLoaded;
             },
             enumerable: true,
             configurable: true
@@ -3552,9 +3546,16 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
                 return this._templateID;
             },
             set: function (v) {
+                var _this = this;
                 if (this._templateID !== v) {
                     this._templateID = v;
-                    this._loadTemplate();
+                    var templateEl_1 = this.el;
+                    this._loadTemplate().catch(function (err) {
+                        if (_this.getIsStateDirty()) {
+                            return;
+                        }
+                        _this._onFail(templateEl_1, err);
+                    });
                     this.objEvents.raiseProp("templateID");
                 }
             },
@@ -3971,7 +3972,7 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
 define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/utils/lifetime", "jriapp/utils/dom", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/utils/parser"], function (require, exports, jriapp_shared_18, lifetime_1, dom_5, mloader_1, binding_1, viewchecks_2, parser_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_18.Utils, createDeferred = utils.defer.createDeferred, viewChecks = viewchecks_2.ViewChecks, dom = dom_5.DomUtils, _a = utils.str, startsWith = _a.startsWith, fastTrim = _a.fastTrim, parser = parser_2.Parser, forEachProp = utils.core.forEachProp;
+    var utils = jriapp_shared_18.Utils, createDeferred = utils.defer.createDeferred, viewChecks = viewchecks_2.ViewChecks, dom = dom_5.DomUtils, _a = utils.str, startsWith = _a.startsWith, fastTrim = _a.fastTrim, parser = parser_2.Parser, forEachProp = utils.core.forEachProp, fromList = utils.arr.fromList;
     function createDataBindSvc(app) {
         return new DataBindingService(app);
     }
@@ -4014,12 +4015,18 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
         });
         return result;
     }
+    var arrpush = Array.prototype.push;
     function getRequiredModules(el) {
-        var attr = el.getAttribute("data-require");
-        if (!attr) {
-            return [];
+        var elements = fromList(el.children), reqArr = [];
+        for (var i = 0, len = elements.length; i < len; i += 1) {
+            var attr = elements[i].getAttribute("data-require");
+            if (!!attr) {
+                arrpush.apply(reqArr, attr.split(","));
+            }
         }
-        var reqArr = attr.split(",");
+        if (reqArr.length === 0) {
+            return reqArr;
+        }
         var hashMap = {};
         reqArr.forEach(function (name) {
             if (!name) {
@@ -4110,31 +4117,8 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
         };
         DataBindingService.prototype.bindElements = function (args) {
             var self = this, defer = createDeferred(true), scope = args.scope, lftm = new lifetime_1.LifeTimeScope();
-            var bindElems;
             try {
-                var rootBindEl = null;
-                switch (args.bind) {
-                    case 0:
-                        bindElems = getBindables(scope);
-                        break;
-                    case 1:
-                        rootBindEl = toBindable(scope);
-                        if (!!rootBindEl && !!rootBindEl.dataForm) {
-                            bindElems = [rootBindEl];
-                        }
-                        else {
-                            bindElems = getBindables(scope);
-                            if (!!rootBindEl) {
-                                bindElems.push(rootBindEl);
-                            }
-                        }
-                        break;
-                    case 2:
-                        bindElems = getBindables(scope);
-                        break;
-                    default:
-                        throw new Error("Invalid Operation");
-                }
+                var bindElems = getBindables(scope);
                 var bindables = filterBindables(scope, bindElems);
                 var viewsArr = bindables.map(function (bindElem) {
                     var elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
@@ -4553,6 +4537,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.17.2";
+    exports.VERSION = "2.17.3";
     bootstrap_7.Bootstrap._initFramework();
 });

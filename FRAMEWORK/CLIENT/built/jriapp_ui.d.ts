@@ -514,6 +514,7 @@ declare module "jriapp_ui/dialog" {
         "class": string;
         click: () => void;
     }
+    export type TResult = "ok" | "cancel";
     export class DataEditDialog extends BaseObject implements ITemplateEvents {
         private _uniqueID;
         private _dataContext;
@@ -564,12 +565,12 @@ declare module "jriapp_ui/dialog" {
         setOption(name: string, value: any): void;
         dispose(): void;
         dataContext: any;
-        readonly result: "ok" | "cancel";
+        readonly result: TResult;
         readonly template: ITemplate;
         isSubmitOnOK: boolean;
         width: any;
         height: any;
-        title: any;
+        title: string;
         canRefresh: boolean;
         canCancel: boolean;
     }

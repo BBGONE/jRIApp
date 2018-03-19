@@ -140,7 +140,7 @@ declare module "jriapp/int" {
     export interface ITemplate extends IBaseObject {
         findElByDataName(name: string): HTMLElement[];
         findElViewsByDataName(name: string): IElView[];
-        loadedElem: HTMLElement;
+        isLoaded: boolean;
         dataContext: any;
         templateID: string;
         el: HTMLElement;
@@ -1016,5 +1016,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.17.2";
+    export const VERSION = "2.17.3";
 }

@@ -15,7 +15,7 @@ import { ViewChecks } from "./utils/viewchecks";
 import { Parser } from "./utils/parser";
 
 const utils = Utils, { createDeferred } = utils.defer, viewChecks = ViewChecks, dom = DomUtils,
-    { startsWith, fastTrim } = utils.str, parser = Parser, { forEachProp } = utils.core;
+    { startsWith, fastTrim } = utils.str, parser = Parser, { forEachProp } = utils.core, { fromList } = utils.arr;
 
 export function createDataBindSvc(app: IApplication): IDataBindingService {
     return new DataBindingService(app);
@@ -78,12 +78,20 @@ function getBindables(scope: Document | Element): IBindable[] {
     return result;
 }
 
+const arrpush = Array.prototype.push;
+
 function getRequiredModules(el: Element): string[] {
-    const attr = el.getAttribute(DATA_ATTR.DATA_REQUIRE);
-    if (!attr) {
-        return <string[]>[];
+    const elements = fromList(el.children), reqArr: string[] = [];
+    for (let i = 0, len = elements.length; i < len; i += 1) {
+        const attr = elements[i].getAttribute(DATA_ATTR.DATA_REQUIRE);
+        if (!!attr) {
+            arrpush.apply(reqArr, attr.split(","));
+        }
     }
-    const reqArr = attr.split(",");
+
+    if (reqArr.length === 0) {
+        return reqArr;
+    }
 
     const hashMap: IIndexer<any> = {};
     reqArr.forEach((name) => {
@@ -191,30 +199,9 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
         const self = this, defer = createDeferred<ILifeTimeScope>(true), scope = args.scope,
             lftm: ILifeTimeScope = new LifeTimeScope();
 
-        let bindElems: IBindable[];
+        
         try {
-            let rootBindEl: IBindable = null;
-            switch (args.bind) {
-                case BindScope.Application:
-                    bindElems = getBindables(scope);
-                    break;
-                case BindScope.Template:
-                    rootBindEl = toBindable(<Element>scope);
-                    if (!!rootBindEl && !!rootBindEl.dataForm) {
-                        bindElems = [rootBindEl];
-                    } else {
-                        bindElems = getBindables(scope);
-                        if (!!rootBindEl) {
-                            bindElems.push(rootBindEl);
-                        }
-                    }
-                    break;
-                case BindScope.DataForm:
-                    bindElems = getBindables(<Element>scope);
-                    break;
-                default:
-                    throw new Error("Invalid Operation");
-            }
+            const bindElems = getBindables(scope);
             
             // skip all the bindings inside dataforms (because a dataform performs databinding itself in its own scope)
             const bindables = filterBindables(scope, bindElems);

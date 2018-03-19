@@ -2,7 +2,7 @@
 import { IIndexer, Utils, createWeakMap, TFunc } from "jriapp_shared";
 import { DomEvents } from "./domevents";
 
-const arrHelper = Utils.arr, { fastTrim } = Utils.str, win = window, doc = win.document, queue = Utils.queue,
+const { fromList } = Utils.arr, { fastTrim } = Utils.str, win = window, doc = win.document, queue = Utils.queue,
     hasClassList = ("classList" in window.document.documentElement), weakmap = createWeakMap();
 
 export type TCheckDOMReady  = (closure: TFunc) => void;
@@ -81,11 +81,11 @@ export class DomUtils {
     static fromHTML(html: string): HTMLElement[] {
         const div = doc.createElement("div");
         div.innerHTML = html;
-        return arrHelper.fromList<HTMLElement>(div.children);
+        return fromList<HTMLElement>(div.children);
     }
     static queryAll<T>(root: Document | Element, selector: string): T[] {
         const res = root.querySelectorAll(selector);
-        return arrHelper.fromList<T>(res);
+        return fromList<T>(res);
     }
     static queryOne<T extends Element>(root: Document | Element, selector: string): T {
         return <any>root.querySelector(selector);

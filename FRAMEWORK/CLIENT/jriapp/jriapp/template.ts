@@ -11,7 +11,8 @@ import { DomUtils } from "./utils/dom";
 
 const utils = Utils, { reject } = utils.defer, dom = DomUtils, viewChecks = ViewChecks,
     doc = dom.document, { isFunc, isThenable } = utils.check, { format } = utils.str,
-    arrHelper = utils.arr, sys = utils.sys, boot = bootstrap, ERRS = LocaleERRS, ERROR = utils.err;
+    arrHelper = utils.arr, sys = utils.sys, boot = bootstrap, ERRS = LocaleERRS,
+    ERROR = utils.err;
 
 export const enum css {
     templateContainer = "ria-template-container",
@@ -35,7 +36,7 @@ class Template extends BaseObject implements ITemplate {
     private _el: HTMLElement;
     private _lfTime: ILifeTimeScope;
     private _templElView: ITemplateEvents;
-    private _loadedElem: HTMLElement;
+    private _isLoaded: boolean;
     private _dataContext: any;
     private _templEvents?: ITemplateEvents;
     private _templateID: string;
@@ -44,7 +45,7 @@ class Template extends BaseObject implements ITemplate {
         super();
         this._dataContext = options.dataContext;
         this._templEvents = options.templEvents;
-        this._loadedElem = null;
+        this._isLoaded = false;
         this._lfTime = null;
         this._templateID = null;
         this._templElView = null;
@@ -74,45 +75,37 @@ class Template extends BaseObject implements ITemplate {
     /**
        * returns a promise which resolves with the loaded template's DOM element
     */
-    private _loadAsync(name: string): IPromise<HTMLElement> {
-        const self = this, fnLoader = this.app.getTemplateLoader(name);
+    private _loadAsync(name: string): IPromise<string> {
+        const self = this, loader = this.app.getTemplateLoader(name);
         let promise: IPromise<string>;
-        if (isFunc(fnLoader) && isThenable(promise = fnLoader())) {
-            return promise.then((html: string) => {
-                const elems = dom.fromHTML(html);
-                return elems[0];
-            }).catch((err) => {
-                if (!!err && !!err.message) {
-                    throw err;
-                } else {
-                    throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
-                }
-            });
+        if (isFunc(loader) && isThenable(promise = loader())) {
+            return promise;
         } else {
-            return reject<HTMLElement>(new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
+            return reject<string>(new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
         }
     }
-    private _loadTemplate(): void {
+    private _loadTemplate(): IPromise<HTMLElement> {
         const self = this, id = self.templateID, templateEl = self.el;
         try {
-            if (!!self._loadedElem) {
+            if (self._isLoaded) {
                 self._unloadTemplate();
             }
 
             if (!!id) {
-                const loadPromise = self._loadAsync(id), bindPromise = loadPromise.then((loadedEl) => {
-                    return self._dataBind(templateEl, loadedEl);
-                });
-
-                bindPromise.catch((err) => {
-                    if (self.getIsStateDirty()) {
-                        return;
+                return self._loadAsync(id).then((html) => {
+                    return self._dataBind(templateEl, html);
+                }).catch((err) => {
+                    if (!!err && !!err.message) {
+                        throw err;
+                    } else {
+                        throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
                     }
-                    self._onFail(templateEl, err);
                 });
+            } else {
+                return reject<HTMLElement>(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
             }
         } catch (ex) {
-            self._onFail(templateEl, ex);
+            return reject<HTMLElement>(ex);
         }
     }
     private _onLoading(): void {
@@ -141,23 +134,24 @@ class Template extends BaseObject implements ITemplate {
             this._cleanUp();
         }
     }
-    private _dataBind(templateEl: HTMLElement, loadedEl: HTMLElement): IPromise<HTMLElement> {
+    private _dataBind(templateEl: HTMLElement, html: string): IPromise<HTMLElement> {
         const self = this;
         if (self.getIsStateDirty()) {
             ERROR.abort();
         }
-        if (!loadedEl) {
-            throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
-        }
-
-        if (!!self._loadedElem) {
+        if (self._isLoaded) {
             self._unloadTemplate();
         }
+        if (!html) {
+            throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
+        }
+        templateEl.innerHTML = html;
+        self._isLoaded = true;
+
         dom.setClass([templateEl], css.templateError, true);
-        self._loadedElem = loadedEl;
+        
         self._onLoading();
-        templateEl.appendChild(loadedEl);
-        const promise = self.app._getInternal().bindTemplate(loadedEl, this.dataContext);
+        const promise = self.app._getInternal().bindTemplate(templateEl, this.dataContext);
         return promise.then((lftm) => {
             if (self.getIsStateDirty()) {
                 lftm.dispose();
@@ -166,7 +160,7 @@ class Template extends BaseObject implements ITemplate {
             self._lfTime = lftm;
             self._updateBindingSource();
             self._onLoaded(null);
-            return loadedEl;
+            return templateEl;
         });
     }
     private _onFail(templateEl: HTMLElement, err: any): void {
@@ -211,9 +205,9 @@ class Template extends BaseObject implements ITemplate {
 
         this._templElView = null;
 
-        if (!!this._loadedElem) {
-            dom.removeNode(this._loadedElem);
-            this._loadedElem = null;
+        if (this._isLoaded) {
+            this.el.innerHTML = "";
+            this._isLoaded = false;
         }
     }
     // find elements which has specific data-name attribute value
@@ -236,8 +230,8 @@ class Template extends BaseObject implements ITemplate {
     toString(): string {
         return "ITemplate";
     }
-    get loadedElem(): HTMLElement {
-        return this._loadedElem;
+    get isLoaded(): boolean {
+        return this._isLoaded;
     }
     get dataContext(): any {
         return this._dataContext;
@@ -252,10 +246,17 @@ class Template extends BaseObject implements ITemplate {
     get templateID(): string {
         return this._templateID;
     }
-    set templateID(v) {
+    set templateID(v: string) {
         if (this._templateID !== v) {
             this._templateID = v;
-            this._loadTemplate();
+            const templateEl = this.el;
+            this._loadTemplate().catch((err) => {
+                if (this.getIsStateDirty()) {
+                    return;
+                }
+                this._onFail(templateEl, err);
+            });
+
             this.objEvents.raiseProp("templateID");
         }
     }

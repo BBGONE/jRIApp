@@ -3115,7 +3115,9 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             _super.prototype.dispose.call(this);
         };
         Object.defineProperty(DataEditDialog.prototype, "dataContext", {
-            get: function () { return this._dataContext; },
+            get: function () {
+                return this._dataContext;
+            },
             set: function (v) {
                 if (v !== this._dataContext) {
                     this._dataContext = v;
@@ -3127,17 +3129,23 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "result", {
-            get: function () { return this._result; },
+            get: function () {
+                return this._result;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "template", {
-            get: function () { return this._template; },
+            get: function () {
+                return this._template;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "isSubmitOnOK", {
-            get: function () { return this._submitOnOK; },
+            get: function () {
+                return this._submitOnOK;
+            },
             set: function (v) {
                 if (this._submitOnOK !== v) {
                     this._submitOnOK = v;
@@ -3148,7 +3156,9 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "width", {
-            get: function () { return this.getOption("width"); },
+            get: function () {
+                return this.getOption("width");
+            },
             set: function (v) {
                 var x = this.getOption("width");
                 if (v !== x) {
@@ -3160,7 +3170,9 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "height", {
-            get: function () { return this.getOption("height"); },
+            get: function () {
+                return this.getOption("height");
+            },
             set: function (v) {
                 var x = this.getOption("height");
                 if (v !== x) {
@@ -3172,7 +3184,9 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "title", {
-            get: function () { return this.getOption("title"); },
+            get: function () {
+                return this.getOption("title");
+            },
             set: function (v) {
                 var x = this.getOption("title");
                 if (v !== x) {
@@ -3184,7 +3198,9 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "canRefresh", {
-            get: function () { return this._canRefresh; },
+            get: function () {
+                return this._canRefresh;
+            },
             set: function (v) {
                 var x = this._canRefresh;
                 if (v !== x) {
@@ -3196,7 +3212,9 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "canCancel", {
-            get: function () { return this._canCancel; },
+            get: function () {
+                return this._canCancel;
+            },
             set: function (v) {
                 var x = this._canCancel;
                 if (v !== x) {
@@ -3309,7 +3327,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
             var self = this;
             try {
                 if (!newName && !!self._template) {
-                    if (!!self._animation && !!self._template.loadedElem) {
+                    if (!!self._animation && self._template.isLoaded) {
                         self._animation.stop();
                         self._animation.beforeHide(self._template);
                         self._animation.hide(self._template).always(function () {
@@ -3334,7 +3352,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                     self.objEvents.raiseProp("template");
                     return;
                 }
-                if (!!self._animation && !!self._template.loadedElem) {
+                if (!!self._animation && self._template.isLoaded) {
                     self._animation.stop();
                     self._animation.beforeHide(self._template);
                     self._animation.hide(self._template).always(function () {

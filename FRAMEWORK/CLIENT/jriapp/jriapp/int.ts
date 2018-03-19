@@ -86,7 +86,7 @@ export interface IUnResolvedBindingArgs {
 export interface ITemplate extends IBaseObject {
     findElByDataName(name: string): HTMLElement[];
     findElViewsByDataName(name: string): IElView[];
-    loadedElem: HTMLElement;
+    isLoaded: boolean;
     dataContext: any;
     templateID: string;
     el: HTMLElement;

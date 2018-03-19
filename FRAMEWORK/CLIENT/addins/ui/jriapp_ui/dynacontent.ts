@@ -71,7 +71,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         const self = this;
         try {
             if (!newName && !!self._template) {
-                if (!!self._animation && !!self._template.loadedElem) {
+                if (!!self._animation && self._template.isLoaded) {
                     self._animation.stop();
                     self._animation.beforeHide(self._template);
                     self._animation.hide(self._template).always(() => {
@@ -97,7 +97,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
                 self.objEvents.raiseProp("template");
                 return;
             }
-            if (!!self._animation && !!self._template.loadedElem) {
+            if (!!self._animation && self._template.isLoaded) {
                 self._animation.stop();
                 self._animation.beforeHide(self._template);
                 self._animation.hide(self._template).always(() => {

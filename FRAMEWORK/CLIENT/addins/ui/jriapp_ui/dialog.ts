@@ -108,6 +108,8 @@ class SubmitInfo
     }
 }
 
+export type TResult = "ok" | "cancel";
+
 export class DataEditDialog extends BaseObject implements ITemplateEvents {
     private _uniqueID: string;
     private _dataContext: any;
@@ -123,7 +125,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
     private _fnOnTemplateDestroy: (template: ITemplate) => void;
     private _template: ITemplate;
     private _$dlgEl: JQuery;
-    private _result: "ok" | "cancel";
+    private _result: TResult;
     private _options: IDialogOptions;
     private _submitInfo: SubmitInfo;
     // saves the bootstrap's selectedControl  before showing and restore it on dialog's closing
@@ -181,19 +183,19 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._deferredTemplate = utils.defer.createDeferred<ITemplate>();
         this._createDialog();
     }
-    addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject) {
+    addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject): void {
         this.objEvents.on(DLG_EVENTS.close, fn, nmspace, context);
     }
-    offOnClose(nmspace?: string) {
+    offOnClose(nmspace?: string): void {
         this.objEvents.off(DLG_EVENTS.close, nmspace);
     }
-    addOnRefresh(fn: TEventHandler<DataEditDialog, { isHandled: boolean; }>, nmspace?: string, context?: IBaseObject) {
+    addOnRefresh(fn: TEventHandler<DataEditDialog, { isHandled: boolean; }>, nmspace?: string, context?: IBaseObject): void {
         this.objEvents.on(DLG_EVENTS.refresh, fn, nmspace, context);
     }
-    offOnRefresh(nmspace?: string) {
+    offOnRefresh(nmspace?: string): void {
         this.objEvents.off(DLG_EVENTS.refresh, nmspace);
     }
-    protected _createDialog() {
+    protected _createDialog(): void {
         try {
             this._template = this._createTemplate();
             this._$dlgEl = $(this._template.el);
@@ -228,7 +230,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         template.templateID = this._templateID;
         return template;
     }
-    protected _destroyTemplate() {
+    protected _destroyTemplate(): void {
         if (!!this._template) {
             this._template.dispose();
         }
@@ -268,25 +270,25 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }
         return buttons;
     }
-    protected _getOkButton() {
+    protected _getOkButton(): JQuery {
         return $("#" + this._uniqueID + "_Ok");
     }
-    protected _getCancelButton() {
+    protected _getCancelButton(): JQuery {
         return $("#" + this._uniqueID + "_Cancel");
     }
-    protected _getRefreshButton() {
+    protected _getRefreshButton(): JQuery {
         return $("#" + this._uniqueID + "_Refresh");
     }
-    protected _getAllButtons() {
+    protected _getAllButtons(): JQuery[] {
         return [this._getOkButton(), this._getCancelButton(), this._getRefreshButton()];
     }
-    protected _disableButtons(isDisable: boolean) {
+    protected _disableButtons(isDisable: boolean): void {
         const btns = this._getAllButtons();
         btns.forEach(($btn) => {
             $btn.prop("disabled", !!isDisable);
         });
     }
-    protected _onOk() {
+    protected _onOk(): void {
         const self = this, action = (!!this._fnOnOK) ? this._fnOnOK(this) : DIALOG_ACTION.Default;
         if (action === DIALOG_ACTION.StayOpen) {
             return;
@@ -327,7 +329,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             self.hide();
         }
     }
-    protected _onCancel() {
+    protected _onCancel(): void {
         const action = (!!this._fnOnCancel) ? this._fnOnCancel(this) : DIALOG_ACTION.Default;
         if (action === DIALOG_ACTION.StayOpen) {
             return;
@@ -336,7 +338,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._result = "cancel";
         this.hide();
     }
-    protected _onRefresh() {
+    protected _onRefresh(): void {
         const args = { isHandled: false };
         this.objEvents.raise(DLG_EVENTS.refresh, args);
         if (args.isHandled) {
@@ -351,7 +353,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             }
         }
     }
-    protected _onClose() {
+    protected _onClose(): void {
         try {
             if (this._result !== "ok" && !!this._submitInfo) {
                 this._submitInfo.cancel();
@@ -368,7 +370,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._selectedControl = null;
         utils.queue.enque(() => { boot.selectedControl = csel; csel = null; });
     }
-    protected _onShow() {
+    protected _onShow(): void {
         this._selectedControl = boot.selectedControl;
         this._submitInfo = new SubmitInfo(this.dataContext);
         if (!!this._fnOnShow) {
@@ -398,24 +400,24 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             ERROR.abort();
         });
     }
-    hide() {
+    hide(): void {
         const self = this;
         if (!this._$dlgEl) {
             return;
         }
         (<any>self._$dlgEl).dialog("close");
     }
-    getOption(name: string) {
+    getOption(name: string): any {
         if (!this._$dlgEl) {
             return _undefined;
         }
         return (<any>this._$dlgEl).dialog("option", name);
     }
-    setOption(name: string, value: any) {
+    setOption(name: string, value: any): void {
         const self = this;
         (<any>self._$dlgEl).dialog("option", name, value);
     }
-    dispose() {
+    dispose(): void {
         if (this.getIsDisposed()) {
             return;
         }
@@ -428,7 +430,9 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         this._submitInfo = null;
         super.dispose();
     }
-    get dataContext() { return this._dataContext; }
+    get dataContext(): any {
+        return this._dataContext;
+    }
     set dataContext(v) {
         if (v !== this._dataContext) {
             this._dataContext = v;
@@ -436,16 +440,24 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             this.objEvents.raiseProp("dataContext");
         }
     }
-    get result() { return this._result; }
-    get template() { return this._template; }
-    get isSubmitOnOK() { return this._submitOnOK; }
+    get result(): TResult {
+        return this._result;
+    }
+    get template(): ITemplate {
+        return this._template;
+    }
+    get isSubmitOnOK(): boolean {
+        return this._submitOnOK;
+    }
     set isSubmitOnOK(v) {
         if (this._submitOnOK !== v) {
             this._submitOnOK = v;
             this.objEvents.raiseProp("isSubmitOnOK");
         }
     }
-    get width() { return this.getOption("width"); }
+    get width(): any {
+        return this.getOption("width");
+    }
     set width(v) {
         const x = this.getOption("width");
         if (v !== x) {
@@ -453,7 +465,9 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             this.objEvents.raiseProp("width");
         }
     }
-    get height() { return this.getOption("height"); }
+    get height(): any {
+        return this.getOption("height");
+    }
     set height(v) {
         const x = this.getOption("height");
         if (v !== x) {
@@ -461,7 +475,9 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             this.objEvents.raiseProp("height");
         }
     }
-    get title() { return this.getOption("title"); }
+    get title(): string {
+        return this.getOption("title");
+    }
     set title(v) {
         const x = this.getOption("title");
         if (v !== x) {
@@ -469,7 +485,9 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             this.objEvents.raiseProp("title");
         }
     }
-    get canRefresh() { return this._canRefresh; }
+    get canRefresh(): boolean {
+        return this._canRefresh;
+    }
     set canRefresh(v) {
         const x = this._canRefresh;
         if (v !== x) {
@@ -477,7 +495,9 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             this.objEvents.raiseProp("canRefresh");
         }
     }
-    get canCancel() { return this._canCancel; }
+    get canCancel(): boolean {
+        return this._canCancel;
+    }
     set canCancel(v) {
         const x = this._canCancel;
         if (v !== x) {
