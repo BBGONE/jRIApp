@@ -20,7 +20,7 @@ namespace RIAppDemo
             RouteConfig.RegisterRoutes(RouteTable.Routes);
 
             BundleConfig.RegisterBundles(BundleTable.Bundles);
-            BundleTable.EnableOptimizations = false;
+            BundleTable.EnableOptimizations = true;
         }
 
         protected void Application_AuthenticateRequest(object sender, EventArgs e)
