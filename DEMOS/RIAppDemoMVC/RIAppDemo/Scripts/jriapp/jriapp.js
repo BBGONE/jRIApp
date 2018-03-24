@@ -3972,7 +3972,7 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
 define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/utils/lifetime", "jriapp/utils/dom", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/utils/parser"], function (require, exports, jriapp_shared_18, lifetime_1, dom_5, mloader_1, binding_1, viewchecks_2, parser_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_18.Utils, createDeferred = utils.defer.createDeferred, viewChecks = viewchecks_2.ViewChecks, dom = dom_5.DomUtils, _a = utils.str, startsWith = _a.startsWith, fastTrim = _a.fastTrim, parser = parser_2.Parser, forEachProp = utils.core.forEachProp, fromList = utils.arr.fromList;
+    var utils = jriapp_shared_18.Utils, createDeferred = utils.defer.createDeferred, viewChecks = viewchecks_2.ViewChecks, dom = dom_5.DomUtils, _a = utils.str, startsWith = _a.startsWith, fastTrim = _a.fastTrim, parser = parser_2.Parser, forEachProp = utils.core.forEachProp, _b = utils.arr, fromList = _b.fromList, toMap = _b.toMap;
     function createDataBindSvc(app) {
         return new DataBindingService(app);
     }
@@ -3983,7 +3983,8 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
             el: el,
             needToBind: false,
             dataForm: false,
-            bindings: []
+            bindings: [],
+            elView: null
         };
         var n = allAttrs.length;
         var dataViewName, hasOptions = false;
@@ -4078,12 +4079,11 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
         };
         DataBindingService.prototype._bindElView = function (args) {
             var self = this;
-            args.lftm.addObj(args.elView);
             var bindings = args.bind.bindings;
             if (!!bindings && bindings.length > 0) {
                 var bindInfos = parser.parseBindings(bindings), len = bindInfos.length;
                 for (var j = 0; j < len; j += 1) {
-                    var op = binding_1.getBindingOptions(bindInfos[j], args.elView, args.dataContext);
+                    var op = binding_1.getBindingOptions(bindInfos[j], args.bind.elView, args.dataContext);
                     var binding = self.bind(op);
                     args.lftm.addObj(binding);
                 }
@@ -4120,17 +4120,19 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
             try {
                 var bindElems = getBindables(scope);
                 var bindables = filterBindables(scope, bindElems);
+                bindables.forEach(function (bindElem) {
+                    bindElem.elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
+                    lftm.addObj(bindElem.elView);
+                });
                 var viewsArr = bindables.map(function (bindElem) {
-                    var elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
                     self._bindElView({
-                        elView: elView,
                         bind: bindElem,
                         lftm: lftm,
                         dataContext: args.dataContext
                     });
-                    return elView;
+                    return bindElem.elView;
                 }).filter(function (v) { return !!v.viewMounted; });
-                var viewMap = utils.arr.toMap(viewsArr, function (v) { return v.uniqueID; });
+                var viewMap = toMap(viewsArr, function (v) { return v.uniqueID; });
                 forEachProp(viewMap, function (n, v) { v.viewMounted(); });
                 defer.resolve(lftm);
             }
@@ -4537,6 +4539,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.17.3";
+    exports.VERSION = "2.17.4";
     bootstrap_7.Bootstrap._initFramework();
 });

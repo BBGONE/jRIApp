@@ -15,7 +15,7 @@ import { ViewChecks } from "./utils/viewchecks";
 import { Parser } from "./utils/parser";
 
 const utils = Utils, { createDeferred } = utils.defer, viewChecks = ViewChecks, dom = DomUtils,
-    { startsWith, fastTrim } = utils.str, parser = Parser, { forEachProp } = utils.core, { fromList } = utils.arr;
+    { startsWith, fastTrim } = utils.str, parser = Parser, { forEachProp } = utils.core, { fromList, toMap } = utils.arr;
 
 export function createDataBindSvc(app: IApplication): IDataBindingService {
     return new DataBindingService(app);
@@ -26,10 +26,10 @@ interface IBindable {
     needToBind: boolean;
     dataForm: boolean;
     bindings: string[];
+    elView: IElView;
 }
 
 interface IBindElViewArgs {
-    readonly elView: IElView;
     readonly bind: IBindable;
     readonly lftm: ILifeTimeScope;
     readonly dataContext: any;
@@ -42,7 +42,8 @@ function toBindable(el: Element): IBindable {
         el: el,
         needToBind: false,
         dataForm: false,
-        bindings: []
+        bindings: [],
+        elView: null
     };
     const n = allAttrs.length;
     let dataViewName: string, hasOptions = false;
@@ -154,15 +155,13 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
     }
     private _bindElView(args: IBindElViewArgs): void {
         const self = this;
-        args.lftm.addObj(args.elView);
-     
         // then create databinding if element has data-bind attribute
         const bindings = args.bind.bindings;
         if (!!bindings && bindings.length > 0) {
             const bindInfos = parser.parseBindings(bindings),
                 len = bindInfos.length;
             for (let j = 0; j < len; j += 1) {
-                const op = getBindingOptions(bindInfos[j], args.elView, args.dataContext);
+                const op = getBindingOptions(bindInfos[j], args.bind.elView, args.dataContext);
                 const binding = self.bind(op);
                 args.lftm.addObj(binding);
             }
@@ -206,18 +205,21 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             // skip all the bindings inside dataforms (because a dataform performs databinding itself in its own scope)
             const bindables = filterBindables(scope, bindElems);
 
+            bindables.forEach((bindElem) => {
+                bindElem.elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
+                lftm.addObj(bindElem.elView);
+            });
+
             const viewsArr = bindables.map((bindElem) => {
-                const elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
                 self._bindElView({
-                    elView: elView,
                     bind: bindElem,
                     lftm: lftm,
                     dataContext: args.dataContext
                 });
-                return elView;
+                return bindElem.elView;
             }).filter((v) => !!v.viewMounted);
 
-            const viewMap = utils.arr.toMap(viewsArr, (v) => v.uniqueID);
+            const viewMap = toMap(viewsArr, (v) => v.uniqueID);
             forEachProp(viewMap, (n, v) => { v.viewMounted(); });
 
             defer.resolve(lftm);
