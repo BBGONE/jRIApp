@@ -22,7 +22,7 @@ export function createDataBindSvc(app: IApplication): IDataBindingService {
 }
 
 interface IBindable {
-    el: Element;
+    el: HTMLElement;
     needToBind: boolean;
     dataForm: boolean;
     bindings: string[];
@@ -36,7 +36,7 @@ interface IBindElViewArgs {
 }
 
 
-function toBindable(el: Element): IBindable {
+function toBindable(el: HTMLElement): IBindable {
     let attr: Attr;
     const allAttrs = el.attributes, res: IBindable = {
         el: el,
@@ -67,8 +67,8 @@ function toBindable(el: Element): IBindable {
     return res.needToBind? res : null;
  }
 
-function getBindables(scope: Document | Element): IBindable[] {
-    const result: IBindable[] = [], allElems = dom.queryAll<Element>(scope, "*");
+function getBindables(scope: Document | HTMLElement): IBindable[] {
+    const result: IBindable[] = [], allElems = dom.queryAll<HTMLElement>(scope, "*");
     allElems.forEach((el) => {
         const res = toBindable(el);
         if (!!res) {
@@ -107,7 +107,7 @@ function getRequiredModules(el: Element): string[] {
     return Object.keys(hashMap);
 }
 
-function filterBindables(scope: Document | Element, bindElems: IBindable[]): IBindable[] {
+function filterBindables(scope: Document | HTMLElement, bindElems: IBindable[]): IBindable[] {
     // select all dataforms inside the scope
     const forms = bindElems.filter((bindElem) => {
         return !!bindElem.dataForm;
@@ -126,7 +126,7 @@ function filterBindables(scope: Document | Element, bindElems: IBindable[]): IBi
 }
 
 class DataBindingService extends BaseObject implements IDataBindingService, IErrorHandler {
-    private _root: Document | Element;
+    private _root: Document | HTMLElement;
     private _elViewFactory: IElViewFactory;
     private _objLifeTime: ILifeTimeScope;
     private _mloader: IModuleLoader;
@@ -167,7 +167,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             }
         }
     }
-    bindTemplate(templateEl: Element, dataContext: any): IPromise<ILifeTimeScope> {
+    bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope> {
         const self = this, requiredModules = getRequiredModules(templateEl);
         let res: IPromise<ILifeTimeScope>;
         if (requiredModules.length > 0) {
@@ -206,8 +206,11 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             const bindables = filterBindables(scope, bindElems);
 
             bindables.forEach((bindElem) => {
-                bindElem.elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
-                lftm.addObj(bindElem.elView);
+                bindElem.elView = self._elViewFactory.getElView(bindElem.el);
+                if (!bindElem.elView) {
+                    bindElem.elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
+                    lftm.addObj(bindElem.elView);
+                }
             });
 
             const viewsArr = bindables.map((bindElem) => {

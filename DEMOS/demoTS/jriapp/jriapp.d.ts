@@ -178,8 +178,8 @@ declare module "jriapp/int" {
     export interface IElViewFactory {
         createElView(viewInfo: IElViewInfo): IElView;
         getElView(el: HTMLElement): IElView;
-        getOrCreateElView(el: Element, dataContext: any): IElView;
-        getElementViewInfo(el: Element, dataContext: any): IElViewInfo;
+        getOrCreateElView(el: HTMLElement, dataContext: any): IElView;
+        getElementViewInfo(el: HTMLElement, dataContext: any): IElViewInfo;
         store: IElViewStore;
         register: IElViewRegister;
         dispose(): void;
@@ -215,12 +215,12 @@ declare module "jriapp/int" {
         updateSource(): void;
     }
     export interface IBindArgs {
-        readonly scope: Document | Element;
+        readonly scope: Document | HTMLElement;
         readonly bind: BindScope;
         readonly dataContext: any;
     }
     export interface IDataBindingService extends IDisposable {
-        bindTemplate(templateEl: Element, dataContext: any): IPromise<ILifeTimeScope>;
+        bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
         bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
         setUpBindings(): IVoidPromise;
         bind(opts: TBindingOptions): IBinding;
@@ -338,12 +338,12 @@ declare module "jriapp/int" {
         startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
         readonly uniqueID: string;
         readonly appName: string;
-        readonly appRoot: Document | Element;
+        readonly appRoot: Document | HTMLElement;
         readonly viewFactory: IElViewFactory;
     }
     export interface IAppOptions {
         modulesInits?: IIndexer<(app: IApplication) => void>;
-        appRoot?: Document | Element;
+        appRoot?: Document | HTMLElement;
     }
 }
 declare module "jriapp/utils/parser" {
@@ -992,7 +992,7 @@ declare module "jriapp/app" {
         readonly uniqueID: string;
         readonly options: IAppOptions;
         readonly appName: string;
-        readonly appRoot: Document | Element;
+        readonly appRoot: Document | HTMLElement;
         readonly viewFactory: IElViewFactory;
         readonly UC: any;
         readonly app: IApplication;

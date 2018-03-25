@@ -4121,8 +4121,11 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
                 var bindElems = getBindables(scope);
                 var bindables = filterBindables(scope, bindElems);
                 bindables.forEach(function (bindElem) {
-                    bindElem.elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
-                    lftm.addObj(bindElem.elView);
+                    bindElem.elView = self._elViewFactory.getElView(bindElem.el);
+                    if (!bindElem.elView) {
+                        bindElem.elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
+                        lftm.addObj(bindElem.elView);
+                    }
                 });
                 var viewsArr = bindables.map(function (bindElem) {
                     self._bindElView({

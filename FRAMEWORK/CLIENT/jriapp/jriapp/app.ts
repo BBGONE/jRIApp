@@ -349,7 +349,7 @@ export class Application extends BaseObject implements IApplication {
     get appName(): string {
         return this._appName;
     }
-    get appRoot(): Document | Element {
+    get appRoot(): Document | HTMLElement {
         return (!this._options || !this._options.appRoot) ? doc : this._options.appRoot;
     }
     get viewFactory(): IElViewFactory {
