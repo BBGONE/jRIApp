@@ -634,15 +634,6 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstra
         ElViewFactory.prototype.getElView = function (el) {
             return this.store.getElView(el);
         };
-        ElViewFactory.prototype.getOrCreateElView = function (el, dataContext) {
-            if (dataContext === void 0) { dataContext = null; }
-            var elView = this.store.getElView(el);
-            if (!!elView) {
-                return elView;
-            }
-            var info = this.getElementViewInfo(el, dataContext);
-            return this.createElView(info);
-        };
         ElViewFactory.prototype.getElementViewInfo = function (el, dataContext) {
             if (dataContext === void 0) { dataContext = null; }
             var viewName = null;
@@ -4121,11 +4112,14 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
                 var bindElems = getBindables(scope);
                 var bindables = filterBindables(scope, bindElems);
                 bindables.forEach(function (bindElem) {
-                    bindElem.elView = self._elViewFactory.getElView(bindElem.el);
-                    if (!bindElem.elView) {
-                        bindElem.elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
-                        lftm.addObj(bindElem.elView);
+                    var factory = self._elViewFactory;
+                    var elView = factory.getElView(bindElem.el);
+                    if (!elView) {
+                        var info = factory.getElementViewInfo(bindElem.el, args.dataContext);
+                        elView = factory.createElView(info);
+                        lftm.addObj(elView);
                     }
+                    bindElem.elView = elView;
                 });
                 var viewsArr = bindables.map(function (bindElem) {
                     self._bindElView({
@@ -4542,6 +4536,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.17.4";
+    exports.VERSION = "2.17.5";
     bootstrap_7.Bootstrap._initFramework();
 });

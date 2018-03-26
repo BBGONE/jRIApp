@@ -131,10 +131,9 @@ export interface IElViewInfo {
 }
 
 export interface IElViewFactory {
+    getElementViewInfo(el: HTMLElement, dataContext: any): IElViewInfo;
     createElView(viewInfo: IElViewInfo): IElView;
     getElView(el: HTMLElement): IElView;
-    getOrCreateElView(el: HTMLElement, dataContext: any): IElView;
-    getElementViewInfo(el: HTMLElement, dataContext: any): IElViewInfo;
     store: IElViewStore;
     register: IElViewRegister;
     dispose(): void;

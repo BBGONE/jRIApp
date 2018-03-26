@@ -206,11 +206,14 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             const bindables = filterBindables(scope, bindElems);
 
             bindables.forEach((bindElem) => {
-                bindElem.elView = self._elViewFactory.getElView(bindElem.el);
-                if (!bindElem.elView) {
-                    bindElem.elView = self._elViewFactory.getOrCreateElView(bindElem.el, args.dataContext);
-                    lftm.addObj(bindElem.elView);
+                const factory = self._elViewFactory;
+                let elView = factory.getElView(bindElem.el);
+                if (!elView) {
+                    const info = factory.getElementViewInfo(bindElem.el, args.dataContext);
+                    elView = factory.createElView(info);
+                    lftm.addObj(elView);
                 }
+                bindElem.elView = elView;
             });
 
             const viewsArr = bindables.map((bindElem) => {

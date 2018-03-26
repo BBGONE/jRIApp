@@ -176,10 +176,9 @@ declare module "jriapp/int" {
         readonly options: IViewOptions;
     }
     export interface IElViewFactory {
+        getElementViewInfo(el: HTMLElement, dataContext: any): IElViewInfo;
         createElView(viewInfo: IElViewInfo): IElView;
         getElView(el: HTMLElement): IElView;
-        getOrCreateElView(el: HTMLElement, dataContext: any): IElView;
-        getElementViewInfo(el: HTMLElement, dataContext: any): IElViewInfo;
         store: IElViewStore;
         register: IElViewRegister;
         dispose(): void;
@@ -1016,5 +1015,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.17.4";
+    export const VERSION = "2.17.5";
 }
