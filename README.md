@@ -70,9 +70,6 @@ with Microsoft Windows Presentation Foundation (WPF).
 <br/>
  Full framework minified size is 398KB (or 90KB gzipped).
 </p>
-<p>
- <b>The framework contains the docs which at present for the old version of the framework (it can be used anyway)</b>
-<p/> 
 <b>The Demos include:</b>
 <p>
 The <b>RIAppDemo</b> is the demo project which uses this framework and it also includes server side components of this framework - The Data Service.<br/> 
