@@ -10,36 +10,28 @@ and the demo application was implemented using ASP.NET MVC project.
 You can watch a short video of the demo on <a href="https://youtu.be/dQyOOw2dK4w" target="_blank"><b>YouTube</b></a> and <a href="https://www.youtube.com/watch?v=m2lxFWhJghA" target="_blank"><b>Older video</b></a>. 
 <br/>
 The framework was designed primarily for creating data centric Line of Business (LOB) applications 
-which will work natively in browsers without the need for plugins. (<i>Although it can be used for other types of applications, too.</i>)
+which will work natively in browsers without the need for plugins.
 </p>
 <p>
-I wrote this framework because everything i searched through was not suitable for serious data centric HTML5 applications.</br>
-The other frameworks offer very much what is not needed and very little of what is needed to develop this kind of applications<br/>
-(<i>P.S. - the framework depends on JQuery, Moment, QTip, RequireJS. The Moment, QTip and RequireJS are easily replaceable. 
-JQuery is used only in the UI part of the framework.
-</i>
-).
+I  have written this framework because existing frameworks which i had found was not suitable for the data centric HTML5 applications.</br>
 </br>
-The framework is based on (Model-View-ViewModel) MVVM architecture:<br/>
+The framework uses (Model-View-ViewModel) MVVM architecture:<br/>
 <ul>
-<li>It is written in typescript that can be compiled to ES5, ES6 or possibly to any future EcmaScript standards - just recompile it with new settings.</li>
+<li>It is written in typescript that can be compiled to ES5, ES6 or possibly to any future EcmaScript standards.</li>
 <li>It can work with (<i>data bind to</i>) any HTML Element or Web Component and subscribe to its events, declaratively.</li>
-<li>It has built-in ability to work with data stores on the server (<i>Much like Microsoft Entity Framework does</i>)</li>
-<li>It has useful components as Data Grid and others (<i>and be used declaratively</i>). It's easy to add custom ones.</li>
-<li>It can load modules, CSS and HTML templates on demand (<i>a template can load CSS and JavaScript modules</i>)</li>
-<li>It has an ability to wrap any existing UI Control from any framework - like JQuery UI, Bootstrap or anything else.</li>
-<li>It has superb performance because it does not use polling for any property changes and does not use
-intermixed HTML and Scripts inside template (<i>the code is 100% separated from HTML- if you choose to do it</i>).</li>
-<li>And the code does not know (agnostic) about the structure of HTML page.</li>
-<li>The framework uses HTML5 features implemented in most of the browsers (<i>starting from IE9</i>) and does not need Polyfills 
-and the code is not overengineered.</li>
-<li>Besides relational databases it can also be used to work with NOSQL because it can work with complex properties of unlimited depth. 
-<i>(the properties can be complex objects which can also contain complex properties)</i><br/>
-Also, it can work with JSON to bind values extracted from it to the UI controls - it's an easy path to work with NOSQL DB. 
-</li>
-<li>Classes for using the data service can be used without using the whole framework. They can be used in React, Angular.js and
-any other framework no different as when using them with this framework.<br/> 
-They are 169KB (when minified or 40KB gzipped) and they are not dependenent on JQuery.
+<li>It has a built-in ability to work with data stores (databases) on the server</li>
+<li>It has components such as Data Grid and others (<i>they can be used declaratively</i>). It's easy to add custom ones.</li>
+<li>It can load modules, CSS and HTML templates on demand (<i>a template can load CSS and JavaScript modules declaratively</i>)</li>
+<li>It can be used to wrap any existing UI Control from other framework - like JQuery UI, Bootstrap or anything else.</li>
+<li>It has a superb performance because it does not use polling for any property changes and does not use scripts inside the templates (<i>the code is 100% separated from the HTML markup- if you choose to do it</i>).</li>
+<li>And the code is agnostic about the structure of a HTML page.</li>
+<li>The framework code is not overengineered.</li>
+<li>Besides the relational databases it also can be used to work with NOSQL</i></li>
+<li>It is mature and used to create the real applications in an insurance company where i work</i></li>
+<li>Parts of the framework can be used independently. The classes for using the data service (<i>the DbContext</i>) can be used without using the whole framework. They can be used in the ReactJS, AngularJS and
+other framework no different as when using them with this framework.<br/> 
+They are 169KB (when minified or 40KB gzipped) and they are not dependenent on JQuery.<br>
+The User Interface implementation is optional  and can be omitted or replaced with a custom one.
 </li>
 </ul>
 <br/>
@@ -49,8 +41,7 @@ The client side of framework is split into 5 bundles:<br/>
 <b>jriapp_ui.js</b> - element views for the User Interface (it depends on  <b>jriapp.js</b> and <b>jriapp_shared.js</b>)<br/>
 <b>jriapp_db.js</b> - client side entity framework (it depends on  <b>jriapp_shared.js</b>)<br/>
 <b>jriapp_langs.js</b> - local strings, needed for other than english language<br/><br/>
-If someone does not want to use this framework, but needs only the means to work with 
-databases in other frameworks, he (she) can use only <b>jriapp_shared.js</b> and <b>jriapp_db.js</b> bundles.
+If someone needs only the means to work with the databases in other frameworks, he (she) can only use the <b>jriapp_shared.js</b> and the <b>jriapp_db.js</b> bundles.
 <br/><br/>
  The server side part provides a code generation feature. The client side domain model (<i>entities, lists, dictionaries, dbsets, dbcontext</i>) is generated in statically typed typescript language.
  It provides more reliability for the application and much more easy refactoring and maintenance.
