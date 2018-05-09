@@ -35,6 +35,14 @@ The User Interface implementation is optional  and can be omitted or replaced wi
 </li>
 </ul>
 <br/>
+<p>The framework is superior over ReactJS and AngularJS, since it needs much less plumbing code to start working with it. 
+It does not need a hierarchical structure of the components because it uses databinding. It does not need the Redux complexity and immutable data.
+ReactJS and AngularJS are better used to create some components which could be reused (not the whole applications). 
+This framework is much better in creating the whole applications and it can use it own components or developed with other frameworks (<i>like ReactJS or JQueryUI ...</i>). 
+It has templates with arbitrary datacontexts, it has a view switching (<i>like *ngFor in AngularJS, but with its own means</i>). 
+The whole application is developed much faster without losing the ability to maintain it in the long term.
+</p>
+<br/>
 The client side of framework is split into 5 bundles:<br/>
 <b>jriapp_shared.js</b> - the bundle with common classes (collection types, utilities, other common types)<br/>
 <b>jriapp.js</b> - application class and data binding infrastructure (it depends on <b>jriapp_shared.js</b>)<br/>
