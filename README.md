@@ -34,13 +34,14 @@ They are 169KB (when minified or 40KB gzipped) and they are not dependenent on J
 The User Interface implementation is optional  and can be omitted or replaced with a custom one.
 </li>
 </ul>
-<p>The framework is superior over ReactJS and AngularJS for creating the whole applications, because in those frameworks the rigid hierarchical structure of the application makes it monolithic.
-The JRIApp allows loosely placed components on the page since it uses databinding. The JRIApp can use templates with arbitrary datacontexts, it has a view switching (<i>like *ngIf in AngularJS, but with its own means</i>). 
-It does not need the Redux complexity and immutable data and the difficulty to provide the data from the top to the bottom in those frameworks.
-The JRIApp is reactive out of the box and the change detection is very perfomant due to the use of events without the polling.
-Also it needs less plumbing code to start working with it. 
-Very complex components such as a virtual data grid could be created using a view engine such as the ReactJS and then be used for the creation of the applications with this framework.
-The whole application is developed much faster without losing the ability to maintain it in the long term.
+<p>The framework is superior over ReactJS and AngularJS for creation of large data centric applications (<i>since they need a lot of the plumbing code to provide the data throuhg the hierarchical component tree -
+ - it does not need the Redux complexity and immutable data to for this</i>).
+The JRIApp is reactive out of the box and the change detection is very perfomant due to the use of events without the use of the polling.
+The JRIApp allows abitrary placing components on the page, including declarative means of supplying the data to the constructor (<i>through an injection or a data binding</i>).
+The JRIApp can use templates which have the datacontexts to obtain the data in them, it also has a view switching (<i>like the *ngIf in AngularJS, but with its own means</i>). 
+The JRIApp allows very easy use of components built with different third party libraries
+(<i>very complex components such as a virtual data grid could be created using a view engine such as the ReactJS and then be used in the applications</i>).
+Due to that the application is developed much faster and without losing the ability to maintain it in the long term.
 </p>
 <br/>
 The client side of framework is split into 5 bundles:<br/>
