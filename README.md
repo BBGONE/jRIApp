@@ -34,12 +34,12 @@ They are 169KB (when minified or 40KB gzipped) and they are not dependenent on J
 The User Interface implementation is optional  and can be omitted or replaced with a custom one.
 </li>
 </ul>
-<p>The framework is superior over ReactJS and AngularJS, since it needs much less plumbing code to start working with it. 
-It does not need a hierarchical structure of the components because it uses databinding. It does not need the Redux complexity and immutable data and 
-the difficulty to provide the data from the top to the bottom in those frameworks. It is reactive out of the box.
-ReactJS and AngularJS are better used to create some components which could be reused (not the whole applications). 
-This framework is much better suited for creation of the whole applications (<i>to compose components, which can be developed from different libraries</i>). 
-It has templates with arbitrary datacontexts, it has a view switching (<i>like *ngIf in AngularJS, but with its own means</i>). 
+<p>The framework is superior over ReactJS and AngularJS for creating the whole applications, because in those frameworks the rigid hierarchical structure of the application makes it monolithic.
+The JRIApp allows loosely placed components on the page since it uses databinding. The JRIApp can use templates with arbitrary datacontexts, it has a view switching (<i>like *ngIf in AngularJS, but with its own means</i>). 
+It does not need the Redux complexity and immutable data and the difficulty to provide the data from the top to the bottom in those frameworks.
+The JRIApp is reactive out of the box and the change detection is very perfomant due to the use of events without the polling.
+Also it needs less plumbing code to start working with it. 
+Very complex components such as a virtual data grid could be created using a view engine such as the ReactJS and then be used for the creation of the applications with this framework.
 The whole application is developed much faster without losing the ability to maintain it in the long term.
 </p>
 <br/>
