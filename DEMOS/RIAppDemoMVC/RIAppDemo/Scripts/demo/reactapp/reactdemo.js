@@ -88,66 +88,60 @@ define("components/temp", ["require", "exports", "react"], function (require, ex
     var Temperature = (function (_super) {
         __extends(Temperature, _super);
         function Temperature(props) {
-            var _this = _super.call(this, props) || this;
-            _this._model = _this.props.model;
-            _this._model.objEvents.onProp("value", function (s, a) {
-                _this.forceUpdate();
-            }, "tempreact");
-            _this._spacerStyle = {
-                display: 'inline-block',
-                marginLeft: '15px',
-                marginRight: '5px'
-            };
-            _this._spanStyle = {
-                color: 'blue'
-            };
-            return _this;
+            return _super.call(this, props) || this;
         }
         Temperature.prototype.componentWillUnmount = function () {
-            this._model.objEvents.offNS("tempreact");
-            this._model = null;
         };
         Temperature.prototype.render = function () {
-            var model = this.model;
+            var model = this.props.model, styles = this.props.styles, actions = this.props.actions;
             return (React.createElement("fieldset", null,
-                React.createElement("legend", null, "This a React component"),
-                React.createElement("input", { value: model.value, onChange: function (e) { return model.value = e.target.value; } }),
-                React.createElement("span", { style: this._spacerStyle }, "You entered: "),
-                React.createElement("span", { style: this._spanStyle }, model.value)));
+                React.createElement("legend", null, model.title ? model.title : 'This is a React component'),
+                React.createElement("input", { value: model.value, onChange: function (e) { return actions.tempChanged(e.target.value); } }),
+                React.createElement("span", { style: styles.spacer }, "You entered: "),
+                React.createElement("span", { style: styles.span }, model.value)));
         };
-        Object.defineProperty(Temperature.prototype, "model", {
-            get: function () {
-                return this._model;
-            },
-            enumerable: true,
-            configurable: true
-        });
         return Temperature;
     }(React.Component));
     exports.Temperature = Temperature;
 });
-define("components/reactview", ["require", "exports", "jriapp_ui", "react", "react-dom", "components/temp"], function (require, exports, uiMOD, React, ReactDOM, temp_1) {
+define("components/reactview", ["require", "exports", "jriapp", "jriapp_ui", "react", "react-dom", "components/temp"], function (require, exports, RIAPP, uiMOD, React, ReactDOM, temp_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var spacerStyle = {
+        display: 'inline-block',
+        marginLeft: '15px',
+        marginRight: '5px'
+    };
+    var spanStyle = {
+        color: 'blue'
+    };
     var ReactElView = (function (_super) {
         __extends(ReactElView, _super);
         function ReactElView(el, options) {
             var _this = _super.call(this, el, options) || this;
-            _this._value = options.value || "25";
+            _this._watchChanges = new RIAPP.PropWatcher();
+            _this._debounce = new RIAPP.Debounce();
+            _this._value = options.value || "0";
+            _this._title = "";
             return _this;
         }
         ReactElView.prototype.viewMounted = function () {
+            var _this = this;
             this.render();
+            this._watchChanges.addWatch(this, ["value", "title"], function () { _this._debounce.enque(function () { return _this.render(); }); });
         };
         ReactElView.prototype.render = function () {
-            var self = this;
+            var _this = this;
+            var self = this, model = { value: self.value, title: self.title }, styles = { spacer: spacerStyle, span: spanStyle }, actions = { tempChanged: function (temp) { _this.value = temp; } };
             ReactDOM.render(React.createElement("div", null,
-                React.createElement(temp_1.Temperature, { model: self })), self.el);
+                React.createElement(temp_1.Temperature, { model: model, styles: styles, actions: actions })), self.el);
         };
         ReactElView.prototype.dispose = function () {
             if (this.getIsDisposed())
                 return;
             this.setDisposing();
+            this._debounce.dispose();
+            this._watchChanges.dispose();
             ReactDOM.unmountComponentAtNode(this.el);
             _super.prototype.dispose.call(this);
         };
@@ -159,6 +153,19 @@ define("components/reactview", ["require", "exports", "jriapp_ui", "react", "rea
                 if (this._value !== v) {
                     this._value = v;
                     this.objEvents.raiseProp("value");
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ReactElView.prototype, "title", {
+            get: function () {
+                return this._title;
+            },
+            set: function (v) {
+                if (this._title !== v) {
+                    this._title = v;
+                    this.objEvents.raiseProp("title");
                 }
             },
             enumerable: true,

@@ -36,7 +36,6 @@ The User Interface implementation is optional  and can be omitted or replaced wi
 </ul>
 <p>The framework is superior over ReactJS and AngularJS for creation of large data centric applications (<i>since they need a lot of the plumbing code to provide the data through the hierarchical component tree -
  - it does not need the Redux complexity and immutable data for this</i>).
-The JRIApp is reactive out of the box and the change detection is very perfomant without the use of the polling.
 The JRIApp allows abitrary placing components on the page, including declarative means of supplying the data to the constructor (<i>through the injection or the databinding</i>).
 The JRIApp can use templates which have the datacontexts to obtain the data in them, it also has a view switching (<i>like the *ngIf in AngularJS, but with its own means</i>). 
 The JRIApp allows very easy use of components built with different third party libraries

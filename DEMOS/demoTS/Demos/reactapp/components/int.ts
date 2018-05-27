@@ -1,9 +1,18 @@
 ﻿import * as RIAPP from "jriapp";
 
-export interface IProps<T extends RIAPP.IBaseObject> {
-    model: T;
+
+export interface IModel {
+    value: string;
+    title?: string;
 }
 
-export interface IReactView extends RIAPP.IBaseObject {
-    value: string;
+
+export interface IActions {
+    tempChanged(temp: string);
+}
+
+export interface IProps<T> {
+    model: T;
+    styles: { spacer: any; span: any; };
+    actions: IActions;
 }
