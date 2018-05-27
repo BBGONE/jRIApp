@@ -34,12 +34,12 @@ They are 169KB (when minified or 40KB gzipped) and they are not dependenent on J
 The User Interface implementation is optional  and can be omitted or replaced with a custom one.
 </li>
 </ul>
-<p>The framework is superior over ReactJS and AngularJS for creation of large data centric applications (<i>since they need a lot of the plumbing code to provide the data through the hierarchical component tree -
- - it does not need the Redux complexity and immutable data for this</i>).
-The JRIApp allows abitrary placing components on the page, including declarative means of supplying the data to the constructor (<i>through the injection or the databinding</i>).
-The JRIApp can use templates which have the datacontexts to obtain the data in them, it also has a view switching (<i>like the *ngIf in AngularJS, but with its own means</i>). 
-The JRIApp allows very easy use of components built with different third party libraries
-(<i>very complex components such as a virtual data grid could be created using a view engine such as the ReactJS and then it can be used in the applications</i>).
+<p>The framework is superior over ReactJS and AngularJS for creation of large data centric applications 
+(<i>since they need a lot of the plumbing code to provide the data through the hierarchical component tree</i>).
+Instead, the JRIApp allows abitrary placing individual components on the page, including declarative means of supplying the data to the constructor (<i>through the injection or the databinding</i>).
+The JRIApp can use its own templates which have the datacontexts to obtain the data in them, it also has a view switching (<i>like the *ngIf in AngularJS, but with its own means</i>). 
+The JRIApp allows a very easy use of components built with different third party libraries like the <b>React.js</b>
+(<i>especially effective is the usage of very complex components such as a virtual data grid without the need to write them by yourself</i>).
 The applications are developed much faster and without losing the ability to maintain them in the long term.
 </p>
 <br/>
