@@ -10,35 +10,37 @@ export abstract class ReactElView extends uiMOD.BaseElView {
     private _propWatcher = new RIAPP.PropWatcher();
     private _isRendering = false;
     private _isDirty = false;
+    private _debounce = new RIAPP.Debounce();
 
-    private _onRendering(): void {
-        this._isRendering = true;
-        this._isDirty = false;
-    }
-    private _onRendered(): void {
-        this._isRendering = false;
-        if (this._isDirty) {
-            this.render();
-        }
-    }
-    // if viewMounted method is present then it occurs after all the properties were databound
+    abstract watchChanges();
+    abstract getMarkup(): any;
+    // if viewMounted method is present then it is called after all the properties are databound
     viewMounted(): void {
         this.render();
         this.watchChanges();
     }
-    abstract watchChanges();
-    abstract getMarkup(): any;
+    protected onModelChanged(): void {
+        this._isDirty = true;
+        this._debounce.enque(() => {
+            this.render();
+        });
+    }
     render(): void {
         if (this.getIsStateDirty()) {
             return;
         }
         if (this._isRendering) {
-            this._isDirty = true;
             return;
         }
-        this._onRendering();
+        this._isRendering = true;
+        this._isDirty = false;
         ReactDOM.render(this.getMarkup(), this.el,
-            () => { this._onRendered(); }
+            () => {
+                this._isRendering = false;
+                if (this._isDirty) {
+                    this.render();
+                }
+            }
         );
     }
     dispose(): void {
@@ -46,7 +48,9 @@ export abstract class ReactElView extends uiMOD.BaseElView {
             return;
         this.setDisposing();
         this._propWatcher.dispose();
+        this._debounce.dispose();
         this._isDirty = false;
+        this._isRendering = false;
         ReactDOM.unmountComponentAtNode(this.el);
         super.dispose();
     }

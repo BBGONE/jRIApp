@@ -35,7 +35,7 @@ export class TempElView extends ReactElView {
     // override
     watchChanges(): void {
         this.propWatcher.addWatch(this, ["value", "title"], () => {
-            this.render();
+            this.onModelChanged();
         });
     }
     // override

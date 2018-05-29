@@ -88,21 +88,19 @@ define("reactview", ["require", "exports", "jriapp", "jriapp_ui", "react-dom"], 
             _this._propWatcher = new RIAPP.PropWatcher();
             _this._isRendering = false;
             _this._isDirty = false;
+            _this._debounce = new RIAPP.Debounce();
             return _this;
         }
-        ReactElView.prototype._onRendering = function () {
-            this._isRendering = true;
-            this._isDirty = false;
-        };
-        ReactElView.prototype._onRendered = function () {
-            this._isRendering = false;
-            if (this._isDirty) {
-                this.render();
-            }
-        };
         ReactElView.prototype.viewMounted = function () {
             this.render();
             this.watchChanges();
+        };
+        ReactElView.prototype.onModelChanged = function () {
+            var _this = this;
+            this._isDirty = true;
+            this._debounce.enque(function () {
+                _this.render();
+            });
         };
         ReactElView.prototype.render = function () {
             var _this = this;
@@ -110,18 +108,25 @@ define("reactview", ["require", "exports", "jriapp", "jriapp_ui", "react-dom"], 
                 return;
             }
             if (this._isRendering) {
-                this._isDirty = true;
                 return;
             }
-            this._onRendering();
-            ReactDOM.render(this.getMarkup(), this.el, function () { _this._onRendered(); });
+            this._isRendering = true;
+            this._isDirty = false;
+            ReactDOM.render(this.getMarkup(), this.el, function () {
+                _this._isRendering = false;
+                if (_this._isDirty) {
+                    _this.render();
+                }
+            });
         };
         ReactElView.prototype.dispose = function () {
             if (this.getIsDisposed())
                 return;
             this.setDisposing();
             this._propWatcher.dispose();
+            this._debounce.dispose();
             this._isDirty = false;
+            this._isRendering = false;
             ReactDOM.unmountComponentAtNode(this.el);
             _super.prototype.dispose.call(this);
         };
@@ -187,7 +192,7 @@ define("components/tempview", ["require", "exports", "react", "reactview", "comp
         TempElView.prototype.watchChanges = function () {
             var _this = this;
             this.propWatcher.addWatch(this, ["value", "title"], function () {
-                _this.render();
+                _this.onModelChanged();
             });
         };
         TempElView.prototype.getMarkup = function () {
