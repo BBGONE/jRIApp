@@ -78,6 +78,67 @@ define("app", ["require", "exports", "jriapp", "testobject"], function (require,
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
 });
+define("reactview", ["require", "exports", "jriapp", "jriapp_ui", "react-dom"], function (require, exports, RIAPP, uiMOD, ReactDOM) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var ReactElView = (function (_super) {
+        __extends(ReactElView, _super);
+        function ReactElView() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this._propWatcher = new RIAPP.PropWatcher();
+            _this._isRendering = false;
+            _this._isDirty = false;
+            return _this;
+        }
+        ReactElView.prototype._onRendering = function () {
+            this._isRendering = true;
+            this._isDirty = false;
+        };
+        ReactElView.prototype._onRendered = function () {
+            this._isRendering = false;
+            if (this._isDirty) {
+                this.render();
+            }
+        };
+        ReactElView.prototype.viewMounted = function () {
+            this.render();
+            this.watchChanges();
+        };
+        ReactElView.prototype.render = function () {
+            var _this = this;
+            if (this.getIsStateDirty()) {
+                return;
+            }
+            if (this._isRendering) {
+                this._isDirty = true;
+                return;
+            }
+            this._onRendering();
+            ReactDOM.render(this.getMarkup(), this.el, function () { _this._onRendered(); });
+        };
+        ReactElView.prototype.dispose = function () {
+            if (this.getIsDisposed())
+                return;
+            this.setDisposing();
+            this._propWatcher.dispose();
+            this._isDirty = false;
+            ReactDOM.unmountComponentAtNode(this.el);
+            _super.prototype.dispose.call(this);
+        };
+        Object.defineProperty(ReactElView.prototype, "propWatcher", {
+            get: function () {
+                return this._propWatcher;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ReactElView.prototype.toString = function () {
+            return "ReactElView";
+        };
+        return ReactElView;
+    }(uiMOD.BaseElView));
+    exports.ReactElView = ReactElView;
+});
 define("components/int", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -104,7 +165,7 @@ define("components/temp", ["require", "exports", "react"], function (require, ex
     }(React.Component));
     exports.Temperature = Temperature;
 });
-define("components/reactview", ["require", "exports", "jriapp", "jriapp_ui", "react", "react-dom", "components/temp"], function (require, exports, RIAPP, uiMOD, React, ReactDOM, temp_1) {
+define("components/tempview", ["require", "exports", "react", "reactview", "components/temp"], function (require, exports, React, reactview_1, temp_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var spacerStyle = {
@@ -115,37 +176,27 @@ define("components/reactview", ["require", "exports", "jriapp", "jriapp_ui", "re
     var spanStyle = {
         color: 'blue'
     };
-    var ReactElView = (function (_super) {
-        __extends(ReactElView, _super);
-        function ReactElView(el, options) {
+    var TempElView = (function (_super) {
+        __extends(TempElView, _super);
+        function TempElView(el, options) {
             var _this = _super.call(this, el, options) || this;
-            _this._watchChanges = new RIAPP.PropWatcher();
-            _this._debounce = new RIAPP.Debounce();
             _this._value = options.value || "0";
             _this._title = "";
             return _this;
         }
-        ReactElView.prototype.viewMounted = function () {
+        TempElView.prototype.watchChanges = function () {
             var _this = this;
-            this.render();
-            this._watchChanges.addWatch(this, ["value", "title"], function () { _this._debounce.enque(function () { return _this.render(); }); });
+            this.propWatcher.addWatch(this, ["value", "title"], function () {
+                _this.render();
+            });
         };
-        ReactElView.prototype.render = function () {
+        TempElView.prototype.getMarkup = function () {
             var _this = this;
-            var self = this, model = { value: self.value, title: self.title }, styles = { spacer: spacerStyle, span: spanStyle }, actions = { tempChanged: function (temp) { _this.value = temp; } };
-            ReactDOM.render(React.createElement("div", null,
-                React.createElement(temp_1.Temperature, { model: model, styles: styles, actions: actions })), self.el);
+            var model = { value: this.value, title: this.title }, styles = { spacer: spacerStyle, span: spanStyle }, actions = { tempChanged: function (temp) { _this.value = temp; } };
+            return (React.createElement("div", null,
+                React.createElement(temp_1.Temperature, { model: model, styles: styles, actions: actions })));
         };
-        ReactElView.prototype.dispose = function () {
-            if (this.getIsDisposed())
-                return;
-            this.setDisposing();
-            this._debounce.dispose();
-            this._watchChanges.dispose();
-            ReactDOM.unmountComponentAtNode(this.el);
-            _super.prototype.dispose.call(this);
-        };
-        Object.defineProperty(ReactElView.prototype, "value", {
+        Object.defineProperty(TempElView.prototype, "value", {
             get: function () {
                 return this._value;
             },
@@ -158,7 +209,7 @@ define("components/reactview", ["require", "exports", "jriapp", "jriapp_ui", "re
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ReactElView.prototype, "title", {
+        Object.defineProperty(TempElView.prototype, "title", {
             get: function () {
                 return this._title;
             },
@@ -171,18 +222,18 @@ define("components/reactview", ["require", "exports", "jriapp", "jriapp_ui", "re
             enumerable: true,
             configurable: true
         });
-        ReactElView.prototype.toString = function () {
-            return "ReactElView";
+        TempElView.prototype.toString = function () {
+            return "TempElView";
         };
-        return ReactElView;
-    }(uiMOD.BaseElView));
-    exports.ReactElView = ReactElView;
+        return TempElView;
+    }(reactview_1.ReactElView));
+    exports.TempElView = TempElView;
     function initModule(app) {
-        app.registerElView("react", ReactElView);
+        app.registerElView("tempview", TempElView);
     }
     exports.initModule = initModule;
 });
-define("main", ["require", "exports", "jriapp", "app", "components/reactview"], function (require, exports, RIAPP, app_1, reactview_1) {
+define("main", ["require", "exports", "jriapp", "app", "components/tempview"], function (require, exports, RIAPP, app_1, tempview_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
@@ -193,7 +244,7 @@ define("main", ["require", "exports", "jriapp", "app", "components/reactview"], 
     });
     function start(options) {
         options.modulesInits = utils.core.extend(options.modulesInits || {}, {
-            "reactview": reactview_1.initModule
+            "tempview": tempview_1.initModule
         });
         return bootstrap.startApp(function () {
             return new app_1.DemoApplication(options);

@@ -3,7 +3,7 @@
     Layout = "~/Views/Shared/_LayoutReact.cshtml";
 }
 @{
-    ViewBag.Title = "React Demo";
+    ViewBag.Title = "React Demo - using a react component";
 }
 
 @section CssImport
@@ -45,7 +45,7 @@
 <h2 class="ex8">@ViewBag.Title</h2>
 
 <div id="demoContent" style="opacity:0;">
-    <div data-view="react" data-bind-1="this.value,to=temperature,mode=TwoWay,source=testObj" 
+    <div data-view="tempview" data-bind-1="this.value,to=temperature,mode=TwoWay,source=testObj" 
          data-bind-2="this.title,to=val,source={val='This is a React component demo'}"></div>
 
     <fieldset>

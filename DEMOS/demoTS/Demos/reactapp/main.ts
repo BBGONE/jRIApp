@@ -5,7 +5,7 @@
 
 import * as RIAPP from "jriapp";
 import { DemoApplication } from "./app";
-import { initModule as initReactView } from "./components/reactview";
+import { initModule as initTempView } from "./components/tempview";
 
 
 const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
@@ -19,7 +19,7 @@ bootstrap.objEvents.addOnError(function (_s, args) {
 
 export function start(options: RIAPP.IAppOptions) {
     options.modulesInits = utils.core.extend(options.modulesInits || {}, {
-        "reactview": initReactView
+        "tempview": initTempView
     });
    
     //create and start application here
