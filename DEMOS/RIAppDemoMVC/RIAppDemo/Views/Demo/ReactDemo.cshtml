@@ -3,7 +3,7 @@
     Layout = "~/Views/Shared/_LayoutReact.cshtml";
 }
 @{
-    ViewBag.Title = "React Demo - using a react component";
+    ViewBag.Title = "React Demo - using react components";
 }
 
 @section CssImport
@@ -19,6 +19,46 @@
         label {
             color: blue;
         }
+
+        div[data-view="pagerview"] {
+            margin-bottom: 15px;
+        }
+
+        .pagination {
+            display: inline-block;
+            padding-left: 0;
+            margin: 20px 0;
+            margin-top: 0;
+            border-radius: 4px;
+        }
+
+            .pagination > li {
+                display: inline;
+            }
+
+            .pagination > .active > a, .pagination > .active > span, .pagination > .active > a:hover, .pagination > .active > span:hover, .pagination > .active > a:focus, .pagination > .active > span:focus {
+                z-index: 2;
+                color: #fff;
+                cursor: default;
+                background-color: #337ab7;
+                border-color: #337ab7;
+            }
+
+            .pagination > li > a, .pagination > li > span {
+                position: relative;
+                float: left;
+                padding: 6px 12px;
+                margin-left: -1px;
+                line-height: 1.42857143;
+                color: #337ab7;
+                text-decoration: none;
+                background-color: #fff;
+                border: 1px solid #ddd;
+                border-top-color: rgb(221, 221, 221);
+                border-right-color: rgb(221, 221, 221);
+                border-bottom-color: rgb(221, 221, 221);
+                border-left-color: rgb(221, 221, 221);
+            }
     </style>
 }
 
@@ -45,15 +85,21 @@
 <h2 class="ex8">@ViewBag.Title</h2>
 
 <div id="demoContent" style="opacity:0;">
-    <div data-view="tempview" data-bind-1="this.value,to=temperature,mode=TwoWay,source=testObj" 
+    <div data-view="tempview" data-bind-1="this.value,to=temperature,mode=TwoWay,source=testObj"
          data-bind-2="this.title,to=val,source={val='This is a React component demo'}"></div>
-
     <fieldset>
         <legend>This is a databound text input</legend>
         <input type="text" data-bind="this.value,to=temperature,mode=TwoWay,source=testObj"
                data-view-options="updateOnKeyUp=true"
                style="width: 250px" />
     </fieldset>
+    
+    <h4 style="margin-top:40px;">This is a react pager demo</h4>
+    <div data-view="pagerview" 
+         data-bind-1="this.current,to=page,mode=BackWay,source=testObj"
+         data-view-options="total=25,current=6,visiblePage=7">
+    </div>
+    <strong>Current Page Index:</strong>&nbsp;<span data-bind-1="this.value,to=page,source=testObj"></span>
 </div>
 
 @Html.Partial("_WaitLoad")

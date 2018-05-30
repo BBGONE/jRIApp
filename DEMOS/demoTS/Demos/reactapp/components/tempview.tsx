@@ -4,7 +4,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { ReactElView } from "../reactview";
 import { Temperature } from "./temp";
-import { IModel } from "./int";
+import { ITempModel } from "./int";
 
 export interface ITempViewOptions extends RIAPP.IViewOptions
 {

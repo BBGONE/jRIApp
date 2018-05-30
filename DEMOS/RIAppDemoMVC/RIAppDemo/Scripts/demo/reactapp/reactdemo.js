@@ -16,6 +16,7 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
         function TestObject(app) {
             var _this = _super.call(this, app) || this;
             _this._temperature = "0";
+            _this._page = 1;
             return _this;
         }
         TestObject.prototype.dispose = function () {
@@ -33,6 +34,19 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
                 if (this._temperature !== v) {
                     this._temperature = v;
                     this.objEvents.raiseProp("temperature");
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TestObject.prototype, "page", {
+            get: function () {
+                return this._page;
+            },
+            set: function (v) {
+                if (this._page !== v) {
+                    this._page = v;
+                    this.objEvents.raiseProp("page");
                 }
             },
             enumerable: true,
@@ -241,7 +255,236 @@ define("components/tempview", ["require", "exports", "react", "reactview", "comp
     }
     exports.initModule = initModule;
 });
-define("main", ["require", "exports", "jriapp", "app", "components/tempview"], function (require, exports, RIAPP, app_1, tempview_1) {
+define("components/pager", ["require", "exports", "react"], function (require, exports, React) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var BASE_SHIFT = 0;
+    var TITLE_SHIFT = 1;
+    var TITLES = {
+        first: 'First',
+        prev: '\u00AB',
+        prevSet: '...',
+        nextSet: '...',
+        next: '\u00BB',
+        last: 'Last',
+    };
+    var Pager = (function (_super) {
+        __extends(Pager, _super);
+        function Pager(props) {
+            var _this = _super.call(this, props) || this;
+            _this.handleFirstPage = _this.handleFirstPage.bind(_this);
+            _this.handlePreviousPage = _this.handlePreviousPage.bind(_this);
+            _this.handleNextPage = _this.handleNextPage.bind(_this);
+            _this.handleLastPage = _this.handleLastPage.bind(_this);
+            _this.handleMorePrevPages = _this.handleMorePrevPages.bind(_this);
+            _this.handleMoreNextPages = _this.handleMoreNextPages.bind(_this);
+            _this.handlePageChanged = _this.handlePageChanged.bind(_this);
+            return _this;
+        }
+        Pager.prototype.getTitles = function (key) {
+            return this.props.titles[key] || TITLES[key];
+        };
+        Pager.prototype.calcBlocks = function () {
+            var props = this.props;
+            var total = props.total;
+            var blockSize = props.visiblePages;
+            var current = props.current + TITLE_SHIFT;
+            var blocks = Math.ceil(total / blockSize);
+            var currBlock = Math.ceil(current / blockSize) - TITLE_SHIFT;
+            return {
+                total: blocks,
+                current: currBlock,
+                size: blockSize,
+            };
+        };
+        Pager.prototype.isPrevDisabled = function () {
+            return this.props.current <= BASE_SHIFT;
+        };
+        Pager.prototype.isNextDisabled = function () {
+            return this.props.current >= (this.props.total - TITLE_SHIFT);
+        };
+        Pager.prototype.isPrevMoreHidden = function () {
+            var blocks = this.calcBlocks();
+            return (blocks.total === TITLE_SHIFT) || (blocks.current === BASE_SHIFT);
+        };
+        Pager.prototype.isNextMoreHidden = function () {
+            var blocks = this.calcBlocks();
+            return (blocks.total === TITLE_SHIFT) || (blocks.current === (blocks.total - TITLE_SHIFT));
+        };
+        Pager.prototype.visibleRange = function () {
+            var blocks = this.calcBlocks();
+            var start = blocks.current * blocks.size;
+            var delta = this.props.total - start;
+            var end = start + ((delta > blocks.size) ? blocks.size : delta);
+            return [start + TITLE_SHIFT, end + TITLE_SHIFT];
+        };
+        Pager.prototype.handleFirstPage = function () {
+            if (!this.isPrevDisabled()) {
+                this.handlePageChanged(BASE_SHIFT);
+            }
+        };
+        Pager.prototype.handlePreviousPage = function () {
+            if (!this.isPrevDisabled()) {
+                this.handlePageChanged(this.props.current - TITLE_SHIFT);
+            }
+        };
+        Pager.prototype.handleNextPage = function () {
+            if (!this.isNextDisabled()) {
+                this.handlePageChanged(this.props.current + TITLE_SHIFT);
+            }
+        };
+        Pager.prototype.handleLastPage = function () {
+            if (!this.isNextDisabled()) {
+                this.handlePageChanged(this.props.total - TITLE_SHIFT);
+            }
+        };
+        Pager.prototype.handleMorePrevPages = function () {
+            var blocks = this.calcBlocks();
+            this.handlePageChanged((blocks.current * blocks.size) - TITLE_SHIFT);
+        };
+        Pager.prototype.handleMoreNextPages = function () {
+            var blocks = this.calcBlocks();
+            this.handlePageChanged((blocks.current + TITLE_SHIFT) * blocks.size);
+        };
+        Pager.prototype.handlePageChanged = function (num) {
+            var handler = this.props.onPageChanged;
+            if (handler)
+                handler(num);
+        };
+        Pager.prototype.renderPages = function (pair) {
+            var _this = this;
+            return range(pair[0], pair[1]).map(function (num, idx) {
+                var current = num - TITLE_SHIFT;
+                var onClick = _this.handlePageChanged.bind(_this, current);
+                var isActive = (_this.props.current === current);
+                return (React.createElement(Page, { key: idx, index: idx, isActive: isActive, className: "btn-numbered-page", onClick: onClick }, num));
+            });
+        };
+        Pager.prototype.render = function () {
+            var titles = this.getTitles.bind(this);
+            var className = "pagination";
+            if (this.props.className) {
+                className += " " + this.props.className;
+            }
+            return (React.createElement("nav", null,
+                React.createElement("ul", { className: className },
+                    React.createElement(Page, { className: "btn-first-page", key: "btn-first-page", isDisabled: this.isPrevDisabled(), onClick: this.handleFirstPage }, titles('first')),
+                    React.createElement(Page, { className: "btn-prev-page", key: "btn-prev-page", isDisabled: this.isPrevDisabled(), onClick: this.handlePreviousPage }, titles('prev')),
+                    React.createElement(Page, { className: "btn-prev-more", key: "btn-prev-more", isHidden: this.isPrevMoreHidden(), onClick: this.handleMorePrevPages }, titles('prevSet')),
+                    this.renderPages(this.visibleRange()),
+                    React.createElement(Page, { className: "btn-next-more", key: "btn-next-more", isHidden: this.isNextMoreHidden(), onClick: this.handleMoreNextPages }, titles('nextSet')),
+                    React.createElement(Page, { className: "btn-next-page", key: "btn-next-page", isDisabled: this.isNextDisabled(), onClick: this.handleNextPage }, titles('next')),
+                    React.createElement(Page, { className: "btn-last-page", key: "btn-last-page", isDisabled: this.isNextDisabled(), onClick: this.handleLastPage }, titles('last')))));
+        };
+        return Pager;
+    }(React.Component));
+    var Page = function (props) {
+        if (props.isHidden)
+            return null;
+        var baseCss = props.className ? props.className + " " : '';
+        var fullCss = "" + baseCss + (props.isActive ? ' active' : '') + (props.isDisabled ? ' disabled' : '');
+        return (React.createElement("li", { key: props.index, className: fullCss },
+            React.createElement("a", { onClick: props.onClick }, props.children)));
+    };
+    function range(start, end) {
+        var res = [];
+        for (var i = start; i < end; i++) {
+            res.push(i);
+        }
+        return res;
+    }
+    exports.default = Pager;
+});
+define("components/pagerapp", ["require", "exports", "react", "components/pager"], function (require, exports, React, pager_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var PagerApp = (function (_super) {
+        __extends(PagerApp, _super);
+        function PagerApp(props) {
+            return _super.call(this, props) || this;
+        }
+        PagerApp.prototype.render = function () {
+            var model = this.props.model, actions = this.props.actions;
+            return (React.createElement(pager_1.default, { total: model.total, current: model.current, visiblePages: model.visiblePage, titles: { first: '<|', last: '|>' }, onPageChanged: function (newPage) { return actions.pageChanged(newPage); } }));
+        };
+        return PagerApp;
+    }(React.Component));
+    exports.PagerApp = PagerApp;
+});
+define("components/pagerview", ["require", "exports", "react", "reactview", "components/pagerapp"], function (require, exports, React, reactview_2, pagerapp_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var PagerElView = (function (_super) {
+        __extends(PagerElView, _super);
+        function PagerElView(el, options) {
+            var _this = _super.call(this, el, options) || this;
+            _this._total = options.total || 11;
+            _this._current = options.current || 7;
+            _this._visiblePage = options.visiblePage || 3;
+            return _this;
+        }
+        PagerElView.prototype.watchChanges = function () {
+            var _this = this;
+            this.propWatcher.addWatch(this, ["total", "current", "visiblePage"], function () {
+                _this.onModelChanged();
+            });
+        };
+        PagerElView.prototype.getMarkup = function () {
+            var _this = this;
+            var model = { total: this.total, current: this.current, visiblePage: this.visiblePage }, actions = { pageChanged: function (newPage) { _this.current = newPage; } };
+            return React.createElement(pagerapp_1.PagerApp, { model: model, actions: actions });
+        };
+        Object.defineProperty(PagerElView.prototype, "total", {
+            get: function () {
+                return this._total;
+            },
+            set: function (v) {
+                if (this._total !== v) {
+                    this._total = v;
+                    this.objEvents.raiseProp("total");
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PagerElView.prototype, "current", {
+            get: function () {
+                return this._current;
+            },
+            set: function (v) {
+                if (this._current !== v) {
+                    this._current = v;
+                    this.objEvents.raiseProp("current");
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PagerElView.prototype, "visiblePage", {
+            get: function () {
+                return this._visiblePage;
+            },
+            set: function (v) {
+                if (this._visiblePage !== v) {
+                    this._visiblePage = v;
+                    this.objEvents.raiseProp("visiblePage");
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        PagerElView.prototype.toString = function () {
+            return "PagerElView";
+        };
+        return PagerElView;
+    }(reactview_2.ReactElView));
+    exports.PagerElView = PagerElView;
+    function initModule(app) {
+        app.registerElView("pagerview", PagerElView);
+    }
+    exports.initModule = initModule;
+});
+define("main", ["require", "exports", "jriapp", "app", "components/tempview", "components/pagerview"], function (require, exports, RIAPP, app_1, tempview_1, pagerview_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
@@ -252,7 +495,8 @@ define("main", ["require", "exports", "jriapp", "app", "components/tempview"], f
     });
     function start(options) {
         options.modulesInits = utils.core.extend(options.modulesInits || {}, {
-            "tempview": tempview_1.initModule
+            "tempview": tempview_1.initModule,
+            "pagerview": pagerview_1.initModule
         });
         return bootstrap.startApp(function () {
             return new app_1.DemoApplication(options);

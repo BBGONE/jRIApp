@@ -1,7 +1,7 @@
 ﻿import * as React from "react";
-import { IProps, IModel } from "./int";
+import { ITempProps, ITempModel } from "./int";
 
-export class Temperature extends React.Component<IProps<IModel>> {
+export class Temperature extends React.Component<ITempProps<ITempModel>> {
     constructor(props) {
         super(props);
     }
