@@ -19,11 +19,16 @@ export abstract class ReactElView extends uiMOD.BaseElView {
         this.render();
         this.watchChanges();
     }
+    protected checkRender(): void {
+        this._debounce.enque(() => {
+            if (this._isDirty) {
+                this.render();
+            }
+        });
+    }
     protected onModelChanged(): void {
         this._isDirty = true;
-        this._debounce.enque(() => {
-            this.render();
-        });
+        this.checkRender();
     }
     render(): void {
         if (this.getIsStateDirty()) {
@@ -37,9 +42,7 @@ export abstract class ReactElView extends uiMOD.BaseElView {
         ReactDOM.render(this.getMarkup(), this.el,
             () => {
                 this._isRendering = false;
-                if (this._isDirty) {
-                    this.render();
-                }
+                this.checkRender();
             }
         );
     }

@@ -95,12 +95,17 @@ define("reactview", ["require", "exports", "jriapp", "jriapp_ui", "react-dom"], 
             this.render();
             this.watchChanges();
         };
-        ReactElView.prototype.onModelChanged = function () {
+        ReactElView.prototype.checkRender = function () {
             var _this = this;
-            this._isDirty = true;
             this._debounce.enque(function () {
-                _this.render();
+                if (_this._isDirty) {
+                    _this.render();
+                }
             });
+        };
+        ReactElView.prototype.onModelChanged = function () {
+            this._isDirty = true;
+            this.checkRender();
         };
         ReactElView.prototype.render = function () {
             var _this = this;
@@ -114,9 +119,7 @@ define("reactview", ["require", "exports", "jriapp", "jriapp_ui", "react-dom"], 
             this._isDirty = false;
             ReactDOM.render(this.getMarkup(), this.el, function () {
                 _this._isRendering = false;
-                if (_this._isDirty) {
-                    _this.render();
-                }
+                _this.checkRender();
             });
         };
         ReactElView.prototype.dispose = function () {
