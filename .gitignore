@@ -231,7 +231,7 @@ HeatService*.wxs
 
 #Aurelia build artifacts
 **/dist/
-node_modules/
+#node_modules/
 jspm_packages/
 bower_components/
 **/src/**/*.js
