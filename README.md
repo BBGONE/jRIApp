@@ -39,8 +39,8 @@ The User Interface implementation is optional  and can be omitted or replaced wi
 Instead, the JRIApp allows abitrary placing individual components on the page, including declarative means of supplying the data to the constructor (<i>through the injection or the databinding</i>).
 The JRIApp can use its own templates which have the datacontexts to obtain the data in them, it also has a view switching (<i>like the *ngIf in AngularJS, but with its own means</i>). 
 The JRIApp allows a very easy use of components built with different third party libraries like the <b>React.js</b>
-(<i>especially effective is the usage of very complex components such as a virtual data grid without the need to write them by yourself- after encapsulating a React component into
-an element view, the component can be used declaratively on the page exposing properties which can be databound</i>).
+(<i>for example, if we have a complex React component which we want to reuse - we can wrap it in an element view and use it like any other one in our applications,
+the component can be used declaratively on the page exposing properties which can be databound. The Demo shows how to do it.</i>).
 The applications are developed much faster and without losing the ability to maintain them in the long term.
 </p>
 <br/>
