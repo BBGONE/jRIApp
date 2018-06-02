@@ -28,6 +28,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="shared\autocomplete.ts" />
     <TypeScriptCompile Include="shared\common.ts" />
+    <TypeScriptCompile Include="shared\mixobj.ts" />
     <TypeScriptCompile Include="shared\monthpicker.ts" />
     <TypeScriptCompile Include="shared\uploader.ts" />
     <TypeScriptCompile Include="shared\header.ts" />

@@ -712,6 +712,91 @@ define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (requir
     }(RIAPP.ViewModel));
     exports.HeaderVM = HeaderVM;
 });
+define("mixobj", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/error", "jriapp_shared/utils/weakmap", "jriapp_shared/object"], function (require, exports, checks_1, error_1, weakmap_1, object_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var checks = checks_1.Checks, signature = object_1.objSignature, weakmap = weakmap_1.createWeakMap();
+    function MixObject(Base) {
+        return (function (_super) {
+            __extends(class_1, _super);
+            function class_1() {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                var _this = _super.apply(this, args) || this;
+                weakmap.set(_this, { objState: 0, events: null });
+                return _this;
+            }
+            class_1.prototype.isHasProp = function (prop) {
+                return checks.isHasProp(this, prop);
+            };
+            class_1.prototype.handleError = function (error, source) {
+                if (error_1.ERROR.checkIsDummy(error)) {
+                    return true;
+                }
+                if (!error.message) {
+                    error = new Error("Error: " + error);
+                }
+                var args = { error: error, source: source, isHandled: false };
+                this.objEvents.raise("error", args);
+                var isHandled = args.isHandled;
+                if (!isHandled) {
+                    isHandled = error_1.ERROR.handleError(this, error, source);
+                }
+                return isHandled;
+            };
+            class_1.prototype.getIsDisposed = function () {
+                var state = weakmap.get(this);
+                return !state || state.objState === 2;
+            };
+            class_1.prototype.getIsStateDirty = function () {
+                var state = weakmap.get(this);
+                return !state || state.objState !== 0;
+            };
+            class_1.prototype.dispose = function () {
+                var state = weakmap.get(this);
+                if (!state || state.objState === 2) {
+                    return;
+                }
+                try {
+                    if (!!state.events) {
+                        state.events.raise("disposed", {});
+                        state.events.off();
+                        state.events = null;
+                    }
+                }
+                finally {
+                    state.objState = 2;
+                    weakmap.delete(this);
+                }
+            };
+            Object.defineProperty(class_1.prototype, "objEvents", {
+                get: function () {
+                    var state = weakmap.get(this);
+                    if (!state || state.objState === 2) {
+                        return object_1.dummyEvents;
+                    }
+                    if (!state.events) {
+                        state.events = object_1.createObjectEvents(this);
+                    }
+                    return state.events;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(class_1.prototype, "__objSig", {
+                get: function () {
+                    return signature;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return class_1;
+        }(Base));
+    }
+    exports.MixObject = MixObject;
+});
 define("monthpicker", ["require", "exports", "jriapp_ui"], function (require, exports, uiMOD) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });

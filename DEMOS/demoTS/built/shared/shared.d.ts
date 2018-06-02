@@ -143,6 +143,20 @@ declare module "header" {
         readonly $topPanel: JQuery;
     }
 }
+declare module "mixobj" {
+    import { IObjectEvents, TAnyConstructor } from "jriapp_shared/int";
+    export function MixObject<T extends TAnyConstructor<{}>>(Base: T): {
+        new (...args: any[]): {
+            isHasProp(prop: string): boolean;
+            handleError(error: any, source: any): boolean;
+            getIsDisposed(): boolean;
+            getIsStateDirty(): boolean;
+            dispose(): void;
+            readonly objEvents: IObjectEvents<any>;
+            readonly __objSig: object;
+        };
+    } & T;
+}
 declare module "monthpicker" {
     import * as RIAPP from "jriapp";
     import * as uiMOD from "jriapp_ui";
