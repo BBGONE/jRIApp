@@ -26,6 +26,24 @@
 
 import * as React from 'react';
 
+export interface IPagerTitles {
+    first: string;
+    prev: string;
+    prevSet: string;
+    nextSet: string;
+    next: string;
+    last: string;
+}
+
+export interface IPagerProps {
+    total: number;
+    current: number;
+    visiblePages: number;
+    titles?: Partial<IPagerTitles>;
+    onPageChanged(newPage: number);
+    className?: string;
+}
+
 
 /**
  * ## Constants
@@ -33,20 +51,20 @@ import * as React from 'react';
 const BASE_SHIFT  = 0;
 const TITLE_SHIFT = 1;
 
-const TITLES = {
+const TITLES: IPagerTitles = {
 	first:   'First',
 	prev:    '\u00AB',
 	prevSet: '...',
 	nextSet: '...',
 	next:    '\u00BB',
-	last:    'Last',
+	last:    'Last'
 };
 
 
 /**
  * ## Constructor
  */
-class Pager extends React.Component<any> {
+class Pager extends React.Component<IPagerProps> {
 	constructor(props) {
 		super(props);
 
@@ -155,7 +173,7 @@ class Pager extends React.Component<any> {
 
 	handlePageChanged(num) {
 		const handler = this.props.onPageChanged;
-		if (handler) handler(num);
+		if (!!handler) handler(num);
 	}
 
 
@@ -258,7 +276,18 @@ Pager.defaultProps = {
 };
 */
 
-const Page = (props) => {
+export interface IPageProps {
+    isHidden?: boolean;
+    isActive?: boolean;
+    isDisabled?: boolean;
+    index?: number;
+    className?: string;
+    onClick?: () => void;
+    children?: any;
+}
+
+
+const Page = (props: IPageProps) => {
 	if (props.isHidden) return null;
 
 	const baseCss = props.className ? `${props.className} ` : '';

@@ -247,7 +247,7 @@ define("components/pager", ["require", "exports", "react"], function (require, e
         prevSet: '...',
         nextSet: '...',
         next: '\u00BB',
-        last: 'Last',
+        last: 'Last'
     };
     var Pager = (function (_super) {
         __extends(Pager, _super);
@@ -329,7 +329,7 @@ define("components/pager", ["require", "exports", "react"], function (require, e
         };
         Pager.prototype.handlePageChanged = function (num) {
             var handler = this.props.onPageChanged;
-            if (handler)
+            if (!!handler)
                 handler(num);
         };
         Pager.prototype.renderPages = function (pair) {
