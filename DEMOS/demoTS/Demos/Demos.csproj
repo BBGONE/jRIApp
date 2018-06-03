@@ -58,11 +58,9 @@
     <TypeScriptCompile Include="reactapp\app.ts" />
     <TypeScriptCompile Include="reactapp\components\int.ts" />
     <TypeScriptCompile Include="reactapp\components\pager.tsx" />
-    <TypeScriptCompile Include="reactapp\components\pagerapp.tsx" />
     <TypeScriptCompile Include="reactapp\components\pagerview.tsx" />
     <TypeScriptCompile Include="reactapp\components\tempview.tsx" />
     <TypeScriptCompile Include="reactapp\reactview.tsx" />
-    <TypeScriptCompile Include="reactapp\components\temp.tsx" />
     <TypeScriptCompile Include="reactapp\main.ts" />
     <TypeScriptCompile Include="reactapp\node_modules\%40types\node\index.d.ts" />
     <TypeScriptCompile Include="reactapp\node_modules\%40types\node\inspector.d.ts" />

@@ -3,12 +3,12 @@ import * as uiMOD from "jriapp_ui";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { ReactElView } from "../reactview";
-import { PagerApp } from "./pagerapp";
-import { IPagerModel } from "./int";
+import Pager from './pager';
+import { IPagerModel, IPagerActions } from "./int";
 
 export interface IPagerViewOptions extends RIAPP.IViewOptions
 {
-    visiblePage?: number;
+    visiblePages?: number;
     total?: number;
     current: number;
 }
@@ -20,26 +20,34 @@ export interface IPagerViewOptions extends RIAPP.IViewOptions
 export class PagerElView extends ReactElView {
     private _total: number;
     private _current: number;
-    private _visiblePage: number;
+    private _visiblePages: number;
 
     constructor(el: HTMLElement, options: IPagerViewOptions) {
         super(el, options);
-        this._total = options.total || 11;
+        this._total = options.total || 20;
         this._current = options.current || 7;
-        this._visiblePage = options.visiblePage || 3;
+        this._visiblePages = options.visiblePages || 6;
     }
     // override
     watchChanges(): void {
-        this.propWatcher.addWatch(this, ["total", "current","visiblePage"], () => {
+        this.propWatcher.addWatch(this, ["total", "current","visiblePages"], () => {
             this.onModelChanged();
         });
     }
     // override
     getMarkup(): any {
-        const model = { total: this.total, current: this.current, visiblePage: this.visiblePage },
-            actions = { pageChanged: (newPage: number) => { this.current = newPage; } };
+        const model: IPagerModel = { total: this.total, current: this.current, visiblePages: this.visiblePages },
+            actions: IPagerActions = { pageChanged: (newPage: number) => { this.current = newPage; } };
 
-        return <PagerApp model={model} actions={actions} />;
+        return (
+            <Pager
+                total={model.total}
+                current={model.current}
+                visiblePages={model.visiblePages}
+                titles={{ first: '<|', last: '|>' }}
+                onPageChanged={(newPage) => actions.pageChanged(newPage)}
+            />
+        ); 
     }
     get total(): number {
         return this._total;
@@ -59,13 +67,13 @@ export class PagerElView extends ReactElView {
             this.objEvents.raiseProp("current");
         }
     }
-    get visiblePage(): number {
-        return this._visiblePage;
+    get visiblePages(): number {
+        return this._visiblePages;
     }
-    set visiblePage(v: number) {
-        if (this._visiblePage !== v) {
-            this._visiblePage = v;
-            this.objEvents.raiseProp("visiblePage");
+    set visiblePages(v: number) {
+        if (this._visiblePages !== v) {
+            this._visiblePages = v;
+            this.objEvents.raiseProp("visiblePages");
         }
     }
     toString(): string {

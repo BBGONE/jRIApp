@@ -3,8 +3,7 @@ import * as uiMOD from "jriapp_ui";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { ReactElView } from "../reactview";
-import { Temperature } from "./temp";
-import { ITempModel } from "./int";
+import { ITempModel, ITempActions } from "./int";
 
 export interface ITempViewOptions extends RIAPP.IViewOptions
 {
@@ -40,13 +39,18 @@ export class TempElView extends ReactElView {
     }
     // override
     getMarkup(): any {
-        const model = { value: this.value, title: this.title },
+        const model: ITempModel = { value: this.value, title: this.title },
             styles = { spacer: spacerStyle, span: spanStyle },
-            actions = { tempChanged: (temp: string) => { this.value = temp; } };
+            actions: ITempActions = { tempChanged: (temp: string) => { this.value = temp; } };
 
-        return (<div>
-            <Temperature model={model} styles={styles} actions={actions} />
-        </div>);
+        return (
+            <fieldset>
+                <legend>{model.title ? model.title : 'This is a React component'}</legend>
+                <input value={model.value} onChange={(e) => actions.tempChanged(e.target.value)} />
+                <span style={styles.spacer}>You entered: </span>
+                <span style={styles.span}>{model.value}</span>
+            </fieldset>
+        );
     }
     get value(): string {
         return this._value;

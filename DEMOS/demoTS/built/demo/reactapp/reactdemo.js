@@ -165,29 +165,7 @@ define("components/int", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("components/temp", ["require", "exports", "react"], function (require, exports, React) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var Temperature = (function (_super) {
-        __extends(Temperature, _super);
-        function Temperature(props) {
-            return _super.call(this, props) || this;
-        }
-        Temperature.prototype.componentWillUnmount = function () {
-        };
-        Temperature.prototype.render = function () {
-            var model = this.props.model, styles = this.props.styles, actions = this.props.actions;
-            return (React.createElement("fieldset", null,
-                React.createElement("legend", null, model.title ? model.title : 'This is a React component'),
-                React.createElement("input", { value: model.value, onChange: function (e) { return actions.tempChanged(e.target.value); } }),
-                React.createElement("span", { style: styles.spacer }, "You entered: "),
-                React.createElement("span", { style: styles.span }, model.value)));
-        };
-        return Temperature;
-    }(React.Component));
-    exports.Temperature = Temperature;
-});
-define("components/tempview", ["require", "exports", "react", "reactview", "components/temp"], function (require, exports, React, reactview_1, temp_1) {
+define("components/tempview", ["require", "exports", "react", "reactview"], function (require, exports, React, reactview_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var spacerStyle = {
@@ -215,8 +193,11 @@ define("components/tempview", ["require", "exports", "react", "reactview", "comp
         TempElView.prototype.getMarkup = function () {
             var _this = this;
             var model = { value: this.value, title: this.title }, styles = { spacer: spacerStyle, span: spanStyle }, actions = { tempChanged: function (temp) { _this.value = temp; } };
-            return (React.createElement("div", null,
-                React.createElement(temp_1.Temperature, { model: model, styles: styles, actions: actions })));
+            return (React.createElement("fieldset", null,
+                React.createElement("legend", null, model.title ? model.title : 'This is a React component'),
+                React.createElement("input", { value: model.value, onChange: function (e) { return actions.tempChanged(e.target.value); } }),
+                React.createElement("span", { style: styles.spacer }, "You entered: "),
+                React.createElement("span", { style: styles.span }, model.value)));
         };
         Object.defineProperty(TempElView.prototype, "value", {
             get: function () {
@@ -395,44 +376,28 @@ define("components/pager", ["require", "exports", "react"], function (require, e
     }
     exports.default = Pager;
 });
-define("components/pagerapp", ["require", "exports", "react", "components/pager"], function (require, exports, React, pager_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var PagerApp = (function (_super) {
-        __extends(PagerApp, _super);
-        function PagerApp(props) {
-            return _super.call(this, props) || this;
-        }
-        PagerApp.prototype.render = function () {
-            var model = this.props.model, actions = this.props.actions;
-            return (React.createElement(pager_1.default, { total: model.total, current: model.current, visiblePages: model.visiblePage, titles: { first: '<|', last: '|>' }, onPageChanged: function (newPage) { return actions.pageChanged(newPage); } }));
-        };
-        return PagerApp;
-    }(React.Component));
-    exports.PagerApp = PagerApp;
-});
-define("components/pagerview", ["require", "exports", "react", "reactview", "components/pagerapp"], function (require, exports, React, reactview_2, pagerapp_1) {
+define("components/pagerview", ["require", "exports", "react", "reactview", "components/pager"], function (require, exports, React, reactview_2, pager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var PagerElView = (function (_super) {
         __extends(PagerElView, _super);
         function PagerElView(el, options) {
             var _this = _super.call(this, el, options) || this;
-            _this._total = options.total || 11;
+            _this._total = options.total || 20;
             _this._current = options.current || 7;
-            _this._visiblePage = options.visiblePage || 3;
+            _this._visiblePages = options.visiblePages || 6;
             return _this;
         }
         PagerElView.prototype.watchChanges = function () {
             var _this = this;
-            this.propWatcher.addWatch(this, ["total", "current", "visiblePage"], function () {
+            this.propWatcher.addWatch(this, ["total", "current", "visiblePages"], function () {
                 _this.onModelChanged();
             });
         };
         PagerElView.prototype.getMarkup = function () {
             var _this = this;
-            var model = { total: this.total, current: this.current, visiblePage: this.visiblePage }, actions = { pageChanged: function (newPage) { _this.current = newPage; } };
-            return React.createElement(pagerapp_1.PagerApp, { model: model, actions: actions });
+            var model = { total: this.total, current: this.current, visiblePages: this.visiblePages }, actions = { pageChanged: function (newPage) { _this.current = newPage; } };
+            return (React.createElement(pager_1.default, { total: model.total, current: model.current, visiblePages: model.visiblePages, titles: { first: '<|', last: '|>' }, onPageChanged: function (newPage) { return actions.pageChanged(newPage); } }));
         };
         Object.defineProperty(PagerElView.prototype, "total", {
             get: function () {
@@ -460,14 +425,14 @@ define("components/pagerview", ["require", "exports", "react", "reactview", "com
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(PagerElView.prototype, "visiblePage", {
+        Object.defineProperty(PagerElView.prototype, "visiblePages", {
             get: function () {
-                return this._visiblePage;
+                return this._visiblePages;
             },
             set: function (v) {
-                if (this._visiblePage !== v) {
-                    this._visiblePage = v;
-                    this.objEvents.raiseProp("visiblePage");
+                if (this._visiblePages !== v) {
+                    this._visiblePages = v;
+                    this.objEvents.raiseProp("visiblePages");
                 }
             },
             enumerable: true,

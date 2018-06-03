@@ -22,7 +22,7 @@ export interface ITempProps<T> {
 export interface IPagerModel {
     total: number;
     current: number;
-    visiblePage: number;
+    visiblePages: number;
 }
 
 export interface IPagerActions {
@@ -32,8 +32,4 @@ export interface IPagerActions {
 export interface IPagerProps<T> {
     model: T;
     actions: IPagerActions;
-}
-
-export interface IPagerState {
-    current: number;
 }
