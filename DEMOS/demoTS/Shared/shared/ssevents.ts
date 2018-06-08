@@ -1,12 +1,11 @@
 ﻿/// <reference path="../../jriapp/jriapp.d.ts" />
-/// <reference path="../../thirdparty/sse.d.ts"/>
 import * as RIAPP from "jriapp";
 
 //server side events client
 const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
 export class SSEventsVM extends RIAPP.BaseObject {
-    private _es: sse.IEventSourceStatic;
+    private _es: EventSource;
     private _baseUrl: string;
     private _url: string;
     private _closeClientUrl: string;

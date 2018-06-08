@@ -4,18 +4,18 @@ declare module "jriapp_db/const" {
         None = 0,
         Changed = 1,
         Setted = 2,
-        Refreshed = 4,
+        Refreshed = 4
     }
     export const enum REFRESH_MODE {
         NONE = 0,
         RefreshCurrent = 1,
         MergeIntoCurrent = 2,
-        CommitChanges = 3,
+        CommitChanges = 3
     }
     export const enum DELETE_ACTION {
         NoAction = 0,
         Cascade = 1,
-        SetNulls = 2,
+        SetNulls = 2
     }
     export const enum DATA_OPER {
         None = 0,
@@ -23,7 +23,7 @@ declare module "jriapp_db/const" {
         Query = 2,
         Invoke = 3,
         Refresh = 4,
-        Init = 5,
+        Init = 5
     }
 }
 declare module "jriapp_db/datacache" {
@@ -37,7 +37,7 @@ declare module "jriapp_db/datacache" {
         private _totalCount;
         constructor(query: TDataQuery);
         dispose(): void;
-        private _getPrevPageIndex(currentPageIndex);
+        private _getPrevPageIndex;
         getNextRange(pageIndex: number): {
             start: number;
             end: number;
@@ -93,13 +93,13 @@ declare module "jriapp_db/dataquery" {
         private _isPagingEnabled;
         constructor(dbSet: DbSet<TItem, TObj, DbContext>, queryInfo: IQueryInfo);
         dispose(): void;
-        private _addSort(fieldName, sortOrder);
-        private _addFilterItem(fieldName, operand, value, checkFieldName?);
-        private _resetCacheInvalidated();
-        private _clearCache();
-        private _getCache();
-        private _isPageCached(pageIndex);
-        private _updateCache(pageIndex, items);
+        private _addSort;
+        private _addFilterItem;
+        private _resetCacheInvalidated;
+        private _clearCache;
+        private _getCache;
+        private _isPageCached;
+        private _updateCache;
         _getInternal(): IInternalQueryMethods;
         where(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName?: boolean): this;
         and(fieldName: string, operand: FILTER_TYPE, value: any, checkFieldName?: boolean): this;
@@ -333,7 +333,7 @@ declare module "jriapp_db/association" {
         protected _notifyChildrenChanged(changed: string[]): void;
         protected _notifyParentChanged(changed: string[]): void;
         protected _notifyChanged(changedPkeys: string[], changedCkeys: string[]): void;
-        private _notify();
+        private _notify;
         protected _onChildEdit(item: IEntityItem, isBegin: boolean, isCanceled: boolean): void;
         protected _onChildCommitChanges(item: IEntityItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
         protected _storeChildFKey(item: IEntityItem): void;

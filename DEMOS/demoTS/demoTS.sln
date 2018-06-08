@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2037
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demos", "Demos\Demos.csproj", "{4BCCAAB0-F3B9-44FE-B237-ECE697EAA6BF}"
 EndProject
@@ -16,7 +16,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "thirdparty", "thirdparty", 
 		thirdparty\moment.d.ts = thirdparty\moment.d.ts
 		thirdparty\qtip2.d.ts = thirdparty\qtip2.d.ts
 		thirdparty\require.d.ts = thirdparty\require.d.ts
-		thirdparty\sse.d.ts = thirdparty\sse.d.ts
 	EndProjectSection
 EndProject
 Global
@@ -36,5 +35,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F78845E5-FBB2-454F-A114-B6E33907E497}
 	EndGlobalSection
 EndGlobal

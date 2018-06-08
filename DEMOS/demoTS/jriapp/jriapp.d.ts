@@ -4,13 +4,13 @@ declare module "jriapp/const" {
     export const enum SERVICES {
         TOOLTIP_SVC = "ITooltipService",
         DATEPICKER_SVC = "IDatepicker",
-        UIERRORS_SVC = "IUIErrorsService",
+        UIERRORS_SVC = "IUIErrorsService"
     }
     export const enum BINDING_MODE {
         OneTime = 0,
         OneWay = 1,
         TwoWay = 2,
-        BackWay = 3,
+        BackWay = 3
     }
     export const enum STORE_KEY {
         SVC = "svc.",
@@ -18,7 +18,7 @@ declare module "jriapp/const" {
         OBJECT = "obj.",
         OPTION = "opt.",
         LOADER = "ldr.",
-        TGROUP = "tgrp.",
+        TGROUP = "tgrp."
     }
     export const enum DATA_ATTR {
         DATA_BIND = "data-bind",
@@ -29,7 +29,7 @@ declare module "jriapp/const" {
         DATA_CONTENT = "data-content",
         DATA_COLUMN = "data-column",
         DATA_NAME = "data-name",
-        DATA_REQUIRE = "data-require",
+        DATA_REQUIRE = "data-require"
     }
     export const enum KEYS {
         backspace = 8,
@@ -45,23 +45,23 @@ declare module "jriapp/const" {
         up = 38,
         right = 39,
         down = 40,
-        del = 127,
+        del = 127
     }
     export const enum ELVIEW_NM {
-        DataForm = "dataform",
+        DataForm = "dataform"
     }
     export const enum LOADER_GIF {
         Small = "loader2.gif",
-        Default = "loader.gif",
+        Default = "loader.gif"
     }
     export const enum BindScope {
         Application = 0,
         Template = 1,
-        DataForm = 2,
+        DataForm = 2
     }
     export const enum BindTo {
         Source = 0,
-        Target = 1,
+        Target = 1
     }
     export const enum SubscribeFlags {
         delegationOn = 0,
@@ -69,7 +69,7 @@ declare module "jriapp/const" {
         change = 2,
         keypress = 3,
         keydown = 4,
-        keyup = 5,
+        keyup = 5
     }
 }
 declare module "jriapp/int" {
@@ -406,7 +406,7 @@ declare module "jriapp/utils/tloader" {
         }) => void, nmspace?: string): void;
         offOnLoaded(nmspace?: string): void;
         waitForNotLoading(callback: (...args: any[]) => any, callbackArgs: any): void;
-        private _onLoaded(html, owner);
+        private _onLoaded;
         loadTemplatesAsync(owner: IDataProvider, loader: () => IPromise<string>): IPromise<any>;
         getTemplateLoader(context: ILoaderContext, name: string): () => IPromise<string>;
         readonly isLoading: boolean;
@@ -468,7 +468,6 @@ declare module "jriapp/utils/domevents" {
         static on(el: TDomElement, evType: "MSGestureStart", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, evType: "MSGestureTap", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, evType: "MSInertiaStart", listener: (ev: MSGestureEvent) => any, args?: TEventsArgsOrNamespace): void;
-        static on(el: TDomElement, evType: "MSManipulationStateChanged", listener: (ev: MSManipulationEvent) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, evType: "MSPointerCancel", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, evType: "MSPointerDown", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, evType: "MSPointerEnter", listener: (ev: MSPointerEvent) => any, args?: TEventsArgsOrNamespace): void;
@@ -518,8 +517,6 @@ declare module "jriapp/utils/domevents" {
         static on(el: TDomElement, evType: "mouseover", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, evType: "mouseup", listener: (ev: MouseEvent) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, evType: "mousewheel", listener: (ev: WheelEvent) => any, args?: TEventsArgsOrNamespace): void;
-        static on(el: TDomElement, evType: "mssitemodejumplistitemremoved", listener: (ev: MSSiteModeEvent) => any, args?: TEventsArgsOrNamespace): void;
-        static on(el: TDomElement, evType: "msthumbnailclick", listener: (ev: MSSiteModeEvent) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, evType: "pause", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, evType: "play", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
         static on(el: TDomElement, evType: "playing", listener: (ev: Event) => any, args?: TEventsArgsOrNamespace): void;
@@ -586,7 +583,7 @@ declare module "jriapp/utils/dom" {
         static insertBefore(node: Node, refNode: Node): Node;
         static wrap(elem: Element, wrapper: Element): void;
         static unwrap(elem: Element): void;
-        private static getClassMap(el);
+        private static getClassMap;
         static setClasses(elems: Element[], classes: string[]): void;
         static setClass(elems: Element[], css: string, remove?: boolean): void;
         static addClass(elems: Element[], css: string): void;
@@ -647,7 +644,7 @@ declare module "jriapp/bootstrap" {
         Initialized = 2,
         Ready = 3,
         Error = 4,
-        Disposed = 5,
+        Disposed = 5
     }
     export function registerConverter(root: IDataProvider, name: string, obj: IConverter): void;
     export function getConverter(root: IDataProvider, name: string): IConverter;
@@ -673,18 +670,18 @@ declare module "jriapp/bootstrap" {
         private _uniqueID;
         constructor();
         dispose(): void;
-        private _bindGlobalEvents();
-        private _onTemplateLoaded(html, owner);
-        private _processOptions(owner, root);
-        private _processTemplates(owner, root);
-        private _processTemplate(owner, name, html);
+        private _bindGlobalEvents;
+        private _onTemplateLoaded;
+        private _processOptions;
+        private _processTemplates;
+        private _processTemplate;
         protected _createObjEvents(): IObjectEvents;
-        private _init();
-        private _initialize();
-        private _registerApp(app);
-        private _unregisterApp(app);
-        private _destroyApp();
-        private _waitLoaded(onLoad);
+        private _init;
+        private _initialize;
+        private _registerApp;
+        private _unregisterApp;
+        private _destroyApp;
+        private _waitLoaded;
         _getInternal(): IInternalBootstrapMethods;
         addOnDisposed(handler: TEventHandler<Bootstrap, any>, nmspace?: string, context?: object): void;
         offOnDisposed(nmspace?: string): void;
@@ -808,17 +805,17 @@ declare module "jriapp/binding" {
         private _cntUSrc;
         constructor(options: TBindingOptions);
         dispose(): void;
-        private _update();
-        private _onSrcErrChanged(errNotif);
-        private _getTgtChangedFn(self, obj, prop, restPath, lvl);
-        private _getSrcChangedFn(self, obj, prop, restPath, lvl);
-        private _addOnPropChanged(obj, prop, fn);
-        private _parseSrc(obj, path, lvl);
-        private _parseSrc2(obj, path, lvl);
-        private _parseTgt(obj, path, lvl);
-        private _parseTgt2(obj, path, lvl);
-        private _setPathItem(newObj, bindingTo, lvl, path);
-        private _cleanUp(obj);
+        private _update;
+        private _onSrcErrChanged;
+        private _getTgtChangedFn;
+        private _getSrcChangedFn;
+        private _addOnPropChanged;
+        private _parseSrc;
+        private _parseSrc2;
+        private _parseTgt;
+        private _parseTgt2;
+        private _setPathItem;
+        private _cleanUp;
         protected _setTarget(value: any): boolean;
         protected _setSource(value: any): boolean;
         updateTarget(): void;
@@ -843,7 +840,7 @@ declare module "jriapp/template" {
     import { ITemplate, ITemplateEvents } from "jriapp/int";
     export const enum css {
         templateContainer = "ria-template-container",
-        templateError = "ria-template-error",
+        templateError = "ria-template-error"
     }
     export interface ITemplateOptions {
         dataContext?: any;
@@ -959,9 +956,9 @@ declare module "jriapp/app" {
         private _appState;
         constructor(options?: IAppOptions);
         dispose(): void;
-        private _cleanUpObjMaps();
-        private _initAppModules();
-        private _getTemplateLoaderInfo(name);
+        private _cleanUpObjMaps;
+        private _initAppModules;
+        private _getTemplateLoaderInfo;
         protected onStartUp(): any;
         _getInternal(): IInternalAppMethods;
         addOnDisposed(handler: TEventHandler<IApplication, any>, nmspace?: string, context?: object): void;

@@ -23,7 +23,7 @@ declare module "jriapp_ui/int" {
         disabled = "disabled",
         opacity = "opacity",
         color = "color",
-        fontSize = "font-size",
+        fontSize = "font-size"
     }
 }
 declare module "jriapp_ui/content/basic" {
@@ -86,8 +86,8 @@ declare module "jriapp_ui/content/template" {
         private _templateID;
         constructor(options: IConstructorContentOptions);
         dispose(): void;
-        private getTemplateID();
-        private createTemplate();
+        private getTemplateID;
+        private createTemplate;
         protected cleanUp(): void;
         render(): void;
         toString(): string;
@@ -105,7 +105,7 @@ declare module "jriapp_ui/utils/eventbag" {
         None = 0,
         Added = 1,
         Deleted = 2,
-        Updated = 3,
+        Updated = 3
     }
     export interface IEventChangedArgs {
         name: string;
@@ -165,7 +165,7 @@ declare module "jriapp_ui/baseview" {
         private _viewState;
         constructor(el: TElement, options?: IViewOptions);
         dispose(): void;
-        private _getStore();
+        private _getStore;
         protected _onEventChanged(args: IEventChangedArgs): void;
         protected _onEventAdded(name: string, newVal: ICommand): void;
         protected _onEventDeleted(name: string, oldVal: ICommand): void;
@@ -350,15 +350,15 @@ declare module "jriapp_ui/listbox" {
         private _isDSFilled;
         constructor(el: HTMLSelectElement, options: IListBoxConstructorOptions);
         dispose(): void;
-        private _bindDS();
-        private _unbindDS();
-        private _addOption(item, first);
-        private _mapByValue();
-        private _resetText();
-        private _resetState();
-        private _removeOption(item);
-        private _clear();
-        private _refresh();
+        private _bindDS;
+        private _unbindDS;
+        private _addOption;
+        private _mapByValue;
+        private _resetText;
+        private _resetState;
+        private _removeOption;
+        private _clear;
+        private _refresh;
         protected _onSelectedChanged(): void;
         protected _getValue(item: ICollectionItem): any;
         protected _getText(item: ICollectionItem, index: number): string;
@@ -472,7 +472,7 @@ declare module "jriapp_ui/utils/tooltip" {
     import { ITooltipService } from "jriapp/int";
     export const enum css {
         toolTip = "qtip",
-        toolTipError = "qtip-red",
+        toolTipError = "qtip-red"
     }
     export function createToolTipSvc(): ITooltipService;
 }
@@ -490,7 +490,7 @@ declare module "jriapp_ui/dialog" {
     import { ViewModel } from "jriapp/mvvm";
     export const enum DIALOG_ACTION {
         Default = 0,
-        StayOpen = 1,
+        StayOpen = 1
     }
     export interface IDialogConstructorOptions {
         dataContext?: any;
@@ -611,7 +611,7 @@ declare module "jriapp_ui/dynacontent" {
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
-        private _templateChanging(oldName, newName);
+        private _templateChanging;
         dispose(): void;
         readonly template: ITemplate;
         templateID: string;
@@ -640,18 +640,18 @@ declare module "jriapp_ui/datagrid/const" {
         DATA = "data",
         ROW_EXPANDER = "row_expander",
         ROW_ACTIONS = "row_actions",
-        ROW_SELECTOR = "row_selector",
+        ROW_SELECTOR = "row_selector"
     }
     export const enum ROW_POSITION {
         Up = 0,
         Bottom = 1,
-        Details = 2,
+        Details = 2
     }
     export const enum ROW_ACTION {
         OK = 0,
         EDIT = 1,
         CANCEL = 2,
-        DELETE = 3,
+        DELETE = 3
     }
     export const enum css {
         container = "ria-table-container",
@@ -676,7 +676,7 @@ declare module "jriapp_ui/datagrid/const" {
         nobr = "ria-nobr",
         colSortable = "ria-sortable",
         colSortAsc = "ria-sort-asc",
-        colSortDesc = "ria-sort-desc",
+        colSortDesc = "ria-sort-desc"
     }
     export const txtMap: IIndexer<string>;
     export const enum PROP_NAME {
@@ -689,7 +689,7 @@ declare module "jriapp_ui/datagrid/const" {
         currentRow = "currentRow",
         grid = "grid",
         animation = "animation",
-        stateProvider = "stateProvider",
+        stateProvider = "stateProvider"
     }
 }
 declare module "jriapp_ui/datagrid/animation" {
@@ -855,8 +855,8 @@ declare module "jriapp_ui/datagrid/cells/actions" {
         private _isEditing;
         constructor(options: ICellOptions);
         dispose(): void;
-        private _setupButtons(btns);
-        private _cleanUp(td);
+        private _setupButtons;
+        private _cleanUp;
         protected readonly editBtnsHTML: string[];
         protected readonly viewBtnsHTML: string[];
         protected _createButtons(isEditing: boolean): void;
@@ -914,8 +914,8 @@ declare module "jriapp_ui/datagrid/rows/row" {
             item: ICollectionItem;
         });
         dispose(): void;
-        private _createCells();
-        private _createCell(col, num);
+        private _createCells;
+        private _createCell;
         protected _loadDOM(): void;
         protected _unloadDOM(): void;
         _setState(css: string): void;
@@ -1030,11 +1030,11 @@ declare module "jriapp_ui/datagrid/rows/details" {
             details_id: string;
         });
         dispose(): void;
-        private _createCell(detailsId);
+        private _createCell;
         protected _setParentRow(row: Row): void;
-        private _initShow();
-        private _show(onEnd);
-        private _hide(onEnd);
+        private _initShow;
+        private _show;
+        private _hide;
         toString(): string;
         readonly rect: ClientRect;
         readonly height: number;
@@ -1080,7 +1080,7 @@ declare module "jriapp_ui/datagrid/rows/fillspace" {
             grid: DataGrid;
         });
         dispose(): void;
-        private _createCell();
+        private _createCell;
         toString(): string;
         attach(): void;
         detach(): void;
@@ -1291,7 +1291,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         constructor(table: HTMLTableElement, options: IDataGridViewOptions);
         toString(): string;
         dispose(): void;
-        private _bindGridEvents();
+        private _bindGridEvents;
         protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         dataSource: ICollection<ICollectionItem>;
         readonly grid: DataGrid;
@@ -1341,7 +1341,7 @@ declare module "jriapp_ui/pager" {
         protected _unbindDS(): void;
         protected _reset(): void;
         protected _createLink(text: string): HTMLElement;
-        private _addScope(el, page);
+        private _addScope;
         protected _createFirst(): HTMLElement;
         protected _createPrevious(): HTMLElement;
         protected _createCurrent(): HTMLElement;
@@ -1506,7 +1506,7 @@ declare module "jriapp_ui/template" {
     export class TemplateElView extends BaseElView implements ITemplateEvents {
         private _command;
         constructor(el: HTMLElement, options: IViewOptions);
-        private invokeCommand(args);
+        private invokeCommand;
         templateLoading(template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
@@ -1539,14 +1539,14 @@ declare module "jriapp_ui/dataform" {
         private _contentPromise;
         constructor(el: HTMLElement, options: IFormOptions);
         dispose(): void;
-        private _getBindings();
-        private _createContent();
-        private _updateCreatedContent();
-        private _updateContent();
-        private _onDSErrorsChanged();
-        private _bindDS();
-        private _unbindDS();
-        private _clearContent();
+        private _getBindings;
+        private _createContent;
+        private _updateCreatedContent;
+        private _updateContent;
+        private _onDSErrorsChanged;
+        private _bindDS;
+        private _unbindDS;
+        private _clearContent;
         protected _setErrors(errors: IValidationInfo[]): void;
         protected _onIsEditingChanged(): void;
         toString(): string;
@@ -1593,9 +1593,9 @@ declare module "jriapp_ui/command" {
         private _debounce;
         constructor(el: TElement, options: ICommandViewOptions);
         dispose(): void;
-        private _getCommandFlag(flag);
-        private _setCommandFlag(v, flag);
-        private _onCanExecuteChanged(cmd, args);
+        private _getCommandFlag;
+        private _setCommandFlag;
+        private _onCanExecuteChanged;
         protected _getCommandParam(): any;
         protected _onCommandChanged(): void;
         protected invokeCommand(): void;
@@ -1719,7 +1719,7 @@ declare module "jriapp_ui/expander" {
         isExpanded?: boolean;
     }
     export const enum PROP_NAME {
-        isExpanded = "isExpanded",
+        isExpanded = "isExpanded"
     }
     export class ExpanderElView extends AnchorElView {
         private _expandedsrc;

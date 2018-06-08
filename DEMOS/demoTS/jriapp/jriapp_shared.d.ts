@@ -2,17 +2,17 @@ declare module "jriapp_shared/const" {
     export const enum DEBUG_LEVEL {
         NONE = 0,
         NORMAL = 1,
-        HIGH = 2,
+        HIGH = 2
     }
     export const enum BRACKETS {
         ROUND = 0,
         CURLY = 1,
-        SQUARE = 2,
+        SQUARE = 2
     }
     export const enum SIDE {
         BOTH = 0,
         LEFT = 1,
-        RIGHT = 2,
+        RIGHT = 2
     }
     export const APP_NAME = "app";
     export const DUMY_ERROR = "DUMMY_ERROR";
@@ -22,7 +22,7 @@ declare module "jriapp_shared/utils/ideferred" {
         Pending = 0,
         ResolutionInProgress = 1,
         Resolved = 2,
-        Rejected = 3,
+        Rejected = 3
     }
     export interface IPromiseState {
         state(): PromiseState;
@@ -140,17 +140,18 @@ declare module "jriapp_shared/int" {
     export const enum TPriority {
         Normal = 0,
         AboveNormal = 1,
-        High = 2,
+        High = 2
     }
+    export type PropertyNames<T> = keyof T | "*" | "[*]";
     export interface IEvents<T = any> {
         canRaise(name: string): boolean;
         on(name: string, handler: TEventHandler<T, any>, nmspace?: string, context?: object, priority?: TPriority): void;
         off(name?: string, nmspace?: string): void;
         offNS(nmspace?: string): void;
         raise(name: string, args: any): void;
-        raiseProp(name: keyof T | "*" | "[*]"): void;
-        onProp(prop: keyof T | "*" | "[*]", handler: TPropChangedHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
-        offProp(prop?: keyof T | "*" | "[*]", nmspace?: string): void;
+        raiseProp(name: PropertyNames<T>): void;
+        onProp(prop: PropertyNames<T>, handler: TPropChangedHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
+        offProp(prop?: PropertyNames<T>, nmspace?: string): void;
     }
     export interface IBaseObject extends IErrorHandler, IDisposable {
         getIsStateDirty(): boolean;
@@ -398,7 +399,7 @@ declare module "jriapp_shared/collection/const" {
     export const enum DATE_CONVERSION {
         None = 0,
         ServerLocalToClientLocal = 1,
-        UtcToClientLocal = 2,
+        UtcToClientLocal = 2
     }
     export const enum DATA_TYPE {
         None = 0,
@@ -411,7 +412,7 @@ declare module "jriapp_shared/collection/const" {
         Date = 7,
         Time = 8,
         Guid = 9,
-        Binary = 10,
+        Binary = 10
     }
     export const enum FIELD_TYPE {
         None = 0,
@@ -420,11 +421,11 @@ declare module "jriapp_shared/collection/const" {
         Navigation = 3,
         RowTimeStamp = 4,
         Object = 5,
-        ServerCalculated = 6,
+        ServerCalculated = 6
     }
     export const enum SORT_ORDER {
         ASC = 0,
-        DESC = 1,
+        DESC = 1
     }
     export const enum FILTER_TYPE {
         Equals = 0,
@@ -436,19 +437,19 @@ declare module "jriapp_shared/collection/const" {
         Lt = 6,
         GtEq = 7,
         LtEq = 8,
-        NotEq = 9,
+        NotEq = 9
     }
     export const enum COLL_CHANGE_TYPE {
         Remove = 0,
         Add = 1,
         Reset = 2,
-        Remap = 3,
+        Remap = 3
     }
     export const enum COLL_CHANGE_REASON {
         None = 0,
         PageChange = 1,
         Sorting = 2,
-        Refresh = 3,
+        Refresh = 3
     }
     export const enum COLL_CHANGE_OPER {
         None = 0,
@@ -456,18 +457,18 @@ declare module "jriapp_shared/collection/const" {
         AddNew = 2,
         Remove = 3,
         Commit = 4,
-        Sort = 5,
+        Sort = 5
     }
     export const enum ITEM_STATUS {
         None = 0,
         Added = 1,
         Updated = 2,
-        Deleted = 3,
+        Deleted = 3
     }
     export const enum VALS_VERSION {
         Current = 0,
         Temporary = 1,
-        Original = 2,
+        Original = 2
     }
 }
 declare module "jriapp_shared/collection/int" {
@@ -488,7 +489,7 @@ declare module "jriapp_shared/collection/int" {
     };
     export const enum ITEM_EVENTS {
         errors_changed = "errors_changed",
-        destroyed = "destroyed",
+        destroyed = "destroyed"
     }
     export interface IFieldInfo {
         fieldName: string;
@@ -825,11 +826,11 @@ declare module "jriapp_shared/object" {
     export const enum ObjState {
         None = 0,
         Disposing = 1,
-        Disposed = 2,
+        Disposed = 2
     }
     export const enum OBJ_EVENTS {
         error = "error",
-        disposed = "disposed",
+        disposed = "disposed"
     }
     export function createObjectEvents(owner: IBaseObject): IObjectEvents;
     export class ObjectEvents implements IObjectEvents {
@@ -1051,7 +1052,7 @@ declare module "jriapp_shared/utils/http" {
     import { IIndexer } from "jriapp_shared/int";
     export class HttpUtils {
         static isStatusOK(status: string | number): boolean;
-        private static _getXMLRequest(url, method, deferred, headers?);
+        private static _getXMLRequest;
         static postAjax(url: string, postData: string, headers?: IIndexer<string>): IAbortablePromise<string>;
         static getAjax(url: string, headers?: IIndexer<string>): IAbortablePromise<string>;
         static defaultHeaders: IIndexer<string>;
@@ -1298,9 +1299,9 @@ declare module "jriapp_shared/collection/validation" {
     import { IFieldInfo } from "jriapp_shared/collection/int";
     import { IValidationInfo } from "jriapp_shared/int";
     export class Validations {
-        private static _dtRangeToDate(str);
-        private static checkNumRange(num, range);
-        private static checkDateRange(dt, range);
+        private static _dtRangeToDate;
+        private static checkNumRange;
+        private static checkDateRange;
         static checkField(fieldInfo: IFieldInfo, value: any, isNew: boolean): string[];
         static distinct(vals: IValidationInfo[]): IValidationInfo[];
     }
@@ -1313,7 +1314,7 @@ declare module "jriapp_shared/collection/aspect" {
     import { BaseObject } from "jriapp_shared/object";
     import { ICollectionItem, IItemAspect } from "jriapp_shared/collection/int";
     import { BaseCollection } from "jriapp_shared/collection/base";
-    export abstract class ItemAspect<TItem extends ICollectionItem, TObj extends IIndexer<any>> extends BaseObject implements IItemAspect<TItem, TObj> {
+    export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem, TObj extends IIndexer<any> = IIndexer<any>> extends BaseObject implements IItemAspect<TItem, TObj> {
         private _key;
         private _item;
         private _coll;
@@ -1325,8 +1326,8 @@ declare module "jriapp_shared/collection/aspect" {
         constructor(collection: BaseCollection<TItem>, vals: any, key: string, isNew: boolean);
         dispose(): void;
         protected _onErrorsChanged(): void;
-        private _getFlag(flag);
-        private _setFlag(v, flag);
+        private _getFlag;
+        private _setFlag;
         protected _setIsEdited(v: boolean): void;
         protected _setIsCancelling(v: boolean): void;
         protected _cloneVals(): TObj;
@@ -1418,7 +1419,7 @@ declare module "jriapp_shared/collection/list" {
         private _fieldInfos;
         private _newKey;
         constructor(props: IPropInfo[]);
-        private _updateFieldMap(props);
+        private _updateFieldMap;
         protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void;
         protected createItem(obj?: TObj): TItem;
         protected _getNewKey(): string;

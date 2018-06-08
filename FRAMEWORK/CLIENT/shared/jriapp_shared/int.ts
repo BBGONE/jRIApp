@@ -41,6 +41,8 @@ export const enum TPriority {
     Normal = 0, AboveNormal = 1, High = 2
 }
 
+export type PropertyNames<T> = keyof T | "*" | "[*]";
+
 export interface IEvents<T = any> {
     canRaise(name: string): boolean;
     on(name: string, handler: TEventHandler<T, any>, nmspace?: string, context?: object, priority?: TPriority): void;
@@ -48,10 +50,10 @@ export interface IEvents<T = any> {
     // remove event handlers by their namespace
     offNS(nmspace?: string): void;
     raise(name: string, args: any): void;
-    raiseProp(name: keyof T | "*" | "[*]"): void;
+    raiseProp(name: PropertyNames<T>): void;
     // to subscribe for changes on all properties, pass in the prop parameter: '*'
-    onProp(prop: keyof T | "*" | "[*]", handler: TPropChangedHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
-    offProp(prop?: keyof T | "*" | "[*]", nmspace?: string): void;
+    onProp(prop: PropertyNames<T>, handler: TPropChangedHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
+    offProp(prop?: PropertyNames<T>, nmspace?: string): void;
 }
 
 export interface IBaseObject extends IErrorHandler, IDisposable {

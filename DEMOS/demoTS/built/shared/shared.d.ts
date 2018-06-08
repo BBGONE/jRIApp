@@ -2,7 +2,6 @@
 /// <reference path="../../jriapp/jriapp.d.ts" />
 /// <reference path="../../jriapp/jriapp_ui.d.ts" />
 /// <reference path="../../jriapp/jriapp_db.d.ts" />
-/// <reference path="../../thirdparty/sse.d.ts" />
 declare module "common" {
     import * as RIAPP from "jriapp";
     import * as dbMOD from "jriapp_db";
@@ -183,10 +182,10 @@ declare module "ssevents" {
         constructor(baseUrl: string, clientID: string);
         static isSupported(): boolean;
         getEventNames(): string[];
-        private _onEsOpen(event);
-        private _onEsError(event);
-        private _onMsg(event);
-        private _close();
+        private _onEsOpen;
+        private _onEsError;
+        private _onMsg;
+        private _close;
         addOnMessage(fn: (sender: any, args: {
             message: string;
             data: any;
@@ -195,7 +194,7 @@ declare module "ssevents" {
         close(): void;
         post(message: string, clientID?: string): RIAPP.IAbortablePromise<string>;
         dispose(): void;
-        readonly es: sse.IEventSourceStatic;
+        readonly es: EventSource;
         readonly openESCommand: RIAPP.ICommand;
         readonly closeESCommand: RIAPP.ICommand;
         readonly url: string;

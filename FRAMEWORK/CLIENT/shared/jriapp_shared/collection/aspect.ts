@@ -52,7 +52,7 @@ function checkDetached<TItem extends ICollectionItem, TObj>(aspect: IItemAspect<
     }
 }
 
-export abstract class ItemAspect<TItem extends ICollectionItem, TObj extends IIndexer<any>> extends BaseObject implements IItemAspect<TItem, TObj> {
+export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem, TObj extends IIndexer<any> = IIndexer<any>> extends BaseObject implements IItemAspect<TItem, TObj> {
     private _key: string;
     private _item: TItem;
     private _coll: BaseCollection<TItem>;
