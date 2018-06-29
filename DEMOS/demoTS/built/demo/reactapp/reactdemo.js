@@ -161,10 +161,6 @@ define("reactview", ["require", "exports", "jriapp", "jriapp_ui", "react-dom"], 
     }(uiMOD.BaseElView));
     exports.ReactElView = ReactElView;
 });
-define("components/int", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 define("components/tempview", ["require", "exports", "react", "reactview"], function (require, exports, React, reactview_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -192,12 +188,11 @@ define("components/tempview", ["require", "exports", "react", "reactview"], func
         };
         TempElView.prototype.getMarkup = function () {
             var _this = this;
-            var model = { value: this.value, title: this.title }, styles = { spacer: spacerStyle, span: spanStyle }, actions = { tempChanged: function (temp) { _this.value = temp; } };
             return (React.createElement("fieldset", null,
-                React.createElement("legend", null, model.title ? model.title : 'This is a React component'),
-                React.createElement("input", { value: model.value, onChange: function (e) { return actions.tempChanged(e.target.value); } }),
-                React.createElement("span", { style: styles.spacer }, "You entered: "),
-                React.createElement("span", { style: styles.span }, model.value)));
+                React.createElement("legend", null, this.title ? this.title : 'This is a React component'),
+                React.createElement("input", { value: this.value, onChange: function (e) { return _this.value = e.target.value; } }),
+                React.createElement("span", { style: spacerStyle }, "You entered: "),
+                React.createElement("span", { style: spanStyle }, this.value)));
         };
         Object.defineProperty(TempElView.prototype, "value", {
             get: function () {
@@ -263,7 +258,8 @@ define("components/pager", ["require", "exports", "react"], function (require, e
             return _this;
         }
         Pager.prototype.getTitles = function (key) {
-            return this.props.titles[key] || TITLES[key];
+            var titles = this.props.titles || {};
+            return titles[key] || TITLES[key];
         };
         Pager.prototype.calcBlocks = function () {
             var props = this.props;
@@ -396,8 +392,7 @@ define("components/pagerview", ["require", "exports", "react", "reactview", "com
         };
         PagerElView.prototype.getMarkup = function () {
             var _this = this;
-            var model = { total: this.total, current: this.current, visiblePages: this.visiblePages }, actions = { pageChanged: function (newPage) { _this.current = newPage; } };
-            return (React.createElement(pager_1.default, { total: model.total, current: model.current, visiblePages: model.visiblePages, titles: { first: '<|', last: '|>' }, onPageChanged: function (newPage) { return actions.pageChanged(newPage); } }));
+            return (React.createElement(pager_1.default, { total: this.total, current: this.current, visiblePages: this.visiblePages, titles: { first: '<|', last: '|>' }, onPageChanged: function (newPage) { _this.current = newPage; } }));
         };
         Object.defineProperty(PagerElView.prototype, "total", {
             get: function () {

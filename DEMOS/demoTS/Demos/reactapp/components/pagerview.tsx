@@ -4,7 +4,6 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { ReactElView } from "../reactview";
 import Pager from './pager';
-import { IPagerModel, IPagerActions } from "./int";
 
 export interface IPagerViewOptions extends RIAPP.IViewOptions
 {
@@ -36,16 +35,12 @@ export class PagerElView extends ReactElView {
     }
     // override
     getMarkup(): any {
-        const model: IPagerModel = { total: this.total, current: this.current, visiblePages: this.visiblePages },
-            actions: IPagerActions = { pageChanged: (newPage: number) => { this.current = newPage; } };
-
         return (
-            <Pager
-                total={model.total}
-                current={model.current}
-                visiblePages={model.visiblePages}
+            <Pager total={this.total}
+                current={this.current}
+                visiblePages={this.visiblePages}
                 titles={{ first: '<|', last: '|>' }}
-                onPageChanged={(newPage) => actions.pageChanged(newPage)}
+                onPageChanged={(newPage) => { this.current = newPage; } }
             />
         ); 
     }

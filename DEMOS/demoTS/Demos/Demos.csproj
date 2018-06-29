@@ -56,7 +56,6 @@
     <TypeScriptCompile Include="mastDetDemo\prodAutocomplete.ts" />
     <TypeScriptCompile Include="mastDetDemo\productVM.ts" />
     <TypeScriptCompile Include="reactapp\app.ts" />
-    <TypeScriptCompile Include="reactapp\components\int.ts" />
     <TypeScriptCompile Include="reactapp\components\pager.tsx" />
     <TypeScriptCompile Include="reactapp\components\pagerview.tsx" />
     <TypeScriptCompile Include="reactapp\components\tempview.tsx" />
