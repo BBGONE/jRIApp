@@ -78,9 +78,8 @@ class Pager extends React.Component<IPagerProps> {
 	}
 
     /* ========================= HELPERS ==============================*/
-    getTitles(key) {
-        const titles = this.props.titles || {};
-		return titles[key] || TITLES[key];
+	getTitles(key) {
+		return this.props.titles[key] || TITLES[key];
 	}
 
     /**
