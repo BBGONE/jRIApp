@@ -13,6 +13,10 @@ The framework was designed primarily for creating data centric Line of Business 
 which will work natively in browsers without the need for plugins.
 </p>
 <p>
+I'm currently moving it to NET.Core <a href="https://github.com/BBGONE/JRIApp.Core" target="_blank"><b>JRIApp.Core</b></a>.<br/> 
+The RIAPP.DataService project is already in netstandard 2.0 but the other server side projects are still full DotNet 4.7.1 (but i'll move them too)
+</p>
+<p>
 I  have written this framework because existing frameworks which i had found was not suitable for the data centric HTML5 applications.</br>
 </br>
 The framework uses (Model-View-ViewModel) MVVM architecture:<br/>
