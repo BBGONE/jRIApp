@@ -445,7 +445,7 @@ namespace RIAPP.DataService.DomainService
             MethodInfoData methodData = metadata.getOperationMethodInfo(info.dbSetName, MethodType.Refresh);
             if (methodData == null)
                 throw new InvalidOperationException(string.Format(ErrorStrings.ERR_REC_REFRESH_INVALID,
-                    info.dbSetInfo.EntityType.Name, GetType().Name));
+                    info.dbSetInfo.EntityType.Name, this.GetType().Name));
             info.rowInfo.dbSetInfo = info.dbSetInfo;
             IAuthorizer authorizer = ServiceContainer.Authorizer;
             authorizer.CheckUserRightsToExecute(methodData);

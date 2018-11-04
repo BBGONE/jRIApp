@@ -14,7 +14,7 @@ namespace RIAppDemo.DAL.EF
         {
             SalesOrderDetails = new HashSet<SalesOrderDetail>();
         }
-
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ProductID { get; set; }
 
         [Required]

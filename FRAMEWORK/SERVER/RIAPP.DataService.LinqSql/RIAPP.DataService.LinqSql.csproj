@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>RIAPP.DataService.LinqSql</RootNamespace>
     <AssemblyName>RIAPP.DataService.LinqSql</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -54,10 +54,6 @@
     <Compile Include="Utils\LinqValueConverter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection.Abstractions\Microsoft.Extensions.DependencyInjection.Abstractions.csproj">
-      <Project>{3fc36108-1ad9-43e2-b685-b4bcd00a7bda}</Project>
-      <Name>Microsoft.Extensions.DependencyInjection.Abstractions</Name>
-    </ProjectReference>
     <ProjectReference Include="..\RIAPP.DataService\RIAPP.DataService.csproj">
       <Project>{5FA08D23-6BAE-47AD-930B-A11EAFFF11DC}</Project>
       <Name>RIAPP.DataService</Name>

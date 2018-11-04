@@ -15,7 +15,6 @@ namespace RIAPP.DataService.Utils
             return __scopeStore.Count;
         }
 #endif
-
         #region class fields
 
         private static readonly ConcurrentDictionary<Guid, WeakReference<CallContext<T>>> __scopeStore =

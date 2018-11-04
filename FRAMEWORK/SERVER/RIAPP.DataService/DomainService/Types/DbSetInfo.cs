@@ -26,7 +26,7 @@ namespace RIAPP.DataService.DomainService.Types
                     true);
 
             enablePaging = true;
-            pageSize = 25;
+            pageSize = 100;
             isTrackChanges = false;
         }
 
