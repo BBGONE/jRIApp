@@ -646,14 +646,14 @@ namespace RIAPP.DataService.Utils.CodeGen
                 sbFields.AppendLine();
                 //no writable properties to ParentToChildren navigation fields
                 bool isReadonly = dataType.EndsWith("[]");
-                if (!isReadonly)
+                if (!f.isReadOnly || f.allowClientDefault)
                 {
-                    sbFields.AppendFormat("\tset {0}(v: {1}) {{ this._aspect._setNavFieldVal('{0}',v); }}", f.fieldName,
+                    sbFields.AppendFormat("\tset {0}(v: {1}) {{ this._aspect._setFieldVal('{0}',v); }}", f.fieldName,
                         dataType);
                     sbFields.AppendLine();
                 }
 
-                sbEntityFields.AppendFormat("\t{0}{1}: {2};", isReadonly ? "readonly " : "", f.fieldName, dataType);
+                sbValsFields.AppendFormat("\t{0}{1}: {2};", (!f.isReadOnly || f.allowClientDefault) ? "" : "readonly ", f.fieldName, dataType);
                 sbEntityFields.AppendLine();
             };
 
