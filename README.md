@@ -14,7 +14,9 @@ which will work natively in browsers without the need for plugins.
 </p>
 <p>
 I'm currently moving it to NET.Core <a href="https://github.com/BBGONE/JRIApp.Core" target="_blank"><b>JRIApp.Core</b></a>.<br/> 
-The RIAPP.DataService project is already in netstandard 2.0 but the other server side projects are still full DotNet 4.7.1 (but i'll move them too)
+The RIAPP.DataService and RIAPP.DataService.EFCore projects are in netstandard 2.0 but the Web MVC projects are still in full Net Framework 4.7.1 (but i'll move them too).
+That's because the netstandard 2.0 libraries can be used in full Net Framework 4.7.1 without problems. The only problem that Entity Framework Core has a bug with saving
+updates on the owned types (i opened an issue for that problem).
 </p>
 <p>
 I  have written this framework because existing frameworks which i had found was not suitable for the data centric HTML5 applications.</br>
