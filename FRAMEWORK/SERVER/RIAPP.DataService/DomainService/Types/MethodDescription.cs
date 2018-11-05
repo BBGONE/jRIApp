@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using RIAPP.DataService.DomainService.Interfaces;
+using RIAPP.DataService.Utils;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Serialization;
-using System.Web.Script.Serialization;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.Utils;
 using System.Threading.Tasks;
 
 namespace RIAPP.DataService.DomainService.Types
@@ -47,7 +46,6 @@ namespace RIAPP.DataService.DomainService.Types
 
 
         [IgnoreDataMember]
-        [ScriptIgnore]
         public MethodInfoData methodData { get; }
 
         /// <summary>

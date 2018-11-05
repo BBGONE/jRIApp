@@ -616,6 +616,9 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     getFieldInfo(fieldName: string): IFieldInfo {
         const parts = fieldName.split("."), fieldMap = this.getFieldMap();
         let fld = fieldMap[parts[0]];
+        if (!fld) {
+            throw new Error(`getFieldInfo - the Collection: ${this.toString()} does not have field: ${fieldName}`);
+        }
         if (parts.length === 1) {
             return fld;
         }

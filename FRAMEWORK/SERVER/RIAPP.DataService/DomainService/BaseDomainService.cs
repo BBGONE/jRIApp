@@ -279,16 +279,7 @@ namespace RIAPP.DataService.DomainService
                 IEnumerable<Row> rows = rowGenerator.CreateRows();
 
                 SubsetsGenerator subsetsGenerator = new SubsetsGenerator(this);
-                IEnumerable<Subset> subsets1 = subsetsGenerator.CreateSubsets(queryInfo.dbSetInfo, entities, queryResult.includeNavigations);
-                SubsetList subsets2 = subsetsGenerator.CreateSubsets(queryResult.subResults);
-
-                SubsetList subResults = subsets1.Aggregate(subsets2, (lst, subRes) =>
-                {
-                    if (lst.Any(r => r.dbSetName == subRes.dbSetName))
-                        throw new DomainServiceException(string.Format("The included results already have {0} entities", subRes.dbSetName));
-                    lst.Add(subRes);
-                    return lst;
-                });
+                SubsetList subResults = subsetsGenerator.CreateSubsets(queryResult.subResults);
 
                 QueryResponse res = new QueryResponse
                 {

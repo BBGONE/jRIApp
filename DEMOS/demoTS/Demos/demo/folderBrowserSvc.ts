@@ -1,5 +1,5 @@
 ﻿/*
-	Generated from: /FolderBrowserService/code?lang=ts on 2018-02-11 at 13:47
+	Generated from: /FolderBrowserService/code?lang=ts on 2018-11-05 at 20:51
 	Don't make manual changes here, they will be lost when this interface will be regenerated!
 */
 
@@ -55,7 +55,7 @@ export class FileSystemObjectDb extends dbMOD.DbSet<FileSystemObject, IFileSyste
     constructor(dbContext: DbContext) {
         var opts: dbMOD.IDbSetConstuctorOptions = {
             dbContext: dbContext,
-            dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "FileSystemObject" },
+            dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 100, "dbSetName": "FileSystemObject" },
             childAssoc: ([{ "name": "ChildToParent", "parentDbSetName": "FileSystemObject", "childDbSetName": "FileSystemObject", "childToParentName": "Parent", "parentToChildrenName": "Children", "onDeleteAction": 1, "fieldRels": [{ "parentField": "Key", "childField": "ParentKey" }] }]),
             parentAssoc: ([{ "name": "ChildToParent", "parentDbSetName": "FileSystemObject", "childDbSetName": "FileSystemObject", "childToParentName": "Parent", "parentToChildrenName": "Children", "onDeleteAction": 1, "fieldRels": [{ "parentField": "Key", "childField": "ParentKey" }] }])
         };
@@ -103,7 +103,7 @@ export class FileSystemObjectDb extends dbMOD.DbSet<FileSystemObject, IFileSyste
     defineExtraPropsField(getFunc: (item: FileSystemObject) => any) { this._defineCalculatedField('ExtraProps', getFunc); }
 }
 
-export interface IAssocs extends dbMOD.TAssociations {
+export interface IAssocs {
     getChildToParent: () => dbMOD.Association;
 }
 

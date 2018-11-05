@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,13 +19,6 @@ namespace RIAPP.DataService.DomainService.Types
 
         public object extraInfo { get; set; }
 
-        /// <summary>
-        ///     child navigation properties which should be included in the result
-        ///     in the form dbSetName.parentToChildrenName or dbSetName.childToParentName
-        ///     for example:Customer.CustomerAddresses
-        /// </summary>
-        public string[] includeNavigations { get; set; }
-
         public SubResultList subResults
         {
             get { return _subResults.Value; }
@@ -37,25 +29,19 @@ namespace RIAPP.DataService.DomainService.Types
         where T : class
     {
         public QueryResult()
-            : this(Enumerable.Empty<T>(), null, new string[0])
+            : this(Enumerable.Empty<T>(), null)
         {
         }
 
         public QueryResult(IEnumerable<T> result)
-            : this(result, null, new string[0])
+            : this(result, null)
         {
         }
 
         public QueryResult(IEnumerable<T> result, int? totalCount)
-            : this(result, totalCount, new string[0])
-        {
-        }
-
-        public QueryResult(IEnumerable<T> result, int? totalCount, string[] includeNavigations)
         {
             Result = result;
             TotalCount = totalCount;
-            this.includeNavigations = includeNavigations == null ? new string[0] : includeNavigations;
         }
 
         public IEnumerable<T> getResult()

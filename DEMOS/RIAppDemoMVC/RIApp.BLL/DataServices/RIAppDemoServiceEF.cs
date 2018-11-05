@@ -75,6 +75,42 @@ namespace RIAppDemo.BLL.DataServices
             config.IsCodeGenEnabled = true;
         }
 
+
+        /// <summary>
+        ///     here can be tracked changes to the entities
+        ///     for example: product entity changes is tracked and can be seen here
+        /// </summary>
+        /// <param name="dbSetName"></param>
+        /// <param name="changeType"></param>
+        /// <param name="diffgram"></param>
+        protected override void OnTrackChange(string dbSetName, ChangeType changeType, string diffgram)
+        {
+            //you can set a breakpoint here and to examine diffgram
+            _diffGramm = diffgram;
+        }
+
+        /// <summary>
+        ///     Error logging could be implemented here
+        /// </summary>
+        /// <param name="ex"></param>
+        protected override void OnError(Exception ex)
+        {
+            var msg = "";
+            if (ex != null)
+                msg = ex.GetFullMessage();
+        }
+
+        protected override void Dispose(bool isDisposing)
+        {
+            if (_connection != null)
+            {
+                _connection.Close();
+                _connection = null;
+            }
+
+            base.Dispose(isDisposing);
+        }
+
         #region ProductModel
 
         [AllowAnonymous]
@@ -192,41 +228,6 @@ namespace RIAppDemo.BLL.DataServices
             //p.s. do something with info and keys
         }
 
-        /// <summary>
-        ///     here can be tracked changes to the entities
-        ///     for example: product entity changes is tracked and can be seen here
-        /// </summary>
-        /// <param name="dbSetName"></param>
-        /// <param name="changeType"></param>
-        /// <param name="diffgram"></param>
-        protected override void OnTrackChange(string dbSetName, ChangeType changeType, string diffgram)
-        {
-            //you can set a breakpoint here and to examine diffgram
-            _diffGramm = diffgram;
-        }
-        
-        /// <summary>
-        ///     Error logging could be implemented here
-        /// </summary>
-        /// <param name="ex"></param>
-        protected override void OnError(Exception ex)
-        {
-            var msg = "";
-            if (ex != null)
-                msg = ex.GetFullMessage();
-        }
-
-        protected override void Dispose(bool isDisposing)
-        {
-            if (_connection != null)
-            {
-                _connection.Close();
-                _connection = null;
-            }
-
-            base.Dispose(isDisposing);
-        }
-
         #region CustomerJSON
         /// <summary>
         /// Contrived example of an entity which has JSON data in one of its fields
@@ -315,21 +316,13 @@ namespace RIAppDemo.BLL.DataServices
         #region Customer
 
         [Query]
-        public QueryResult<Customer> ReadCustomer(bool? includeNav)
+        public async Task<QueryResult<Customer>> ReadCustomer(bool? includeNav)
         {
-            var includeHierarchy = new string[0];
-            if (includeNav == true)
-            {
-                //we can conditionally include entity hierarchy into results
-                //making the path navigations decisions on the server enhances security
-                //we can not trust clients to define navigation's expansions because it can influence the server performance
-                //and is not good from the security considerations
-                includeHierarchy = new[] {"CustomerAddresses.Address"};
-            }
-            var customers = DB.Customers.AsNoTracking() as IQueryable<Customer>;
+            var customers = DB.Customers as IQueryable<Customer>;
             var queryInfo = this.GetCurrentQueryInfo();
-            //AddressCount does not exists in Database (we calculate it), so it is needed to sort it manually
+            // AddressCount does not exists in Database (we calculate it), so it is needed to sort it manually
             var addressCountSortItem = queryInfo.sortInfo.sortItems.FirstOrDefault(sortItem => sortItem.fieldName == "AddressCount");
+
             if (addressCountSortItem != null)
             {
                 queryInfo.sortInfo.sortItems.Remove(addressCountSortItem);
@@ -339,27 +332,43 @@ namespace RIAppDemo.BLL.DataServices
                     customers = customers.OrderByDescending(c => c.CustomerAddresses.Count());
             }
 
-            //perform query
-            int? totalCount = null;
-            List<Customer> res = null;
+            // perform query
+            var customersResult = this.PerformQuery(customers, (countQuery) => countQuery.CountAsync());
+            int? totalCount = await customersResult.Count;
+            List<Customer> customersList = await customersResult.Data.ToListAsync();
 
-            if (includeNav == true)
-                res =   this.PerformQuery(customers, ref totalCount)
-                        .Include(c => c.CustomerAddresses.Select(y => y.Address))
-                        .ToList();
-            else
-                res = this.PerformQuery(customers, ref totalCount).ToList();
+            var queryRes = new QueryResult<Customer>(customersList, totalCount);
 
-
-            //if we have preloaded customer addresses then update server side calculated field: AddressCount 
-            //(which i had introduced for testing purposes)
             if (includeNav == true)
             {
-                res.ForEach(customer => { customer.AddressCount = customer.CustomerAddresses.Count(); });
+                int[] customerIDs = customersList.Select(c => c.CustomerID).ToArray();
+                var customerAddress = await DB.CustomerAddresses.Where(ca => customerIDs.Contains(ca.CustomerID)).ToListAsync();
+                int[] addressIDs = customerAddress.Select(ca => ca.AddressID).ToArray();
+
+                var subResult1 = new SubResult
+                {
+                    dbSetName = "CustomerAddress",
+                    Result = customerAddress
+                };
+
+                var subResult2 = new SubResult
+                {
+                    dbSetName = "Address",
+                    Result = await DB.Addresses.AsNoTracking().Where(adr => addressIDs.Contains(adr.AddressID)).ToListAsync()
+                };
+
+                // since we have preloaded customer addresses then update server side calculated field: AddressCount 
+                // (which i have introduced for testing purposes as a server calculated field)
+                customersList.ForEach(customer => {
+                    customer.AddressCount = customer.CustomerAddresses.Count();
+                });
+
+                // return two subresults with the query results
+                queryRes.subResults.Add(subResult1);
+                queryRes.subResults.Add(subResult2);
             }
 
-            //return result
-            return new QueryResult<Customer>(res, totalCount, includeHierarchy);
+            return queryRes;
         }
 
         [Authorize(Roles = new[] {ADMINS_ROLE})]
@@ -392,9 +401,10 @@ namespace RIAppDemo.BLL.DataServices
         }
 
         [Refresh]
-        public Customer RefreshCustomer(RefreshInfo refreshInfo)
+        public async Task<Customer> RefreshCustomer(RefreshInfo refreshInfo)
         {
-            return this.GetRefreshedEntity(DB.Customers, refreshInfo);
+            var query = this.GetRefreshedEntityQuery(DB.Customers, refreshInfo);
+            return await query.SingleAsync();
         }
 
         #endregion

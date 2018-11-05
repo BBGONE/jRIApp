@@ -72,17 +72,20 @@ const enum DBCTX_EVENTS {
     DBSET_CREATING = "dbset_creating"
 }
 
-export type TAssociations = IIndexer<() => Association>;
+export type TAssociations<T> = {
+    [P in keyof T]: () => Association;
+};
+
 export type TServiceMethods = IIndexer<(args: IIndexer<any>) => IPromise<any>>;
 export type TSubmitErrArgs = { error: any, isHandled: boolean };
 
-export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extends TServiceMethods = TServiceMethods, TAssoc extends TAssociations = TAssociations> extends BaseObject {
+export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extends TServiceMethods = TServiceMethods, TAssoc = any> extends BaseObject {
     private _requestHeaders: IIndexer<string>;
     private _requests: IRequestPromise[];
     private _initState: IStatefulPromise<any>;
     private _dbSets: TDbSets;
     private _svcMethods: TMethods;
-    private _assoc: TAssoc;
+    private _assoc: TAssociations<TAssoc>;
     private _arrAssoc: Association[];
     private _queryInf: { [queryName: string]: IQueryInfo; };
     private _serviceUrl: string;
@@ -101,7 +104,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
         this._requests = [];
         this._dbSets = null;
         this._svcMethods = <TMethods>{};
-        this._assoc = <TAssoc>{};
+        this._assoc = <TAssociations<TAssoc>>{};
         this._arrAssoc = [];
         this._queryInf = {};
         this._serviceUrl = null;
@@ -144,7 +147,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
             assoc.dispose();
         });
         this._arrAssoc = [];
-        this._assoc = <TAssoc>{};
+        this._assoc = <TAssociations<TAssoc>>{};
         this._dbSets.dispose();
         this._dbSets = null;
         this._svcMethods = <TMethods>{};
@@ -219,7 +222,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
             self._arrAssoc.push(res);
             return res;
         });
-        this._assoc[name] = () => lazy.Value;
+        (<IIndexer<() => Association>>this._assoc)[name] = () => lazy.Value;
     }
     protected _initMethod(methodInfo: IQueryInfo): void {
         const self = this;
@@ -810,7 +813,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
         return this._dbSets.findDbSet(name);
     }
     getAssociation(name: string): Association {
-        const name2 = "get" + name, fn = this._assoc[name2];
+        const name2 = "get" + name, fn = <() => Association>(<any>this._assoc)[name2];
         if (!fn) {
             throw new Error(format(ERRS.ERR_ASSOC_NAME_INVALID, name));
         }
@@ -898,7 +901,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
             promise.req.abort(reason);
         }
     }
-    get associations(): TAssoc {
+    get associations(): TAssociations<TAssoc> {
         return this._assoc;
     }
     get serviceMethods(): TMethods {

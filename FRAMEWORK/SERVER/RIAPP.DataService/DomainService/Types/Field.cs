@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Web.Script.Serialization;
 
 namespace RIAPP.DataService.DomainService.Types
 {
@@ -133,18 +132,15 @@ namespace RIAPP.DataService.DomainService.Types
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [IgnoreDataMember]
-        [ScriptIgnore]
         public int _ordinal { get; set; }
 
         //It is used only for Navigation and ComplexType fields
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [IgnoreDataMember]
-        [ScriptIgnore]
         public string _TypeScriptDataType { get; set; }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [IgnoreDataMember]
-        [ScriptIgnore]
         public string _FullName { get; set; }
 
         public Field[] GetNestedInResultFields()

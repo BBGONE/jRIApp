@@ -1,29 +1,28 @@
-﻿using System;
+﻿using RIAPP.DataService.DomainService.Attributes;
+using RIAPP.DataService.DomainService.Security;
+using RIAPP.DataService.DomainService.Types;
+using RIAppDemo.DAL.EF;
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using RIAppDemo.DAL.EF;
-using RIAPP.DataService.DomainService.Attributes;
-using RIAPP.DataService.DomainService.Security;
-using RIAPP.DataService.DomainService.Types;
 
 namespace RIAppDemo.BLL.DataServices.DataManagers
 {
     public class CustomerAddressDM : AdWDataManager<CustomerAddress>
     {
         [Query]
-        public QueryResult<CustomerAddress> ReadCustomerAddress()
+        public async Task<QueryResult<CustomerAddress>> ReadCustomerAddress()
         {
-            int? totalCount = null;
-            var res = PerformQuery(ref totalCount);
-            return new QueryResult<CustomerAddress>(res, totalCount);
+            var res = PerformQuery(null);
+            return new QueryResult<CustomerAddress>(await res.Data.ToListAsync(), totalCount: null);
         }
 
         [Query]
-        public QueryResult<CustomerAddress> ReadAddressForCustomers(int[] custIDs)
+        public async Task<QueryResult<CustomerAddress>> ReadAddressForCustomers(int[] custIDs)
         {
             int? totalCount = null;
-            var res = DB.CustomerAddresses.Where(ca => custIDs.Contains(ca.CustomerID));
+            var res = await DB.CustomerAddresses.Where(ca => custIDs.Contains(ca.CustomerID)).ToListAsync();
             return new QueryResult<CustomerAddress>(res, totalCount);
         }
 
@@ -38,6 +37,7 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
         [Authorize(Roles = new[] {ADMINS_ROLE})]
         public override void Update(CustomerAddress customeraddress)
         {
+            customeraddress.ModifiedDate = DateTime.Now;
             var orig = GetOriginal();
             DB.CustomerAddresses.Attach(customeraddress);
             DB.Entry(customeraddress).OriginalValues.SetValues(orig);

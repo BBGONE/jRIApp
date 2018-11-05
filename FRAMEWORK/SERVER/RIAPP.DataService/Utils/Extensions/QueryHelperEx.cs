@@ -1,11 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using RIAPP.DataService.DomainService;
+﻿using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Exceptions;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Resources;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Utils.Extensions
 {
@@ -138,18 +140,18 @@ namespace RIAPP.DataService.Utils.Extensions
                             filterItem.values.FirstOrDefault()));
                         break;
                     case FilterType.NotEq:
-                    {
-                        var val = filterItem.values.FirstOrDefault();
-                        if (val == null)
                         {
-                            sb.AppendFormat("{0}!=NULL", filterItem.fieldName);
+                            var val = filterItem.values.FirstOrDefault();
+                            if (val == null)
+                            {
+                                sb.AppendFormat("{0}!=NULL", filterItem.fieldName);
+                            }
+                            else
+                            {
+                                sb.AppendFormat("{0}!=@{1}", filterItem.fieldName, cnt);
+                                filterParams.AddLast(dataHelper.DeserializeField(typeof(T), field, val));
+                            }
                         }
-                        else
-                        {
-                            sb.AppendFormat("{0}!=@{1}", filterItem.fieldName, cnt);
-                            filterParams.AddLast(dataHelper.DeserializeField(typeof(T), field, val));
-                        }
-                    }
                         break;
                     case FilterType.Between:
                         sb.AppendFormat("{0}>=@{1} and {0}<=@{2}", filterItem.fieldName, cnt, ++cnt);
@@ -175,48 +177,81 @@ namespace RIAPP.DataService.Utils.Extensions
                 return result;
             if (pageSize < 0)
                 pageSize = 0;
-            var skipRows = pageIndex*pageSize;
-            result = Queryable.Take(Queryable.Skip(entities, skipRows), pageSize*pageCount);
+            var skipRows = pageIndex * pageSize;
+            result = Queryable.Take(Queryable.Skip(entities, skipRows), pageSize * pageCount);
             return result;
         }
 
-        public static IQueryable<T> PerformQuery<T>(this IServicesProviderTmp dataService, IQueryable<T> entities,
-            ref int? totalCount)
-            where T : class
+        private static IQueryable<T> PerformQuery<T>(this IServicesProviderTmp dataService, IQueryable<T> entities, out IQueryable<T> totalCountQuery)
+           where T : class
         {
+            totalCountQuery = null;
             var reqCtxt = RequestContext.Current;
             var queryInfo = reqCtxt.CurrentQueryInfo;
-            if (queryInfo.isIncludeTotalCount && !totalCount.HasValue)
-            {
-                totalCount = GetTotalCount(dataService, entities, queryInfo.filterInfo, queryInfo.dbSetInfo);
-            }
             entities = PerformFilter(dataService, entities, queryInfo.filterInfo, queryInfo.dbSetInfo);
+            if (queryInfo.isIncludeTotalCount)
+            {
+                totalCountQuery = entities;
+            }
             entities = PerformSort(dataService, entities, queryInfo.sortInfo);
-            entities = GetPage(dataService, entities, queryInfo.pageIndex, queryInfo.pageSize, queryInfo.pageCount,
-                queryInfo.dbSetInfo);
+            entities = GetPage(dataService, entities, queryInfo.pageIndex, queryInfo.pageSize, queryInfo.pageCount, queryInfo.dbSetInfo);
             return entities;
         }
 
-        public static T GetRefreshedEntity<T>(this IServicesProviderTmp dataService, IQueryable<T> entities,
-            RefreshInfo info)
+        public static IQueryable<T> PerformQuery<T>(this IServicesProviderTmp dataService, IQueryable<T> entities)
+           where T : class
+        {
+            IQueryable<T> countQuery = null;
+            return PerformQuery(dataService, entities, out countQuery);
+        }
+
+        public static PerformQueryResult<T> PerformQuery<T>(this IServicesProviderTmp dataService, IQueryable<T> entities, Func<IQueryable<T>, Task<int>> totalCountFunc)
+            where T : class
+        {
+            IQueryable<T> countQuery = null;
+            IQueryable<T> result = PerformQuery(dataService, entities, out countQuery);
+            Task<int?> dataCount = Task.FromResult<int?>(null);
+
+            if (countQuery != null && totalCountFunc != null)
+            {
+                dataCount = totalCountFunc(countQuery).ContinueWith(t => {
+                    return (int?)t.Result;
+                }, TaskContinuationOptions.ExecuteSynchronously);
+            }
+            return new PerformQueryResult<T>(result, dataCount);
+        }
+
+
+        public static IQueryable<T> PerformQuery<T>(this IServicesProviderTmp dataService, IQueryable<T> entities, ref int? totalCount)
+            where T : class
+        {
+            IQueryable<T> countQuery = null;
+            IQueryable<T> result = PerformQuery(dataService, entities, out countQuery);
+
+            if (countQuery != null && !totalCount.HasValue)
+            {
+                totalCount = countQuery.Count();
+            }
+            return result;
+        }
+
+        public static IQueryable<T> GetRefreshedEntityQuery<T>(this IServicesProviderTmp dataService, IQueryable<T> entities, RefreshInfo info)
             where T : class
         {
             var keyValue = info.rowInfo.GetPKValues(dataService.ServiceContainer.DataHelper);
-            var dbEntity = FindEntity(entities, info.rowInfo, keyValue);
-            return (T) dbEntity;
+            return FindEntityQuery(entities, info.rowInfo, keyValue);
         }
 
-        public static int? GetTotalCount<T>(this IServicesProviderTmp dataService, IQueryable<T> entities,
-            FilterInfo filter, DbSetInfo dbSetInfo)
+        public static int? GetTotalCount<T>(this IServicesProviderTmp dataService, IQueryable<T> entities, FilterInfo filter, DbSetInfo dbSetInfo)
             where T : class
         {
             IQueryable filtered_entities = PerformFilter(dataService, entities, filter, dbSetInfo);
             return filtered_entities.Count();
         }
 
-        public static object FindEntity(IQueryable entities, RowInfo rowInfo, object[] pkValues)
+        public static IQueryable<T> FindEntityQuery<T>(IQueryable<T> entities, RowInfo rowInfo, object[] pkValues)
         {
-            var predicate = rowInfo.GetWherePKPredicate();
+            string predicate = rowInfo.GetWherePKPredicate();
 
             if (pkValues == null || pkValues.Length < 1 || pkValues.Any(kv => kv == null))
             {
@@ -224,19 +259,7 @@ namespace RIAPP.DataService.Utils.Extensions
                     rowInfo.dbSetInfo.EntityType.Name, string.Join(";", pkValues)));
             }
 
-            var query = entities.Where(predicate, pkValues);
-            object dbEntity = null;
-            var cnt = 0;
-            foreach (var entity in query)
-            {
-                dbEntity = entity;
-                ++cnt;
-                if (cnt > 1)
-                    throw new DomainServiceException(string.Format(ErrorStrings.ERR_ROWINFO_PKVAL_INVALID,
-                        rowInfo.dbSetInfo.EntityType.Name, string.Join(";", pkValues)));
-            }
-
-            return dbEntity;
+            return entities.Where(predicate, pkValues);
         }
     }
 }

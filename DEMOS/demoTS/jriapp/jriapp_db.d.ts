@@ -409,13 +409,15 @@ declare module "jriapp_db/dbcontext" {
         onDbSetHasChangesChanged(eSet: TDbSet): void;
         load(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
     }
-    export type TAssociations = IIndexer<() => Association>;
+    export type TAssociations<T> = {
+        [P in keyof T]: () => Association;
+    };
     export type TServiceMethods = IIndexer<(args: IIndexer<any>) => IPromise<any>>;
     export type TSubmitErrArgs = {
         error: any;
         isHandled: boolean;
     };
-    export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extends TServiceMethods = TServiceMethods, TAssoc extends TAssociations = TAssociations> extends BaseObject {
+    export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extends TServiceMethods = TServiceMethods, TAssoc = any> extends BaseObject {
         private _requestHeaders;
         private _requests;
         private _initState;
@@ -514,7 +516,7 @@ declare module "jriapp_db/dbcontext" {
         acceptChanges(): void;
         rejectChanges(): void;
         abortRequests(reason?: string, operType?: DATA_OPER): void;
-        readonly associations: TAssoc;
+        readonly associations: TAssociations<TAssoc>;
         readonly serviceMethods: TMethods;
         readonly dbSets: TDbSets;
         readonly serviceUrl: string;

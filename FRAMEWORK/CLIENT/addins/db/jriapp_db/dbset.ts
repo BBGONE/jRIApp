@@ -252,8 +252,12 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
     }
     protected _doNavigationField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): INavFieldImpl<TItem> {
         const self = this, result: INavFieldImpl<TItem> = {
-            getFunc: (item) => { throw new Error("Function is not implemented"); },
-            setFunc: (v: any, item: TItem) => { throw new Error("Function is not implemented"); }
+            getFunc: (item) => {
+                throw new Error(`Navigation get function for the field: ${fieldInfo.fieldName} is not implemented`);
+            },
+            setFunc: (v: any, item: TItem) => {
+                throw new Error(`Navigation set function for the field: ${fieldInfo.fieldName} is not implemented`);
+            }
         };
         let isChild = true, assocs = opts.childAssoc.filter((a) => {
             return a.childToParentName === fieldInfo.fieldName;
@@ -276,7 +280,7 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
             self._childAssocMap[assocs[0].childToParentName] = assocs[0];
             assocs[0].fieldRels.forEach((frel) => {
                 const childFld = self.getFieldInfo(frel.childField);
-                if (!fieldInfo.isReadOnly && childFld.isReadOnly) {
+                if (!fieldInfo.isReadOnly && (childFld.isReadOnly && !childFld.allowClientDefault)) {
                     fieldInfo.isReadOnly = true;
                 }
             });
@@ -947,10 +951,12 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
     getFieldInfo(fieldName: string): IFieldInfo {
         const parts = fieldName.split(".");
         let fld = this._fieldMap[parts[0]];
+        if (!fld) {
+            throw new Error(`getFieldInfo - the DbSet: ${this.dbSetName} does not have field: ${fieldName}`);
+        }
         if (parts.length === 1) {
             return fld;
         }
-
         if (fld.fieldType === FIELD_TYPE.Object) {
             for (let i = 1; i < parts.length; i += 1) {
                 fld = getObjectField(parts[i], fld.nested);

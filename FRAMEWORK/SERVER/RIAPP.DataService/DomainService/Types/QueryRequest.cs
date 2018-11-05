@@ -1,5 +1,4 @@
 ﻿using System.Runtime.Serialization;
-using System.Web.Script.Serialization;
 
 namespace RIAPP.DataService.DomainService.Types
 {
@@ -34,7 +33,6 @@ namespace RIAPP.DataService.DomainService.Types
         [DataMember]
         public bool isIncludeTotalCount { get; set; }
 
-        [ScriptIgnore]
         [IgnoreDataMember]
         public DbSetInfo dbSetInfo { get; set; }
     }

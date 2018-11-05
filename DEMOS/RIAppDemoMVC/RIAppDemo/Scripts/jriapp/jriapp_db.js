@@ -757,8 +757,12 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype._doNavigationField = function (opts, fieldInfo) {
             var self = this, result = {
-                getFunc: function (item) { throw new Error("Function is not implemented"); },
-                setFunc: function (v, item) { throw new Error("Function is not implemented"); }
+                getFunc: function (item) {
+                    throw new Error("Navigation get function for the field: " + fieldInfo.fieldName + " is not implemented");
+                },
+                setFunc: function (v, item) {
+                    throw new Error("Navigation set function for the field: " + fieldInfo.fieldName + " is not implemented");
+                }
             };
             var isChild = true, assocs = opts.childAssoc.filter(function (a) {
                 return a.childToParentName === fieldInfo.fieldName;
@@ -779,7 +783,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 self._childAssocMap[assocs[0].childToParentName] = assocs[0];
                 assocs[0].fieldRels.forEach(function (frel) {
                     var childFld = self.getFieldInfo(frel.childField);
-                    if (!fieldInfo.isReadOnly && childFld.isReadOnly) {
+                    if (!fieldInfo.isReadOnly && (childFld.isReadOnly && !childFld.allowClientDefault)) {
                         fieldInfo.isReadOnly = true;
                     }
                 });
@@ -1395,6 +1399,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype.getFieldInfo = function (fieldName) {
             var parts = fieldName.split(".");
             var fld = this._fieldMap[parts[0]];
+            if (!fld) {
+                throw new Error("getFieldInfo - the DbSet: " + this.dbSetName + " does not have field: " + fieldName);
+            }
             if (parts.length === 1) {
                 return fld;
             }

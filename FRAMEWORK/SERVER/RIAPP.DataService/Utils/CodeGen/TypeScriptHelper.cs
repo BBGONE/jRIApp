@@ -192,7 +192,7 @@ namespace RIAPP.DataService.Utils.CodeGen
         private string createIAssocs()
         {
             var sb = new StringBuilder(512);
-            sb.AppendLine("export interface IAssocs extends dbMOD.TAssociations");
+            sb.AppendLine("export interface IAssocs");
             sb.AppendLine("{");
             foreach (var assoc in _associations)
             {
@@ -602,8 +602,8 @@ namespace RIAPP.DataService.Utils.CodeGen
             return TrimEnd(_entityIntfTemplate.ProcessTemplate(dic));
         }
 
-       
-    
+
+
         private EntityDefinition createEntityType(DbSetInfo dbSetInfo)
         {
             EntityDefinition entityDef = new EntityDefinition();
@@ -626,7 +626,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                 throw new ApplicationException(
                     string.Format("Names collision. Name '{0}' can not be used for an entity type's name because this name is used for a client's type.",
                         entityDef.interfaceName));
-            
+
             Action<Field> AddCalculatedField = f =>
             {
                 var dataType = GetFieldDataType(f);
@@ -646,14 +646,14 @@ namespace RIAPP.DataService.Utils.CodeGen
                 sbFields.AppendLine();
                 //no writable properties to ParentToChildren navigation fields
                 bool isReadonly = dataType.EndsWith("[]");
-                if (!f.isReadOnly || f.allowClientDefault)
+                if (!isReadonly)
                 {
-                    sbFields.AppendFormat("\tset {0}(v: {1}) {{ this._aspect._setFieldVal('{0}',v); }}", f.fieldName,
+                    sbFields.AppendFormat("\tset {0}(v: {1}) {{ this._aspect._setNavFieldVal('{0}',v); }}", f.fieldName,
                         dataType);
                     sbFields.AppendLine();
                 }
 
-                sbValsFields.AppendFormat("\t{0}{1}: {2};", (!f.isReadOnly || f.allowClientDefault) ? "" : "readonly ", f.fieldName, dataType);
+                sbEntityFields.AppendFormat("\t{0}{1}: {2};", isReadonly ? "readonly " : "", f.fieldName, dataType);
                 sbEntityFields.AppendLine();
             };
 
@@ -679,14 +679,14 @@ namespace RIAPP.DataService.Utils.CodeGen
                 sbFields.AppendFormat("\tget {0}(): {1} {{ return this._aspect._getFieldVal('{0}'); }}", f.fieldName,
                     dataType);
                 sbFields.AppendLine();
-                if (!f.isReadOnly)
+                if (!f.isReadOnly || f.allowClientDefault)
                 {
                     sbFields.AppendFormat("\tset {0}(v: {1}) {{ this._aspect._setFieldVal('{0}',v); }}", f.fieldName,
                         dataType);
                     sbFields.AppendLine();
                 }
 
-                sbValsFields.AppendFormat("\t{0}{1}: {2};", f.isReadOnly?"readonly ":"", f.fieldName, dataType);
+                sbValsFields.AppendFormat("\t{0}{1}: {2};", (!f.isReadOnly || f.allowClientDefault) ? "" : "readonly ", f.fieldName, dataType);
                 sbValsFields.AppendLine();
             };
 

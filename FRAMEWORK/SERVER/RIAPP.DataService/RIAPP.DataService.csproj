@@ -76,6 +76,7 @@
     <Compile Include="DomainService\ServiceOperationsHelper.cs" />
     <Compile Include="DomainService\SubsetsGenerator.cs" />
     <Compile Include="DomainService\Types\CodeGenArgs.cs" />
+    <Compile Include="DomainService\Types\PerformQueryResult.cs" />
     <Compile Include="DomainService\Types\SubResult.cs" />
     <Compile Include="DomainService\Types\FieldName.cs" />
     <Compile Include="DomainService\Types\Subset.cs" />

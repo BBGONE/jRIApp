@@ -1,11 +1,10 @@
-﻿using System;
+﻿using RIAPP.DataService.DomainService.Attributes;
+using RIAPP.DataService.DomainService.Exceptions;
+using RIAPP.DataService.DomainService.Interfaces;
+using System;
 using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Web.Script.Serialization;
-using RIAPP.DataService.DomainService.Attributes;
-using RIAPP.DataService.DomainService.Exceptions;
-using RIAPP.DataService.DomainService.Interfaces;
 
 namespace RIAPP.DataService.DomainService.Types
 {
@@ -52,7 +51,6 @@ namespace RIAPP.DataService.DomainService.Types
         public int ordinal { get; set; }
 
         [IgnoreDataMember]
-        [ScriptIgnore]
         public Type ParameterType { get; set; }
 
 

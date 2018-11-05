@@ -3721,6 +3721,9 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         BaseCollection.prototype.getFieldInfo = function (fieldName) {
             var parts = fieldName.split("."), fieldMap = this.getFieldMap();
             var fld = fieldMap[parts[0]];
+            if (!fld) {
+                throw new Error("getFieldInfo - the Collection: " + this.toString() + " does not have field: " + fieldName);
+            }
             if (parts.length === 1) {
                 return fld;
             }

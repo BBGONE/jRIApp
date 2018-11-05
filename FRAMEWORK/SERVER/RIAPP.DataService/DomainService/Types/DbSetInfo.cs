@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Web.Script.Serialization;
 
 namespace RIAPP.DataService.DomainService.Types
 {
@@ -67,12 +66,10 @@ namespace RIAPP.DataService.DomainService.Types
             return _timestampField.Value;
         }
 
-        [ScriptIgnore]
         [IgnoreDataMember]
         public Type EntityType { get; set; }
 
         [DefaultValue(false)]
-        [ScriptIgnore]
         [IgnoreDataMember]
         public bool isTrackChanges { get; set; }
 

@@ -1,57 +1,46 @@
-﻿using System;
-using System.Data.Entity;
-using System.Linq;
-using System.Threading.Tasks;
-using RIAppDemo.DAL.EF;
-using RIAPP.DataService.DomainService.Attributes;
+﻿using RIAPP.DataService.DomainService.Attributes;
 using RIAPP.DataService.DomainService.Security;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Utils.Extensions;
+using RIAppDemo.DAL.EF;
+using System;
+using System.Data.Entity;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RIAppDemo.BLL.DataServices.DataManagers
 {
     public class ProductDM : AdWDataManager<Product>
     {
-        /// <summary>
-        ///     The method can be asynchronous if instead of QueryResult<Product>
-        ///     type you return Task<QueryResult<Product>>
-        ///     the demo shows the async variant
-        /// </summary>
-        /// <param name="param1"></param>
-        /// <param name="param2"></param>
-        /// <returns></returns>
         [Query]
         public async Task<QueryResult<Product>> ReadProduct(int[] param1, string param2)
         {
-            int? totalCount = null;
-            var qinf = RequestContext.CurrentQueryInfo;
-            //the async delay is for the demo purposes to make it more  complex
-            //await Task.Delay(5000).ConfigureAwait(false);
+            // var queryInfo = RequestContext.CurrentQueryInfo;
+            var productsResult = PerformQuery((countQuery) => countQuery.CountAsync());
+            int? totalCount = await productsResult.Count;
+            var productsList = await productsResult.Data.ToListAsync();
 
-            //another async part
-            var productsArr = await PerformQuery(ref totalCount).ToArrayAsync();
-            var productIDs = productsArr.Select(p => p.ProductID).Distinct().ToArray();
-            var queryResult = new QueryResult<Product>(productsArr, totalCount);
+            var productIDs = productsList.Select(p => p.ProductID).Distinct().ToArray();
+            var queryResult = new QueryResult<Product>(productsList, totalCount);
 
             var subResult = new SubResult
             {
                 dbSetName = "SalesOrderDetail",
-                Result = DB.SalesOrderDetails.AsNoTracking().Where(sod => productIDs.Contains(sod.ProductID))
+                Result = await DB.SalesOrderDetails.AsNoTracking().Where(sod => productIDs.Contains(sod.ProductID)).ToListAsync()
             };
 
-            //include related SalesOrderDetails with the products in the same query result
+            // include related SalesOrderDetails with the products in the same query result
             queryResult.subResults.Add(subResult);
-            //example of returning out of band information and use it on the client (of it can be more useful than it)
+            // example of returning out of band information and use it on the client (of it can be more useful than it)
             queryResult.extraInfo = new {test = "ReadProduct Extra Info: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss")};
             return queryResult;
         }
 
         [Query]
-        public QueryResult<Product> ReadProductByIds(int[] productIDs)
+        public async Task<QueryResult<Product>> ReadProductByIds(int[] productIDs)
         {
-            int? totalCount = null;
-            var res = DB.Products.Where(ca => productIDs.Contains(ca.ProductID));
-            return new QueryResult<Product>(res, totalCount);
+            var res = await DB.Products.Where(ca => productIDs.Contains(ca.ProductID)).ToListAsync();
+            return new QueryResult<Product>(res, totalCount: null);
         }
 
         [Authorize(Roles = new[] {ADMINS_ROLE})]
@@ -78,17 +67,11 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
             DB.Products.Remove(product);
         }
 
-        /// <summary>
-        ///     This is just for a demo to show that you can return Task<Product>
-        ///     type from this method
-        ///     instead of simply returning the Product type (for async execution)
-        /// </summary>
-        /// <param name="refreshInfo"></param>
-        /// <returns>Product or Task<Product></returns>
         [Refresh]
-        public Task<Product> RefreshProduct(RefreshInfo refreshInfo)
+        public async Task<Product> RefreshProduct(RefreshInfo refreshInfo)
         {
-            return Task.Run(() => { return DataService.GetRefreshedEntity(DB.Products, refreshInfo); });
+            var query = DataService.GetRefreshedEntityQuery(DB.Products, refreshInfo);
+            return await query.SingleAsync();
         }
     }
 }
