@@ -76,15 +76,18 @@ export type TAssociations<T> = {
     [P in keyof T]: () => Association;
 };
 
-export type TServiceMethods = IIndexer<(args: IIndexer<any>) => IPromise<any>>;
+export type TServiceMethods<T> = {
+    [P in keyof T]: (args?: IIndexer<any>) => IPromise<any>;
+};
+
 export type TSubmitErrArgs = { error: any, isHandled: boolean };
 
-export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extends TServiceMethods = TServiceMethods, TAssoc = any> extends BaseObject {
+export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any, TAssoc = any> extends BaseObject {
     private _requestHeaders: IIndexer<string>;
     private _requests: IRequestPromise[];
     private _initState: IStatefulPromise<any>;
     private _dbSets: TDbSets;
-    private _svcMethods: TMethods;
+    private _svcMethods: TServiceMethods<TMethods>;
     private _assoc: TAssociations<TAssoc>;
     private _arrAssoc: Association[];
     private _queryInf: { [queryName: string]: IQueryInfo; };
@@ -103,7 +106,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
         this._requestHeaders = {};
         this._requests = [];
         this._dbSets = null;
-        this._svcMethods = <TMethods>{};
+        this._svcMethods = <TServiceMethods<TMethods>>{};
         this._assoc = <TAssociations<TAssoc>>{};
         this._arrAssoc = [];
         this._queryInf = {};
@@ -150,7 +153,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
         this._assoc = <TAssociations<TAssoc>>{};
         this._dbSets.dispose();
         this._dbSets = null;
-        this._svcMethods = <TMethods>{};
+        this._svcMethods = <TServiceMethods<TMethods>>{};
         this._queryInf = {};
         this._serviceUrl = null;
         this._initState = null;
@@ -227,7 +230,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
     protected _initMethod(methodInfo: IQueryInfo): void {
         const self = this;
         // function expects method parameters
-        this._svcMethods[methodInfo.methodName] = (args: { [paramName: string]: any; }) => {
+        (<IIndexer<(args: IIndexer<any>) => IPromise<any>>>this._svcMethods)[methodInfo.methodName] = (args: { [paramName: string]: any; }) => {
             return self._invokeMethod(methodInfo, args).then((res) => {
                 self._checkDisposed();
                 if (!res) {
@@ -904,7 +907,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extend
     get associations(): TAssociations<TAssoc> {
         return this._assoc;
     }
-    get serviceMethods(): TMethods {
+    get serviceMethods(): TServiceMethods<TMethods> {
         return this._svcMethods;
     }
     get dbSets(): TDbSets {

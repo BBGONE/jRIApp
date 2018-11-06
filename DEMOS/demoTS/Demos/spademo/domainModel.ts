@@ -1,5 +1,5 @@
 ﻿/*
-	Generated from: /RIAppDemoServiceEF/code?lang=ts on 2018-11-05 at 20:47
+	Generated from: /RIAppDemoServiceEF/code?lang=ts on 2018-11-06 at 16:13
 	Don't make manual changes here, they will be lost when this interface will be regenerated!
 */
 
@@ -80,7 +80,7 @@ export enum TestEnum2 {
 }
 //******END INTERFACE REGION******
 
-export interface ISvcMethods extends dbMOD.TServiceMethods {
+export interface ISvcMethods {
     TestComplexInvoke: (args: {
         info: IAddressInfo2;
         keys: IKeyVal[];

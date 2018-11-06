@@ -412,12 +412,14 @@ declare module "jriapp_db/dbcontext" {
     export type TAssociations<T> = {
         [P in keyof T]: () => Association;
     };
-    export type TServiceMethods = IIndexer<(args: IIndexer<any>) => IPromise<any>>;
+    export type TServiceMethods<T> = {
+        [P in keyof T]: (args?: IIndexer<any>) => IPromise<any>;
+    };
     export type TSubmitErrArgs = {
         error: any;
         isHandled: boolean;
     };
-    export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods extends TServiceMethods = TServiceMethods, TAssoc = any> extends BaseObject {
+    export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any, TAssoc = any> extends BaseObject {
         private _requestHeaders;
         private _requests;
         private _initState;
@@ -517,7 +519,7 @@ declare module "jriapp_db/dbcontext" {
         rejectChanges(): void;
         abortRequests(reason?: string, operType?: DATA_OPER): void;
         readonly associations: TAssociations<TAssoc>;
-        readonly serviceMethods: TMethods;
+        readonly serviceMethods: TServiceMethods<TMethods>;
         readonly dbSets: TDbSets;
         readonly serviceUrl: string;
         readonly isInitialized: boolean;

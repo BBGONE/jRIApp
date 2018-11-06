@@ -231,7 +231,7 @@ namespace RIAPP.DataService.Utils.CodeGen
         private string createISvcMethods()
         {
             var sbISvcMeth = new StringBuilder(512);
-            sbISvcMeth.AppendLine("export interface ISvcMethods extends dbMOD.TServiceMethods");
+            sbISvcMeth.AppendLine("export interface ISvcMethods");
             sbISvcMeth.AppendLine("{");
             var sbArgs = new StringBuilder(255);
             var svcMethods = _metadata.GetInvokeMethods().OrderBy(m => m.methodName).ToList();

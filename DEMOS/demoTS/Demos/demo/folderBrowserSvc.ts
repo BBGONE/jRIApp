@@ -1,12 +1,12 @@
 ﻿/*
-	Generated from: /FolderBrowserService/code?lang=ts on 2018-11-05 at 20:51
+	Generated from: /FolderBrowserService/code?lang=ts on 2018-11-06 at 16:12
 	Don't make manual changes here, they will be lost when this interface will be regenerated!
 */
 
 import * as RIAPP from "jriapp_shared";
 import * as dbMOD from "jriapp_db";
 
-export interface ISvcMethods extends dbMOD.TServiceMethods {
+export interface ISvcMethods {
 }
 
 export interface IFileSystemObject {
