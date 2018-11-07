@@ -1,7 +1,7 @@
+using RIAPP.DataService.DomainService;
 using System;
 using System.Collections.Concurrent;
-using System.Runtime.Remoting.Messaging;
-using RIAPP.DataService.DomainService;
+using System.Threading;
 
 namespace RIAPP.DataService.Utils
 {
@@ -15,40 +15,61 @@ namespace RIAPP.DataService.Utils
             return __scopeStore.Count;
         }
 #endif
+
         #region class fields
 
         private static readonly ConcurrentDictionary<Guid, WeakReference<CallContext<T>>> __scopeStore =
             new ConcurrentDictionary<Guid, WeakReference<CallContext<T>>>();
 
+        private static class InternalCallContext<TData>
+        {
+            static ConcurrentDictionary<string, AsyncLocal<TData>> state = new ConcurrentDictionary<string, AsyncLocal<TData>>();
+
+            public static void SetData(string name, TData data) =>
+                state.GetOrAdd(name, _ => new AsyncLocal<TData>()).Value = data;
+
+            public static TData GetData(string name) =>
+                state.TryGetValue(name, out AsyncLocal<TData> data) ? data.Value : default(TData);
+
+            public static bool RemoveData(string name) =>
+               state.TryRemove(name, out var _);
+        }
+
         private static CallContext<T> __currentScope
         {
             get
             {
-                var res = CallContext.LogicalGetData(SLOT_KEY);
-                if (res != null)
+                Guid? res = InternalCallContext<Guid?>.GetData(SLOT_KEY);
+                if (res.HasValue)
                 {
-                    var scopeID = (Guid) res;
+                    Guid scopeID = res.Value;
                     WeakReference<CallContext<T>> wref;
                     CallContext<T> scope;
                     if (__scopeStore.TryGetValue(scopeID, out wref))
                     {
-                        if (wref.TryGetTarget(out scope))
-                            return scope;
+                        return wref.TryGetTarget(out scope) ? scope : null;
+                    }
+                    else
+                    {
                         return null;
                     }
+                }
+                else
+                {
                     return null;
                 }
-                return null;
             }
             set
             {
-                var id = value == null ? (Guid?) null : value.UNIQUE_ID;
+                Guid? id = value == null ? (Guid?) null : value.UNIQUE_ID;
                 if (id.HasValue)
                 {
-                    CallContext.LogicalSetData(SLOT_KEY, id);
+                    InternalCallContext<Guid?>.SetData(SLOT_KEY, id);
                 }
                 else
-                    CallContext.FreeNamedDataSlot(SLOT_KEY);
+                {
+                    InternalCallContext<Guid?>.RemoveData(SLOT_KEY);
+                }
             }
         }
 
