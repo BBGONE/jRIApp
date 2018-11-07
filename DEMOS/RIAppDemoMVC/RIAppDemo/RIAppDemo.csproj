@@ -287,9 +287,9 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService.EF6_CF\RIAPP.DataService.EF6_CF.csproj">
-      <Project>{8a2062b4-6992-4132-9341-6f95cd3ff138}</Project>
-      <Name>RIAPP.DataService.EF6_CF</Name>
+    <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService.EF2\RIAPP.DataService.EF2.csproj">
+      <Project>{610fc4c8-33d2-4cc6-b585-b0af6577d02f}</Project>
+      <Name>RIAPP.DataService.EF2</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService.Mvc\RIAPP.DataService.Mvc.csproj">
       <Project>{bb05e399-1f91-4aff-8218-d2595da49e1b}</Project>

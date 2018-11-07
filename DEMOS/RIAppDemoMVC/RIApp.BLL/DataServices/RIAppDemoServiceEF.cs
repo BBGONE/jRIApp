@@ -3,7 +3,7 @@ using RIAPP.DataService.DomainService.Config;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Security;
 using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.EF6_CF;
+using RIAPP.DataService.EF2;
 using RIAPP.DataService.Utils.Extensions;
 using RIAppDemo.BLL.DataServices.Config;
 using RIAppDemo.BLL.Models;
