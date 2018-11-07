@@ -2,8 +2,7 @@
 import { DATA_TYPE, COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
 import {
     IIndexer, IVoidPromise, IBaseObject, TEventHandler, TErrorHandler, LocaleERRS as ERRS,
-    BaseObject, Utils, WaitQueue, Lazy, IStatefulPromise, IPromise, IAbortablePromise, PromiseState
-} from "jriapp_shared";
+    BaseObject, Utils, WaitQueue, Lazy, IStatefulPromise, IAbortablePromise, PromiseState } from "jriapp_shared";
 import { ValueUtils } from "jriapp_shared/collection/utils";
 import {
     IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IAssocConstructorOptions,
@@ -72,14 +71,6 @@ const enum DBCTX_EVENTS {
     DBSET_CREATING = "dbset_creating"
 }
 
-export type TAssociations<T> = {
-    [P in keyof T]: () => Association;
-};
-
-export type TServiceMethods<T> = {
-    [P in keyof T]: (args?: IIndexer<any>) => IPromise<any>;
-};
-
 export type TSubmitErrArgs = { error: any, isHandled: boolean };
 
 export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any, TAssoc = any> extends BaseObject {
@@ -87,10 +78,10 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
     private _requests: IRequestPromise[];
     private _initState: IStatefulPromise<any>;
     private _dbSets: TDbSets;
-    private _svcMethods: TServiceMethods<TMethods>;
-    private _assoc: TAssociations<TAssoc>;
+    private _svcMethods: TMethods;
+    private _assoc: TAssoc;
     private _arrAssoc: Association[];
-    private _queryInf: { [queryName: string]: IQueryInfo; };
+    private _queryInfo: { [queryName: string]: IQueryInfo; };
     private _serviceUrl: string;
     private _isSubmiting: boolean;
     private _isHasChanges: boolean;
@@ -106,10 +97,10 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         this._requestHeaders = {};
         this._requests = [];
         this._dbSets = null;
-        this._svcMethods = <TServiceMethods<TMethods>>{};
-        this._assoc = <TAssociations<TAssoc>>{};
+        this._svcMethods = <TMethods>{};
+        this._assoc = <TAssoc>{};
         this._arrAssoc = [];
-        this._queryInf = {};
+        this._queryInfo = {};
         this._serviceUrl = null;
         this._isSubmiting = false;
         this._isHasChanges = false;
@@ -150,11 +141,11 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             assoc.dispose();
         });
         this._arrAssoc = [];
-        this._assoc = <TAssociations<TAssoc>>{};
+        this._assoc = <TAssoc>{};
         this._dbSets.dispose();
         this._dbSets = null;
-        this._svcMethods = <TServiceMethods<TMethods>>{};
-        this._queryInf = {};
+        this._svcMethods = <TMethods>{};
+        this._queryInfo = {};
         this._serviceUrl = null;
         this._initState = null;
         this._isSubmiting = false;
@@ -192,7 +183,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         const self = this;
         methods.forEach((info) => {
             if (info.isQuery) {
-                self._queryInf[info.methodName] = info;
+                self._queryInfo[info.methodName] = info;
             } else {
                 // service method info
                 self._initMethod(info);
@@ -219,18 +210,20 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             parentToChildrenName: assoc.parentToChildrenName,
             childToParentName: assoc.childToParentName,
             name: assoc.name
-        }, name = "get" + assoc.name;
+        }, name = `get${assoc.name}`;
+
         const lazy = new Lazy<Association>(() => {
             const res = new Association(options);
             self._arrAssoc.push(res);
             return res;
         });
-        (<IIndexer<() => Association>>this._assoc)[name] = () => lazy.Value;
+
+        (<any>this._assoc)[name] = () => lazy.Value;
     }
     protected _initMethod(methodInfo: IQueryInfo): void {
         const self = this;
         // function expects method parameters
-        (<IIndexer<(args: IIndexer<any>) => IPromise<any>>>this._svcMethods)[methodInfo.methodName] = (args: { [paramName: string]: any; }) => {
+        (<any>this._svcMethods)[methodInfo.methodName] = (args: { [paramName: string]: any; }) => {
             return self._invokeMethod(methodInfo, args).then((res) => {
                 self._checkDisposed();
                 if (!res) {
@@ -624,7 +617,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         return deferred.promise();
     }
     protected _getQueryInfo(name: string): IQueryInfo {
-        return this._queryInf[name];
+        return this._queryInfo[name];
     }
     protected _onDbSetHasChangesChanged(dbSet: TDbSet): void {
         const old = this._isHasChanges;
@@ -816,7 +809,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         return this._dbSets.findDbSet(name);
     }
     getAssociation(name: string): Association {
-        const name2 = "get" + name, fn = <() => Association>(<any>this._assoc)[name2];
+        const name2 = `get${name}`, fn: () => Association = (<any>this._assoc)[name2];
         if (!fn) {
             throw new Error(format(ERRS.ERR_ASSOC_NAME_INVALID, name));
         }
@@ -904,10 +897,10 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             promise.req.abort(reason);
         }
     }
-    get associations(): TAssociations<TAssoc> {
+    get associations(): TAssoc {
         return this._assoc;
     }
-    get serviceMethods(): TServiceMethods<TMethods> {
+    get serviceMethods(): TMethods {
         return this._svcMethods;
     }
     get dbSets(): TDbSets {

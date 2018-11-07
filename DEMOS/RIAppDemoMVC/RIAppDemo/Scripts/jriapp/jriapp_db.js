@@ -2447,7 +2447,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             _this._svcMethods = {};
             _this._assoc = {};
             _this._arrAssoc = [];
-            _this._queryInf = {};
+            _this._queryInfo = {};
             _this._serviceUrl = null;
             _this._isSubmiting = false;
             _this._isHasChanges = false;
@@ -2492,7 +2492,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             this._dbSets.dispose();
             this._dbSets = null;
             this._svcMethods = {};
-            this._queryInf = {};
+            this._queryInfo = {};
             this._serviceUrl = null;
             this._initState = null;
             this._isSubmiting = false;
@@ -2528,7 +2528,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var self = this;
             methods.forEach(function (info) {
                 if (info.isQuery) {
-                    self._queryInf[info.methodName] = info;
+                    self._queryInfo[info.methodName] = info;
                 }
                 else {
                     self._initMethod(info);
@@ -2919,7 +2919,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             return deferred.promise();
         };
         DbContext.prototype._getQueryInfo = function (name) {
-            return this._queryInf[name];
+            return this._queryInfo[name];
         };
         DbContext.prototype._onDbSetHasChangesChanged = function (dbSet) {
             var old = this._isHasChanges;

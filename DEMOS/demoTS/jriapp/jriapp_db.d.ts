@@ -395,7 +395,7 @@ declare module "jriapp_db/error" {
 }
 declare module "jriapp_db/dbcontext" {
     import { COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
-    import { IIndexer, IVoidPromise, IBaseObject, TEventHandler, TErrorHandler, BaseObject, IStatefulPromise, IPromise, IAbortablePromise } from "jriapp_shared";
+    import { IIndexer, IVoidPromise, IBaseObject, TEventHandler, TErrorHandler, BaseObject, IStatefulPromise, IAbortablePromise } from "jriapp_shared";
     import { IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IInvokeResponse, IQueryResponse, IChangeSet } from "jriapp_db/int";
     import { DATA_OPER } from "jriapp_db/const";
     import { TDbSet } from "jriapp_db/dbset";
@@ -409,12 +409,6 @@ declare module "jriapp_db/dbcontext" {
         onDbSetHasChangesChanged(eSet: TDbSet): void;
         load(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
     }
-    export type TAssociations<T> = {
-        [P in keyof T]: () => Association;
-    };
-    export type TServiceMethods<T> = {
-        [P in keyof T]: (args?: IIndexer<any>) => IPromise<any>;
-    };
     export type TSubmitErrArgs = {
         error: any;
         isHandled: boolean;
@@ -427,7 +421,7 @@ declare module "jriapp_db/dbcontext" {
         private _svcMethods;
         private _assoc;
         private _arrAssoc;
-        private _queryInf;
+        private _queryInfo;
         private _serviceUrl;
         private _isSubmiting;
         private _isHasChanges;
@@ -518,8 +512,8 @@ declare module "jriapp_db/dbcontext" {
         acceptChanges(): void;
         rejectChanges(): void;
         abortRequests(reason?: string, operType?: DATA_OPER): void;
-        readonly associations: TAssociations<TAssoc>;
-        readonly serviceMethods: TServiceMethods<TMethods>;
+        readonly associations: TAssoc;
+        readonly serviceMethods: TMethods;
         readonly dbSets: TDbSets;
         readonly serviceUrl: string;
         readonly isInitialized: boolean;
