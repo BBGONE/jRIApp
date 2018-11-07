@@ -32,7 +32,7 @@ namespace WebsocketTest
                 socketServer.AddWebSocketService<WSClientBehaviour>(this._path);
                 if (this._isSSL)
                 {
-                    //configure SSL for websocket server (just to test this feature!)
+                    // configure SSL for websocket server (just to test this feature!)
                     string basedir = AppDomain.CurrentDomain.BaseDirectory;
                     string certPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(basedir, @"..\serverCertificate.pfx"));
                     if (!System.IO.File.Exists(certPath))
@@ -62,7 +62,7 @@ namespace WebsocketTest
         {
             if (_socketServer != null && _socketServer.IsListening)
             {
-                MessageService.Stop();
+                MessageService.Stop().Wait();
 
                 _socketServer.Stop();
                 _socketServer = null;
