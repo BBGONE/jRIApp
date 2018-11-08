@@ -137,6 +137,7 @@
     <Compile Include="DomainService\Types\Association.cs" />
     <Compile Include="DomainService\Types\ErrorInfo.cs" />
     <Compile Include="DomainService\Types\Metadata.cs" />
+    <Compile Include="Utils\RequestCallContext.cs" />
     <Compile Include="Utils\TemplateParser.cs" />
     <Compile Include="Utils\CodeGen\TypeScriptHelper.cs" />
     <Compile Include="Utils\ValueConverter.cs" />

@@ -31,7 +31,7 @@ namespace RIAPP.DataService.DomainService
             {
                 var reqCtxt = RequestCallContext.CurrentContext;
                 if (reqCtxt == null)
-                    throw new InvalidOperationException("RequestCallContext == null");
+                    throw new InvalidOperationException("Current RequestCallContext is null");
                 return reqCtxt;
             }
         }
