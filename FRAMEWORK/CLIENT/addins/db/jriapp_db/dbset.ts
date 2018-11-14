@@ -952,7 +952,7 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
         const parts = fieldName.split(".");
         let fld = this._fieldMap[parts[0]];
         if (!fld) {
-            throw new Error(`getFieldInfo - the DbSet: ${this.dbSetName} does not have field: ${fieldName}`);
+            throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
         }
         if (parts.length === 1) {
             return fld;

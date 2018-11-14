@@ -97,9 +97,9 @@ export class DataQuery<TItem extends IEntityItem = IEntityItem, TObj = any> exte
         }
 
         const tmpVals = arrHelper.clone(vals);
-        const fld = this.getFieldInfo(fieldName);
-        if (!fld && checkFieldName) {
-            throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
+        let fld: IFieldInfo = null;
+        if (checkFieldName) {
+            fld = this.getFieldInfo(fieldName);
         }
 
         if (!!fld) {
