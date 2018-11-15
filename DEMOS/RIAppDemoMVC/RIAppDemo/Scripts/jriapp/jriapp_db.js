@@ -314,9 +314,9 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                 vals = value;
             }
             var tmpVals = arrHelper.clone(vals);
-            var fld = this.getFieldInfo(fieldName);
-            if (!fld && checkFieldName) {
-                throw new Error(format(jriapp_shared_2.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
+            var fld = null;
+            if (checkFieldName) {
+                fld = this.getFieldInfo(fieldName);
             }
             if (!!fld) {
                 vals = tmpVals.map(function (v) { return valUtils.stringifyValue(v, fld.dateConversion, fld.dataType, stz); });
@@ -1400,7 +1400,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             var parts = fieldName.split(".");
             var fld = this._fieldMap[parts[0]];
             if (!fld) {
-                throw new Error("getFieldInfo - the DbSet: " + this.dbSetName + " does not have field: " + fieldName);
+                throw new Error(format(jriapp_shared_3.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
             }
             if (parts.length === 1) {
                 return fld;
