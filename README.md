@@ -2,6 +2,9 @@
 <b>JavaScript (TypeScript actually) HTML5 RIA framework for creating data centric applications</b>
 <br/>
 <p>
+I have moved it to NET.Core <a href="https://github.com/BBGONE/JRIApp.Core" target="_blank"><b>JRIApp.Core</b></a>
+</p>
+<p>
 <b>jRIApp</b> – is an application framework for developing rich internet applications - RIA’s. It consists of two parts – 
 the client and the server (<i>optional and has a respective optional db addin for the client side</i>) parts. 
 The client side part was written in <b>typescript</b> language. The server side part was  written in C# (<i>but potentially can be written in any server side language</i>) 
@@ -11,9 +14,6 @@ You can watch a short video of the demo on <a href="https://youtu.be/dQyOOw2dK4w
 <br/>
 The framework was designed primarily for creating data centric Line of Business (LOB) applications 
 which will work natively in browsers without the need for plugins.
-</p>
-<p>
-I have moved it to NET.Core <a href="https://github.com/BBGONE/JRIApp.Core" target="_blank"><b>JRIApp.Core</b></a>
 </p>
 <p>
 I  have written this framework because existing frameworks which i had found was not suitable for the data centric HTML5 applications.</br>
