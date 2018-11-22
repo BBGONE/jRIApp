@@ -13,10 +13,7 @@ The framework was designed primarily for creating data centric Line of Business 
 which will work natively in browsers without the need for plugins.
 </p>
 <p>
-I'm currently moving it to NET.Core <a href="https://github.com/BBGONE/JRIApp.Core" target="_blank"><b>JRIApp.Core</b></a>.<br/> 
-The RIAPP.DataService and RIAPP.DataService.EFCore projects are in netstandard 2.0 but the Web MVC projects are still in full Net Framework 4.7.1 (but i'll move them too).
-That's because the netstandard 2.0 libraries can be used in full Net Framework 4.7.1 without problems. The only problem that Entity Framework Core has a bug with saving
-updates on the owned types (i opened an issue for that problem).
+I have moved it to NET.Core <a href="https://github.com/BBGONE/JRIApp.Core" target="_blank"><b>JRIApp.Core</b></a>
 </p>
 <p>
 I  have written this framework because existing frameworks which i had found was not suitable for the data centric HTML5 applications.</br>
@@ -74,7 +71,7 @@ If someone needs only the means to work with the databases in other frameworks, 
 with Microsoft Windows Presentation Foundation (WPF).
 <br/>
 <br/>
- Full framework minified size is 398KB (or 90KB gzipped).
+ Full framework minified size is 438KB (or 98KB gzipped).
 </p>
 <b>The Demos include:</b>
 <p>
