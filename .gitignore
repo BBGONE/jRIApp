@@ -230,14 +230,9 @@ HeatService*.wxs
 **/Optimiser.Web/Reports/
 
 #Aurelia build artifacts
-**/dist/
 #node_modules/
 jspm_packages/
 bower_components/
-**/src/**/*.js
-**/src/**/*.map
-**/test/**/*.js
-**/test/**/*.map
 
 !**/Optimiser.Web.NG/wwwroot/config.js
 !**/src/**/silverlight.js
