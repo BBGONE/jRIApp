@@ -55,9 +55,7 @@ namespace RIAPP.DataService.DomainService
         {
             get
             {
-                if (_dataBag == null)
-                    _dataBag = new ExpandoObject();
-                return _dataBag;
+                return _dataBag.Value;
             }
         }
 
@@ -70,7 +68,7 @@ namespace RIAPP.DataService.DomainService
 
         #region private fields
 
-        private dynamic _dataBag;
+        private Lazy<dynamic> _dataBag = new Lazy<dynamic>(() => new ExpandoObject(), true);
 
         #endregion
 

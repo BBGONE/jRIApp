@@ -61,35 +61,38 @@ namespace RIAPP.DataService.DomainService
             get { return _allList; }
         }
 
-        private void getAllParentDbSets(LinkedList<string> list, string dbSetName)
+        private void getAllParentDbSets(HashSet<String> list, string dbSetName)
         {
-            var parentDbNames =
-                _metadata.associations.Values.Where(a => a.childDbSetName == dbSetName)
+            var parentDbNames = _metadata.Associations.Values.Where(a => a.childDbSetName == dbSetName)
                     .Select(x => x.parentDbSetName)
                     .ToArray();
+
             foreach (var name in parentDbNames)
             {
-                list.AddLast(name);
-                getAllParentDbSets(list, name);
+                if (!list.Contains(name))
+                {
+                    list.Add(name);
+                    getAllParentDbSets(list, name);
+                }
             }
         }
 
         private int DbSetComparison(DbSet dbSet1, DbSet dbSet2)
         {
-            var parentDbNames = new LinkedList<string>();
+            var parentDbNames = new HashSet<String>();
             getAllParentDbSets(parentDbNames, dbSet1.dbSetName);
-            var names1 = parentDbNames.ToArray();
-            if (Array.IndexOf(names1, dbSet2.dbSetName) > -1)
+            if (parentDbNames.Contains(dbSet2.dbSetName))
             {
                 return 1;
             }
+
             parentDbNames.Clear();
             getAllParentDbSets(parentDbNames, dbSet2.dbSetName);
-            var names2 = parentDbNames.ToArray();
-            if (Array.IndexOf(names2, dbSet1.dbSetName) > -1)
+            if (parentDbNames.Contains(dbSet1.dbSetName))
             {
                 return -1;
             }
+
             return string.Compare(dbSet1.dbSetName, dbSet2.dbSetName);
         }
 
@@ -103,7 +106,7 @@ namespace RIAPP.DataService.DomainService
             var result = new Dictionary<string, RowInfo>();
             foreach (var dbSet in changeSet.dbSets)
             {
-                var dbSetInfo = _metadata.dbSets[dbSet.dbSetName];
+                var dbSetInfo = _metadata.DbSets[dbSet.dbSetName];
                 if (dbSetInfo.EntityType == null)
                     throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_ENTITYTYPE_INVALID,
                         dbSetInfo.dbSetName));
@@ -123,7 +126,7 @@ namespace RIAPP.DataService.DomainService
 
             foreach (var trackAssoc in changeSet.trackAssocs)
             {
-                var assoc = _metadata.associations[trackAssoc.assocName];
+                var assoc = _metadata.Associations[trackAssoc.assocName];
                 var pkey = string.Format("{0}:{1}", assoc.parentDbSetName, trackAssoc.parentKey);
                 var ckey = string.Format("{0}:{1}", assoc.childDbSetName, trackAssoc.childKey);
                 var parent = rowsMap[pkey];

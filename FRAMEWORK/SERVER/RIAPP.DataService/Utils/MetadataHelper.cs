@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using RIAPP.DataService.DomainService;
+﻿using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Attributes;
-using RIAPP.DataService.DomainService.Config;
 using RIAPP.DataService.DomainService.Exceptions;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils.CodeGen;
 using RIAPP.DataService.Utils.Extensions;
-using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Utils
 {
@@ -38,13 +35,12 @@ namespace RIAPP.DataService.Utils
                 return metadata;
             });
 
-            domainService.Config = result.Config;
             return result;
         }
 
         private static CachedMetadata InitMetadata(BaseDomainService domainService)
         {
-            CachedMetadata cachedMetadata = new CachedMetadata();
+            CachedMetadata cachedMetadata = new CachedMetadata(domainService.ServiceContainer.Config);
             //called on every data manager registered while bootstrapping
             try
             {
@@ -70,14 +66,10 @@ namespace RIAPP.DataService.Utils
             foreach (DbSetInfo dbSetInfo in metadata.DbSets)
             {
               // indexed by dbSetName
-                cachedMetadata.dbSets.Add(dbSetInfo.dbSetName, dbSetInfo);
+                cachedMetadata.DbSets.Add(dbSetInfo.dbSetName, dbSetInfo);
             }
 
-            // bootstrapping services
-            domainService.Bootstrap(cachedMetadata.Config);
-            domainService.Config = cachedMetadata.Config;
-
-            foreach (DbSetInfo dbSetInfo in cachedMetadata.dbSets.Values)
+            foreach (DbSetInfo dbSetInfo in cachedMetadata.DbSets.Values)
             {
                 dbSetInfo.Initialize(domainService.ServiceContainer);
             }
@@ -95,18 +87,18 @@ namespace RIAPP.DataService.Utils
                 {
                     throw new DomainServiceException(ErrorStrings.ERR_ASSOC_EMPTY_NAME);
                 }
-                if (!cachedMetadata.dbSets.ContainsKey(assoc.parentDbSetName))
+                if (!cachedMetadata.DbSets.ContainsKey(assoc.parentDbSetName))
                 {
                     throw new DomainServiceException(string.Format(ErrorStrings.ERR_ASSOC_INVALID_PARENT, assoc.name,
                         assoc.parentDbSetName));
                 }
-                if (!cachedMetadata.dbSets.ContainsKey(assoc.childDbSetName))
+                if (!cachedMetadata.DbSets.ContainsKey(assoc.childDbSetName))
                 {
                     throw new DomainServiceException(string.Format(ErrorStrings.ERR_ASSOC_INVALID_CHILD, assoc.name,
                         assoc.childDbSetName));
                 }
-                var childDb = cachedMetadata.dbSets[assoc.childDbSetName];
-                var parentDb = cachedMetadata.dbSets[assoc.parentDbSetName];
+                var childDb = cachedMetadata.DbSets[assoc.childDbSetName];
+                var parentDb = cachedMetadata.DbSets[assoc.parentDbSetName];
                 var parentDbFields = parentDb.GetFieldByNames();
                 var childDbFields = childDb.GetFieldByNames();
 
@@ -148,7 +140,7 @@ namespace RIAPP.DataService.Utils
                     }
                 }
                 //indexed by Name
-                cachedMetadata.associations.Add(assoc.name, assoc);
+                cachedMetadata.Associations.Add(assoc.name, assoc);
 
                 if (!string.IsNullOrEmpty(assoc.childToParentName))
                 {

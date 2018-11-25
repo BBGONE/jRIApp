@@ -1,36 +1,41 @@
-﻿using System;
+﻿using RIAPP.DataService.DomainService;
+using RIAPP.DataService.DomainService.Interfaces;
+using RIAPP.DataService.DomainService.Types;
+using RIAPP.DataService.Mvc.Utils;
+using RIAPP.DataService.Utils.Interfaces;
+using System;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.SessionState;
-using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.Mvc.Utils;
-using RIAPP.DataService.Utils.Interfaces;
 
 namespace RIAPP.DataService.Mvc
 {
     [NoCache]
     [SessionState(SessionStateBehavior.Disabled)]
-    public abstract class DataServiceController<T> : Controller
-        where T : BaseDomainService
+    public abstract class DataServiceController<TService> : Controller
+        where TService : BaseDomainService
     {
-        private Lazy<IDomainService> _DomainService;
+        private TService _DomainService;
 
-        public DataServiceController()
+        public DataServiceController(TService domainService)
         {
-            Serializer = new Serializer();
-            _DomainService = new Lazy<IDomainService>(() => CreateDomainService(), true);
+            _DomainService = domainService;
         }
 
         protected IDomainService DomainService
         {
-            get { return _DomainService.Value; }
+            get { return _DomainService; }
         }
 
-        public ISerializer Serializer { get; private set; }
+        public ISerializer Serializer
+        {
+            get
+            {
+                return _DomainService.Serializer;
+            }
+        }
 
         [ActionName("typescript")]
         [HttpGet]
@@ -71,28 +76,10 @@ namespace RIAPP.DataService.Mvc
             return res;
         }
 
-        protected virtual IDomainService CreateDomainService()
-        {
-            return this.CreateDomainService(null);
-        }
-
-        protected virtual IDomainService CreateDomainService(Action<IServiceOptions> args)
-        {
-            Action<IServiceOptions> action = (options) =>
-            {
-                options.Serializer = this.Serializer;
-                options.User = this.User;
-                if (args != null)
-                    args(options);
-            };
-            var service = (IDomainService)Activator.CreateInstance(typeof(T), action);
-            return service;
-        }
-
         [ChildActionOnly]
         public string PermissionsInfo()
         {
-            var info = DomainService.ServiceGetPermissions();
+            var info = DomainService.ServiceGetPermissions().Result;
             return Serializer.Serialize(info);
         }
 
@@ -120,9 +107,9 @@ namespace RIAPP.DataService.Mvc
 
         [ActionName("permissions")]
         [HttpGet]
-        public ActionResult GetPermissions()
+        public async Task<ActionResult> GetPermissions()
         {
-            var res = DomainService.ServiceGetPermissions();
+            var res = await DomainService.ServiceGetPermissions();
             return new ChunkedResult<Permissions>(res, Serializer);
         }
 
@@ -158,20 +145,10 @@ namespace RIAPP.DataService.Mvc
             return new ChunkedResult<InvokeResponse>(res, Serializer);
         }
 
-        protected T GetDomainService()
+        protected TService GetDomainService()
         {
-            return (T) DomainService;
+            return _DomainService;
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && _DomainService.IsValueCreated)
-            {
-                _DomainService.Value.Dispose();
-            }
-            _DomainService = null;
-            Serializer = null;
-            base.Dispose(disposing);
-        }
     }
 }

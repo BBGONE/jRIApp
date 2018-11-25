@@ -1,7 +1,6 @@
 ﻿using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Attributes;
 using RIAPP.DataService.DomainService.Config;
-using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Security;
 using RIAPP.DataService.DomainService.Types;
 using RIAppDemo.BLL.Models;
@@ -20,8 +19,8 @@ namespace RIAppDemo.BLL.DataServices
         private readonly string BASE_ROOT = AppDomain.CurrentDomain.BaseDirectory;
         private readonly string CONFIG_ROOT = ConfigurationManager.AppSettings["FOLDER_BROWSER_PATH"];
 
-        public FolderBrowserService(Action<IServiceOptions> args)
-            : base(args)
+        public FolderBrowserService(IServiceProvider services)
+            : base(services)
         {
         }
 

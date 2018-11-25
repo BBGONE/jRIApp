@@ -1,4 +1,4 @@
-﻿using RIAppDemo.BLL.DataServices;
+﻿using RIAppDemo.BLL.Utils;
 using RIAppDemo.Models;
 using System;
 using System.IO;
@@ -11,6 +11,14 @@ namespace RIAppDemo.Controllers
     [SessionState(SessionStateBehavior.Disabled)]
     public class UploadController : Controller
     {
+        readonly IThumbnailService _thumbnailService;
+
+
+        public UploadController(IThumbnailService thumbnailService)
+        {
+            _thumbnailService = thumbnailService;
+        }
+
         public ActionResult Index()
         {
             return new EmptyResult();
@@ -28,11 +36,7 @@ namespace RIAppDemo.Controllers
                         var filename = Path.GetFileName(file.FileName);
                         if (filename != null)
                         {
-                            var svc = ThumbnailServiceFactory.Create(User);
-                            using (svc)
-                            {
-                                await svc.SaveThumbnail2(file.DataID, file.FileName, file.DataContent);
-                            }
+                            await _thumbnailService.SaveThumbnail2(file.DataID, file.FileName, file.DataContent);
                         }
                     }
                     finally

@@ -1,13 +1,14 @@
-﻿using RIAPP.DataService.DomainService;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Exceptions;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Resources;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
+using System;
 
 namespace RIAPP.DataService.Utils.Extensions
 {
@@ -140,18 +141,18 @@ namespace RIAPP.DataService.Utils.Extensions
                             filterItem.values.FirstOrDefault()));
                         break;
                     case FilterType.NotEq:
+                    {
+                        var val = filterItem.values.FirstOrDefault();
+                        if (val == null)
                         {
-                            var val = filterItem.values.FirstOrDefault();
-                            if (val == null)
-                            {
-                                sb.AppendFormat("{0}!=NULL", filterItem.fieldName);
-                            }
-                            else
-                            {
-                                sb.AppendFormat("{0}!=@{1}", filterItem.fieldName, cnt);
-                                filterParams.AddLast(dataHelper.DeserializeField(typeof(T), field, val));
-                            }
+                            sb.AppendFormat("{0}!=NULL", filterItem.fieldName);
                         }
+                        else
+                        {
+                            sb.AppendFormat("{0}!=@{1}", filterItem.fieldName, cnt);
+                            filterParams.AddLast(dataHelper.DeserializeField(typeof(T), field, val));
+                        }
+                    }
                         break;
                     case FilterType.Between:
                         sb.AppendFormat("{0}>=@{1} and {0}<=@{2}", filterItem.fieldName, cnt, ++cnt);
@@ -177,8 +178,8 @@ namespace RIAPP.DataService.Utils.Extensions
                 return result;
             if (pageSize < 0)
                 pageSize = 0;
-            var skipRows = pageIndex * pageSize;
-            result = Queryable.Take(Queryable.Skip(entities, skipRows), pageSize * pageCount);
+            var skipRows = pageIndex*pageSize;
+            result = Queryable.Take(Queryable.Skip(entities, skipRows), pageSize*pageCount);
             return result;
         }
 
@@ -226,7 +227,7 @@ namespace RIAPP.DataService.Utils.Extensions
             where T : class
         {
             IQueryable<T> countQuery = null;
-            IQueryable<T> result = PerformQuery(dataService, entities, out countQuery);
+            IQueryable <T> result = PerformQuery(dataService, entities, out countQuery);
 
             if (countQuery != null && !totalCount.HasValue)
             {
@@ -259,7 +260,7 @@ namespace RIAPP.DataService.Utils.Extensions
                     rowInfo.dbSetInfo.EntityType.Name, string.Join(";", pkValues)));
             }
 
-            return entities.Where(predicate, pkValues);
+           return entities.Where(predicate, pkValues);
         }
     }
 }

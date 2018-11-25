@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using RIAPP.DataService.DomainService.Attributes;
 using RIAPP.DataService.DomainService.Config;
 using RIAPP.DataService.DomainService.Exceptions;
-using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Resources;
-using RIAPP.DataService.DomainService.Attributes;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RIAPP.DataService.Utils
 {
@@ -15,30 +14,21 @@ namespace RIAPP.DataService.Utils
         private readonly Lazy<ILookup<Type, DbSetInfo>> _dbSetsByTypeLookUp;
         private readonly OperationalMethods _operMethods;
         private readonly MethodMap _svcMethods;
-        private readonly ServiceConfig _config;
 
-        public CachedMetadata()
+        public CachedMetadata(ServiceConfig config)
         {
-            _dbSetsByTypeLookUp = new Lazy<ILookup<Type, DbSetInfo>>(() => { return dbSets.Values.ToLookup(v => v.EntityType); }, true);
+            Config = config;
+            DbSets = new DbSetsDictionary();
+            Associations = new AssociationsDictionary();
+            _dbSetsByTypeLookUp = new Lazy<ILookup<Type, DbSetInfo>>(() => { return DbSets.Values.ToLookup(v => v.EntityType); }, true);
             _svcMethods = new MethodMap();
             _operMethods = new OperationalMethods();
-            this._config = new ServiceConfig();
         }
 
-        internal ILookup<Type, DbSetInfo> dbSetsByTypeLookUp
+        ILookup<Type, DbSetInfo> dbSetsByTypeLookUp
         {
             get { return _dbSetsByTypeLookUp.Value; }
         }
-
-        public ServiceConfig Config => _config;
-        public DbSetsDictionary dbSets { get; } = new DbSetsDictionary();
-        public AssociationsDictionary associations { get; } = new AssociationsDictionary();
-
-        public MethodsList methodDescriptions
-        {
-            get { return new MethodsList(_svcMethods.Values); }
-        }
-
 
         internal void InitSvcMethods(MethodsList methods)
         {
@@ -52,14 +42,14 @@ namespace RIAPP.DataService.Utils
                     string dbSetName = queryAttribute.DbSetName;
                     if (!string.IsNullOrWhiteSpace(dbSetName))
                     {
-                        if (!this.dbSets.ContainsKey(dbSetName))
+                        if (!this.DbSets.ContainsKey(dbSetName))
                             throw new DomainServiceException(string.Format("Can not determine the DbSet for a query method: {0} by DbSetName {1}", md.methodName, dbSetName));
                         _svcMethods.Add(dbSetName, md);
                     }
                     else
                     {
                         System.Type entityType = queryAttribute.EntityType ?? md.methodData.entityType;
-                  
+
                         IEnumerable<DbSetInfo> dbSets = dbSetsByTypeLookUp[entityType];
                         if (!dbSets.Any())
                         {
@@ -73,7 +63,9 @@ namespace RIAPP.DataService.Utils
                     }
                 }
                 else
+                {
                     _svcMethods.Add("", md);
+                }
             });
         }
 
@@ -133,10 +125,21 @@ namespace RIAPP.DataService.Utils
            return _svcMethods.GetInvokeMethods();
         }
 
-        public MethodInfoData getOperationMethodInfo(string dbSetName, MethodType methodType)
+        public MethodInfoData GetOperationMethodInfo(string dbSetName, MethodType methodType)
         {
             var method = _operMethods.GetMethod(dbSetName, methodType);
             return method;
+        }
+
+        public ServiceConfig Config { get; }
+
+        public DbSetsDictionary DbSets { get; }
+
+        public AssociationsDictionary Associations { get; }
+
+        public MethodsList MethodDescriptions
+        {
+            get { return new MethodsList(_svcMethods.Values); }
         }
     }
 }

@@ -13,7 +13,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace RIAPP.DataService.DomainService
@@ -21,34 +20,27 @@ namespace RIAPP.DataService.DomainService
     public abstract class BaseDomainService : IDomainService, IServicesProviderTmp
     {
         private readonly object _lockObj = new  object();
-        private readonly IPrincipal _User;
-        protected readonly ISerializer _Serializer;
-        private Lazy<IServiceContainer> _ServiceContainer;
+        private IServiceContainer _ServiceContainer;
 
-        public BaseDomainService(Action<IServiceOptions> optionsInitializer)
+        public BaseDomainService(IServiceProvider services)
         {
-            ServiceOptions options = new ServiceOptions(new ServiceCollection());
-            optionsInitializer(options);
-            if (options.Serializer == null)
-                throw new ArgumentException(ErrorStrings.ERR_NO_SERIALIZER);
-            if (options.User == null)
-                throw new ArgumentException(ErrorStrings.ERR_NO_USER);
-
-            this._Serializer = options.Serializer;
-            this._User = options.User;
-            this._ServiceContainer = new Lazy<IServiceContainer>(() => {
-                this.ConfigureServices(options.Services);
-                return new ServiceContainer(options.Services);
-            }, true);
+            var containerType = typeof(IServiceContainer<>).MakeGenericType(this.GetType());
+            this._ServiceContainer = (IServiceContainer)services.GetRequiredService(containerType);
         }
 
-        public ServiceConfig Config { get; internal set; }
-        
         public IPrincipal User
         {
             get
             {
-                return this._User;
+                return this._ServiceContainer.User;
+            }
+        }
+
+        public ISerializer Serializer
+        {
+            get
+            {
+                return this._ServiceContainer.Serializer;
             }
         }
 
@@ -56,7 +48,7 @@ namespace RIAPP.DataService.DomainService
         {
             get
             {
-                return this._ServiceContainer.Value;
+                return this._ServiceContainer;
             }
         }
 
@@ -73,45 +65,12 @@ namespace RIAPP.DataService.DomainService
         }
 
         #region Overridable Methods
-        protected virtual void ConfigureServices(IServiceCollection services)
-        {
-            services.AddSingleton<ISerializer>(this._Serializer);
-            services.AddSingleton<IPrincipal>(this._User);
-            services.AddSingleton<IDomainService>(this);
-            services.AddSingleton<BaseDomainService>(this);
-            services.AddSingleton(this.GetType(), this);
-                    
-            services.AddSingleton<IAuthorizer, AuthorizerClass>();
-
-            services.AddSingleton<IValueConverter, ValueConverter>();
-
-            services.AddSingleton<IDataHelper, DataHelper>();
-
-            services.AddSingleton<IValidationHelper, ValidationHelper>();
-
-            services.AddSingleton<IServiceOperationsHelper, ServiceOperationsHelper>();
-
-            foreach (var descriptor in this.Config.DataManagerContainer.Descriptors)
-            {
-                services.AddSingleton(descriptor.ServiceType, descriptor.ImplementationType);
-            }
-            foreach (var descriptor in this.Config.ValidatorsContainer.Descriptors)
-            {
-                services.AddSingleton(descriptor.ServiceType, descriptor.ImplementationType);
-            }
-        }
-
         protected virtual void ConfigureCodeGen(CodeGenConfig config)
         {
         }
 
         protected internal abstract Metadata GetMetadata(bool isDraft);
-
-        protected internal virtual void Bootstrap(ServiceConfig config)
-        {
-            //noop
-        }
-
+      
         /// <summary>
         ///     Can be used for tracking what is changed by CRUD methods
         /// </summary>
@@ -210,7 +169,7 @@ namespace RIAPP.DataService.DomainService
             {
                 //methods on domain service which are attempted to be executed by client (SaveChanges triggers their execution)
                 Dictionary<string, MethodInfoData> domainServiceMethods = new Dictionary<string, MethodInfoData>();
-                DbSetInfo dbInfo = metadata.dbSets[dbSet.dbSetName];
+                DbSetInfo dbInfo = metadata.DbSets[dbSet.dbSetName];
 
                 foreach (var rowInfo in dbSet.rows)
                 {
@@ -240,10 +199,10 @@ namespace RIAPP.DataService.DomainService
         /// <param name="dbSetName"></param>
         /// <param name="queryName"></param>
         /// <returns></returns>
-        public QueryResponse GetQueryData(string dbSetName, string queryName)
+        public async Task<QueryResponse> GetQueryData(string dbSetName, string queryName)
         {
             QueryRequest getInfo = new QueryRequest {dbSetName = dbSetName, queryName = queryName};
-            return ServiceGetData(getInfo).Result;
+            return await ServiceGetData(getInfo);
         }
 
         protected async Task<QueryResponse> ExecQuery(QueryRequest queryInfo)
@@ -252,7 +211,7 @@ namespace RIAPP.DataService.DomainService
             MethodDescription method = metadata.GetQueryMethod(queryInfo.dbSetName, queryInfo.queryName);
             IAuthorizer authorizer = ServiceContainer.Authorizer;
             authorizer.CheckUserRightsToExecute(method.methodData);
-            queryInfo.dbSetInfo = metadata.dbSets[queryInfo.dbSetName];
+            queryInfo.dbSetInfo = metadata.DbSets[queryInfo.dbSetName];
             var isMultyPageRequest = queryInfo.dbSetInfo.enablePaging && queryInfo.pageCount > 1;
 
             QueryResult queryResult = null;
@@ -432,11 +391,11 @@ namespace RIAPP.DataService.DomainService
         protected async Task<RefreshInfo> RefreshRowInfo(RefreshInfo info)
         {
             CachedMetadata metadata = this.GetMetadata();
-            info.dbSetInfo = metadata.dbSets[info.dbSetName];
-            MethodInfoData methodData = metadata.getOperationMethodInfo(info.dbSetName, MethodType.Refresh);
+            info.dbSetInfo = metadata.DbSets[info.dbSetName];
+            MethodInfoData methodData = metadata.GetOperationMethodInfo(info.dbSetName, MethodType.Refresh);
             if (methodData == null)
                 throw new InvalidOperationException(string.Format(ErrorStrings.ERR_REC_REFRESH_INVALID,
-                    info.dbSetInfo.EntityType.Name, this.GetType().Name));
+                    info.dbSetInfo.EntityType.Name, GetType().Name));
             info.rowInfo.dbSetInfo = info.dbSetInfo;
             IAuthorizer authorizer = ServiceContainer.Authorizer;
             authorizer.CheckUserRightsToExecute(methodData);
@@ -491,15 +450,16 @@ namespace RIAPP.DataService.DomainService
             }
         }
 
-        public Permissions ServiceGetPermissions()
+        public async Task<Permissions> ServiceGetPermissions()
         {
             try
             {
+                await Task.CompletedTask;
                 CachedMetadata metadata = this.GetMetadata();
                 Permissions result = new Permissions();
                 result.serverTimezone = DateTimeHelper.GetTimezoneOffset();
                 IAuthorizer authorizer = ServiceContainer.Authorizer;
-                foreach (var dbInfo in metadata.dbSets.Values)
+                foreach (var dbInfo in metadata.DbSets.Values)
                 {
                     DbSetPermit permissions = SecurityHelper.GetDbSetPermissions(metadata, dbInfo.dbSetName, authorizer);
                     result.permissions.Add(permissions);
@@ -520,9 +480,9 @@ namespace RIAPP.DataService.DomainService
             {
                 CachedMetadata metadata = this.GetMetadata();
                 MetadataResult result = new MetadataResult();
-                result.methods = metadata.methodDescriptions;
-                result.associations.AddRange(metadata.associations.Values);
-                result.dbSets.AddRange(metadata.dbSets.Values.OrderBy(d=>d.dbSetName));
+                result.methods = metadata.MethodDescriptions;
+                result.associations.AddRange(metadata.Associations.Values);
+                result.dbSets.AddRange(metadata.DbSets.Values.OrderBy(d=>d.dbSetName));
                 return result;
             }
             catch (Exception ex)
@@ -625,18 +585,7 @@ namespace RIAPP.DataService.DomainService
 
         protected virtual void Dispose(bool isDisposing)
         {
-            Lazy<IServiceContainer> services = Interlocked.Exchange(ref this._ServiceContainer, null);
-            if (services == null)
-            {
-                return;
-            }
-
-            if (services.IsValueCreated)
-            {
-                IDisposable disposable = (services.Value as IDisposable);
-                if (disposable != null)
-                    disposable.Dispose();
-            }
+            _ServiceContainer = null;
         }
 
         void IDisposable.Dispose()

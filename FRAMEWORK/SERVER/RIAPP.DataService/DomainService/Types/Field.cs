@@ -17,10 +17,7 @@ namespace RIAPP.DataService.DomainService.Types
         public Field()
         {
             _nested = new Lazy<FieldsList>(() => fieldType == FieldType.Object ? new FieldsList() : null, true);
-            _nestedInResultFields =
-                new Lazy<Field[]>(
-                    () =>
-                        fieldType == FieldType.Object
+            _nestedInResultFields = new Lazy<Field[]>(() => fieldType == FieldType.Object
                             ? nested.Where(f => f.GetIsIncludeInResult()).OrderBy(f => f._ordinal).ToArray()
                             : new Field[0], true);
             isPrimaryKey = 0;

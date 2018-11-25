@@ -1,11 +1,9 @@
 ﻿using RIAPP.DataService.DomainService.Attributes;
 using RIAPP.DataService.DomainService.Config;
-using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Security;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.EF2;
 using RIAPP.DataService.Utils.Extensions;
-using RIAppDemo.BLL.DataServices.Config;
 using RIAppDemo.BLL.Models;
 using RIAppDemo.BLL.Utils;
 using RIAppDemo.DAL.EF;
@@ -13,19 +11,16 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.Entity;
-using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Transactions;
 using ResourceHelper = RIAppDemo.BLL.Utils.ResourceHelper;
 using SortOrder = RIAPP.DataService.DomainService.Types.SortOrder;
 
 namespace RIAppDemo.BLL.DataServices
 {
     [Authorize]
-    public class RIAppDemoServiceEF : EFDomainService<ADWDbContext>, IThumbnailService
+    public class RIAppDemoServiceEF : EFDomainService<ADWDbContext>
     {
         internal const string USERS_ROLE = "Users";
         internal const string ADMINS_ROLE = "Admins";
@@ -34,17 +29,10 @@ namespace RIAppDemo.BLL.DataServices
         //store last diffgram here
         private string _diffGramm;
 
-        public RIAppDemoServiceEF(Action<IServiceOptions> args)
-            : base(args)
+        public RIAppDemoServiceEF(IServiceProvider services, ADWDbContext db)
+            : base(services, db)
         {
-        }
-
-        protected override ADWDbContext CreateDataContext()
-        {
-            if (_connection == null)
-                _connection = DBConnectionFactory.GetRIAppDemoConnection();
-            var db = new ADWDbContext(_connection);
-            return db;
+            
         }
 
         protected override Metadata GetMetadata(bool isDraft)
@@ -56,13 +44,6 @@ namespace RIAppDemo.BLL.DataServices
             }
             //first the uncorrected metadata was saved into xml file and then edited 
             return Metadata.FromXML(ResourceHelper.GetResourceString("RIAppDemo.BLL.Metadata.MainDemo2.xml"));
-        }
-
-        protected override void Bootstrap(ServiceConfig config)
-        {
-            base.Bootstrap(config);
-            ValidatorConfig.RegisterValidators(config.ValidatorsContainer);
-            DataManagerConfig.RegisterDataManagers(config.DataManagerContainer);
         }
 
         protected override void ConfigureCodeGen(CodeGenConfig config)
@@ -135,8 +116,8 @@ namespace RIAppDemo.BLL.DataServices
         public QueryResult<object> ReadProductCategory()
         {
             int? totalCount = null;
-            //we return anonymous type from query instead of real entities
-            //the framework does not care about the real type of the returned entities as long as they contain all the fields
+            // we return anonymous type from query instead of real entities
+            // the framework does not care about the real type of the returned entities as long as they contain all the fields
             var res = this.PerformQuery(DB.ProductCategories.AsNoTracking(), ref totalCount).Select(p =>
             new
             {
@@ -195,8 +176,7 @@ namespace RIAppDemo.BLL.DataServices
         [Invoke]
         public Task<string> TestInvoke(byte[] param1, string param2)
         {
-            var ipAddressService = this.ServiceContainer.GetService<IHostAddrService>();
-            string userIPaddress = ipAddressService.GetIPAddress();
+            var userIPaddress = "Not Available";
 
             return Task.Run(() =>
             {
@@ -263,7 +243,7 @@ namespace RIAppDemo.BLL.DataServices
             var res = custList.Select(c => new CustomerJSON() {
                 CustomerID = c.CustomerID,
                 rowguid = c.rowguid,
-                Data = this._Serializer.Serialize(new
+                Data = this.Serializer.Serialize(new
                 {
                     Title = c.Title,
                     CompanyName = c.CompanyName,
@@ -536,68 +516,6 @@ namespace RIAppDemo.BLL.DataServices
             DB.SalesOrderDetails.Remove(salesorderdetail);
         }
 
-        #endregion
-
-        #region IThumbnailService
-
-        public async Task<string> GetThumbnail(int id, Stream strm)
-        {
-            string fileName = DB.Products.Where(a => a.ProductID == id).Select(a => a.ThumbnailPhotoFileName).FirstOrDefault();
-            if (string.IsNullOrEmpty(fileName))
-                return "";
-            var topts = new TransactionOptions() { Timeout = TimeSpan.FromSeconds(60), IsolationLevel = IsolationLevel.Serializable };
-
-            using (var scope = new TransactionScope(TransactionScopeOption.Required, topts, TransactionScopeAsyncFlowOption.Enabled))
-            using (var conn = DBConnectionFactory.GetRIAppDemoConnection())
-            {
-                using (var bstrm = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", "ThumbNailPhoto",
-                    string.Format("WHERE [ProductID]={0}", id)))
-                {
-                    bstrm.Open();
-                    await bstrm.CopyToAsync(strm, 512 * 1024);
-                }
-
-                scope.Complete();
-            }
-
-            return fileName;
-        }
-
-        public Task SaveThumbnail(int id, string fileName, Stream strm)
-        {
-            return SaveThumbnail2(id, fileName, new StreamContent(strm));
-        }
-
-        public async Task SaveThumbnail2(int id, string fileName, IDataContent content)
-        {
-            var product = await DB.Products.Where(a => a.ProductID == id).FirstOrDefaultAsync();
-            if (product == null)
-                throw new Exception(string.Format("Product {0} is Not Found", id));
-
-            var topts = new TransactionOptions() { Timeout = TimeSpan.FromSeconds(60), IsolationLevel = IsolationLevel.Serializable };
-            using (var trxScope = new TransactionScope(TransactionScopeOption.Required, topts, TransactionScopeAsyncFlowOption.Enabled))
-            using (var conn = DBConnectionFactory.GetRIAppDemoConnection())
-            {
-                using (var blobStream = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", "ThumbNailPhoto",
-                    string.Format("WHERE [ProductID]={0}", id)))
-                using (var bufferedStream = new BufferedStream(blobStream, 128 * 1024))
-                {
-                    await blobStream.InitColumnAsync();
-                    blobStream.Open();
-                    Task delayTask = Task.Delay(10000);
-                    Task firstTask = await Task.WhenAny(content.CopyToAsync(bufferedStream), delayTask);
-                    if (firstTask == delayTask)
-                        throw new Exception("Saving Image took longer than expected");
-                    //if it's a copy task then just await for completion
-                    await firstTask;
-                }
-
-                product.ThumbnailPhotoFileName = fileName;
-                await DB.SaveChangesAsync();
-                trxScope.Complete();
-            }
-        }
-        
         #endregion
     }
 }

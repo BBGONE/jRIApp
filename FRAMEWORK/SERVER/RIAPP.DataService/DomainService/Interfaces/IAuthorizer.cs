@@ -1,7 +1,7 @@
-﻿using System;
+﻿using RIAPP.DataService.Utils;
+using System;
 using System.Collections.Generic;
 using System.Security.Principal;
-using RIAPP.DataService.Utils;
 
 namespace RIAPP.DataService.DomainService.Interfaces
 {
@@ -11,5 +11,11 @@ namespace RIAPP.DataService.DomainService.Interfaces
         Type serviceType { get; }
         void CheckUserRightsToExecute(IEnumerable<MethodInfoData> methods);
         void CheckUserRightsToExecute(MethodInfoData method);
+    }
+
+    public interface IAuthorizer<TService>: IAuthorizer
+        where TService : BaseDomainService
+    {
+
     }
 }

@@ -1,5 +1,4 @@
 ﻿using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Utils.Interfaces;
 using System;
@@ -7,7 +6,6 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
-using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,61 +13,31 @@ using System.Web.Http;
 
 namespace RIAPP.DataService.WebApi
 {
-    public abstract class BaseWebApiController<T> : ApiController
-        where T : BaseDomainService
+    public abstract class BaseWebApiController<TService> : ApiController
+        where TService : BaseDomainService
     {
-        private Lazy<T> _dataService;
-        private ISerializer _serializer;
 
-        public BaseWebApiController()
+        private TService _DomainService;
+
+        public BaseWebApiController(TService domainService)
         {
-            _serializer = new Serializer();
+            _DomainService = domainService;
             MediaFormatter = new JsonMediaTypeFormatter();
-            _dataService = new Lazy<T>(() => { return CreateDomainService(); }, true);
         }
 
         protected MediaTypeFormatter MediaFormatter { get; }
 
-        protected T DataService
+        protected TService DataService
         {
-            get { return _dataService.Value; }
+            get { return _DomainService; }
         }
 
         public ISerializer Serializer
         {
             get
             {
-                return _serializer;
+                return _DomainService.Serializer;
             }
-        }
-
-        protected virtual T CreateDomainService()
-        {
-            return this.CreateDomainService(null);
-        }
-
-        protected virtual T CreateDomainService(Action<IServiceOptions> args)
-        {
-            Action<IServiceOptions> action = (options) =>
-            {
-                options.Serializer = this.Serializer;
-                options.User = this.User;
-                if (args != null)
-                    args(options);
-            };
-            var service = (T)Activator.CreateInstance(typeof(T), action);
-            return service;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && _dataService.IsValueCreated)
-            {
-                ((IDisposable) _dataService.Value).Dispose();
-            }
-            _dataService = null;
-            _serializer = null;
-            base.Dispose(disposing);
         }
 
         public class PlainTextActionResult : IHttpActionResult
@@ -179,10 +147,10 @@ namespace RIAPP.DataService.WebApi
 
         [ActionName("permissions")]
         [HttpGet]
-        public virtual IHttpActionResult Permissions(HttpRequestMessage request)
+        public virtual async Task<IHttpActionResult> Permissions(HttpRequestMessage request)
         {
-            var res = DataService.ServiceGetPermissions();
-            return new ChunkedActionResult<Permissions>(request, res, _serializer);
+            var res = await DataService.ServiceGetPermissions();
+            return new ChunkedActionResult<Permissions>(request, res, Serializer);
         }
 
         [ActionName("query")]
@@ -196,7 +164,7 @@ namespace RIAPP.DataService.WebApi
                 throw new HttpResponseException(response);
             }
             var res = await svc.ServiceGetData(query).ConfigureAwait(false);
-            return new ChunkedActionResult<QueryResponse>(request, res, _serializer);
+            return new ChunkedActionResult<QueryResponse>(request, res, Serializer);
         }
 
         [ActionName("refresh")]
@@ -210,7 +178,7 @@ namespace RIAPP.DataService.WebApi
                 throw new HttpResponseException(response);
             }
             var res = await svc.ServiceRefreshRow(refreshInfo).ConfigureAwait(false);
-            return new ChunkedActionResult<RefreshInfo>(request, res, _serializer);
+            return new ChunkedActionResult<RefreshInfo>(request, res, Serializer);
         }
 
         /*
@@ -240,7 +208,7 @@ namespace RIAPP.DataService.WebApi
                 throw new HttpResponseException(response);
             }
             var res = await svc.ServiceInvokeMethod(invokeInfo).ConfigureAwait(false);
-            return new ChunkedActionResult<InvokeResponse>(request, res, _serializer);
+            return new ChunkedActionResult<InvokeResponse>(request, res, Serializer);
         }
 
         [ActionName("save")]
@@ -248,7 +216,7 @@ namespace RIAPP.DataService.WebApi
         public virtual async Task<IHttpActionResult> Save(HttpRequestMessage request, ChangeSet changeSet)
         {
             var res = await DataService.ServiceApplyChangeSet(changeSet).ConfigureAwait(false);
-            return new ChunkedActionResult<ChangeSet>(request, res, _serializer);
+            return new ChunkedActionResult<ChangeSet>(request, res, Serializer);
         }
 
         #endregion

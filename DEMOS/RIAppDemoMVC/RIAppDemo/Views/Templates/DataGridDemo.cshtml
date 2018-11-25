@@ -35,21 +35,21 @@
                     </a>
                 </div>
                 <div id="b">
-                    <img style="float: left; max-height: 200px; max-width: 350px;" 
+                    <img style="float: left; max-height: 200px; max-width: 350px;"
                          data-bind-1="this.id,to=ProductID"
-                         data-bind-2="this.fileName,to=ThumbnailPhotoFileName" alt="Product Image" src="" 
-                         data-view="fileImage" data-view-options="baseUri:'@Url.Action("DownloadThumbnail", "File", new {httproute = "ApiByAction"})'" /><br />
+                         data-bind-2="this.fileName,to=ThumbnailPhotoFileName" alt="Product Image" src=""
+                         data-view="fileImage" data-view-options="baseUri:'@Url.RouteUrl("Default", new {controller = "Download", action = "ThumbnailDownload"})'" /><br />
                     <div style="float: left; margin-left: 8px;">
-                        click to download the image: <a class="btn btn-info btn-small" 
+                        click to download the image: <a class="btn btn-info btn-small"
                                                         data-bind-1="this.text,to=ThumbnailPhotoFileName"
-                                                        data-bind-2="this.id,to=ProductID" 
-                                                        data-view="fileLink" 
+                                                        data-bind-2="this.id,to=ProductID"
+                                                        data-view="fileLink"
                                                         data-view-options="baseUri:'@Url.RouteUrl("Default", new {controller = "Download", action = "ThumbnailDownload"})'">
                         </a>
                     </div>
                     <div style="clear: both; padding: 5px 0px 5px 0px;">
                         <!--bind commandParameter to current datacontext, that is product entity-->
-                        <a class="btn btn-info btn-small" data-name="upload" 
+                        <a class="btn btn-info btn-small" data-name="upload"
                            data-bind-1="this.command,to=dialogCommand,source=uploadVM"
                            data-bind-2="this.commandParam"
                            data-view-options="tip='click me to upload product thumbnail photo'">

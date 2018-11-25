@@ -42,7 +42,7 @@ namespace RIAPP.DataService.Utils
                     foreach (var val in list)
                         res.Add(val);
                 }
-                return res.Distinct();
+                return res.Distinct<V>();
             }
         }
 

@@ -1,11 +1,13 @@
 ﻿using System;
+using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Utils;
 using RIAPP.DataService.Utils.Interfaces;
 
 namespace RIAPP.DataService.LinqSql.Utils
 {
-    public class LinqValueConverter: ValueConverter
+    public class LinqValueConverter<TService>: ValueConverter<TService>
+         where TService : BaseDomainService
     {
         public LinqValueConverter(ISerializer serializer)
             : base(serializer)

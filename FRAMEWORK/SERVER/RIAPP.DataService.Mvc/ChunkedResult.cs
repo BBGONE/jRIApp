@@ -1,8 +1,7 @@
-﻿using System.IO;
-using System.Net.Mime;
+﻿using RIAPP.DataService.Utils.Interfaces;
+using System.IO;
 using System.Text;
 using System.Web.Mvc;
-using RIAPP.DataService.Utils.Interfaces;
 
 namespace RIAPP.DataService.Mvc
 {

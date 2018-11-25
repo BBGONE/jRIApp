@@ -1,26 +1,18 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils.Extensions;
 using RIAPP.DataService.Utils.Interfaces;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace RIAPP.DataService.Utils
 {
-    public class DataHelper : IDataHelper
+    public class DataHelper
     {
-        private readonly IValueConverter valueConverter;
-        private readonly ISerializer serializer;
-
-        public DataHelper(ISerializer serializer, IValueConverter valueConverter)
-        {
-            this.serializer = serializer;
-            this.valueConverter = valueConverter;
-        }
-
         protected static IList CreateList<T>()
         {
             return new List<T>();
@@ -29,6 +21,19 @@ namespace RIAPP.DataService.Utils
         protected static IEnumerable CreateArray<T>(List<T> list)
         {
             return list.ToArray();
+        }
+    }
+
+    public class DataHelper<TService> : DataHelper, IDataHelper<TService>
+        where TService : BaseDomainService
+    {
+        private readonly IValueConverter<TService> valueConverter;
+        private readonly ISerializer serializer;
+
+        public DataHelper(ISerializer serializer, IValueConverter<TService> valueConverter)
+        {
+            this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer), ErrorStrings.ERR_NO_SERIALIZER);
+            this.valueConverter = valueConverter ?? throw new ArgumentNullException(nameof(valueConverter));
         }
 
         protected T Deserialize<T>(string val)
@@ -101,7 +106,7 @@ namespace RIAPP.DataService.Utils
             var pval = pinfo.GetValue(obj, null);
             if (pval == null)
                 throw new Exception(string.Format(ErrorStrings.ERR_PPROPERTY_ISNULL, enityType.Name, pinfo.Name));
-            return GetValue(pval, string.Join(".", parts.Skip(1).ToArray()), throwErrors);
+            return GetValue(pval, string.Join(".", parts.Skip(1)), throwErrors);
         }
 
         public bool SetValue(object obj, string propertyName, object value, bool throwErrors)
@@ -128,7 +133,7 @@ namespace RIAPP.DataService.Utils
             var pval = pinfo.GetValue(obj, null);
             if (pval == null)
                 throw new Exception(string.Format(ErrorStrings.ERR_PPROPERTY_ISNULL, enityType.Name, pinfo.Name));
-            return SetValue(pval, string.Join(".", parts.Skip(1).ToArray()), value, throwErrors);
+            return SetValue(pval, string.Join(".", parts.Skip(1)), value, throwErrors);
         }
 
         public object SetFieldValue(object entity, string fullName, Field fieldInfo, string value)
@@ -164,7 +169,7 @@ namespace RIAPP.DataService.Utils
             var pval = pinfo.GetValue(entity, null);
             if (pval == null)
                 throw new Exception(string.Format(ErrorStrings.ERR_PPROPERTY_ISNULL, enityType.Name, pinfo.Name));
-            return SetFieldValue(pval, string.Join(".", parts.Skip(1).ToArray()), fieldInfo, value);
+            return SetFieldValue(pval, string.Join(".", parts.Skip(1)), fieldInfo, value);
         }
 
         public object SerializeField(object fieldOwner, Field fieldInfo)
@@ -226,6 +231,7 @@ namespace RIAPP.DataService.Utils
                 var list = (IList) typeof(DataHelper).GetMethod("CreateList", BindingFlags.NonPublic | BindingFlags.Static)
                         .MakeGenericMethod(paramType.GetElementType())
                         .Invoke(null, new object[] {});
+
                 foreach (var v in arr)
                 {
                     list.Add(ParseParameter(paramType.GetElementType(), pinfo, false, v));

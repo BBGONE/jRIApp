@@ -1,6 +1,5 @@
 ﻿using RIAPP.DataService.DomainService.Exceptions;
 using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.Utils;
 using RIAPP.DataService.Utils.Extensions;
 using RIAPP.DataService.Utils.Interfaces;
 using System.Collections.Generic;
@@ -27,7 +26,7 @@ namespace RIAPP.DataService.DomainService
             var metadata = _domainService.GetMetadata();
             foreach (var subResult in subResults)
             {
-                var dbSetInfo = metadata.dbSets[subResult.dbSetName];
+                var dbSetInfo = metadata.DbSets[subResult.dbSetName];
 
                 if (result.Any(r => r.dbSetName == subResult.dbSetName))
                     throw new DomainServiceException(string.Format("The included sub results already have DbSet {0} entities", dbSetInfo.dbSetName));

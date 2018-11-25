@@ -1,5 +1,6 @@
-﻿using System;
+﻿using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Types;
+using System;
 
 namespace RIAPP.DataService.Utils.Interfaces
 {
@@ -10,5 +11,11 @@ namespace RIAPP.DataService.Utils.Interfaces
         object DeserializeValue(Type propType, DataType dataType, DateConversion dateConversion, string value);
         bool IsNullableType(Type propType);
         DataType DataTypeFromType(Type type, out bool isArray);
+    }
+
+    public interface IValueConverter<TService>: IValueConverter
+        where TService : BaseDomainService
+    {
+
     }
 }

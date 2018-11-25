@@ -41,8 +41,8 @@ namespace RIAPP.DataService.Utils.CodeGen
             _metadata = metadata;
             _serializer = _serviceContainer.Serializer;
             _clientTypes = new List<Type>(clientTypes == null ? Enumerable.Empty<Type>() : clientTypes);
-            _dbSets = _metadata.dbSets.Values.OrderBy(v => v.dbSetName).ToList();
-            _associations = _metadata.associations.Values.OrderBy(a => a.name).ToList();
+            _dbSets = _metadata.DbSets.Values.OrderBy(v => v.dbSetName).ToList();
+            _associations = _metadata.Associations.Values.OrderBy(a => a.name).ToList();
         }
 
         private void _dotnet2TS_newClientTypeAdded(object sender, NewTypeArgs e)
@@ -533,7 +533,7 @@ namespace RIAPP.DataService.Utils.CodeGen
             dic.Add("DBSETS", () => sbCreateDbSets.ToString().Trim('\r', '\n', ' '));
             dic.Add("TIMEZONE", () => DateTimeHelper.GetTimezoneOffset().ToString());
             dic.Add("ASSOCIATIONS", () => _serializer.Serialize(_associations));
-            dic.Add("METHODS", () => _serializer.Serialize(_metadata.methodDescriptions.OrderByDescending(m => m.isQuery).ThenBy(m => m.methodName)));
+            dic.Add("METHODS", () => _serializer.Serialize(_metadata.MethodDescriptions.OrderByDescending(m => m.isQuery).ThenBy(m => m.methodName)));
 
             return new CodeGenTemplate("DbContext.txt").ProcessTemplate(dic);
         }
@@ -602,8 +602,8 @@ namespace RIAPP.DataService.Utils.CodeGen
             return TrimEnd(_entityIntfTemplate.ProcessTemplate(dic));
         }
 
-
-
+       
+    
         private EntityDefinition createEntityType(DbSetInfo dbSetInfo)
         {
             EntityDefinition entityDef = new EntityDefinition();
@@ -626,7 +626,7 @@ namespace RIAPP.DataService.Utils.CodeGen
                 throw new ApplicationException(
                     string.Format("Names collision. Name '{0}' can not be used for an entity type's name because this name is used for a client's type.",
                         entityDef.interfaceName));
-
+            
             Action<Field> AddCalculatedField = f =>
             {
                 var dataType = GetFieldDataType(f);

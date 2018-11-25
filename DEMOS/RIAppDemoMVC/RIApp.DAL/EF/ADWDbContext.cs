@@ -138,5 +138,10 @@ namespace RIAppDemo.DAL.EF
                 .Property(e => e.Culture)
                 .IsFixedLength();
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+        }
     }
 }

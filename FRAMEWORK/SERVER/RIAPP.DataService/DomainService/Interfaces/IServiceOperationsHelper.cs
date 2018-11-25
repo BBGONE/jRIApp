@@ -28,4 +28,10 @@ namespace RIAPP.DataService.DomainService.Interfaces
 
         Task<object> GetMethodResult(object invokeRes);
     }
+
+    public interface IServiceOperationsHelper<TService>: IServiceOperationsHelper
+        where TService : BaseDomainService
+    {
+
+    }
 }

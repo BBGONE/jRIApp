@@ -55,6 +55,12 @@
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.2.1.1\lib\net461\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.2.1.1\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -124,11 +130,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="App_Start\Startup.cs" />
     <Compile Include="Controllers\AssetsController.cs" />
-    <Compile Include="Controllers\FileWebApiController.cs" />
     <Compile Include="Controllers\RIAppDemoServiceEFController.cs" />
-    <Compile Include="Controllers\RIAppDemoEFWebApiController.cs" />
-    <Compile Include="Controllers\SSEWebApiController.cs" />
     <Compile Include="Controllers\TemplatesController.cs" />
     <Compile Include="Controllers\FolderBrowserServiceController.cs" />
     <Compile Include="Controllers\DemoController.cs" />
@@ -143,11 +147,11 @@
     <Compile Include="Models\UploadedFile2.cs" />
     <Compile Include="Models\UploadedFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\ServiceProviderExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
-    <Compile Include="App_Start\WebApiConfig.cs" />
     <Content Include="Content\images\Misc\note.png" />
     <Content Include="Content\images\Misc\phone.png" />
     <Content Include="Content\images\Themes\blue.png" />
@@ -265,7 +269,7 @@
     <Content Include="Scripts\toastr\toastr.css" />
     <Content Include="Scripts\toastr\toastr.min.css" />
     <Content Include="Scripts\toastr\toastr.min.js" />
-    <Content Include="Templates\productEditTemplate.html" />
+    <None Include="Views\Templates\ProductEditTemplate.cshtml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -281,7 +285,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Utils\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -294,10 +297,6 @@
     <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService.Mvc\RIAPP.DataService.Mvc.csproj">
       <Project>{bb05e399-1f91-4aff-8218-d2595da49e1b}</Project>
       <Name>RIAPP.DataService.Mvc</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService.WebApi\RIAPP.DataService.WebApi.csproj">
-      <Project>{9a60da2e-0c01-45dc-8171-68a6503718a5}</Project>
-      <Name>RIAPP.DataService.WebApi</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService\RIAPP.DataService.csproj">
       <Project>{5fa08d23-6bae-47ad-930b-a11eafff11dc}</Project>

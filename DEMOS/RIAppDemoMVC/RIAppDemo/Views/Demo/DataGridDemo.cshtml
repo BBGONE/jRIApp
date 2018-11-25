@@ -142,32 +142,19 @@
                 templates_url: null,
                 productEditTemplate_url: null,
                 modelData: null,
-                categoryData: null,
-                sse_url: null,
-                sse_clientID: null
+                categoryData: null
             };
 
             (function(ops) {
-                //download template is using ASP.NET MVC - it first goes through the Razor engine to create links
-                ops.templates_url = '@Url.Action("Download", "Templates", new {name = "DataGridDemo"})';
-
             @*
             ops.modelData = @Html.Action("ProductModelData", "RIAppDemoService");
             ops.categoryData = @Html.Action("ProductCategoryData", "RIAppDemoService");
             *@
-
-                //these links are using WEB API instead of ASP.NET MVC (as an example that all is possible)
-                ops.service_url = '@Url.Action("", "RIAppDemoEFWebApi", new {httproute = "ApiByAction"})';
-                ops.upload_thumb_url = '@Url.Action("UploadThumbnail", "File", new {httproute = "ApiByAction"})';
-                ops.productEditTemplate_url = '@Url.Action("DownloadTemplate", "File", new {httproute = "ApiByName", name = "productEditTemplate"})';
-
-                //TESTING Server Side Events - it uses Web API
-                @{
-                    var client_id = Guid.NewGuid().ToString();
-                }
-                ops.sse_clientID = '@client_id';
-                ops.sse_url = '@Url.Action("Get", "SSEWebApi", new {httproute = "ApiById"})';
-
+                ops.service_url = '@Url.RouteUrl("Default", new {controller = "RIAppDemoServiceEF", action = ""})';
+                ops.permissionInfo = @Html.Action("PermissionsInfo", "RIAppDemoServiceEF");
+                ops.upload_thumb_url = '@Url.Action("ThumbnailUpload", "Upload")';
+                ops.templates_url = '@Url.Action("Download", "Templates", new {name = "DataGridDemo"})';
+                ops.productEditTemplate_url = '@Url.Action("Download", "Templates", new { name = "productEditTemplate"})';
             })(mainOptions);
 
             DEMO.start(mainOptions).then(function () {
@@ -292,8 +279,6 @@
         <a id="btn_reset" class="btn btn-info btn-small" data-bind="this.command,to=filter.resetCommand"><i class="icon-retweet"></i>&nbsp;Reset</a>
         <a class="btn btn-info btn-small" data-bind="this.command,to=openWsCommand,source=websockVM" data-view-options="tip:'Do not forget to start the demo websocket service!'">Connect Websocket</a>
         <a class="btn btn-info btn-small" data-bind="this.command,to=closeWsCommand,source=websockVM">Close Websocket</a>
-        <a class="btn btn-info btn-small" data-bind="this.command,to=openESCommand,source=sseVM">Connect SSEvents</a>
-        <a class="btn btn-info btn-small" data-bind="this.command,to=closeESCommand,source=sseVM">Close SSEvents</a>
     </div>
 </form>
 

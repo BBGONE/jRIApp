@@ -1,29 +1,17 @@
-﻿using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.Mvc;
+﻿using RIAPP.DataService.Mvc;
 using RIAppDemo.BLL.DataServices;
 using RIAppDemo.BLL.Utils;
 using System.Web.Mvc;
 using System.Web.SessionState;
-using RIAPP.DataService.Utils.Extensions;
-using System;
 
 namespace RIAppDemo.Controllers
 {
     [SessionState(SessionStateBehavior.Disabled)]
     public class RIAppDemoServiceEFController : DataServiceController<RIAppDemoServiceEF>, IHostAddrService
     {
-        private string _userIPAddress;
-
-        protected override IDomainService CreateDomainService(Action<IServiceOptions> args)
+        public RIAppDemoServiceEFController(RIAppDemoServiceEF domainService):
+            base(domainService)
         {
-            this._userIPAddress = this.Request.UserHostAddress;
-            var service = base.CreateDomainService((options) => {
-                //an example how to add external services to the data service
-                //this service has one method to get an IP address of the client
-
-                options.AddSingleton<IHostAddrService>(this);
-            });
-            return service;
         }
 
         [ChildActionOnly]
@@ -40,9 +28,9 @@ namespace RIAppDemo.Controllers
             return Serializer.Serialize(info);
         }
 
-        string IHostAddrService.GetIPAddress()
+        public string GetIPAddress()
         {
-            return this._userIPAddress;
+            return this.Request.UserHostAddress;
         }
     }
 }

@@ -1,8 +1,7 @@
-﻿using System;
-using System.IO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+﻿using Newtonsoft.Json;
 using RIAPP.DataService.Utils.Interfaces;
+using System;
+using System.IO;
 
 namespace RIAppDemo.BLL.Utils
 {
@@ -19,7 +18,6 @@ namespace RIAppDemo.BLL.Utils
         public void Serialize(object obj, TextWriter writer)
         {
             var serializer = new JsonSerializer();
-            serializer.Converters.Add(new JavaScriptDateTimeConverter());
             serializer.NullValueHandling = NullValueHandling.Include;
 
             using (JsonWriter jsonWriter = new JsonTextWriter(writer))

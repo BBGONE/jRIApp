@@ -1,27 +1,28 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using RIAPP.DataService.DomainService.Exceptions;
+﻿using RIAPP.DataService.DomainService.Exceptions;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils;
 using RIAPP.DataService.Utils.Extensions;
 using RIAPP.DataService.Utils.Interfaces;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RIAPP.DataService.DomainService
 {
-    public class ServiceOperationsHelper : IDisposable, IServiceOperationsHelper
+    public class ServiceOperationsHelper<TService> : IServiceOperationsHelper<TService>, IDisposable
+        where TService: BaseDomainService
     {
         /// <summary>
         ///     Already created instances of DataManagers indexed by modelType
         /// </summary>
         private readonly ConcurrentDictionary<Type, object> _dataManagers;
-        private BaseDomainService _domainService;
+        private TService _domainService;
 
-        public ServiceOperationsHelper(BaseDomainService domainService)
+        public ServiceOperationsHelper(TService domainService)
         {
             _domainService = domainService;
             _dataManagers = new ConcurrentDictionary<Type, object>();
@@ -306,7 +307,7 @@ namespace RIAPP.DataService.DomainService
             if (rowInfo.changeType != ChangeType.Added)
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
                     dbSetInfo.EntityType.Name, rowInfo.changeType));
-            MethodInfoData methodData = metadata.getOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Insert);
+            MethodInfoData methodData = metadata.GetOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Insert);
             if (methodData == null)
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_INSERT_NOT_IMPLEMENTED,
                     dbSetInfo.EntityType.Name, GetType().Name));
@@ -323,7 +324,7 @@ namespace RIAPP.DataService.DomainService
             if (rowInfo.changeType != ChangeType.Updated)
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
                     dbSetInfo.EntityType.Name, rowInfo.changeType));
-            MethodInfoData methodData = metadata.getOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Update);
+            MethodInfoData methodData = metadata.GetOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Update);
             if (methodData == null)
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_UPDATE_NOT_IMPLEMENTED,
                     dbSetInfo.EntityType.Name, GetType().Name));
@@ -344,7 +345,7 @@ namespace RIAPP.DataService.DomainService
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
                     dbSetInfo.EntityType.Name, rowInfo.changeType));
 
-            MethodInfoData methodData = metadata.getOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Delete);
+            MethodInfoData methodData = metadata.GetOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Delete);
             if (methodData == null)
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_DELETE_NOT_IMPLEMENTED,
                     dbSetInfo.EntityType.Name, GetType().Name));
@@ -420,7 +421,7 @@ namespace RIAPP.DataService.DomainService
 
             rowInfo.changeState.ChangedFieldNames = mustBeChecked.ToArray();
 
-            MethodInfoData methodData = metadata.getOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Validate);
+            MethodInfoData methodData = metadata.GetOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Validate);
             if (methodData != null)
             {
                 var instance = GetMethodOwner(methodData);

@@ -1,6 +1,5 @@
 ﻿using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Config;
-using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.EF2.Utils;
 using System;
@@ -21,18 +20,11 @@ namespace RIAPP.DataService.EF2
         private TDB _db;
         private bool _ownsDb = false;
 
-        public EFDomainService(TDB db, Action<IServiceOptions> args)
-            :base(args)
+        public EFDomainService(IServiceProvider services, TDB db = default(TDB))
+            :base(services)
         {
             this._db = db;
         }
-
-        public EFDomainService(Action<IServiceOptions> args)
-            : this(null,args)
-        {
-            
-        }
-
 
         #region Overridable Methods
         protected override void ConfigureCodeGen(CodeGenConfig config)

@@ -70,6 +70,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Serializer.cs" />
     <Compile Include="Utils\CssMin.cs" />
     <Compile Include="Utils\OptimizationController.cs" />
     <Compile Include="Utils\CompressAttribute.cs" />
@@ -82,7 +83,6 @@
     <Compile Include="Utils\NotModifiedResult.cs" />
     <Compile Include="ServiceParamsModelBinder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Serializer.cs" />
     <Compile Include="Utils\UrlHelperEx.cs" />
   </ItemGroup>
   <ItemGroup>

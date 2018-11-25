@@ -160,13 +160,13 @@ namespace RIAPP.DataService.DomainService.Security
             switch (rowInfo.changeType)
             {
                 case ChangeType.Added:
-                    method = metadata.getOperationMethodInfo(dbSetName, MethodType.Insert);
+                    method = metadata.GetOperationMethodInfo(dbSetName, MethodType.Insert);
                     break;
                 case ChangeType.Deleted:
-                    method = metadata.getOperationMethodInfo(dbSetName, MethodType.Delete);
+                    method = metadata.GetOperationMethodInfo(dbSetName, MethodType.Delete);
                     break;
                 case ChangeType.Updated:
-                    method = metadata.getOperationMethodInfo(dbSetName, MethodType.Update);
+                    method = metadata.GetOperationMethodInfo(dbSetName, MethodType.Update);
                     break;
                 default:
                     throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID, dbSetName,
@@ -193,16 +193,16 @@ namespace RIAPP.DataService.DomainService.Security
             MethodInfoData method = null;
             var permit = new DbSetPermit();
             permit.dbSetName = dbSetName;
-            method = metadata.getOperationMethodInfo(dbSetName, MethodType.Insert);
+            method = metadata.GetOperationMethodInfo(dbSetName, MethodType.Insert);
             permit.canAddRow = method != null && CanAccessMethod(method, authorizer);
 
-            method = metadata.getOperationMethodInfo(dbSetName, MethodType.Update);
+            method = metadata.GetOperationMethodInfo(dbSetName, MethodType.Update);
             permit.canEditRow = method != null && CanAccessMethod(method, authorizer);
 
-            method = metadata.getOperationMethodInfo(dbSetName, MethodType.Delete);
+            method = metadata.GetOperationMethodInfo(dbSetName, MethodType.Delete);
             permit.canDeleteRow = method != null && CanAccessMethod(method, authorizer);
 
-            method = metadata.getOperationMethodInfo(dbSetName, MethodType.Refresh);
+            method = metadata.GetOperationMethodInfo(dbSetName, MethodType.Refresh);
             permit.canRefreshRow = method != null && CanAccessMethod(method, authorizer);
             return permit;
         }

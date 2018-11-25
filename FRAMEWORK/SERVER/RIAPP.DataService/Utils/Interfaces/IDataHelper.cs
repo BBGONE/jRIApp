@@ -1,5 +1,6 @@
-﻿using System;
+﻿using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Types;
+using System;
 
 namespace RIAPP.DataService.Utils.Interfaces
 {
@@ -14,5 +15,10 @@ namespace RIAPP.DataService.Utils.Interfaces
         object ParseParameter(Type paramType, ParamMetadata pinfo, bool isArray, string val);
         Field getFieldInfo(DbSetInfo dbSetInfo, string fullName);
         void ForEachFieldInfo(string path, Field rootField, Action<string, Field> callBack);
+    }
+
+    public interface IDataHelper<TService> : IDataHelper
+        where TService : BaseDomainService
+    {
     }
 }

@@ -1,12 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using RIAPP.DataService.DomainService;
+﻿using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Config;
-using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.LinqSql.Utils;
-using RIAPP.DataService.Utils;
-using RIAPP.DataService.Utils.Extensions;
-using RIAPP.DataService.Utils.Interfaces;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -21,16 +16,10 @@ namespace RIAPP.DataService.LinqSql
         private TDB _db;
         private bool _ownsDb = false;
 
-        public LinqForSqlDomainService(TDB db, Action<IServiceOptions> args)
-            :base(args)
+        public LinqForSqlDomainService(IServiceProvider services, TDB db = default(TDB))
+            :base(services)
         {
             this._db = db;
-        }
-
-        public LinqForSqlDomainService(Action<IServiceOptions> args)
-            : this(null,args)
-        {
-           
         }
 
         #region Overridable Methods
@@ -40,11 +29,13 @@ namespace RIAPP.DataService.LinqSql
             config.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
         }
 
+        /*
         protected override void ConfigureServices(IServiceCollection services)
         {
             base.ConfigureServices(services);
             services.ReplaceSingleton<IValueConverter, LinqValueConverter>();
         }
+        */
 
         protected virtual TDB CreateDataContext() {
             return Activator.CreateInstance<TDB>();

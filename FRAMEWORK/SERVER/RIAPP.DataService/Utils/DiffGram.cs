@@ -24,7 +24,7 @@ namespace RIAPP.DataService.Utils
             var pval = pinfo.GetValue(obj, null);
             if (pval == null)
                 throw new Exception(string.Format(ErrorStrings.ERR_PPROPERTY_ISNULL, objType.Name, pinfo.Name));
-            return GetValue(pval, string.Join(".", parts.Skip(1).ToArray()));
+            return GetValue(pval, string.Join(".", parts.Skip(1)));
         }
 
         private static Dictionary<string, object> GetValues(Type t, object obj, string[] propNames)

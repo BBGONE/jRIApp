@@ -1,20 +1,81 @@
-﻿using System;
-using System.Globalization;
-using System.Text;
+﻿using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Exceptions;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils.Interfaces;
+using System;
+using System.Globalization;
+using System.Text;
 
 namespace RIAPP.DataService.Utils
 {
-    public class ValueConverter : IValueConverter
+    public class ValueConverter
+    {
+        public static bool IsNullableTypeCore(Type propType)
+        {
+            return propType.IsGenericType &&
+                   propType.GetGenericTypeDefinition() == typeof(System.Nullable<>);
+        }
+
+        public static DataType DataTypeFromTypeCore(Type type, out bool isArray)
+        {
+            bool isNullable = IsNullableTypeCore(type);
+            isArray = false;
+            Type realType = (!isNullable) ? type : Nullable.GetUnderlyingType(type);
+            string fullName = realType.FullName, name = fullName;
+            if (fullName.EndsWith("[]"))
+            {
+                isArray = true;
+                name = fullName.Substring(0, fullName.Length - 2);
+            }
+
+            switch (name)
+            {
+                case "System.Byte":
+                    if (isArray)
+                    {
+                        //Binary is data type separate from the array (although it is array by its nature)
+                        isArray = false;
+                        return DataType.Binary;
+                    }
+                    return DataType.Integer;
+                case "System.String":
+                    return DataType.String;
+                case "System.Int16":
+                case "System.Int32":
+                case "System.Int64":
+                case "System.UInt16":
+                case "System.UInt32":
+                case "System.UInt64":
+                    return DataType.Integer;
+                case "System.Decimal":
+                    return DataType.Decimal;
+                case "System.Double":
+                case "System.Single":
+                    return DataType.Float;
+                case "System.DateTime":
+                case "System.DateTimeOffset":
+                    return DataType.DateTime;
+                case "System.TimeSpan":
+                    return DataType.Time;
+                case "System.Boolean":
+                    return DataType.Bool;
+                case "System.Guid":
+                    return DataType.Guid;
+                default:
+                    throw new UnsupportedTypeException(string.Format("Unsupported method type {0}", realType.FullName));
+            }
+        }
+    }
+
+    public class ValueConverter<TService> : ValueConverter, IValueConverter<TService>
+        where TService : BaseDomainService
     {
         private readonly ISerializer serializer;
 
         public ValueConverter(ISerializer serializer)
         {
-            this.serializer = serializer;
+            this.serializer = serializer?? throw new ArgumentNullException(nameof(serializer), ErrorStrings.ERR_NO_SERIALIZER);
         }
 
         public virtual object DeserializeField(Type propType, Field fieldInfo, string value)
@@ -298,62 +359,6 @@ namespace RIAPP.DataService.Utils
             }
             sb.Append("]");
             return sb.ToString();
-        }
-
-        public static bool IsNullableTypeCore(Type propType)
-        {
-            return propType.IsGenericType &&
-                   propType.GetGenericTypeDefinition() == typeof(System.Nullable<>);
-        }
-
-        public static DataType DataTypeFromTypeCore(Type type, out bool isArray)
-        {
-            bool isNullable = IsNullableTypeCore(type);
-            isArray = false;
-            Type realType = (!isNullable) ? type : Nullable.GetUnderlyingType(type);
-            string fullName = realType.FullName, name = fullName;
-            if (fullName.EndsWith("[]"))
-            {
-                isArray = true;
-                name = fullName.Substring(0, fullName.Length - 2);
-            }
-
-            switch (name)
-            {
-                case "System.Byte":
-                    if (isArray)
-                    {
-                        //Binary is data type separate from the array (although it is array by its nature)
-                        isArray = false;
-                        return DataType.Binary;
-                    }
-                    return DataType.Integer;
-                case "System.String":
-                    return DataType.String;
-                case "System.Int16":
-                case "System.Int32":
-                case "System.Int64":
-                case "System.UInt16":
-                case "System.UInt32":
-                case "System.UInt64":
-                    return DataType.Integer;
-                case "System.Decimal":
-                    return DataType.Decimal;
-                case "System.Double":
-                case "System.Single":
-                    return DataType.Float;
-                case "System.DateTime":
-                case "System.DateTimeOffset":
-                    return DataType.DateTime;
-                case "System.TimeSpan":
-                    return DataType.Time;
-                case "System.Boolean":
-                    return DataType.Bool;
-                case "System.Guid":
-                    return DataType.Guid;
-                default:
-                    throw new UnsupportedTypeException(string.Format("Unsupported method type {0}", realType.FullName));
-            }
         }
     }
 }

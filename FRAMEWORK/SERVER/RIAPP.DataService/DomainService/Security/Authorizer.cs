@@ -1,30 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Principal;
-using RIAPP.DataService.DomainService.Exceptions;
+﻿using RIAPP.DataService.DomainService.Exceptions;
 using RIAPP.DataService.DomainService.Interfaces;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Principal;
 
 namespace RIAPP.DataService.DomainService.Security
 {
-    public class AuthorizerClass : IAuthorizer
+    public class AuthorizerClass<TService> : IAuthorizer<TService>
+        where TService : BaseDomainService
     {
         private const string ANONYMOUS_USER = "Anonymous";
         private IEnumerable<string> _serviceRoles;
 
-        public AuthorizerClass(BaseDomainService service, IPrincipal principal)
+        public AuthorizerClass(TService service, IPrincipal principal)
         {
             this.serviceType = service.GetType();
-            if (principal == null)
-            {
-                IIdentity identity = new GenericIdentity(string.Empty);
-                IPrincipal unauthentcated = new GenericPrincipal(identity, new string[0]);
-                this.principal = unauthentcated;
-            }
-            else
-                this.principal = principal;
+            this.principal = principal?? throw new ArgumentNullException(nameof(principal), ErrorStrings.ERR_NO_USER);
         }
 
         /// <summary>
