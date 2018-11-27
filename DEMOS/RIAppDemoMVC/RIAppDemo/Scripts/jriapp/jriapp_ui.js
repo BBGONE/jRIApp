@@ -4953,6 +4953,9 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_shared"
         };
         DetailsRow.prototype._setParentRow = function (row) {
             var self = this;
+            if (self.getIsStateDirty()) {
+                return;
+            }
             this._item = null;
             this._cell.item = null;
             dom.removeNode(this.tr);

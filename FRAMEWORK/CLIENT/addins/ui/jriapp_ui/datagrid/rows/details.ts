@@ -58,6 +58,10 @@ export class DetailsRow extends BaseObject {
     }
     protected _setParentRow(row: Row): void {
         const self = this;
+        // important to check here!
+        if (self.getIsStateDirty()) {
+            return;
+        }
         this._item = null;
         this._cell.item = null;
         dom.removeNode(this.tr);
