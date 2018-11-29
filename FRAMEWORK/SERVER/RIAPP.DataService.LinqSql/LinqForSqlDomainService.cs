@@ -10,7 +10,16 @@ using System.Transactions;
 
 namespace RIAPP.DataService.LinqSql
 {
-    public abstract class LinqForSqlDomainService<TDB> : BaseDomainService
+    public abstract class BaseLinqForSqlDomainService : BaseDomainService
+    {
+        public BaseLinqForSqlDomainService(IServiceProvider services)
+           : base(services)
+        {
+            
+        }
+    }
+
+    public abstract class LinqForSqlDomainService<TDB> : BaseLinqForSqlDomainService
         where TDB : System.Data.Linq.DataContext
     {
         private TDB _db;
@@ -28,14 +37,6 @@ namespace RIAPP.DataService.LinqSql
             base.ConfigureCodeGen(config);
             config.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
         }
-
-        /*
-        protected override void ConfigureServices(IServiceCollection services)
-        {
-            base.ConfigureServices(services);
-            services.ReplaceSingleton<IValueConverter, LinqValueConverter>();
-        }
-        */
 
         protected virtual TDB CreateDataContext() {
             return Activator.CreateInstance<TDB>();
