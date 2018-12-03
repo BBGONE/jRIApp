@@ -101,7 +101,7 @@ namespace RIAPP.DataService.Utils.Extensions
                             foreach (var v in filterItem.values)
                                 vals.Add(dataHelper.DeserializeField(typeof(T), field, v));
 
-                            sb.AppendFormat("@{0}.Contains(outerIt.{1})", cnt, filterItem.fieldName);
+                            sb.AppendFormat("@{0}.Contains({1})", cnt, filterItem.fieldName);
                             filterParams.AddLast(vals);
                         }
                         break;
