@@ -27,7 +27,7 @@ namespace RIAPP.DataService.DomainService
         {
             get
             {
-                return this.ServiceContainer.User;
+                return this.ServiceContainer.UserProvider.User;
             }
         }
 

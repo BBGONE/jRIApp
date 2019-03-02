@@ -15,15 +15,22 @@ namespace RIAPP.DataService.DomainService.Security
         private const string ANONYMOUS_USER = "ANONYMOUS_USER";
 
         private Lazy<IEnumerable<IAuthorizeData>> _serviceAuthorization;
+        private readonly IUserProvider _userProvider;
 
-        public Authorizer(TService service, IPrincipal user)
+        public Authorizer(TService service, IUserProvider userProvider)
         {
             this.ServiceType = service.GetType();
-            this.User = user ?? throw new ArgumentNullException(nameof(user), ErrorStrings.ERR_NO_USER);
+            this._userProvider = userProvider ?? throw new ArgumentNullException(nameof(userProvider), ErrorStrings.ERR_NO_USER);
             this._serviceAuthorization = new Lazy<IEnumerable<IAuthorizeData>>(() => ServiceType.GetTypeAuthorization(), true);
         }
 
-        public IPrincipal User { get; }
+        public IPrincipal User
+        {
+            get
+            {
+                return this._userProvider.User;
+            }
+        }
 
         public Type ServiceType { get; }
 

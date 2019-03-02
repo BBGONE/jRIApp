@@ -22,7 +22,6 @@ namespace RIAppDemo.BLL.DataServices.Config
                 configure?.Invoke(svcOptions);
 
                 options.UserFactory = svcOptions.GetUser;
-                options.SerializerFactory = svcOptions.GetSerializer;
             });
 
             services.AddScoped<ADWDbContext>((sp) => {

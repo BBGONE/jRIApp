@@ -28,20 +28,15 @@ namespace RIAppDemo
                 return HttpContext.Current?.User;
             };
 
-            Func<IServiceProvider, ISerializer> getSerializer = (sp) =>
-            {
-                return new Serializer();
-            };
-
             services.AddSingleton<ICodeGenConfig, CodeGenConfig>();
+            services.AddSingleton<ISerializer, Serializer>();
             services.AddSingleton<DBConnectionFactory>();
+
             services.AddThumbnailService();
             services.AddFolderBrowser((options) => {
-                options.GetSerializer = getSerializer;
                 options.GetUser = getCurrentUser;
             });
             services.AddRIAppDemoService((options) => {
-                options.GetSerializer = getSerializer;
                 options.GetUser = getCurrentUser;
             });
         }

@@ -4,7 +4,6 @@ using RIAPP.DataService.DomainService.Security;
 using RIAPP.DataService.Utils;
 using System;
 using System.Collections.Generic;
-using System.Security.Principal;
 using System.Threading;
 
 namespace RIAPP.DataService.DomainService
@@ -71,11 +70,11 @@ namespace RIAPP.DataService.DomainService
             }
         }
 
-        public IPrincipal User
+        public IUserProvider UserProvider
         {
             get
             {
-                return GetRequiredService<IPrincipal>();
+                return GetRequiredService<IUserProvider>();
             }
         }
 

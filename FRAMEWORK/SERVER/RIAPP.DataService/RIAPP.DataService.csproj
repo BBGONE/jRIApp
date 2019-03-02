@@ -74,6 +74,7 @@
     <Compile Include="Abstractions\Security\IAuthorizeData.cs" />
     <Compile Include="Abstractions\Security\IAuthorizer.cs" />
     <Compile Include="Abstractions\Security\IOverrideAuthorizeData.cs" />
+    <Compile Include="Abstractions\Security\IUserProvider.cs" />
     <Compile Include="Abstractions\Utils\IMultiMap.cs" />
     <Compile Include="Abstractions\Utils\ISerializer.cs" />
     <Compile Include="Abstractions\Utils\IValidationHelper.cs" />
@@ -135,6 +136,7 @@
     <Compile Include="DomainService\Security\Authorizer.cs" />
     <Compile Include="DomainService\Security\OverrideAuthorizeAttribute.cs" />
     <Compile Include="DomainService\Security\SecurityHelper.cs" />
+    <Compile Include="DomainService\Security\UserProvider.cs" />
     <Compile Include="DomainService\ServiceContainer.cs" />
     <Compile Include="DomainService\ServiceOperationsHelper.cs" />
     <Compile Include="DomainService\ServiceOperationType.cs" />

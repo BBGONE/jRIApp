@@ -6,7 +6,6 @@ using RIAPP.DataService.DomainService.Security;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils;
 using System;
-using System.Security.Principal;
 
 namespace RIAPP.DataService.DomainService.Config
 {
@@ -19,12 +18,9 @@ namespace RIAPP.DataService.DomainService.Config
             ServiceOptions options = new ServiceOptions(services);
             configure?.Invoke(options);
 
-            var getSerializer = options.SerializerFactory ?? throw new ArgumentNullException(nameof(options.SerializerFactory), ErrorStrings.ERR_NO_SERIALIZER);
             var getUser = options.UserFactory ?? throw new ArgumentNullException(nameof(options.UserFactory), ErrorStrings.ERR_NO_USER);
-            
-            services.TryAddScoped<ISerializer>((sp) => getSerializer(sp));
 
-            services.TryAddScoped<IPrincipal>((sp) => getUser(sp));
+            services.TryAddScoped<IUserProvider>((sp) => new UserProvider(() => getUser(sp)));
 
             services.TryAddScoped<IAuthorizer<TService>, Authorizer<TService>>();
 

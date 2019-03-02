@@ -3,14 +3,13 @@ using RIAPP.DataService.DomainService.Security;
 using RIAPP.DataService.Utils;
 using System;
 using System.Collections.Generic;
-using System.Security.Principal;
 
 namespace RIAPP.DataService.DomainService
 {
     public interface IServiceContainer
     {
         ISerializer Serializer { get; }
-        IPrincipal User { get; }
+        IUserProvider UserProvider { get; }
         IServiceContainer CreateScope();
 
         IAuthorizer GetAuthorizer();
