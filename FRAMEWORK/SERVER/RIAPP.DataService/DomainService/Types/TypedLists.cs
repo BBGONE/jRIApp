@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using RIAPP.DataService.DomainService.Metadata;
+using System.Collections.Generic;
 
 namespace RIAPP.DataService.DomainService.Types
 {

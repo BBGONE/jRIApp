@@ -1,7 +1,8 @@
-﻿using System;
+﻿using RIAPP.DataService.DomainService.Metadata;
+using RIAPP.DataService.DomainService.Types;
+using System;
 using System.Linq;
 using System.Text;
-using RIAPP.DataService.DomainService.Types;
 
 
 namespace RIAPP.DataService.LinqSql.Utils

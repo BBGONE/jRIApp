@@ -1,0 +1,20 @@
+﻿using RIAPP.DataService.DomainService;
+
+namespace RIAPP.DataService.DomainService.CodeGen
+{
+    public interface ICodeGenProvider
+    {
+        string GenerateScript(string comment, bool isDraft);
+
+        string Lang
+        {
+            get;
+        }
+    }
+
+    public interface ICodeGenProvider<TService> : ICodeGenProvider
+            where TService : BaseDomainService
+    {
+         TService Owner { get; }
+    }
+}

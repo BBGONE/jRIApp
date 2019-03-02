@@ -1,8 +1,7 @@
-﻿using System;
-using RIAPP.DataService.DomainService;
+﻿using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Utils;
-using RIAPP.DataService.Utils.Interfaces;
+using System;
 
 namespace RIAPP.DataService.LinqSql.Utils
 {

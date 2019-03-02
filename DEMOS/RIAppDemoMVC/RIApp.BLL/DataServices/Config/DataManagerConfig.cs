@@ -1,13 +1,14 @@
-﻿using RIAppDemo.BLL.DataServices.DataManagers;
+﻿using RIAPP.DataService.DomainService.Config;
+using RIAppDemo.BLL.DataServices.DataManagers;
 using RIAppDemo.BLL.Models;
 using RIAppDemo.DAL.EF;
-using RIAPP.DataService.DomainService.Interfaces;
 
 namespace RIAppDemo.BLL.DataServices.Config
 {
     public static class DataManagerConfig
     {
-        public static void RegisterDataManagers(IDataManagerContainer dataManagers)
+
+        public static void RegisterDataManagers(IDataManagerRegister dataManagers)
         {
             dataManagers.RegisterDataManager<CustomerAddress, CustomerAddressDM>();
             dataManagers.RegisterDataManager<LookUpProduct, LookUpProductDM>();

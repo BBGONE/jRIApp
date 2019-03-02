@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using RIAPP.DataService.Utils.Interfaces;
+﻿using Net451.Microsoft.Extensions.DependencyInjection;
+using RIAPP.DataService.DomainService.CodeGen;
+using RIAPP.DataService.Utils;
 using RIAppDemo.BLL;
 using RIAppDemo.BLL.DataServices.Config;
 using RIAppDemo.BLL.Utils;
@@ -7,7 +8,7 @@ using RIAppDemo.Utils;
 using System;
 using System.Linq;
 using System.Security.Principal;
-using System.Threading;
+using System.Web;
 using System.Web.Mvc;
 
 namespace RIAppDemo
@@ -22,20 +23,27 @@ namespace RIAppDemo
             || t.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase)));
 
 
-            Func<IPrincipal> getCurrentUser = () =>
+            Func<IServiceProvider, IPrincipal> getCurrentUser = (sp) =>
             {
-                return Thread.CurrentPrincipal;
+                return HttpContext.Current?.User;
             };
 
-            Func<ISerializer> getSerializer = () =>
+            Func<IServiceProvider, ISerializer> getSerializer = (sp) =>
             {
                 return new Serializer();
             };
 
+            services.AddSingleton<ICodeGenConfig, CodeGenConfig>();
             services.AddSingleton<DBConnectionFactory>();
             services.AddThumbnailService();
-            services.AddFolderBrowser(getSerializer, getCurrentUser);
-            services.AddRIAppDemoService(getSerializer, getCurrentUser);
+            services.AddFolderBrowser((options) => {
+                options.GetSerializer = getSerializer;
+                options.GetUser = getCurrentUser;
+            });
+            services.AddRIAppDemoService((options) => {
+                options.GetSerializer = getSerializer;
+                options.GetUser = getCurrentUser;
+            });
         }
 
     }

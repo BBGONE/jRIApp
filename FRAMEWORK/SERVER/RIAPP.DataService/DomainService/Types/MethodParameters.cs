@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using RIAPP.DataService.DomainService.Exceptions;
+using RIAPP.DataService.DomainService.Metadata;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
-using RIAPP.DataService.DomainService.Exceptions;
-using RIAPP.DataService.DomainService.Interfaces;
 
 namespace RIAPP.DataService.DomainService.Types
 {
     /// <summary>
-    ///     Stores parameter description (it's attributes)
+    ///  Stores parameter description (it's attributes)
     /// </summary>
     [DataContract]
     public class MethodParameter
@@ -51,7 +51,7 @@ namespace RIAPP.DataService.DomainService.Types
                 throw new DomainServiceException(string.Format("Method: {0} has no parameter with a name: {1}",
                     methodDescription.methodName, name));
             }
-            return serviceContainer.DataHelper.ParseParameter(paraminfo.ParameterType, paraminfo, paraminfo.isArray,
+            return serviceContainer.GetDataHelper().ParseParameter(paraminfo.ParameterType, paraminfo, paraminfo.isArray,
                 par.value);
         }
     }

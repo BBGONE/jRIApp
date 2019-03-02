@@ -1,4 +1,4 @@
-﻿using RIAPP.DataService.Utils.Extensions;
+﻿using RIAPP.DataService.DomainService.Exceptions;
 using RIAppDemo.BLL.Utils;
 using RIAppDemo.DAL.EF;
 using System;

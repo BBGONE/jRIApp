@@ -3,7 +3,7 @@
 namespace RIAPP.DataService.DomainService.Security
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public class AuthorizeAttribute : Attribute
+    public class AuthorizeAttribute : Attribute, IAuthorizeData
     {
         public AuthorizeAttribute()
         {

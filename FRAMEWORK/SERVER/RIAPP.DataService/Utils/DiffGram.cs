@@ -1,10 +1,10 @@
-﻿using System;
+﻿using RIAPP.DataService.DomainService.Types;
+using RIAPP.DataService.Resources;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
-using RIAPP.DataService.Resources;
-using RIAPP.DataService.DomainService.Types;
 
 namespace RIAPP.DataService.Utils
 {

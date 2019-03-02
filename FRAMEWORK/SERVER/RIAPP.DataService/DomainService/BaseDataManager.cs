@@ -1,11 +1,10 @@
-﻿using System;
+﻿using RIAPP.DataService.DomainService.Types;
+using System;
 using System.Threading.Tasks;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService.Types;
 
 namespace RIAPP.DataService.DomainService
 {
-    public class BaseDataManager<TDataService, TModel> : IDataManager<TModel>, IServicesProviderTmp
+    public class BaseDataManager<TDataService, TModel> : IDataManager<TModel>, IDataServiceComponent
         where TModel : class
         where TDataService : BaseDomainService
     {

@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using RIAPP.DataService.Utils.Interfaces;
+using RIAPP.DataService.Utils;
 using System;
 using System.IO;
 

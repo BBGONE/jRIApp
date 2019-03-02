@@ -1,21 +1,18 @@
-﻿using System;
+﻿using RIAPP.DataService.DomainService.Exceptions;
+using RIAPP.DataService.DomainService.Metadata;
+using RIAPP.DataService.DomainService.Types;
+using RIAPP.DataService.Resources;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using RIAPP.DataService.DomainService.Exceptions;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.Resources;
-using RIAPP.DataService.Utils;
+using System.Threading.Tasks;
 
 namespace RIAPP.DataService.DomainService.Security
 {
     public static class SecurityHelper
     {
-        public const string AUTHENTICATED = "_mustbe_authenicated";
-        public const string ALLOW_ANONYMOUS = "_allow_anonymous";
-
-        public static MethodInfo GetMethodInfo(Type type, string name)
+        public static MethodInfo GetMethodInfo(this Type type, string name)
         {
             MethodInfo meth = null;
             if (!string.IsNullOrEmpty(name))
@@ -23,138 +20,159 @@ namespace RIAPP.DataService.DomainService.Security
             return meth;
         }
 
-        public static RolesForMethod GetRolesForMethod(MethodInfoData method)
+        public static MethodAuthorization GetMethodAuthorization(this MethodInfoData method)
         {
-            var method_roles = new RolesForMethod
+            var attr = method.MethodInfo.GetCustomAttributes(false);
+            var methodAuthorization = new MethodAuthorization
             {
-                MethodName = method.methodInfo.Name,
-                Roles = new string[0],
-                IsRolesOverride = false
+                MethodName = method.MethodInfo.Name,
+                AuthorizeData = Enumerable.Empty<IAuthorizeData>(),
+                IsOverride = false,
+                IsAllowAnonymous= attr.Where(a => a is IAllowAnonymous).Any()
             };
-            var roles_list = new LinkedList<string>();
 
-            //the override attribute replaces all other roles for the method
-            var override_roles = method.methodInfo.GetCustomAttribute<OverrideAuthorizeAttribute>(false);
-            if (override_roles != null)
+            if (methodAuthorization.IsAllowAnonymous)
+                return methodAuthorization;
+
+            var attributes = attr.Where(a => a is IAuthorizeData).Cast<IAuthorizeData>().ToArray();
+
+            // the override attribute replaces all authorization for the method
+            var overrides = attributes.OfType<IOverrideAuthorizeData>();
+
+            if (overrides.Any())
             {
-                method_roles.IsRolesOverride = true;
-                method_roles.Roles = override_roles.Roles.Select(a => a.Trim()).Distinct().ToArray();
-                return method_roles;
+                methodAuthorization.IsOverride = true;
+                methodAuthorization.AuthorizeData = overrides;
+                return methodAuthorization;
             }
 
-            var attrs =
-                method.methodInfo.GetCustomAttributes(typeof(AuthorizeAttribute), false).OfType<AuthorizeAttribute>();
-            if (attrs.Count() == 0)
+            if (attributes.Any())
             {
-                //allow unauthenticated access
-                var passthrough_attrs =
-                    method.methodInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute), false)
-                        .OfType<AllowAnonymousAttribute>();
-                if (passthrough_attrs.Any())
-                    roles_list.AddLast(ALLOW_ANONYMOUS);
+                methodAuthorization.AuthorizeData = attributes;
             }
-            else
-            {
-                //at least user must be authenticated
-                roles_list.AddLast(AUTHENTICATED);
-                foreach (var attr in attrs)
-                {
-                    var attr_roles = attr.Roles.Select(a => a.Trim());
-                    foreach (var role in attr_roles)
-                        roles_list.AddLast(role);
-                }
-            }
-            method_roles.Roles = roles_list.Distinct().ToArray();
-            return method_roles;
+
+            return methodAuthorization;
         }
 
-        public static RoleTree GetRoleTree(IEnumerable<string> serviceRoles, IEnumerable<MethodInfoData> methods)
+        public static DataManagerAuthorization GetDataManagerAuthorization(this Type managerType)
         {
-            var tree = new RoleTree
+            var attr = managerType.GetCustomAttributes(false);
+
+            var managerAuthorization = new DataManagerAuthorization
             {
-                Roles = serviceRoles,
-                ownerRoles = new RolesForOwner[0],
-                methodRoles = new RolesForMethod[0]
+                ManagerType = managerType,
+                AuthorizeData = Enumerable.Empty<IAuthorizeData>(),
+                MethodsAuthorization = new MethodAuthorization[0],
+                IsOverride= false,
+                IsAllowAnonymous = attr.Where(a=> a is IAllowAnonymous).Any()
             };
-            foreach (var method in methods)
-            {
-                if (method.isInDataManager)
-                {
-                    var ownerRoles = tree.ownerRoles.Where(r => r.ownerType == method.ownerType).FirstOrDefault();
-                    if (ownerRoles == null)
-                    {
-                        ownerRoles = new RolesForOwner
-                        {
-                            ownerType = method.ownerType,
-                            Roles = new string[0],
-                            methodRoles = new RolesForMethod[0]
-                        };
-                        //the override attribute replaces all other roles
-                        var override_roles = method.ownerType.GetCustomAttribute<OverrideAuthorizeAttribute>(false);
-                        if (override_roles != null)
-                        {
-                            ownerRoles.IsRolesOverride = true;
-                            ownerRoles.Roles = override_roles.Roles.Select(a => a.Trim()).Distinct().ToArray();
-                        }
-                        else
-                        {
-                            //allow unauthenticated access
-                            var passthrough_attrs =
-                                method.ownerType.GetCustomAttributes(typeof(AllowAnonymousAttribute), false)
-                                    .OfType<AllowAnonymousAttribute>();
-                            if (passthrough_attrs.Any())
-                                ownerRoles.Roles = new[] {ALLOW_ANONYMOUS};
-                            else
-                                ownerRoles.Roles = GetRolesFromType(method.ownerType);
-                        }
-                        tree.ownerRoles = tree.ownerRoles.Concat(new[] {ownerRoles});
-                    }
 
-                    var method_roles =
-                        ownerRoles.methodRoles.Where(m => m.MethodName == method.methodInfo.Name).FirstOrDefault();
-                    if (method_roles == null)
-                    {
-                        method_roles = GetRolesForMethod(method);
-                        ownerRoles.methodRoles = ownerRoles.methodRoles.Concat(new[] {method_roles});
-                    }
-                }
-                else
-                {
-                    var method_roles =
-                        tree.methodRoles.Where(m => m.MethodName == method.methodInfo.Name).FirstOrDefault();
-                    if (method_roles == null)
-                    {
-                        method_roles = GetRolesForMethod(method);
-                        tree.methodRoles = tree.methodRoles.Concat(new[] {method_roles});
-                    }
-                }
+            if (managerAuthorization.IsAllowAnonymous)
+                return managerAuthorization;
+
+            var attributes = attr.Where(a => a is IAuthorizeData).Cast<IAuthorizeData>().ToArray();
+
+            // the override attribute replaces all higher and the current authorization
+            var overrides = attributes.OfType<IOverrideAuthorizeData>();
+
+            if (overrides.Any())
+            {
+                managerAuthorization.IsOverride = true;
+                managerAuthorization.AuthorizeData = overrides;
+                return managerAuthorization;
             }
 
-            return tree;
+            if (attributes.Any())
+            {
+                managerAuthorization.AuthorizeData = attributes;
+            }
+
+            return managerAuthorization;
         }
 
-        public static IEnumerable<string> GetRolesFromType(Type instanceType)
+        public static IEnumerable<IAuthorizeData> GetTypeAuthorization(this Type instanceType)
         {
-            var roles_list = new LinkedList<string>();
-            var attrs = instanceType.GetCustomAttributes(typeof(AuthorizeAttribute), false).OfType<AuthorizeAttribute>();
-            if (attrs.Count() > 0)
+            var attributes = instanceType.GetCustomAttributes(false).Where(a => a is IAuthorizeData).Cast<IAuthorizeData>().ToArray();
+
+            // the override attribute replaces all authorization
+            var overrides = attributes.OfType<IOverrideAuthorizeData>();
+            if (overrides.Any())
             {
-                //at least user must be authenticated
-                roles_list.AddLast(AUTHENTICATED);
+                return overrides;
             }
 
-            foreach (var attr in attrs)
-            {
-                var attr_roles = attr.Roles.Select(a => a.Trim());
-                foreach (var role in attr_roles)
-                    roles_list.AddLast(role);
-            }
-
-            var distinct_roles = roles_list.Distinct();
-            return distinct_roles;
+            return attributes;
         }
 
-        public static MethodInfoData GetCRUDMethodInfo(CachedMetadata metadata, string dbSetName, RowInfo rowInfo)
+        private static IEnumerable<DataManagerAuthorization> _GetDataManagersAuthorization(IEnumerable<MethodInfoData> methods)
+        {
+            var selectedMethods =  methods.Where(m => m.IsInDataManager).ToArray();
+            if (!selectedMethods.Any())
+                return Enumerable.Empty<DataManagerAuthorization>();
+
+            Dictionary<Type, DataManagerAuthorization> authorizationDict = new Dictionary<Type, DataManagerAuthorization>();
+            Dictionary<Type, Dictionary<string, MethodAuthorization>> ownerMethodAuthorizationDict = new Dictionary<Type, Dictionary<string, MethodAuthorization>>();
+
+            foreach (var method in selectedMethods)
+            {
+                if (!authorizationDict.TryGetValue(method.OwnerType, out var ownerAuthorization))
+                {
+                    ownerAuthorization = method.OwnerType.GetDataManagerAuthorization();
+                    authorizationDict.Add(method.OwnerType, ownerAuthorization);
+                }
+
+                if (!ownerMethodAuthorizationDict.TryGetValue(method.OwnerType, out var methodAuthorizationDict))
+                {
+                    methodAuthorizationDict = new Dictionary<string, MethodAuthorization>();
+                    ownerMethodAuthorizationDict.Add(method.OwnerType, methodAuthorizationDict);
+                }
+
+                if (!methodAuthorizationDict.TryGetValue(method.MethodInfo.Name, out var methodAuthorization))
+                {
+                    methodAuthorization = method.GetMethodAuthorization();
+                    methodAuthorizationDict.Add(method.MethodInfo.Name, methodAuthorization);
+                }
+            }
+
+            foreach (Type ownerType in authorizationDict.Keys)
+            {
+                authorizationDict[ownerType].MethodsAuthorization = ownerMethodAuthorizationDict[ownerType].Values.ToArray();
+            }
+
+            return authorizationDict.Values.ToArray();
+        }
+
+        private static IEnumerable<MethodAuthorization> _GetMethodsAuthorization(IEnumerable<MethodInfoData> methods)
+        {
+            var selectedMethods = methods.Where(m => !m.IsInDataManager).ToArray();
+            if (!selectedMethods.Any())
+                return Enumerable.Empty<MethodAuthorization>();
+
+            Dictionary<string, MethodAuthorization> methodAuthorizationDict = new Dictionary<string, MethodAuthorization>();
+
+            foreach (var method in selectedMethods)
+            {
+                if (!methodAuthorizationDict.TryGetValue(method.MethodInfo.Name, out var methodAuthorization))
+                {
+                    methodAuthorization = method.GetMethodAuthorization();
+                    methodAuthorizationDict.Add(method.MethodInfo.Name, methodAuthorization);
+                }
+            }
+
+            return methodAuthorizationDict.Values.ToArray();
+        }
+
+        public static AuthorizationTree GetAuthorizationTree(this IEnumerable<IAuthorizeData> serviceAuthorization, IEnumerable<MethodInfoData> methods)
+        {
+            return new AuthorizationTree
+            {
+                DataServiceAuthorization = serviceAuthorization,
+                DataManagersAuthorization = _GetDataManagersAuthorization(methods),
+                MethodsAuthorization = _GetMethodsAuthorization(methods)
+            };
+        }
+   
+        public static MethodInfoData GetCRUDMethodInfo(this RowInfo rowInfo, RunTimeMetadata metadata, string dbSetName)
         {
             MethodInfoData method = null;
             switch (rowInfo.changeType)
@@ -175,68 +193,20 @@ namespace RIAPP.DataService.DomainService.Security
             return method;
         }
 
-        public static bool CanAccessMethod(MethodInfoData method, IAuthorizer authorizer)
+        public static async Task<bool> CanAccessOperation(this IAuthorizer authorizer, RunTimeMetadata metadata, string dbSetName, MethodType methodType)
         {
-            try
-            {
-                authorizer.CheckUserRightsToExecute(method);
-                return true;
-            }
-            catch (AccessDeniedException)
-            {
-                return false;
-            }
+            MethodInfoData method = metadata.GetOperationMethodInfo(dbSetName, methodType);
+            return method != null && await authorizer.CanAccessMethod(method);
         }
 
-        public static DbSetPermit GetDbSetPermissions(CachedMetadata metadata, string dbSetName, IAuthorizer authorizer)
+        public static async Task<DbSetPermit> GetDbSetPermissions(this IAuthorizer authorizer, RunTimeMetadata metadata, string dbSetName)
         {
-            MethodInfoData method = null;
-            var permit = new DbSetPermit();
-            permit.dbSetName = dbSetName;
-            method = metadata.GetOperationMethodInfo(dbSetName, MethodType.Insert);
-            permit.canAddRow = method != null && CanAccessMethod(method, authorizer);
-
-            method = metadata.GetOperationMethodInfo(dbSetName, MethodType.Update);
-            permit.canEditRow = method != null && CanAccessMethod(method, authorizer);
-
-            method = metadata.GetOperationMethodInfo(dbSetName, MethodType.Delete);
-            permit.canDeleteRow = method != null && CanAccessMethod(method, authorizer);
-
-            method = metadata.GetOperationMethodInfo(dbSetName, MethodType.Refresh);
-            permit.canRefreshRow = method != null && CanAccessMethod(method, authorizer);
-            return permit;
-        }
-
-        /// <summary>
-        ///     Roles for DataService which contains methods and DataManagers
-        ///     it is the highest level
-        /// </summary>
-        public class RoleTree
-        {
-            public IEnumerable<RolesForMethod> methodRoles;
-            public IEnumerable<RolesForOwner> ownerRoles;
-            public IEnumerable<string> Roles;
-        }
-
-        /// <summary>
-        ///     Roles for DataManager which contains the methods
-        /// </summary>
-        public class RolesForOwner
-        {
-            public bool IsRolesOverride;
-            public IEnumerable<RolesForMethod> methodRoles;
-            public Type ownerType;
-            public IEnumerable<string> Roles;
-        }
-
-        /// <summary>
-        ///     The Lowest level - roles for the methods
-        /// </summary>
-        public class RolesForMethod
-        {
-            public bool IsRolesOverride;
-            public string MethodName;
-            public IEnumerable<string> Roles;
+            return new DbSetPermit() { dbSetName = dbSetName,
+                canAddRow = await authorizer.CanAccessOperation(metadata, dbSetName, MethodType.Insert),
+                canEditRow = await authorizer.CanAccessOperation(metadata, dbSetName, MethodType.Update),
+                canDeleteRow = await authorizer.CanAccessOperation(metadata, dbSetName, MethodType.Delete),
+                canRefreshRow = await authorizer.CanAccessOperation(metadata, dbSetName, MethodType.Refresh)
+            };
         }
     }
 }

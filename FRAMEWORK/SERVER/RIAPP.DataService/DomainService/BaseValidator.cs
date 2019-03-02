@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using RIAPP.DataService.DomainService.Types;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService.Types;
 
 namespace RIAPP.DataService.DomainService
 {

@@ -1,6 +1,6 @@
 ﻿using RIAPP.DataService.DomainService;
 using RIAPP.DataService.DomainService.Attributes;
-using RIAPP.DataService.DomainService.Config;
+using RIAPP.DataService.DomainService.Metadata;
 using RIAPP.DataService.DomainService.Security;
 using RIAPP.DataService.DomainService.Types;
 using RIAppDemo.BLL.Models;
@@ -19,23 +19,14 @@ namespace RIAppDemo.BLL.DataServices
         private readonly string BASE_ROOT = AppDomain.CurrentDomain.BaseDirectory;
         private readonly string CONFIG_ROOT = ConfigurationManager.AppSettings["FOLDER_BROWSER_PATH"];
 
-        public FolderBrowserService(IServiceProvider services)
-            : base(services)
+        public FolderBrowserService(IServiceContainer serviceContainer)
+            : base(serviceContainer)
         {
         }
 
-        protected override Metadata GetMetadata(bool isDraft)
+        protected override DesignTimeMetadata GetDesignTimeMetadata(bool isDraft)
         {
-            return Metadata.FromXML(ResourceHelper.GetResourceString("RIAppDemo.BLL.Metadata.FolderBrowser.xml"));
-        }
-
-        protected override void ConfigureCodeGen(CodeGenConfig config)
-        {
-            base.ConfigureCodeGen(config);
-            //it allows getting information via GetCSharp, GetXAML, GetTypeScript
-            //it should be set to false in release version 
-            //allow it only at development time
-            config.IsCodeGenEnabled = true;
+            return DesignTimeMetadata.FromXML(ResourceHelper.GetResourceString("RIAppDemo.BLL.Metadata.FolderBrowser.xml"));
         }
 
         private string GetRootPath(string infoType)

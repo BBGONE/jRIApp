@@ -1,24 +1,33 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using RIAPP.DataService.Utils.Extensions;
-using RIAPP.DataService.Utils.Interfaces;
+﻿using Net451.Microsoft.Extensions.DependencyInjection;
+using RIAPP.DataService.EF2;
+using RIAppDemo.BLL.Models;
 using RIAppDemo.DAL.EF;
 using System;
-using System.Security.Principal;
 
 namespace RIAppDemo.BLL.DataServices.Config
 {
     public static class RIAppDemoServiceEFConfig
     {
-        public static void AddRIAppDemoService(this IServiceCollection services, Func<ISerializer> getSerializer, Func<IPrincipal> getUser)
+        public static void AddRIAppDemoService(this IServiceCollection services,
+            Action<SvcOptions> configure)
         {
-            services.AddDomainService<RIAppDemoServiceEF>(getSerializer, getUser, (options) => {
-                ValidatorConfig.RegisterValidators(options.ValidatorsContainer);
-                DataManagerConfig.RegisterDataManagers(options.DataManagerContainer);
+            services.AddEF2DomainService<RIAppDemoServiceEF, ADWDbContext>((options) => {
 
-                services.AddScoped<ADWDbContext>((sp) => {
-                    var res = new ADWDbContext(sp.GetRequiredService<DBConnectionFactory>().GetRIAppDemoConnection());
-                    return res;
-                });
+                ValidatorConfig.RegisterValidators(options.ValidatorRegister);
+                DataManagerConfig.RegisterDataManagers(options.DataManagerRegister);
+
+                options.ClientTypes = () => new[] { typeof(TestModel), typeof(KeyVal), typeof(StrKeyVal), typeof(RadioVal), typeof(HistoryItem), typeof(TestEnum2) };
+
+                var svcOptions = new SvcOptions();
+                configure?.Invoke(svcOptions);
+
+                options.UserFactory = svcOptions.GetUser;
+                options.SerializerFactory = svcOptions.GetSerializer;
+            });
+
+            services.AddScoped<ADWDbContext>((sp) => {
+                var res = new ADWDbContext(sp.GetRequiredService<DBConnectionFactory>().GetRIAppDemoConnection());
+                return res;
             });
         }
     }

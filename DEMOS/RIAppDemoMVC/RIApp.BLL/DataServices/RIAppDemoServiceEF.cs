@@ -1,15 +1,16 @@
-﻿using RIAPP.DataService.DomainService.Attributes;
-using RIAPP.DataService.DomainService.Config;
+﻿using RIAPP.DataService.DomainService;
+using RIAPP.DataService.DomainService.Attributes;
+using RIAPP.DataService.DomainService.Exceptions;
+using RIAPP.DataService.DomainService.Metadata;
+using RIAPP.DataService.DomainService.Query;
 using RIAPP.DataService.DomainService.Security;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.EF2;
-using RIAPP.DataService.Utils.Extensions;
 using RIAppDemo.BLL.Models;
 using RIAppDemo.BLL.Utils;
 using RIAppDemo.DAL.EF;
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
@@ -24,38 +25,25 @@ namespace RIAppDemo.BLL.DataServices
     {
         internal const string USERS_ROLE = "Users";
         internal const string ADMINS_ROLE = "Admins";
-        private DbConnection _connection;
 
-        //store last diffgram here
+        // store last diffgram here
         private string _diffGramm;
 
-        public RIAppDemoServiceEF(IServiceProvider services, ADWDbContext db)
-            : base(services, db)
+        public RIAppDemoServiceEF(IServiceContainer serviceContainer, ADWDbContext db)
+            : base(serviceContainer, db)
         {
             
         }
 
-        protected override Metadata GetMetadata(bool isDraft)
+        protected override DesignTimeMetadata GetDesignTimeMetadata(bool isDraft)
         {
             if (isDraft)
+                return base.GetDesignTimeMetadata(true);
+            else
             {
-                //returns raw (uncorrected) programmatically generated metadata from LinqToSQL classes
-                return base.GetMetadata(true);
+                return DesignTimeMetadata.FromXML(ResourceHelper.GetResourceString("RIAppDemo.BLL.Metadata.MainDemo2.xml"));
             }
-            //first the uncorrected metadata was saved into xml file and then edited 
-            return Metadata.FromXML(ResourceHelper.GetResourceString("RIAppDemo.BLL.Metadata.MainDemo2.xml"));
         }
-
-        protected override void ConfigureCodeGen(CodeGenConfig config)
-        {
-            base.ConfigureCodeGen(config);
-            config.clientTypes.AddRange(new[] { typeof(TestModel), typeof(KeyVal), typeof(StrKeyVal), typeof(RadioVal), typeof(HistoryItem), typeof(TestEnum2) });
-            //it allows getting information via GetCSharp, GetXAML, GetTypeScript
-            //it should be set to false in release version 
-            //allow it only at development time
-            config.IsCodeGenEnabled = true;
-        }
-
 
         /// <summary>
         ///     here can be tracked changes to the entities
@@ -83,12 +71,6 @@ namespace RIAppDemo.BLL.DataServices
 
         protected override void Dispose(bool isDisposing)
         {
-            if (_connection != null)
-            {
-                _connection.Close();
-                _connection = null;
-            }
-
             base.Dispose(isDisposing);
         }
 

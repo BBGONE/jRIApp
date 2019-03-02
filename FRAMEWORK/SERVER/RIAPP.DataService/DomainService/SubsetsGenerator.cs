@@ -1,7 +1,7 @@
 ﻿using RIAPP.DataService.DomainService.Exceptions;
 using RIAPP.DataService.DomainService.Types;
+using RIAPP.DataService.Utils;
 using RIAPP.DataService.Utils.Extensions;
-using RIAPP.DataService.Utils.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,7 +15,7 @@ namespace RIAPP.DataService.DomainService
         public SubsetsGenerator(BaseDomainService domainService)
         {
             _domainService = domainService;
-            _dataHelper = _domainService.ServiceContainer.DataHelper;
+            _dataHelper = _domainService.ServiceContainer.GetDataHelper();
         }
 
         public SubsetList CreateSubsets(IEnumerable<SubResult> subResults)

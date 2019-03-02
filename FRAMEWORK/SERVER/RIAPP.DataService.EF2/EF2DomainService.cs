@@ -1,5 +1,5 @@
 ﻿using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Config;
+using RIAPP.DataService.DomainService.Metadata;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.EF2.Utils;
 using System;
@@ -20,19 +20,13 @@ namespace RIAPP.DataService.EF2
         private TDB _db;
         private bool _ownsDb = false;
 
-        public EFDomainService(IServiceProvider services, TDB db = default(TDB))
-            :base(services)
+        public EFDomainService(IServiceContainer serviceContainer, TDB db = default(TDB))
+            : base(serviceContainer)
         {
             this._db = db;
         }
 
         #region Overridable Methods
-        protected override void ConfigureCodeGen(CodeGenConfig config)
-        {
-            base.ConfigureCodeGen(config);
-            config.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
-        }
-
         protected virtual TDB CreateDataContext() {
             return Activator.CreateInstance<TDB>();
         }
@@ -103,9 +97,9 @@ namespace RIAPP.DataService.EF2
             });
         }
 
-        protected override Metadata GetMetadata(bool isDraft)
+        protected override DesignTimeMetadata GetDesignTimeMetadata(bool isDraft)
         {
-            Metadata metadata = new Metadata();
+            var metadata = new DesignTimeMetadata();
 
             var container = this.ObjectContext.MetadataWorkspace.GetEntityContainer(this.ObjectContext.DefaultContainerName, DataSpace.CSpace);
             var entitySetsDic = (from meta in container.BaseEntitySets

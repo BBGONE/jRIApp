@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using RIAPP.DataService.DomainService.Exceptions;
+﻿using RIAPP.DataService.DomainService.Exceptions;
+using RIAPP.DataService.DomainService.Metadata;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Resources;
-using RIAPP.DataService.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RIAPP.DataService.DomainService
 {
@@ -19,7 +19,7 @@ namespace RIAPP.DataService.DomainService
 
         public RowInfo ParentRow { get; set; }
 
-        public Association association { get; set; }
+        public Association Association { get; set; }
     }
 
     internal class ChangeSetGraph
@@ -27,52 +27,52 @@ namespace RIAPP.DataService.DomainService
         private readonly LinkedList<RowInfo> _allList = new LinkedList<RowInfo>();
         private readonly LinkedList<RowInfo> _deleteList = new LinkedList<RowInfo>();
         private readonly LinkedList<RowInfo> _insertList = new LinkedList<RowInfo>();
-        private readonly CachedMetadata _metadata;
+        private readonly RunTimeMetadata _metadata;
         private readonly LinkedList<RowInfo> _updateList = new LinkedList<RowInfo>();
         private DbSet[] sortedDbSets;
         private readonly LinkedList<ParentChildNode> updateNodes = new LinkedList<ParentChildNode>();
 
 
-        public ChangeSetGraph(ChangeSet changeSet, CachedMetadata metadata)
+        public ChangeSetGraph(ChangeSet changeSet, RunTimeMetadata metadata)
         {
-            this.changeSet = changeSet;
-            _metadata = metadata;
+            this.ChangeSet = changeSet;
+            this._metadata = metadata;
         }
 
-        public ChangeSet changeSet { get; }
+        public ChangeSet ChangeSet { get; }
 
-        public IEnumerable<RowInfo> insertList
+        public IEnumerable<RowInfo> InsertList
         {
             get { return _insertList; }
         }
 
-        public IEnumerable<RowInfo> updateList
+        public IEnumerable<RowInfo> UpdateList
         {
             get { return _updateList; }
         }
 
-        public IEnumerable<RowInfo> deleteList
+        public IEnumerable<RowInfo> DeleteList
         {
             get { return _deleteList; }
         }
 
-        public IEnumerable<RowInfo> allList
+        public IEnumerable<RowInfo> AllList
         {
             get { return _allList; }
         }
 
-        private void getAllParentDbSets(HashSet<String> list, string dbSetName)
+        private void GetAllParentDbSets(HashSet<String> list, string dbSetName)
         {
             var parentDbNames = _metadata.Associations.Values.Where(a => a.childDbSetName == dbSetName)
                     .Select(x => x.parentDbSetName)
                     .ToArray();
 
-            foreach (var name in parentDbNames)
+            foreach (string name in parentDbNames)
             {
                 if (!list.Contains(name))
                 {
                     list.Add(name);
-                    getAllParentDbSets(list, name);
+                    GetAllParentDbSets(list, name);
                 }
             }
         }
@@ -80,14 +80,14 @@ namespace RIAPP.DataService.DomainService
         private int DbSetComparison(DbSet dbSet1, DbSet dbSet2)
         {
             var parentDbNames = new HashSet<String>();
-            getAllParentDbSets(parentDbNames, dbSet1.dbSetName);
+            GetAllParentDbSets(parentDbNames, dbSet1.dbSetName);
             if (parentDbNames.Contains(dbSet2.dbSetName))
             {
                 return 1;
             }
 
             parentDbNames.Clear();
-            getAllParentDbSets(parentDbNames, dbSet2.dbSetName);
+            GetAllParentDbSets(parentDbNames, dbSet2.dbSetName);
             if (parentDbNames.Contains(dbSet1.dbSetName))
             {
                 return -1;
@@ -104,7 +104,7 @@ namespace RIAPP.DataService.DomainService
         private Dictionary<string, RowInfo> GetRowsMap()
         {
             var result = new Dictionary<string, RowInfo>();
-            foreach (var dbSet in changeSet.dbSets)
+            foreach (var dbSet in ChangeSet.dbSets)
             {
                 var dbSetInfo = _metadata.DbSets[dbSet.dbSetName];
                 if (dbSetInfo.EntityType == null)
@@ -124,7 +124,7 @@ namespace RIAPP.DataService.DomainService
         {
             var rowsMap = GetRowsMap();
 
-            foreach (var trackAssoc in changeSet.trackAssocs)
+            foreach (var trackAssoc in ChangeSet.trackAssocs)
             {
                 var assoc = _metadata.Associations[trackAssoc.assocName];
                 var pkey = string.Format("{0}:{1}", assoc.parentDbSetName, trackAssoc.parentKey);
@@ -132,7 +132,7 @@ namespace RIAPP.DataService.DomainService
                 var parent = rowsMap[pkey];
                 var child = rowsMap[ckey];
                 var childNode = new ParentChildNode(child);
-                childNode.association = assoc;
+                childNode.Association = assoc;
                 childNode.ParentRow = parent;
                 updateNodes.AddLast(childNode);
             }
@@ -167,7 +167,7 @@ namespace RIAPP.DataService.DomainService
         {
             if (sortedDbSets == null)
             {
-                var array = changeSet.dbSets.ToArray();
+                var array = ChangeSet.dbSets.ToArray();
                 Array.Sort(array, DbSetComparison);
                 sortedDbSets = array;
             }

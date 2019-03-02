@@ -1,9 +1,8 @@
-﻿using System;
+﻿using RIAPP.DataService.DomainService.Types;
+using RIAPP.DataService.Utils;
+using System;
 using System.Dynamic;
 using System.Security.Principal;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.Utils;
 
 namespace RIAPP.DataService.DomainService
 {
@@ -61,12 +60,12 @@ namespace RIAPP.DataService.DomainService
 
         private IServiceOperationsHelper ServiceHelper
         {
-            get { return DataService.ServiceContainer.ServiceHelper; }
+            get { return DataService.ServiceContainer.GetServiceHelper(); }
         }
 
         public BaseDomainService DataService { get; }
 
-        #region private fields
+        #region Private Fields
 
         private Lazy<dynamic> _dataBag = new Lazy<dynamic>(() => new ExpandoObject(), true);
 

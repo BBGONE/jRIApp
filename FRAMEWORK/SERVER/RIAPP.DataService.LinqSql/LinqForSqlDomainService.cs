@@ -1,7 +1,6 @@
 ﻿using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Config;
+using RIAPP.DataService.DomainService.Metadata;
 using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.LinqSql.Utils;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -12,8 +11,8 @@ namespace RIAPP.DataService.LinqSql
 {
     public abstract class BaseLinqForSqlDomainService : BaseDomainService
     {
-        public BaseLinqForSqlDomainService(IServiceProvider services)
-           : base(services)
+        public BaseLinqForSqlDomainService(IServiceContainer serviceContainer)
+            : base(serviceContainer)
         {
             
         }
@@ -25,26 +24,20 @@ namespace RIAPP.DataService.LinqSql
         private TDB _db;
         private bool _ownsDb = false;
 
-        public LinqForSqlDomainService(IServiceProvider services, TDB db = default(TDB))
-            :base(services)
+        public LinqForSqlDomainService(IServiceContainer serviceContainer, TDB db = default(TDB))
+            : base(serviceContainer)
         {
             this._db = db;
         }
 
         #region Overridable Methods
-        protected override void ConfigureCodeGen(CodeGenConfig config)
-        {
-            base.ConfigureCodeGen(config);
-            config.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
-        }
-
         protected virtual TDB CreateDataContext() {
             return Activator.CreateInstance<TDB>();
         }
 
-        protected override Metadata GetMetadata(bool isDraft)
+        protected override DesignTimeMetadata GetDesignTimeMetadata(bool isDraft)
         {
-            Metadata metadata = new Metadata();
+            var metadata = new DesignTimeMetadata();
             PropertyInfo[] dbsetPropList = this.DB.GetType().GetProperties().Where(p => p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(System.Data.Linq.Table<>)).ToArray();
             Array.ForEach(dbsetPropList, (propInfo) =>
             {
@@ -77,7 +70,7 @@ namespace RIAPP.DataService.LinqSql
                         }
                     }
                     bool isArray = false;
-                    fieldInfo.dataType = this.ServiceContainer.ValueConverter.DataTypeFromType(propInfo2.PropertyType, out isArray);
+                    fieldInfo.dataType = this.ServiceContainer.GetValueConverter().DataTypeFromType(propInfo2.PropertyType, out isArray);
                     if (colAttr.DbType.IndexOf("NOT NULL", StringComparison.OrdinalIgnoreCase) > 0)
                         fieldInfo.isNullable = false;
                     fieldInfo.fieldType = colAttr.IsVersion?FieldType.RowTimeStamp: FieldType.None;

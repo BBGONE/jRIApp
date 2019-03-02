@@ -1,16 +1,21 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using RIAPP.DataService.Utils.Extensions;
-using RIAPP.DataService.Utils.Interfaces;
+﻿using Net451.Microsoft.Extensions.DependencyInjection;
+using RIAPP.DataService.DomainService.Config;
 using System;
-using System.Security.Principal;
 
 namespace RIAppDemo.BLL.DataServices.Config
 {
     public static class FolderBrowserServiceConfig
     {
-        public static void AddFolderBrowser(this IServiceCollection services, Func<ISerializer> getSerializer, Func<IPrincipal> getUser)
+        public static void AddFolderBrowser(this IServiceCollection services,
+           Action<SvcOptions> configure)
         {
-            services.AddDomainService<FolderBrowserService>(getSerializer, getUser);
+            services.AddDomainService<FolderBrowserService>((options) => {
+                var svcOptions = new SvcOptions();
+                configure?.Invoke(svcOptions);
+
+                options.UserFactory = svcOptions.GetUser;
+                options.SerializerFactory = svcOptions.GetSerializer;
+            });
         }
     }
 }

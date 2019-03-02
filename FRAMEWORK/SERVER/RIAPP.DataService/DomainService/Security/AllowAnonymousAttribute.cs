@@ -3,7 +3,7 @@
 namespace RIAPP.DataService.DomainService.Security
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = false)]
-    public class AllowAnonymousAttribute : Attribute
+    public class AllowAnonymousAttribute : Attribute, IAllowAnonymous
     {
     }
 }

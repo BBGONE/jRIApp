@@ -7,29 +7,10 @@ namespace RIAPP.DataService.DomainService.Security
     ///     the other authorize attributes
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = false)]
-    public class OverrideAuthorizeAttribute : Attribute
+    public class OverrideAuthorizeAttribute : AuthorizeAttribute, IOverrideAuthorizeData
     {
-        public OverrideAuthorizeAttribute()
+        public OverrideAuthorizeAttribute(): base()
         {
-            Roles = new string[0];
-        }
-
-        public string[] Roles { get; set; }
-
-        public string RolesString
-        {
-            get { return string.Join(",", Roles); }
-            set
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    Roles = new string[0];
-                }
-                else
-                {
-                    Roles = value.Split(',', ';');
-                }
-            }
         }
     }
 }

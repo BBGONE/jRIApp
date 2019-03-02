@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Net451.Microsoft.Extensions.DependencyInjection;
+using Net451.Microsoft.Extensions.DependencyInjection.Extensions;
 using RIAppDemo.BLL.Utils;
 
 namespace RIAppDemo.BLL.DataServices.Config

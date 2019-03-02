@@ -1,6 +1,6 @@
 ﻿using RIAPP.DataService.DomainService;
+using RIAPP.DataService.DomainService.Query;
 using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.Utils.Extensions;
 using RIAppDemo.DAL.EF;
 using System;
 using System.Linq;

@@ -1,8 +1,8 @@
 ﻿using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Interfaces;
+using RIAPP.DataService.DomainService.CodeGen;
 using RIAPP.DataService.DomainService.Types;
 using RIAPP.DataService.Mvc.Utils;
-using RIAPP.DataService.Utils.Interfaces;
+using RIAPP.DataService.Utils;
 using System;
 using System.Net.Mime;
 using System.Text;
@@ -41,12 +41,11 @@ namespace RIAPP.DataService.Mvc
         [HttpGet]
         public ActionResult GetTypeScript()
         {
-            var comment = string.Format(
-                    "\tGenerated from: {0} on {1:yyyy-MM-dd} at {1:HH:mm}\r\n\tDon't make manual changes here, they will be lost when this interface will be regenerated!",
-                    ControllerContext.HttpContext.Request.RawUrl, DateTime.Now);
+            string url = ControllerContext.HttpContext.Request.RawUrl;
+            DateTime now = DateTime.Now;
+            var comment = $"\tGenerated from: {url} on {now:yyyy-MM-dd} at {now:HH:mm}\r\n\tDon't make manual changes here, they will be lost when this interface will be regenerated!";
             var content = DomainService.ServiceCodeGen(new CodeGenArgs("ts") { comment = comment });
             var res = new ContentResult();
-            res.ContentEncoding = Encoding.UTF8;
             res.ContentType = MediaTypeNames.Text.Plain;
             res.Content = content;
             return res;

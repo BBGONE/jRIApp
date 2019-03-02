@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Data.Entity;
 using RIAPP.DataService.DomainService.Types;
-
+using RIAPP.DataService.DomainService.Metadata;
 
 namespace RIAPP.DataService.EF2.Utils
 {

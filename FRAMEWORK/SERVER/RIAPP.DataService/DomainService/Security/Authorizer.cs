@@ -1,183 +1,195 @@
 ﻿using RIAPP.DataService.DomainService.Exceptions;
-using RIAPP.DataService.DomainService.Interfaces;
+using RIAPP.DataService.DomainService.Metadata;
 using RIAPP.DataService.Resources;
-using RIAPP.DataService.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
+using System.Threading.Tasks;
 
 namespace RIAPP.DataService.DomainService.Security
 {
-    public class AuthorizerClass<TService> : IAuthorizer<TService>
+    public class Authorizer<TService> : IAuthorizer<TService>
         where TService : BaseDomainService
     {
-        private const string ANONYMOUS_USER = "Anonymous";
-        private IEnumerable<string> _serviceRoles;
+        private const string ANONYMOUS_USER = "ANONYMOUS_USER";
 
-        public AuthorizerClass(TService service, IPrincipal principal)
+        private Lazy<IEnumerable<IAuthorizeData>> _serviceAuthorization;
+
+        public Authorizer(TService service, IPrincipal user)
         {
-            this.serviceType = service.GetType();
-            this.principal = principal?? throw new ArgumentNullException(nameof(principal), ErrorStrings.ERR_NO_USER);
+            this.ServiceType = service.GetType();
+            this.User = user ?? throw new ArgumentNullException(nameof(user), ErrorStrings.ERR_NO_USER);
+            this._serviceAuthorization = new Lazy<IEnumerable<IAuthorizeData>>(() => ServiceType.GetTypeAuthorization(), true);
         }
 
+        public IPrincipal User { get; }
+
+        public Type ServiceType { get; }
+
         /// <summary>
-        ///     throws AccesDeniedExeption if user have no rights to execute operation
+        ///  throws AccesDeniedExeption if user have no rights to execute operation
         /// </summary>
         /// <param name="changeSet"></param>
-        public void CheckUserRightsToExecute(IEnumerable<MethodInfoData> methods)
+        public async Task CheckUserRightsToExecute(IEnumerable<MethodInfoData> methods)
         {
-            var roles = SecurityHelper.GetRoleTree(GetRolesForService(), methods);
+            var authorizationTree = GetServiceAuthorization().GetAuthorizationTree(methods);
 
-            if (!CheckAccess(roles))
+            if (!await CheckAccess(authorizationTree))
             {
-                var user = principal == null || principal.Identity == null || !principal.Identity.IsAuthenticated
+                var user = this.User == null || this.User.Identity == null || !this.User.Identity.IsAuthenticated
                     ? ANONYMOUS_USER
-                    : principal.Identity.Name;
+                    : this.User.Identity.Name;
                 throw new AccessDeniedException(string.Format(ErrorStrings.ERR_USER_ACCESS_DENIED, user));
             }
         }
 
+        public Task<bool> CanAccessMethod(MethodInfoData method)
+        {
+            var authorizationTree = GetServiceAuthorization().GetAuthorizationTree(new[] { method });
+            return CheckAccess(authorizationTree);
+        }
+
         /// <summary>
-        ///     throws AccesDeniedExeption if user have no rights to execute operation
+        ///   throws AccesDeniedExeption if user have no rights to execute operation
         /// </summary>
         /// <param name="changeSet"></param>
-        public void CheckUserRightsToExecute(MethodInfoData method)
+        public async Task CheckUserRightsToExecute(MethodInfoData method)
         {
-            var roles = SecurityHelper.GetRoleTree(GetRolesForService(), new[] {method});
-
-            if (!CheckAccess(roles))
+            if (!await CanAccessMethod(method))
             {
-                var user = principal == null || principal.Identity == null || !principal.Identity.IsAuthenticated
+                var user = this.User == null || this.User.Identity == null || !this.User.Identity.IsAuthenticated
                     ? ANONYMOUS_USER
-                    : principal.Identity.Name;
+                    : this.User.Identity.Name;
                 throw new AccessDeniedException(string.Format(ErrorStrings.ERR_USER_ACCESS_DENIED, user));
             }
         }
-
-        public IPrincipal principal { get; }
-
-        public Type serviceType { get; }
 
         #region Private methods
 
-        private bool CheckAccessCore(IEnumerable<string> roles)
+        private async Task<bool> CheckAccessCore(IEnumerable<IAuthorizeData> authorizeData)
         {
-            if (principal == null)
+            await Task.CompletedTask;
+
+            if (User == null)
                 return false;
-            if (roles == null || !roles.Any())
+
+            if (authorizeData == null || !authorizeData.Any())
                 return true;
-            if (!principal.Identity.IsAuthenticated &&
-                roles.Contains(SecurityHelper.AUTHENTICATED, StringComparer.Ordinal))
+
+            if (!User.Identity.IsAuthenticated && authorizeData.Any())
                 return false;
-            var filteredRoles = roles.Where(r => !r.Equals(SecurityHelper.AUTHENTICATED, StringComparison.Ordinal));
-            if (!filteredRoles.Any())
-                return true;
-            foreach (var role in filteredRoles)
+
+            int cnt = 0;
+            foreach (var role in authorizeData.SelectMany(a=>a.Roles))
             {
-                if (principal.IsInRole(role))
+                ++cnt;
+                if (User.IsInRole(role))
                 {
                     return true;
                 }
             }
-            return false;
+
+            return cnt > 0 ? false : true;
         }
 
-        private IEnumerable<string> GetRolesForService()
+        private IEnumerable<IAuthorizeData> GetServiceAuthorization()
         {
-            if (_serviceRoles != null)
-                return _serviceRoles;
-            _serviceRoles = SecurityHelper.GetRolesFromType(serviceType);
-            return _serviceRoles;
+            return _serviceAuthorization.Value;
         }
 
-        private bool CheckMethodAccess(bool allowServiceAccess, IEnumerable<SecurityHelper.RolesForMethod> methodRoles)
+        /// <summary>
+        /// Checks access to multiple methods. If access to one method fails, then the access is blocked to all the methods
+        /// </summary>
+        /// <param name="allowServiceAccess"></param>
+        /// <param name="methodAuthorizations"></param>
+        /// <returns></returns>
+        private async Task<bool> CheckMethodAccess(bool allowServiceAccess, IEnumerable<MethodAuthorization> methodAuthorizations)
         {
-            var result = true;
-            foreach (var rolesForMethod in methodRoles)
+            bool result = true;
+
+            foreach (var methodAuthorization in methodAuthorizations)
             {
-                var allowAnonymous =
-                    rolesForMethod.Roles.Any(r => r.Equals(SecurityHelper.ALLOW_ANONYMOUS, StringComparison.Ordinal));
-                if (allowAnonymous)
+                if (methodAuthorization.IsAllowAnonymous)
                 {
                     continue;
                 }
 
-                if (principal == null)
+                if (User == null)
                 {
                     result = false;
                     break;
                 }
 
-                //if not the method overrides roles for the service
-                if (!rolesForMethod.IsRolesOverride && !allowServiceAccess)
+                // if the method does not override authorization for the service
+                if (!methodAuthorization.IsOverride && !allowServiceAccess)
                 {
-                    //first check roles assigned to the service as a whole
+                    // first check authorization at the service level
                     result = false;
                     break;
                 }
 
-                //check the roles assigned for the method
-                var meth_roles =
-                    rolesForMethod.Roles.Where(r => !r.Equals(SecurityHelper.ALLOW_ANONYMOUS, StringComparison.Ordinal));
-                if (!CheckAccessCore(meth_roles))
+                // check authorization for the method
+                if (!await CheckAccessCore(methodAuthorization.AuthorizeData))
                 {
                     result = false;
                     break;
                 }
             }
+
             return result;
         }
 
-        private bool CheckOwnerAccess(bool allowServiceAccess, SecurityHelper.RolesForOwner rolesForOwner)
+        private async Task<bool> CheckOwnerAccess(bool allowServiceAccess, DataManagerAuthorization ownerAuthorization)
         {
-            var allowAnonymous =
-                rolesForOwner.Roles.Any(r => r.Equals(SecurityHelper.ALLOW_ANONYMOUS, StringComparison.Ordinal));
-            if (allowAnonymous)
+            if (ownerAuthorization.IsAllowAnonymous)
             {
                 return true;
             }
 
-            if (principal == null)
+            if (User == null)
             {
                 return false;
             }
 
-            //if not the method overrides roles for the service
-            if (!rolesForOwner.IsRolesOverride && !allowServiceAccess)
+            // if it does not ovveride authorization for the service
+            if (!ownerAuthorization.IsOverride && !allowServiceAccess)
             {
                 return false;
             }
 
-            //check the roles assigned for the owner
-            var owner_roles =
-                rolesForOwner.Roles.Where(r => !r.Equals(SecurityHelper.ALLOW_ANONYMOUS, StringComparison.Ordinal));
-            if (!CheckAccessCore(owner_roles))
+            // check authorization for the owner
+            if (!await CheckAccessCore(ownerAuthorization.AuthorizeData))
             {
                 return false;
             }
+
             return true;
         }
 
-        private bool CheckAccess(SecurityHelper.RoleTree rolesTree)
+        private async Task<bool> CheckAccess(AuthorizationTree authorizationTree)
         {
-            var result = true;
-            //check roles assigned to the service as a whole
-            var allowServiceAccess = CheckAccessCore(rolesTree.Roles);
-            if (rolesTree.methodRoles.Any())
+            bool result = true;
+            // check authorization at the service level
+            bool allowServiceAccess = await CheckAccessCore(authorizationTree.DataServiceAuthorization);
+
+            if (authorizationTree.MethodsAuthorization.Any())
             {
-                result = CheckMethodAccess(allowServiceAccess, rolesTree.methodRoles);
+                result = await CheckMethodAccess(allowServiceAccess, authorizationTree.MethodsAuthorization);
 
                 if (!result)
                     return result;
             }
-            else if (!rolesTree.ownerRoles.Any())
-                return allowServiceAccess;
-
-            foreach (var rolesForOwner in rolesTree.ownerRoles)
+            else if (!authorizationTree.DataManagersAuthorization.Any())
             {
-                var allowOwnerAccess = CheckOwnerAccess(allowServiceAccess, rolesForOwner);
-                result = CheckMethodAccess(allowOwnerAccess, rolesForOwner.methodRoles);
+                return allowServiceAccess;
+            }
+
+            foreach (var ownerAuthorization in authorizationTree.DataManagersAuthorization)
+            {
+                bool allowOwnerAccess = await CheckOwnerAccess(allowServiceAccess, ownerAuthorization);
+                result = await CheckMethodAccess(allowOwnerAccess, ownerAuthorization.MethodsAuthorization);
+
                 if (!result)
                 {
                     break;

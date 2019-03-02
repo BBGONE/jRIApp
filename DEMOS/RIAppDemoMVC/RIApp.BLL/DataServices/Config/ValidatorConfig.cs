@@ -1,4 +1,4 @@
-﻿using RIAPP.DataService.DomainService.Interfaces;
+﻿using RIAPP.DataService.DomainService.Config;
 using RIAppDemo.BLL.Validators;
 using RIAppDemo.DAL.EF;
 
@@ -6,10 +6,10 @@ namespace RIAppDemo.BLL.DataServices.Config
 {
     public static class ValidatorConfig
     {
-        public static void RegisterValidators(IValidatorContainer validators)
+        public static void RegisterValidators(IValidatorRegister validators)
         {
             validators.RegisterValidator<Customer, CustomerValidator>();
-            //validators.RegisterValidator<Product, ProductValidator>();
+            // validators.RegisterValidator<Product, ProductValidator>();
             // just for for testing  - using raw types
             validators.RegisterValidator(typeof(Product), typeof(ProductValidator));
         }
