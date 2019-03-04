@@ -7,6 +7,7 @@ using RIAppDemo.BLL.Utils;
 using RIAppDemo.Utils;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Principal;
 using System.Web;
 using System.Web.Mvc;
@@ -25,7 +26,7 @@ namespace RIAppDemo
 
             Func<IServiceProvider, IPrincipal> getCurrentUser = (sp) =>
             {
-                return HttpContext.Current?.User;
+                return HttpContext.Current?.User?? new ClaimsPrincipal(new ClaimsIdentity(null, Enumerable.Empty<Claim>()));
             };
 
             services.AddSingleton<ICodeGenConfig, CodeGenConfig>();

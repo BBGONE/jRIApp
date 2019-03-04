@@ -1,5 +1,4 @@
 ﻿using Net451.Microsoft.Extensions.DependencyInjection;
-using RIAPP.DataService.Utils;
 using System;
 using System.Collections.Generic;
 using System.Security.Principal;
@@ -14,8 +13,6 @@ namespace RIAPP.DataService.DomainService.Config
             this.DataManagerRegister = new DataManagerRegister();
             this.ValidatorRegister = new ValidatorRegister();
         }
-
-        public Func<IServiceProvider, ISerializer> SerializerFactory { get; set; }
 
         public Func<IServiceProvider, IPrincipal> UserFactory { get; set; }
 
