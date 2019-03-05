@@ -1,5 +1,5 @@
-﻿using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Types;
+﻿using RIAPP.DataService.Core;
+using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Utils;
 using System;
 

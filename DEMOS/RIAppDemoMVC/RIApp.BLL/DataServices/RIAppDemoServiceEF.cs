@@ -1,10 +1,10 @@
-﻿using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Attributes;
-using RIAPP.DataService.DomainService.Exceptions;
-using RIAPP.DataService.DomainService.Metadata;
-using RIAPP.DataService.DomainService.Query;
-using RIAPP.DataService.DomainService.Security;
-using RIAPP.DataService.DomainService.Types;
+﻿using RIAPP.DataService.Core;
+using RIAPP.DataService.Annotations;
+using RIAPP.DataService.Core.Exceptions;
+using RIAPP.DataService.Core.Metadata;
+using RIAPP.DataService.Core.Query;
+using RIAPP.DataService.Core.Security;
+using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.EF2;
 using RIAppDemo.BLL.Models;
 using RIAppDemo.BLL.Utils;
@@ -16,7 +16,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ResourceHelper = RIAppDemo.BLL.Utils.ResourceHelper;
-using SortOrder = RIAPP.DataService.DomainService.Types.SortOrder;
+using SortOrder = RIAPP.DataService.Core.Types.SortOrder;
 
 namespace RIAppDemo.BLL.DataServices
 {

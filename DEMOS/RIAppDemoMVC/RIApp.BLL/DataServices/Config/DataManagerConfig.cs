@@ -1,4 +1,4 @@
-﻿using RIAPP.DataService.DomainService.Config;
+﻿using RIAPP.DataService.Core.Config;
 using RIAppDemo.BLL.DataServices.DataManagers;
 using RIAppDemo.BLL.Models;
 using RIAppDemo.DAL.EF;

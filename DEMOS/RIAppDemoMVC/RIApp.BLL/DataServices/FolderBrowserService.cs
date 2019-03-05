@@ -1,8 +1,8 @@
-﻿using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Attributes;
-using RIAPP.DataService.DomainService.Metadata;
-using RIAPP.DataService.DomainService.Security;
-using RIAPP.DataService.DomainService.Types;
+﻿using RIAPP.DataService.Core;
+using RIAPP.DataService.Annotations;
+using RIAPP.DataService.Core.Metadata;
+using RIAPP.DataService.Core.Security;
+using RIAPP.DataService.Core.Types;
 using RIAppDemo.BLL.Models;
 using RIAppDemo.BLL.Utils;
 using System;

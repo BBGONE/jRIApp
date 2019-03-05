@@ -1,4 +1,4 @@
-﻿namespace RIAPP.DataService.DomainService.CodeGen
+﻿namespace RIAPP.DataService.Core.CodeGen
 {
     public interface ICodeGenConfig
     {

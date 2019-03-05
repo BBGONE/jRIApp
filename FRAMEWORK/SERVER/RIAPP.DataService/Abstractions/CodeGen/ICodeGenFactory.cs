@@ -1,6 +1,6 @@
-﻿using RIAPP.DataService.DomainService;
+﻿using RIAPP.DataService.Core;
 
-namespace RIAPP.DataService.DomainService.CodeGen
+namespace RIAPP.DataService.Core.CodeGen
 {
     public interface ICodeGenFactory
     {

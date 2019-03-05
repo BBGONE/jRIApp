@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Text;
 using System.Data.Entity;
-using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.DomainService.Metadata;
+using RIAPP.DataService.Core.Types;
+using RIAPP.DataService.Core.Metadata;
 
 namespace RIAPP.DataService.EF2.Utils
 {

@@ -1,5 +1,5 @@
 ﻿<data:Metadata x:Key="MainDemo" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-               xmlns:data="clr-namespace:RIAPP.DataService.Types;assembly=RIAPP.DataService"
+               xmlns:data="clr-namespace:RIAPP.DataService.Core.Types;assembly=RIAPP.DataService"
                xmlns:dal="clr-namespace:RIAppDemo.DAL.EF;assembly=RIAppDemo.DAL"
                xmlns:models="clr-namespace:RIAppDemo.BLL.Models;assembly=RIAppDemo.BLL">
   <data:Metadata.DbSets>

@@ -1,5 +1,5 @@
-﻿using RIAPP.DataService.DomainService.Metadata;
-using RIAPP.DataService.DomainService.Types;
+﻿using RIAPP.DataService.Core.Metadata;
+using RIAPP.DataService.Core.Types;
 using System;
 using System.Linq;
 using System.Text;

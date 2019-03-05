@@ -1,4 +1,4 @@
-﻿using RIAPP.DataService.DomainService.Types;
+﻿using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Resources;
 using System;
 using System.Collections.Generic;

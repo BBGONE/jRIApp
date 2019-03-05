@@ -86,8 +86,8 @@ namespace RIAppDemo
         {
             private const string PROVIDER_KEY = "SVC_PROVIDER_KEY";
             private const string PROVIDER_SCOPE_KEY = "SVC_PROVIDER_SCOPE_KEY";
-            private IServiceProvider _rootProvider;
-            private AppEvents _appEvents;
+            private readonly IServiceProvider _rootProvider;
+            private readonly AppEvents _appEvents;
 
             public DefaultDependencyResolver(IServiceProvider serviceProvider, AppEvents appEvents)
             {
@@ -109,9 +109,16 @@ namespace RIAppDemo
 
             private void _appEvents_OnEndRequest(object sender, EventArgs e)
             {
-                HttpContext ctx = HttpContext.Current;
-                var scope = (IServiceScope)ctx.Items[PROVIDER_SCOPE_KEY];
-                scope.Dispose();
+                try
+                {
+                    HttpContext ctx = HttpContext.Current;
+                    var scope = (IServiceScope)ctx.Items[PROVIDER_SCOPE_KEY];
+                    scope.Dispose();
+                }
+                catch
+                {
+                    // TO DO: Log any Error
+                }
             }
 
 

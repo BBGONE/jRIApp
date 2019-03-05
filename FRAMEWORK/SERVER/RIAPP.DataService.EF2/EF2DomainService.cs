@@ -1,6 +1,6 @@
-﻿using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Metadata;
-using RIAPP.DataService.DomainService.Types;
+﻿using RIAPP.DataService.Core;
+using RIAPP.DataService.Core.Metadata;
+using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.EF2.Utils;
 using System;
 using System.Data.Entity;

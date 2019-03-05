@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace RIAPP.DataService.DomainService.Types
+namespace RIAPP.DataService.Core.Types
 {
     public static class FieldEx
     {

@@ -1,6 +1,6 @@
-﻿using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.CodeGen;
-using RIAPP.DataService.DomainService.Types;
+﻿using RIAPP.DataService.Core;
+using RIAPP.DataService.Core.CodeGen;
+using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Mvc.Utils;
 using RIAPP.DataService.Utils;
 using System;

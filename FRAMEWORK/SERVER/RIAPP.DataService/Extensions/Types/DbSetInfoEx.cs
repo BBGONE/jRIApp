@@ -1,9 +1,9 @@
-﻿using RIAPP.DataService.DomainService.Exceptions;
+﻿using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Resources;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RIAPP.DataService.DomainService.Types
+namespace RIAPP.DataService.Core.Types
 {
     public static class DbSetInfoEx
     {

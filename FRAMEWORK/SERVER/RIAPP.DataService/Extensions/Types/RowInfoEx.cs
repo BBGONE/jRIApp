@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 
-namespace RIAPP.DataService.DomainService.Types
+namespace RIAPP.DataService.Core.Types
 {
     public static class RowInfoEx
     {

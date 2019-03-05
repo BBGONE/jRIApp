@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RIAPP.DataService.DomainService.Exceptions
+namespace RIAPP.DataService.Core.Exceptions
 {
     public static class ExceptionEx
     {

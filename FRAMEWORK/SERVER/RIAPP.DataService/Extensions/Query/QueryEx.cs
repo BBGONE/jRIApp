@@ -1,5 +1,5 @@
-﻿using RIAPP.DataService.DomainService.Exceptions;
-using RIAPP.DataService.DomainService.Types;
+﻿using RIAPP.DataService.Core.Exceptions;
+using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Resources;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Linq.Dynamic.Core;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RIAPP.DataService.DomainService.Query
+namespace RIAPP.DataService.Core.Query
 {
     public static class QueryEx
     {

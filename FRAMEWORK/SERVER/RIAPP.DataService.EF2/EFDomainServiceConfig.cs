@@ -1,6 +1,6 @@
 ﻿using Net451.Microsoft.Extensions.DependencyInjection;
-using RIAPP.DataService.DomainService.CodeGen;
-using RIAPP.DataService.DomainService.Config;
+using RIAPP.DataService.Core.CodeGen;
+using RIAPP.DataService.Core.Config;
 using RIAPP.DataService.EF2.Utils;
 using System;
 using System.Data.Entity;

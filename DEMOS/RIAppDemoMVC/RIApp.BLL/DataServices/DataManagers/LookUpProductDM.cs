@@ -1,5 +1,5 @@
-﻿using RIAPP.DataService.DomainService.Attributes;
-using RIAPP.DataService.DomainService.Types;
+﻿using RIAPP.DataService.Annotations;
+using RIAPP.DataService.Core.Types;
 using RIAppDemo.BLL.Models;
 using RIAppDemo.DAL.EF;
 using System.Data.Entity;

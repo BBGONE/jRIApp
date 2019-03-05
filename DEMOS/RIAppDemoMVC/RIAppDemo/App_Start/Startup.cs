@@ -1,5 +1,5 @@
 ﻿using Net451.Microsoft.Extensions.DependencyInjection;
-using RIAPP.DataService.DomainService.CodeGen;
+using RIAPP.DataService.Core.CodeGen;
 using RIAPP.DataService.Utils;
 using RIAppDemo.BLL;
 using RIAppDemo.BLL.DataServices.Config;

@@ -1,5 +1,5 @@
 ﻿using Net451.Microsoft.Extensions.DependencyInjection;
-using RIAPP.DataService.DomainService.Config;
+using RIAPP.DataService.Core.Config;
 using System;
 
 namespace RIAppDemo.BLL.DataServices.Config

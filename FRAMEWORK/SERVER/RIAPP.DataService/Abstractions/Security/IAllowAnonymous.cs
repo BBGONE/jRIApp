@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RIAPP.DataService.DomainService.Security
+namespace RIAPP.DataService.Core.Security
 {
     public interface IAllowAnonymous
     {

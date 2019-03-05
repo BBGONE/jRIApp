@@ -1,10 +1,10 @@
-﻿using RIAPP.DataService.DomainService.Metadata;
+﻿using RIAPP.DataService.Core.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Security.Principal;
 using System.Threading.Tasks;
 
-namespace RIAPP.DataService.DomainService.Security
+namespace RIAPP.DataService.Core.Security
 {
     public interface IAuthorizer
     {

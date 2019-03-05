@@ -2,7 +2,7 @@
 using RIAPP.DataService.Utils.Extensions;
 using System;
 
-namespace RIAPP.DataService.DomainService.Config
+namespace RIAPP.DataService.Core.Config
 {
     public static class ServiceOptionsEx
     {

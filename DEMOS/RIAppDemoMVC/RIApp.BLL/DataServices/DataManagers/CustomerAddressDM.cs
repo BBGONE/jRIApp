@@ -1,6 +1,6 @@
-﻿using RIAPP.DataService.DomainService.Attributes;
-using RIAPP.DataService.DomainService.Security;
-using RIAPP.DataService.DomainService.Types;
+﻿using RIAPP.DataService.Annotations;
+using RIAPP.DataService.Core.Security;
+using RIAPP.DataService.Core.Types;
 using RIAppDemo.DAL.EF;
 using System;
 using System.Data.Entity;

@@ -1,6 +1,6 @@
 ﻿using System.Security.Principal;
 
-namespace RIAPP.DataService.DomainService.Security
+namespace RIAPP.DataService.Core.Security
 {
     public interface IUserProvider
     {

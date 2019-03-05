@@ -1,6 +1,6 @@
-﻿using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Exceptions;
-using RIAPP.DataService.DomainService.Types;
+﻿using RIAPP.DataService.Core;
+using RIAPP.DataService.Core.Exceptions;
+using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Resources;
 using System;
 using System.Globalization;

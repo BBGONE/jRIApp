@@ -1,4 +1,4 @@
-﻿using RIAPP.DataService.DomainService;
+﻿using RIAPP.DataService.Core;
 
 namespace RIAPP.DataService.Utils
 {

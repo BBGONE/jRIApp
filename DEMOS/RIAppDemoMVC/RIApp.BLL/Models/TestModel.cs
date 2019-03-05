@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using RIAPP.DataService.DomainService.Attributes;
+﻿using RIAPP.DataService.Annotations.CodeGen;
+using System.Collections.Generic;
 
 namespace RIAppDemo.BLL.Models
 {

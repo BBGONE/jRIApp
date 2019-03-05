@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace RIAPP.DataService.DomainService.Config
+namespace RIAPP.DataService.Core.Config
 {
     public interface IValidatorRegister
     {

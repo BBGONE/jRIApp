@@ -1,8 +1,8 @@
-﻿using RIAPP.DataService.DomainService.Types;
+﻿using RIAPP.DataService.Core.Types;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RIAPP.DataService.DomainService.Metadata
+namespace RIAPP.DataService.Core.Metadata
 {
     public static class MethodInfoEx
     {

@@ -1,13 +1,13 @@
 ﻿using Net451.Microsoft.Extensions.DependencyInjection;
 using Net451.Microsoft.Extensions.DependencyInjection.Extensions;
-using RIAPP.DataService.DomainService.CodeGen;
-using RIAPP.DataService.DomainService.Config;
-using RIAPP.DataService.DomainService.Security;
+using RIAPP.DataService.Core.CodeGen;
+using RIAPP.DataService.Core.Config;
+using RIAPP.DataService.Core.Security;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils;
 using System;
 
-namespace RIAPP.DataService.DomainService.Config
+namespace RIAPP.DataService.Core.Config
 {
     public static class ServiceConfigureEx
     {
