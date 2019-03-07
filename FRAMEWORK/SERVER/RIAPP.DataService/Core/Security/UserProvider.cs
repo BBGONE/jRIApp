@@ -1,17 +1,17 @@
 ﻿using System;
-using System.Security.Principal;
+using System.Security.Claims;
 
 namespace RIAPP.DataService.Core.Security
 {
     public class UserProvider : IUserProvider
     {
-        private readonly IPrincipal _user;
+        private readonly Lazy<ClaimsPrincipal> _user;
 
-        public UserProvider(Func<IPrincipal> userFactory)
+        public UserProvider(Func<ClaimsPrincipal> userFactory)
         {
-            _user = userFactory();
+            _user = new Lazy<ClaimsPrincipal>(userFactory, true);
         }
 
-        public IPrincipal User => _user;
+        public ClaimsPrincipal User => _user.Value;
     }
 }

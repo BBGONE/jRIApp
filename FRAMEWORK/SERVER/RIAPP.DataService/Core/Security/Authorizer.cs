@@ -4,7 +4,7 @@ using RIAPP.DataService.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Principal;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Core.Security
@@ -24,7 +24,7 @@ namespace RIAPP.DataService.Core.Security
             this._serviceAuthorization = new Lazy<IEnumerable<IAuthorizeData>>(() => ServiceType.GetTypeAuthorization(), true);
         }
 
-        public IPrincipal User
+        public ClaimsPrincipal User
         {
             get
             {

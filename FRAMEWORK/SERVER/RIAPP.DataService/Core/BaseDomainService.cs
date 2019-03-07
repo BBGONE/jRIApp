@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Principal;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Core
@@ -17,20 +17,16 @@ namespace RIAPP.DataService.Core
     public abstract class BaseDomainService : IDomainService, IDataServiceComponent
     {
         private readonly object _lockObj = new  object();
-        private readonly IPrincipal _user;
 
         public BaseDomainService(IServiceContainer serviceContainer)
         {
             this.ServiceContainer = serviceContainer;
-            this._user = serviceContainer.UserProvider.User;
+            this.User = serviceContainer.UserProvider.User;
         }
 
-        public IPrincipal User
+        public ClaimsPrincipal User
         {
-            get
-            {
-                return _user;
-            }
+            get;
         }
 
         public ISerializer Serializer

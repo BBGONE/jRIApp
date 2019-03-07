@@ -1,5 +1,5 @@
-﻿using RIAPP.DataService.Core;
-using RIAPP.DataService.Annotations;
+﻿using RIAPP.DataService.Annotations;
+using RIAPP.DataService.Core;
 using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Core.Metadata;
 using RIAPP.DataService.Core.Query;
@@ -25,9 +25,6 @@ namespace RIAppDemo.BLL.DataServices
     {
         internal const string USERS_ROLE = "Users";
         internal const string ADMINS_ROLE = "Admins";
-
-        // store last diffgram here
-        private string _diffGramm;
 
         public RIAppDemoServiceEF(IServiceContainer serviceContainer, ADWDbContext db)
             : base(serviceContainer, db)
@@ -55,7 +52,7 @@ namespace RIAppDemo.BLL.DataServices
         protected override void OnTrackChange(string dbSetName, ChangeType changeType, string diffgram)
         {
             //you can set a breakpoint here and to examine diffgram
-            _diffGramm = diffgram;
+            var user = this.User.Identity.Name;
         }
 
         /// <summary>

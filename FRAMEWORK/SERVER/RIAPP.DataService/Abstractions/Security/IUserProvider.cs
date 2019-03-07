@@ -1,9 +1,9 @@
-﻿using System.Security.Principal;
+﻿using System.Security.Claims;
 
 namespace RIAPP.DataService.Core.Security
 {
     public interface IUserProvider
     {
-        IPrincipal User { get; }
+        ClaimsPrincipal User { get; }
     }
 }

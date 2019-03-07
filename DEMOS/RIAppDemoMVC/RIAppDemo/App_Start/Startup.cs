@@ -8,7 +8,6 @@ using RIAppDemo.Utils;
 using System;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Principal;
 using System.Web;
 using System.Web.Mvc;
 
@@ -24,9 +23,9 @@ namespace RIAppDemo
             || t.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase)));
 
 
-            Func<IServiceProvider, IPrincipal> getCurrentUser = (sp) =>
+            Func<IServiceProvider, ClaimsPrincipal> getCurrentUser = (sp) =>
             {
-                return HttpContext.Current?.User?? new ClaimsPrincipal(new ClaimsIdentity(null, Enumerable.Empty<Claim>()));
+                return (HttpContext.Current?.User as ClaimsPrincipal)?? new ClaimsPrincipal(new ClaimsIdentity(null, Enumerable.Empty<Claim>()));
             };
 
             services.AddSingleton<ICodeGenConfig, CodeGenConfig>();

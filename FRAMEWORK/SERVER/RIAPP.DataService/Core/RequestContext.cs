@@ -2,7 +2,7 @@
 using RIAPP.DataService.Utils;
 using System;
 using System.Dynamic;
-using System.Security.Principal;
+using System.Security.Claims;
 
 namespace RIAPP.DataService.Core
 {
@@ -35,7 +35,7 @@ namespace RIAPP.DataService.Core
             }
         }
 
-        public IPrincipal User
+        public ClaimsPrincipal User
         {
             get { return DataService.User; }
         }

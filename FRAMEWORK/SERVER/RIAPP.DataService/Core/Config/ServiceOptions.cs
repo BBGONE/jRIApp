@@ -1,7 +1,7 @@
 ﻿using Net451.Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Security.Principal;
+using System.Security.Claims;
 
 namespace RIAPP.DataService.Core.Config
 {
@@ -14,7 +14,7 @@ namespace RIAPP.DataService.Core.Config
             this.ValidatorRegister = new ValidatorRegister();
         }
 
-        public Func<IServiceProvider, IPrincipal> UserFactory { get; set; }
+        public Func<IServiceProvider, ClaimsPrincipal> UserFactory { get; set; }
 
         public Func<IEnumerable<Type>> ClientTypes { get; set; }
 

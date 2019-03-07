@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Security.Principal;
+using System.Security.Claims;
 
 namespace RIAppDemo.BLL.DataServices.Config
 {
     public class SvcOptions
     {
-        public Func<IServiceProvider, IPrincipal> GetUser { get; set; }
+        public Func<IServiceProvider, ClaimsPrincipal> GetUser { get; set; }
     }
 }
