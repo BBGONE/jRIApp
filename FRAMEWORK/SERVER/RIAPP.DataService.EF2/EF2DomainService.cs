@@ -36,7 +36,7 @@ namespace RIAPP.DataService.EF2
             using (TransactionScope transScope = new TransactionScope(TransactionScopeOption.RequiresNew, 
                 new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted, Timeout = TimeSpan.FromMinutes(1.0) }, TransactionScopeAsyncFlowOption.Enabled))
             {
-                await this.DB.SaveChangesAsync().ConfigureAwait(false);
+                await this.DB.SaveChangesAsync();
                 
                 transScope.Complete();
             }

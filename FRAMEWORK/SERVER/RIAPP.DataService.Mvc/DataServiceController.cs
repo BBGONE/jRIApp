@@ -116,7 +116,7 @@ namespace RIAPP.DataService.Mvc
         [HttpPost]
         public async Task<ActionResult> PerformQuery([SericeParamsBinder] QueryRequest request)
         {
-            var res = await DomainService.ServiceGetData(request).ConfigureAwait(false);
+            var res = await DomainService.ServiceGetData(request);
             return new ChunkedResult<QueryResponse>(res, Serializer);
         }
 
@@ -124,7 +124,7 @@ namespace RIAPP.DataService.Mvc
         [HttpPost]
         public async Task<ActionResult> Save([SericeParamsBinder] ChangeSet changeSet)
         {
-            var res = await DomainService.ServiceApplyChangeSet(changeSet).ConfigureAwait(false);
+            var res = await DomainService.ServiceApplyChangeSet(changeSet);
             return new ChunkedResult<ChangeSet>(res, Serializer);
         }
 
@@ -132,7 +132,7 @@ namespace RIAPP.DataService.Mvc
         [HttpPost]
         public async Task<ActionResult> Refresh([SericeParamsBinder] RefreshInfo refreshInfo)
         {
-            var res = await DomainService.ServiceRefreshRow(refreshInfo).ConfigureAwait(false);
+            var res = await DomainService.ServiceRefreshRow(refreshInfo);
             return new ChunkedResult<RefreshInfo>(res, Serializer);
         }
 
@@ -140,7 +140,7 @@ namespace RIAPP.DataService.Mvc
         [HttpPost]
         public async Task<ActionResult> Invoke([SericeParamsBinder] InvokeRequest invokeInfo)
         {
-            var res = await DomainService.ServiceInvokeMethod(invokeInfo).ConfigureAwait(false);
+            var res = await DomainService.ServiceInvokeMethod(invokeInfo);
             return new ChunkedResult<InvokeResponse>(res, Serializer);
         }
 

@@ -55,7 +55,7 @@ namespace RIAPP.DataService.Core
         {
             IEnumerable<IDataManager> dataManagers = _dataManagers.Values.Select(m => (IDataManager)m);
             foreach (IDataManager dataManager in dataManagers)
-                await dataManager.AfterExecuteChangeSet().ConfigureAwait(false);
+                await dataManager.AfterExecuteChangeSet();
         }
 
         public void ApplyValues(object entity, RowInfo rowInfo, string path, ValueChange[] values, bool isOriginal)
@@ -425,7 +425,7 @@ namespace RIAPP.DataService.Core
                 var instance = GetMethodOwner(methodData);
                 var invokeRes = methodData.MethodInfo.Invoke(instance,
                     new[] { rowInfo.changeState.Entity, rowInfo.changeState.ChangedFieldNames });
-                errs1 = (IEnumerable<ValidationErrorInfo>)await GetMethodResult(invokeRes).ConfigureAwait(false);
+                errs1 = (IEnumerable<ValidationErrorInfo>)await GetMethodResult(invokeRes);
             }
 
             if (errs1 == null)
@@ -457,7 +457,7 @@ namespace RIAPP.DataService.Core
             System.Type typeInfo = invokeRes != null ? invokeRes.GetType() : null;
             if (typeInfo != null && invokeRes is Task)
             {
-                await ((Task)invokeRes).ConfigureAwait(false);
+                await ((Task)invokeRes);
                 if (typeInfo.IsGenericType)
                 {
                     return typeInfo.GetProperty("Result").GetValue(invokeRes, null);

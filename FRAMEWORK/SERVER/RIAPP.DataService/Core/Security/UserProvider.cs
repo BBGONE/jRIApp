@@ -5,13 +5,13 @@ namespace RIAPP.DataService.Core.Security
 {
     public class UserProvider : IUserProvider
     {
-        private readonly Func<IPrincipal> _userFactory;
+        private readonly IPrincipal _user;
 
         public UserProvider(Func<IPrincipal> userFactory)
         {
-            _userFactory = userFactory;
+            _user = userFactory();
         }
 
-        public IPrincipal User => _userFactory();
+        public IPrincipal User => _user;
     }
 }
