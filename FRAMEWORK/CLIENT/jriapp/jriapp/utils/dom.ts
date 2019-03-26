@@ -7,15 +7,18 @@ const { fromList } = Utils.arr, { fastTrim } = Utils.str, win = window, doc = wi
 
 export type TCheckDOMReady  = (closure: TFunc) => void;
 
+let _isTemplateTagAvailable = false;
 
 const _checkDOMReady: TCheckDOMReady = (function () {
-    const funcs: TFunc[] = [], hack = (<any>doc.documentElement).doScroll, domContentLoaded = "DOMContentLoaded";
+    const funcs: TFunc[] = [], hack = (<any>doc.documentElement).doScroll,
+        domContentLoaded = "DOMContentLoaded";
     let isDOMloaded = (hack ? /^loaded|^c/ : /^loaded|^i|^c/).test(doc.readyState);
 
     if (!isDOMloaded) {
         const callback = () => {
             doc.removeEventListener(domContentLoaded, <any>callback);
             isDOMloaded = true;
+
             let fnOnloaded: TFunc = null;
             while (fnOnloaded = funcs.shift()) {
                 queue.enque(fnOnloaded);
@@ -30,6 +33,18 @@ const _checkDOMReady: TCheckDOMReady = (function () {
     };
 })();
 
+_checkDOMReady(() => { _isTemplateTagAvailable = ('content' in doc.createElement('template')); });
+
+function GetElementContent(root: Element): DocumentFragment {
+    const frag = doc.createDocumentFragment();
+    let child: Node = null;
+
+    while (!!(child = root.firstChild)) {
+        // root.removeChild(child);
+        frag.appendChild(child);
+    }
+    return frag;
+}
 
 /**
  * pure javascript methods for the DOM manipulation
@@ -40,6 +55,9 @@ export class DomUtils {
     static readonly ready = _checkDOMReady;
     static readonly events = DomEvents;
 
+    static isTemplateTagAvailable(): boolean {
+        return _isTemplateTagAvailable;
+    }
     static getData(el: Node, key: string): any {
         const map: any = weakmap.get(el);
         if (!map) {
@@ -77,6 +95,17 @@ export class DomUtils {
         }
 
         return false;
+    }
+    static getDocFragment(html: string): DocumentFragment {
+        if (_isTemplateTagAvailable) {
+            const t = doc.createElement('template'); 
+            t.innerHTML = html;
+            return t.content;
+        } else {
+            const t = doc.createElement('div');
+            t.innerHTML = html;
+            return GetElementContent(t);
+        }
     }
     static fromHTML(html: string): HTMLElement[] {
         const div = doc.createElement("div");

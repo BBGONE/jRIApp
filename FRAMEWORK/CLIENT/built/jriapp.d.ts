@@ -120,15 +120,17 @@ declare module "jriapp/int" {
         getSvc<T>(name: string): T;
         getSvc(name: string): any;
     }
+    export type THTMLLoaderFunc = () => IPromise<string>;
+    export type TLoaderFunc = () => IPromise<DocumentFragment>;
     export interface ITemplateLoaderInfo {
-        loader: () => IPromise<string>;
+        loader: TLoaderFunc;
         owner: IDataProvider;
     }
     export interface ITemplateGroupInfo {
         name: string;
         url: string;
-        loader: () => IPromise<string>;
-        promise: IPromise<string>;
+        loader: THTMLLoaderFunc;
+        promise: IPromise<void>;
         owner: IDataProvider;
     }
     export interface IUnResolvedBindingArgs {
@@ -328,9 +330,9 @@ declare module "jriapp/int" {
         registerObject(name: string, obj: any): void;
         getObject<T>(name: string): T;
         getObject(name: string): any;
-        loadTemplates(url: string): IPromise<any>;
-        registerTemplateLoader(name: string, loader: () => IPromise<string>): void;
-        getTemplateLoader(name: string): () => IPromise<string>;
+        loadTemplates(url: string): IPromise<void>;
+        registerTemplateLoader(name: string, loader: THTMLLoaderFunc): void;
+        getTemplateLoader(name: string): TLoaderFunc;
         registerTemplateGroup(name: string, url: string): void;
         getOptions(name: string): string;
         bind(opts: TBindingOptions): IBinding;
@@ -388,9 +390,9 @@ declare module "jriapp/defaults" {
 }
 declare module "jriapp/utils/tloader" {
     import { IPromise, BaseObject } from "jriapp_shared";
-    import { ITemplateGroupInfo, ITemplateLoaderInfo, IDataProvider } from "jriapp/int";
+    import { ITemplateGroupInfo, ITemplateLoaderInfo, IDataProvider, THTMLLoaderFunc, TLoaderFunc } from "jriapp/int";
     export function getLoader(root: IDataProvider, name: string): ITemplateLoaderInfo;
-    export function registerLoader(root: IDataProvider, name: string, loader: () => IPromise<string>): void;
+    export function registerLoader(root: IDataProvider, name: string, loader: TLoaderFunc): void;
     export function registerTemplateGroup(root: IDataProvider, name: string, obj: ITemplateGroupInfo): void;
     export interface ILoaderContext extends IDataProvider {
         getTemplateLoaderInfo: (name: string) => ITemplateLoaderInfo;
@@ -407,8 +409,8 @@ declare module "jriapp/utils/tloader" {
         offOnLoaded(nmspace?: string): void;
         waitForNotLoading(callback: (...args: any[]) => any, callbackArgs: any): void;
         private _onLoaded;
-        loadTemplatesAsync(owner: IDataProvider, loader: () => IPromise<string>): IPromise<any>;
-        getTemplateLoader(context: ILoaderContext, name: string): () => IPromise<string>;
+        loadTemplatesAsync(owner: IDataProvider, loader: THTMLLoaderFunc): IPromise<void>;
+        getTemplateLoader(context: ILoaderContext, name: string): TLoaderFunc;
         readonly isLoading: boolean;
     }
 }
@@ -569,10 +571,12 @@ declare module "jriapp/utils/dom" {
         static readonly document: Document;
         static readonly ready: TCheckDOMReady;
         static readonly events: typeof DomEvents;
+        static isTemplateTagAvailable(): boolean;
         static getData(el: Node, key: string): any;
         static setData(el: Node, key: string, val: any): void;
         static removeData(el: Node, key?: string): void;
         static isContained(oNode: any, oCont: any): boolean;
+        static getDocFragment(html: string): DocumentFragment;
         static fromHTML(html: string): HTMLElement[];
         static queryAll<T>(root: Document | Element, selector: string): T[];
         static queryOne<T extends Element>(root: Document | Element, selector: string): T;
@@ -941,7 +945,7 @@ declare module "jriapp/databindsvc" {
 }
 declare module "jriapp/app" {
     import { IIndexer, TEventHandler, IPromise, TErrorHandler, IBaseObject, BaseObject } from "jriapp_shared";
-    import { IElViewFactory, IViewType, IApplication, TBindingOptions, IAppOptions, IInternalAppMethods, IConverter, IBinding } from "jriapp/int";
+    import { IElViewFactory, IViewType, IApplication, TBindingOptions, IAppOptions, IInternalAppMethods, IConverter, IBinding, TLoaderFunc, THTMLLoaderFunc } from "jriapp/int";
     export class Application extends BaseObject implements IApplication {
         private _UC;
         private _moduleInits;
@@ -978,10 +982,10 @@ declare module "jriapp/app" {
         registerObject(name: string, obj: any): void;
         getObject<T = any>(name: string): T;
         startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
-        loadTemplates(url: string): IPromise<any>;
-        registerTemplateLoader(name: string, loader: () => IPromise<string>): void;
+        loadTemplates(url: string): IPromise<void>;
+        registerTemplateLoader(name: string, loader: THTMLLoaderFunc): void;
         registerTemplateById(name: string, templateId: string): void;
-        getTemplateLoader(name: string): () => IPromise<string>;
+        getTemplateLoader(name: string): TLoaderFunc;
         registerTemplateGroup(name: string, url: string): void;
         getOptions(name: string): string;
         toString(): string;
@@ -1012,5 +1016,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.18.4";
+    export const VERSION = "2.19.1";
 }

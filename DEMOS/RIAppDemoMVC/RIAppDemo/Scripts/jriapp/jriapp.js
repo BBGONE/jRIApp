@@ -934,8 +934,7 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
             return res;
         };
         TemplateLoader.prototype.getTemplateLoader = function (context, name) {
-            var self = this;
-            var info = context.getTemplateLoaderInfo(name);
+            var self = this, info = context.getTemplateLoaderInfo(name);
             if (!!info) {
                 return info.loader;
             }
@@ -964,9 +963,9 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
                                 }
                                 throw new Error(error);
                             }
-                            var promise = info.loader();
-                            promise.then(function (html) {
-                                deferred.resolve(html);
+                            var loadPromise = info.loader();
+                            loadPromise.then(function (fragment) {
+                                deferred.resolve(fragment);
                             }, function (err) {
                                 deferred.reject(err);
                             });
@@ -1298,6 +1297,7 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var fromList = jriapp_shared_7.Utils.arr.fromList, fastTrim = jriapp_shared_7.Utils.str.fastTrim, win = window, doc = win.document, queue = jriapp_shared_7.Utils.queue, hasClassList = ("classList" in window.document.documentElement), weakmap = jriapp_shared_7.createWeakMap();
+    var _isTemplateTagAvailable = false;
     var _checkDOMReady = (function () {
         var funcs = [], hack = doc.documentElement.doScroll, domContentLoaded = "DOMContentLoaded";
         var isDOMloaded = (hack ? /^loaded|^c/ : /^loaded|^i|^c/).test(doc.readyState);
@@ -1316,9 +1316,21 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
             isDOMloaded ? queue.enque(fn) : funcs.push(fn);
         };
     })();
+    _checkDOMReady(function () { _isTemplateTagAvailable = ('content' in doc.createElement('template')); });
+    function GetElementContent(root) {
+        var frag = doc.createDocumentFragment();
+        var child = null;
+        while (!!(child = root.firstChild)) {
+            frag.appendChild(child);
+        }
+        return frag;
+    }
     var DomUtils = (function () {
         function DomUtils() {
         }
+        DomUtils.isTemplateTagAvailable = function () {
+            return _isTemplateTagAvailable;
+        };
         DomUtils.getData = function (el, key) {
             var map = weakmap.get(el);
             if (!map) {
@@ -1356,6 +1368,18 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
                 }
             }
             return false;
+        };
+        DomUtils.getDocFragment = function (html) {
+            if (_isTemplateTagAvailable) {
+                var t = doc.createElement('template');
+                t.innerHTML = html;
+                return t.content;
+            }
+            else {
+                var t = doc.createElement('div');
+                t.innerHTML = html;
+                return GetElementContent(t);
+            }
         };
         DomUtils.fromHTML = function (html) {
             var div = doc.createElement("div");
@@ -2083,7 +2107,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             });
         };
         Bootstrap.prototype._processTemplate = function (owner, name, html) {
-            var res = resolve(fastTrim(html), true), loader = function () { return res; };
+            var res = resolve(dom.getDocFragment(fastTrim(html)), true), loader = function () { return res; };
             tloader_1.registerLoader(owner, name, loader);
         };
         Bootstrap.prototype._createObjEvents = function () {
@@ -3349,8 +3373,8 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
             this._unloadTemplate();
             if (!!this._el) {
                 dom.removeNode(this._el);
-                this._el = null;
             }
+            this._el = null;
             this._dataContext = null;
             this._templEvents = null;
             _super.prototype.dispose.call(this);
@@ -3378,8 +3402,8 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
                     self._unloadTemplate();
                 }
                 if (!!id) {
-                    return self._loadAsync(id).then(function (html) {
-                        return self._dataBind(templateEl, html);
+                    return self._loadAsync(id).then(function (fragment) {
+                        return self._dataBind(templateEl, fragment);
                     }).catch(function (err) {
                         if (!!err && !!err.message) {
                             throw err;
@@ -3424,7 +3448,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
                 this._cleanUp();
             }
         };
-        Template.prototype._dataBind = function (templateEl, html) {
+        Template.prototype._dataBind = function (el, fragment) {
             var self = this;
             if (self.getIsStateDirty()) {
                 ERROR.abort();
@@ -3432,14 +3456,14 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
             if (self._isLoaded) {
                 self._unloadTemplate();
             }
-            if (!html) {
+            if (!fragment) {
                 throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
             }
-            templateEl.innerHTML = html;
+            el.appendChild(fragment.cloneNode(true));
             self._isLoaded = true;
-            dom.setClass([templateEl], "ria-template-error", true);
+            dom.removeClass([el], "ria-template-error");
             self._onLoading();
-            var promise = self.app._getInternal().bindTemplate(templateEl, this.dataContext);
+            var promise = self.app._getInternal().bindTemplate(el, this.dataContext);
             return promise.then(function (lftm) {
                 if (self.getIsStateDirty()) {
                     lftm.dispose();
@@ -3448,7 +3472,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
                 self._lfTime = lftm;
                 self._updateBindingSource();
                 self._onLoaded(null);
-                return templateEl;
+                return el;
             });
         };
         Template.prototype._onFail = function (templateEl, err) {
@@ -4414,16 +4438,20 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             return boot.templateLoader.loadTemplatesAsync(this, function () { return http.getAjax(url); });
         };
         Application.prototype.registerTemplateLoader = function (name, loader) {
-            tloader_2.registerLoader(this, name, loader);
+            var fn = memoize(function () {
+                return loader().then(function (html) { return dom.getDocFragment(html); });
+            });
+            tloader_2.registerLoader(this, name, fn);
         };
         Application.prototype.registerTemplateById = function (name, templateId) {
-            this.registerTemplateLoader(name, memoize(function () {
+            var fn = memoize(function () {
                 var el = dom.queryOne(doc, "#" + templateId);
                 if (!el) {
                     throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, templateId));
                 }
-                return resolve(el.innerHTML, true);
-            }));
+                return resolve(dom.getDocFragment(el.innerHTML), true);
+            });
+            tloader_2.registerLoader(this, name, fn);
         };
         Application.prototype.getTemplateLoader = function (name) {
             var res = boot.templateLoader.getTemplateLoader(this._getInternal(), name);
@@ -4539,6 +4567,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.18.4";
+    exports.VERSION = "2.19.1";
     bootstrap_7.Bootstrap._initFramework();
 });

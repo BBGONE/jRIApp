@@ -7,7 +7,7 @@ import { STORE_KEY } from "./const";
 import {
     IElViewFactory, IViewType, IApplication,
     TBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo, ITemplateLoaderInfo,
-    IDataBindingService, IBinding, IBindArgs
+    IDataBindingService, IBinding, IBindArgs, TLoaderFunc, THTMLLoaderFunc
 } from "./int";
 import {
     bootstrap, getOptions, registerSvc, unregisterSvc, getSvc, registerConverter, getConverter,
@@ -291,27 +291,32 @@ export class Application extends BaseObject implements IApplication {
         return promise;
     }
     // loads a group of templates from the server
-    loadTemplates(url: string): IPromise<any> {
+    loadTemplates(url: string): IPromise<void> {
         return boot.templateLoader.loadTemplatesAsync(this, () => http.getAjax(url));
     }
-    // loader must load template and return promise which resolves with the loaded HTML string
-    registerTemplateLoader(name: string, loader: () => IPromise<string>): void {
-        registerLoader(this, name, loader);
+    // loader must load template and return promise which resolves with the loaded DocumentFragment
+    registerTemplateLoader(name: string, loader: THTMLLoaderFunc): void {
+        const fn: TLoaderFunc = memoize(() => {
+            return loader().then(html => dom.getDocFragment(html));
+        });
+        registerLoader(this, name, fn);
     }
     // register loading a template from html element by its id value
     registerTemplateById(name: string, templateId: string): void {
-        this.registerTemplateLoader(name, memoize(() => {
+        const fn: TLoaderFunc = memoize(() => {
             const el = dom.queryOne<Element>(doc, "#" + templateId);
             if (!el) {
                 throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, templateId));
             }
-            return resolve<string>(el.innerHTML, true);
-        }));
+            return resolve<DocumentFragment>(dom.getDocFragment(el.innerHTML), true);
+        });
+
+        registerLoader(this, name, fn);
     }
-    getTemplateLoader(name: string): () => IPromise<string> {
+    getTemplateLoader(name: string): TLoaderFunc {
         let res = boot.templateLoader.getTemplateLoader(this._getInternal(), name);
         if (!res) {
-            res = () => { return reject<string>(new Error(format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
+            res = () => { return reject<DocumentFragment>(new Error(format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
         }
         return res;
     }

@@ -2990,7 +2990,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
 define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app", "gridDemo/resizableGrid"], function (require, exports, RIAPP, COMMON, app_1, ResizableGrid) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core;
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
     var styles = ["lsize", 'msize', 'ssize', 'nsize'];
     var SizeConverter = (function (_super) {
         __extends(SizeConverter, _super);
@@ -3045,9 +3045,7 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
         }, function (app) {
             app.registerConverter('sizeConverter', new SizeConverter());
             app.loadTemplates(options.templates_url);
-            app.registerTemplateLoader('productEditTemplate', coreUtils.memoize(function () {
-                return utils.http.getAjax(options.productEditTemplate_url);
-            }));
+            app.registerTemplateLoader('productEditTemplate', function () { return utils.http.getAjax(options.productEditTemplate_url); });
         }).then(function (app) {
             if (!!options.modelData && !!options.categoryData) {
                 app.productVM.filter.modelData = options.modelData;

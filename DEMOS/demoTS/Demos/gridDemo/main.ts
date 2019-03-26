@@ -9,7 +9,7 @@ import * as COMMON from "common";
 import { IMainOptions, DemoApplication } from "./app";
 import * as  ResizableGrid from "./resizableGrid";
 
-const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core;
+const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 const styles = ["lsize", 'msize', 'ssize', 'nsize'];
 
 /*
@@ -81,16 +81,14 @@ export function start(options: IMainOptions) {
     }, (app) => {
         app.registerConverter('sizeConverter', new SizeConverter());
 
-        // an example of how to load a file with templates from the server (for loading group of templates- see spaDEMO.ts)
+        // an example of how to load a file with multiple templates from the server (for loading group of templates- see spaDEMO.ts)
         app.loadTemplates(options.templates_url);
 
-        // this registered function will be invoked every  time when the template with that name is needed
-        // P.S. - but a better way how to load templates is to register templates' groups
-        // see the Single Page RIAPP.Application Demo (spaDEMO.ts) how it is done there
-        app.registerTemplateLoader('productEditTemplate', coreUtils.memoize(() => {
-            return utils.http.getAjax(options.productEditTemplate_url); })
-        );
-    }).then((app) => {
+        // loads a single template from the server when template is needed
+        // a better way how to load templates is to register templates' groups
+        // see the Single Page Application Demo (spademo/main.ts) how it is done there
+           app.registerTemplateLoader('productEditTemplate', () => utils.http.getAjax(options.productEditTemplate_url));
+        }).then((app) => {
         if (!!options.modelData && !!options.categoryData) {
             // the data was embedded into HTML page as json, just use it
             app.productVM.filter.modelData = options.modelData;

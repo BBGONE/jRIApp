@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IPromise, LocaleERRS, BaseObject, WaitQueue, Utils } from "jriapp_shared";
-import { ITemplateGroupInfo, ITemplateLoaderInfo, IDataProvider } from "../int";
+import { ITemplateGroupInfo, ITemplateLoaderInfo, IDataProvider, THTMLLoaderFunc, TLoaderFunc } from "../int";
 import { STORE_KEY } from "../const";
 
 
@@ -16,7 +16,8 @@ export function getLoader(root: IDataProvider, name: string): ITemplateLoaderInf
     const name2 = STORE_KEY.LOADER + name;
     return getValue(root.getData(), name2);
 }
-export function registerLoader(root: IDataProvider, name: string, loader: () => IPromise<string>): void {
+
+export function registerLoader(root: IDataProvider, name: string, loader: TLoaderFunc): void {
     if (!isFunc(loader)) {
         throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "loader must be a Function"));
     }
@@ -24,10 +25,12 @@ export function registerLoader(root: IDataProvider, name: string, loader: () => 
     const info: ITemplateLoaderInfo = { loader: loader, owner: root };
     setValue(root.getData(), name2, info, true);
 }
+
 export function registerTemplateGroup(root: IDataProvider, name: string, obj: ITemplateGroupInfo): void {
     const name2 = STORE_KEY.TGROUP + name;
     setValue(root.getData(), name2, obj, true);
 }
+
 function getTemplateGroup(root: IDataProvider, name: string): ITemplateGroupInfo {
     const name2 = STORE_KEY.TGROUP + name;
     return getValue(root.getData(), name2);
@@ -86,13 +89,13 @@ export class TemplateLoader extends BaseObject {
     private _onLoaded(html: string, owner: IDataProvider): void {
         this.objEvents.raise(LOADER_EVENTS.loaded, { html: html, owner: owner });
     }
-    public loadTemplatesAsync(owner: IDataProvider, loader: () => IPromise<string>): IPromise < any > {
+    public loadTemplatesAsync(owner: IDataProvider, loader: THTMLLoaderFunc): IPromise<void> {
         const self = this, promise = loader(), old = self.isLoading;
         self._promises.push(promise);
         if (self.isLoading !== old) {
             self.objEvents.raiseProp("isLoading");
         }
-        const res = promise.then((html: string) => {
+        const res: IPromise<void> = promise.then((html: string) => {
             self._onLoaded(html, owner);
         });
 
@@ -102,12 +105,13 @@ export class TemplateLoader extends BaseObject {
                 self.objEvents.raiseProp("isLoading");
             }
         });
+
         return res;
     }
     // returns a promise resolved with the template's html
-    public getTemplateLoader(context: ILoaderContext, name: string): () => IPromise<string> {
-        const self = this;
-        const info: ITemplateLoaderInfo = context.getTemplateLoaderInfo(name);
+    public getTemplateLoader(context: ILoaderContext, name: string): TLoaderFunc {
+        const self = this, info: ITemplateLoaderInfo = context.getTemplateLoaderInfo(name);
+
         if (!!info) {
             return info.loader;
         } else {
@@ -128,12 +132,12 @@ export class TemplateLoader extends BaseObject {
                         group.promise = self.loadTemplatesAsync(group.owner, group.loader);
                     }
 
-                    const deferred = createDeferred<string>(true);
+                    const deferred = createDeferred<DocumentFragment>(true);
 
                     group.promise.then(() => {
                         const info: ITemplateLoaderInfo = context.getTemplateLoaderInfo(name);
                         if (!info) {
-                            const error = format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name), rejected = reject<string>(error, true);
+                            const error = format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name), rejected = reject<DocumentFragment>(error, true);
                             // template failed to load, register function which rejects immediately
                             registerLoader(group.owner, name, () => rejected);
                             if (DEBUG.isDebugging()) {
@@ -142,9 +146,10 @@ export class TemplateLoader extends BaseObject {
                             throw new Error(error);
                         }
 
-                        const promise = info.loader();
-                        promise.then((html) => {
-                            deferred.resolve(html);
+                        const loadPromise = info.loader();
+
+                        loadPromise.then((fragment) => {
+                            deferred.resolve(fragment);
                         }, (err) => {
                             deferred.reject(err);
                         });

@@ -12,7 +12,7 @@ import * as PRODAUTOCOMPLETE from "./prodAutocomplete";
 
 
 //bootstrap error handler - the last resort (typically display message to the user)
-RIAPP.bootstrap.objEvents.addOnError(function (_s, args) {
+RIAPP.bootstrap.objEvents.addOnError(function (_, args) {
     debugger;
     alert(args.error.message);
 });

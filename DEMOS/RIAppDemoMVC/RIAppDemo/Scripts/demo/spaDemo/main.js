@@ -3301,7 +3301,7 @@ define("prodAutocomplete", ["require", "exports", "autocomplete"], function (req
 define("main", ["require", "exports", "jriapp", "app", "common", "autocomplete", "gridElView", "prodAutocomplete"], function (require, exports, RIAPP, app_1, COMMON, AUTOCOMPLETE, GRIDELVIEW, PRODAUTOCOMPLETE) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    RIAPP.bootstrap.objEvents.addOnError(function (_s, args) {
+    RIAPP.bootstrap.objEvents.addOnError(function (_, args) {
         debugger;
         alert(args.error.message);
     });

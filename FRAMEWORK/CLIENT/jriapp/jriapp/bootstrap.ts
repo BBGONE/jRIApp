@@ -7,7 +7,7 @@ import {
 import { STORE_KEY, SubscribeFlags } from "./const";
 import {
     IApplication, ISelectableProvider, IDataProvider, IConverter, ISvcStore,
-    IContentFactoryList, IElViewRegister, IStylesLoader, ISubscriber
+    IContentFactoryList, IElViewRegister, IStylesLoader, ISubscriber, TLoaderFunc
 } from "./int";
 import { createElViewRegister } from "./elview";
 import { createContentFactoryList } from "./content";
@@ -335,7 +335,7 @@ export class Bootstrap extends BaseObject implements IDataProvider, ISvcStore {
         });
     }
     private _processTemplate(owner: IDataProvider, name: string, html: string): void {
-        const res = resolve<string>(fastTrim(html), true), loader = () => res;
+        const res = resolve<DocumentFragment>(dom.getDocFragment(fastTrim(html)), true), loader: TLoaderFunc = () => res;
         // template already loaded, register function which returns the template immediately
         registerLoader(owner, name, loader);
     }

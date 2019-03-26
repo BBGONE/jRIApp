@@ -62,16 +62,20 @@ export interface ISvcStore {
     getSvc(name: string): any;
 }
 
+export type THTMLLoaderFunc = () => IPromise<string>;
+export type TLoaderFunc = () => IPromise<DocumentFragment>;
+
+
 export interface ITemplateLoaderInfo {
-    loader: () => IPromise<string>;
+    loader: TLoaderFunc;
     owner: IDataProvider;
 }
 
 export interface ITemplateGroupInfo {
     name: string;
     url: string;
-    loader: () => IPromise<string>;
-    promise: IPromise<string>;
+    loader: THTMLLoaderFunc;
+    promise: IPromise<void>;
     owner: IDataProvider;
 }
 
@@ -310,9 +314,9 @@ export interface IApplication extends IErrorHandler, IDataProvider, IBaseObject 
     registerObject(name: string, obj: any): void;
     getObject<T>(name: string): T;
     getObject(name: string): any;
-    loadTemplates(url: string): IPromise<any>;
-    registerTemplateLoader(name: string, loader: () => IPromise<string>): void;
-    getTemplateLoader(name: string): () => IPromise<string>;
+    loadTemplates(url: string): IPromise<void>;
+    registerTemplateLoader(name: string, loader: THTMLLoaderFunc): void;
+    getTemplateLoader(name: string): TLoaderFunc;
     registerTemplateGroup(name: string, url: string): void;
     getOptions(name: string): string;
     bind(opts: TBindingOptions): IBinding;
