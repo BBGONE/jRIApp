@@ -67,8 +67,8 @@ export class TemplateContent extends BaseObject implements IContent {
         }
         return id;
     }
-    private createTemplate(): ITemplate {
-        const template = createTemplate(this._dataContext);
+    private createTemplate(parentEl: HTMLElement): ITemplate {
+        const template = createTemplate({ parentEl: parentEl, dataContext: this._dataContext });
         template.templateID = this._templateID;
         return template;
     }
@@ -85,8 +85,7 @@ export class TemplateContent extends BaseObject implements IContent {
             if (this._templateID !== id) {
                 this.cleanUp();
                 this._templateID = id;
-                this._template = this.createTemplate();
-                this._parentEl.appendChild(this._template.el);
+                this._template = this.createTemplate(this.parentEl);
             }
         } catch (ex) {
             ERROR.reThrow(ex, this.handleError(ex, this));

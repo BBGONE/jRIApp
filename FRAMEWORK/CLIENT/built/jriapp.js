@@ -1317,7 +1317,7 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
         };
     })();
     _checkDOMReady(function () { _isTemplateTagAvailable = ('content' in doc.createElement('template')); });
-    function GetElementContent(root) {
+    function getElementContent(root) {
         var frag = doc.createDocumentFragment();
         var child = null;
         while (!!(child = root.firstChild)) {
@@ -1378,7 +1378,7 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
             else {
                 var t = doc.createElement('div');
                 t.innerHTML = html;
-                return GetElementContent(t);
+                return getElementContent(t);
             }
         };
         DomUtils.fromHTML = function (html) {
@@ -3337,17 +3337,13 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
 define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/viewchecks", "jriapp/utils/dom"], function (require, exports, jriapp_shared_13, bootstrap_5, viewchecks_1, dom_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_13.Utils, reject = utils.defer.reject, dom = dom_4.DomUtils, viewChecks = viewchecks_1.ViewChecks, doc = dom.document, _a = utils.check, isFunc = _a.isFunc, isThenable = _a.isThenable, format = utils.str.format, arrHelper = utils.arr, sys = utils.sys, boot = bootstrap_5.bootstrap, ERRS = jriapp_shared_13.LocaleERRS, ERROR = utils.err;
+    var utils = jriapp_shared_13.Utils, reject = utils.defer.reject, dom = dom_4.DomUtils, viewChecks = viewchecks_1.ViewChecks, _a = utils.check, isFunc = _a.isFunc, isThenable = _a.isThenable, format = utils.str.format, arrHelper = utils.arr, sys = utils.sys, boot = bootstrap_5.bootstrap, ERRS = jriapp_shared_13.LocaleERRS, ERROR = utils.err, doc = dom.document;
     var css;
     (function (css) {
         css["templateContainer"] = "ria-template-container";
         css["templateError"] = "ria-template-error";
     })(css = exports.css || (exports.css = {}));
-    function createTemplate(dataContext, templEvents) {
-        var options = {
-            dataContext: dataContext,
-            templEvents: templEvents
-        };
+    function createTemplate(options) {
         return new Template(options);
     }
     exports.createTemplate = createTemplate;
@@ -3355,14 +3351,22 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
         __extends(Template, _super);
         function Template(options) {
             var _this = _super.call(this) || this;
+            if (options.parentEl === null) {
+                var parentEl = doc.createElement('div');
+                dom.addClass([parentEl], "ria-template-container");
+                _this._el = parentEl;
+                _this._removeElOnDispose = true;
+            }
+            else {
+                _this._el = options.parentEl;
+                _this._removeElOnDispose = false;
+            }
             _this._dataContext = options.dataContext;
             _this._templEvents = options.templEvents;
             _this._isLoaded = false;
             _this._lfTime = null;
             _this._templateID = null;
             _this._templElView = null;
-            _this._el = doc.createElement("div");
-            _this._el.className = "ria-template-container";
             return _this;
         }
         Template.prototype.dispose = function () {
@@ -3371,7 +3375,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
             }
             this.setDisposing();
             this._unloadTemplate();
-            if (!!this._el) {
+            if (!!this._el && this._removeElOnDispose) {
                 dom.removeNode(this._el);
             }
             this._el = null;
@@ -3567,12 +3571,12 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
                 var _this = this;
                 if (this._templateID !== v) {
                     this._templateID = v;
-                    var templateEl_1 = this.el;
+                    var el_1 = this.el;
                     this._loadTemplate().catch(function (err) {
                         if (_this.getIsStateDirty()) {
                             return;
                         }
-                        _this._onFail(templateEl_1, err);
+                        _this._onFail(el_1, err);
                     });
                     this.objEvents.raiseProp("templateID");
                 }
@@ -4567,6 +4571,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.19.1";
+    exports.VERSION = "2.20.0";
     bootstrap_7.Bootstrap._initFramework();
 });

@@ -69,9 +69,8 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         }
 
         if (!!this._options.templateID) {
-            this._template = createTemplate(null, this);
+            this._template = createTemplate({ parentEl: col, templEvents: this });
             this._template.templateID = this._options.templateID;
-            dom.append(col, [this._template.el]);
         } else if (!!this._options.title) {
             col.innerHTML = this._options.title;
         }

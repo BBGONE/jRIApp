@@ -251,8 +251,8 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             dom.removeClass([obj.el], css.itemDeleted);
         }
     }
-    protected _createTemplate(item: ICollectionItem): ITemplate {
-        const template = createTemplate(item, null);
+    protected _createTemplate(item: ICollectionItem, parentEl: HTMLElement): ITemplate {
+        const template = createTemplate({ parentEl: parentEl, dataContext: item });
         template.templateID = this.templateID;
         return template;
     }
@@ -275,8 +275,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         const mappedItem: IMappedItem = { el: itemElem, template: null, item: item };
         dom.setData(itemElem, "data", mappedItem);
         self._itemMap[item._key] = mappedItem;
-        mappedItem.template = self._createTemplate(item);
-        mappedItem.el.appendChild(mappedItem.template.el);
+        mappedItem.template = self._createTemplate(item, mappedItem.el);
     }
     protected _bindDS():void {
         const self = this, ds = this.dataSource;

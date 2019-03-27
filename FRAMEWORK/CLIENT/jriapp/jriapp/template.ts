@@ -10,25 +10,22 @@ import { ViewChecks } from "./utils/viewchecks";
 import { DomUtils } from "./utils/dom";
 
 const utils = Utils, { reject } = utils.defer, dom = DomUtils, viewChecks = ViewChecks,
-    doc = dom.document, { isFunc, isThenable } = utils.check, { format } = utils.str,
+    { isFunc, isThenable } = utils.check, { format } = utils.str,
     arrHelper = utils.arr, sys = utils.sys, boot = bootstrap, ERRS = LocaleERRS,
-    ERROR = utils.err;
+    ERROR = utils.err, doc = dom.document;
 
 export const enum css {
-    templateContainer = "ria-template-container",
-    templateError = "ria-template-error"
+   templateContainer = "ria-template-container",
+   templateError = "ria-template-error"
 }
 
 export interface ITemplateOptions {
+    parentEl: HTMLElement | null;
     dataContext?: any;
     templEvents?: ITemplateEvents;
 }
 
-export function createTemplate(dataContext ?: any, templEvents?: ITemplateEvents): ITemplate {
-    const options: ITemplateOptions = {
-        dataContext: dataContext,
-        templEvents: templEvents
-    };
+export function createTemplate(options: ITemplateOptions): ITemplate {
     return new Template(options);
 }
 
@@ -40,17 +37,25 @@ class Template extends BaseObject implements ITemplate {
     private _dataContext: any;
     private _templEvents?: ITemplateEvents;
     private _templateID: string;
+    private readonly _removeElOnDispose: boolean;
 
     constructor(options: ITemplateOptions) {
         super();
+        if (options.parentEl === null) {
+            const parentEl = doc.createElement('div');
+            dom.addClass([parentEl], css.templateContainer);
+            this._el = parentEl;
+            this._removeElOnDispose = true;
+        } else {
+            this._el = options.parentEl;
+            this._removeElOnDispose = false;
+        }
         this._dataContext = options.dataContext;
         this._templEvents = options.templEvents;
         this._isLoaded = false;
         this._lfTime = null;
         this._templateID = null;
         this._templElView = null;
-        this._el = doc.createElement("div");
-        this._el.className = css.templateContainer;
     }
     dispose(): void {
         if (this.getIsDisposed()) {
@@ -58,7 +63,7 @@ class Template extends BaseObject implements ITemplate {
         }
         this.setDisposing();
         this._unloadTemplate();
-        if (!!this._el) {
+        if (!!this._el && this._removeElOnDispose) {
             dom.removeNode(this._el);
         }
         this._el = null;
@@ -249,12 +254,12 @@ class Template extends BaseObject implements ITemplate {
     set templateID(v: string) {
         if (this._templateID !== v) {
             this._templateID = v;
-            const templateEl = this.el;
+            const el = this.el;
             this._loadTemplate().catch((err) => {
                 if (this.getIsStateDirty()) {
                     return;
                 }
-                this._onFail(templateEl, err);
+                this._onFail(el, err);
             });
 
             this.objEvents.raiseProp("templateID");

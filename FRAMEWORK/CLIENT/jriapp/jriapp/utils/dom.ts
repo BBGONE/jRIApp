@@ -35,7 +35,7 @@ const _checkDOMReady: TCheckDOMReady = (function () {
 
 _checkDOMReady(() => { _isTemplateTagAvailable = ('content' in doc.createElement('template')); });
 
-function GetElementContent(root: Element): DocumentFragment {
+function getElementContent(root: Element): DocumentFragment {
     const frag = doc.createDocumentFragment();
     let child: Node = null;
 
@@ -104,7 +104,7 @@ export class DomUtils {
         } else {
             const t = doc.createElement('div');
             t.innerHTML = html;
-            return GetElementContent(t);
+            return getElementContent(t);
         }
     }
     static fromHTML(html: string): HTMLElement[] {

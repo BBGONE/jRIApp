@@ -10,7 +10,7 @@ import { bootstrap } from "jriapp/bootstrap";
 import { ViewModel } from "jriapp/mvvm";
 
 const utils = Utils, { _undefined, isFunc } = utils.check, { format } = utils.str,
-    { extend, getNewID } = utils.core, sys = utils.sys, _async = utils.defer, doc = DomUtils.document,
+    { extend, getNewID } = utils.core, sys = utils.sys, _async = utils.defer, dom = DomUtils, doc = dom.document,
     ERROR = utils.err, boot = bootstrap;
 
 export const enum DIALOG_ACTION { Default = 0, StayOpen = 1 };
@@ -226,7 +226,10 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }
     }
     protected _createTemplate(): ITemplate {
-        const template = createTemplate(null, this);
+        const template = createTemplate({
+            parentEl: null,
+            templEvents: this
+        });
         template.templateID = this._templateID;
         return template;
     }

@@ -27,7 +27,7 @@ export class DetailsCell extends BaseObject {
             return;
         }
         this._row.tr.appendChild(this._td);
-        this._template = createTemplate(null, null);
+        this._template = createTemplate({ parentEl: null });
         this._template.templateID = options.details_id;
         this._td.appendChild(this._template.el);
     }
