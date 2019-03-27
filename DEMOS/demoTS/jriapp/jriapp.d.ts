@@ -847,10 +847,11 @@ declare module "jriapp/template" {
         templateError = "ria-template-error"
     }
     export interface ITemplateOptions {
+        parentEl: HTMLElement | null;
         dataContext?: any;
         templEvents?: ITemplateEvents;
     }
-    export function createTemplate(dataContext?: any, templEvents?: ITemplateEvents): ITemplate;
+    export function createTemplate(options: ITemplateOptions): ITemplate;
 }
 declare module "jriapp/utils/lifetime" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
@@ -1016,5 +1017,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.19.1";
+    export const VERSION = "2.20.0";
 }

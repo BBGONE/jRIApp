@@ -1416,7 +1416,7 @@ declare module "jriapp_ui/stackpanel" {
         protected _onDSCurrentChanged(): void;
         protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
         protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS): void;
-        protected _createTemplate(item: ICollectionItem): ITemplate;
+        protected _createTemplate(item: ICollectionItem, parentEl: HTMLElement): ITemplate;
         protected _appendItems(newItems: ICollectionItem[]): void;
         protected _appendItem(parent: Node, item: ICollectionItem): void;
         protected _bindDS(): void;

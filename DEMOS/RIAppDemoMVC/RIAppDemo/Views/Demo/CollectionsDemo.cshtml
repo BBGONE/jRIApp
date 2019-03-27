@@ -6,7 +6,9 @@
 }
 
 <style type="text/css">
-    #demoHeader label { color: Blue; }
+    #demoHeader label {
+        color: Blue;
+    }
 
     #demoContent {
         height: 600px;
@@ -15,17 +17,24 @@
         vertical-align: top;
     }
 
-    #demoContent > fieldset { border-radius: 5px; }
+        #demoContent > fieldset {
+            border-radius: 5px;
+        }
 
-    #demoContent fieldset > legend {
-        color: Blue;
-        font-weight: bold;
-    }
+        #demoContent fieldset > legend {
+            color: Blue;
+            font-weight: bold;
+        }
 
-    #demoContent .radioItem {
-        display: inline-block;
-        margin: 4px;
-        padding: 4px;
+        #demoContent .radioItem {
+            display: inline-block;
+            margin: 4px;
+            padding: 4px;
+        }
+
+    div.ria-stackpanel .ria-current-item {
+        outline: 1px dashed black;
+        box-sizing: border-box;
     }
 
     .stackPanelItemV {
@@ -66,11 +75,27 @@
         overflow: auto;
     }
 
-    .ria-stack-panel-item fieldset { border-radius: 5px; }
+    .ria-stack-panel-item fieldset {
+        border-radius: 5px;
+    }
 
-    .ria-stack-panel-item fieldset legend {
-        color: blue;
-        font-weight: bold;
+        .ria-stack-panel-item fieldset legend {
+            color: blue;
+            font-weight: bold;
+        }
+
+    ul.ria-stackpanel, ol.ria-stackpanel {
+        padding-left: 20px;
+        margin: 0;
+    }
+
+    li.ria-stackpanel-item > div.list-item {
+        padding: 3px 8px;
+        margin-left: 5px;
+    }
+
+    li.ria-current-item > div.list-item {
+        outline: 1px dashed black;
     }
 </style>
 
@@ -84,9 +109,9 @@
 
             //create and start application here
             let promise = RIAPP.bootstrap.startApp(function () {
-                    return new DEMO.DemoApplication(DEMO.appOptions);
-                },
-                function(app) {
+                return new DEMO.DemoApplication(DEMO.appOptions);
+            },
+                function (app) {
                     console.log('application starting');
                 });
 
@@ -100,33 +125,32 @@
 </script>
 
 <h2 class="ex8">@ViewBag.Title</h2>
-
 <!--using dataform is convenient because it sets a datacontext scope for all its content-->
 <div id="demoContent" style="opacity:0;" data-bind="this.dataContext,source=demoVM" data-view="dataform">
     <fieldset>
         <legend>Radios elements (click on them to fill the stackpanels)</legend>
         <label class="radioItem">
             <input type="radio" class="ria-radio" name="radioItem"
-                   data-bind="this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,param=radioValue1"/>
-            <span data-bind1="this.value,to=radioValues[radioValue1].value" 
+                   data-bind="this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,param=radioValue1" />
+            <span data-bind1="this.value,to=radioValues[radioValue1].value"
                   data-bind2="this.toolTip,to=radioValues[radioValue1].comment"></span>
         </label>
         <label class="radioItem">
             <input type="radio" class="ria-radio" name="radioItem"
-                   data-bind="this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,param=radioValue2"/>
-            <span data-bind1="this.value,to=radioValues[radioValue2].value" 
+                   data-bind="this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,param=radioValue2" />
+            <span data-bind1="this.value,to=radioValues[radioValue2].value"
                   data-bind2="this.toolTip,to=radioValues[radioValue2].comment"></span>
         </label>
         <label class="radioItem">
             <input type="radio" class="ria-radio" name="radioItem"
-                   data-bind="this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,param=radioValue3"/>
-            <span data-bind1="this.value,to=radioValues[radioValue3].value" 
+                   data-bind="this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,param=radioValue3" />
+            <span data-bind1="this.value,to=radioValues[radioValue3].value"
                   data-bind2="this.toolTip,to=radioValues[radioValue3].comment"></span>
         </label>
         <label class="radioItem">
             <input type="radio" class="ria-radio" name="radioItem"
-                   data-bind="this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,param=radioValue4"/>
-            <span data-bind1="this.value,to=radioValues[radioValue4].value" 
+                   data-bind="this.checked,to=radioValue,mode=TwoWay,converter=radioValueConverter,param=radioValue4" />
+            <span data-bind1="this.value,to=radioValues[radioValue4].value"
                   data-bind2="this.toolTip,to=radioValues[radioValue4].comment"></span>
         </label>
     </fieldset>
@@ -134,24 +158,25 @@
         Demo of using Vertical and Horizontal StackPanels &nbsp;(count:&nbsp;<span data-bind="this.value,to=historyList.count"></span>)
     </h3>
     <!--example of using stackpanel for vertical and horizontal list view-->
-    <div class="stackPanelV" 
-         data-bind="this.dataSource,to=historyList" 
+    <div class="stackPanelV"
+         data-bind="this.dataSource,to=historyList"
          data-view="stackpanel"
          data-view-options="templateID:stackPanelItemTemplateV,orientation:vertical"></div>
-    <div class="stackPanelH" 
-         data-bind="this.dataSource,to=historyList" 
+    <div class="stackPanelH"
+         data-bind="this.dataSource,to=historyList"
          data-view="stackpanel"
          data-view-options="templateID:stackPanelItemTemplateH,orientation:horizontal"></div>
-    <br style="clear: both"/>
-    <button class="btn btn-info btn-small" 
-            style="margin: 5px 5px 5px 0px;" 
-            data-bind="this.command,to=clearListCommand">Clear list</button>
-
-    <br/>
+    <br style="clear: both" />
+    <button class="btn btn-info btn-small"
+            style="margin: 5px 5px 5px 0px;"
+            data-bind="this.command,to=clearListCommand">
+        Clear list
+    </button>
+    <br />
     <fieldset>
         <legend>Summary (ordered list databound to the collection)</legend>
-        <ol style="max-height: 150px; overflow: auto; width: 300px;" 
-            data-bind="this.dataSource,to=historyList" 
+        <ol style="max-height: 150px; overflow: auto; width: 300px;"
+            data-bind="this.dataSource,to=historyList"
             data-view-options="templateID:ItemListTemplate"></ol>
     </fieldset>
 </div>
@@ -161,7 +186,7 @@
         <strong>
             <span style="color: Blue;" data-bind="this.value,to=radioValue"></span>
         </strong>
-        <br/>
+        <br />
         Time:&nbsp;<span data-bind="this.value,to=time,converter=dateTimeConverter,param='HH:mm:ss'"></span>
     </div>
 </script>
@@ -170,13 +195,13 @@
         <strong>
             <span style="color: Blue;" data-bind="this.value,to=radioValue"></span>
         </strong>
-        <br/>
+        <br />
         Time:&nbsp;<span data-bind="this.value,to=time,converter=dateTimeConverter,param='HH:mm:ss'"></span>
     </div>
 </script>
 <script id="ItemListTemplate" type="text/x-template">
-    <div style="padding-left: 5px;">
-        <span style="color: Blue; margin-right: 10px;" data-bind="this.value,to=radioValue"></span>Time:&nbsp;
-        <span data-bind="this.value,to=time,converter=dateTimeConverter,param='HH:mm:ss'"></span>
+    <div class="list-item">
+        <span style="color: Blue;margin-right:10px;" data-bind="this.value,to=radioValue"></span>Time:
+        <span style="margin-left:3px;" data-bind="this.value,to=time,converter=dateTimeConverter,param='HH:mm:ss'"></span>
     </div>
 </script>

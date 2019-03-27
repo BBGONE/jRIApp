@@ -386,8 +386,8 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
             }
             return id;
         };
-        TemplateContent.prototype.createTemplate = function () {
-            var template = template_1.createTemplate(this._dataContext);
+        TemplateContent.prototype.createTemplate = function (parentEl) {
+            var template = template_1.createTemplate({ parentEl: parentEl, dataContext: this._dataContext });
             template.templateID = this._templateID;
             return template;
         };
@@ -404,8 +404,7 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
                 if (this._templateID !== id) {
                     this.cleanUp();
                     this._templateID = id;
-                    this._template = this.createTemplate();
-                    this._parentEl.appendChild(this._template.el);
+                    this._template = this.createTemplate(this.parentEl);
                 }
             }
             catch (ex) {
@@ -2748,7 +2747,7 @@ define("jriapp_ui/utils/errors", ["require", "exports", "jriapp_shared", "jriapp
 define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/utils/jquery", "jriapp/utils/dom", "jriapp/template", "jriapp/bootstrap", "jriapp/mvvm"], function (require, exports, jriapp_shared_15, jquery_3, dom_12, template_3, bootstrap_11, mvvm_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_15.Utils, _a = utils.check, _undefined = _a._undefined, isFunc = _a.isFunc, format = utils.str.format, _b = utils.core, extend = _b.extend, getNewID = _b.getNewID, sys = utils.sys, _async = utils.defer, doc = dom_12.DomUtils.document, ERROR = utils.err, boot = bootstrap_11.bootstrap;
+    var utils = jriapp_shared_15.Utils, _a = utils.check, _undefined = _a._undefined, isFunc = _a.isFunc, format = utils.str.format, _b = utils.core, extend = _b.extend, getNewID = _b.getNewID, sys = utils.sys, _async = utils.defer, dom = dom_12.DomUtils, doc = dom.document, ERROR = utils.err, boot = bootstrap_11.bootstrap;
     var DIALOG_ACTION;
     (function (DIALOG_ACTION) {
         DIALOG_ACTION[DIALOG_ACTION["Default"] = 0] = "Default";
@@ -2915,7 +2914,10 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
             }
         };
         DataEditDialog.prototype._createTemplate = function () {
-            var template = template_3.createTemplate(null, this);
+            var template = template_3.createTemplate({
+                parentEl: null,
+                templEvents: this
+            });
             template.templateID = this._templateID;
             return template;
         };
@@ -3350,7 +3352,11 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                     return;
                 }
                 if (!self._template) {
-                    self._template = template_4.createTemplate(self._dataContext, self);
+                    self._template = template_4.createTemplate({
+                        parentEl: null,
+                        dataContext: self._dataContext,
+                        templEvents: self
+                    });
                     self._template.templateID = newName;
                     self.objEvents.raiseProp("template");
                     return;
@@ -3706,9 +3712,8 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
                 _this._th.style.width = _this._options.width;
             }
             if (!!_this._options.templateID) {
-                _this._template = template_5.createTemplate(null, _this);
+                _this._template = template_5.createTemplate({ parentEl: col, templEvents: _this });
                 _this._template.templateID = _this._options.templateID;
-                dom.append(col, [_this._template.el]);
             }
             else if (!!_this._options.title) {
                 col.innerHTML = _this._options.title;
@@ -4844,7 +4849,7 @@ define("jriapp_ui/datagrid/cells/details", ["require", "exports", "jriapp_shared
                 return _this;
             }
             _this._row.tr.appendChild(_this._td);
-            _this._template = template_6.createTemplate(null, null);
+            _this._template = template_6.createTemplate({ parentEl: null });
             _this._template.templateID = options.details_id;
             _this._td.appendChild(_this._template.el);
             return _this;
@@ -7452,8 +7457,8 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 dom.removeClass([obj.el], "ria-item-deleted");
             }
         };
-        StackPanel.prototype._createTemplate = function (item) {
-            var template = template_7.createTemplate(item, null);
+        StackPanel.prototype._createTemplate = function (item, parentEl) {
+            var template = template_7.createTemplate({ parentEl: parentEl, dataContext: item });
             template.templateID = this.templateID;
             return template;
         };
@@ -7475,8 +7480,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             var mappedItem = { el: itemElem, template: null, item: item };
             dom.setData(itemElem, "data", mappedItem);
             self._itemMap[item._key] = mappedItem;
-            mappedItem.template = self._createTemplate(item);
-            mappedItem.el.appendChild(mappedItem.template.el);
+            mappedItem.template = self._createTemplate(item, mappedItem.el);
         };
         StackPanel.prototype._bindDS = function () {
             var self = this, ds = this.dataSource;

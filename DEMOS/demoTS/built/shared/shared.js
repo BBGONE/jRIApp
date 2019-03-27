@@ -369,8 +369,9 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             });
             _this._isOpen = false;
             _this._createGridDataSource();
-            _this._template = _this._createTemplate();
-            _this._$dropDown = $(dom.document.createElement("div"));
+            var parentEl = dom.document.createElement("div");
+            _this._template = _this._createTemplate(parentEl);
+            _this._$dropDown = $(parentEl);
             _this._$dropDown.css({
                 "position": "absolute",
                 "z-index": "10000",
@@ -381,10 +382,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
                 "width": _this._width,
                 "height": _this._height
             });
-            _this._$dropDown.append(_this._template.el);
-            _this._template.el.style.height = '100%';
-            _this._template.el.style.width = '100%';
-            dom.document.body.appendChild(_this._$dropDown.get(0));
+            dom.document.body.appendChild(parentEl);
             return _this;
         }
         AutoCompleteElView.prototype.templateLoading = function (template) {
@@ -417,8 +415,8 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
         AutoCompleteElView.prototype._getDbContext = function () {
             return this._dbContext;
         };
-        AutoCompleteElView.prototype._createTemplate = function () {
-            var t = RIAPP.createTemplate(this, this);
+        AutoCompleteElView.prototype._createTemplate = function (parentEl) {
+            var t = RIAPP.createTemplate({ parentEl: parentEl, dataContext: this, templEvents: this });
             t.templateID = this._templateId;
             return t;
         };

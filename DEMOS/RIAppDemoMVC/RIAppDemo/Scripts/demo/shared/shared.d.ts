@@ -94,7 +94,7 @@ declare module "autocomplete" {
         constructor(el: HTMLInputElement, options: IAutocompleteOptions);
         protected _createGridDataSource(): void;
         protected _getDbContext(): dbMOD.DbContext;
-        protected _createTemplate(): RIAPP.ITemplate;
+        protected _createTemplate(parentEl: HTMLElement): RIAPP.ITemplate;
         protected _onTextChange(): void;
         protected _onKeyUp(text: string, keyCode: number): void;
         protected _onKeyPress(keyCode: number): boolean;

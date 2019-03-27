@@ -110,8 +110,9 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
 
         this._isOpen = false;
         this._createGridDataSource();
-        this._template = this._createTemplate();
-        this._$dropDown = $(dom.document.createElement("div"));
+        const parentEl = dom.document.createElement("div");
+        this._template = this._createTemplate(parentEl);
+        this._$dropDown = $(parentEl);
         this._$dropDown.css({
             "position": "absolute",
             "z-index": "10000",
@@ -122,11 +123,7 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
             "width": this._width,
             "height": this._height
         });
-        this._$dropDown.append(this._template.el);
-        this._template.el.style.height = '100%';
-        this._template.el.style.width = '100%';
-
-        dom.document.body.appendChild(this._$dropDown.get(0));
+        dom.document.body.appendChild(parentEl);
     }
     protected _createGridDataSource(): void {
         this._gridDataSource = this._getDbContext().getDbSet(this._dbSetName);
@@ -137,8 +134,8 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
     protected _getDbContext(): dbMOD.DbContext {
         return this._dbContext;
     }
-    protected _createTemplate(): RIAPP.ITemplate {
-        const t = RIAPP.createTemplate(this, this);
+    protected _createTemplate(parentEl: HTMLElement): RIAPP.ITemplate {
+        const t = RIAPP.createTemplate({ parentEl: parentEl, dataContext: this, templEvents: this });
         t.templateID = this._templateId;
         return t;
     }

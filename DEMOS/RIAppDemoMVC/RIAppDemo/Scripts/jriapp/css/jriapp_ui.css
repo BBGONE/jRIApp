@@ -310,8 +310,3 @@ td.ria-row-selector input[type="checkbox"] {
     display: inline-block;
     margin: 3px 1px 1px 1px;
 }
-
-.ria-stackpanel .ria-current-item .ria-template-container {
-    outline: 1px dashed black;
-    box-sizing: border-box;
-}
