@@ -2145,7 +2145,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         Promise.prototype.catch = function (errorCB) {
             return this._deferred._then(_undefined, errorCB);
         };
-        Promise.prototype.always = function (errorCB) {
+        Promise.prototype.finally = function (errorCB) {
             return this._deferred._then(errorCB, errorCB);
         };
         Promise.all = function () {
@@ -2187,8 +2187,8 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         AbortablePromise.prototype.catch = function (errorCB) {
             return this._deferred.promise().catch(errorCB);
         };
-        AbortablePromise.prototype.always = function (errorCB) {
-            return this._deferred.promise().always(errorCB);
+        AbortablePromise.prototype.finally = function (errorCB) {
+            return this._deferred.promise().finally(errorCB);
         };
         AbortablePromise.prototype.abort = function (reason) {
             if (this._aborted) {

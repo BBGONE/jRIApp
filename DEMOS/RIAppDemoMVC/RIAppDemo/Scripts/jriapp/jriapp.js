@@ -925,7 +925,7 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
             var res = promise.then(function (html) {
                 self._onLoaded(html, owner);
             });
-            res.always(function () {
+            res.finally(function () {
                 utils.arr.remove(self._promises, promise);
                 if (!self.isLoading) {
                     self.objEvents.raiseProp("isLoading");
@@ -4571,6 +4571,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.20.0";
+    exports.VERSION = "2.21.0";
     bootstrap_7.Bootstrap._initFramework();
 });

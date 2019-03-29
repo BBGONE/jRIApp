@@ -2583,9 +2583,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._addRequestPromise = function (req, operType, name) {
             var self = this, item = { req: req, operType: operType, name: name }, cnt = self._requests.length, oldBusy = this.isBusy;
             self._requests.push(item);
-            req.always(function () {
-                if (self.getIsStateDirty())
+            req.finally(function () {
+                if (self.getIsStateDirty()) {
                     return;
+                }
                 var oldBusy = self.isBusy;
                 utils.arr.remove(self._requests, item);
                 self.objEvents.raiseProp("requestCount");
@@ -3001,13 +3002,13 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             return deferred.promise();
         };
         DbContext.prototype._submitChanges = function (args) {
-            var self = this, no_changes = "NO_CHANGES";
+            var self = this, noChanges = "NO_CHANGES";
             args.fn_onStart();
             delay(function () {
                 self._checkDisposed();
                 var res = self._getChanges();
                 if (res.dbSets.length === 0) {
-                    ERROR.abort(no_changes);
+                    ERROR.abort(noChanges);
                 }
                 return res;
             }).then(function (changes) {
@@ -3023,7 +3024,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 self._checkDisposed();
                 args.fn_onOk();
             }).catch(function (er) {
-                if (!self.getIsStateDirty() && ERROR.checkIsAbort(er) && er.reason === no_changes) {
+                if (!self.getIsStateDirty() && ERROR.checkIsAbort(er) && er.reason === noChanges) {
                     args.fn_onOk();
                 }
                 else {

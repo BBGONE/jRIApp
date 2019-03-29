@@ -2997,7 +2997,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 var title_1 = this.title;
                 this.title = jriapp_shared_15.LocaleSTRS.TEXT.txtSubmitting;
                 var promise = this._submitInfo.submit();
-                promise.always(function () {
+                promise.finally(function () {
                     self._disableButtons(false);
                     self.title = title_1;
                 });
@@ -3335,7 +3335,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                     if (!!self._animation && self._template.isLoaded) {
                         self._animation.stop();
                         self._animation.beforeHide(self._template);
-                        self._animation.hide(self._template).always(function () {
+                        self._animation.hide(self._template).finally(function () {
                             if (self.getIsStateDirty()) {
                                 return;
                             }
@@ -3364,7 +3364,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                 if (!!self._animation && self._template.isLoaded) {
                     self._animation.stop();
                     self._animation.beforeHide(self._template);
-                    self._animation.hide(self._template).always(function () {
+                    self._animation.hide(self._template).finally(function () {
                         if (self.getIsStateDirty()) {
                             return;
                         }

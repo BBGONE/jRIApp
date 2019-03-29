@@ -82,9 +82,9 @@ export interface IPromise<T> extends IThenable<T> {
         errorCB?: IVoidErrorCB
     ): IPromise<TP>;
 
-    always<TP>(errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-    always<TP>(errorCB?: IErrorCB<TP>): IPromise<TP>;
-    always(errorCB?: IVoidErrorCB): IPromise<void>;
+    finally<TP>(errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
+    finally<TP>(errorCB?: IErrorCB<TP>): IPromise<TP>;
+    finally(errorCB?: IVoidErrorCB): IPromise<void>;
 
     catch(errorCB?: IDeferredErrorCB<T>): IPromise<T>;
     catch(errorCB?: IErrorCB<T>): IPromise<T>;
@@ -127,9 +127,9 @@ export interface IStatefulPromise<T> extends IPromise<T>, IPromiseState {
         errorCB?: IVoidErrorCB
     ): IStatefulPromise<TP>;
 
-    always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
-    always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
-    always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+    finally<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+    finally<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+    finally(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
 
     catch(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
     catch(errorCB?: IErrorCB<T>): IStatefulPromise<T>;

@@ -541,7 +541,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             query.orderBy(this._fieldName);
             this._isLoading = true;
             this.objEvents.raiseProp('isLoading');
-            query.load().always(function (res) {
+            query.load().finally(function (res) {
                 self._isLoading = false;
                 self.objEvents.raiseProp('isLoading');
             });

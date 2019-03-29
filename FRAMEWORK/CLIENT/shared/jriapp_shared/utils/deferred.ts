@@ -311,11 +311,11 @@ export class Promise<T> implements IStatefulPromise<T> {
         return this._deferred._then(_undefined, errorCB);
     }
 
-    always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
-    always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
-    always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+    finally<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+    finally<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+    finally(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
 
-    always(errorCB?: any): any {
+    finally(errorCB?: any): any {
         return this._deferred._then(errorCB, errorCB);
     }
 
@@ -404,12 +404,12 @@ export class AbortablePromise<T> implements IAbortablePromise<T> {
         return this._deferred.promise().catch(errorCB);
     }
 
-    always<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
-    always<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
-    always(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+    finally<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
+    finally<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
+    finally(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
 
-    always(errorCB?: any): any {
-        return this._deferred.promise().always(errorCB);
+    finally(errorCB?: any): any {
+        return this._deferred.promise().finally(errorCB);
     }
 
     abort(reason?: string): void {

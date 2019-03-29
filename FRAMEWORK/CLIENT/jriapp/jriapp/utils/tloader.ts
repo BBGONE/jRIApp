@@ -99,7 +99,7 @@ export class TemplateLoader extends BaseObject {
             self._onLoaded(html, owner);
         });
 
-        res.always(() => {
+        res.finally(() => {
             utils.arr.remove(self._promises, promise);
             if (!self.isLoading) {
                 self.objEvents.raiseProp("isLoading");

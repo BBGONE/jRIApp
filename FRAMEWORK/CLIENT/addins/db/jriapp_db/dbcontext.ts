@@ -242,9 +242,10 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             cnt = self._requests.length, oldBusy = this.isBusy;
 
         self._requests.push(item);
-        req.always(() => {
-            if (self.getIsStateDirty())
+        req.finally(() => {
+            if (self.getIsStateDirty()) {
                 return;
+            }
             const oldBusy = self.isBusy;
             utils.arr.remove(self._requests, item);
             self.objEvents.raiseProp("requestCount");
@@ -430,7 +431,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         const args: TSubmitErrArgs = { error: error, isHandled: false };
         this.objEvents.raise(DBCTX_EVENTS.SUBMIT_ERROR, args);
         if (!args.isHandled) {
-            //this.rejectChanges();
+            // this.rejectChanges();
             this._onDataOperError(error, DATA_OPER.Submit);
         }
     }
@@ -478,7 +479,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
 
             const oldQuery = context.dbSet.query,
                 loadPageCount = context.loadPageCount,
-                isPagingEnabled = context.isPagingEnabled
+                isPagingEnabled = context.isPagingEnabled;
 
             let range: { start: number; end: number; cnt: number; }, pageCount = 1,
                 pageIndex = context.pageIndex;
@@ -705,14 +706,14 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         fn_onErr: (ex: any) => void;
         fn_onOk: () => void;
     }): void {
-        const self = this, no_changes = "NO_CHANGES";
+        const self = this, noChanges = "NO_CHANGES";
         args.fn_onStart();
 
         delay<IChangeSet>(() => {
             self._checkDisposed();
             const res = self._getChanges();
             if (res.dbSets.length === 0) {
-                ERROR.abort(no_changes);
+                ERROR.abort(noChanges);
             }
             return res;
         }).then((changes) => {
@@ -728,7 +729,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             self._checkDisposed();
             args.fn_onOk();
         }).catch((er) => {
-            if (!self.getIsStateDirty() && ERROR.checkIsAbort(er) && er.reason === no_changes) {
+            if (!self.getIsStateDirty() && ERROR.checkIsAbort(er) && er.reason === noChanges) {
                 args.fn_onOk();
             } else {
                 args.fn_onErr(er);

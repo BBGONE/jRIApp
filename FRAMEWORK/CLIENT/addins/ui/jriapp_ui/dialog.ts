@@ -54,8 +54,7 @@ const enum DLG_EVENTS {
     refresh = "refresh"
 }
 
-class SubmitInfo
-{
+class SubmitInfo {
     private _submitError: boolean;
     private _dataContext: any;
     private _editable: IEditable;
@@ -65,8 +64,7 @@ class SubmitInfo
         this._submitError = false;
         this._editable = sys.getEditable(this._dataContext);
     }
-    submit(): IVoidPromise
-    {
+    submit(): IVoidPromise {
         const self = this, submittable = sys.getSubmittable(this._dataContext);
         if (!submittable || !submittable.isCanSubmit) {
             // signals immediatly
@@ -313,7 +311,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             const title = this.title;
             this.title = STRS.TEXT.txtSubmitting;
             const promise = this._submitInfo.submit();
-            promise.always(() => {
+            promise.finally(() => {
                 self._disableButtons(false);
                 self.title = title;
             });
