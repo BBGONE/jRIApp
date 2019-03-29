@@ -3086,7 +3086,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 if (!self.getIsStateDirty()) {
                     self.handleError(err, self);
                 }
-                ERROR.abort();
+                return ERROR.abort();
             });
         };
         DataEditDialog.prototype.hide = function () {

@@ -41,7 +41,7 @@ export class ERROR {
 
         return isHandled;
     }
-    static throwDummy(err: any): void {
+    static throwDummy(err: any): never {
         if (ERROR.checkIsDummy(err)) {
             throw err;
         } else {
@@ -54,14 +54,14 @@ export class ERROR {
     static checkIsAbort(error: any): error is AbortError  {
         return !!error && (error instanceof AbortError);
     }
-    static reThrow(ex: any, isHandled: boolean) {
+    static reThrow(ex: any, isHandled: boolean): never {
         if (!isHandled) {
             throw ex;
         } else {
-            ERROR.throwDummy(ex);
+            return ERROR.throwDummy(ex);
         }
     }
-    static abort(reason?: string) {
+    static abort(reason?: string): never {
         throw new AbortError(reason);
     }
 }

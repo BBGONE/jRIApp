@@ -398,7 +398,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             if (!self.getIsStateDirty()) {
                 self.handleError(err, self);
             }
-            ERROR.abort();
+            return ERROR.abort();
         });
     }
     hide(): void {

@@ -14,133 +14,43 @@ export interface IAbortable {
     abort(reason?: string): void;
 }
 
-export interface ISuccessCB<T, TP> {
-    (value: T): TP;
-}
-
-export interface IDeferredSuccessCB<T, TP> {
-    (value: T): IThenable<TP>;
-}
-
-export interface IErrorCB<TP> {
-    (err: any): TP;
-}
-
-export interface IVoidErrorCB {
-    (err: any): void;
-}
-
-export interface IDeferredErrorCB<TP> {
-    (error: any): IThenable<TP>;
-}
-
-export interface IThenable<T> {
-    then<TP>(
-        successCB?: IDeferredSuccessCB<T, TP>,
-        errorCB?: IDeferredErrorCB<TP>
-    ): IThenable<TP>;
-
-    then<TP>(
-        successCB?: IDeferredSuccessCB<T, TP>,
-        errorCB?: IErrorCB<TP>
-    ): IThenable<TP>;
-
-    then<TP>(
-        successCB?: ISuccessCB<T, TP>,
-        errorCB?: IDeferredErrorCB<TP>
-    ): IThenable<TP>;
-
-    then<TP>(
-        successCB?: ISuccessCB<T, TP>,
-        errorCB?: IErrorCB<TP>
-    ): IThenable<TP>;
-}
-
-export interface IPromise<T> extends IThenable<T> {
-    then<TP>(
-        successCB?: IDeferredSuccessCB<T, TP>,
-        errorCB?: IDeferredErrorCB<TP>
-    ): IPromise<TP>;
-    then<TP>(
-        successCB?: IDeferredSuccessCB<T, TP>,
-        errorCB?: IErrorCB<TP>
-    ): IPromise<TP>;
-    then<TP>(
-        successCB?: IDeferredSuccessCB<T, TP>,
-        errorCB?: IVoidErrorCB
-    ): IPromise<TP>;
-    then<TP>(
-        successCB?: ISuccessCB<T, TP>,
-        errorCB?: IDeferredErrorCB<TP>
-    ): IPromise<TP>;
-    then<TP>(
-        successCB?: ISuccessCB<T, TP>,
-        errorCB?: IErrorCB<TP>
-    ): IPromise<TP>;
-    then<TP>(
-        successCB?: ISuccessCB<T, TP>,
-        errorCB?: IVoidErrorCB
-    ): IPromise<TP>;
-
-    finally<TP>(errorCB?: IDeferredErrorCB<TP>): IPromise<TP>;
-    finally<TP>(errorCB?: IErrorCB<TP>): IPromise<TP>;
-    finally(errorCB?: IVoidErrorCB): IPromise<void>;
-
-    catch(errorCB?: IDeferredErrorCB<T>): IPromise<T>;
-    catch(errorCB?: IErrorCB<T>): IPromise<T>;
-    catch(errorCB?: IVoidErrorCB): IPromise<void>;
+export interface IPromise<T> {
+    then<TResult1 = T, TResult2 = never>(
+        onFulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+        onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
+    ): IPromise<TResult1 | TResult2>;
+    catch<TResult = never>(
+        onRejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
+    ): IPromise<T | TResult>;
+    finally<U = any>(onFinally?: ((value: any) => U)): IPromise<U>;
 }
 
 export interface IVoidPromise extends IPromise<void> {
 }
 
 export interface IDeferred<T> {
-    resolve(value?: IThenable<T>): IPromise<T>;
+    resolve(value?: PromiseLike<T>): IPromise<T>;
     resolve(value?: T): IPromise<T>;
     reject(error?: any): IPromise<T>;
     promise(): IPromise<T>;
 }
 
-export interface IStatefulPromise<T> extends IPromise<T>, IPromiseState {
-    then<TP>(
-        successCB?: IDeferredSuccessCB<T, TP>,
-        errorCB?: IDeferredErrorCB<TP>
-    ): IStatefulPromise<TP>;
-    then<TP>(
-        successCB?: IDeferredSuccessCB<T, TP>,
-        errorCB?: IErrorCB<TP>
-    ): IStatefulPromise<TP>;
-    then<TP>(
-        successCB?: IDeferredSuccessCB<T, TP>,
-        errorCB?: IVoidErrorCB
-    ): IStatefulPromise<TP>;
-    then<TP>(
-        successCB?: ISuccessCB<T, TP>,
-        errorCB?: IDeferredErrorCB<TP>
-    ): IStatefulPromise<TP>;
-    then<TP>(
-        successCB?: ISuccessCB<T, TP>,
-        errorCB?: IErrorCB<TP>
-    ): IStatefulPromise<TP>;
-    then<TP>(
-        successCB?: ISuccessCB<T, TP>,
-        errorCB?: IVoidErrorCB
-    ): IStatefulPromise<TP>;
-
-    finally<TP>(errorCB?: IDeferredErrorCB<TP>): IStatefulPromise<TP>;
-    finally<TP>(errorCB?: IErrorCB<TP>): IStatefulPromise<TP>;
-    finally(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
-
-    catch(errorCB?: IDeferredErrorCB<T>): IStatefulPromise<T>;
-    catch(errorCB?: IErrorCB<T>): IStatefulPromise<T>;
-    catch(errorCB?: IVoidErrorCB): IStatefulPromise<void>;
+export interface IStatefulPromise<T> extends IPromiseState {
+    then<TResult1 = T, TResult2 = never>(
+        onFulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+        onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
+    ): IStatefulPromise<TResult1 | TResult2>;
+    catch<TResult = never>(
+        onRejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
+    ): IStatefulPromise<T | TResult>;
+    finally<U = any>(onFinally?: ((value: any) => U)): IStatefulPromise<U>;
 }
 
 export interface IAbortablePromise<T> extends IStatefulPromise<T>, IAbortable {
 }
 
 export interface IStatefulDeferred<T> extends IDeferred<T>, IPromiseState {
-    resolve(value?: IThenable<T>): IStatefulPromise<T>;
+    resolve(value?: PromiseLike<T>): IStatefulPromise<T>;
     resolve(value?: T): IStatefulPromise<T>;
     reject(error?: any): IStatefulPromise<T>;
     promise(): IStatefulPromise<T>;

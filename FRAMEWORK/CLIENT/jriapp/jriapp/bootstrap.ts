@@ -370,7 +370,7 @@ export class Bootstrap extends BaseObject implements IDataProvider, ISvcStore {
             });
         });
 
-       const res = promise.then((boot) => {
+        const res = promise.then((boot) => {
             if (boot._bootState !== BootstrapState.Ready) {
                 throw new Error("Invalid operation: bootState !== BootstrapState.Ready");
             }
@@ -379,15 +379,15 @@ export class Bootstrap extends BaseObject implements IDataProvider, ISvcStore {
             return boot;
         });
 
-       return res;
+        return res;
     }
     private _initialize(): IPromise<Bootstrap> {
         const self = this;
-        return self._init().then(() => {
+        return self._init().then((_) => {
             return self;
         }, (err) => {
             self._bootState = BootstrapState.Error;
-            ERROR.reThrow(err, this.handleError(err, self));
+            return ERROR.reThrow(err, this.handleError(err, self));
         });
     }
     private _registerApp(app: IApplication): void {
@@ -493,7 +493,7 @@ export class Bootstrap extends BaseObject implements IDataProvider, ISvcStore {
         const res = promise.then((app) => {
             return app;
         }, (err) => {
-            ERROR.reThrow(err, self.handleError(err, self));
+            return ERROR.reThrow(err, self.handleError(err, self));
         });
 
         return res;

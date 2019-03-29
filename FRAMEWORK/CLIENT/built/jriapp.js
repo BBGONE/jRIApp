@@ -2148,11 +2148,11 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
         Bootstrap.prototype._initialize = function () {
             var _this = this;
             var self = this;
-            return self._init().then(function () {
+            return self._init().then(function (_) {
                 return self;
             }, function (err) {
                 self._bootState = 4;
-                ERROR.reThrow(err, _this.handleError(err, self));
+                return ERROR.reThrow(err, _this.handleError(err, self));
             });
         };
         Bootstrap.prototype._registerApp = function (app) {
@@ -2255,7 +2255,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             var res = promise.then(function (app) {
                 return app;
             }, function (err) {
-                ERROR.reThrow(err, self.handleError(err, self));
+                return ERROR.reThrow(err, self.handleError(err, self));
             });
             return res;
         };
@@ -4402,6 +4402,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
                                 return self._dataBindingService.setUpBindings();
                             }, function (err) {
                                 deferred.reject(err);
+                                throw err;
                             });
                         }
                         else {
@@ -4571,6 +4572,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.21.0";
+    exports.VERSION = "2.21.1";
     bootstrap_7.Bootstrap._initFramework();
 });

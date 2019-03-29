@@ -1369,7 +1369,7 @@ define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/const"
                 throw ex;
             }
             else {
-                ERROR.throwDummy(ex);
+                return ERROR.throwDummy(ex);
             }
         };
         ERROR.abort = function (reason) {
@@ -1952,7 +1952,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     exports.race = race;
     function promiseSerial(funcs) {
         return funcs.reduce(function (promise, func) {
-            return promise.then(function (result) { return func().then(Array.prototype.concat.bind(result)); });
+            return promise.then(function (result) { return func().then(function (res) { return result.concat(res); }); });
         }, Promise.resolve([]));
     }
     exports.promiseSerial = promiseSerial;
@@ -2139,14 +2139,14 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
                 });
             }
         }
-        Promise.prototype.then = function (successCB, errorCB) {
-            return this._deferred._then(successCB, errorCB);
+        Promise.prototype.then = function (onFulfilled, onRejected) {
+            return this._deferred._then(onFulfilled, onRejected);
         };
-        Promise.prototype.catch = function (errorCB) {
-            return this._deferred._then(_undefined, errorCB);
+        Promise.prototype.catch = function (onRejected) {
+            return this._deferred._then(_undefined, onRejected);
         };
-        Promise.prototype.finally = function (errorCB) {
-            return this._deferred._then(errorCB, errorCB);
+        Promise.prototype.finally = function (onFinally) {
+            return this._deferred._then(onFinally, onFinally);
         };
         Promise.all = function () {
             var args = arrHelper.fromList(arguments);
@@ -2181,14 +2181,14 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
             this._abortable = abortable;
             this._aborted = false;
         }
-        AbortablePromise.prototype.then = function (successCB, errorCB) {
-            return this._deferred.promise().then(successCB, errorCB);
+        AbortablePromise.prototype.then = function (onFulfilled, onRejected) {
+            return this._deferred.promise().then(onFulfilled, onRejected);
         };
-        AbortablePromise.prototype.catch = function (errorCB) {
-            return this._deferred.promise().catch(errorCB);
+        AbortablePromise.prototype.catch = function (onRejected) {
+            return this._deferred.promise().catch(onRejected);
         };
-        AbortablePromise.prototype.finally = function (errorCB) {
-            return this._deferred.promise().finally(errorCB);
+        AbortablePromise.prototype.finally = function (onFinally) {
+            return this._deferred.promise().finally(onFinally);
         };
         AbortablePromise.prototype.abort = function (reason) {
             if (this._aborted) {
