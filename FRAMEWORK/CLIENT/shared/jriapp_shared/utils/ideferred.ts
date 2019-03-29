@@ -22,17 +22,10 @@ export interface IPromise<T> {
     catch<TResult = never>(
         onRejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
     ): IPromise<T | TResult>;
-    finally<U = any>(onFinally?: ((value: any) => U)): IPromise<U>;
+    finally(onFinally?: (value: any) => any): IPromise<T>;
 }
 
 export interface IVoidPromise extends IPromise<void> {
-}
-
-export interface IDeferred<T> {
-    resolve(value?: PromiseLike<T>): IPromise<T>;
-    resolve(value?: T): IPromise<T>;
-    reject(error?: any): IPromise<T>;
-    promise(): IPromise<T>;
 }
 
 export interface IStatefulPromise<T> extends IPromiseState {
@@ -43,15 +36,17 @@ export interface IStatefulPromise<T> extends IPromiseState {
     catch<TResult = never>(
         onRejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
     ): IStatefulPromise<T | TResult>;
-    finally<U = any>(onFinally?: ((value: any) => U)): IStatefulPromise<U>;
+    finally(onFinally?: (value: any) => any): IStatefulPromise<T>;
 }
 
 export interface IAbortablePromise<T> extends IStatefulPromise<T>, IAbortable {
 }
 
-export interface IStatefulDeferred<T> extends IDeferred<T>, IPromiseState {
+export interface IStatefulDeferred<T> extends IPromiseState {
     resolve(value?: PromiseLike<T>): IStatefulPromise<T>;
     resolve(value?: T): IStatefulPromise<T>;
     reject(error?: any): IStatefulPromise<T>;
     promise(): IStatefulPromise<T>;
 }
+
+export type IDeferred<T> = IStatefulDeferred<T>;

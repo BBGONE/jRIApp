@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     IStatefulDeferred, IStatefulPromise, ITaskQueue, PromiseState,
-    IPromise, IAbortablePromise, IAbortable, IDeferred
+    IPromise, IAbortablePromise, IAbortable
 } from "./ideferred";
 import { AbortError } from "../errors";
 import { Checks } from "./checks";
@@ -81,7 +81,7 @@ class Callback {
     private _dispatcher: TDispatcher;
     private _successCB: any;
     private _errorCB: any;
-    private _deferred: IDeferred<any>;
+    private _deferred: IStatefulDeferred<any>;
 
     constructor(dispatcher: TDispatcher, successCB: any, errorCB: any) {
         this._dispatcher = dispatcher;
@@ -123,7 +123,7 @@ class Callback {
         }
     }
 
-    get deferred(): IDeferred<any> {
+    get deferred(): IStatefulDeferred<any> {
         return this._deferred;
     }
 }
@@ -288,8 +288,14 @@ export class Promise<T> implements IStatefulPromise<T> {
         return this._deferred._then(_undefined, onRejected);
     }
 
-    finally<U = any>(onFinally?: ((value: any) => U)): IStatefulPromise<U> {
-        return this._deferred._then(onFinally, onFinally);
+    finally(onFinally?: (value: any) => any): IStatefulPromise<T> {
+        return this._deferred._then((res: any) => {
+            onFinally(res);
+            return res;
+        }, (err: any) => {
+            onFinally(err);
+            return Promise.reject(err);
+        });
     }
 
     static all<T>(...promises: Array<T | PromiseLike<T>>): IStatefulPromise<T[]>;
@@ -355,8 +361,14 @@ export class AbortablePromise<T> implements IAbortablePromise<T> {
         return this._deferred.promise().catch(onRejected);
     }
 
-    finally<U = any>(onFinally?: ((value: any) => U)): IStatefulPromise<U> {
-        return this._deferred.promise().finally(onFinally);
+    finally(onFinally?: (value: any) => any): IStatefulPromise<T> {
+        return this._deferred.promise().then((res: any) => {
+            onFinally(res);
+            return res;
+        }, (err: any) => {
+            onFinally(err);
+            return Promise.reject(err);
+        });
     }
 
     abort(reason?: string): void {

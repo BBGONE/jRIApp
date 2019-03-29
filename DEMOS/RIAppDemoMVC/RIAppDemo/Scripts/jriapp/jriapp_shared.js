@@ -2146,7 +2146,13 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
             return this._deferred._then(_undefined, onRejected);
         };
         Promise.prototype.finally = function (onFinally) {
-            return this._deferred._then(onFinally, onFinally);
+            return this._deferred._then(function (res) {
+                onFinally(res);
+                return res;
+            }, function (err) {
+                onFinally(err);
+                return Promise.reject(err);
+            });
         };
         Promise.all = function () {
             var args = arrHelper.fromList(arguments);
@@ -2188,7 +2194,13 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
             return this._deferred.promise().catch(onRejected);
         };
         AbortablePromise.prototype.finally = function (onFinally) {
-            return this._deferred.promise().finally(onFinally);
+            return this._deferred.promise().then(function (res) {
+                onFinally(res);
+                return res;
+            }, function (err) {
+                onFinally(err);
+                return Promise.reject(err);
+            });
         };
         AbortablePromise.prototype.abort = function (reason) {
             if (this._aborted) {

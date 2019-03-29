@@ -37,29 +37,24 @@ declare module "jriapp_shared/utils/ideferred" {
     export interface IPromise<T> {
         then<TResult1 = T, TResult2 = never>(onFulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): IPromise<TResult1 | TResult2>;
         catch<TResult = never>(onRejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): IPromise<T | TResult>;
-        finally<U = any>(onFinally?: ((value: any) => U)): IPromise<U>;
+        finally(onFinally?: (value: any) => any): IPromise<T>;
     }
     export interface IVoidPromise extends IPromise<void> {
-    }
-    export interface IDeferred<T> {
-        resolve(value?: PromiseLike<T>): IPromise<T>;
-        resolve(value?: T): IPromise<T>;
-        reject(error?: any): IPromise<T>;
-        promise(): IPromise<T>;
     }
     export interface IStatefulPromise<T> extends IPromiseState {
         then<TResult1 = T, TResult2 = never>(onFulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): IStatefulPromise<TResult1 | TResult2>;
         catch<TResult = never>(onRejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): IStatefulPromise<T | TResult>;
-        finally<U = any>(onFinally?: ((value: any) => U)): IStatefulPromise<U>;
+        finally(onFinally?: (value: any) => any): IStatefulPromise<T>;
     }
     export interface IAbortablePromise<T> extends IStatefulPromise<T>, IAbortable {
     }
-    export interface IStatefulDeferred<T> extends IDeferred<T>, IPromiseState {
+    export interface IStatefulDeferred<T> extends IPromiseState {
         resolve(value?: PromiseLike<T>): IStatefulPromise<T>;
         resolve(value?: T): IStatefulPromise<T>;
         reject(error?: any): IStatefulPromise<T>;
         promise(): IStatefulPromise<T>;
     }
+    export type IDeferred<T> = IStatefulDeferred<T>;
 }
 declare module "jriapp_shared/int" {
     import { DEBUG_LEVEL } from "jriapp_shared/const";
@@ -873,7 +868,7 @@ declare module "jriapp_shared/utils/deferred" {
         constructor(fn: (resolve: (res?: T) => void, reject: (err?: any) => void) => void, dispatcher?: TDispatcher);
         then<TResult1 = T, TResult2 = never>(onFulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): IStatefulPromise<TResult1 | TResult2>;
         catch<TResult = never>(onRejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): IStatefulPromise<T | TResult>;
-        finally<U = any>(onFinally?: ((value: any) => U)): IStatefulPromise<U>;
+        finally(onFinally?: (value: any) => any): IStatefulPromise<T>;
         static all<T>(...promises: Array<T | PromiseLike<T>>): IStatefulPromise<T[]>;
         static all<T>(promises: Array<T | PromiseLike<T>>): IStatefulPromise<T[]>;
         static race<T>(...promises: Array<IPromise<T>>): IPromise<T>;
@@ -890,7 +885,7 @@ declare module "jriapp_shared/utils/deferred" {
         constructor(deferred: IStatefulDeferred<T>, abortable: IAbortable);
         then<TResult1 = T, TResult2 = never>(onFulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): IStatefulPromise<TResult1 | TResult2>;
         catch<TResult = never>(onRejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): IStatefulPromise<T | TResult>;
-        finally<U = any>(onFinally?: ((value: any) => U)): IStatefulPromise<U>;
+        finally(onFinally?: (value: any) => any): IStatefulPromise<T>;
         abort(reason?: string): void;
         state(): PromiseState;
     }
