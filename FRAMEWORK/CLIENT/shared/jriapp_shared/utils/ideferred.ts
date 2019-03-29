@@ -22,7 +22,7 @@ export interface IPromise<T> {
     catch<TResult = never>(
         onRejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
     ): IPromise<T | TResult>;
-    finally(onFinally?: (value: any) => any): IPromise<T>;
+    finally(onFinally: (value: any) => any): IPromise<T>;
 }
 
 export interface IVoidPromise extends IPromise<void> {

@@ -288,7 +288,7 @@ export class Promise<T> implements IStatefulPromise<T> {
         return this._deferred._then(_undefined, onRejected);
     }
 
-    finally(onFinally?: (value: any) => any): IStatefulPromise<T> {
+    finally(onFinally: (value: any) => void): IStatefulPromise<T> {
         return this._deferred._then((res: any) => {
             onFinally(res);
             return res;
@@ -361,14 +361,8 @@ export class AbortablePromise<T> implements IAbortablePromise<T> {
         return this._deferred.promise().catch(onRejected);
     }
 
-    finally(onFinally?: (value: any) => any): IStatefulPromise<T> {
-        return this._deferred.promise().then((res: any) => {
-            onFinally(res);
-            return res;
-        }, (err: any) => {
-            onFinally(err);
-            return Promise.reject(err);
-        });
+    finally(onFinally: (value: any) => void): IStatefulPromise<T> {
+        return this._deferred.promise().finally(onFinally);
     }
 
     abort(reason?: string): void {

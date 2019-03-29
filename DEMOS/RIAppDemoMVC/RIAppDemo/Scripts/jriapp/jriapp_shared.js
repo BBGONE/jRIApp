@@ -2194,13 +2194,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
             return this._deferred.promise().catch(onRejected);
         };
         AbortablePromise.prototype.finally = function (onFinally) {
-            return this._deferred.promise().then(function (res) {
-                onFinally(res);
-                return res;
-            }, function (err) {
-                onFinally(err);
-                return Promise.reject(err);
-            });
+            return this._deferred.promise().finally(onFinally);
         };
         AbortablePromise.prototype.abort = function (reason) {
             if (this._aborted) {
