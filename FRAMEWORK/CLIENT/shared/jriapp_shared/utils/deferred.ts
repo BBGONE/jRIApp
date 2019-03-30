@@ -36,7 +36,7 @@ export function whenAll<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<
 
 export function race<T>(promises: IThenable<T>[]): IStatefulPromise<T> {
     return new Promise((res, rej) => {
-        promises.forEach(p => p.then(res).then(rej, rej));
+        promises.forEach(p => p.then(res).then(_undefined, rej));
     });
 }
 

@@ -1946,7 +1946,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     exports.whenAll = whenAll;
     function race(promises) {
         return new Promise(function (res, rej) {
-            promises.forEach(function (p) { return p.then(res).then(rej, rej); });
+            promises.forEach(function (p) { return p.then(res).then(_undefined, rej); });
         });
     }
     exports.race = race;
