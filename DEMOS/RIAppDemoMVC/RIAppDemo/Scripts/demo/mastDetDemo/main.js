@@ -1512,6 +1512,85 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
     }(dbMOD.DbContext));
     exports.DbContext = DbContext;
 });
+define("mastDetDemo/prodAutocomplete", ["require", "exports", "autocomplete"], function (require, exports, AUTOCOMPLETE) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var ProductAutoComplete = (function (_super) {
+        __extends(ProductAutoComplete, _super);
+        function ProductAutoComplete(el, options) {
+            var _this = _super.call(this, el, options) || this;
+            var self = _this;
+            _this._lastLoadedID = null;
+            _this._lookupSource = _this._getDbContext().getDbSet('Product');
+            _this._lookupSource.addOnCollChanged(function (_s, args) {
+                self._updateValue();
+            }, self.uniqueID);
+            return _this;
+        }
+        ProductAutoComplete.prototype._updateSelection = function () {
+            if (!!this.dataContext) {
+                var id = this.currentSelection;
+                this.getDataContext().ProductID = id;
+            }
+        };
+        ProductAutoComplete.prototype._onHide = function () {
+            this._updateValue();
+            _super.prototype._onHide.call(this);
+        };
+        ProductAutoComplete.prototype._updateValue = function () {
+            if (!this.dataContext) {
+                this.value = '';
+                return;
+            }
+            var productID = this.getDataContext().ProductID, product = this._lookupSource.findEntity(productID);
+            if (!!product) {
+                this.value = product.Name;
+            }
+            else {
+                this.value = '';
+                if (this._lastLoadedID !== productID) {
+                    this._lastLoadedID = productID;
+                    var query = this._lookupSource.createReadProductByIdsQuery({ productIDs: [productID] });
+                    query.isClearPrevData = false;
+                    query.load();
+                }
+            }
+        };
+        ProductAutoComplete.prototype.setDataContext = function (v) {
+            var old = this.getDataContext(), self = this;
+            if (old !== v) {
+                var dxt = v;
+                if (!!dxt) {
+                    dxt.objEvents.onProp('ProductID', function (_s, a) {
+                        self._updateValue();
+                    }, this.uniqueID);
+                }
+                _super.prototype.setDataContext.call(this, v);
+                self._updateValue();
+            }
+        };
+        ProductAutoComplete.prototype.getDataContext = function () { return _super.prototype.getDataContext.call(this); };
+        Object.defineProperty(ProductAutoComplete.prototype, "currentSelection", {
+            get: function () {
+                if (!!this.gridDataSource.currentItem) {
+                    return this.gridDataSource.currentItem['ProductID'];
+                }
+                else {
+                    return null;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return ProductAutoComplete;
+    }(AUTOCOMPLETE.AutoCompleteElView));
+    exports.ProductAutoComplete = ProductAutoComplete;
+    function initModule(app) {
+        app.registerElView('productAutocomplete', ProductAutoComplete);
+    }
+    exports.initModule = initModule;
+    ;
+});
 define("mastDetDemo/productVM", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1686,6 +1765,93 @@ define("mastDetDemo/orderDetVM", ["require", "exports", "jriapp", "jriapp_ui", "
         return OrderDetailVM;
     }(RIAPP.ViewModel));
     exports.OrderDetailVM = OrderDetailVM;
+});
+define("mastDetDemo/addressVM", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var AddressVM = (function (_super) {
+        __extends(AddressVM, _super);
+        function AddressVM(orderVM) {
+            var _this = _super.call(this, orderVM.app) || this;
+            var self = _this;
+            _this._orderVM = orderVM;
+            _this._dbSet = _this.dbSets.Address;
+            _this._orderVM.dbSet.addOnFill(function (_s, args) {
+                self.loadAddressesForOrders(args.items);
+            }, self.uniqueID);
+            _this._dbSet.objEvents.onProp('currentItem', function (_s, args) {
+                self._onCurrentChanged();
+            }, self.uniqueID);
+            return _this;
+        }
+        AddressVM.prototype._onCurrentChanged = function () {
+            this.objEvents.raiseProp('currentItem');
+        };
+        AddressVM.prototype.loadAddressesForOrders = function (orders) {
+            var ids1 = orders.map(function (item) {
+                return item.ShipToAddressID;
+            });
+            var ids2 = orders.map(function (item) {
+                return item.BillToAddressID;
+            });
+            var ids = ids1.concat(ids2).filter(function (id) {
+                return id !== null;
+            });
+            return this.load(RIAPP.Utils.arr.distinct(ids), false);
+        };
+        AddressVM.prototype.load = function (ids, isClearTable) {
+            var query = this.dbSet.createReadAddressByIdsQuery({ addressIDs: ids });
+            query.isClearPrevData = isClearTable;
+            return query.load();
+        };
+        AddressVM.prototype.clear = function () {
+            this.dbSet.clear();
+        };
+        AddressVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
+                return;
+            this.setDisposing();
+            if (!!this._dbSet) {
+                this._dbSet.objEvents.offNS(this.uniqueID);
+            }
+            this._customerDbSet.objEvents.offNS(this.uniqueID);
+            this._orderVM.objEvents.offNS(this.uniqueID);
+            this._orderVM = null;
+            _super.prototype.dispose.call(this);
+        };
+        Object.defineProperty(AddressVM.prototype, "_customerDbSet", {
+            get: function () { return this._orderVM.customerVM.dbSet; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressVM.prototype, "dbContext", {
+            get: function () { return this.app.dbContext; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressVM.prototype, "dbSets", {
+            get: function () { return this.dbContext.dbSets; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressVM.prototype, "currentItem", {
+            get: function () { return this._dbSet.currentItem; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressVM.prototype, "dbSet", {
+            get: function () { return this._dbSet; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressVM.prototype, "orderVM", {
+            get: function () { return this._orderVM; },
+            enumerable: true,
+            configurable: true
+        });
+        return AddressVM;
+    }(RIAPP.ViewModel));
+    exports.AddressVM = AddressVM;
 });
 define("mastDetDemo/orderVM", ["require", "exports", "jriapp", "jriapp_ui", "demo/demoDB", "mastDetDemo/orderDetVM", "mastDetDemo/addressVM"], function (require, exports, RIAPP, uiMOD, DEMODB, orderDetVM_1, addressVM_1) {
     "use strict";
@@ -2162,172 +2328,6 @@ define("mastDetDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "commo
         return DemoApplication;
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
-});
-define("mastDetDemo/addressVM", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var AddressVM = (function (_super) {
-        __extends(AddressVM, _super);
-        function AddressVM(orderVM) {
-            var _this = _super.call(this, orderVM.app) || this;
-            var self = _this;
-            _this._orderVM = orderVM;
-            _this._dbSet = _this.dbSets.Address;
-            _this._orderVM.dbSet.addOnFill(function (_s, args) {
-                self.loadAddressesForOrders(args.items);
-            }, self.uniqueID);
-            _this._dbSet.objEvents.onProp('currentItem', function (_s, args) {
-                self._onCurrentChanged();
-            }, self.uniqueID);
-            return _this;
-        }
-        AddressVM.prototype._onCurrentChanged = function () {
-            this.objEvents.raiseProp('currentItem');
-        };
-        AddressVM.prototype.loadAddressesForOrders = function (orders) {
-            var ids1 = orders.map(function (item) {
-                return item.ShipToAddressID;
-            });
-            var ids2 = orders.map(function (item) {
-                return item.BillToAddressID;
-            });
-            var ids = ids1.concat(ids2).filter(function (id) {
-                return id !== null;
-            });
-            return this.load(RIAPP.Utils.arr.distinct(ids), false);
-        };
-        AddressVM.prototype.load = function (ids, isClearTable) {
-            var query = this.dbSet.createReadAddressByIdsQuery({ addressIDs: ids });
-            query.isClearPrevData = isClearTable;
-            return query.load();
-        };
-        AddressVM.prototype.clear = function () {
-            this.dbSet.clear();
-        };
-        AddressVM.prototype.dispose = function () {
-            if (this.getIsDisposed())
-                return;
-            this.setDisposing();
-            if (!!this._dbSet) {
-                this._dbSet.objEvents.offNS(this.uniqueID);
-            }
-            this._customerDbSet.objEvents.offNS(this.uniqueID);
-            this._orderVM.objEvents.offNS(this.uniqueID);
-            this._orderVM = null;
-            _super.prototype.dispose.call(this);
-        };
-        Object.defineProperty(AddressVM.prototype, "_customerDbSet", {
-            get: function () { return this._orderVM.customerVM.dbSet; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AddressVM.prototype, "dbContext", {
-            get: function () { return this.app.dbContext; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AddressVM.prototype, "dbSets", {
-            get: function () { return this.dbContext.dbSets; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AddressVM.prototype, "currentItem", {
-            get: function () { return this._dbSet.currentItem; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AddressVM.prototype, "dbSet", {
-            get: function () { return this._dbSet; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AddressVM.prototype, "orderVM", {
-            get: function () { return this._orderVM; },
-            enumerable: true,
-            configurable: true
-        });
-        return AddressVM;
-    }(RIAPP.ViewModel));
-    exports.AddressVM = AddressVM;
-});
-define("mastDetDemo/prodAutocomplete", ["require", "exports", "autocomplete"], function (require, exports, AUTOCOMPLETE) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var ProductAutoComplete = (function (_super) {
-        __extends(ProductAutoComplete, _super);
-        function ProductAutoComplete(el, options) {
-            var _this = _super.call(this, el, options) || this;
-            var self = _this;
-            _this._lastLoadedID = null;
-            _this._lookupSource = _this._getDbContext().getDbSet('Product');
-            _this._lookupSource.addOnCollChanged(function (_s, args) {
-                self._updateValue();
-            }, self.uniqueID);
-            return _this;
-        }
-        ProductAutoComplete.prototype._updateSelection = function () {
-            if (!!this.dataContext) {
-                var id = this.currentSelection;
-                this.getDataContext().ProductID = id;
-            }
-        };
-        ProductAutoComplete.prototype._onHide = function () {
-            this._updateValue();
-            _super.prototype._onHide.call(this);
-        };
-        ProductAutoComplete.prototype._updateValue = function () {
-            if (!this.dataContext) {
-                this.value = '';
-                return;
-            }
-            var productID = this.getDataContext().ProductID, product = this._lookupSource.findEntity(productID);
-            if (!!product) {
-                this.value = product.Name;
-            }
-            else {
-                this.value = '';
-                if (this._lastLoadedID !== productID) {
-                    this._lastLoadedID = productID;
-                    var query = this._lookupSource.createReadProductByIdsQuery({ productIDs: [productID] });
-                    query.isClearPrevData = false;
-                    query.load();
-                }
-            }
-        };
-        ProductAutoComplete.prototype.setDataContext = function (v) {
-            var old = this.getDataContext(), self = this;
-            if (old !== v) {
-                var dxt = v;
-                if (!!dxt) {
-                    dxt.objEvents.onProp('ProductID', function (_s, a) {
-                        self._updateValue();
-                    }, this.uniqueID);
-                }
-                _super.prototype.setDataContext.call(this, v);
-                self._updateValue();
-            }
-        };
-        ProductAutoComplete.prototype.getDataContext = function () { return _super.prototype.getDataContext.call(this); };
-        Object.defineProperty(ProductAutoComplete.prototype, "currentSelection", {
-            get: function () {
-                if (!!this.gridDataSource.currentItem) {
-                    return this.gridDataSource.currentItem['ProductID'];
-                }
-                else {
-                    return null;
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return ProductAutoComplete;
-    }(AUTOCOMPLETE.AutoCompleteElView));
-    exports.ProductAutoComplete = ProductAutoComplete;
-    function initModule(app) {
-        app.registerElView('productAutocomplete', ProductAutoComplete);
-    }
-    exports.initModule = initModule;
-    ;
 });
 define("mastDetDemo/main", ["require", "exports", "jriapp", "common", "autocomplete", "mastDetDemo/prodAutocomplete", "mastDetDemo/app"], function (require, exports, RIAPP, COMMON, AUTOCOMPLETE, PRODAUTOCOMPLETE, app_1) {
     "use strict";

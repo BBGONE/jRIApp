@@ -266,7 +266,7 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
         query.orderBy(this._fieldName);
         this._isLoading = true;
         this.objEvents.raiseProp('isLoading');
-        query.load().finally(function (res) {
+        query.load().finally(function() {
             self._isLoading = false;
             self.objEvents.raiseProp('isLoading');
         });

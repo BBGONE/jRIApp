@@ -1,5 +1,4 @@
-﻿/// <reference path="../../built/shared/shared.d.ts" />
-import * as RIAPP from "jriapp";
+﻿import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
 
 import * as DEMODB from "./domainModel";

@@ -1,7 +1,3 @@
-/// <reference path="../../jriapp/jriapp_shared.d.ts" />
-/// <reference path="../../jriapp/jriapp.d.ts" />
-/// <reference path="../../jriapp/jriapp_ui.d.ts" />
-/// <reference path="../../jriapp/jriapp_db.d.ts" />
 declare module "common" {
     import * as RIAPP from "jriapp";
     import * as dbMOD from "jriapp_db";

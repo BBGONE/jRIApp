@@ -1,5 +1,4 @@
-﻿/// <reference path="../../built/shared/shared.d.ts" />
-import * as RIAPP from "jriapp";
+﻿import * as RIAPP from "jriapp";
 import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
 import * as MONTHPICKER from "monthpicker";

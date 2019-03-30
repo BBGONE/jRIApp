@@ -1,5 +1,4 @@
-﻿/// <reference path="../../built/shared/shared.d.ts" />
-import * as RIAPP from "jriapp";
+﻿import * as RIAPP from "jriapp";
 import * as uiMOD from "jriapp_ui";
 import * as COMMON from "common";
 

@@ -2306,500 +2306,7 @@ define("routes", ["require", "exports", "jriapp", "animation"], function (requir
     }(RIAPP.BaseObject));
     exports.AddressRoute = AddressRoute;
 });
-define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "addAddressVM"], function (require, exports, RIAPP, dbMOD, addAddressVM_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var CustomerAddressVM = (function (_super) {
-        __extends(CustomerAddressVM, _super);
-        function CustomerAddressVM(customerVM) {
-            var _this = _super.call(this, customerVM.app) || this;
-            var self = _this;
-            _this._customerVM = customerVM;
-            _this._addAddressVM = null;
-            _this._currentCustomer = self._customerVM.currentItem;
-            _this._addressesDb = _this.dbSets.Address;
-            _this._custAdressDb = _this.dbSets.CustomerAddress;
-            _this._custAdressDb.addOnItemDeleting(function (_s, args) {
-                if (!confirm('Are you sure that you want to unlink Address from this customer?'))
-                    args.isCancel = true;
-            }, self.uniqueID);
-            _this._custAdressDb.addOnBeginEdit(function (_s, args) {
-                var item = args.item;
-                var address = item.Address;
-                if (!!address)
-                    address._aspect.beginEdit();
-            }, self.uniqueID);
-            _this._custAdressDb.addOnEndEdit(function (_s, args) {
-                var item = args.item;
-                var address = item.Address;
-                if (!args.isCanceled) {
-                    if (!!address)
-                        address._aspect.endEdit();
-                }
-                else {
-                    if (address)
-                        address._aspect.cancelEdit();
-                }
-            }, self.uniqueID);
-            _this._addressesDb.addOnItemDeleting(function (_s, args) {
-                if (!confirm('Are you sure that you want to delete the Customer\'s Address?'))
-                    args.isCancel = true;
-            }, self.uniqueID);
-            _this._addressesView = new dbMOD.DataView({
-                dataSource: _this._addressesDb,
-                fn_sort: function (a, b) { return a.AddressID - b.AddressID; },
-                fn_filter: function (item) {
-                    if (!self._currentCustomer)
-                        return false;
-                    return item.CustomerAddresses.some(function (ca) {
-                        return self._currentCustomer === ca.Customer;
-                    });
-                },
-                fn_itemsProvider: function (ds) {
-                    if (!self._currentCustomer)
-                        return [];
-                    var custAdrs = self._currentCustomer.CustomerAddresses;
-                    return custAdrs.map(function (m) {
-                        return m.Address;
-                    }).filter(function (address) {
-                        return !!address;
-                    });
-                }
-            });
-            _this._custAdressView.addOnViewRefreshed(function (s, a) {
-                self._addressesView.refresh();
-            }, self.uniqueID);
-            _this._customerVM.objEvents.onProp('currentItem', function (_s, args) {
-                self._currentCustomer = self._customerVM.currentItem;
-                self.objEvents.raiseProp('currentCustomer');
-            }, self.uniqueID);
-            return _this;
-        }
-        CustomerAddressVM.prototype._loadAddresses = function (addressIDs, isClearTable) {
-            var query = this._addressesDb.createReadAddressByIdsQuery({ addressIDs: addressIDs });
-            query.isClearPrevData = isClearTable;
-            return query.load();
-        };
-        CustomerAddressVM.prototype._addNewAddress = function () {
-            var adr = this.addressesView.addNew();
-            return adr;
-        };
-        CustomerAddressVM.prototype._addNewCustAddress = function (address) {
-            var cust = this.currentCustomer;
-            var ca = this.custAdressView.addNew();
-            ca.CustomerID = cust.CustomerID;
-            ca.AddressType = "Main Office";
-            ca.Address = address;
-            ca._aspect.endEdit();
-            return ca;
-        };
-        CustomerAddressVM.prototype.load = function (customers) {
-            var custArr = customers || [];
-            var custIDs = custArr.map(function (item) {
-                return item.CustomerID;
-            });
-            var query = this._custAdressDb.createReadAddressForCustomersQuery({ custIDs: custIDs });
-            query.load();
-        };
-        CustomerAddressVM.prototype.dispose = function () {
-            if (this.getIsDisposed())
-                return;
-            this.setDisposing();
-            if (!!this._addressesDb) {
-                this._addressesDb.objEvents.offNS(this.uniqueID);
-            }
-            if (!!this._custAdressDb) {
-                this._custAdressDb.objEvents.offNS(this.uniqueID);
-            }
-            if (!!this._customerVM) {
-                this._customerVM.objEvents.offNS(this.uniqueID);
-            }
-            if (!!this._custAdressView) {
-                this._custAdressView.objEvents.offNS(this.uniqueID);
-            }
-            if (this._addAddressVM) {
-                this._addAddressVM.dispose();
-                this._addAddressVM = null;
-            }
-            _super.prototype.dispose.call(this);
-        };
-        Object.defineProperty(CustomerAddressVM.prototype, "_custAdressView", {
-            get: function () { return this._customerVM.custAdressView; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerAddressVM.prototype, "dbContext", {
-            get: function () { return this.app.dbContext; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerAddressVM.prototype, "dbSets", {
-            get: function () { return this.dbContext.dbSets; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerAddressVM.prototype, "addressesDb", {
-            get: function () { return this._addressesDb; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerAddressVM.prototype, "custAdressDb", {
-            get: function () { return this._custAdressDb; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerAddressVM.prototype, "addressesView", {
-            get: function () { return this._addressesView; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerAddressVM.prototype, "custAdressView", {
-            get: function () { return this._custAdressView; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerAddressVM.prototype, "addAddressVM", {
-            get: function () {
-                if (!this._addAddressVM) {
-                    this._addAddressVM = new addAddressVM_1.AddAddressVM(this);
-                }
-                return this._addAddressVM;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerAddressVM.prototype, "currentCustomer", {
-            get: function () { return this._currentCustomer; },
-            enumerable: true,
-            configurable: true
-        });
-        return CustomerAddressVM;
-    }(RIAPP.ViewModel));
-    exports.CustomerAddressVM = CustomerAddressVM;
-});
-define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "gridEvents", "routes", "custAddressVM", "orderVM"], function (require, exports, RIAPP, dbMOD, gridEvents_2, routes_1, custAddressVM_1, orderVM_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var CustomerVM = (function (_super) {
-        __extends(CustomerVM, _super);
-        function CustomerVM(app) {
-            var _this = _super.call(this, app) || this;
-            var self = _this;
-            _this._dbSet = _this.dbSets.Customer;
-            _this._dbSet.isSubmitOnDelete = true;
-            _this._propWatcher = new RIAPP.PropWatcher();
-            _this._uiMainRoute = new routes_1.MainRoute();
-            _this._uiCustDetRoute = new routes_1.CustDetRoute();
-            _this._uiMainRoute.objEvents.onProp('viewName', function (sender) {
-                self._uiCustDetRoute.reset();
-                if (sender.viewName === sender.custTemplName) {
-                    setTimeout(function () {
-                        if (!!self._gridEvents) {
-                            self._gridEvents.focusGrid();
-                        }
-                    }, 0);
-                }
-            });
-            _this._gridEvents = new gridEvents_2.CustomerGridEvents(_this);
-            _this._dbSet.addOnItemDeleting(function (_s, args) {
-                if (!confirm('Are you sure that you want to delete customer?'))
-                    args.isCancel = true;
-            }, self.uniqueID);
-            _this._dbSet.addOnPageIndexChanged(function (_s, args) {
-                self.objEvents.raise('page_changed', {});
-            }, self.uniqueID);
-            _this._dbSet.addOnItemAdded(function (s, args) {
-                args.item.NameStyle = false;
-                args.item.ComplexProp.LastName = "Dummy1";
-                args.item.ComplexProp.FirstName = "Dummy2";
-            });
-            _this._editCommand = new RIAPP.Command(function () {
-                self.currentItem._aspect.beginEdit();
-            }, function () {
-                return !!self.currentItem;
-            });
-            _this._endEditCommand = new RIAPP.Command(function () {
-                if (self.currentItem._aspect.endEdit())
-                    self.dbContext.submitChanges();
-            }, function () {
-                return !!self.currentItem;
-            });
-            _this._cancelEditCommand = new RIAPP.Command(function () {
-                self.currentItem._aspect.cancelEdit();
-                self.dbContext.rejectChanges();
-            }, function () {
-                return !!self.currentItem;
-            });
-            _this._addNewCommand = new RIAPP.Command(function () {
-                self._dbSet.addNew();
-            });
-            _this._saveCommand = new RIAPP.Command(function () {
-                self.dbContext.submitChanges();
-            }, function () {
-                return self.dbContext.isHasChanges;
-            });
-            _this._undoCommand = new RIAPP.Command(function () {
-                self.dbContext.rejectChanges();
-            }, function () {
-                return self.dbContext.isHasChanges;
-            });
-            _this._loadCommand = new RIAPP.Command(function () {
-                self.load();
-            });
-            _this._switchViewCommand = new RIAPP.Command(function (param) {
-                self.uiMainRoute.viewName = param;
-            });
-            _this._switchDetViewCommand = new RIAPP.Command(function (param) {
-                self.uiCustDetRoute.viewName = param;
-            });
-            _this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function () {
-                self._saveCommand.raiseCanExecuteChanged();
-                self._undoCommand.raiseCanExecuteChanged();
-            });
-            _this._propWatcher.addPropWatch(_this._dbSet, 'currentItem', function () {
-                self._editCommand.raiseCanExecuteChanged();
-                self._endEditCommand.raiseCanExecuteChanged();
-                self._cancelEditCommand.raiseCanExecuteChanged();
-                self._onCurrentChanged();
-            });
-            _this._dbSet.addOnCleared(function () {
-                self.dbSets.CustomerAddress.clear();
-                self.dbSets.Address.clear();
-            }, self.uniqueID);
-            var custAssoc = self.dbContext.associations.getCustAddrToCustomer();
-            _this._custAdressView = new dbMOD.ChildDataView({
-                association: custAssoc,
-                fn_sort: function (a, b) { return a.AddressID - b.AddressID; }
-            });
-            _this._ordersVM = new orderVM_1.OrderVM(_this);
-            _this._customerAddressVM = new custAddressVM_1.CustomerAddressVM(_this);
-            return _this;
-        }
-        CustomerVM.prototype._onCurrentChanged = function () {
-            this._custAdressView.parentItem = this._dbSet.currentItem;
-            this.objEvents.raiseProp('currentItem');
-        };
-        CustomerVM.prototype._onGridPageChanged = function () {
-        };
-        CustomerVM.prototype._onGridRowSelected = function (item) {
-        };
-        CustomerVM.prototype._onGridRowExpanded = function (item) {
-            this.objEvents.raise('row_expanded', { customer: item, isExpanded: true });
-        };
-        CustomerVM.prototype._onGridRowCollapsed = function (item) {
-            this.objEvents.raise('row_expanded', { customer: item, isExpanded: false });
-        };
-        CustomerVM.prototype.load = function () {
-            var query = this._dbSet.createReadCustomerQuery({ includeNav: true });
-            query.pageSize = 50;
-            query.orderBy('ComplexProp.LastName').thenBy('ComplexProp.MiddleName').thenBy('ComplexProp.FirstName');
-            return this.dbContext.load(query);
-        };
-        CustomerVM.prototype.dispose = function () {
-            if (this.getIsDisposed())
-                return;
-            this.setDisposing();
-            this._propWatcher.dispose();
-            this._propWatcher = null;
-            if (!!this._dbSet) {
-                this._dbSet.objEvents.offNS(this.uniqueID);
-            }
-            this._gridEvents.dispose();
-            this._gridEvents = null;
-            this._ordersVM.dispose();
-            this._ordersVM = null;
-            this._customerAddressVM.dispose();
-            this._customerAddressVM = null;
-            this._custAdressView.dispose();
-            this._custAdressView = null;
-            _super.prototype.dispose.call(this);
-        };
-        Object.defineProperty(CustomerVM.prototype, "dbContext", {
-            get: function () { return this.app.dbContext; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "dbSets", {
-            get: function () { return this.dbContext.dbSets; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "dbSet", {
-            get: function () { return this._dbSet; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "currentItem", {
-            get: function () { return this._dbSet.currentItem; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "editCommand", {
-            get: function () { return this._editCommand; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "endEditCommand", {
-            get: function () { return this._endEditCommand; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "cancelEditCommand", {
-            get: function () { return this._cancelEditCommand; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "addNewCommand", {
-            get: function () { return this._addNewCommand; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "saveCommand", {
-            get: function () { return this._saveCommand; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "undoCommand", {
-            get: function () { return this._undoCommand; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "loadCommand", {
-            get: function () { return this._loadCommand; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "ordersVM", {
-            get: function () { return this._ordersVM; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "custAdressView", {
-            get: function () { return this._custAdressView; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "customerAddressVM", {
-            get: function () { return this._customerAddressVM; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "switchViewCommand", {
-            get: function () { return this._switchViewCommand; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "switchDetViewCommand", {
-            get: function () { return this._switchDetViewCommand; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "uiMainRoute", {
-            get: function () { return this._uiMainRoute; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "uiCustDetRoute", {
-            get: function () { return this._uiCustDetRoute; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CustomerVM.prototype, "gridEvents", {
-            get: function () { return this._gridEvents; },
-            enumerable: true,
-            configurable: true
-        });
-        return CustomerVM;
-    }(RIAPP.ViewModel));
-    exports.CustomerVM = CustomerVM;
-});
-define("app", ["require", "exports", "jriapp", "domainModel", "common", "customerVM"], function (require, exports, RIAPP, DEMODB, common_1, customerVM_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var DemoApplication = (function (_super) {
-        __extends(DemoApplication, _super);
-        function DemoApplication(options) {
-            var _this = _super.call(this, options) || this;
-            _this._dbContext = null;
-            _this._errorVM = null;
-            _this._customerVM = null;
-            return _this;
-        }
-        DemoApplication.prototype.onStartUp = function () {
-            var self = this, options = self.options;
-            this._dbContext = new DEMODB.DbContext();
-            this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
-            function toText(str) {
-                if (str === null)
-                    return '';
-                else
-                    return str;
-            }
-            ;
-            this._dbContext.dbSets.Customer.defineComplexProp_NameField(function (item) {
-                return toText(item.ComplexProp.LastName) + '  ' + toText(item.ComplexProp.MiddleName) + '  ' + toText(item.ComplexProp.FirstName);
-            });
-            this.registerSvc("$dbContext", this._dbContext);
-            this._errorVM = new common_1.ErrorViewModel(this);
-            this._customerVM = new customerVM_1.CustomerVM(this);
-            function handleError(sender, data) {
-                self._handleError(sender, data);
-            }
-            ;
-            this.objEvents.addOnError(handleError);
-            this._dbContext.objEvents.addOnError(handleError);
-            _super.prototype.onStartUp.call(this);
-        };
-        DemoApplication.prototype._handleError = function (sender, data) {
-            debugger;
-            data.isHandled = true;
-            this.errorVM.error = data.error;
-            this.errorVM.showDialog();
-        };
-        DemoApplication.prototype.dispose = function () {
-            if (this.getIsDisposed())
-                return;
-            this.setDisposing();
-            var self = this;
-            try {
-                self._errorVM.dispose();
-                self._customerVM.dispose();
-                self._dbContext.dispose();
-            }
-            finally {
-                _super.prototype.dispose.call(this);
-            }
-        };
-        Object.defineProperty(DemoApplication.prototype, "options", {
-            get: function () { return this._options; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DemoApplication.prototype, "dbContext", {
-            get: function () { return this._dbContext; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DemoApplication.prototype, "errorVM", {
-            get: function () { return this._errorVM; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DemoApplication.prototype, "customerVM", {
-            get: function () { return this._customerVM; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DemoApplication.prototype, "TEXT", {
-            get: function () { return RIAPP.LocaleSTRS.TEXT; },
-            enumerable: true,
-            configurable: true
-        });
-        return DemoApplication;
-    }(RIAPP.Application));
-    exports.DemoApplication = DemoApplication;
-});
-define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "common", "routes"], function (require, exports, RIAPP, dbMOD, uiMOD, COMMON, routes_2) {
+define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "common", "routes"], function (require, exports, RIAPP, dbMOD, uiMOD, COMMON, routes_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = RIAPP.Utils;
@@ -2815,7 +2322,7 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
             _this._newAddress = null;
             _this._dataGrid = null;
             _this._searchString = null;
-            _this._uiAddressRoute = new routes_2.AddressRoute();
+            _this._uiAddressRoute = new routes_1.AddressRoute();
             _this._dialogVM = new uiMOD.DialogVM(self.app);
             var dialogOptions = {
                 templateID: 'custAdrGroup.addAddressTemplate',
@@ -3137,6 +2644,499 @@ define("addAddressVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"
         return AddAddressVM;
     }(RIAPP.ViewModel));
     exports.AddAddressVM = AddAddressVM;
+});
+define("custAddressVM", ["require", "exports", "jriapp", "jriapp_db", "addAddressVM"], function (require, exports, RIAPP, dbMOD, addAddressVM_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var CustomerAddressVM = (function (_super) {
+        __extends(CustomerAddressVM, _super);
+        function CustomerAddressVM(customerVM) {
+            var _this = _super.call(this, customerVM.app) || this;
+            var self = _this;
+            _this._customerVM = customerVM;
+            _this._addAddressVM = null;
+            _this._currentCustomer = self._customerVM.currentItem;
+            _this._addressesDb = _this.dbSets.Address;
+            _this._custAdressDb = _this.dbSets.CustomerAddress;
+            _this._custAdressDb.addOnItemDeleting(function (_s, args) {
+                if (!confirm('Are you sure that you want to unlink Address from this customer?'))
+                    args.isCancel = true;
+            }, self.uniqueID);
+            _this._custAdressDb.addOnBeginEdit(function (_s, args) {
+                var item = args.item;
+                var address = item.Address;
+                if (!!address)
+                    address._aspect.beginEdit();
+            }, self.uniqueID);
+            _this._custAdressDb.addOnEndEdit(function (_s, args) {
+                var item = args.item;
+                var address = item.Address;
+                if (!args.isCanceled) {
+                    if (!!address)
+                        address._aspect.endEdit();
+                }
+                else {
+                    if (address)
+                        address._aspect.cancelEdit();
+                }
+            }, self.uniqueID);
+            _this._addressesDb.addOnItemDeleting(function (_s, args) {
+                if (!confirm('Are you sure that you want to delete the Customer\'s Address?'))
+                    args.isCancel = true;
+            }, self.uniqueID);
+            _this._addressesView = new dbMOD.DataView({
+                dataSource: _this._addressesDb,
+                fn_sort: function (a, b) { return a.AddressID - b.AddressID; },
+                fn_filter: function (item) {
+                    if (!self._currentCustomer)
+                        return false;
+                    return item.CustomerAddresses.some(function (ca) {
+                        return self._currentCustomer === ca.Customer;
+                    });
+                },
+                fn_itemsProvider: function (ds) {
+                    if (!self._currentCustomer)
+                        return [];
+                    var custAdrs = self._currentCustomer.CustomerAddresses;
+                    return custAdrs.map(function (m) {
+                        return m.Address;
+                    }).filter(function (address) {
+                        return !!address;
+                    });
+                }
+            });
+            _this._custAdressView.addOnViewRefreshed(function (s, a) {
+                self._addressesView.refresh();
+            }, self.uniqueID);
+            _this._customerVM.objEvents.onProp('currentItem', function (_s, args) {
+                self._currentCustomer = self._customerVM.currentItem;
+                self.objEvents.raiseProp('currentCustomer');
+            }, self.uniqueID);
+            return _this;
+        }
+        CustomerAddressVM.prototype._loadAddresses = function (addressIDs, isClearTable) {
+            var query = this._addressesDb.createReadAddressByIdsQuery({ addressIDs: addressIDs });
+            query.isClearPrevData = isClearTable;
+            return query.load();
+        };
+        CustomerAddressVM.prototype._addNewAddress = function () {
+            var adr = this.addressesView.addNew();
+            return adr;
+        };
+        CustomerAddressVM.prototype._addNewCustAddress = function (address) {
+            var cust = this.currentCustomer;
+            var ca = this.custAdressView.addNew();
+            ca.CustomerID = cust.CustomerID;
+            ca.AddressType = "Main Office";
+            ca.Address = address;
+            ca._aspect.endEdit();
+            return ca;
+        };
+        CustomerAddressVM.prototype.load = function (customers) {
+            var custArr = customers || [];
+            var custIDs = custArr.map(function (item) {
+                return item.CustomerID;
+            });
+            var query = this._custAdressDb.createReadAddressForCustomersQuery({ custIDs: custIDs });
+            query.load();
+        };
+        CustomerAddressVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
+                return;
+            this.setDisposing();
+            if (!!this._addressesDb) {
+                this._addressesDb.objEvents.offNS(this.uniqueID);
+            }
+            if (!!this._custAdressDb) {
+                this._custAdressDb.objEvents.offNS(this.uniqueID);
+            }
+            if (!!this._customerVM) {
+                this._customerVM.objEvents.offNS(this.uniqueID);
+            }
+            if (!!this._custAdressView) {
+                this._custAdressView.objEvents.offNS(this.uniqueID);
+            }
+            if (this._addAddressVM) {
+                this._addAddressVM.dispose();
+                this._addAddressVM = null;
+            }
+            _super.prototype.dispose.call(this);
+        };
+        Object.defineProperty(CustomerAddressVM.prototype, "_custAdressView", {
+            get: function () { return this._customerVM.custAdressView; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressVM.prototype, "dbContext", {
+            get: function () { return this.app.dbContext; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressVM.prototype, "dbSets", {
+            get: function () { return this.dbContext.dbSets; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressVM.prototype, "addressesDb", {
+            get: function () { return this._addressesDb; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressVM.prototype, "custAdressDb", {
+            get: function () { return this._custAdressDb; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressVM.prototype, "addressesView", {
+            get: function () { return this._addressesView; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressVM.prototype, "custAdressView", {
+            get: function () { return this._custAdressView; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressVM.prototype, "addAddressVM", {
+            get: function () {
+                if (!this._addAddressVM) {
+                    this._addAddressVM = new addAddressVM_1.AddAddressVM(this);
+                }
+                return this._addAddressVM;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressVM.prototype, "currentCustomer", {
+            get: function () { return this._currentCustomer; },
+            enumerable: true,
+            configurable: true
+        });
+        return CustomerAddressVM;
+    }(RIAPP.ViewModel));
+    exports.CustomerAddressVM = CustomerAddressVM;
+});
+define("customerVM", ["require", "exports", "jriapp", "jriapp_db", "gridEvents", "routes", "custAddressVM", "orderVM"], function (require, exports, RIAPP, dbMOD, gridEvents_2, routes_2, custAddressVM_1, orderVM_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var CustomerVM = (function (_super) {
+        __extends(CustomerVM, _super);
+        function CustomerVM(app) {
+            var _this = _super.call(this, app) || this;
+            var self = _this;
+            _this._dbSet = _this.dbSets.Customer;
+            _this._dbSet.isSubmitOnDelete = true;
+            _this._propWatcher = new RIAPP.PropWatcher();
+            _this._uiMainRoute = new routes_2.MainRoute();
+            _this._uiCustDetRoute = new routes_2.CustDetRoute();
+            _this._uiMainRoute.objEvents.onProp('viewName', function (sender) {
+                self._uiCustDetRoute.reset();
+                if (sender.viewName === sender.custTemplName) {
+                    setTimeout(function () {
+                        if (!!self._gridEvents) {
+                            self._gridEvents.focusGrid();
+                        }
+                    }, 0);
+                }
+            });
+            _this._gridEvents = new gridEvents_2.CustomerGridEvents(_this);
+            _this._dbSet.addOnItemDeleting(function (_s, args) {
+                if (!confirm('Are you sure that you want to delete customer?'))
+                    args.isCancel = true;
+            }, self.uniqueID);
+            _this._dbSet.addOnPageIndexChanged(function (_s, args) {
+                self.objEvents.raise('page_changed', {});
+            }, self.uniqueID);
+            _this._dbSet.addOnItemAdded(function (s, args) {
+                args.item.NameStyle = false;
+                args.item.ComplexProp.LastName = "Dummy1";
+                args.item.ComplexProp.FirstName = "Dummy2";
+            });
+            _this._editCommand = new RIAPP.Command(function () {
+                self.currentItem._aspect.beginEdit();
+            }, function () {
+                return !!self.currentItem;
+            });
+            _this._endEditCommand = new RIAPP.Command(function () {
+                if (self.currentItem._aspect.endEdit())
+                    self.dbContext.submitChanges();
+            }, function () {
+                return !!self.currentItem;
+            });
+            _this._cancelEditCommand = new RIAPP.Command(function () {
+                self.currentItem._aspect.cancelEdit();
+                self.dbContext.rejectChanges();
+            }, function () {
+                return !!self.currentItem;
+            });
+            _this._addNewCommand = new RIAPP.Command(function () {
+                self._dbSet.addNew();
+            });
+            _this._saveCommand = new RIAPP.Command(function () {
+                self.dbContext.submitChanges();
+            }, function () {
+                return self.dbContext.isHasChanges;
+            });
+            _this._undoCommand = new RIAPP.Command(function () {
+                self.dbContext.rejectChanges();
+            }, function () {
+                return self.dbContext.isHasChanges;
+            });
+            _this._loadCommand = new RIAPP.Command(function () {
+                self.load();
+            });
+            _this._switchViewCommand = new RIAPP.Command(function (param) {
+                self.uiMainRoute.viewName = param;
+            });
+            _this._switchDetViewCommand = new RIAPP.Command(function (param) {
+                self.uiCustDetRoute.viewName = param;
+            });
+            _this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function () {
+                self._saveCommand.raiseCanExecuteChanged();
+                self._undoCommand.raiseCanExecuteChanged();
+            });
+            _this._propWatcher.addPropWatch(_this._dbSet, 'currentItem', function () {
+                self._editCommand.raiseCanExecuteChanged();
+                self._endEditCommand.raiseCanExecuteChanged();
+                self._cancelEditCommand.raiseCanExecuteChanged();
+                self._onCurrentChanged();
+            });
+            _this._dbSet.addOnCleared(function () {
+                self.dbSets.CustomerAddress.clear();
+                self.dbSets.Address.clear();
+            }, self.uniqueID);
+            var custAssoc = self.dbContext.associations.getCustAddrToCustomer();
+            _this._custAdressView = new dbMOD.ChildDataView({
+                association: custAssoc,
+                fn_sort: function (a, b) { return a.AddressID - b.AddressID; }
+            });
+            _this._ordersVM = new orderVM_1.OrderVM(_this);
+            _this._customerAddressVM = new custAddressVM_1.CustomerAddressVM(_this);
+            return _this;
+        }
+        CustomerVM.prototype._onCurrentChanged = function () {
+            this._custAdressView.parentItem = this._dbSet.currentItem;
+            this.objEvents.raiseProp('currentItem');
+        };
+        CustomerVM.prototype._onGridPageChanged = function () {
+        };
+        CustomerVM.prototype._onGridRowSelected = function (item) {
+        };
+        CustomerVM.prototype._onGridRowExpanded = function (item) {
+            this.objEvents.raise('row_expanded', { customer: item, isExpanded: true });
+        };
+        CustomerVM.prototype._onGridRowCollapsed = function (item) {
+            this.objEvents.raise('row_expanded', { customer: item, isExpanded: false });
+        };
+        CustomerVM.prototype.load = function () {
+            var query = this._dbSet.createReadCustomerQuery({ includeNav: true });
+            query.pageSize = 50;
+            query.orderBy('ComplexProp.LastName').thenBy('ComplexProp.MiddleName').thenBy('ComplexProp.FirstName');
+            return this.dbContext.load(query);
+        };
+        CustomerVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
+                return;
+            this.setDisposing();
+            this._propWatcher.dispose();
+            this._propWatcher = null;
+            if (!!this._dbSet) {
+                this._dbSet.objEvents.offNS(this.uniqueID);
+            }
+            this._gridEvents.dispose();
+            this._gridEvents = null;
+            this._ordersVM.dispose();
+            this._ordersVM = null;
+            this._customerAddressVM.dispose();
+            this._customerAddressVM = null;
+            this._custAdressView.dispose();
+            this._custAdressView = null;
+            _super.prototype.dispose.call(this);
+        };
+        Object.defineProperty(CustomerVM.prototype, "dbContext", {
+            get: function () { return this.app.dbContext; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "dbSets", {
+            get: function () { return this.dbContext.dbSets; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "dbSet", {
+            get: function () { return this._dbSet; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "currentItem", {
+            get: function () { return this._dbSet.currentItem; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "editCommand", {
+            get: function () { return this._editCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "endEditCommand", {
+            get: function () { return this._endEditCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "cancelEditCommand", {
+            get: function () { return this._cancelEditCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "addNewCommand", {
+            get: function () { return this._addNewCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "saveCommand", {
+            get: function () { return this._saveCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "undoCommand", {
+            get: function () { return this._undoCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "loadCommand", {
+            get: function () { return this._loadCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "ordersVM", {
+            get: function () { return this._ordersVM; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "custAdressView", {
+            get: function () { return this._custAdressView; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "customerAddressVM", {
+            get: function () { return this._customerAddressVM; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "switchViewCommand", {
+            get: function () { return this._switchViewCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "switchDetViewCommand", {
+            get: function () { return this._switchDetViewCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "uiMainRoute", {
+            get: function () { return this._uiMainRoute; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "uiCustDetRoute", {
+            get: function () { return this._uiCustDetRoute; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerVM.prototype, "gridEvents", {
+            get: function () { return this._gridEvents; },
+            enumerable: true,
+            configurable: true
+        });
+        return CustomerVM;
+    }(RIAPP.ViewModel));
+    exports.CustomerVM = CustomerVM;
+});
+define("app", ["require", "exports", "jriapp", "domainModel", "common", "customerVM"], function (require, exports, RIAPP, DEMODB, common_1, customerVM_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var DemoApplication = (function (_super) {
+        __extends(DemoApplication, _super);
+        function DemoApplication(options) {
+            var _this = _super.call(this, options) || this;
+            _this._dbContext = null;
+            _this._errorVM = null;
+            _this._customerVM = null;
+            return _this;
+        }
+        DemoApplication.prototype.onStartUp = function () {
+            var self = this, options = self.options;
+            this._dbContext = new DEMODB.DbContext();
+            this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
+            function toText(str) {
+                if (str === null)
+                    return '';
+                else
+                    return str;
+            }
+            ;
+            this._dbContext.dbSets.Customer.defineComplexProp_NameField(function (item) {
+                return toText(item.ComplexProp.LastName) + '  ' + toText(item.ComplexProp.MiddleName) + '  ' + toText(item.ComplexProp.FirstName);
+            });
+            this.registerSvc("$dbContext", this._dbContext);
+            this._errorVM = new common_1.ErrorViewModel(this);
+            this._customerVM = new customerVM_1.CustomerVM(this);
+            function handleError(sender, data) {
+                self._handleError(sender, data);
+            }
+            ;
+            this.objEvents.addOnError(handleError);
+            this._dbContext.objEvents.addOnError(handleError);
+            _super.prototype.onStartUp.call(this);
+        };
+        DemoApplication.prototype._handleError = function (sender, data) {
+            debugger;
+            data.isHandled = true;
+            this.errorVM.error = data.error;
+            this.errorVM.showDialog();
+        };
+        DemoApplication.prototype.dispose = function () {
+            if (this.getIsDisposed())
+                return;
+            this.setDisposing();
+            var self = this;
+            try {
+                self._errorVM.dispose();
+                self._customerVM.dispose();
+                self._dbContext.dispose();
+            }
+            finally {
+                _super.prototype.dispose.call(this);
+            }
+        };
+        Object.defineProperty(DemoApplication.prototype, "options", {
+            get: function () { return this._options; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DemoApplication.prototype, "dbContext", {
+            get: function () { return this._dbContext; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DemoApplication.prototype, "errorVM", {
+            get: function () { return this._errorVM; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DemoApplication.prototype, "customerVM", {
+            get: function () { return this._customerVM; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DemoApplication.prototype, "TEXT", {
+            get: function () { return RIAPP.LocaleSTRS.TEXT; },
+            enumerable: true,
+            configurable: true
+        });
+        return DemoApplication;
+    }(RIAPP.Application));
+    exports.DemoApplication = DemoApplication;
 });
 define("gridElView", ["require", "exports", "jriapp_ui"], function (require, exports, uiMOD) {
     "use strict";

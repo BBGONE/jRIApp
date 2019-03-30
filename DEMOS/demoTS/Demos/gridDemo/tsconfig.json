@@ -1,16 +1,29 @@
 ﻿{
-    "compilerOptions": {
-        "module": "amd",
-        "target": "es5",
-        "noImplicitAny": true,
-        "removeComments": true,
-        "preserveConstEnums": true,
-        "outFile": "../../built/demo/gridDemo/main.js",
-        "declaration": false,
-        "sourceMap": false,
-        "noFallthroughCasesInSwitch": true,
-        "noUnusedLocals": true,
-        "noImplicitThis": true,
-        "noImplicitReturns": true
-    }
+  "compilerOptions": {
+    "module": "amd",
+    "target": "es5",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "outFile": "../../built/demo/gridDemo/main.js",
+    "declaration": false,
+    "sourceMap": false,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true
+  },
+  "files": [
+    "main.ts"
+  ],
+  "include": [
+    "../../built/shared/shared.d.ts",
+    "../../jriapp/jriapp_shared.d.ts",
+    "../../jriapp/jriapp.d.ts",
+    "../../jriapp/jriapp_ui.d.ts",
+    "../../jriapp/jriapp_db.d.ts",
+    "../../thirdparty/moment.d.ts",
+    "../../thirdparty/jquery.d.ts",
+    "../../thirdparty/jqueryui.d.ts"
+  ]
 }

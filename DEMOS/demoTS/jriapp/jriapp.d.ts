@@ -1,5 +1,3 @@
-/// <reference path="../thirdparty/moment.d.ts" />
-/// <reference path="jriapp_shared.d.ts" />
 declare module "jriapp/const" {
     export const enum SERVICES {
         TOOLTIP_SVC = "ITooltipService",
@@ -74,7 +72,7 @@ declare module "jriapp/const" {
 }
 declare module "jriapp/int" {
     import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "jriapp/const";
-    import { IBaseObject, IDisposable, IIndexer, IPromise, IVoidPromise, IErrorHandler, TEventHandler, IConfig, IValidationInfo } from "jriapp_shared";
+    import { IBaseObject, IDisposable, IIndexer, IPromise, IErrorHandler, TEventHandler, IConfig, IValidationInfo } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     export interface IJRIAppConfig extends IConfig {
         frameworkPath?: string;
@@ -223,7 +221,7 @@ declare module "jriapp/int" {
     export interface IDataBindingService extends IDisposable {
         bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
         bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
-        setUpBindings(): IVoidPromise;
+        setUpBindings(): IPromise<void>;
         bind(opts: TBindingOptions): IBinding;
     }
     export type TBindingOptions = {
@@ -1017,5 +1015,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.21.2";
+    export const VERSION = "2.21.3";
 }

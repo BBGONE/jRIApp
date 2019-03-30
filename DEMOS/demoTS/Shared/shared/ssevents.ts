@@ -1,5 +1,4 @@
-﻿/// <reference path="../../jriapp/jriapp.d.ts" />
-import * as RIAPP from "jriapp";
+﻿import * as RIAPP from "jriapp";
 
 //server side events client
 const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
