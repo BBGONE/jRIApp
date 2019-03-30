@@ -1,8 +1,3 @@
-/// <reference path="jriapp.d.ts" />
-/// <reference path="jriapp_shared.d.ts" />
-/// <reference path="../thirdparty/jquery.d.ts" />
-/// <reference path="../thirdparty/jqueryui.d.ts" />
-/// <reference path="../thirdparty/qtip2.d.ts" />
 declare module "jriapp_ui/int" {
     import { IValidationInfo } from "jriapp_shared";
     import { IViewErrorsService } from "jriapp/int";

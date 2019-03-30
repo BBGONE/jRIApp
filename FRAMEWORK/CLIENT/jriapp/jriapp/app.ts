@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     APP_NAME, IIndexer, TEventHandler, IPromise, TErrorHandler,
-    IBaseObject, LocaleERRS, BaseObject, Utils
+    IBaseObject, LocaleERRS, BaseObject, Utils, IThenable
 } from "jriapp_shared";
 import { STORE_KEY } from "./const";
 import {
@@ -229,7 +229,7 @@ export class Application extends BaseObject implements IApplication {
             try {
                 self._initAppModules();
                 const onStartupRes1: any = self.onStartUp();
-                let setupPromise1: PromiseLike<void>;
+                let setupPromise1: IThenable<void>;
                 if (isThenable(onStartupRes1)) {
                     setupPromise1 = onStartupRes1;
                 } else {
@@ -239,10 +239,10 @@ export class Application extends BaseObject implements IApplication {
                 const promise = setupPromise1.then(() => {
                     self.objEvents.raise(APP_EVENTS.startup, {});
                     const onStartupRes2: any = (!!onStartUp) ? onStartUp.apply(self, [self]) : null;
-                    let setupPromise2: IPromise<void>;
+                    let setupPromise2: IThenable<void>;
 
                     if (isThenable(onStartupRes2))  {
-                        setupPromise2 = (<IPromise<any>>onStartupRes2).then(() => {
+                        setupPromise2 = onStartupRes2.then(() => {
                             return self._dataBindingService.setUpBindings();
                         }, (err) => {
                             deferred.reject(err);

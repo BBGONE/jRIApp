@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    ITaskQueue, IStatefulDeferred, IStatefulPromise, IPromise
+    ITaskQueue, IStatefulDeferred, IStatefulPromise, IPromise, IThenable
 } from "./ideferred";
 import {
     createDefer, whenAll, race, getTaskQueue, Promise, promiseSerial
@@ -26,10 +26,10 @@ export class AsyncUtils {
     static promiseSerial<T>(funcs: { (): IPromise<T>; }[]): IStatefulPromise<T[]> {
         return promiseSerial(funcs);
     }
-    static whenAll<T>(args: Array<T | PromiseLike<T>>): IStatefulPromise<T[]> {
+    static whenAll<T>(args: Array<T | IThenable<T>>): IStatefulPromise<T[]> {
         return _whenAll(args);
     }
-    static race<T>(promises: Array<IPromise<T>>): IPromise<T> {
+    static race<T>(promises: Array<IThenable<T>>): IPromise<T> {
         return _race(promises);
     }
     static getTaskQueue(): ITaskQueue {

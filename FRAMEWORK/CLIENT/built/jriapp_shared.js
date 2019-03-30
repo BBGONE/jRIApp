@@ -1940,20 +1940,18 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     exports.getTaskQueue = getTaskQueue;
     function whenAll(promises) {
         var results = [], resolved = createDefer().resolve(null);
-        var merged = promises.reduce(function (acc, p) { return acc.then(function () { return p; }).then(function (r) { return results.push(r); }); }, resolved);
+        var merged = promises.reduce(function (acc, p) { return acc.then(function () { return p; }).then(function (r) { results.push(r); return r; }); }, resolved);
         return merged.then(function () { return results; });
     }
     exports.whenAll = whenAll;
     function race(promises) {
         return new Promise(function (res, rej) {
-            promises.forEach(function (p) { return p.then(res).catch(rej); });
+            promises.forEach(function (p) { return p.then(res).then(rej, rej); });
         });
     }
     exports.race = race;
     function promiseSerial(funcs) {
-        return funcs.reduce(function (promise, func) {
-            return promise.then(function (result) { return func().then(function (res) { return result.concat(res); }); });
-        }, Promise.resolve([]));
+        return funcs.reduce(function (promise, func) { return promise.then(function (result) { return func().then(function (res) { return result.concat(res); }); }); }, Promise.resolve([]));
     }
     exports.promiseSerial = promiseSerial;
     function fn_enque(task) {
@@ -2147,10 +2145,10 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         };
         Promise.prototype.finally = function (onFinally) {
             return this._deferred._then(function (res) {
-                onFinally(res);
+                onFinally();
                 return res;
             }, function (err) {
-                onFinally(err);
+                onFinally();
                 return Promise.reject(err);
             });
         };

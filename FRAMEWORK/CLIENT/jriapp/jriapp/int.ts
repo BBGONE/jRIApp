@@ -1,8 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "./const";
 import {
-    IBaseObject, IDisposable, IIndexer, IPromise,
-    IVoidPromise, IErrorHandler, TEventHandler, IConfig, IValidationInfo
+    IBaseObject, IDisposable, IIndexer, IPromise, IErrorHandler, TEventHandler, IConfig, IValidationInfo
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 
@@ -188,7 +187,7 @@ export interface IBindArgs  {
 export interface IDataBindingService extends IDisposable {
     bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
     bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
-    setUpBindings(): IVoidPromise;
+    setUpBindings(): IPromise<void>;
     bind(opts: TBindingOptions): IBinding;
 }
 

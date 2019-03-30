@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    Utils, IIndexer, IErrorHandler, IPromise, IVoidPromise, DummyError, BaseObject
+    Utils, IIndexer, IErrorHandler, IPromise, DummyError, BaseObject
 } from "jriapp_shared";
 import { DATA_ATTR, ELVIEW_NM, BindScope } from "./const";
 import {
@@ -239,7 +239,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
 
         return defer.promise();
     }
-    setUpBindings(): IVoidPromise {
+    setUpBindings(): IPromise<void>{
         const bindScope = this._root, dataContext = this._app, self = this;
         this._cleanUp();
         const promise = this.bindElements({

@@ -1,7 +1,4 @@
-﻿/// <reference path="../../built/jriapp.d.ts" />
-/// <reference path="../../thirdparty/jquery.d.ts" />
-/// <reference path="../../thirdparty/jqueryui.d.ts" />
-/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     IPagerText, IValidateText, IText, ILocaleText, STRS, ERRS,
     IErrors, assign

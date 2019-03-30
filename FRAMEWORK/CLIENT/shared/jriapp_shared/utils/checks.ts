@@ -1,4 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { IThenable } from "./ideferred";
 const GUID_RX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const _undefined: any = void (0);
 
@@ -57,7 +58,7 @@ export class Checks {
     static isArray<T>(a: any): a is Array<T> {
         return (!a) ? false : Array.isArray(a);
     }
-    static isThenable(a: any): a is PromiseLike<any> {
+    static isThenable(a: any): a is IThenable<any> {
         return (!a) ? false : ((typeof (a) === "object") && isFunc(a.then));
     }
 }
