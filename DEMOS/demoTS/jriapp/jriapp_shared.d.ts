@@ -52,8 +52,7 @@ declare module "jriapp_shared/utils/ideferred" {
     export interface IAbortablePromise<T> extends IStatefulPromise<T>, IAbortable {
     }
     export interface IStatefulDeferred<T> extends IPromiseState {
-        resolve(value?: PromiseLike<T>): IStatefulPromise<T>;
-        resolve(value?: T): IStatefulPromise<T>;
+        resolve(value?: T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>): IStatefulPromise<T>;
         reject(error?: any): IStatefulPromise<T>;
         promise(): IStatefulPromise<T>;
     }
@@ -878,7 +877,7 @@ declare module "jriapp_shared/utils/deferred" {
         static race<T>(...promises: Array<IPromise<T>>): IPromise<T>;
         static race<T>(promises: Array<IPromise<T>>): IPromise<T>;
         static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T>;
-        static resolve<T>(value?: T, isSync?: boolean): IStatefulPromise<T>;
+        static resolve<T>(value?: T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>, isSync?: boolean): IStatefulPromise<T>;
         state(): PromiseState;
         deferred(): IStatefulDeferred<T>;
     }

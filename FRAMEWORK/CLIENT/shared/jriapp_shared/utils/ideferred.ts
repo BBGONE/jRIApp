@@ -50,8 +50,7 @@ export interface IAbortablePromise<T> extends IStatefulPromise<T>, IAbortable {
 }
 
 export interface IStatefulDeferred<T> extends IPromiseState {
-    resolve(value?: PromiseLike<T>): IStatefulPromise<T>;
-    resolve(value?: T): IStatefulPromise<T>;
+    resolve(value?: T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>): IStatefulPromise<T>;
     reject(error?: any): IStatefulPromise<T>;
     promise(): IStatefulPromise<T>;
 }

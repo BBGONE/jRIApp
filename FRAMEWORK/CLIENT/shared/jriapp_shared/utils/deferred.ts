@@ -77,10 +77,10 @@ class TaskQueue implements ITaskQueue {
 }
 
 class Callback {
-    private _dispatcher: TDispatcher;
-    private _successCB: any;
-    private _errorCB: any;
-    private _deferred: IStatefulDeferred<any>;
+    private readonly _dispatcher: TDispatcher;
+    private readonly _successCB: any;
+    private readonly _errorCB: any;
+    private readonly _deferred: IStatefulDeferred<any>;
 
     constructor(dispatcher: TDispatcher, successCB: any, errorCB: any) {
         this._dispatcher = dispatcher;
@@ -128,20 +128,20 @@ class Callback {
 }
 
 class Deferred<T> implements IStatefulDeferred<T> {
-    private _promise: IStatefulPromise<T>;
+    private readonly _promise: IStatefulPromise<T>;
+    private readonly _dispatcher: TDispatcher;
     private _stack: Array<Callback>;
     private _state: PromiseState;
     private _value: T;
     private _error: any;
-    private _dispatcher: TDispatcher;
 
     constructor(promise: IStatefulPromise<T>, dispatcher: TDispatcher) {
+        this._promise = promise;
         this._dispatcher = dispatcher;
         this._value = _undefined;
         this._error = _undefined;
         this._state = PromiseState.Pending;
         this._stack = [];
-        this._promise = promise;
     }
 
     private _resolve(value: any): IStatefulDeferred<T> {
@@ -234,11 +234,7 @@ class Deferred<T> implements IStatefulDeferred<T> {
         return cb.deferred.promise();
     }
 
-    resolve(value?: T): IStatefulPromise<T>;
-
-    resolve(value?: IPromise<T>): IStatefulPromise<T>;
-
-    resolve(value?: any): IStatefulPromise<T> {
+    resolve(value?: T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>): IStatefulPromise<T> {
         if (this._state !== PromiseState.Pending) {
             return this.promise();
         }
@@ -321,7 +317,7 @@ export class Promise<T> implements IStatefulPromise<T> {
         return deferred.promise();
     }
 
-    static resolve<T>(value?: T, isSync?: boolean): IStatefulPromise<T> {
+    static resolve<T>(value?: T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>, isSync?: boolean): IStatefulPromise<T> {
         const deferred = createDefer<T>(isSync);
         deferred.resolve(value);
         return deferred.promise();

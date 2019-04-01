@@ -2025,12 +2025,12 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     }());
     var Deferred = (function () {
         function Deferred(promise, dispatcher) {
+            this._promise = promise;
             this._dispatcher = dispatcher;
             this._value = _undefined;
             this._error = _undefined;
             this._state = 0;
             this._stack = [];
-            this._promise = promise;
         }
         Deferred.prototype._resolve = function (value) {
             var _this = this;
