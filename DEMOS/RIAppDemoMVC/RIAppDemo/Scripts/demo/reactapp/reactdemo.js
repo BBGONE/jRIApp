@@ -115,6 +115,7 @@ define("reactview", ["require", "exports", "jriapp_ui", "react-dom", "redux"], f
             var _this = _super.call(this, el, options) || this;
             _this._isRendering = false;
             _this._isDirty = false;
+            _this._isMounted = false;
             _this._store = redux_1.createStore(reducer);
             _this._state = _this._store.getState();
             _this._unsubscribe = _this._store.subscribe(function () {
@@ -123,17 +124,12 @@ define("reactview", ["require", "exports", "jriapp_ui", "react-dom", "redux"], f
                 var previous = _this._state;
                 var current = _this._store.getState();
                 _this._state = current;
-                _this.stateChanged(current, previous);
+                if (_this.isViewShouldRender(current, previous)) {
+                    _this._renderView();
+                }
             });
             return _this;
         }
-        ReactElView.prototype._checkRender = function () {
-            if (this.getIsStateDirty())
-                return;
-            if (this._isDirty) {
-                this._render();
-            }
-        };
         ReactElView.prototype._render = function () {
             var _this = this;
             if (this.getIsStateDirty()) {
@@ -147,17 +143,20 @@ define("reactview", ["require", "exports", "jriapp_ui", "react-dom", "redux"], f
             this._isDirty = false;
             react_dom_1.render(this.getMarkup(), this.el, function () {
                 _this._isRendering = false;
-                _this._checkRender();
+                if (_this._isDirty) {
+                    _this._render();
+                }
             });
         };
-        ReactElView.prototype.onModelChanged = function () {
-            if (this.getIsStateDirty())
-                return;
+        ReactElView.prototype._renderView = function () {
             this._isDirty = true;
-            this._checkRender();
+            if (this._isMounted) {
+                this._render();
+            }
         };
         ReactElView.prototype.viewMounted = function () {
-            this.onModelChanged();
+            this._isMounted = true;
+            this._renderView();
         };
         ReactElView.prototype.dispatch = function (action) {
             this._store.dispatch(action);
@@ -168,6 +167,7 @@ define("reactview", ["require", "exports", "jriapp_ui", "react-dom", "redux"], f
             this.setDisposing();
             this._isRendering = false;
             this._isDirty = false;
+            this._isMounted = false;
             this._unsubscribe();
             react_dom_1.unmountComponentAtNode(this.el);
             _super.prototype.dispose.call(this);
@@ -227,15 +227,17 @@ define("components/tempview", ["require", "exports", "react", "reactview"], func
             _this = _super.call(this, el, options, reducer) || this;
             return _this;
         }
-        TempElView.prototype.stateChanged = function (current, previous) {
+        TempElView.prototype.isViewShouldRender = function (current, previous) {
+            var res = false;
             if (current.title !== previous.title) {
                 this.objEvents.raiseProp("title");
-                this.onModelChanged();
+                res = true;
             }
             if (current.value !== previous.value) {
                 this.objEvents.raiseProp("value");
-                this.onModelChanged();
+                res = true;
             }
+            return res;
         };
         TempElView.prototype.getMarkup = function () {
             var _this = this;
@@ -443,19 +445,21 @@ define("components/pagerview", ["require", "exports", "react", "reactview", "com
             _this = _super.call(this, el, options, reducer) || this;
             return _this;
         }
-        PagerElView.prototype.stateChanged = function (current, previous) {
+        PagerElView.prototype.isViewShouldRender = function (current, previous) {
+            var res = false;
             if (current.total !== previous.total) {
                 this.objEvents.raiseProp("total");
-                this.onModelChanged();
+                res = true;
             }
             if (current.current !== previous.current) {
                 this.objEvents.raiseProp("current");
-                this.onModelChanged();
+                res = true;
             }
             if (current.visiblePages !== previous.visiblePages) {
                 this.objEvents.raiseProp("visiblePages");
-                this.onModelChanged();
+                res = true;
             }
+            return res;
         };
         PagerElView.prototype.getMarkup = function () {
             var _this = this;

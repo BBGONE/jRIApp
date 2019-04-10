@@ -18,13 +18,27 @@ export abstract class ReactElView<S> extends uiMOD.BaseElView {
     private _state: S;
     private _unsubscribe: Redux.Unsubscribe;
     private _isDirty = false;
-    private _checkRender(): void {
-        if (this.getIsStateDirty())
-            return;
-        if (this._isDirty) {
-            this._render();
-        }
+    private _isMounted = false;
+
+    constructor(el: HTMLElement, options: RIAPP.IViewOptions, reducer: Redux.Reducer<S>) {
+        super(el, options);
+        this._store = createStore(reducer);
+        this._state = this._store.getState();
+        this._unsubscribe = this._store.subscribe(() => {
+            if (this.getIsStateDirty())
+                return;
+            const previous = this._state;
+            const current = this._store.getState();
+            this._state = current;
+            if (this.isViewShouldRender(current, previous)) {
+                this._renderView();
+            }
+        });
     }
+
+    abstract isViewShouldRender(current: S, previous: S): boolean;
+    abstract getMarkup(): React.ReactElement;
+
     private _render(): void {
         if (this.getIsStateDirty()) {
             return;
@@ -42,38 +56,24 @@ export abstract class ReactElView<S> extends uiMOD.BaseElView {
             this.el,
             () => {
                 this._isRendering = false
-                this._checkRender();
+                if (this._isDirty) {
+                    this._render();
+                }
             }
         );
     }
 
-    constructor(el: HTMLElement, options: RIAPP.IViewOptions, reducer: Redux.Reducer<S>) {
-        super(el, options);
-        this._store = createStore(reducer);
-        this._state = this._store.getState();
-        this._unsubscribe = this._store.subscribe(() => {
-            if (this.getIsStateDirty())
-                return;
-            const previous = this._state;
-            const current = this._store.getState();
-            this._state = current;
-            this.stateChanged(current, previous);
-        });
-    }
-
-    abstract stateChanged(current: S, previous: S): void;
-    abstract getMarkup(): React.ReactElement;
-
-    protected onModelChanged(): void {
-        if (this.getIsStateDirty())
-            return;
+    private _renderView(): void {
         this._isDirty = true;
-        this._checkRender();
+        if (this._isMounted) {
+            this._render();
+        }
     }
 
     // if viewMounted method is present then it is called after all the properties are databound
     viewMounted(): void {
-        this.onModelChanged();
+        this._isMounted = true;
+        this._renderView();
     }
 
     protected dispatch(action: Action<any>): void {
@@ -86,6 +86,7 @@ export abstract class ReactElView<S> extends uiMOD.BaseElView {
         this.setDisposing();
         this._isRendering = false;
         this._isDirty = false;
+        this._isMounted = false;
         this._unsubscribe();
         unmountComponentAtNode(this.el);
         super.dispose();

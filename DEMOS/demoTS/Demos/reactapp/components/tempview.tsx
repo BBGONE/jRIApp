@@ -52,16 +52,20 @@ export class TempElView extends ReactElView<ITempModel> {
         super(el, options, reducer);
     }
     // override
-    stateChanged(current: ITempModel, previous: ITempModel): void {
+    isViewShouldRender(current: ITempModel, previous: ITempModel): boolean {
+        let res = false;
+
         if (current.title !== previous.title) {
             this.objEvents.raiseProp("title");
-            this.onModelChanged();
+            res = true;
         }
 
         if (current.value !== previous.value) {
             this.objEvents.raiseProp("value");
-            this.onModelChanged();
+            res = true;
         }
+
+        return res;
     }
     // override
     getMarkup(): any {

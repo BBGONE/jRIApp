@@ -5,6 +5,7 @@ import * as ReactDOM from "react-dom";
 import { ReactElView, Action } from "../reactview";
 import Pager from './pager';
 import { IPagerModel, IPagerActions } from "./int";
+import { bool } from "prop-types";
 
 export interface IPagerViewOptions extends RIAPP.IViewOptions
 {
@@ -55,22 +56,26 @@ export class PagerElView extends ReactElView<IPagerModel> {
     }
 
     // override
-    stateChanged(current: IPagerModel, previous: IPagerModel): void {
+    isViewShouldRender(current: IPagerModel, previous: IPagerModel): boolean {
+        let res = false;
         if (current.total !== previous.total) {
             this.objEvents.raiseProp("total");
-            this.onModelChanged();
+            res = true;
         }
 
         if (current.current !== previous.current) {
             this.objEvents.raiseProp("current");
-            this.onModelChanged();
+            res = true;
         }
 
         if (current.visiblePages !== previous.visiblePages) {
             this.objEvents.raiseProp("visiblePages");
-            this.onModelChanged();
+            res = true;
         }
+
+        return res;
     }
+
     // override
     getMarkup(): React.ReactElement {
          const { total = 20, current = 7, visiblePages = 6 } = this.state,
@@ -104,6 +109,7 @@ export class PagerElView extends ReactElView<IPagerModel> {
     set visiblePages(v: number) {
         this.dispatch({ type: ActionTypes.CHANGE_VISIBLE_PAGES, value: v });
     }
+
     toString(): string {
         return "PagerElView";
     }
