@@ -244,8 +244,12 @@
     <Content Include="Scripts\qtip\jquery.qtip.min.js" />
     <Content Include="Scripts\react\react-dom.development.js" />
     <Content Include="Scripts\react\react-dom.production.min.js" />
+    <Content Include="Scripts\react\react-redux.js" />
+    <Content Include="Scripts\react\react-redux.min.js" />
     <Content Include="Scripts\react\react.development.js" />
     <Content Include="Scripts\react\react.production.min.js" />
+    <Content Include="Scripts\react\redux.js" />
+    <Content Include="Scripts\react\redux.min.js" />
     <Content Include="Scripts\require.js" />
     <Content Include="Scripts\require.min.js" />
     <Content Include="Scripts\toastr\toastr.css" />

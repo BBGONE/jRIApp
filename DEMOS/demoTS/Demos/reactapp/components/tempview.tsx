@@ -2,7 +2,7 @@
 import * as uiMOD from "jriapp_ui";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { ReactElView } from "../reactview";
+import { ReactElView, Action } from "../reactview";
 import { ITempModel, ITempActions } from "./int";
 
 export interface ITempViewOptions extends RIAPP.IViewOptions
@@ -19,27 +19,53 @@ const spanStyle = {
     color: 'blue'
 };
 
+export const enum ActionTypes {
+    CHANGE_VALUE = "CHANGE_VALUE",
+    CHANGE_TITLE = "CHANGE_TITLE"
+}
+
+let initialState = { value: "0", title: "" };
+
+const reducer = (state: ITempModel, action: Redux.Action) => {
+    switch (action.type) {
+        case ActionTypes.CHANGE_VALUE:
+            return {
+                ...state,
+                value: (action as Action<string>).value
+            };
+        case ActionTypes.CHANGE_TITLE:
+            return {
+                ...state,
+                title: (action as Action<string>).value
+            };
+        default:
+            return state || initialState;
+    }
+};
+
 /**
   Demo element view wich renders the Temperature React component
  */
-export class TempElView extends ReactElView {
-    private _value: string;
-    private _title: string;
-
+export class TempElView extends ReactElView<ITempModel> {
     constructor(el: HTMLElement, options: ITempViewOptions) {
-        super(el, options);
-        this._value = options.value || "0";
-        this._title = "";
+        initialState.value = options.value || initialState.value;
+        super(el, options, reducer);
     }
     // override
-    watchChanges(): void {
-        this.propWatcher.addWatch(this, ["value", "title"], () => {
+    stateChanged(current: ITempModel, previous: ITempModel): void {
+        if (current.title !== previous.title) {
+            this.objEvents.raiseProp("title");
             this.onModelChanged();
-        });
+        }
+
+        if (current.value !== previous.value) {
+            this.objEvents.raiseProp("value");
+            this.onModelChanged();
+        }
     }
     // override
     getMarkup(): any {
-        const model: ITempModel = { value: this.value, title: this.title },
+        const model: ITempModel = this.state,
             styles = { spacer: spacerStyle, span: spanStyle },
             actions: ITempActions = { tempChanged: (temp: string) => { this.value = temp; } };
 
@@ -53,22 +79,16 @@ export class TempElView extends ReactElView {
         );
     }
     get value(): string {
-        return this._value;
+        return this.state.value;
     }
     set value(v: string) {
-        if (this._value !== v) {
-            this._value = v;
-            this.objEvents.raiseProp("value");
-        }
+        this.dispatch({ type: ActionTypes.CHANGE_VALUE, value: v });
     }
     get title(): string {
-        return this._title;
+        return this.state.title;
     }
     set title(v: string) {
-        if (this._title !== v) {
-            this._title = v;
-            this.objEvents.raiseProp("title");
-        }
+        this.dispatch({ type: ActionTypes.CHANGE_TITLE, value: v });
     }
     toString(): string {
         return "TempElView";

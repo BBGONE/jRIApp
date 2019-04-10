@@ -3,7 +3,6 @@ import { DemoApplication } from "./app";
 import { initModule as initTempView } from "./components/tempview";
 import { initModule as initPagerView } from "./components/pagerview";
 
-
 const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
 //bootstrap error handler - the last resort (typically display message to the user)

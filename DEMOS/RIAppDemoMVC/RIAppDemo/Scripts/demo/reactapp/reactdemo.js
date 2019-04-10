@@ -11,6 +11,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 define("testobject", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -95,64 +106,82 @@ define("app", ["require", "exports", "jriapp", "testobject"], function (require,
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
 });
-define("reactview", ["require", "exports", "jriapp", "jriapp_ui", "react-dom"], function (require, exports, RIAPP, uiMOD, ReactDOM) {
+define("reactview", ["require", "exports", "jriapp_ui", "react-dom", "redux"], function (require, exports, uiMOD, react_dom_1, redux_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ReactElView = (function (_super) {
         __extends(ReactElView, _super);
-        function ReactElView() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this._propWatcher = new RIAPP.PropWatcher();
+        function ReactElView(el, options, reducer) {
+            var _this = _super.call(this, el, options) || this;
             _this._isRendering = false;
             _this._isDirty = false;
-            _this._debounce = new RIAPP.Debounce();
+            _this._store = redux_1.createStore(reducer);
+            _this._state = _this._store.getState();
+            _this._unsubscribe = _this._store.subscribe(function () {
+                if (_this.getIsStateDirty())
+                    return;
+                var previous = _this._state;
+                var current = _this._store.getState();
+                _this._state = current;
+                _this.stateChanged(current, previous);
+            });
             return _this;
         }
-        ReactElView.prototype.viewMounted = function () {
-            this.render();
-            this.watchChanges();
+        ReactElView.prototype._checkRender = function () {
+            if (this.getIsStateDirty())
+                return;
+            if (this._isDirty) {
+                this._render();
+            }
         };
-        ReactElView.prototype.checkRender = function () {
-            var _this = this;
-            this._debounce.enque(function () {
-                if (_this._isDirty) {
-                    _this.render();
-                }
-            });
-        };
-        ReactElView.prototype.onModelChanged = function () {
-            this._isDirty = true;
-            this.checkRender();
-        };
-        ReactElView.prototype.render = function () {
+        ReactElView.prototype._render = function () {
             var _this = this;
             if (this.getIsStateDirty()) {
                 return;
             }
             if (this._isRendering) {
+                this._isDirty = true;
                 return;
             }
             this._isRendering = true;
             this._isDirty = false;
-            ReactDOM.render(this.getMarkup(), this.el, function () {
+            react_dom_1.render(this.getMarkup(), this.el, function () {
                 _this._isRendering = false;
-                _this.checkRender();
+                _this._checkRender();
             });
+        };
+        ReactElView.prototype.onModelChanged = function () {
+            if (this.getIsStateDirty())
+                return;
+            this._isDirty = true;
+            this._checkRender();
+        };
+        ReactElView.prototype.viewMounted = function () {
+            this.onModelChanged();
+        };
+        ReactElView.prototype.dispatch = function (action) {
+            this._store.dispatch(action);
         };
         ReactElView.prototype.dispose = function () {
             if (this.getIsDisposed())
                 return;
             this.setDisposing();
-            this._propWatcher.dispose();
-            this._debounce.dispose();
-            this._isDirty = false;
             this._isRendering = false;
-            ReactDOM.unmountComponentAtNode(this.el);
+            this._isDirty = false;
+            this._unsubscribe();
+            react_dom_1.unmountComponentAtNode(this.el);
             _super.prototype.dispose.call(this);
         };
-        Object.defineProperty(ReactElView.prototype, "propWatcher", {
+        Object.defineProperty(ReactElView.prototype, "store", {
             get: function () {
-                return this._propWatcher;
+                return this._store;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ReactElView.prototype, "state", {
+            get: function () {
+                return this._state;
             },
             enumerable: true,
             configurable: true
@@ -179,23 +208,38 @@ define("components/tempview", ["require", "exports", "react", "reactview"], func
     var spanStyle = {
         color: 'blue'
     };
+    var initialState = { value: "0", title: "" };
+    var reducer = function (state, action) {
+        switch (action.type) {
+            case "CHANGE_VALUE":
+                return __assign({}, state, { value: action.value });
+            case "CHANGE_TITLE":
+                return __assign({}, state, { title: action.value });
+            default:
+                return state || initialState;
+        }
+    };
     var TempElView = (function (_super) {
         __extends(TempElView, _super);
         function TempElView(el, options) {
-            var _this = _super.call(this, el, options) || this;
-            _this._value = options.value || "0";
-            _this._title = "";
+            var _this = this;
+            initialState.value = options.value || initialState.value;
+            _this = _super.call(this, el, options, reducer) || this;
             return _this;
         }
-        TempElView.prototype.watchChanges = function () {
-            var _this = this;
-            this.propWatcher.addWatch(this, ["value", "title"], function () {
-                _this.onModelChanged();
-            });
+        TempElView.prototype.stateChanged = function (current, previous) {
+            if (current.title !== previous.title) {
+                this.objEvents.raiseProp("title");
+                this.onModelChanged();
+            }
+            if (current.value !== previous.value) {
+                this.objEvents.raiseProp("value");
+                this.onModelChanged();
+            }
         };
         TempElView.prototype.getMarkup = function () {
             var _this = this;
-            var model = { value: this.value, title: this.title }, styles = { spacer: spacerStyle, span: spanStyle }, actions = { tempChanged: function (temp) { _this.value = temp; } };
+            var model = this.state, styles = { spacer: spacerStyle, span: spanStyle }, actions = { tempChanged: function (temp) { _this.value = temp; } };
             return (React.createElement("fieldset", null,
                 React.createElement("legend", null, model.title ? model.title : 'This is a React component'),
                 React.createElement("input", { value: model.value, onChange: function (e) { return actions.tempChanged(e.target.value); } }),
@@ -204,26 +248,20 @@ define("components/tempview", ["require", "exports", "react", "reactview"], func
         };
         Object.defineProperty(TempElView.prototype, "value", {
             get: function () {
-                return this._value;
+                return this.state.value;
             },
             set: function (v) {
-                if (this._value !== v) {
-                    this._value = v;
-                    this.objEvents.raiseProp("value");
-                }
+                this.dispatch({ type: "CHANGE_VALUE", value: v });
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(TempElView.prototype, "title", {
             get: function () {
-                return this._title;
+                return this.state.title;
             },
             set: function (v) {
-                if (this._title !== v) {
-                    this._title = v;
-                    this.objEvents.raiseProp("title");
-                }
+                this.dispatch({ type: "CHANGE_TITLE", value: v });
             },
             enumerable: true,
             configurable: true
@@ -382,61 +420,76 @@ define("components/pager", ["require", "exports", "react"], function (require, e
 define("components/pagerview", ["require", "exports", "react", "reactview", "components/pager"], function (require, exports, React, reactview_2, pager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var initialState = { total: 20, current: 6, visiblePages: 7 };
+    var reducer = function (state, action) {
+        switch (action.type) {
+            case "CHANGE_TOTAL":
+                return __assign({}, state, { total: action.value });
+            case "CHANGE_CURRENT":
+                return __assign({}, state, { current: action.value });
+            case "CHANGE_VISIBLE_PAGES":
+                return __assign({}, state, { visiblePages: action.value });
+            default:
+                return state || initialState;
+        }
+    };
     var PagerElView = (function (_super) {
         __extends(PagerElView, _super);
         function PagerElView(el, options) {
-            var _this = _super.call(this, el, options) || this;
-            _this._total = options.total || 20;
-            _this._current = options.current || 7;
-            _this._visiblePages = options.visiblePages || 6;
+            var _this = this;
+            initialState.total = options.total || initialState.total;
+            initialState.current = options.current || initialState.current;
+            initialState.visiblePages = options.visiblePages || initialState.visiblePages;
+            _this = _super.call(this, el, options, reducer) || this;
             return _this;
         }
-        PagerElView.prototype.watchChanges = function () {
-            var _this = this;
-            this.propWatcher.addWatch(this, ["total", "current", "visiblePages"], function () {
-                _this.onModelChanged();
-            });
+        PagerElView.prototype.stateChanged = function (current, previous) {
+            if (current.total !== previous.total) {
+                this.objEvents.raiseProp("total");
+                this.onModelChanged();
+            }
+            if (current.current !== previous.current) {
+                this.objEvents.raiseProp("current");
+                this.onModelChanged();
+            }
+            if (current.visiblePages !== previous.visiblePages) {
+                this.objEvents.raiseProp("visiblePages");
+                this.onModelChanged();
+            }
         };
         PagerElView.prototype.getMarkup = function () {
             var _this = this;
-            var model = { total: this.total, current: this.current, visiblePages: this.visiblePages }, actions = { pageChanged: function (newPage) { _this.current = newPage; } };
-            return (React.createElement(pager_1.default, { total: model.total, current: model.current, visiblePages: model.visiblePages, titles: { first: '<|', last: '|>' }, onPageChanged: function (newPage) { return actions.pageChanged(newPage); } }));
+            var _a = this.state, _b = _a.total, total = _b === void 0 ? 20 : _b, _c = _a.current, current = _c === void 0 ? 7 : _c, _d = _a.visiblePages, visiblePages = _d === void 0 ? 6 : _d, actions = {
+                pageChanged: function (newPage) { _this.current = newPage; }
+            };
+            return (React.createElement(pager_1.default, { total: total, current: current, visiblePages: visiblePages, titles: { first: '<|', last: '|>' }, onPageChanged: function (newPage) { return actions.pageChanged(newPage); } }));
         };
         Object.defineProperty(PagerElView.prototype, "total", {
             get: function () {
-                return this._total;
+                return this.state.total;
             },
             set: function (v) {
-                if (this._total !== v) {
-                    this._total = v;
-                    this.objEvents.raiseProp("total");
-                }
+                this.dispatch({ type: "CHANGE_TOTAL", value: v });
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(PagerElView.prototype, "current", {
             get: function () {
-                return this._current;
+                return this.state.current;
             },
             set: function (v) {
-                if (this._current !== v) {
-                    this._current = v;
-                    this.objEvents.raiseProp("current");
-                }
+                this.dispatch({ type: "CHANGE_CURRENT", value: v });
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(PagerElView.prototype, "visiblePages", {
             get: function () {
-                return this._visiblePages;
+                return this.state.visiblePages;
             },
             set: function (v) {
-                if (this._visiblePages !== v) {
-                    this._visiblePages = v;
-                    this.objEvents.raiseProp("visiblePages");
-                }
+                this.dispatch({ type: "CHANGE_VISIBLE_PAGES", value: v });
             },
             enumerable: true,
             configurable: true

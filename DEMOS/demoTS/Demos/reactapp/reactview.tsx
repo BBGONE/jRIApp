@@ -1,64 +1,101 @@
 ﻿import * as RIAPP from "jriapp";
 import * as uiMOD from "jriapp_ui";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { render as renderReact, unmountComponentAtNode } from "react-dom";
+import { createStore } from 'redux'
+
+export interface Action<T> {
+    type: string;
+    value?: T;
+}
 
 /**
     Base abstract class for rendering a React component
 */
-export abstract class ReactElView extends uiMOD.BaseElView {
-    private _propWatcher = new RIAPP.PropWatcher();
+export abstract class ReactElView<S> extends uiMOD.BaseElView {
     private _isRendering = false;
+    private _store: Redux.Store<S>;
+    private _state: S;
+    private _unsubscribe: Redux.Unsubscribe;
     private _isDirty = false;
-    private _debounce = new RIAPP.Debounce();
-
-    abstract watchChanges();
-    abstract getMarkup(): any;
-    // if viewMounted method is present then it is called after all the properties are databound
-    viewMounted(): void {
-        this.render();
-        this.watchChanges();
+    private _checkRender(): void {
+        if (this.getIsStateDirty())
+            return;
+        if (this._isDirty) {
+            this._render();
+        }
     }
-    protected checkRender(): void {
-        this._debounce.enque(() => {
-            if (this._isDirty) {
-                this.render();
-            }
-        });
-    }
-    protected onModelChanged(): void {
-        this._isDirty = true;
-        this.checkRender();
-    }
-    render(): void {
+    private _render(): void {
         if (this.getIsStateDirty()) {
             return;
         }
+
         if (this._isRendering) {
+            this._isDirty = true;
             return;
         }
+
         this._isRendering = true;
         this._isDirty = false;
-        ReactDOM.render(this.getMarkup(), this.el,
+
+        renderReact(this.getMarkup(),
+            this.el,
             () => {
-                this._isRendering = false;
-                this.checkRender();
+                this._isRendering = false
+                this._checkRender();
             }
         );
     }
+
+    constructor(el: HTMLElement, options: RIAPP.IViewOptions, reducer: Redux.Reducer<S>) {
+        super(el, options);
+        this._store = createStore(reducer);
+        this._state = this._store.getState();
+        this._unsubscribe = this._store.subscribe(() => {
+            if (this.getIsStateDirty())
+                return;
+            const previous = this._state;
+            const current = this._store.getState();
+            this._state = current;
+            this.stateChanged(current, previous);
+        });
+    }
+
+    abstract stateChanged(current: S, previous: S): void;
+    abstract getMarkup(): React.ReactElement;
+
+    protected onModelChanged(): void {
+        if (this.getIsStateDirty())
+            return;
+        this._isDirty = true;
+        this._checkRender();
+    }
+
+    // if viewMounted method is present then it is called after all the properties are databound
+    viewMounted(): void {
+        this.onModelChanged();
+    }
+
+    protected dispatch(action: Action<any>): void {
+        this._store.dispatch(action);
+    }
+
     dispose(): void {
         if (this.getIsDisposed())
             return;
         this.setDisposing();
-        this._propWatcher.dispose();
-        this._debounce.dispose();
-        this._isDirty = false;
         this._isRendering = false;
-        ReactDOM.unmountComponentAtNode(this.el);
+        this._isDirty = false;
+        this._unsubscribe();
+        unmountComponentAtNode(this.el);
         super.dispose();
     }
-    get propWatcher(): RIAPP.PropWatcher {
-        return this._propWatcher;
+
+    protected get store(): Redux.Store<S> {
+        return this._store;
+    }
+    protected get state(): S {
+        return this._state;
     }
     toString() {
         return "ReactElView";
