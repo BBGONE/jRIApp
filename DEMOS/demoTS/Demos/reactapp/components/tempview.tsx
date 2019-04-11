@@ -28,28 +28,22 @@ export const enum ActionTypes {
     CHANGE_TITLE = "CHANGE_TITLE"
 }
 
-function getReducer(options: ITempViewOptions): React.Reducer<ITempModel, any> {
-    const initialState = mergeOptions(options, { value: "0", title: "" } as ITempModel);
-
-    const reducer = (state: ITempModel, action: Redux.Action) => {
-        switch (action.type) {
-            case ActionTypes.CHANGE_VALUE:
-                return {
-                    ...state,
-                    value: (action as Action<string>).value
-                };
-            case ActionTypes.CHANGE_TITLE:
-                return {
-                    ...state,
-                    title: (action as Action<string>).value
-                };
-            default:
-                return state || initialState;
-        }
-    };
-
-    return reducer;
-}
+const reducer = (initialState: ITempModel, state: ITempModel, action: Redux.Action) => {
+    switch (action.type) {
+        case ActionTypes.CHANGE_VALUE:
+            return {
+                ...state,
+                value: (action as Action<string>).value
+            };
+        case ActionTypes.CHANGE_TITLE:
+            return {
+                ...state,
+                title: (action as Action<string>).value
+            };
+        default:
+            return state || initialState;
+    }
+};
 
 
 /**
@@ -57,7 +51,8 @@ function getReducer(options: ITempViewOptions): React.Reducer<ITempModel, any> {
  */
 export class TempElView extends ReactElView<ITempModel> {
     constructor(el: HTMLElement, options: ITempViewOptions) {
-        super(el, options, getReducer(options));
+        const initialState = mergeOptions(options, { value: "0", title: "" } as ITempModel);
+        super(el, options, reducer.bind(null, initialState));
     }
     // override
     storeChanged(current: ITempModel, previous: ITempModel): boolean {

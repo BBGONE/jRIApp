@@ -14,41 +14,35 @@ export interface IPagerViewOptions extends RIAPP.IViewOptions
     current: number;
 }
 
-function getReducer(options: IPagerViewOptions): React.Reducer<IPagerModel, any> {
-    const initialState = mergeOptions(options, { total: 20, current: 6, visiblePages: 7 } as IPagerModel);
-
-    const reducer = (state: IPagerModel, action: Redux.Action) => {
-        switch (action.type) {
-            case ActionTypes.CHANGE_TOTAL:
-                return {
-                    ...state,
-                    total: (action as Action<number>).value
-                };
-            case ActionTypes.CHANGE_CURRENT:
-                return {
-                    ...state,
-                    current: (action as Action<number>).value
-                };
-            case ActionTypes.CHANGE_VISIBLE_PAGES:
-                return {
-                    ...state,
-                    visiblePages: (action as Action<number>).value
-                };
-            default:
-                return state || initialState;
-        }
-    };
-
-    return reducer;
-}
-
+const reducer = (initialState: IPagerModel, state: IPagerModel, action: Redux.Action) => {
+    switch (action.type) {
+        case ActionTypes.CHANGE_TOTAL:
+            return {
+                ...state,
+                total: (action as Action<number>).value
+            };
+        case ActionTypes.CHANGE_CURRENT:
+            return {
+                ...state,
+                current: (action as Action<number>).value
+            };
+        case ActionTypes.CHANGE_VISIBLE_PAGES:
+            return {
+                ...state,
+                visiblePages: (action as Action<number>).value
+            };
+        default:
+            return state || initialState;
+    }
+};
 
 /**
   Demo element view wich renders the Pager React component
  */
 export class PagerElView extends ReactElView<IPagerModel> {
     constructor(el: HTMLElement, options: IPagerViewOptions) {
-        super(el, options, getReducer(options));
+        const initialState = mergeOptions(options, { total: 20, current: 6, visiblePages: 7 } as IPagerModel);
+        super(el, options, reducer.bind(null, initialState));
     }
 
     // override

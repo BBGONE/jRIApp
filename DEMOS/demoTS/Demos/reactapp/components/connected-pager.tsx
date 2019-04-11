@@ -26,4 +26,3 @@ const mapDispatchToProps = (dispatch: (action: Action<any>) => void) => {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Pager);
-

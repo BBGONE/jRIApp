@@ -219,24 +219,23 @@ define("components/tempview", ["require", "exports", "react", "reactview"], func
     var spanStyle = {
         color: 'blue'
     };
-    function getReducer(options) {
-        var initialState = reactview_1.mergeOptions(options, { value: "0", title: "" });
-        var reducer = function (state, action) {
-            switch (action.type) {
-                case "CHANGE_VALUE":
-                    return __assign({}, state, { value: action.value });
-                case "CHANGE_TITLE":
-                    return __assign({}, state, { title: action.value });
-                default:
-                    return state || initialState;
-            }
-        };
-        return reducer;
-    }
+    var reducer = function (initialState, state, action) {
+        switch (action.type) {
+            case "CHANGE_VALUE":
+                return __assign({}, state, { value: action.value });
+            case "CHANGE_TITLE":
+                return __assign({}, state, { title: action.value });
+            default:
+                return state || initialState;
+        }
+    };
     var TempElView = (function (_super) {
         __extends(TempElView, _super);
         function TempElView(el, options) {
-            return _super.call(this, el, options, getReducer(options)) || this;
+            var _this = this;
+            var initialState = reactview_1.mergeOptions(options, { value: "0", title: "" });
+            _this = _super.call(this, el, options, reducer.bind(null, initialState)) || this;
+            return _this;
         }
         TempElView.prototype.storeChanged = function (current, previous) {
             var shouldRerender = false;
@@ -448,26 +447,25 @@ define("components/connected-pager", ["require", "exports", "react-redux", "comp
 define("components/pagerview", ["require", "exports", "react", "react-redux", "reactview", "components/connected-pager"], function (require, exports, React, react_redux_2, reactview_2, connected_pager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    function getReducer(options) {
-        var initialState = reactview_2.mergeOptions(options, { total: 20, current: 6, visiblePages: 7 });
-        var reducer = function (state, action) {
-            switch (action.type) {
-                case "CHANGE_TOTAL":
-                    return __assign({}, state, { total: action.value });
-                case "CHANGE_CURRENT":
-                    return __assign({}, state, { current: action.value });
-                case "CHANGE_VISIBLE_PAGES":
-                    return __assign({}, state, { visiblePages: action.value });
-                default:
-                    return state || initialState;
-            }
-        };
-        return reducer;
-    }
+    var reducer = function (initialState, state, action) {
+        switch (action.type) {
+            case "CHANGE_TOTAL":
+                return __assign({}, state, { total: action.value });
+            case "CHANGE_CURRENT":
+                return __assign({}, state, { current: action.value });
+            case "CHANGE_VISIBLE_PAGES":
+                return __assign({}, state, { visiblePages: action.value });
+            default:
+                return state || initialState;
+        }
+    };
     var PagerElView = (function (_super) {
         __extends(PagerElView, _super);
         function PagerElView(el, options) {
-            return _super.call(this, el, options, getReducer(options)) || this;
+            var _this = this;
+            var initialState = reactview_2.mergeOptions(options, { total: 20, current: 6, visiblePages: 7 });
+            _this = _super.call(this, el, options, reducer.bind(null, initialState)) || this;
+            return _this;
         }
         PagerElView.prototype.storeChanged = function (current, previous) {
             var shouldRerender = false;
