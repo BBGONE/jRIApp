@@ -1,11 +1,11 @@
 ﻿import * as RIAPP from "jriapp";
-import * as uiMOD from "jriapp_ui";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { ReactElView, Action } from "../reactview";
-import Pager from './pager';
-import { IPagerModel, IPagerActions } from "./int";
-import { bool } from "prop-types";
+import { Provider } from 'react-redux';
+import * as Redux from 'redux';
+import { ReactElView, mergeOptions } from "../reactview";
+import Pager, { Action, ActionTypes } from './connected-pager';
+import { IPagerModel } from "./int";
+
 
 export interface IPagerViewOptions extends RIAPP.IViewOptions
 {
@@ -14,80 +14,70 @@ export interface IPagerViewOptions extends RIAPP.IViewOptions
     current: number;
 }
 
-export const enum ActionTypes {
-    CHANGE_TOTAL = "CHANGE_TOTAL",
-    CHANGE_CURRENT = "CHANGE_CURRENT",
-    CHANGE_VISIBLE_PAGES = "CHANGE_VISIBLE_PAGES"
+function getReducer(options: IPagerViewOptions): React.Reducer<IPagerModel, any> {
+    const initialState = mergeOptions(options, { total: 20, current: 6, visiblePages: 7 } as IPagerModel);
+
+    const reducer = (state: IPagerModel, action: Redux.Action) => {
+        switch (action.type) {
+            case ActionTypes.CHANGE_TOTAL:
+                return {
+                    ...state,
+                    total: (action as Action<number>).value
+                };
+            case ActionTypes.CHANGE_CURRENT:
+                return {
+                    ...state,
+                    current: (action as Action<number>).value
+                };
+            case ActionTypes.CHANGE_VISIBLE_PAGES:
+                return {
+                    ...state,
+                    visiblePages: (action as Action<number>).value
+                };
+            default:
+                return state || initialState;
+        }
+    };
+
+    return reducer;
 }
 
-let initialState = { total: 20, current: 6, visiblePages: 7 };
-
-const reducer = (state: IPagerModel, action: Redux.Action) => {
-    switch (action.type) {
-        case ActionTypes.CHANGE_TOTAL:
-            return {
-                ...state,
-                total: (action as Action<number>).value
-            };
-        case ActionTypes.CHANGE_CURRENT:
-            return {
-                ...state,
-                current: (action as Action<number>).value
-            };
-        case ActionTypes.CHANGE_VISIBLE_PAGES:
-            return {
-                ...state,
-                visiblePages: (action as Action<number>).value
-            };
-        default:
-            return state || initialState;
-    }
-};
 
 /**
   Demo element view wich renders the Pager React component
  */
 export class PagerElView extends ReactElView<IPagerModel> {
     constructor(el: HTMLElement, options: IPagerViewOptions) {
-        initialState.total = options.total || initialState.total;
-        initialState.current = options.current || initialState.current;
-        initialState.visiblePages = options.visiblePages || initialState.visiblePages;
-        super(el, options, reducer);
+        super(el, options, getReducer(options));
     }
 
     // override
-    isViewShouldRender(current: IPagerModel, previous: IPagerModel): boolean {
-        let res = false;
+    storeChanged(current: IPagerModel, previous: IPagerModel): boolean {
+        // because we use a connected pager component
+        // we don't need to rerender pager ourselves
+        const shouldRerender = false;
+
         if (current.total !== previous.total) {
             this.objEvents.raiseProp("total");
-            res = true;
         }
 
         if (current.current !== previous.current) {
             this.objEvents.raiseProp("current");
-            res = true;
         }
 
         if (current.visiblePages !== previous.visiblePages) {
             this.objEvents.raiseProp("visiblePages");
-            res = true;
         }
 
-        return res;
+        return shouldRerender;
     }
 
     // override
     getMarkup(): React.ReactElement {
-         const { total = 20, current = 7, visiblePages = 6 } = this.state,
-             actions: IPagerActions = {
-                 pageChanged: (newPage: number) => { this.current = newPage; }
-             };
-       
         return (
-            <Pager total={total} current={current} visiblePages={visiblePages}
-                titles={{ first: '<|', last: '|>' }}
-                onPageChanged={(newPage) => actions.pageChanged(newPage)}
-            />
+            <Provider store={this.store}>
+                <Pager titles={{ first: '<|', last: '|>' }} />
+            </Provider>
         ); 
     }
 

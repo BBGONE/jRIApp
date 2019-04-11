@@ -106,9 +106,20 @@ define("app", ["require", "exports", "jriapp", "testobject"], function (require,
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
 });
-define("reactview", ["require", "exports", "jriapp_ui", "react-dom", "redux"], function (require, exports, uiMOD, react_dom_1, redux_1) {
+define("reactview", ["require", "exports", "jriapp", "jriapp_ui", "react-dom", "redux"], function (require, exports, RIAPP, uiMOD, react_dom_1, Redux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    function mergeOptions(obj, defaults) {
+        var ret = {};
+        Object.keys(defaults).forEach(function (key) {
+            if (!RIAPP.Utils.check.isNt(obj[key]))
+                ret[key] = obj[key];
+            else
+                ret[key] = defaults[key];
+        });
+        return ret;
+    }
+    exports.mergeOptions = mergeOptions;
     var ReactElView = (function (_super) {
         __extends(ReactElView, _super);
         function ReactElView(el, options, reducer) {
@@ -116,7 +127,7 @@ define("reactview", ["require", "exports", "jriapp_ui", "react-dom", "redux"], f
             _this._isRendering = false;
             _this._isDirty = false;
             _this._isMounted = false;
-            _this._store = redux_1.createStore(reducer);
+            _this._store = Redux.createStore(reducer);
             _this._state = _this._store.getState();
             _this._unsubscribe = _this._store.subscribe(function () {
                 if (_this.getIsStateDirty())
@@ -124,7 +135,7 @@ define("reactview", ["require", "exports", "jriapp_ui", "react-dom", "redux"], f
                 var previous = _this._state;
                 var current = _this._store.getState();
                 _this._state = current;
-                if (_this.isViewShouldRender(current, previous)) {
+                if (_this.storeChanged(current, previous)) {
                     _this._renderView();
                 }
             });
@@ -208,36 +219,36 @@ define("components/tempview", ["require", "exports", "react", "reactview"], func
     var spanStyle = {
         color: 'blue'
     };
-    var initialState = { value: "0", title: "" };
-    var reducer = function (state, action) {
-        switch (action.type) {
-            case "CHANGE_VALUE":
-                return __assign({}, state, { value: action.value });
-            case "CHANGE_TITLE":
-                return __assign({}, state, { title: action.value });
-            default:
-                return state || initialState;
-        }
-    };
+    function getReducer(options) {
+        var initialState = reactview_1.mergeOptions(options, { value: "0", title: "" });
+        var reducer = function (state, action) {
+            switch (action.type) {
+                case "CHANGE_VALUE":
+                    return __assign({}, state, { value: action.value });
+                case "CHANGE_TITLE":
+                    return __assign({}, state, { title: action.value });
+                default:
+                    return state || initialState;
+            }
+        };
+        return reducer;
+    }
     var TempElView = (function (_super) {
         __extends(TempElView, _super);
         function TempElView(el, options) {
-            var _this = this;
-            initialState.value = options.value || initialState.value;
-            _this = _super.call(this, el, options, reducer) || this;
-            return _this;
+            return _super.call(this, el, options, getReducer(options)) || this;
         }
-        TempElView.prototype.isViewShouldRender = function (current, previous) {
-            var res = false;
+        TempElView.prototype.storeChanged = function (current, previous) {
+            var shouldRerender = false;
             if (current.title !== previous.title) {
                 this.objEvents.raiseProp("title");
-                res = true;
+                shouldRerender = true;
             }
             if (current.value !== previous.value) {
                 this.objEvents.raiseProp("value");
-                res = true;
+                shouldRerender = true;
             }
-            return res;
+            return shouldRerender;
         };
         TempElView.prototype.getMarkup = function () {
             var _this = this;
@@ -419,54 +430,61 @@ define("components/pager", ["require", "exports", "react"], function (require, e
     }
     exports.default = Pager;
 });
-define("components/pagerview", ["require", "exports", "react", "reactview", "components/pager"], function (require, exports, React, reactview_2, pager_1) {
+define("components/connected-pager", ["require", "exports", "react-redux", "components/pager"], function (require, exports, react_redux_1, pager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var initialState = { total: 20, current: 6, visiblePages: 7 };
-    var reducer = function (state, action) {
-        switch (action.type) {
-            case "CHANGE_TOTAL":
-                return __assign({}, state, { total: action.value });
-            case "CHANGE_CURRENT":
-                return __assign({}, state, { current: action.value });
-            case "CHANGE_VISIBLE_PAGES":
-                return __assign({}, state, { visiblePages: action.value });
-            default:
-                return state || initialState;
-        }
+    var mapStateToProps = function (storeData) {
+        return storeData;
     };
+    var mapDispatchToProps = function (dispatch) {
+        return {
+            onPageChanged: function (newPage) {
+                dispatch({ type: "CHANGE_CURRENT", value: newPage });
+            }
+        };
+    };
+    exports.default = react_redux_1.connect(mapStateToProps, mapDispatchToProps)(pager_1.default);
+});
+define("components/pagerview", ["require", "exports", "react", "react-redux", "reactview", "components/connected-pager"], function (require, exports, React, react_redux_2, reactview_2, connected_pager_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function getReducer(options) {
+        var initialState = reactview_2.mergeOptions(options, { total: 20, current: 6, visiblePages: 7 });
+        var reducer = function (state, action) {
+            switch (action.type) {
+                case "CHANGE_TOTAL":
+                    return __assign({}, state, { total: action.value });
+                case "CHANGE_CURRENT":
+                    return __assign({}, state, { current: action.value });
+                case "CHANGE_VISIBLE_PAGES":
+                    return __assign({}, state, { visiblePages: action.value });
+                default:
+                    return state || initialState;
+            }
+        };
+        return reducer;
+    }
     var PagerElView = (function (_super) {
         __extends(PagerElView, _super);
         function PagerElView(el, options) {
-            var _this = this;
-            initialState.total = options.total || initialState.total;
-            initialState.current = options.current || initialState.current;
-            initialState.visiblePages = options.visiblePages || initialState.visiblePages;
-            _this = _super.call(this, el, options, reducer) || this;
-            return _this;
+            return _super.call(this, el, options, getReducer(options)) || this;
         }
-        PagerElView.prototype.isViewShouldRender = function (current, previous) {
-            var res = false;
+        PagerElView.prototype.storeChanged = function (current, previous) {
+            var shouldRerender = false;
             if (current.total !== previous.total) {
                 this.objEvents.raiseProp("total");
-                res = true;
             }
             if (current.current !== previous.current) {
                 this.objEvents.raiseProp("current");
-                res = true;
             }
             if (current.visiblePages !== previous.visiblePages) {
                 this.objEvents.raiseProp("visiblePages");
-                res = true;
             }
-            return res;
+            return shouldRerender;
         };
         PagerElView.prototype.getMarkup = function () {
-            var _this = this;
-            var _a = this.state, _b = _a.total, total = _b === void 0 ? 20 : _b, _c = _a.current, current = _c === void 0 ? 7 : _c, _d = _a.visiblePages, visiblePages = _d === void 0 ? 6 : _d, actions = {
-                pageChanged: function (newPage) { _this.current = newPage; }
-            };
-            return (React.createElement(pager_1.default, { total: total, current: current, visiblePages: visiblePages, titles: { first: '<|', last: '|>' }, onPageChanged: function (newPage) { return actions.pageChanged(newPage); } }));
+            return (React.createElement(react_redux_2.Provider, { store: this.store },
+                React.createElement(connected_pager_1.default, { titles: { first: '<|', last: '|>' } })));
         };
         Object.defineProperty(PagerElView.prototype, "total", {
             get: function () {

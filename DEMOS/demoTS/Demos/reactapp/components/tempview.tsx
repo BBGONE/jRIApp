@@ -1,9 +1,13 @@
 ﻿import * as RIAPP from "jriapp";
-import * as uiMOD from "jriapp_ui";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { ReactElView, Action } from "../reactview";
-import { ITempModel, ITempActions } from "./int";
+import * as Redux from 'redux';
+import { ReactElView, mergeOptions } from "../reactview";
+import { ITempActions, ITempModel } from "./int";
+
+export interface Action<T> {
+    type: string;
+    value: T;
+}
 
 export interface ITempViewOptions extends RIAPP.IViewOptions
 {
@@ -24,48 +28,52 @@ export const enum ActionTypes {
     CHANGE_TITLE = "CHANGE_TITLE"
 }
 
-let initialState = { value: "0", title: "" };
+function getReducer(options: ITempViewOptions): React.Reducer<ITempModel, any> {
+    const initialState = mergeOptions(options, { value: "0", title: "" } as ITempModel);
 
-const reducer = (state: ITempModel, action: Redux.Action) => {
-    switch (action.type) {
-        case ActionTypes.CHANGE_VALUE:
-            return {
-                ...state,
-                value: (action as Action<string>).value
-            };
-        case ActionTypes.CHANGE_TITLE:
-            return {
-                ...state,
-                title: (action as Action<string>).value
-            };
-        default:
-            return state || initialState;
-    }
-};
+    const reducer = (state: ITempModel, action: Redux.Action) => {
+        switch (action.type) {
+            case ActionTypes.CHANGE_VALUE:
+                return {
+                    ...state,
+                    value: (action as Action<string>).value
+                };
+            case ActionTypes.CHANGE_TITLE:
+                return {
+                    ...state,
+                    title: (action as Action<string>).value
+                };
+            default:
+                return state || initialState;
+        }
+    };
+
+    return reducer;
+}
+
 
 /**
   Demo element view wich renders the Temperature React component
  */
 export class TempElView extends ReactElView<ITempModel> {
     constructor(el: HTMLElement, options: ITempViewOptions) {
-        initialState.value = options.value || initialState.value;
-        super(el, options, reducer);
+        super(el, options, getReducer(options));
     }
     // override
-    isViewShouldRender(current: ITempModel, previous: ITempModel): boolean {
-        let res = false;
+    storeChanged(current: ITempModel, previous: ITempModel): boolean {
+        let shouldRerender = false;
 
         if (current.title !== previous.title) {
             this.objEvents.raiseProp("title");
-            res = true;
+            shouldRerender = true;
         }
 
         if (current.value !== previous.value) {
             this.objEvents.raiseProp("value");
-            res = true;
+            shouldRerender = true;
         }
 
-        return res;
+        return shouldRerender;
     }
     // override
     getMarkup(): any {

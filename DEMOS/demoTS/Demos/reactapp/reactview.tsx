@@ -2,11 +2,19 @@
 import * as uiMOD from "jriapp_ui";
 import * as React from "react";
 import { render as renderReact, unmountComponentAtNode } from "react-dom";
-import { createStore } from 'redux'
+import * as Redux from 'redux';
 
-export interface Action<T> {
-    type: string;
-    value?: T;
+export type Action = any;
+
+export function mergeOptions<T, D>(obj: T, defaults: D): D {
+    const ret: any = {};
+    Object.keys(defaults).forEach(key => {
+        if (!RIAPP.Utils.check.isNt(obj[key]))
+            ret[key] = obj[key];
+        else
+            ret[key] = defaults[key];
+    })
+    return ret;
 }
 
 /**
@@ -22,7 +30,7 @@ export abstract class ReactElView<S> extends uiMOD.BaseElView {
 
     constructor(el: HTMLElement, options: RIAPP.IViewOptions, reducer: Redux.Reducer<S>) {
         super(el, options);
-        this._store = createStore(reducer);
+        this._store = Redux.createStore(reducer);
         this._state = this._store.getState();
         this._unsubscribe = this._store.subscribe(() => {
             if (this.getIsStateDirty())
@@ -30,13 +38,13 @@ export abstract class ReactElView<S> extends uiMOD.BaseElView {
             const previous = this._state;
             const current = this._store.getState();
             this._state = current;
-            if (this.isViewShouldRender(current, previous)) {
+            if (this.storeChanged(current, previous)) {
                 this._renderView();
             }
         });
     }
 
-    abstract isViewShouldRender(current: S, previous: S): boolean;
+    abstract storeChanged(current: S, previous: S): boolean;
     abstract getMarkup(): React.ReactElement;
 
     private _render(): void {
@@ -76,7 +84,7 @@ export abstract class ReactElView<S> extends uiMOD.BaseElView {
         this._renderView();
     }
 
-    protected dispatch(action: Action<any>): void {
+    protected dispatch(action: Action): void {
         this._store.dispatch(action);
     }
 
