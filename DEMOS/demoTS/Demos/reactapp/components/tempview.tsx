@@ -28,7 +28,7 @@ export const enum ActionTypes {
     CHANGE_TITLE = "CHANGE_TITLE"
 }
 
-const reducer = (initialState: ITempModel, state: ITempModel, action: Redux.Action) => {
+const _reducer = (initialState: ITempModel, state: ITempModel, action: Redux.Action) => {
     switch (action.type) {
         case ActionTypes.CHANGE_VALUE:
             return {
@@ -44,15 +44,16 @@ const reducer = (initialState: ITempModel, state: ITempModel, action: Redux.Acti
             return state || initialState;
     }
 };
-
+const reducer = (initialState: ITempModel) => (state: ITempModel, action: Redux.Action) => _reducer(initialState, state, action);
+const defaults = { value: "0", title: "" } as ITempModel;
 
 /**
   Demo element view wich renders the Temperature React component
  */
 export class TempElView extends ReactElView<ITempModel> {
     constructor(el: HTMLElement, options: ITempViewOptions) {
-        const initialState = mergeOptions(options, { value: "0", title: "" } as ITempModel);
-        super(el, options, reducer.bind(null, initialState));
+        const initialState = mergeOptions(options, defaults);
+        super(el, options, reducer(initialState));
     }
     // override
     storeChanged(current: ITempModel, previous: ITempModel): boolean {

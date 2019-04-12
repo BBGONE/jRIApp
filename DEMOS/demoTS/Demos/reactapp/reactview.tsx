@@ -6,11 +6,11 @@ import * as Redux from 'redux';
 
 export type Action = any;
 
-export function mergeOptions<T, D>(obj: T, defaults: D): D {
+export function mergeOptions<T, D>(options: T, defaults: D): D {
     const ret: any = {};
     Object.keys(defaults).forEach(key => {
-        if (!RIAPP.Utils.check.isNt(obj[key]))
-            ret[key] = obj[key];
+        if (!RIAPP.Utils.check.isNt(options[key]))
+            ret[key] = options[key];
         else
             ret[key] = defaults[key];
     })

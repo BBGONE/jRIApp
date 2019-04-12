@@ -109,11 +109,11 @@ define("app", ["require", "exports", "jriapp", "testobject"], function (require,
 define("reactview", ["require", "exports", "jriapp", "jriapp_ui", "react-dom", "redux"], function (require, exports, RIAPP, uiMOD, react_dom_1, Redux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    function mergeOptions(obj, defaults) {
+    function mergeOptions(options, defaults) {
         var ret = {};
         Object.keys(defaults).forEach(function (key) {
-            if (!RIAPP.Utils.check.isNt(obj[key]))
-                ret[key] = obj[key];
+            if (!RIAPP.Utils.check.isNt(options[key]))
+                ret[key] = options[key];
             else
                 ret[key] = defaults[key];
         });
@@ -219,7 +219,7 @@ define("components/tempview", ["require", "exports", "react", "reactview"], func
     var spanStyle = {
         color: 'blue'
     };
-    var reducer = function (initialState, state, action) {
+    var _reducer = function (initialState, state, action) {
         switch (action.type) {
             case "CHANGE_VALUE":
                 return __assign({}, state, { value: action.value });
@@ -229,12 +229,14 @@ define("components/tempview", ["require", "exports", "react", "reactview"], func
                 return state || initialState;
         }
     };
+    var reducer = function (initialState) { return function (state, action) { return _reducer(initialState, state, action); }; };
+    var defaults = { value: "0", title: "" };
     var TempElView = (function (_super) {
         __extends(TempElView, _super);
         function TempElView(el, options) {
             var _this = this;
-            var initialState = reactview_1.mergeOptions(options, { value: "0", title: "" });
-            _this = _super.call(this, el, options, reducer.bind(null, initialState)) || this;
+            var initialState = reactview_1.mergeOptions(options, defaults);
+            _this = _super.call(this, el, options, reducer(initialState)) || this;
             return _this;
         }
         TempElView.prototype.storeChanged = function (current, previous) {
@@ -447,7 +449,7 @@ define("components/connected-pager", ["require", "exports", "react-redux", "comp
 define("components/pagerview", ["require", "exports", "react", "react-redux", "reactview", "components/connected-pager"], function (require, exports, React, react_redux_2, reactview_2, connected_pager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var reducer = function (initialState, state, action) {
+    var _reducer = function (initialState, state, action) {
         switch (action.type) {
             case "CHANGE_TOTAL":
                 return __assign({}, state, { total: action.value });
@@ -459,12 +461,14 @@ define("components/pagerview", ["require", "exports", "react", "react-redux", "r
                 return state || initialState;
         }
     };
+    var reducer = function (initialState) { return function (state, action) { return _reducer(initialState, state, action); }; };
+    var defaults = { total: 20, current: 6, visiblePages: 7 };
     var PagerElView = (function (_super) {
         __extends(PagerElView, _super);
         function PagerElView(el, options) {
             var _this = this;
-            var initialState = reactview_2.mergeOptions(options, { total: 20, current: 6, visiblePages: 7 });
-            _this = _super.call(this, el, options, reducer.bind(null, initialState)) || this;
+            var initialState = reactview_2.mergeOptions(options, defaults);
+            _this = _super.call(this, el, options, reducer(initialState)) || this;
             return _this;
         }
         PagerElView.prototype.storeChanged = function (current, previous) {

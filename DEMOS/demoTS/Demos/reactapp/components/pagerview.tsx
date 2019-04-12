@@ -14,7 +14,7 @@ export interface IPagerViewOptions extends RIAPP.IViewOptions
     current: number;
 }
 
-const reducer = (initialState: IPagerModel, state: IPagerModel, action: Redux.Action) => {
+const _reducer = (initialState: IPagerModel, state: IPagerModel, action: Redux.Action) => {
     switch (action.type) {
         case ActionTypes.CHANGE_TOTAL:
             return {
@@ -35,14 +35,15 @@ const reducer = (initialState: IPagerModel, state: IPagerModel, action: Redux.Ac
             return state || initialState;
     }
 };
-
+const reducer = (initialState: IPagerModel) => (state: IPagerModel, action: Redux.Action) => _reducer(initialState, state, action);
+const defaults = { total: 20, current: 6, visiblePages: 7 } as IPagerModel;
 /**
   Demo element view wich renders the Pager React component
  */
 export class PagerElView extends ReactElView<IPagerModel> {
     constructor(el: HTMLElement, options: IPagerViewOptions) {
-        const initialState = mergeOptions(options, { total: 20, current: 6, visiblePages: 7 } as IPagerModel);
-        super(el, options, reducer.bind(null, initialState));
+        const initialState = mergeOptions(options, defaults);
+        super(el, options, reducer(initialState));
     }
 
     // override
