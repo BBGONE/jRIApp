@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.3.1.5\build\Microsoft.TypeScript.MSBuild.props" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.3.1.5\build\Microsoft.TypeScript.MSBuild.props')" />
+  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.3.4.3\build\Microsoft.TypeScript.MSBuild.props" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.3.4.3\build\Microsoft.TypeScript.MSBuild.props')" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -55,21 +55,17 @@
     <TypeScriptCompile Include="mastDetDemo\orderVM.ts" />
     <TypeScriptCompile Include="mastDetDemo\prodAutocomplete.ts" />
     <TypeScriptCompile Include="mastDetDemo\productVM.ts" />
+    <TypeScriptCompile Include="reactapp\abstractions\temp.ts" />
+    <TypeScriptCompile Include="reactapp\actions\temp-actions.tsx" />
+    <TypeScriptCompile Include="reactapp\actions\pager-actions.tsx" />
     <TypeScriptCompile Include="reactapp\app.ts" />
-    <TypeScriptCompile Include="reactapp\components\int.ts" />
+    <TypeScriptCompile Include="reactapp\components\connected-pager.tsx" />
+    <TypeScriptCompile Include="reactapp\abstractions\pager.ts" />
     <TypeScriptCompile Include="reactapp\components\pager.tsx" />
-    <TypeScriptCompile Include="reactapp\components\pagerview.tsx" />
-    <TypeScriptCompile Include="reactapp\components\tempview.tsx" />
-    <TypeScriptCompile Include="reactapp\reactview.tsx" />
+    <TypeScriptCompile Include="reactapp\views\pagerview.tsx" />
+    <TypeScriptCompile Include="reactapp\views\tempview.tsx" />
+    <TypeScriptCompile Include="reactapp\views\reactview.tsx" />
     <TypeScriptCompile Include="reactapp\main.ts" />
-    <TypeScriptCompile Include="reactapp\node_modules\%40types\node\index.d.ts" />
-    <TypeScriptCompile Include="reactapp\node_modules\%40types\node\inspector.d.ts" />
-    <TypeScriptCompile Include="reactapp\node_modules\%40types\react-dom\index.d.ts" />
-    <TypeScriptCompile Include="reactapp\node_modules\%40types\react-dom\node-stream\index.d.ts" />
-    <TypeScriptCompile Include="reactapp\node_modules\%40types\react-dom\server\index.d.ts" />
-    <TypeScriptCompile Include="reactapp\node_modules\%40types\react-dom\test-utils\index.d.ts" />
-    <TypeScriptCompile Include="reactapp\node_modules\%40types\react\global.d.ts" />
-    <TypeScriptCompile Include="reactapp\node_modules\%40types\react\index.d.ts" />
     <TypeScriptCompile Include="reactapp\testobject.ts" />
     <TypeScriptCompile Include="spademo\addAddressVM.ts" />
     <TypeScriptCompile Include="spademo\addressVM.ts" />
@@ -104,20 +100,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="obj\" />
+    <Folder Include="reactapp\node_modules\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="manToManDemo\tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="reactapp\node_modules\%40types\node\LICENSE" />
-    <Content Include="reactapp\node_modules\%40types\node\package.json" />
-    <Content Include="reactapp\node_modules\%40types\node\README.md" />
-    <Content Include="reactapp\node_modules\%40types\react-dom\LICENSE" />
-    <Content Include="reactapp\node_modules\%40types\react-dom\package.json" />
-    <Content Include="reactapp\node_modules\%40types\react-dom\README.md" />
-    <Content Include="reactapp\node_modules\%40types\react\LICENSE" />
-    <Content Include="reactapp\node_modules\%40types\react\package.json" />
-    <Content Include="reactapp\node_modules\%40types\react\README.md" />
     <Content Include="reactapp\package.json" />
     <Content Include="reactapp\tsconfig.json" />
   </ItemGroup>
@@ -176,8 +164,8 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.TypeScript.MSBuild.3.1.5\build\Microsoft.TypeScript.MSBuild.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.TypeScript.MSBuild.3.1.5\build\Microsoft.TypeScript.MSBuild.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.TypeScript.MSBuild.3.1.5\build\Microsoft.TypeScript.MSBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.TypeScript.MSBuild.3.1.5\build\Microsoft.TypeScript.MSBuild.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.TypeScript.MSBuild.3.4.3\build\Microsoft.TypeScript.MSBuild.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.TypeScript.MSBuild.3.4.3\build\Microsoft.TypeScript.MSBuild.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.TypeScript.MSBuild.3.4.3\build\Microsoft.TypeScript.MSBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.TypeScript.MSBuild.3.4.3\build\Microsoft.TypeScript.MSBuild.targets'))" />
   </Target>
-  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.3.1.5\build\Microsoft.TypeScript.MSBuild.targets" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.3.1.5\build\Microsoft.TypeScript.MSBuild.targets')" />
+  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.3.4.3\build\Microsoft.TypeScript.MSBuild.targets" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.3.4.3\build\Microsoft.TypeScript.MSBuild.targets')" />
 </Project>

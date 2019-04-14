@@ -2,17 +2,17 @@
 import * as uiMOD from "jriapp_ui";
 import * as React from "react";
 import { render as renderReact, unmountComponentAtNode } from "react-dom";
-import * as Redux from 'redux';
+import * as Redux from "redux";
 
 export type Action = any;
 
 export function mergeOptions<T, D>(options: T, defaults: D): D {
     const ret: any = {};
     Object.keys(defaults).forEach(key => {
-        if (!RIAPP.Utils.check.isNt(options[key]))
-            ret[key] = options[key];
+        if (!RIAPP.Utils.check.isNt((options as any)[key]))
+            ret[key] = (options as any)[key];
         else
-            ret[key] = defaults[key];
+            ret[key] = (defaults as any)[key];
     })
     return ret;
 }

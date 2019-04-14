@@ -438,15 +438,15 @@ declare module "jriapp/utils/domevents" {
         private _ev;
         private _target;
         private _cancelBubble;
-        constructor(ev: TEvent, target: TDomElement);
+        constructor(ev: TEvent, target: EventTarget | null);
         readonly type: string;
-        readonly target: TDomElement;
+        readonly target: EventTarget | null;
         readonly bubbles: boolean;
         readonly defaultPrevented: boolean;
         readonly cancelable: boolean;
         readonly isTrusted: boolean;
         returnValue: boolean;
-        readonly srcElement: Element;
+        readonly srcElement: EventTarget | null;
         readonly eventPhase: number;
         cancelBubble: boolean;
         readonly timeStamp: number;
@@ -1015,5 +1015,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.21.4";
+    export const VERSION = "2.21.5";
 }

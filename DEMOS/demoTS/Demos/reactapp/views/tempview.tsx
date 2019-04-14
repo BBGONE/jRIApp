@@ -1,13 +1,9 @@
 ﻿import * as RIAPP from "jriapp";
 import * as React from "react";
 import * as Redux from 'redux';
-import { ReactElView, mergeOptions } from "../reactview";
-import { ITempActions, ITempModel } from "./int";
-
-export interface Action<T> {
-    type: string;
-    value: T;
-}
+import { ReactElView, mergeOptions } from "./reactview";
+import { propertyChanged, Action, ActionTypes } from "../actions/temp-actions";
+import { ITempActions, ITempModel } from "../abstractions/temp";
 
 export interface ITempViewOptions extends RIAPP.IViewOptions
 {
@@ -19,26 +15,18 @@ const spacerStyle = {
     marginLeft: '15px',
     marginRight: '5px'
 };
+
 const spanStyle = {
     color: 'blue'
 };
 
-export const enum ActionTypes {
-    CHANGE_VALUE = "CHANGE_VALUE",
-    CHANGE_TITLE = "CHANGE_TITLE"
-}
 
 const _reducer = (initialState: ITempModel, state: ITempModel, action: Redux.Action) => {
     switch (action.type) {
-        case ActionTypes.CHANGE_VALUE:
+        case ActionTypes.CHANGE_PROP:
             return {
                 ...state,
-                value: (action as Action<string>).value
-            };
-        case ActionTypes.CHANGE_TITLE:
-            return {
-                ...state,
-                title: (action as Action<string>).value
+                [(action as Action<any>).name]: (action as Action<any>).value
             };
         default:
             return state || initialState;
@@ -90,13 +78,13 @@ export class TempElView extends ReactElView<ITempModel> {
         return this.state.value;
     }
     set value(v: string) {
-        this.dispatch({ type: ActionTypes.CHANGE_VALUE, value: v });
+        this.dispatch(propertyChanged("value", v));
     }
     get title(): string {
         return this.state.title;
     }
     set title(v: string) {
-        this.dispatch({ type: ActionTypes.CHANGE_TITLE, value: v });
+        this.dispatch(propertyChanged("title", v));
     }
     toString(): string {
         return "TempElView";

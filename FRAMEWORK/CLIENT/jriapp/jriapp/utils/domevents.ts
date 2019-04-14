@@ -31,10 +31,10 @@ export type THandlerFunc = (evt: any) => void;
 
 export class EventWrap<TEvent extends Event = Event> {
     private _ev: TEvent;
-    private _target: TDomElement;
+    private _target: EventTarget | null;
     private _cancelBubble: boolean;
 
-    constructor(ev: TEvent, target: TDomElement) {
+    constructor(ev: TEvent, target: EventTarget | null) {
         this._ev = ev;
         this._target = target;
         this._cancelBubble = false;
@@ -42,7 +42,7 @@ export class EventWrap<TEvent extends Event = Event> {
     get type(): string {
         return this._ev.type;
     }
-    get target(): TDomElement {
+    get target(): EventTarget | null {
         return this._target;
     }
     get bubbles(): boolean {
@@ -63,7 +63,7 @@ export class EventWrap<TEvent extends Event = Event> {
     set returnValue(v: boolean) {
         this._ev.returnValue = v;
     }
-    get srcElement(): Element {
+    get srcElement(): EventTarget | null {
         return this._ev.srcElement;
     }
     get eventPhase(): number {

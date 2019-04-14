@@ -2,9 +2,10 @@
 import * as React from "react";
 import { Provider } from 'react-redux';
 import * as Redux from 'redux';
-import { ReactElView, mergeOptions } from "../reactview";
-import Pager, { Action, ActionTypes } from './connected-pager';
-import { IPagerModel } from "./int";
+import { ReactElView, mergeOptions } from "./reactview";
+import { IPagerModel } from "../abstractions/pager";
+import { propertyChanged, Action, ActionTypes } from "../actions/pager-actions";
+import Pager from '../components/connected-pager';
 
 
 export interface IPagerViewOptions extends RIAPP.IViewOptions
@@ -16,20 +17,10 @@ export interface IPagerViewOptions extends RIAPP.IViewOptions
 
 const _reducer = (initialState: IPagerModel, state: IPagerModel, action: Redux.Action) => {
     switch (action.type) {
-        case ActionTypes.CHANGE_TOTAL:
+        case ActionTypes.CHANGE_PROP:
             return {
                 ...state,
-                total: (action as Action<number>).value
-            };
-        case ActionTypes.CHANGE_CURRENT:
-            return {
-                ...state,
-                current: (action as Action<number>).value
-            };
-        case ActionTypes.CHANGE_VISIBLE_PAGES:
-            return {
-                ...state,
-                visiblePages: (action as Action<number>).value
+                [(action as Action<any>).name]: (action as Action<any>).value
             };
         default:
             return state || initialState;
@@ -80,19 +71,19 @@ export class PagerElView extends ReactElView<IPagerModel> {
         return this.state.total;
     }
     set total(v: number) {
-        this.dispatch({ type: ActionTypes.CHANGE_TOTAL, value: v });
+        this.dispatch(propertyChanged("total", v));
     }
     get current(): number {
         return this.state.current;
     }
     set current(v: number) {
-        this.dispatch({ type: ActionTypes.CHANGE_CURRENT, value: v });
+        this.dispatch(propertyChanged("current", v));
     }
     get visiblePages(): number {
         return this.state.visiblePages;
     }
     set visiblePages(v: number) {
-        this.dispatch({ type: ActionTypes.CHANGE_VISIBLE_PAGES, value: v });
+        this.dispatch(propertyChanged("visiblePages", v));
     }
 
     toString(): string {

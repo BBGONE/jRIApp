@@ -1,7 +1,7 @@
 ﻿import * as RIAPP from "jriapp";
 import { DemoApplication } from "./app";
-import { initModule as initTempView } from "./components/tempview";
-import { initModule as initPagerView } from "./components/pagerview";
+import { initModule as initTempView } from "./views/tempview";
+import { initModule as initPagerView } from "./views/pagerview";
 
 const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
