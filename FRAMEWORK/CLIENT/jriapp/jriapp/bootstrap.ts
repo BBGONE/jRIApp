@@ -121,12 +121,12 @@ export function unregisterSvc(root: IDataProvider, name: string): any {
     const name2 = STORE_KEY.SVC + name;
     return unregisterObject(root, name2);
 }
-export function getSvc<T = any>(root: IDataProvider, name: string): T {
+export function getSvc<T = any>(root: IDataProvider, name: string, ...args: any[]): T {
     const name2 = STORE_KEY.SVC + name, obj = getObject(root, name2);
     if (!obj) {
         return null;
     }
-    const res = isFunc(obj) ? obj() : obj;
+    const res = isFunc(obj) ? obj(...args) : obj;
     if (!res) {
         throw new Error(`The factory for service: ${name} have not returned the service`);
     }

@@ -394,16 +394,18 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
     }
     function getExprArgs(expr) {
         var parts = expr.split(",");
-        if (parts.length > 2) {
-            throw new Error("Invalid Expression: " + expr);
-        }
         return parts.map(function (p) { return trim(p); });
     }
-    function inject(id) {
-        return bootstrap_1.bootstrap.app.getSvc(id);
+    function getSvc(id) {
+        var _a;
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        return (_a = bootstrap_1.bootstrap.app).getSvc.apply(_a, [trimQuotes(id)].concat(args));
     }
     function getOptions(id) {
-        return bootstrap_1.bootstrap.app.getOptions(id);
+        return bootstrap_1.bootstrap.app.getOptions(trimQuotes(id));
     }
     function parseById(parse_type, id, dataContext) {
         var options = getOptions(id);
@@ -470,7 +472,11 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         res[kv.key] = parseById(0, kv.val, dataContext);
                         break;
                     case "4":
-                        res[kv.key] = inject(kv.val);
+                        {
+                            var args = getExprArgs(kv.val);
+                            var val = args[0], rest = args.slice(1);
+                            res[kv.key] = getSvc.apply(void 0, [val].concat(rest));
+                        }
                         break;
                     default:
                         res[kv.key] = kv.val;
@@ -1920,11 +1926,15 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
     }
     exports.unregisterSvc = unregisterSvc;
     function getSvc(root, name) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
+        }
         var name2 = "svc." + name, obj = getObject(root, name2);
         if (!obj) {
             return null;
         }
-        var res = isFunc(obj) ? obj() : obj;
+        var res = isFunc(obj) ? obj.apply(void 0, args) : obj;
         if (!res) {
             throw new Error("The factory for service: " + name + " have not returned the service");
         }
@@ -4349,9 +4359,13 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             bootstrap_6.unregisterSvc(this, name);
         };
         Application.prototype.getSvc = function (name) {
-            var obj = bootstrap_6.getSvc(this, name);
+            var args = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
+            }
+            var obj = bootstrap_6.getSvc.apply(void 0, [this, name].concat(args));
             if (!obj) {
-                obj = bootstrap_6.getSvc(boot, name);
+                obj = bootstrap_6.getSvc.apply(void 0, [boot, name].concat(args));
             }
             if (!obj) {
                 throw new Error("The service: " + name + " is not registered");
@@ -4572,6 +4586,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.21.6";
+    exports.VERSION = "2.21.8";
     bootstrap_7.Bootstrap._initFramework();
 });

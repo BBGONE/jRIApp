@@ -308,11 +308,9 @@ export interface IApplication extends IErrorHandler, IDataProvider, IBaseObject 
     registerConverter(name: string, obj: IConverter): void;
     getConverter(name: string): IConverter;
     registerSvc(name: string, obj: any): void;
-    getSvc<T>(name: string): T;
-    getSvc(name: string): any;
+    getSvc<T = any>(name: string, ...args: any[]): T;
     registerObject(name: string, obj: any): void;
-    getObject<T>(name: string): T;
-    getObject(name: string): any;
+    getObject<T = any>(name: string): T;
     loadTemplates(url: string): IPromise<void>;
     registerTemplateLoader(name: string, loader: THTMLLoaderFunc): void;
     getTemplateLoader(name: string): TLoaderFunc;

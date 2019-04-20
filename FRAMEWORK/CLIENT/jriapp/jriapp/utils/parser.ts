@@ -328,18 +328,15 @@ function getKeyVals(val: string): IKeyVal[] {
 */
 function getExprArgs(expr: string): string[] {
     const parts = expr.split(",");
-    if (parts.length > 2) {
-        throw new Error("Invalid Expression: " + expr);
-    }
     return parts.map((p) => trim(p));
 }
 
-function inject(id: string): string {
-    return bootstrap.app.getSvc(id);
+function getSvc(id: string, ...args: any[]): string {
+    return bootstrap.app.getSvc(trimQuotes(id), ...args);
 }
 
 function getOptions(id: string): string {
-    return bootstrap.app.getOptions(id);
+    return bootstrap.app.getOptions(trimQuotes(id));
 }
 
 /**
@@ -420,7 +417,11 @@ function parseOption(parse_type: PARSE_TYPE, part: string, dataContext: any): an
                     res[kv.key] = parseById(PARSE_TYPE.NONE, kv.val, dataContext);
                     break;
                 case TAG.INJECT:
-                    res[kv.key] = inject(kv.val);
+                    {
+                        const args = getExprArgs(kv.val);
+                        let [val, ...rest] = args;
+                        res[kv.key] = getSvc(val, ...rest);
+                    }
                     break;
                 default:
                     res[kv.key] = kv.val;

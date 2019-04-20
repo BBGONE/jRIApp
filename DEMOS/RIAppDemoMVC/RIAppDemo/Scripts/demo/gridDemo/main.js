@@ -3044,6 +3044,10 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
             return new app_1.DemoApplication(options);
         }, function (app) {
             app.registerConverter('sizeConverter', new SizeConverter());
+            app.registerSvc("testsvc", function (p1, p2, p3) {
+                console.log("testsvc factory(%s, %s, %s)", p1, p2, p3);
+                return "testsvc implementation";
+            });
             app.loadTemplates(options.templates_url);
             app.registerTemplateLoader('productEditTemplate', function () { return utils.http.getAjax(options.productEditTemplate_url); });
         }).then(function (app) {

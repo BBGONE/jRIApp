@@ -76,6 +76,12 @@ export function start(options: IMainOptions) {
     }, (app) => {
         app.registerConverter('sizeConverter', new SizeConverter());
 
+            // testing registering a service (for using with inject)
+            app.registerSvc("testsvc", (p1: string, p2: number, p3: any) => {
+                console.log("testsvc factory(%s, %s, %s)", p1, p2, p3);
+                return "testsvc implementation";
+            });
+
         // an example of how to load a file with multiple templates from the server (for loading group of templates- see spaDEMO.ts)
         app.loadTemplates(options.templates_url);
 

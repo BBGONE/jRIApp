@@ -323,11 +323,9 @@ declare module "jriapp/int" {
         registerConverter(name: string, obj: IConverter): void;
         getConverter(name: string): IConverter;
         registerSvc(name: string, obj: any): void;
-        getSvc<T>(name: string): T;
-        getSvc(name: string): any;
+        getSvc<T = any>(name: string, ...args: any[]): T;
         registerObject(name: string, obj: any): void;
-        getObject<T>(name: string): T;
-        getObject(name: string): any;
+        getObject<T = any>(name: string): T;
         loadTemplates(url: string): IPromise<void>;
         registerTemplateLoader(name: string, loader: THTMLLoaderFunc): void;
         getTemplateLoader(name: string): TLoaderFunc;
@@ -652,7 +650,7 @@ declare module "jriapp/bootstrap" {
     export function getConverter(root: IDataProvider, name: string): IConverter;
     export function registerSvc(root: IDataProvider, name: string, obj: any): void;
     export function unregisterSvc(root: IDataProvider, name: string): any;
-    export function getSvc<T = any>(root: IDataProvider, name: string): T;
+    export function getSvc<T = any>(root: IDataProvider, name: string, ...args: any[]): T;
     export function getOptions(root: IDataProvider, name: string): string;
     export function registerObject(root: IDataProvider, name: string, obj: any): void;
     export function unregisterObject(root: IDataProvider, name: string): any;
@@ -976,7 +974,7 @@ declare module "jriapp/app" {
         getConverter(name: string): IConverter;
         registerSvc(name: string, obj: any): void;
         unregisterSvc(name: string): void;
-        getSvc<T = any>(name: string): T;
+        getSvc<T = any>(name: string, ...args: any[]): T;
         registerElView(name: string, vwType: IViewType): void;
         registerObject(name: string, obj: any): void;
         getObject<T = any>(name: string): T;
@@ -1015,5 +1013,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.21.5";
+    export const VERSION = "2.21.8";
 }

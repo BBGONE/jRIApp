@@ -181,10 +181,10 @@ export class Application extends BaseObject implements IApplication {
     unregisterSvc(name: string): void {
         unregisterSvc(this, name);
     }
-    getSvc<T = any>(name: string): T {
-        let obj = getSvc(this, name);
+    getSvc<T = any>(name: string, ...args: any[]): T {
+        let obj = getSvc(this, name, ...args);
         if (!obj) {
-            obj = getSvc(boot, name);
+            obj = getSvc(boot, name, ...args);
         }
         if (!obj) {
             throw new Error(`The service: ${name} is not registered`);
