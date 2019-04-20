@@ -113,7 +113,7 @@ define("jriapp/int", ["require", "exports"], function (require, exports) {
 define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_1, bootstrap_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, endsWith = _b.endsWith, trimQuotes = _b.trimQuotes, parseBool = jriapp_shared_1.Utils.core.parseBool, _c = jriapp_shared_1.Utils.sys, resolvePath = _c.resolvePath, getBraceLen = _c.getBraceLen;
+    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _undefined = _a._undefined, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, endsWith = _b.endsWith, trimQuotes = _b.trimQuotes, parseBool = jriapp_shared_1.Utils.core.parseBool, _c = jriapp_shared_1.Utils.sys, resolvePath = _c.resolvePath, getBraceLen = _c.getBraceLen;
     var getRX = /^get[(].+[)]$/g, spaceRX = /^\s+$/;
     var TOKEN;
     (function (TOKEN) {
@@ -215,46 +215,46 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             }
         }
     }
+    function convertToDate(val, format) {
+        if (format === void 0) { format = "YYYYMMDD"; }
+        if (val === _undefined) {
+            return moment().startOf('day').toDate();
+        }
+        switch (val) {
+            case "today":
+                return moment().startOf('day').toDate();
+            case "tomorrow":
+                return moment().startOf('day').add(1, 'days').toDate();
+            case "yesterday":
+                return moment().startOf('day').subtract(1, 'days').toDate();
+            case "endofmonth":
+                return moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
+            default:
+                return moment(val, format).toDate();
+        }
+    }
     function checkVal(kv) {
         if (!kv.key) {
             return false;
         }
         if (!!kv.val) {
-            if (kv.tag === "3") {
-                var parts = getExprArgs(kv.val), format_1 = "YYYYMMDD";
-                if (parts.length > 1) {
-                    format_1 = parts[1];
-                }
-                if (parts.length > 0) {
-                    switch (parts[0]) {
-                        case "today":
-                            kv.val = moment().startOf('day').toDate();
-                            break;
-                        case "tomorrow":
-                            kv.val = moment().startOf('day').add(1, 'days').toDate();
-                            break;
-                        case "yesterday":
-                            kv.val = moment().startOf('day').subtract(1, 'days').toDate();
-                            break;
-                        case "endofmonth":
-                            kv.val = moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
-                            break;
-                        default:
-                            kv.val = moment(parts[0], format_1).toDate();
-                            break;
+            switch (kv.tag) {
+                case "3":
+                    {
+                        var args = getExprArgs(kv.val), val = args.length > 0 ? args[0] : _undefined, format_1 = args.length > 1 ? args[1] : "YYYYMMDD";
+                        kv.val = convertToDate(val, format_1);
                     }
-                }
-                else {
-                    kv.val = moment().startOf('day').toDate();
-                }
-            }
-            else if (!kv.tag) {
-                if (isNumeric(kv.val)) {
-                    kv.val = Number(kv.val);
-                }
-                else if (isBoolString(kv.val)) {
-                    kv.val = parseBool(kv.val);
-                }
+                    break;
+                case "":
+                    {
+                        if (isNumeric(kv.val)) {
+                            kv.val = Number(kv.val);
+                        }
+                        else if (isBoolString(kv.val)) {
+                            kv.val = parseBool(kv.val);
+                        }
+                    }
+                    break;
             }
         }
         return true;
@@ -281,7 +281,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         return tag;
     }
     function getKeyVals(val) {
-        var i, ch, literal, parts = [], kv = { tag: null, key: "", val: "" }, isKey = true, start = -1;
+        var i, ch, literal, parts = [], kv = { tag: "", key: "", val: "" }, isKey = true, start = -1;
         var len = val.length;
         for (i = 0; i < len; i += 1) {
             if (start < 0) {
@@ -295,7 +295,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         setKeyVal(kv, start, i, val, isKey, false);
                         literal = ch;
                         start = i + 1;
-                        if (!kv.tag) {
+                        if (kv.tag === "") {
                             kv.tag = "0";
                         }
                         break;
@@ -349,7 +349,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         setKeyVal(kv, start, i, val, isKey, false);
                         start = -1;
                         parts.push(kv);
-                        kv = { tag: null, key: "", val: "" };
+                        kv = { tag: "", key: "", val: "" };
                         isKey = true;
                         break;
                     case ":":
@@ -4572,6 +4572,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.21.5";
+    exports.VERSION = "2.21.6";
     bootstrap_7.Bootstrap._initFramework();
 });
