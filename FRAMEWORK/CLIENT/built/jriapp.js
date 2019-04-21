@@ -402,7 +402,20 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        return (_a = bootstrap_1.bootstrap.app).getSvc.apply(_a, [trimQuotes(id)].concat(args));
+        var argsdata = [];
+        for (var i = 0; i < args.length; ++i) {
+            var val = trimQuotes(args[i]);
+            if (isNumeric(val)) {
+                argsdata[i] = Number(val);
+            }
+            else if (isBoolString(val)) {
+                argsdata[i] = parseBool(val);
+            }
+            else {
+                argsdata[i] = val;
+            }
+        }
+        return (_a = bootstrap_1.bootstrap.app).getSvc.apply(_a, [trimQuotes(id)].concat(argsdata));
     }
     function getOptions(id) {
         return bootstrap_1.bootstrap.app.getOptions(trimQuotes(id));
@@ -474,8 +487,8 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     case "4":
                         {
                             var args = getExprArgs(kv.val);
-                            var val = args[0], rest = args.slice(1);
-                            res[kv.key] = getSvc.apply(void 0, [val].concat(rest));
+                            var id = args[0], rest = args.slice(1);
+                            res[kv.key] = getSvc.apply(void 0, [id].concat(rest));
                         }
                         break;
                     default:
@@ -4586,6 +4599,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.21.8";
+    exports.VERSION = "2.21.9";
     bootstrap_7.Bootstrap._initFramework();
 });

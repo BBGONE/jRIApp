@@ -332,7 +332,18 @@ function getExprArgs(expr: string): string[] {
 }
 
 function getSvc(id: string, ...args: any[]): string {
-    return bootstrap.app.getSvc(trimQuotes(id), ...args);
+    const argsdata: any[] = [];
+    for (let i = 0; i < args.length; ++i) {
+        const val = trimQuotes(args[i]);
+        if (isNumeric(val)) {
+            argsdata[i] = Number(val);
+        } else if (isBoolString(val)) {
+            argsdata[i] = parseBool(val);
+        } else {
+            argsdata[i] = val;
+        }
+    }
+    return bootstrap.app.getSvc(trimQuotes(id), ...argsdata);
 }
 
 function getOptions(id: string): string {
@@ -419,8 +430,8 @@ function parseOption(parse_type: PARSE_TYPE, part: string, dataContext: any): an
                 case TAG.INJECT:
                     {
                         const args = getExprArgs(kv.val);
-                        let [val, ...rest] = args;
-                        res[kv.key] = getSvc(val, ...rest);
+                        let [id, ...rest] = args;
+                        res[kv.key] = getSvc(id, ...rest);
                     }
                     break;
                 default:
