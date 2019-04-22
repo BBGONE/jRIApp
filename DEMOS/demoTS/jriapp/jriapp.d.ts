@@ -1,4 +1,4 @@
-declare module "jriapp/const" {
+declare module "jriapp/consts" {
     export const enum SERVICES {
         TOOLTIP_SVC = "ITooltipService",
         DATEPICKER_SVC = "IDatepicker",
@@ -71,7 +71,7 @@ declare module "jriapp/const" {
     }
 }
 declare module "jriapp/int" {
-    import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "jriapp/const";
+    import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "jriapp/consts";
     import { IBaseObject, IDisposable, IIndexer, IPromise, IErrorHandler, TEventHandler, IConfig, IValidationInfo } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     export interface IJRIAppConfig extends IConfig {
@@ -782,7 +782,7 @@ declare module "jriapp/converter" {
 }
 declare module "jriapp/binding" {
     import { IBaseObject, BaseObject } from "jriapp_shared";
-    import { BINDING_MODE } from "jriapp/const";
+    import { BINDING_MODE } from "jriapp/consts";
     import { TBindingInfo, TBindingOptions, IBinding, IConverter, IApplication } from "jriapp/int";
     export function getBindingOptions(bindInfo: TBindingInfo, defTarget: IBaseObject, dataContext: any): TBindingOptions;
     export class Binding extends BaseObject implements IBinding {
@@ -1001,7 +1001,7 @@ declare module "jriapp" {
     export * from "jriapp_shared/collection/int";
     export * from "jriapp_shared/utils/jsonbag";
     export { Promise } from "jriapp_shared/utils/deferred";
-    export { KEYS, BINDING_MODE, BindTo, SubscribeFlags } from "jriapp/const";
+    export { KEYS, BINDING_MODE, BindTo, SubscribeFlags } from "jriapp/consts";
     export { IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, TBindingInfo, TBindingOptions, IConverter, IContentFactory, IDatepicker, IElView, ITooltipService, ISelectable, ISelectableProvider, ILifeTimeScope, ITemplateGroupInfo, ITemplateInfo, IViewOptions, ISubscriber } from "jriapp/int";
     export { DomUtils as DOM } from "jriapp/utils/dom";
     export { ViewChecks } from "jriapp/utils/viewchecks";
@@ -1013,5 +1013,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.21.9";
+    export const VERSION = "2.21.11";
 }

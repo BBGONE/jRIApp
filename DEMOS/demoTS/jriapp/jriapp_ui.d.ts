@@ -147,7 +147,7 @@ declare module "jriapp_ui/utils/cssbag" {
 }
 declare module "jriapp_ui/baseview" {
     import { BaseObject, IPropertyBag, IValidationInfo, IValidatable } from "jriapp_shared";
-    import { SubscribeFlags } from "jriapp/const";
+    import { SubscribeFlags } from "jriapp/consts";
     import { IElView, IApplication, IViewOptions, ISubscriber } from "jriapp/int";
     import { ICommand } from "jriapp/mvvm";
     import { EVENT_CHANGE_TYPE, IEventChangedArgs } from "jriapp_ui/utils/eventbag";
@@ -301,7 +301,7 @@ declare module "jriapp_ui/listbox" {
     import { BaseObject, TEventHandler } from "jriapp_shared";
     import { ITEM_STATUS } from "jriapp_shared/collection/const";
     import { ICollection, ICollectionItem, ICollChangedArgs } from "jriapp_shared/collection/int";
-    import { SubscribeFlags } from "jriapp/const";
+    import { SubscribeFlags } from "jriapp/consts";
     import { IViewOptions, ISubscriber } from "jriapp/int";
     import { BaseElView } from "jriapp_ui/baseview";
     export interface IOptionStateProvider {
@@ -629,7 +629,7 @@ declare module "jriapp_ui/content/int" {
     }
     export function parseContentAttr(contentAttr: string): IContentOptions;
 }
-declare module "jriapp_ui/datagrid/const" {
+declare module "jriapp_ui/datagrid/consts" {
     import { IIndexer } from "jriapp_shared";
     export const enum COLUMN_TYPE {
         DATA = "data",
@@ -886,7 +886,7 @@ declare module "jriapp_ui/datagrid/cells/rowselector" {
 declare module "jriapp_ui/datagrid/rows/row" {
     import { BaseObject } from "jriapp_shared";
     import { ICollectionItem } from "jriapp_shared/collection/int";
-    import { ROW_POSITION } from "jriapp_ui/datagrid/const";
+    import { ROW_POSITION } from "jriapp_ui/datagrid/consts";
     import { BaseCell } from "jriapp_ui/datagrid/cells/base";
     import { ExpanderCell } from "jriapp_ui/datagrid/cells/expander";
     import { ActionsCell } from "jriapp_ui/datagrid/cells/actions";
@@ -948,7 +948,7 @@ declare module "jriapp_ui/datagrid/rows/row" {
 declare module "jriapp_ui/datagrid/cells/base" {
     import { BaseObject } from "jriapp_shared";
     import { ICollectionItem } from "jriapp_shared/collection/int";
-    import { SubscribeFlags } from "jriapp/const";
+    import { SubscribeFlags } from "jriapp/consts";
     import { ISubscriber } from "jriapp/int";
     import { DblClick } from "jriapp_ui/utils/dblclick";
     import { Row } from "jriapp_ui/datagrid/rows/row";
@@ -1092,7 +1092,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
     import { ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollection, ICollItemAddedArgs } from "jriapp_shared/collection/int";
     import { BaseElView } from "jriapp_ui/baseview";
     import { IDialogConstructorOptions } from "jriapp_ui/dialog";
-    import { ROW_POSITION, ROW_ACTION } from "jriapp_ui/datagrid/const";
+    import { ROW_POSITION, ROW_ACTION } from "jriapp_ui/datagrid/consts";
     import { IDataGridAnimation } from "jriapp_ui/datagrid/animation";
     import { BaseCell } from "jriapp_ui/datagrid/cells/base";
     import { Row } from "jriapp_ui/datagrid/rows/row";
@@ -1103,7 +1103,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
     export type DataGridCell = BaseCell<BaseColumn>;
     export { Row as DataGridRow } from "jriapp_ui/datagrid/rows/row";
     export { BaseColumn as DataGridColumn } from "jriapp_ui/datagrid/columns/base";
-    export { ROW_POSITION, COLUMN_TYPE, ROW_ACTION } from "jriapp_ui/datagrid/const";
+    export { ROW_POSITION, COLUMN_TYPE, ROW_ACTION } from "jriapp_ui/datagrid/consts";
     export { IDataGridAnimation, DefaultAnimation } from "jriapp_ui/datagrid/animation";
     export function getDataGrids(): DataGrid[];
     export function findDataGrid(gridName: string): DataGrid;

@@ -70,17 +70,20 @@ export function start(options: IMainOptions) {
         ButtonsCSS.Cancel = 'icon icon-remove';
     });
 
+    const convertArg = (p2: any) => RIAPP.Utils.check.isSimpleObject(p2) ? JSON.stringify(p2, null, 2) : p2;
+
     // create and start application here
     return bootstrap.startApp(() => {
         return new DemoApplication(options);
     }, (app) => {
         app.registerConverter('sizeConverter', new SizeConverter());
 
-            // testing registering a service (for using with inject)
-            app.registerSvc("testsvc", (p1: string, p2: number, p3: any) => {
-                console.log("testsvc factory(%s, %s, %s)", p1, p2, p3);
-                return "testsvc implementation";
-            });
+       // testing registering a service (for using with inject)
+        app.registerSvc("testsvc", (p1: string, p2: any, p3: any) => {
+            console.log("exec testsvc factory(%s, %s, %s)", convertArg(p1), convertArg(p2), convertArg(p3));
+            return "testsvc implementation";
+        });
+
 
         // an example of how to load a file with multiple templates from the server (for loading group of templates- see spaDEMO.ts)
         app.loadTemplates(options.templates_url);

@@ -1,4 +1,4 @@
-declare module "jriapp_shared/const" {
+declare module "jriapp_shared/consts" {
     export const enum DEBUG_LEVEL {
         NONE = 0,
         NORMAL = 1,
@@ -13,6 +13,12 @@ declare module "jriapp_shared/const" {
         BOTH = 0,
         LEFT = 1,
         RIGHT = 2
+    }
+    export const enum DATES {
+        TODAY = "today",
+        TOMORROW = "tomorrow",
+        YESTERDAY = "yesterday",
+        ENDOFMONTH = "endofmonth"
     }
     export const APP_NAME = "app";
     export const DUMY_ERROR = "DUMMY_ERROR";
@@ -59,7 +65,7 @@ declare module "jriapp_shared/utils/ideferred" {
     export type IDeferred<T> = IStatefulDeferred<T>;
 }
 declare module "jriapp_shared/int" {
-    import { DEBUG_LEVEL } from "jriapp_shared/const";
+    import { DEBUG_LEVEL } from "jriapp_shared/consts";
     import { IVoidPromise } from "jriapp_shared/utils/ideferred";
     export interface IConfig {
         debugLevel?: DEBUG_LEVEL;
@@ -186,7 +192,7 @@ declare module "jriapp_shared/utils/checks" {
     }
 }
 declare module "jriapp_shared/utils/strutils" {
-    import { SIDE } from "jriapp_shared/const";
+    import { SIDE } from "jriapp_shared/consts";
     export class StringUtils {
         static endsWith(str: string, suffix: string): boolean;
         static startsWith(str: string, prefix: string): boolean;
@@ -217,6 +223,7 @@ declare module "jriapp_shared/utils/coreutils" {
         static parseBool(a: any): boolean;
         static round(num: number, decimals: number): number;
         static readonly clone: (obj: any, target?: any) => any;
+        static readonly convertToDate: (val: string, format: string) => Date;
         static merge<S, T>(source: S, target?: T): S & T;
         static readonly extend: <T, U>(target: T, ...source: U[]) => T & U;
         static memoize<T>(fn: () => T): () => T;
@@ -671,7 +678,7 @@ declare module "jriapp_shared/collection/int" {
     }
 }
 declare module "jriapp_shared/utils/sysutils" {
-    import { BRACKETS } from "jriapp_shared/const";
+    import { BRACKETS } from "jriapp_shared/consts";
     import { ISubmittable, IErrorNotification, IEditable, IPropertyBag, IBaseObject, IValidatable, IValidationError } from "jriapp_shared/int";
     import { ICollection } from "jriapp_shared/collection/int";
     export class SysUtils {
@@ -1471,7 +1478,7 @@ declare module "jriapp_shared/utils/lazy" {
     }
 }
 declare module "jriapp_shared" {
-    export * from "jriapp_shared/const";
+    export * from "jriapp_shared/consts";
     export * from "jriapp_shared/int";
     export * from "jriapp_shared/errors";
     export * from "jriapp_shared/object";

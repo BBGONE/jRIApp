@@ -11,7 +11,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define("jriapp_shared/const", ["require", "exports"], function (require, exports) {
+define("jriapp_shared/consts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DEBUG_LEVEL;
@@ -32,6 +32,13 @@ define("jriapp_shared/const", ["require", "exports"], function (require, exports
         SIDE[SIDE["LEFT"] = 1] = "LEFT";
         SIDE[SIDE["RIGHT"] = 2] = "RIGHT";
     })(SIDE = exports.SIDE || (exports.SIDE = {}));
+    var DATES;
+    (function (DATES) {
+        DATES["TODAY"] = "today";
+        DATES["TOMORROW"] = "tomorrow";
+        DATES["YESTERDAY"] = "yesterday";
+        DATES["ENDOFMONTH"] = "endofmonth";
+    })(DATES = exports.DATES || (exports.DATES = {}));
     exports.APP_NAME = "app";
     exports.DUMY_ERROR = "DUMMY_ERROR";
 });
@@ -434,6 +441,24 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         }
         return to;
     }
+    function convertToDate(val, format) {
+        if (format === void 0) { format = "YYYYMMDD"; }
+        if (val === _undefined) {
+            return moment().startOf('day').toDate();
+        }
+        switch (val) {
+            case "today":
+                return moment().startOf('day').toDate();
+            case "tomorrow":
+                return moment().startOf('day').add(1, 'days').toDate();
+            case "yesterday":
+                return moment().startOf('day').subtract(1, 'days').toDate();
+            case "endofmonth":
+                return moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
+            default:
+                return moment(val, format).toDate();
+        }
+    }
     function assignStrings(target, source) {
         if (isNt(target)) {
             target = {};
@@ -592,6 +617,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         })();
         CoreUtils.hasProp = isHasProp;
         CoreUtils.clone = clone;
+        CoreUtils.convertToDate = convertToDate;
         CoreUtils.extend = extend;
         CoreUtils.assignStrings = assignStrings;
         return CoreUtils;
@@ -1135,7 +1161,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lan
     exports.SysUtils = SysUtils;
     var sys = SysUtils;
 });
-define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/const", "jriapp_shared/utils/sysutils", "jriapp_shared/lang"], function (require, exports, const_1, sysutils_1, lang_2) {
+define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/utils/sysutils", "jriapp_shared/lang"], function (require, exports, consts_1, sysutils_1, lang_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var sys = sysutils_1.SysUtils;
@@ -1166,7 +1192,7 @@ define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/const", "jr
     var DummyError = (function (_super) {
         __extends(DummyError, _super);
         function DummyError(originalError) {
-            var _this = _super.call(this, const_1.DUMY_ERROR) || this;
+            var _this = _super.call(this, consts_1.DUMY_ERROR) || this;
             _this._origError = originalError;
             return _this;
         }
@@ -1190,7 +1216,7 @@ define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/const", "jr
     var AbortError = (function (_super) {
         __extends(AbortError, _super);
         function AbortError(reason) {
-            var _this = _super.call(this, const_1.DUMY_ERROR) || this;
+            var _this = _super.call(this, consts_1.DUMY_ERROR) || this;
             _this._reason = reason || "Operation Aborted";
             return _this;
         }
@@ -1318,7 +1344,7 @@ define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/const", "jr
     }(BaseError));
     exports.ValidationError = ValidationError;
 });
-define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/const", "jriapp_shared/errors"], function (require, exports, const_2, errors_1) {
+define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/errors"], function (require, exports, consts_2, errors_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ERROR = (function () {
@@ -1335,7 +1361,7 @@ define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/const"
                 return true;
             }
             var handler, isHandled = false;
-            handler = ERROR._handlers[const_2.APP_NAME];
+            handler = ERROR._handlers[consts_2.APP_NAME];
             if (!!handler) {
                 if (handler === sender) {
                     handler = null;
@@ -5717,13 +5743,13 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/const", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, const_3, int_2, errors_9, object_7, jsonbag_1, jsonarray_1, weakmap_1, lang_10, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, consts_3, int_2, errors_9, object_7, jsonbag_1, jsonarray_1, weakmap_1, lang_10, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
     }
     Object.defineProperty(exports, "__esModule", { value: true });
-    __export(const_3);
+    __export(consts_3);
     __export(int_2);
     __export(errors_9);
     __export(object_7);

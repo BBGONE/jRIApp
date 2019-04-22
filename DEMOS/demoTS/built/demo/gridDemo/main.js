@@ -3040,12 +3040,13 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
             ButtonsCSS.OK = 'icon icon-ok';
             ButtonsCSS.Cancel = 'icon icon-remove';
         });
+        var convertArg = function (p2) { return RIAPP.Utils.check.isSimpleObject(p2) ? JSON.stringify(p2, null, 2) : p2; };
         return bootstrap.startApp(function () {
             return new app_1.DemoApplication(options);
         }, function (app) {
             app.registerConverter('sizeConverter', new SizeConverter());
             app.registerSvc("testsvc", function (p1, p2, p3) {
-                console.log("testsvc factory(%s, %s, %s)", p1, p2, p3);
+                console.log("exec testsvc factory(%s, %s, %s)", convertArg(p1), convertArg(p2), convertArg(p3));
                 return "testsvc implementation";
             });
             app.loadTemplates(options.templates_url);
