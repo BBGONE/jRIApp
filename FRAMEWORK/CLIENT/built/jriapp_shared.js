@@ -91,7 +91,11 @@ define("jriapp_shared/utils/checks", ["require", "exports"], function (require, 
             return (isNt(a)) ? false : (typeof a === "object");
         };
         Checks.isSimpleObject = function (a) {
-            return (!a) ? false : ((typeof a === "object") && Object.prototype === Object.getPrototypeOf(a));
+            if (!!a && typeof a == 'object') {
+                var proto = Object.getPrototypeOf(a);
+                return proto === Object.prototype || proto === null;
+            }
+            return false;
         };
         Checks.isBoolean = function (a) {
             return (isNt(a)) ? false : ((typeof a === "boolean") || (typeof a === "object" && a instanceof Boolean));
@@ -968,6 +972,9 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lan
                                     literal = null;
                                     cnt += 1;
                                 }
+                            }
+                            else {
+                                cnt += 1;
                             }
                             break;
                         default:

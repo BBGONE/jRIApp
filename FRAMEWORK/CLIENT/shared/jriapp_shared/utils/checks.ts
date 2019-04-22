@@ -35,7 +35,12 @@ export class Checks {
         return (isNt(a)) ? false : (typeof a === "object");
     }
     static isSimpleObject(a: any): boolean {
-        return (!a) ? false : ((typeof a === "object") && Object.prototype === Object.getPrototypeOf(a));
+        if (!!a && typeof a == 'object') {
+            const proto = Object.getPrototypeOf(a);
+            return proto === Object.prototype || proto === null;
+        }
+
+        return false;
     }
     static readonly isString: (a: any) => a is string = isString;
     static readonly isFunc: (a: any) => a is (...args: any[]) => any = isFunc;

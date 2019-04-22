@@ -100,6 +100,7 @@ export class SysUtils {
         let i: number, cnt = 0, ch: string, literal: string, test = 0;
         const len = val.length;
         let br1: string, br2: string;
+
         switch (brace) {
             case BRACKETS.ROUND:
                 br1 = "(";
@@ -156,6 +157,8 @@ export class SysUtils {
                                 literal = null;
                                 cnt += 1;
                             }
+                        } else {
+                            cnt += 1;
                         }
                         break;
                     default:
