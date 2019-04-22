@@ -6,7 +6,7 @@ export * from "jriapp_shared/collection/const";
 export * from "jriapp_shared/collection/int";
 export * from "jriapp_shared/utils/jsonbag";
 export { Promise } from "jriapp_shared/utils/deferred";
-export { KEYS, BINDING_MODE, BindTo, SubscribeFlags } from "./jriapp/const";
+export { KEYS, BINDING_MODE, BindTo, SubscribeFlags } from "./jriapp/consts";
 export {
     IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, TBindingInfo,
     TBindingOptions, IConverter, IContentFactory, IDatepicker, IElView,
@@ -25,6 +25,6 @@ export { ViewModel, BaseCommand, Command, ICommand } from "./jriapp/mvvm";
 
 export { Application } from "./jriapp/app";
 
-export const VERSION = "2.21.9";
+export const VERSION = "2.21.11";
 
 Bootstrap._initFramework();

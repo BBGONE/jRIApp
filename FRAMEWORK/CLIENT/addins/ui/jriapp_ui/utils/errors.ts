@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IValidationInfo, LocaleSTRS as STRS, createWeakMap } from "jriapp_shared";
-import { SERVICES } from "jriapp/const";
+import { SERVICES } from "jriapp/consts";
 import { ITooltipService } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { cssStyles, IUIErrorsService } from "../int";

@@ -2,7 +2,7 @@
 import { Utils, BaseObject, IPropertyBag, IValidationInfo, IValidatable } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { ViewChecks } from "jriapp/utils/viewchecks";
-import { SERVICES, DATA_ATTR, SubscribeFlags } from "jriapp/const";
+import { SERVICES, DATA_ATTR, SubscribeFlags } from "jriapp/consts";
 import { IElView, IElViewStore, IApplication, IViewOptions, ISubscriber, ITooltipService } from "jriapp/int";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { ICommand } from "jriapp/mvvm";

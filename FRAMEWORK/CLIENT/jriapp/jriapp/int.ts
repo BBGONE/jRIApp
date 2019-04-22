@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "./const";
+import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "./consts";
 import {
     IBaseObject, IDisposable, IIndexer, IPromise, IErrorHandler, TEventHandler, IConfig, IValidationInfo
 } from "jriapp_shared";

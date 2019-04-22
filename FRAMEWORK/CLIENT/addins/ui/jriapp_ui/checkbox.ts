@@ -2,7 +2,7 @@
 import { IValidationInfo, Utils } from "jriapp_shared";
 import { IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { SubscribeFlags } from "jriapp/const";
+import { SubscribeFlags } from "jriapp/consts";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { cssStyles } from "./int";
 import { InputElView } from "./input";

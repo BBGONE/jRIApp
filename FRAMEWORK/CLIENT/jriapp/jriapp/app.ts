@@ -3,7 +3,7 @@ import {
     APP_NAME, IIndexer, TEventHandler, IPromise, TErrorHandler,
     IBaseObject, LocaleERRS, BaseObject, Utils, IThenable
 } from "jriapp_shared";
-import { STORE_KEY } from "./const";
+import { STORE_KEY } from "./consts";
 import {
     IElViewFactory, IViewType, IApplication,
     TBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo, ITemplateLoaderInfo,

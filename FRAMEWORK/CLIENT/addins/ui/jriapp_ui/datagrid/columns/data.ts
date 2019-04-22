@@ -5,7 +5,7 @@ import { SORT_ORDER } from "jriapp_shared/collection/const";
 import { IExternallyCachable, IContentConstructor } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 
-import { css } from "../const";
+import { css } from "../consts";
 import { BaseColumn, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 

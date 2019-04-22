@@ -5,7 +5,7 @@ import {
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { DATA_ATTR, ELVIEW_NM, BindScope, SERVICES } from "jriapp/const";
+import { DATA_ATTR, ELVIEW_NM, BindScope, SERVICES } from "jriapp/consts";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { IContent, IElView, ILifeTimeScope, IViewOptions, IApplication } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";

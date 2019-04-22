@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { BRACKETS } from "../const";
+import { BRACKETS } from "../consts";
 import {
     ISubmittable, IErrorNotification, IEditable, IPropertyBag, IBaseObject, IValidatable, IValidationError
 } from "../int";

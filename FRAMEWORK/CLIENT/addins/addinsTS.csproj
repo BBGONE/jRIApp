@@ -104,7 +104,7 @@
     <TypeScriptCompile Include="ui\jriapp_ui\datagrid\columns\expander.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\datagrid\columns\rowselector.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\datagrid\datagrid.ts" />
-    <TypeScriptCompile Include="ui\jriapp_ui\datagrid\const.ts" />
+    <TypeScriptCompile Include="ui\jriapp_ui\datagrid\consts.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\datagrid\rows\details.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\datagrid\rows\fillspace.ts" />
     <TypeScriptCompile Include="ui\jriapp_ui\datagrid\rows\row.ts" />

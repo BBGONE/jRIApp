@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
 import { $ } from "./utils/jquery";
-import { LOADER_GIF } from "jriapp/const";
+import { LOADER_GIF } from "jriapp/consts";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { DomUtils } from "jriapp/utils/dom";

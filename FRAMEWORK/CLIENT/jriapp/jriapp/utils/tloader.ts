@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IPromise, LocaleERRS, BaseObject, WaitQueue, Utils } from "jriapp_shared";
 import { ITemplateGroupInfo, ITemplateLoaderInfo, IDataProvider, THTMLLoaderFunc, TLoaderFunc } from "../int";
-import { STORE_KEY } from "../const";
+import { STORE_KEY } from "../consts";
 
 
 const utils = Utils, { isFunc } = utils.check, { getValue, setValue } = utils.core,

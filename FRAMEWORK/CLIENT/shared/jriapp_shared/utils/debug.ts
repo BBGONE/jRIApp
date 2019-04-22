@@ -1,4 +1,4 @@
-﻿import { DEBUG_LEVEL } from "../const";
+﻿import { DEBUG_LEVEL } from "../consts";
 import { DebugLevel } from "../int";
 
 export class DEBUG {

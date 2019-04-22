@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { SIDE } from "../const";
+import { SIDE } from "../consts";
 import { Checks } from "./checks";
 const _undefined: any = void (0), hasNativeTrim = !!("".trim), spaceChars = [" ", "\t", "\r", "\n"];
 const ERR_STRING_FORMAT_INVALID = "String format has invalid expression value: ";

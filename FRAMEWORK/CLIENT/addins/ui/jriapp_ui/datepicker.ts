@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IDatepicker } from "jriapp/int";
-import { SERVICES } from "jriapp/const";
+import { SERVICES } from "jriapp/consts";
 import { bootstrap } from "jriapp/bootstrap";
 import { TextBoxElView, ITextBoxOptions } from "./textbox";
 

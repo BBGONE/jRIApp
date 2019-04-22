@@ -3,7 +3,7 @@ import {
     IBaseObject, LocaleERRS as ERRS, Utils
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-import { BINDING_MODE } from "jriapp/const";
+import { BINDING_MODE } from "jriapp/consts";
 import { IExternallyCachable, IBinding, TBindingOptions, IConstructorContentOptions, IConverter, IElView } from "jriapp/int";
 import { ListBoxElView } from "../listbox";
 import { BasicContent, IContentView } from "./basic";

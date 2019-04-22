@@ -5,7 +5,7 @@ import {
 } from "jriapp_shared/lang";
 import { bootstrap } from "jriapp/bootstrap";
 import { IDatepicker } from "jriapp/int";
-import { SERVICES } from "jriapp/const";
+import { SERVICES } from "jriapp/consts";
 
 let PAGER: IPagerText = {
     firstText: "<<",

@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { DUMY_ERROR } from "./const";
+import { DUMY_ERROR } from "./consts";
 import { SysUtils } from "./utils/sysutils";
 import { IValidationInfo, IValidationError } from "./int";
 import { ERRS, STRS } from "./lang";

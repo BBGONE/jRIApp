@@ -11,7 +11,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define("jriapp/const", ["require", "exports"], function (require, exports) {
+define("jriapp/consts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var SERVICES;
@@ -113,7 +113,7 @@ define("jriapp/int", ["require", "exports"], function (require, exports) {
 define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_1, bootstrap_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _undefined = _a._undefined, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, endsWith = _b.endsWith, trimQuotes = _b.trimQuotes, parseBool = jriapp_shared_1.Utils.core.parseBool, _c = jriapp_shared_1.Utils.sys, resolvePath = _c.resolvePath, getBraceLen = _c.getBraceLen;
+    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _undefined = _a._undefined, isString = _a.isString, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, endsWith = _b.endsWith, trimQuotes = _b.trimQuotes, _c = jriapp_shared_1.Utils.core, parseBool = _c.parseBool, convertToDate = _c.convertToDate, _d = jriapp_shared_1.Utils.sys, resolvePath = _d.resolvePath, getBraceLen = _d.getBraceLen;
     var getRX = /^get[(].+[)]$/g, spaceRX = /^\s+$/;
     var TOKEN;
     (function (TOKEN) {
@@ -139,13 +139,6 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         TAG["BRACE"] = "5";
         TAG["INDEXER"] = "6";
     })(TAG || (TAG = {}));
-    var DATES;
-    (function (DATES) {
-        DATES["TODAY"] = "today";
-        DATES["TOMORROW"] = "tomorrow";
-        DATES["YESTERDAY"] = "yesterday";
-        DATES["ENDOFMONTH"] = "endofmonth";
-    })(DATES || (DATES = {}));
     var PARSE_TYPE;
     (function (PARSE_TYPE) {
         PARSE_TYPE[PARSE_TYPE["NONE"] = 0] = "NONE";
@@ -213,24 +206,6 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             else {
                 kv.val += v;
             }
-        }
-    }
-    function convertToDate(val, format) {
-        if (format === void 0) { format = "YYYYMMDD"; }
-        if (val === _undefined) {
-            return moment().startOf('day').toDate();
-        }
-        switch (val) {
-            case "today":
-                return moment().startOf('day').toDate();
-            case "tomorrow":
-                return moment().startOf('day').add(1, 'days').toDate();
-            case "yesterday":
-                return moment().startOf('day').subtract(1, 'days').toDate();
-            case "endofmonth":
-                return moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
-            default:
-                return moment(val, format).toDate();
         }
     }
     function checkVal(kv) {
@@ -304,6 +279,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                             var tag = getTag(val, start, i);
                             var braceLen_1 = getBraceLen(val, i, 0);
                             setKeyVal(kv, i + 1, i + braceLen_1 - 1, val, isKey, false);
+                            if (kv.tag !== "") {
+                                throw new Error("Invalid tag: " + trim(val.substring(start, i)) + " and value: " + kv.val + " in expression: " + val);
+                            }
                             kv.tag = tag;
                             i += (braceLen_1 - 1);
                             start = -1;
@@ -324,6 +302,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                         }
                         else {
                             kv.val += "[" + str + "]";
+                            if (kv.tag !== "") {
+                                throw new Error("Invalid value: " + kv.val + " in expression: " + val);
+                            }
                             kv.tag = "6";
                         }
                         i += (braceLen - 1);
@@ -337,6 +318,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                             }
                             var braceLen_2 = getBraceLen(val, i, 1);
                             kv.val = val.substring(i + 1, i + braceLen_2 - 1);
+                            if (kv.tag !== "") {
+                                throw new Error("Invalid value: " + kv.val + " after brace \"{\" in expression: " + val);
+                            }
                             kv.tag = "5";
                             i += (braceLen_2 - 1);
                             start = -1;
@@ -355,6 +339,9 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     case ":":
                     case "=":
                         setKeyVal(kv, start, i, val, isKey, false);
+                        if (kv.tag !== "" || !isKey) {
+                            throw new Error("Invalid \"" + ch + "\" at the start of: " + val.substring(i) + " in expression: " + val);
+                        }
                         start = -1;
                         isKey = false;
                         break;
@@ -362,6 +349,12 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                     case "}":
                     case "]":
                         throw new Error("Invalid: \"" + ch + "\" in expression " + val);
+                    default:
+                        if (kv.tag !== "" && kv.tag !== "6") {
+                            if (ch !== "\t" && ch !== " " && ch !== "\n" && ch !== "\r")
+                                throw new Error("Invalid: \"" + ch + "\" at the start of: " + val.substring(i) + " in expression: " + val);
+                        }
+                        break;
                 }
             }
             else {
@@ -393,8 +386,81 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         return parts;
     }
     function getExprArgs(expr) {
-        var parts = expr.split(",");
-        return parts.map(function (p) { return trim(p); });
+        var i, ch, literal, parts = [], start = -1, seekNext = false;
+        var len = expr.length;
+        var current = "";
+        for (i = 0; i < len; i += 1) {
+            if (start < 0) {
+                start = i;
+            }
+            ch = expr.charAt(i);
+            if (!literal) {
+                switch (ch) {
+                    case "'":
+                    case '"':
+                        literal = ch;
+                        current += expr.substring(start, i);
+                        start = i + 1;
+                        break;
+                    case ',':
+                        {
+                            if (seekNext && (current != "" || trim(expr.substring(start, i)) != ""))
+                                throw new Error("Invalid expression arguments: " + expr);
+                            if (!seekNext) {
+                                current += expr.substring(start, i);
+                                parts.push(current);
+                            }
+                            else {
+                                seekNext = false;
+                            }
+                            start = -1;
+                            current = "";
+                        }
+                        break;
+                    case '{':
+                        {
+                            if (trim(current) !== "")
+                                throw new Error("Invalid expression arguments: " + expr);
+                            var braceLen = getBraceLen(expr, i, 1);
+                            var val = expr.substring(i + 1, i + braceLen - 1);
+                            var obj = parseOption(0, val, null);
+                            parts.push(obj);
+                            i += (braceLen - 1);
+                            start = -1;
+                            current = "";
+                            seekNext = true;
+                        }
+                        break;
+                }
+            }
+            else {
+                switch (ch) {
+                    case "'":
+                    case '"':
+                        if (literal === ch) {
+                            var i1 = i + 1, next = i1 < len ? expr.charAt(i1) : null;
+                            if (next === ch) {
+                                current += expr.substring(start, i + 1);
+                                i += 1;
+                                start = i + 1;
+                            }
+                            else {
+                                current += expr.substring(start, i);
+                                literal = null;
+                                start = i + 1;
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+        if (start > -1) {
+            if (seekNext && (current != "" || trim(expr.substring(start, i)) != ""))
+                throw new Error("Invalid expression arguments: " + expr);
+            current += expr.substring(start, i);
+            parts.push(current);
+        }
+        return parts.map(function (p) { return isString(p) ? trim(p) : p; });
     }
     function getSvc(id) {
         var _a;
@@ -404,7 +470,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         }
         var argsdata = [];
         for (var i = 0; i < args.length; ++i) {
-            var val = trimQuotes(args[i]);
+            var val = args[i];
             if (isNumeric(val)) {
                 argsdata[i] = Number(val);
             }
@@ -4570,7 +4636,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
     }(jriapp_shared_19.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/deferred", "jriapp/const", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_7, jriapp_shared_20, const_1, int_3, jsonbag_1, deferred_2, const_2, dom_7, viewchecks_3, converter_1, bootstrap_8, binding_2, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
+define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/deferred", "jriapp/consts", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_7, jriapp_shared_20, const_1, int_3, jsonbag_1, deferred_2, consts_1, dom_7, viewchecks_3, converter_1, bootstrap_8, binding_2, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -4581,10 +4647,10 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     __export(int_3);
     __export(jsonbag_1);
     exports.Promise = deferred_2.Promise;
-    exports.KEYS = const_2.KEYS;
-    exports.BINDING_MODE = const_2.BINDING_MODE;
-    exports.BindTo = const_2.BindTo;
-    exports.SubscribeFlags = const_2.SubscribeFlags;
+    exports.KEYS = consts_1.KEYS;
+    exports.BINDING_MODE = consts_1.BINDING_MODE;
+    exports.BindTo = consts_1.BindTo;
+    exports.SubscribeFlags = consts_1.SubscribeFlags;
     exports.DOM = dom_7.DomUtils;
     exports.ViewChecks = viewchecks_3.ViewChecks;
     exports.BaseConverter = converter_1.BaseConverter;
@@ -4599,6 +4665,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.21.9";
+    exports.VERSION = "2.21.11";
     bootstrap_7.Bootstrap._initFramework();
 });

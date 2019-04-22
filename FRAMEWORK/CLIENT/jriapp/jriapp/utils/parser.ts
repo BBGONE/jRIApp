@@ -4,9 +4,9 @@ import { TBindingInfo } from "../int";
 
 import { bootstrap } from "../bootstrap";
 
-const { isNumeric, isBoolString, _undefined } = Utils.check,
+const { isNumeric, isBoolString, _undefined, isString } = Utils.check,
     { format, fastTrim: trim, startsWith, endsWith, trimQuotes } = Utils.str,
-    { parseBool } = Utils.core, { resolvePath, getBraceLen } = Utils.sys;
+    { parseBool, convertToDate } = Utils.core, { resolvePath, getBraceLen } = Utils.sys;
 
 const getRX = /^get[(].+[)]$/g, spaceRX = /^\s+$/;
 
@@ -33,14 +33,6 @@ const enum TAG {
     BRACE = "5",
     INDEXER = "6"
 }
-
-const enum DATES {
-    TODAY = "today",
-    TOMORROW = "tomorrow",
-    YESTERDAY = "yesterday",
-    ENDOFMONTH = "endofmonth"
-}
-
 
 const enum PARSE_TYPE {
     NONE = 0,
@@ -127,25 +119,6 @@ function setKeyVal(kv: IKeyVal, start: number, end: number, val: string, isKey: 
     }
 }
 
-function convertToDate(val: string, format: string = "YYYYMMDD"): Date {
-    if (val === _undefined) {
-        return moment().startOf('day').toDate();
-    }
-
-    switch (val) {
-        case DATES.TODAY:
-            return moment().startOf('day').toDate();
-        case DATES.TOMORROW:
-            return moment().startOf('day').add(1, 'days').toDate();
-        case DATES.YESTERDAY:
-            return moment().startOf('day').subtract(1, 'days').toDate();
-        case DATES.ENDOFMONTH:
-            return moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
-        default:
-            return moment(val, format).toDate();
-    }
-}
-
 function checkVal(kv: IKeyVal): boolean {
     if (!kv.key) {
         return false;
@@ -205,7 +178,6 @@ function getTag(val: string, start: number, end: number): TAG {
 function getKeyVals(val: string): IKeyVal[] {
     let i: number, ch: string, literal: string, parts: IKeyVal[] = [],
         kv: IKeyVal = { tag: TAG.NONE, key: "", val: "" }, isKey = true, start = -1;
-
     const len = val.length;
     for (i = 0; i < len; i += 1) {
         if (start < 0) {
@@ -231,6 +203,9 @@ function getKeyVals(val: string): IKeyVal[] {
                         const tag: TAG = getTag(val, start, i);
                         const braceLen = getBraceLen(val, i, BRACKETS.ROUND);
                         setKeyVal(kv, i + 1, i + braceLen - 1, val, isKey, false);
+                        if (kv.tag !== TAG.NONE) {
+                            throw new Error(`Invalid tag: ${trim(val.substring(start, i))} and value: ${kv.val} in expression: ${val}`);
+                        }
                         kv.tag = tag;
                         i += (braceLen - 1);
                         start = -1;
@@ -250,6 +225,9 @@ function getKeyVals(val: string): IKeyVal[] {
                         kv.key += `[${str}]`;
                     } else {
                         kv.val += `[${str}]`;
+                        if (kv.tag !== TAG.NONE) {
+                            throw new Error(`Invalid value: ${kv.val} in expression: ${val}`);
+                        }
                         kv.tag = TAG.INDEXER;
                     }
                     i += (braceLen - 1);
@@ -263,6 +241,9 @@ function getKeyVals(val: string): IKeyVal[] {
                         }
                         const braceLen = getBraceLen(val, i, BRACKETS.CURLY);
                         kv.val = val.substring(i + 1, i + braceLen - 1);
+                        if (kv.tag !== TAG.NONE) {
+                            throw new Error(`Invalid value: ${kv.val} after brace "{" in expression: ${val}`);
+                        }
                         kv.tag = TAG.BRACE;
                         i += (braceLen - 1);
                         start = -1;
@@ -281,6 +262,9 @@ function getKeyVals(val: string): IKeyVal[] {
                 case TOKEN.DELIMETER1:
                 case TOKEN.DELIMETER2:
                     setKeyVal(kv, start, i, val, isKey, false);
+                    if (kv.tag !== TAG.NONE || !isKey) {
+                        throw new Error(`Invalid "${ch}" at the start of: ${val.substring(i)} in expression: ${val}`);
+                    }
                     start = -1;
                     // switch to parsing the value
                     isKey = false;
@@ -289,14 +273,20 @@ function getKeyVals(val: string): IKeyVal[] {
                 case "}":
                 case "]":
                     throw new Error(`Invalid: "${ch}" in expression ${val}`);
+                default:
+                    if (kv.tag !== TAG.NONE && kv.tag !== TAG.INDEXER) {
+                        if (ch !== "\t" && ch !== " " && ch !== "\n" && ch !== "\r")
+                            throw new Error(`Invalid: "${ch}" at the start of: ${val.substring(i)} in expression: ${val}`);
+                    }
+                    break;
             }
         } else {
             // inside literal content here
             switch (ch) {
                 case "'":
                 case '"':
-                    if (literal === ch) {
-                        //check for quotes escape 
+                   if (literal === ch) {
+                        // check for quotes escape 
                         const i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
                         if (next === ch) {
                             setKeyVal(kv, start, i + 1, val, isKey, true);
@@ -327,14 +317,94 @@ function getKeyVals(val: string): IKeyVal[] {
     * resolve arguments by parsing content of expression: part1, part2 or stringDate,format? or id
 */
 function getExprArgs(expr: string): string[] {
-    const parts = expr.split(",");
-    return parts.map((p) => trim(p));
+    let i: number, ch: string, literal: string, parts: string[] = [], start = -1, seekNext = false;
+    const len = expr.length;
+    let current = "";
+
+    for (i = 0; i < len; i += 1) {
+        if (start < 0) {
+            start = i;
+        }
+        ch = expr.charAt(i);
+
+        if (!literal) {
+            switch (ch) {
+                case "'":
+                case '"':
+                    literal = ch;
+                    current += expr.substring(start, i);
+                    start = i + 1;
+                    break;
+                case ',':
+                    {
+                        if (seekNext && (current != "" || trim(expr.substring(start, i)) != ""))
+                            throw new Error(`Invalid expression arguments: ${expr}`);
+
+                        if (!seekNext) {
+                            current += expr.substring(start, i);
+                            parts.push(current);
+                        } else {
+                            seekNext = false;
+                        }
+                        start = -1;
+                        current = "";
+                    }
+                    break;
+                case '{':
+                    {
+                        if (trim(current) !== "")
+                            throw new Error(`Invalid expression arguments: ${expr}`);
+                     
+                        const braceLen = getBraceLen(expr, i, BRACKETS.CURLY);
+                        const val = expr.substring(i + 1, i + braceLen - 1);
+                        const obj = parseOption(PARSE_TYPE.NONE, val, null);
+                        parts.push(obj);
+                        i += (braceLen - 1);
+                        start = -1;
+                        current = "";
+                        seekNext = true;
+                    }
+                    break;
+            }
+        } else {
+            // inside literal content here
+            switch (ch) {
+                case "'":
+                case '"':
+                    if (literal === ch) {
+                        // check for quotes escape 
+                        const i1 = i + 1, next = i1 < len ? expr.charAt(i1) : null;
+                       
+                        if (next === ch) {
+                            current += expr.substring(start, i + 1);
+                            i += 1;
+                            start = i + 1;
+                        } else {
+                            current += expr.substring(start, i);
+                            literal = null;
+                            start = i + 1;
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+
+    if (start > -1) {
+        if (seekNext && (current != "" || trim(expr.substring(start, i)) != ""))
+            throw new Error(`Invalid expression arguments: ${expr}`);
+
+        current += expr.substring(start, i);
+        parts.push(current);
+    }
+
+    return parts.map((p) => isString(p)?trim(p):p);
 }
 
 function getSvc(id: string, ...args: any[]): string {
     const argsdata: any[] = [];
     for (let i = 0; i < args.length; ++i) {
-        const val = trimQuotes(args[i]);
+        const val = args[i];
         if (isNumeric(val)) {
             argsdata[i] = Number(val);
         } else if (isBoolString(val)) {
@@ -363,7 +433,6 @@ function parseById(parse_type: PARSE_TYPE, id: string, dataContext: any): any {
 function isGetExpr(val: string): boolean {
     return !!val && getRX.test(val);
 }
-
 
 function parseOption(parse_type: PARSE_TYPE, part: string, dataContext: any): any {
     const res: any = parse_type === PARSE_TYPE.BINDING ? {

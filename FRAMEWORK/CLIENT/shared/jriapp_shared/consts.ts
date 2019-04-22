@@ -15,6 +15,13 @@ export const enum SIDE {
     RIGHT = 2
 }
 
+export const enum DATES {
+    TODAY = "today",
+    TOMORROW = "tomorrow",
+    YESTERDAY = "yesterday",
+    ENDOFMONTH = "endofmonth"
+}
+
 export const APP_NAME = "app";
 
 export const DUMY_ERROR = "DUMMY_ERROR";

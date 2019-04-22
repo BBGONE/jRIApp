@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { DATA_ATTR } from "jriapp/const";
+import { DATA_ATTR } from "jriapp/consts";
 import { DomUtils } from "jriapp/utils/dom";
-import { css, ROW_ACTION } from "../const";
+import { css, ROW_ACTION } from "../consts";
 import { IColumnInfo, BaseColumn, ICellInfo } from "./base";
 import { ActionsCell } from "../cells/actions";
 import { DataGrid } from "../datagrid";

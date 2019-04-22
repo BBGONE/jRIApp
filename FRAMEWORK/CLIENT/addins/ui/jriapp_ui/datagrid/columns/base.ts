@@ -6,7 +6,7 @@ import { createTemplate } from "jriapp/template";
 import { addToolTip } from "../../baseview";
 import { selectableProviderWeakMap } from "jriapp/bootstrap";
 
-import { css } from "../const";
+import { css } from "../consts";
 import { DataGrid } from "../datagrid";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, { getNewID } = utils.core;

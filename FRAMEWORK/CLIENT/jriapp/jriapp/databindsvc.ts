@@ -2,7 +2,7 @@
 import {
     Utils, IIndexer, IErrorHandler, IPromise, DummyError, BaseObject
 } from "jriapp_shared";
-import { DATA_ATTR, ELVIEW_NM, BindScope } from "./const";
+import { DATA_ATTR, ELVIEW_NM, BindScope } from "./consts";
 import {
     IElViewFactory, IElView, ILifeTimeScope, IBindArgs,
     TBindingOptions, IDataBindingService, IModuleLoader, IApplication

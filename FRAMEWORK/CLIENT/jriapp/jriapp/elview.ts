@@ -2,7 +2,7 @@
 import {
     BaseObject, Utils, IIndexer, LocaleERRS, createWeakMap, IWeakMap
 } from "jriapp_shared";
-import { DATA_ATTR } from "./const";
+import { DATA_ATTR } from "./consts";
 import {
     IElViewStore, IElView, IViewType, IDataProvider, IViewOptions, IElViewInfo,
     IElViewFactory, IElViewRegister

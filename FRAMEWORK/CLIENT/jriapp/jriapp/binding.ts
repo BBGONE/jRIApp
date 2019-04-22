@@ -3,7 +3,7 @@ import {
     IBaseObject, IIndexer, IErrorNotification, IValidationInfo, LocaleERRS,
     BaseObject, Utils
 } from "jriapp_shared";
-import { BINDING_MODE, BindTo } from "./const";
+import { BINDING_MODE, BindTo } from "./consts";
 import { TBindingInfo, TBindingOptions, IBinding, IConverter, IApplication } from "./int";
 import { bootstrap } from "jriapp/bootstrap";
 

@@ -1,11 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { LocaleSTRS as STRS, Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-import { DATA_ATTR, } from "jriapp/const";
+import { DATA_ATTR, } from "jriapp/consts";
 import { ButtonCss } from "jriapp/int";
 import { addToolTip } from "../../baseview";
 
-import { css, txtMap } from "../const";
+import { css, txtMap } from "../consts";
 import { BaseCell, ICellOptions } from "./base";
 import { ActionsColumn } from "../columns/actions";
 

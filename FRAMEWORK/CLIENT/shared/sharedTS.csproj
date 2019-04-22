@@ -35,7 +35,7 @@
     <TypeScriptCompile Include="jriapp_shared\collection\list.ts" />
     <TypeScriptCompile Include="jriapp_shared\collection\utils.ts" />
     <TypeScriptCompile Include="jriapp_shared\collection\validation.ts" />
-    <TypeScriptCompile Include="jriapp_shared\const.ts" />
+    <TypeScriptCompile Include="jriapp_shared\consts.ts" />
     <TypeScriptCompile Include="jriapp_shared.ts" />
     <TypeScriptCompile Include="jriapp_shared\errors.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\anylist.ts" />

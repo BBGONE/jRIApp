@@ -2,7 +2,7 @@
 import { BaseObject, Utils } from "jriapp_shared";
 import { ICollectionItem } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { css, ROW_POSITION } from "../const";
+import { css, ROW_POSITION } from "../consts";
 import { BaseCell } from "../cells/base";
 import { ExpanderCell } from "../cells/expander";
 import { DataCell } from "../cells/data";

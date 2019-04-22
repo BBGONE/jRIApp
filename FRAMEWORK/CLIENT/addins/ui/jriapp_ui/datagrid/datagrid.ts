@@ -4,7 +4,7 @@ import {
     Debounce, Utils, IPromise, IValidationInfo
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-import { DATA_ATTR, KEYS } from "jriapp/const";
+import { DATA_ATTR, KEYS } from "jriapp/consts";
 import {
     ISelectableProvider, ISelectable, IViewOptions
 } from "jriapp/int";
@@ -22,7 +22,7 @@ import { BaseElView } from "../baseview";
 import { parseContentAttr } from "../content/int";
 import { IDialogConstructorOptions, DataEditDialog } from "../dialog";
 
-import { css, ROW_POSITION, COLUMN_TYPE, ROW_ACTION } from "./const";
+import { css, ROW_POSITION, COLUMN_TYPE, ROW_ACTION } from "./consts";
 import { IDataGridAnimation, DefaultAnimation } from "./animation";
 
 import { BaseCell } from "./cells/base";
@@ -41,7 +41,7 @@ export type DataGridCell = BaseCell<BaseColumn>;
 export { Row as DataGridRow } from "./rows/row";
 export { BaseColumn as DataGridColumn } from "./columns/base";
 
-export { ROW_POSITION, COLUMN_TYPE, ROW_ACTION } from "./const";
+export { ROW_POSITION, COLUMN_TYPE, ROW_ACTION } from "./consts";
 export { IDataGridAnimation, DefaultAnimation } from "./animation";
 import { $ } from "../utils/jquery";
 

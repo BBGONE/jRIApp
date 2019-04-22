@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DATA_TYPE } from "jriapp_shared/collection/const";
-import { KEYS } from "jriapp/const";
+import { KEYS } from "jriapp/consts";
 import { IConverter } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 import { TextBoxElView } from "../textbox";

@@ -2,7 +2,7 @@
 import { DomUtils } from "jriapp/utils/dom";
 import { IContent } from "jriapp/int";
 
-import { css } from "../const";
+import { css } from "../consts";
 import { BaseCell, ICellOptions } from "./base";
 import { DataColumn } from "../columns/data";
 

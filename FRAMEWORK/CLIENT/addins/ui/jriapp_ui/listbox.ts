@@ -9,7 +9,7 @@ import {
 import {
     ICollection, ICollectionItem, ICollChangedArgs
 } from "jriapp_shared/collection/int";
-import { SubscribeFlags } from "jriapp/const";
+import { SubscribeFlags } from "jriapp/consts";
 import { IViewOptions, ISubscriber } from "jriapp/int";
 import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";

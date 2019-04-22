@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { bootstrap } from "jriapp/bootstrap";
-import { SERVICES } from "jriapp/const";
+import { SERVICES } from "jriapp/consts";
 import { initContentFactory } from "./jriapp_ui/content/factory";
 import { createToolTipSvc } from "./jriapp_ui/utils/tooltip";
 import { createDatepickerSvc } from "./jriapp_ui/utils/datepicker";

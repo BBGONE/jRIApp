@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, TEventHandler, Debounce } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-import {DATA_ATTR, KEYS } from "jriapp/const";
+import {DATA_ATTR, KEYS } from "jriapp/consts";
 import {
     ITemplate, ISelectable,  IViewOptions, ISelectableProvider
 } from "jriapp/int";

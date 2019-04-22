@@ -3497,7 +3497,7 @@ define("jriapp_ui/content/int", ["require", "exports", "jriapp_shared", "jriapp/
     }
     exports.parseContentAttr = parseContentAttr;
 });
-define("jriapp_ui/datagrid/const", ["require", "exports"], function (require, exports) {
+define("jriapp_ui/datagrid/consts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var COLUMN_TYPE;
@@ -4159,7 +4159,7 @@ define("jriapp_ui/datagrid/columns/actions", ["require", "exports", "jriapp/util
     }(base_5.BaseColumn));
     exports.ActionsColumn = ActionsColumn;
 });
-define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/int", "jriapp_ui/baseview", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/cells/base"], function (require, exports, jriapp_shared_21, dom_20, int_1, baseview_5, const_1, base_6) {
+define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/int", "jriapp_ui/baseview", "jriapp_ui/datagrid/consts", "jriapp_ui/datagrid/cells/base"], function (require, exports, jriapp_shared_21, dom_20, int_1, baseview_5, consts_1, base_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_21.Utils, dom = dom_20.DomUtils, format = utils.str.format;
@@ -4191,7 +4191,7 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
                 dom.setData(btn, "cell", self);
                 var name = btn.getAttribute("data-name");
                 if (isActionsToolTips) {
-                    baseview_5.addToolTip(btn, jriapp_shared_21.LocaleSTRS.TEXT[const_1.txtMap[name]]);
+                    baseview_5.addToolTip(btn, jriapp_shared_21.LocaleSTRS.TEXT[consts_1.txtMap[name]]);
                 }
                 btn.setAttribute("data-scope", self.column.uniqueID);
             });
@@ -5244,14 +5244,14 @@ define("jriapp_ui/datagrid/rows/fillspace", ["require", "exports", "jriapp_share
     }(jriapp_shared_28.BaseObject));
     exports.FillSpaceRow = FillSpaceRow;
 });
-define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/utils/parser", "jriapp/bootstrap", "jriapp_ui/baseview", "jriapp_ui/content/int", "jriapp_ui/dialog", "jriapp_ui/datagrid/animation", "jriapp_ui/datagrid/rows/row", "jriapp_ui/datagrid/rows/details", "jriapp_ui/datagrid/rows/fillspace", "jriapp_ui/datagrid/columns/expander", "jriapp_ui/datagrid/columns/data", "jriapp_ui/datagrid/columns/actions", "jriapp_ui/datagrid/columns/rowselector", "jriapp_ui/datagrid/rows/row", "jriapp_ui/datagrid/columns/base", "jriapp_ui/datagrid/const", "jriapp_ui/datagrid/animation", "jriapp_ui/utils/jquery"], function (require, exports, jriapp_shared_29, dom_29, parser_2, bootstrap_16, baseview_6, int_2, dialog_1, animation_1, row_1, details_2, fillspace_2, expander_3, data_2, actions_3, rowselector_3, row_2, base_9, const_2, animation_2, jquery_5) {
+define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/utils/parser", "jriapp/bootstrap", "jriapp_ui/baseview", "jriapp_ui/content/int", "jriapp_ui/dialog", "jriapp_ui/datagrid/animation", "jriapp_ui/datagrid/rows/row", "jriapp_ui/datagrid/rows/details", "jriapp_ui/datagrid/rows/fillspace", "jriapp_ui/datagrid/columns/expander", "jriapp_ui/datagrid/columns/data", "jriapp_ui/datagrid/columns/actions", "jriapp_ui/datagrid/columns/rowselector", "jriapp_ui/datagrid/rows/row", "jriapp_ui/datagrid/columns/base", "jriapp_ui/datagrid/consts", "jriapp_ui/datagrid/animation", "jriapp_ui/utils/jquery"], function (require, exports, jriapp_shared_29, dom_29, parser_2, bootstrap_16, baseview_6, int_2, dialog_1, animation_1, row_1, details_2, fillspace_2, expander_3, data_2, actions_3, rowselector_3, row_2, base_9, consts_2, animation_2, jquery_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DataGridRow = row_2.Row;
     exports.DataGridColumn = base_9.BaseColumn;
-    exports.ROW_POSITION = const_2.ROW_POSITION;
-    exports.COLUMN_TYPE = const_2.COLUMN_TYPE;
-    exports.ROW_ACTION = const_2.ROW_ACTION;
+    exports.ROW_POSITION = consts_2.ROW_POSITION;
+    exports.COLUMN_TYPE = consts_2.COLUMN_TYPE;
+    exports.ROW_ACTION = consts_2.ROW_ACTION;
     exports.DefaultAnimation = animation_2.DefaultAnimation;
     var utils = jriapp_shared_29.Utils, format = utils.str.format, _a = utils.core, forEachProp = _a.forEachProp, merge = _a.merge, getNewID = _a.getNewID, extend = _a.extend, ERROR = utils.err, sys = utils.sys, dom = dom_29.DomUtils, parser = parser_2.Parser, doc = dom.document, win = dom.window, boot = bootstrap_16.bootstrap;
     var _columnWidthInterval, _gridsCount = 0;

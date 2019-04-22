@@ -1,9 +1,9 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-import { DATA_ATTR } from "jriapp/const";
+import { DATA_ATTR } from "jriapp/consts";
 
-import { css } from "../const";
+import { css } from "../consts";
 import { BaseColumn, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 import { RowSelectorCell } from "../cells/rowselector";

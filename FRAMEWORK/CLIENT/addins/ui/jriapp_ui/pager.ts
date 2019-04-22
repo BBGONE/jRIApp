@@ -2,7 +2,7 @@
 import {
     Utils, BaseObject, LocaleERRS as ERRS, LocaleSTRS as STRS, Debounce, IValidationInfo
 } from "jriapp_shared";
-import { DATA_ATTR } from "jriapp/const";
+import { DATA_ATTR } from "jriapp/consts";
 import { DomUtils } from "jriapp/utils/dom";
 import { IViewOptions, ISelectable, ISelectableProvider } from "jriapp/int";
 import { addToolTip } from "./baseview";

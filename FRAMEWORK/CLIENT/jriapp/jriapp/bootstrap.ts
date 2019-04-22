@@ -4,7 +4,7 @@ import {
     TEventHandler, TPriority, LocaleERRS, BaseObject, Utils, ObjectEvents,
     IObjectEvents, createWeakMap, IWeakMap
 } from "jriapp_shared";
-import { STORE_KEY, SubscribeFlags } from "./const";
+import { STORE_KEY, SubscribeFlags } from "./consts";
 import {
     IApplication, ISelectableProvider, IDataProvider, IConverter, ISvcStore,
     IContentFactoryList, IElViewRegister, IStylesLoader, ISubscriber, TLoaderFunc

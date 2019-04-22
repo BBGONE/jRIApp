@@ -2,7 +2,7 @@
 import { BaseObject, Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { ICollectionItem } from "jriapp_shared/collection/int";
-import { SubscribeFlags } from "jriapp/const";
+import { SubscribeFlags } from "jriapp/consts";
 import { ISubscriber } from "jriapp/int";
 import { subscribeWeakMap } from "jriapp/bootstrap";
 
