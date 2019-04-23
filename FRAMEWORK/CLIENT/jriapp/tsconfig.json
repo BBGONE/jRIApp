@@ -17,8 +17,7 @@
     "jriapp.ts"
   ],
   "include": [
-    "../built/jriapp_shared.d.ts",
-    "../thirdparty/moment.d.ts"
+    "../built/jriapp_shared.d.ts"
   ],
   "exclude": [
     "node_modules"

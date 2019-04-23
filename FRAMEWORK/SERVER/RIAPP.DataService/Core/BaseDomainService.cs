@@ -21,12 +21,14 @@ namespace RIAPP.DataService.Core
         public BaseDomainService(IServiceContainer serviceContainer)
         {
             this.ServiceContainer = serviceContainer;
-            this.User = serviceContainer.UserProvider.User;
         }
 
         public ClaimsPrincipal User
         {
-            get;
+            get
+            {
+                return this.ServiceContainer.UserProvider.User;
+            }
         }
 
         public ISerializer Serializer

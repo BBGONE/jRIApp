@@ -3,9 +3,10 @@ import { IIndexer } from "../int";
 import { DATES } from "../consts";
 import { StringUtils } from "./strutils";
 import { Checks } from "./checks";
+import { ERRS } from "../lang";
 
 const { isHasProp, _undefined, isBoolean, isArray, isSimpleObject, isNt, isString } = Checks,
-    { format, fastTrim: trim } = StringUtils, { getOwnPropertyNames, getOwnPropertyDescriptor, keys: objectKeys } = Object;
+    { format: formatStr, fastTrim: trim } = StringUtils, { getOwnPropertyNames, getOwnPropertyDescriptor, keys: objectKeys } = Object;
 const UUID_CHARS: string[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
 const NEWID_MAP: IIndexer<number> = {};
 
@@ -60,8 +61,27 @@ function extend<T, U>(target: T, ...source: U[]): T & U {
     return to;
 }
 
-function convertToDate(val: string, format: string = "YYYYMMDD"): Date {
-    if (val === _undefined) {
+function strToDate(val: string, format: string = "YYYYMMDD"): Date {
+    if (!val) {
+        return null;
+    }
+
+    const m = moment(val, format);
+    if (!m.isValid()) {
+        throw new Error(formatStr(ERRS.ERR_CONV_INVALID_DATE, val));
+    }
+    return m.toDate();
+}
+
+function dateToStr(val: Date, format: string = "YYYYMMDD"): string {
+    if (isNt(val)) {
+        return "";
+    }
+    return moment(val).format(format);
+}
+
+export function convertToDate(val: string | DATES, format: string = "YYYYMMDD"): Date {
+    if (!val) {
         return moment().startOf('day').toDate();
     }
 
@@ -127,7 +147,7 @@ export class CoreUtils {
         // the last part is the name itself
         const n = parts[len - 1];
         if (!!checkOverwrite && (parent[n] !== _undefined)) {
-            throw new Error(format(ERR_OBJ_ALREADY_REGISTERED, namePath));
+            throw new Error(formatStr(ERR_OBJ_ALREADY_REGISTERED, namePath));
         }
         parent[n] = val;
     }
@@ -199,14 +219,16 @@ export class CoreUtils {
         } else if (v === "true") {
             return true;
         } else {
-            throw new Error(format("parseBool, argument: {0} is not a valid boolean string", a));
+            throw new Error(formatStr("parseBool, argument: {0} is not a valid boolean string", a));
         }
     }
     static round(num: number, decimals: number): number {
         return parseFloat(num.toFixed(decimals));
     }
     static readonly clone: (obj: any, target?: any) => any = clone;
-    static readonly convertToDate: (val: string, format: string) => Date = convertToDate;
+    static readonly strToDate: (val: string, format?: string) => Date = strToDate;
+    static readonly dateToStr: (val: Date, format?: string) => string = dateToStr;
+    static readonly convertToDate: (val: string | DATES, format?: string) => Date = convertToDate;
     static merge<S, T>(source: S, target?: T): S & T {
         if (!target) {
             target = <any>{};

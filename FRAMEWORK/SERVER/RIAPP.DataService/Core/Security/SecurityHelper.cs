@@ -1,4 +1,5 @@
-﻿using RIAPP.DataService.Core.Exceptions;
+﻿using Microsoft.AspNetCore.Authorization;
+using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Core.Metadata;
 using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Resources;
@@ -37,7 +38,7 @@ namespace RIAPP.DataService.Core.Security
             var attributes = attr.Where(a => a is IAuthorizeData).Cast<IAuthorizeData>().ToArray();
 
             // the override attribute replaces all authorization for the method
-            var overrides = attributes.OfType<IOverrideAuthorizeData>();
+            var overrides = attributes.OfType<IOverrideAuthorize>();
 
             if (overrides.Any())
             {
@@ -73,7 +74,7 @@ namespace RIAPP.DataService.Core.Security
             var attributes = attr.Where(a => a is IAuthorizeData).Cast<IAuthorizeData>().ToArray();
 
             // the override attribute replaces all higher and the current authorization
-            var overrides = attributes.OfType<IOverrideAuthorizeData>();
+            var overrides = attributes.OfType<IOverrideAuthorize>();
 
             if (overrides.Any())
             {
@@ -95,7 +96,7 @@ namespace RIAPP.DataService.Core.Security
             var attributes = instanceType.GetCustomAttributes(false).Where(a => a is IAuthorizeData).Cast<IAuthorizeData>().ToArray();
 
             // the override attribute replaces all authorization
-            var overrides = attributes.OfType<IOverrideAuthorizeData>();
+            var overrides = attributes.OfType<IOverrideAuthorize>();
             if (overrides.Any())
             {
                 return overrides;

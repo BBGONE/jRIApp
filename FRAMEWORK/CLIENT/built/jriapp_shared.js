@@ -386,10 +386,10 @@ define("jriapp_shared/utils/strutils", ["require", "exports", "jriapp_shared/uti
     exports.StringUtils = StringUtils;
     var trim = StringUtils.trim;
 });
-define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks"], function (require, exports, strutils_1, checks_2) {
+define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/lang"], function (require, exports, strutils_1, checks_2, lang_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var isHasProp = checks_2.Checks.isHasProp, _undefined = checks_2.Checks._undefined, isBoolean = checks_2.Checks.isBoolean, isArray = checks_2.Checks.isArray, isSimpleObject = checks_2.Checks.isSimpleObject, isNt = checks_2.Checks.isNt, isString = checks_2.Checks.isString, format = strutils_1.StringUtils.format, trim = strutils_1.StringUtils.fastTrim, getOwnPropertyNames = Object.getOwnPropertyNames, getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor, objectKeys = Object.keys;
+    var isHasProp = checks_2.Checks.isHasProp, _undefined = checks_2.Checks._undefined, isBoolean = checks_2.Checks.isBoolean, isArray = checks_2.Checks.isArray, isSimpleObject = checks_2.Checks.isSimpleObject, isNt = checks_2.Checks.isNt, isString = checks_2.Checks.isString, formatStr = strutils_1.StringUtils.format, trim = strutils_1.StringUtils.fastTrim, getOwnPropertyNames = Object.getOwnPropertyNames, getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor, objectKeys = Object.keys;
     var UUID_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
     var NEWID_MAP = {};
     function clone(obj, target) {
@@ -441,6 +441,24 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         }
         return to;
     }
+    function strToDate(val, format) {
+        if (format === void 0) { format = "YYYYMMDD"; }
+        if (!val) {
+            return null;
+        }
+        var m = moment(val, format);
+        if (!m.isValid()) {
+            throw new Error(formatStr(lang_1.ERRS.ERR_CONV_INVALID_DATE, val));
+        }
+        return m.toDate();
+    }
+    function dateToStr(val, format) {
+        if (format === void 0) { format = "YYYYMMDD"; }
+        if (isNt(val)) {
+            return "";
+        }
+        return moment(val).format(format);
+    }
     function convertToDate(val, format) {
         if (format === void 0) { format = "YYYYMMDD"; }
         if (val === _undefined) {
@@ -459,6 +477,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
                 return moment(val, format).toDate();
         }
     }
+    exports.convertToDate = convertToDate;
     function assignStrings(target, source) {
         if (isNt(target)) {
             target = {};
@@ -500,7 +519,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             }
             var n = parts[len - 1];
             if (!!checkOverwrite && (parent[n] !== _undefined)) {
-                throw new Error(format(ERR_OBJ_ALREADY_REGISTERED, namePath));
+                throw new Error(formatStr(ERR_OBJ_ALREADY_REGISTERED, namePath));
             }
             parent[n] = val;
         };
@@ -565,7 +584,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
                 return true;
             }
             else {
-                throw new Error(format("parseBool, argument: {0} is not a valid boolean string", a));
+                throw new Error(formatStr("parseBool, argument: {0} is not a valid boolean string", a));
             }
         };
         CoreUtils.round = function (num, decimals) {
@@ -617,6 +636,8 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         })();
         CoreUtils.hasProp = isHasProp;
         CoreUtils.clone = clone;
+        CoreUtils.strToDate = strToDate;
+        CoreUtils.dateToStr = dateToStr;
         CoreUtils.convertToDate = convertToDate;
         CoreUtils.extend = extend;
         CoreUtils.assignStrings = assignStrings;
@@ -862,7 +883,7 @@ define("jriapp_shared/collection/int", ["require", "exports"], function (require
         ITEM_EVENTS["destroyed"] = "destroyed";
     })(ITEM_EVENTS = exports.ITEM_EVENTS || (exports.ITEM_EVENTS = {}));
 });
-define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils"], function (require, exports, lang_1, checks_3, strUtils_1) {
+define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils"], function (require, exports, lang_2, checks_3, strUtils_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var isFunc = checks_3.Checks.isFunc, isHasProp = checks_3.Checks.isHasProp, isArray = checks_3.Checks.isArray, isNt = checks_3.Checks.isNt, _undefined = checks_3.Checks._undefined, startsWith = strUtils_1.StringUtils.startsWith, trim = strUtils_1.StringUtils.fastTrim, trimBrackets = strUtils_1.StringUtils.trimBrackets, format = strUtils_1.StringUtils.format, trimQuotes = strUtils_1.StringUtils.trimQuotes;
@@ -1012,7 +1033,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lan
                 }
             }
             if (test !== 0) {
-                throw new Error(format(lang_1.ERRS.ERR_EXPR_BRACES_INVALID, val));
+                throw new Error(format(lang_2.ERRS.ERR_EXPR_BRACES_INVALID, val));
             }
             return cnt;
         };
@@ -1161,7 +1182,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lan
     exports.SysUtils = SysUtils;
     var sys = SysUtils;
 });
-define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/utils/sysutils", "jriapp_shared/lang"], function (require, exports, consts_1, sysutils_1, lang_2) {
+define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/utils/sysutils", "jriapp_shared/lang"], function (require, exports, consts_1, sysutils_1, lang_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var sys = sysutils_1.SysUtils;
@@ -1309,13 +1330,13 @@ define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/consts", "j
         __extends(ValidationError, _super);
         function ValidationError(validations, item) {
             var _this = this;
-            var message = lang_2.ERRS.ERR_VALIDATION + "\r\n";
+            var message = lang_3.ERRS.ERR_VALIDATION + "\r\n";
             validations.forEach(function (err, i) {
                 if (i > 0) {
                     message = message + "\r\n";
                 }
                 if (!!err.fieldName) {
-                    message = message + " " + lang_2.STRS.TEXT.txtField + ": '" + err.fieldName + "'  " + err.errors.join(", ");
+                    message = message + " " + lang_3.STRS.TEXT.txtField + ": '" + err.fieldName + "'  " + err.errors.join(", ");
                 }
                 else {
                     message = message + err.errors.join(", ");
@@ -1431,7 +1452,7 @@ define("jriapp_shared/utils/debug", ["require", "exports", "jriapp_shared/int"],
     }());
     exports.DEBUG = DEBUG;
 });
-define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils", "jriapp_shared/utils/debug"], function (require, exports, lang_3, checks_4, strutils_2, debug_1) {
+define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils", "jriapp_shared/utils/debug"], function (require, exports, lang_4, checks_4, strutils_2, debug_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var isFunc = checks_4.Checks.isFunc, format = strutils_2.StringUtils.format, debug = debug_1.DEBUG;
@@ -1543,13 +1564,13 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
         EventHelper.add = function (ev, name, handler, nmspace, context, priority) {
             if (!ev) {
                 debug.checkStartDebugger();
-                throw new Error(format(lang_3.ERRS.ERR_ASSERTION_FAILED, "ev is a valid object"));
+                throw new Error(format(lang_4.ERRS.ERR_ASSERTION_FAILED, "ev is a valid object"));
             }
             if (!isFunc(handler)) {
-                throw new Error(lang_3.ERRS.ERR_EVENT_INVALID_FUNC);
+                throw new Error(lang_4.ERRS.ERR_EVENT_INVALID_FUNC);
             }
             if (!name) {
-                throw new Error(format(lang_3.ERRS.ERR_EVENT_INVALID, "[Empty]"));
+                throw new Error(format(lang_4.ERRS.ERR_EVENT_INVALID, "[Empty]"));
             }
             var n = name, ns = !nmspace ? "*" : "" + nmspace;
             var list = ev[n];
@@ -1610,7 +1631,7 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
     }());
     exports.EventHelper = EventHelper;
 });
-define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/error", "jriapp_shared/utils/eventhelper"], function (require, exports, lang_4, sysutils_2, checks_5, error_1, eventhelper_1) {
+define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/error", "jriapp_shared/utils/eventhelper"], function (require, exports, lang_5, sysutils_2, checks_5, error_1, eventhelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var isHasProp = checks_5.Checks.isHasProp, evHelper = eventhelper_1.EventHelper, sys = sysutils_2.SysUtils, signature = { signature: "BaseObject" };
@@ -1701,19 +1722,19 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
         };
         ObjectEvents.prototype.raise = function (name, args) {
             if (!name) {
-                throw new Error(lang_4.ERRS.ERR_EVENT_INVALID);
+                throw new Error(lang_5.ERRS.ERR_EVENT_INVALID);
             }
             evHelper.raise(this._owner, this._events, name, args);
         };
         ObjectEvents.prototype.raiseProp = function (name) {
             if (!name) {
-                throw new Error(lang_4.ERRS.ERR_PROP_NAME_EMPTY);
+                throw new Error(lang_5.ERRS.ERR_PROP_NAME_EMPTY);
             }
             evHelper.raiseProp(this._owner, this._events, name, { property: name });
         };
         ObjectEvents.prototype.onProp = function (prop, handler, nmspace, context, priority) {
             if (!prop) {
-                throw new Error(lang_4.ERRS.ERR_PROP_NAME_EMPTY);
+                throw new Error(lang_5.ERRS.ERR_PROP_NAME_EMPTY);
             }
             if (!this._events) {
                 this._events = {};
@@ -2922,7 +2943,7 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
     }(object_2.BaseObject));
     exports.WaitQueue = WaitQueue;
 });
-define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang"], function (require, exports, utils_1, lang_5) {
+define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang"], function (require, exports, utils_1, lang_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = utils_1.Utils, _a = utils.core, getTimeZoneOffset = _a.getTimeZoneOffset, parseBool = _a.parseBool, getValue = _a.getValue, setValue = _a.setValue, format = utils.str.format, _b = utils.check, _undefined = _b._undefined, isArray = _b.isArray, isDate = _b.isDate, isString = _b.isString, isBoolean = _b.isBoolean, isNumber = _b.isNumber, isNt = _b.isNt;
@@ -2960,7 +2981,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                     dt.setMinutes(dt.getMinutes() - clientTZ);
                     break;
                 default:
-                    throw new Error(format(lang_5.ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
+                    throw new Error(format(lang_6.ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
             }
             return dt;
         },
@@ -2969,7 +2990,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                 return null;
             }
             if (!isDate(dt)) {
-                throw new Error(format(lang_5.ERRS.ERR_PARAM_INVALID, "dt", dt));
+                throw new Error(format(lang_6.ERRS.ERR_PARAM_INVALID, "dt", dt));
             }
             var clientTZ = getTimeZoneOffset();
             switch (dtcnv) {
@@ -2983,7 +3004,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                     dt.setMinutes(dt.getMinutes() + clientTZ);
                     break;
                 default:
-                    throw new Error(format(lang_5.ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
+                    throw new Error(format(lang_6.ERRS.ERR_PARAM_INVALID, "dtcnv", dtcnv));
             }
             return dateToString(dt);
         },
@@ -3062,10 +3083,10 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                     }
                     break;
                 default:
-                    throw new Error(format(lang_5.ERRS.ERR_PARAM_INVALID, "dataType", dataType));
+                    throw new Error(format(lang_6.ERRS.ERR_PARAM_INVALID, "dataType", dataType));
             }
             if (!isOK) {
-                throw new Error(format(lang_5.ERRS.ERR_FIELD_WRONG_TYPE, v, dataType));
+                throw new Error(format(lang_6.ERRS.ERR_FIELD_WRONG_TYPE, v, dataType));
             }
             return res;
         },
@@ -3101,7 +3122,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
                     res = JSON.parse(v);
                     break;
                 default:
-                    throw new Error(format(lang_5.ERRS.ERR_PARAM_INVALID, "dataType", dataType));
+                    throw new Error(format(lang_6.ERRS.ERR_PARAM_INVALID, "dataType", dataType));
             }
             return res;
         }
@@ -3132,7 +3153,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
         getObjectField: function (name, flds) {
             var arrFlds = flds.filter(function (f) { return f.fieldName === name; });
             if (!arrFlds || arrFlds.length !== 1) {
-                throw new Error(format(lang_5.ERRS.ERR_ASSERTION_FAILED, "arrFlds.length === 1"));
+                throw new Error(format(lang_6.ERRS.ERR_ASSERTION_FAILED, "arrFlds.length === 1"));
             }
             return arrFlds[0];
         },
@@ -3191,7 +3212,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
         }
     };
 });
-define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/utils", "jriapp_shared/errors"], function (require, exports, object_3, lang_6, waitqueue_1, utils_2, utils_3, errors_5) {
+define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/utils", "jriapp_shared/errors"], function (require, exports, object_3, lang_7, waitqueue_1, utils_2, utils_3, errors_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = utils_2.Utils, _a = utils.core, forEachProp = _a.forEachProp, getTimeZoneOffset = _a.getTimeZoneOffset, getNewID = _a.getNewID, _b = utils.str, format = _b.format, startsWith = _b.startsWith, _c = utils.check, _undefined = _c._undefined, isArray = _c.isArray, isUndefined = _c.isUndefined, sys = utils.sys, stringifyValue = utils_3.ValueUtils.stringifyValue, getObjectField = utils_3.CollUtils.getObjectField;
@@ -3466,7 +3487,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 utils.err.reThrow(ex, this.handleError(ex, this));
             }
             if (!!this.getItemByKey(item._key)) {
-                throw new Error(lang_6.ERRS.ERR_ITEM_IS_ATTACHED);
+                throw new Error(lang_7.ERRS.ERR_ITEM_IS_ATTACHED);
             }
             var pos = this._appendItem(item);
             this._onAddNew(item, pos);
@@ -3531,16 +3552,16 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 return;
             }
             if (v._aspect.isDetached) {
-                throw new Error(lang_6.ERRS.ERR_ITEM_IS_DETACHED);
+                throw new Error(lang_7.ERRS.ERR_ITEM_IS_DETACHED);
             }
             var item = self.getItemByKey(v._key);
             if (!item) {
-                throw new Error(lang_6.ERRS.ERR_ITEM_IS_NOTFOUND);
+                throw new Error(lang_7.ERRS.ERR_ITEM_IS_NOTFOUND);
             }
             var oldItem = self.getItemByPos(oldPos);
             var pos = self._items.indexOf(v);
             if (pos < 0) {
-                throw new Error(lang_6.ERRS.ERR_ITEM_IS_NOTFOUND);
+                throw new Error(lang_7.ERRS.ERR_ITEM_IS_NOTFOUND);
             }
             if (oldPos !== pos || oldItem !== v) {
                 self._onCurrentChanging(v);
@@ -3655,7 +3676,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype._remapItem = function (oldkey, newkey, item) {
             if (!newkey) {
-                throw new Error(lang_6.ERRS.ERR_KEY_IS_EMPTY);
+                throw new Error(lang_7.ERRS.ERR_KEY_IS_EMPTY);
             }
             delete this._itemsByKey[oldkey];
             item._aspect._setKey(newkey);
@@ -3668,7 +3689,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             }
             var oldPos = utils.arr.remove(this._items, item);
             if (oldPos < 0) {
-                throw new Error(lang_6.ERRS.ERR_ITEM_IS_NOTFOUND);
+                throw new Error(lang_7.ERRS.ERR_ITEM_IS_NOTFOUND);
             }
             this._onRemoved(item, oldPos);
             delete this._itemsByKey[key];
@@ -3770,7 +3791,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 }
                 return fld;
             }
-            throw new Error(format(lang_6.ERRS.ERR_PARAM_INVALID, "fieldName", fieldName));
+            throw new Error(format(lang_7.ERRS.ERR_PARAM_INVALID, "fieldName", fieldName));
         };
         BaseCollection.prototype.getFieldNames = function () {
             return this.getFieldInfos().map(function (f) {
@@ -3820,7 +3841,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         };
         BaseCollection.prototype.getItemByKey = function (key) {
             if (!key) {
-                throw new Error(lang_6.ERRS.ERR_KEY_IS_EMPTY);
+                throw new Error(lang_7.ERRS.ERR_KEY_IS_EMPTY);
             }
             return this._itemsByKey[key];
         };
@@ -4284,7 +4305,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
     }(object_3.BaseObject));
     exports.BaseCollection = BaseCollection;
 });
-define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/utils"], function (require, exports, lang_7, utils_4) {
+define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/utils"], function (require, exports, lang_8, utils_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = utils_4.Utils, _a = utils.check, isGuid = _a.isGuid, isNumber = _a.isNumber, isString = _a.isString, isArray = _a.isArray, isDate = _a.isDate, isBoolean = _a.isBoolean, format = utils.str.format;
@@ -4306,12 +4327,12 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
             var errors = [], rangeParts = range.split(",");
             if (!!rangeParts[0]) {
                 if (num < parseFloat(rangeParts[0])) {
-                    errors.push(utils.str.format(lang_7.ERRS.ERR_FIELD_RANGE, num, range));
+                    errors.push(utils.str.format(lang_8.ERRS.ERR_FIELD_RANGE, num, range));
                 }
             }
             if (!!rangeParts[1]) {
                 if (num > parseFloat(rangeParts[1])) {
-                    errors.push(utils.str.format(lang_7.ERRS.ERR_FIELD_RANGE, num, range));
+                    errors.push(utils.str.format(lang_8.ERRS.ERR_FIELD_RANGE, num, range));
                 }
             }
             return errors;
@@ -4320,12 +4341,12 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
             var errors = [], rangeParts = range.split(",");
             if (!!rangeParts[0]) {
                 if (dt < Validations._dtRangeToDate(rangeParts[0])) {
-                    errors.push(utils.str.format(lang_7.ERRS.ERR_FIELD_RANGE, dt, range));
+                    errors.push(utils.str.format(lang_8.ERRS.ERR_FIELD_RANGE, dt, range));
                 }
             }
             if (!!rangeParts[1]) {
                 if (dt > Validations._dtRangeToDate(rangeParts[1])) {
-                    errors.push(utils.str.format(lang_7.ERRS.ERR_FIELD_RANGE, dt, range));
+                    errors.push(utils.str.format(lang_8.ERRS.ERR_FIELD_RANGE, dt, range));
                 }
             }
             return errors;
@@ -4335,7 +4356,7 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
             var isNullVal = (value === null || (isString(value) && !value));
             if (isNullVal && !fieldInfo.isNullable && !fieldInfo.isReadOnly) {
                 if (!(isNew && fieldInfo.isAutoGenerated)) {
-                    res.push(lang_7.ERRS.ERR_FIELD_ISNOT_NULLABLE);
+                    res.push(lang_8.ERRS.ERR_FIELD_ISNOT_NULLABLE);
                 }
             }
             if (isNullVal) {
@@ -4346,41 +4367,41 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
                     break;
                 case 9:
                     if (!isGuid(value)) {
-                        res.push(format(lang_7.ERRS.ERR_FIELD_WRONG_TYPE, value, "Guid"));
+                        res.push(format(lang_8.ERRS.ERR_FIELD_WRONG_TYPE, value, "Guid"));
                     }
                     break;
                 case 1:
                     if (!isString(value)) {
-                        res.push(format(lang_7.ERRS.ERR_FIELD_WRONG_TYPE, value, "String"));
+                        res.push(format(lang_8.ERRS.ERR_FIELD_WRONG_TYPE, value, "String"));
                     }
                     if (fieldInfo.maxLength > 0 && value.length > fieldInfo.maxLength) {
-                        res.push(format(lang_7.ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
+                        res.push(format(lang_8.ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
                     }
                     if (!!fieldInfo.regex) {
                         var reg = new RegExp(fieldInfo.regex, "i");
                         if (!reg.test(value)) {
-                            res.push(format(lang_7.ERRS.ERR_FIELD_REGEX, value));
+                            res.push(format(lang_8.ERRS.ERR_FIELD_REGEX, value));
                         }
                     }
                     break;
                 case 10:
                     if (!isArray(value)) {
-                        res.push(format(lang_7.ERRS.ERR_FIELD_WRONG_TYPE, value, "Array"));
+                        res.push(format(lang_8.ERRS.ERR_FIELD_WRONG_TYPE, value, "Array"));
                     }
                     if (fieldInfo.maxLength > 0 && value.length > fieldInfo.maxLength) {
-                        res.push(format(lang_7.ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
+                        res.push(format(lang_8.ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
                     }
                     break;
                 case 2:
                     if (!isBoolean(value)) {
-                        res.push(format(lang_7.ERRS.ERR_FIELD_WRONG_TYPE, value, "Boolean"));
+                        res.push(format(lang_8.ERRS.ERR_FIELD_WRONG_TYPE, value, "Boolean"));
                     }
                     break;
                 case 3:
                 case 4:
                 case 5:
                     if (!isNumber(value)) {
-                        res.push(format(lang_7.ERRS.ERR_FIELD_WRONG_TYPE, value, "Number"));
+                        res.push(format(lang_8.ERRS.ERR_FIELD_WRONG_TYPE, value, "Number"));
                     }
                     if (!!fieldInfo.range) {
                         Validations.checkNumRange(Number(value), fieldInfo.range).forEach(function (err) {
@@ -4391,7 +4412,7 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
                 case 6:
                 case 7:
                     if (!isDate(value)) {
-                        res.push(format(lang_7.ERRS.ERR_FIELD_WRONG_TYPE, value, "Date"));
+                        res.push(format(lang_8.ERRS.ERR_FIELD_WRONG_TYPE, value, "Date"));
                     }
                     if (!!fieldInfo.range) {
                         Validations.checkDateRange(value, fieldInfo.range).forEach(function (err) {
@@ -4401,11 +4422,11 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
                     break;
                 case 8:
                     if (!isDate(value)) {
-                        res.push(format(lang_7.ERRS.ERR_FIELD_WRONG_TYPE, value, "Time"));
+                        res.push(format(lang_8.ERRS.ERR_FIELD_WRONG_TYPE, value, "Time"));
                     }
                     break;
                 default:
-                    res.push(format(lang_7.ERRS.ERR_PARAM_INVALID, "dataType", fieldInfo.dataType));
+                    res.push(format(lang_8.ERRS.ERR_PARAM_INVALID, "dataType", fieldInfo.dataType));
             }
             return res;
         };
@@ -5074,7 +5095,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
     }(object_5.BaseObject));
     exports.CollectionItem = CollectionItem;
 });
-define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_8, utils_8, base_1, aspect_1, errors_7) {
+define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_9, utils_8, base_1, aspect_1, errors_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = utils_7.Utils, format = utils.str.format, isArray = utils.check.isArray, walkField = utils_8.CollUtils.walkField, initVals = utils_8.CollUtils.initVals, sys = utils.sys;
@@ -5092,7 +5113,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             if (this._getProp(name) !== val) {
                 try {
                     if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
-                        throw new Error(lang_8.ERRS.ERR_FIELD_READONLY);
+                        throw new Error(lang_9.ERRS.ERR_FIELD_READONLY);
                     }
                     this._setValue(name, val, 0);
                     sys.raiseProp(item, name);
@@ -5150,7 +5171,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         BaseList.prototype._updateFieldMap = function (props) {
             var self = this;
             if (!isArray(props) || props.length === 0) {
-                throw new Error(format(lang_8.ERRS.ERR_PARAM_INVALID, "props", props));
+                throw new Error(format(lang_9.ERRS.ERR_PARAM_INVALID, "props", props));
             }
             self._fieldMap = {};
             self._fieldInfos = [];
@@ -5609,7 +5630,7 @@ define("jriapp_shared/utils/weakmap", ["require", "exports"], function (require,
         return WeakMap;
     }());
 });
-define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/list"], function (require, exports, utils_9, lang_9, utils_10, base_2, list_2) {
+define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/list"], function (require, exports, utils_9, lang_10, utils_10, base_2, list_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = utils_9.Utils, format = utils.str.format, isNt = utils.check.isNt, sys = utils.sys, collUtils = utils_10.CollUtils;
@@ -5629,13 +5650,13 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
         function BaseDictionary(keyName, props) {
             var _this = this;
             if (!keyName) {
-                throw new Error(format(lang_9.ERRS.ERR_PARAM_INVALID, "keyName", keyName));
+                throw new Error(format(lang_10.ERRS.ERR_PARAM_INVALID, "keyName", keyName));
             }
             _this = _super.call(this, props) || this;
             _this._keyName = keyName;
             var keyFld = _this.getFieldInfo(keyName);
             if (!keyFld) {
-                throw new Error(format(lang_9.ERRS.ERR_DICTKEY_IS_NOTFOUND, keyName));
+                throw new Error(format(lang_10.ERRS.ERR_DICTKEY_IS_NOTFOUND, keyName));
             }
             keyFld.isPrimaryKey = 1;
             return _this;
@@ -5648,7 +5669,7 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
             }
             else {
                 if (isNt(vals[this._keyName])) {
-                    throw new Error(format(lang_9.ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
+                    throw new Error(format(lang_10.ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
                 }
                 key = "" + vals[this._keyName];
             }
@@ -5659,7 +5680,7 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
             _super.prototype._onItemAdded.call(this, item);
             var key = item[this._keyName], self = this;
             if (isNt(key)) {
-                throw new Error(format(lang_9.ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
+                throw new Error(format(lang_10.ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
             }
             var oldkey = item._key, newkey = "" + key;
             if (oldkey !== newkey) {
@@ -5743,7 +5764,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, consts_3, int_2, errors_9, object_7, jsonbag_1, jsonarray_1, weakmap_1, lang_10, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, consts_3, int_2, errors_9, object_7, jsonbag_1, jsonarray_1, weakmap_1, lang_11, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5756,8 +5777,8 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_s
     __export(jsonbag_1);
     __export(jsonarray_1);
     exports.createWeakMap = weakmap_1.createWeakMap;
-    exports.LocaleSTRS = lang_10.STRS;
-    exports.LocaleERRS = lang_10.ERRS;
+    exports.LocaleSTRS = lang_11.STRS;
+    exports.LocaleERRS = lang_11.ERRS;
     exports.BaseCollection = base_3.BaseCollection;
     exports.CollectionItem = item_2.CollectionItem;
     exports.ItemAspect = aspect_2.ItemAspect;

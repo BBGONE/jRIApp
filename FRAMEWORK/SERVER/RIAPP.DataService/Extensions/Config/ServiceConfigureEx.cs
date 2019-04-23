@@ -1,5 +1,5 @@
-﻿using Net451.Microsoft.Extensions.DependencyInjection;
-using Net451.Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using RIAPP.DataService.Core.CodeGen;
 using RIAPP.DataService.Core.Config;
 using RIAPP.DataService.Core.Security;
@@ -19,7 +19,7 @@ namespace RIAPP.DataService.Core.Config
             configure?.Invoke(options);
 
             var getUser = options.UserFactory ?? throw new ArgumentNullException(nameof(options.UserFactory), ErrorStrings.ERR_NO_USER);
-
+            
             services.TryAddScoped<IUserProvider>((sp) => new UserProvider(() => getUser(sp)));
 
             services.TryAddScoped<IAuthorizer<TService>, Authorizer<TService>>();
