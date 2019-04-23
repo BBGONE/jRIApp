@@ -746,8 +746,8 @@ declare module "jriapp/converter" {
         toString(): string;
     }
     export class DateTimeConverter implements IConverter {
-        convertToSource(val: any, param: any, dataContext: any): Date;
-        convertToTarget(val: any, param: any, dataContext: any): string;
+        convertToSource(val: string, param: string, dataContext: any): Date;
+        convertToTarget(val: Date, param: string, dataContext: any): string;
         toString(): string;
     }
     export class NumberConverter implements IConverter {
@@ -1013,5 +1013,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.21.11";
+    export const VERSION = "2.21.12";
 }
