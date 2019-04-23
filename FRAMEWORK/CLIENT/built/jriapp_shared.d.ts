@@ -211,9 +211,7 @@ declare module "jriapp_shared/utils/strutils" {
 }
 declare module "jriapp_shared/utils/coreutils" {
     import { IIndexer } from "jriapp_shared/int";
-    import { DATES } from "jriapp_shared/consts";
     import { Checks } from "jriapp_shared/utils/checks";
-    export function convertToDate(val: string | DATES, format?: string): Date;
     export class CoreUtils {
         static getNewID(prefix?: string): string;
         static readonly getTimeZoneOffset: () => number;
@@ -225,9 +223,7 @@ declare module "jriapp_shared/utils/coreutils" {
         static parseBool(a: any): boolean;
         static round(num: number, decimals: number): number;
         static readonly clone: (obj: any, target?: any) => any;
-        static readonly strToDate: (val: string, format?: string) => Date;
-        static readonly dateToStr: (val: Date, format?: string) => string;
-        static readonly convertToDate: (val: string | DATES, format?: string) => Date;
+        static readonly convertToDate: (val: string, format: string) => Date;
         static merge<S, T>(source: S, target?: T): S & T;
         static readonly extend: <T, U>(target: T, ...source: U[]) => T & U;
         static memoize<T>(fn: () => T): () => T;

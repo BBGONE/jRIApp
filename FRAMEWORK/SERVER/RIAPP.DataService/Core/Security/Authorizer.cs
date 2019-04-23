@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using RIAPP.DataService.Core.Exceptions;
+﻿using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Core.Metadata;
 using RIAPP.DataService.Resources;
 using System;
@@ -14,28 +13,22 @@ namespace RIAPP.DataService.Core.Security
         where TService : BaseDomainService
     {
         private const string ANONYMOUS_USER = "ANONYMOUS_USER";
-        private readonly IUserProvider _userProvider;
 
         private Lazy<IEnumerable<IAuthorizeData>> _serviceAuthorization;
+        private readonly IUserProvider _userProvider;
 
-        public Authorizer(TService service, IAuthorizationPolicyProvider policyProvider, IAuthorizationService authorizationService, IUserProvider userProvider)
+        public Authorizer(TService service, IUserProvider userProvider)
         {
             this.ServiceType = service.GetType();
-            PolicyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
-            AuthorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
             this._userProvider = userProvider ?? throw new ArgumentNullException(nameof(userProvider), ErrorStrings.ERR_NO_USER);
             this._serviceAuthorization = new Lazy<IEnumerable<IAuthorizeData>>(() => ServiceType.GetTypeAuthorization(), true);
         }
-
-        public IAuthorizationPolicyProvider PolicyProvider { get; }
-
-        public IAuthorizationService AuthorizationService { get; }
 
         public ClaimsPrincipal User
         {
             get
             {
-                return _userProvider.User;
+                return this._userProvider.User;
             }
         }
 
@@ -83,6 +76,8 @@ namespace RIAPP.DataService.Core.Security
 
         private async Task<bool> CheckAccessCore(IEnumerable<IAuthorizeData> authorizeData)
         {
+            await Task.CompletedTask;
+
             if (User == null)
                 return false;
 
@@ -92,9 +87,17 @@ namespace RIAPP.DataService.Core.Security
             if (!User.Identity.IsAuthenticated && authorizeData.Any())
                 return false;
 
-            var policy = await AuthorizationPolicy.CombineAsync(PolicyProvider, authorizeData);
-            var result = await AuthorizationService.AuthorizeAsync(this.User, policy);
-            return result.Succeeded;
+            int cnt = 0;
+            foreach (var role in authorizeData.SelectMany(a=>a.Roles))
+            {
+                ++cnt;
+                if (User.IsInRole(role))
+                {
+                    return true;
+                }
+            }
+
+            return cnt > 0 ? false : true;
         }
 
         private IEnumerable<IAuthorizeData> GetServiceAuthorization()

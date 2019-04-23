@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using System;
+﻿using System;
 
 namespace RIAPP.DataService.Core.Security
 {
@@ -8,13 +7,9 @@ namespace RIAPP.DataService.Core.Security
     ///     the other authorize attributes
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = false)]
-    public class OverrideAuthorizeAttribute : AuthorizeAttribute, IOverrideAuthorize
+    public class OverrideAuthorizeAttribute : AuthorizeAttribute, IOverrideAuthorizeData
     {
         public OverrideAuthorizeAttribute(): base()
-        {
-        }
-
-        public OverrideAuthorizeAttribute(string policy) : base(policy)
         {
         }
     }

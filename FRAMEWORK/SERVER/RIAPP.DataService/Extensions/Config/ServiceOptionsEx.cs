@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Net451.Microsoft.Extensions.DependencyInjection.Extensions;
+using RIAPP.DataService.Utils.Extensions;
 using System;
 
 namespace RIAPP.DataService.Core.Config
@@ -6,14 +7,15 @@ namespace RIAPP.DataService.Core.Config
     public static class ServiceOptionsEx
     {
         public static IServiceOptions RemoveAll<T>(this IServiceOptions serviceOptions)
+             where T : class
         {
-            serviceOptions.Services.RemoveAll<T>();
+            serviceOptions.Services.RemoveService<T>();
             return serviceOptions;
         }
 
         public static IServiceOptions RemoveAll(this IServiceOptions serviceOptions, Type serviceType)
         {
-            serviceOptions.Services.RemoveAll(serviceType);
+            serviceOptions.Services.RemoveService(serviceType);
             return serviceOptions;
         }
 

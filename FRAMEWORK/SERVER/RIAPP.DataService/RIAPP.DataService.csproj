@@ -1,22 +1,266 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5FA08D23-6BAE-47AD-930B-A11EAFFF11DC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RIAPP.DataService</RootNamespace>
+    <AssemblyName>RIAPP.DataService</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
-
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
-    <None Remove="Resources\ChildComplexProperty.txt" />
-    <None Remove="Resources\DbContext.txt" />
-    <None Remove="Resources\DbSet.txt" />
-    <None Remove="Resources\Dictionary.txt" />
-    <None Remove="Resources\Entity.txt" />
-    <None Remove="Resources\EntityInterface.txt" />
-    <None Remove="Resources\Header.txt" />
-    <None Remove="Resources\List.txt" />
-    <None Remove="Resources\ListItem.txt" />
-    <None Remove="Resources\RootComplexProperty.txt" />
+    <Reference Include="Net451.Microsoft.Extensions.DependencyInjection, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\EmailMVC\packages\Net451.Microsoft.Extensions.DependencyInjection.2.0.2\lib\net451\Net451.Microsoft.Extensions.DependencyInjection.dll</HintPath>
+    </Reference>
+    <Reference Include="Net451.Microsoft.Extensions.DependencyInjection.Abstractions, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\EmailMVC\packages\Net451.Microsoft.Extensions.DependencyInjection.Abstractions.2.0.2\lib\net451\Net451.Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Compile Include="Abstractions\CodeGen\ICodeGenConfig.cs" />
+    <Compile Include="Abstractions\CodeGen\ICodeGenFactory.cs" />
+    <Compile Include="Abstractions\CodeGen\ICodeGenProvider.cs" />
+    <Compile Include="Abstractions\CodeGen\ICodeGenProviderFactory.cs" />
+    <Compile Include="Abstractions\Config\IDataManagerRegister.cs" />
+    <Compile Include="Abstractions\Config\IServiceOptions.cs" />
+    <Compile Include="Abstractions\Config\IValidatorRegister.cs" />
+    <Compile Include="Abstractions\Core\IDataHelper.cs" />
+    <Compile Include="Abstractions\Core\IDataManager.cs" />
+    <Compile Include="Abstractions\Core\IDataManagerContainer.cs" />
+    <Compile Include="Abstractions\Core\IDataServiceComponent.cs" />
+    <Compile Include="Abstractions\Core\IDomainService.cs" />
+    <Compile Include="Abstractions\Core\IEntityVersionProvider.cs" />
+    <Compile Include="Abstractions\Core\IServiceContainer.cs" />
+    <Compile Include="Abstractions\Core\IServiceOperationsHelper.cs" />
+    <Compile Include="Abstractions\Core\IValidator.cs" />
+    <Compile Include="Abstractions\Core\IValidatorContainer.cs" />
+    <Compile Include="Abstractions\Metadata\IDateConversionData.cs" />
+    <Compile Include="Abstractions\Security\IAllowAnonymous.cs" />
+    <Compile Include="Abstractions\Security\IAuthorizeData.cs" />
+    <Compile Include="Abstractions\Security\IAuthorizer.cs" />
+    <Compile Include="Abstractions\Security\IOverrideAuthorizeData.cs" />
+    <Compile Include="Abstractions\Security\IUserProvider.cs" />
+    <Compile Include="Abstractions\Utils\IMultiMap.cs" />
+    <Compile Include="Abstractions\Utils\ISerializer.cs" />
+    <Compile Include="Abstractions\Utils\IValidationHelper.cs" />
+    <Compile Include="Abstractions\Utils\IValueConverter.cs" />
+    <Compile Include="Annotations\CodeGen\CommentAttribute.cs" />
+    <Compile Include="Annotations\Metadata\DateConversionAttribute.cs" />
+    <Compile Include="Annotations\DeleteAttribute.cs" />
+    <Compile Include="Annotations\CodeGen\DictionaryAttribute.cs" />
+    <Compile Include="Annotations\CodeGen\ExtendsAttribute.cs" />
+    <Compile Include="Annotations\InsertAttribute.cs" />
+    <Compile Include="Annotations\InvokeAttribute.cs" />
+    <Compile Include="Annotations\CodeGen\ListAttribute.cs" />
+    <Compile Include="Annotations\QueryAttribute.cs" />
+    <Compile Include="Annotations\RefreshAttribute.cs" />
+    <Compile Include="Annotations\CodeGen\TypeNameAttribute.cs" />
+    <Compile Include="Annotations\UpdateAttribute.cs" />
+    <Compile Include="Annotations\ValidateAttribute.cs" />
+    <Compile Include="Core\BaseDataManager.cs" />
+    <Compile Include="Core\BaseDomainService.cs" />
+    <Compile Include="Core\BaseValidator.cs" />
+    <Compile Include="Core\ChangesetGraph.cs" />
+    <Compile Include="Core\CodeGen\BaseCsharpProvider.cs" />
+    <Compile Include="Core\CodeGen\CodeGenArgs.cs" />
+    <Compile Include="Core\CodeGen\CodeGenFactory.cs" />
+    <Compile Include="Core\CodeGen\CodeGenTemplate.cs" />
+    <Compile Include="Core\CodeGen\ComplexTypeBuilder.cs" />
+    <Compile Include="Core\CodeGen\DotNet2TS.cs" />
+    <Compile Include="Core\CodeGen\TypeScriptHelper.cs" />
+    <Compile Include="Core\CodeGen\TypeScriptProvider.cs" />
+    <Compile Include="Core\CodeGen\XamlProvider.cs" />
+    <Compile Include="Core\Config\DataManagerRegister.cs" />
+    <Compile Include="Core\Config\ServiceOptions.cs" />
+    <Compile Include="Core\Config\ServiceTypeDescriptor.cs" />
+    <Compile Include="Core\Config\ValidatorRegister.cs" />
+    <Compile Include="Core\DataHelper.cs" />
+    <Compile Include="Core\DataManagerContainer.cs" />
+    <Compile Include="Core\EntityChangeState.cs" />
+    <Compile Include="Core\Exceptions\AccessDeniedException.cs" />
+    <Compile Include="Core\Exceptions\ConcurrencyException.cs" />
+    <Compile Include="Core\Exceptions\DomainServiceException.cs" />
+    <Compile Include="Core\Exceptions\DummyException.cs" />
+    <Compile Include="Core\Exceptions\UnsupportedTypeException.cs" />
+    <Compile Include="Core\Exceptions\ValidationException.cs" />
+    <Compile Include="Core\Metadata\DesignTimeMetadata.cs" />
+    <Compile Include="Core\Metadata\MetadataCache.cs" />
+    <Compile Include="Core\Metadata\MetadataHelper.cs" />
+    <Compile Include="Core\Metadata\MetadataResult.cs" />
+    <Compile Include="Core\Metadata\MethodDescription.cs" />
+    <Compile Include="Core\Metadata\MethodInfoData.cs" />
+    <Compile Include="Core\Metadata\MethodMap.cs" />
+    <Compile Include="Core\Metadata\OperationalMethods.cs" />
+    <Compile Include="Core\Metadata\ParamMetadata.cs" />
+    <Compile Include="Core\Metadata\RunTimeMetadata.cs" />
+    <Compile Include="Core\RequestContext.cs" />
+    <Compile Include="Core\RowGenerator.cs" />
+    <Compile Include="Core\Security\AllowAnonymousAttribute.cs" />
+    <Compile Include="Core\Security\AuthorizeAttribute.cs" />
+    <Compile Include="Core\Security\AuthorizeParameters.cs" />
+    <Compile Include="Core\Security\Authorizer.cs" />
+    <Compile Include="Core\Security\OverrideAuthorizeAttribute.cs" />
+    <Compile Include="Core\Security\SecurityHelper.cs" />
+    <Compile Include="Core\Security\UserProvider.cs" />
+    <Compile Include="Core\ServiceContainer.cs" />
+    <Compile Include="Core\ServiceOperationsHelper.cs" />
+    <Compile Include="Core\ServiceOperationType.cs" />
+    <Compile Include="Core\SubsetsGenerator.cs" />
+    <Compile Include="Core\Types\Association.cs" />
+    <Compile Include="Core\Types\ChangeSet.cs" />
+    <Compile Include="Core\Types\DbSetInfo.cs" />
+    <Compile Include="Core\Types\DbSetPermit.cs" />
+    <Compile Include="Core\Types\Enums.cs" />
+    <Compile Include="Core\Types\ErrorInfo.cs" />
+    <Compile Include="Core\Types\Field.cs" />
+    <Compile Include="Core\Types\FieldName.cs" />
+    <Compile Include="Core\Types\FilterInfo.cs" />
+    <Compile Include="Core\Types\InvokeRequest.cs" />
+    <Compile Include="Core\Types\InvokeResponse.cs" />
+    <Compile Include="Core\Types\MethodParameters.cs" />
+    <Compile Include="Core\Types\PerformQueryResult.cs" />
+    <Compile Include="Core\Types\Permissions.cs" />
+    <Compile Include="Core\Types\QueryRequest.cs" />
+    <Compile Include="Core\Types\QueryResponse.cs" />
+    <Compile Include="Core\Types\QueryResult.cs" />
+    <Compile Include="Core\Types\RefreshInfo.cs" />
+    <Compile Include="Core\Types\Row.cs" />
+    <Compile Include="Core\Types\RowInfo.cs" />
+    <Compile Include="Core\Types\SortInfo.cs" />
+    <Compile Include="Core\Types\SubResult.cs" />
+    <Compile Include="Core\Types\Subset.cs" />
+    <Compile Include="Core\Types\TrackAssoc.cs" />
+    <Compile Include="Core\Types\TypedLists.cs" />
+    <Compile Include="Core\Types\ValidationErrorInfo.cs" />
+    <Compile Include="Core\Types\Value.cs" />
+    <Compile Include="Core\Types\ValueChange.cs" />
+    <Compile Include="Core\ValidatorContainer.cs" />
+    <Compile Include="Extensions\Config\ServiceConfigureEx.cs" />
+    <Compile Include="Extensions\Config\ServiceOptionsEx.cs" />
+    <Compile Include="Extensions\Exceptions\ExceptionEx.cs" />
+    <Compile Include="Extensions\Metadata\MethodInfoEx.cs" />
+    <Compile Include="Extensions\Query\QueryEx.cs" />
+    <Compile Include="Extensions\Types\DbSetInfoEx.cs" />
+    <Compile Include="Extensions\Types\FieldEx.cs" />
+    <Compile Include="Extensions\Types\RowInfoEx.cs" />
+    <Compile Include="Extensions\Utils\ServiceCollectionEx.cs" />
+    <Compile Include="Extensions\Utils\StringEx.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\ErrorStrings1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ErrorStrings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\CallContext.cs" />
+    <Compile Include="Utils\DateTimeHelper.cs" />
+    <Compile Include="Utils\DiffGram.cs" />
+    <Compile Include="Utils\DynamicLinq\AssemblyBuilderFactory.cs" />
+    <Compile Include="Utils\DynamicLinq\Compatibility\CustomIntrospectionExtensions.cs" />
+    <Compile Include="Utils\DynamicLinq\Compatibility\CustomTypeBuilderExtensions.cs" />
+    <Compile Include="Utils\DynamicLinq\CustomTypeProviders\AbstractDynamicLinqCustomTypeProvider.cs" />
+    <Compile Include="Utils\DynamicLinq\CustomTypeProviders\DefaultDynamicLinqCustomTypeProvider.cs" />
+    <Compile Include="Utils\DynamicLinq\CustomTypeProviders\DynamicLinqTypeAttribute.cs" />
+    <Compile Include="Utils\DynamicLinq\CustomTypeProviders\IDynamicLinkCustomTypeProvider.cs" />
+    <Compile Include="Utils\DynamicLinq\DefaultAssemblyHelper.cs" />
+    <Compile Include="Utils\DynamicLinq\DynamicClass.cs" />
+    <Compile Include="Utils\DynamicLinq\DynamicClassFactory.cs" />
+    <Compile Include="Utils\DynamicLinq\DynamicEnumerableAsyncExtensions.cs" />
+    <Compile Include="Utils\DynamicLinq\DynamicEnumerableExtensions.cs" />
+    <Compile Include="Utils\DynamicLinq\DynamicExpressionArgument.cs" />
+    <Compile Include="Utils\DynamicLinq\DynamicExpressionParser.cs" />
+    <Compile Include="Utils\DynamicLinq\DynamicGetMemberBinder.cs" />
+    <Compile Include="Utils\DynamicLinq\DynamicOrdering.cs" />
+    <Compile Include="Utils\DynamicLinq\DynamicProperty.cs" />
+    <Compile Include="Utils\DynamicLinq\DynamicQueryableExtensions.cs" />
+    <Compile Include="Utils\DynamicLinq\Exceptions\ParseException.cs" />
+    <Compile Include="Utils\DynamicLinq\ExtensibilityPoint.cs" />
+    <Compile Include="Utils\DynamicLinq\Extensions\LinqProviderExtensions.cs" />
+    <Compile Include="Utils\DynamicLinq\GroupResult.cs" />
+    <Compile Include="Utils\DynamicLinq\IAssemblyHelper.cs" />
+    <Compile Include="Utils\DynamicLinq\PagedResult.cs" />
+    <Compile Include="Utils\DynamicLinq\ParameterExpressionHelper.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\ConstantExpressionHelper.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\ConstantExpressionWrapper.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\Constants.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\ExpressionHelper.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\ExpressionParser.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\ExpressionPromoter.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\IConstantExpressionWrapper.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\IExpressionHelper.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\IExpressionPromoter.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\KeywordsHelper.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\PredefinedTypesHelper.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedMethods\CompareConversionType.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedMethods\IEnumerableSignatures.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedMethods\IQueryableSignatures.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedMethods\MethodData.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedMethods\MethodFinder.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedOperands\IAddSignatures.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedOperands\IArithmeticSignatures.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedOperands\IEqualitySignatures.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedOperands\ILogicalSignatures.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedOperands\INegationSignatures.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedOperands\INotSignatures.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedOperands\IRelationalSignatures.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedOperands\IShiftSignatures.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedOperands\ISubtractSignatures.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\TypeHelper.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\WrappedValue.cs" />
+    <Compile Include="Utils\DynamicLinq\ParsingConfig.cs" />
+    <Compile Include="Utils\DynamicLinq\Res.cs" />
+    <Compile Include="Utils\DynamicLinq\Tokenizer\TextParser.cs" />
+    <Compile Include="Utils\DynamicLinq\Tokenizer\Token.cs" />
+    <Compile Include="Utils\DynamicLinq\Tokenizer\TokenId.cs" />
+    <Compile Include="Utils\DynamicLinq\TypeConverterFactory.cs" />
+    <Compile Include="Utils\DynamicLinq\Util\ParameterExpressionRenamer.cs" />
+    <Compile Include="Utils\DynamicLinq\Validation\Check.cs" />
+    <Compile Include="Utils\DynamicLinq\Validation\CoreStrings.cs" />
+    <Compile Include="Utils\JetBrains.Annotations.cs" />
+    <Compile Include="Utils\MultiMap.cs" />
+    <Compile Include="Utils\RequestCallContext.cs" />
+    <Compile Include="Utils\TemplateParser.cs" />
+    <Compile Include="Utils\ValidationHelper.cs" />
+    <Compile Include="Utils\ValueConverter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\ChildComplexProperty.txt" />
     <EmbeddedResource Include="Resources\DbContext.txt" />
@@ -29,32 +273,18 @@
     <EmbeddedResource Include="Resources\ListItem.txt" />
     <EmbeddedResource Include="Resources\RootComplexProperty.txt" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="2.2.0" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Resources\ErrorStrings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ErrorStrings.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Resources\ErrorStrings.resx">
+    <EmbeddedResource Include="Resources\ErrorStrings.resx">
+      <LastGenOutput>ErrorStrings1.Designer.cs</LastGenOutput>
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>ErrorStrings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\" />
-    <Folder Include="Utils\DynamicLinq\" />
-  </ItemGroup>
-
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
 </Project>

@@ -1,0 +1,1 @@
+	-This project contains EFDomainService<TDB> class which is a specialized Data Service used to work with Entity Framework 4 which uses ObjectContext instead of DbContext.

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Net451.Microsoft.Extensions.DependencyInjection;
 using RIAPP.DataService.Core.CodeGen;
 using RIAPP.DataService.Core.Security;
 using RIAPP.DataService.Utils;

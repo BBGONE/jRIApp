@@ -2483,7 +2483,7 @@ define("jriapp/utils/viewchecks", ["require", "exports"], function (require, exp
 define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_11, bootstrap_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_11.Utils, _a = utils.check, isNt = _a.isNt, isNumber = _a.isNumber, _b = utils.str, format = _b.format, stripNonNumeric = _b.stripNonNumeric, formatNumber = _b.formatNumber, _c = utils.core, round = _c.round, strToDate = _c.strToDate, dateToStr = _c.dateToStr, boot = bootstrap_3.bootstrap, ERRS = jriapp_shared_11.LocaleERRS;
+    var utils = jriapp_shared_11.Utils, _a = utils.check, isNt = _a.isNt, isNumber = _a.isNumber, _b = utils.str, format = _b.format, stripNonNumeric = _b.stripNonNumeric, formatNumber = _b.formatNumber, round = utils.core.round, boot = bootstrap_3.bootstrap, ERRS = jriapp_shared_11.LocaleERRS;
     exports.NUM_CONV = { None: 0, Integer: 1, Decimal: 2, Float: 3, SmallInt: 4 };
     var BaseConverter = (function () {
         function BaseConverter() {
@@ -2526,10 +2526,21 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
         function DateTimeConverter() {
         }
         DateTimeConverter.prototype.convertToSource = function (val, param, dataContext) {
-            return strToDate(val, param);
+            if (!val) {
+                return null;
+            }
+            var m = moment(val, param);
+            if (!m.isValid()) {
+                throw new Error(format(ERRS.ERR_CONV_INVALID_DATE, val));
+            }
+            return m.toDate();
         };
         DateTimeConverter.prototype.convertToTarget = function (val, param, dataContext) {
-            return dateToStr(val, param);
+            if (isNt(val)) {
+                return "";
+            }
+            var m = moment(val);
+            return m.format(param);
         };
         DateTimeConverter.prototype.toString = function () {
             return "DateTimeConverter";
@@ -4654,6 +4665,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.21.12";
+    exports.VERSION = "2.21.11";
     bootstrap_7.Bootstrap._initFramework();
 });
