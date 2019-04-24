@@ -2770,6 +2770,9 @@ define("jriapp_shared/utils/dates", ["require", "exports", "jriapp_shared/utils/
     function add(dt, val, period) {
         return moment(dt).add(val, period).toDate();
     }
+    function trim(dt) {
+        return moment(dt).startOf("day").toDate();
+    }
     var DateUtils = (function () {
         function DateUtils() {
         }
@@ -2777,6 +2780,7 @@ define("jriapp_shared/utils/dates", ["require", "exports", "jriapp_shared/utils/
         DateUtils.dateToStr = dateToStr;
         DateUtils.getDate = getDate;
         DateUtils.add = add;
+        DateUtils.trim = trim;
         return DateUtils;
     }());
     exports.DateUtils = DateUtils;

@@ -60,9 +60,14 @@ function add(dt: Date, val: number, period: PERIOD): Date {
     return moment(dt).add(val, period).toDate();
 }
 
+function trim(dt: Date): Date {
+    return moment(dt).startOf(PERIOD.DAY).toDate();
+}
+
 export class DateUtils {
     static readonly strToDate: (val: string, format?: string) => Date = strToDate;
     static readonly dateToStr: (val: Date, format?: string) => string = dateToStr;
     static readonly getDate: (val: DATES | undefined) => Date = getDate;
     static readonly add: (dt: Date, val: number, period: PERIOD) => Date = add;
+    static readonly trim: (dt: Date) => Date = trim;
 }

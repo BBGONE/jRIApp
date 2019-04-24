@@ -1020,6 +1020,7 @@ declare module "jriapp_shared/utils/dates" {
         static readonly dateToStr: (val: Date, format?: string) => string;
         static readonly getDate: (val: DATES | undefined) => Date;
         static readonly add: (dt: Date, val: number, period: PERIOD) => Date;
+        static readonly trim: (dt: Date) => Date;
     }
 }
 declare module "jriapp_shared/utils/utils" {
