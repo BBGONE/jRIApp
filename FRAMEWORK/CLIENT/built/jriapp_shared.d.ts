@@ -1000,12 +1000,6 @@ declare module "jriapp_shared/utils/http" {
     }
 }
 declare module "jriapp_shared/utils/dates" {
-    export const enum DATES {
-        TODAY = "today",
-        TOMORROW = "tomorrow",
-        YESTERDAY = "yesterday",
-        ENDOFMONTH = "endofmonth"
-    }
     export const enum PERIOD {
         YEAR = "year",
         MONTH = "month",
@@ -1018,9 +1012,15 @@ declare module "jriapp_shared/utils/dates" {
     export class DateUtils {
         static readonly strToDate: (val: string, format?: string) => Date;
         static readonly dateToStr: (val: Date, format?: string) => string;
-        static readonly getDate: (val: DATES | undefined) => Date;
         static readonly add: (dt: Date, val: number, period: PERIOD) => Date;
         static readonly trim: (dt: Date) => Date;
+        static today(): Date;
+        static yesterday(dt?: Date): Date;
+        static tomorrow(dt?: Date): Date;
+        static startOfMonth(dt?: Date): Date;
+        static endOfMonth(dt?: Date): Date;
+        static startOfYear(dt?: Date): Date;
+        static endOfYear(dt?: Date): Date;
     }
 }
 declare module "jriapp_shared/utils/utils" {

@@ -2717,13 +2717,6 @@ define("jriapp_shared/utils/dates", ["require", "exports", "jriapp_shared/utils/
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var isNt = checks_9.Checks.isNt, formatStr = strutils_4.StringUtils.format;
-    var DATES;
-    (function (DATES) {
-        DATES["TODAY"] = "today";
-        DATES["TOMORROW"] = "tomorrow";
-        DATES["YESTERDAY"] = "yesterday";
-        DATES["ENDOFMONTH"] = "endofmonth";
-    })(DATES = exports.DATES || (exports.DATES = {}));
     var PERIOD;
     (function (PERIOD) {
         PERIOD["YEAR"] = "year";
@@ -2752,21 +2745,6 @@ define("jriapp_shared/utils/dates", ["require", "exports", "jriapp_shared/utils/
         }
         return moment(val).format(format);
     }
-    function getDate(val) {
-        if (val === void 0) { val = "today"; }
-        switch (val) {
-            case "today":
-                return moment().startOf('day').toDate();
-            case "tomorrow":
-                return moment().startOf('day').add(1, 'days').toDate();
-            case "yesterday":
-                return moment().startOf('day').subtract(1, 'days').toDate();
-            case "endofmonth":
-                return moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
-            default:
-                throw new Error(formatStr(lang_5.ERRS.ERR_CONV_INVALID_DATE, val));
-        }
-    }
     function add(dt, val, period) {
         return moment(dt).add(val, period).toDate();
     }
@@ -2776,9 +2754,29 @@ define("jriapp_shared/utils/dates", ["require", "exports", "jriapp_shared/utils/
     var DateUtils = (function () {
         function DateUtils() {
         }
+        DateUtils.today = function () {
+            return moment().startOf("day").toDate();
+        };
+        DateUtils.yesterday = function (dt) {
+            return moment(dt).startOf("day").add(-1, "day").toDate();
+        };
+        DateUtils.tomorrow = function (dt) {
+            return moment(dt).startOf("day").add(1, "day").toDate();
+        };
+        DateUtils.startOfMonth = function (dt) {
+            return moment(dt).startOf("month").toDate();
+        };
+        DateUtils.endOfMonth = function (dt) {
+            return moment(dt).endOf("month").toDate();
+        };
+        DateUtils.startOfYear = function (dt) {
+            return moment(dt).startOf("year").toDate();
+        };
+        DateUtils.endOfYear = function (dt) {
+            return moment(dt).endOf("year").toDate();
+        };
         DateUtils.strToDate = strToDate;
         DateUtils.dateToStr = dateToStr;
-        DateUtils.getDate = getDate;
         DateUtils.add = add;
         DateUtils.trim = trim;
         return DateUtils;

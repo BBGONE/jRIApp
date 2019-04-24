@@ -113,7 +113,7 @@ define("jriapp/int", ["require", "exports"], function (require, exports) {
 define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_1, bootstrap_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _undefined = _a._undefined, isString = _a.isString, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, endsWith = _b.endsWith, trimQuotes = _b.trimQuotes, parseBool = jriapp_shared_1.Utils.core.parseBool, strToDate = jriapp_shared_1.DateUtils.strToDate, getDate = jriapp_shared_1.DateUtils.getDate, _c = jriapp_shared_1.Utils.sys, resolvePath = _c.resolvePath, getBraceLen = _c.getBraceLen;
+    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _undefined = _a._undefined, isString = _a.isString, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, endsWith = _b.endsWith, trimQuotes = _b.trimQuotes, parseBool = jriapp_shared_1.Utils.core.parseBool, dates = jriapp_shared_1.DateUtils, _c = jriapp_shared_1.Utils.sys, resolvePath = _c.resolvePath, getBraceLen = _c.getBraceLen;
     var getRX = /^get[(].+[)]$/g, spaceRX = /^\s+$/;
     var TOKEN;
     (function (TOKEN) {
@@ -145,6 +145,16 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         PARSE_TYPE[PARSE_TYPE["BINDING"] = 1] = "BINDING";
         PARSE_TYPE[PARSE_TYPE["VIEW"] = 2] = "VIEW";
     })(PARSE_TYPE || (PARSE_TYPE = {}));
+    var DATES;
+    (function (DATES) {
+        DATES["TODAY"] = "today";
+        DATES["TOMORROW"] = "tomorrow";
+        DATES["YESTERDAY"] = "yesterday";
+        DATES["STARTOFMONTH"] = "startofmonth";
+        DATES["ENDOFMONTH"] = "endofmonth";
+        DATES["STARTOFYEAR"] = "startofyear";
+        DATES["ENDOFYEAR"] = "endofyear";
+    })(DATES || (DATES = {}));
     var len_this = "this.".length;
     function getCurlyBraceParts(val) {
         var i, ch;
@@ -208,6 +218,31 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             }
         }
     }
+    function getDate(val, format) {
+        if (!val) {
+            return dates.today();
+        }
+        else {
+            switch (val.toLowerCase()) {
+                case "today":
+                    return dates.today();
+                case "tomorrow":
+                    return dates.tomorrow();
+                case "yesterday":
+                    return dates.yesterday();
+                case "startofmonth":
+                    return dates.startOfMonth();
+                case "endofmonth":
+                    return dates.endOfMonth();
+                case "startofyear":
+                    return dates.startOfYear();
+                case "endofyear":
+                    return dates.endOfYear();
+                default:
+                    return dates.strToDate(val, format);
+            }
+        }
+    }
     function checkVal(kv) {
         if (!kv.key) {
             return false;
@@ -217,22 +252,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 case "3":
                     {
                         var args = getExprArgs(kv.val), val = args.length > 0 ? args[0] : _undefined, format_1 = args.length > 1 ? args[1] : "YYYYMMDD";
-                        if (!val) {
-                            kv.val = getDate("today");
-                        }
-                        else {
-                            switch (val) {
-                                case "today":
-                                case "yesterday":
-                                case "tomorrow":
-                                case "endofmonth":
-                                    kv.val = getDate(val);
-                                    break;
-                                default:
-                                    kv.val = strToDate(val, format_1);
-                                    break;
-                            }
-                        }
+                        kv.val = getDate(val, format_1);
                     }
                     break;
                 case "":
@@ -4673,6 +4693,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.22.1";
+    exports.VERSION = "2.22.2";
     bootstrap_7.Bootstrap._initFramework();
 });

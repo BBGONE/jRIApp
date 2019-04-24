@@ -5,13 +5,6 @@ import { ERRS } from "../lang";
 
 const { isNt } = Checks, { format: formatStr } = StringUtils;
 
-export const enum DATES {
-    TODAY = "today",
-    TOMORROW = "tomorrow",
-    YESTERDAY = "yesterday",
-    ENDOFMONTH = "endofmonth"
-}
-
 export const enum PERIOD {
     YEAR = "year",
     MONTH = "month",
@@ -41,21 +34,6 @@ function dateToStr(val: Date, format: string = "YYYYMMDD"): string {
     return moment(val).format(format);
 }
 
-function getDate(val: DATES = DATES.TODAY): Date {
-    switch (val) {
-        case DATES.TODAY:
-            return moment().startOf('day').toDate();
-        case DATES.TOMORROW:
-            return moment().startOf('day').add(1, 'days').toDate();
-        case DATES.YESTERDAY:
-            return moment().startOf('day').subtract(1, 'days').toDate();
-        case DATES.ENDOFMONTH:
-            return moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
-        default:
-            throw new Error(formatStr(ERRS.ERR_CONV_INVALID_DATE, val));
-    }
-}
-
 function add(dt: Date, val: number, period: PERIOD): Date {
     return moment(dt).add(val, period).toDate();
 }
@@ -67,7 +45,27 @@ function trim(dt: Date): Date {
 export class DateUtils {
     static readonly strToDate: (val: string, format?: string) => Date = strToDate;
     static readonly dateToStr: (val: Date, format?: string) => string = dateToStr;
-    static readonly getDate: (val: DATES | undefined) => Date = getDate;
     static readonly add: (dt: Date, val: number, period: PERIOD) => Date = add;
     static readonly trim: (dt: Date) => Date = trim;
+    static today(): Date {
+        return moment().startOf(PERIOD.DAY).toDate();
+    }
+    static yesterday(dt?: Date): Date {
+        return moment(dt).startOf(PERIOD.DAY).add(-1, PERIOD.DAY).toDate();
+    }
+    static tomorrow(dt?: Date): Date {
+        return moment(dt).startOf(PERIOD.DAY).add(1, PERIOD.DAY).toDate();
+    }
+    static startOfMonth(dt?: Date): Date {
+        return moment(dt).startOf(PERIOD.MONTH).toDate();
+    }
+    static endOfMonth(dt?: Date): Date {
+        return moment(dt).endOf(PERIOD.MONTH).toDate();
+    }
+    static startOfYear(dt?: Date): Date {
+        return moment(dt).startOf(PERIOD.YEAR).toDate();
+    }
+    static endOfYear(dt?: Date): Date {
+        return moment(dt).endOf(PERIOD.YEAR).toDate();
+    }
 }

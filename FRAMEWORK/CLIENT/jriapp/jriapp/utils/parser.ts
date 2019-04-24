@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { Utils, BRACKETS, LocaleERRS as ERRS, DateUtils, DATES } from "jriapp_shared";
+import { Utils, BRACKETS, LocaleERRS as ERRS, DateUtils } from "jriapp_shared";
 import { TBindingInfo } from "../int";
 
 import { bootstrap } from "../bootstrap";
 
 const { isNumeric, isBoolString, _undefined, isString } = Utils.check,
     { format, fastTrim: trim, startsWith, endsWith, trimQuotes } = Utils.str,
-    { parseBool } = Utils.core, { strToDate, getDate } = DateUtils, { resolvePath, getBraceLen } = Utils.sys;
+    { parseBool } = Utils.core, dates = DateUtils, { resolvePath, getBraceLen } = Utils.sys;
 
 const getRX = /^get[(].+[)]$/g, spaceRX = /^\s+$/;
 
@@ -38,6 +38,16 @@ const enum PARSE_TYPE {
     NONE = 0,
     BINDING = 1,
     VIEW = 2
+}
+
+const enum DATES {
+    TODAY = "today",
+    TOMORROW = "tomorrow",
+    YESTERDAY = "yesterday",
+    STARTOFMONTH = "startofmonth",
+    ENDOFMONTH = "endofmonth",
+    STARTOFYEAR = "startofyear",
+    ENDOFYEAR = "endofyear"
 }
 
 const len_this = TOKEN.THIS.length;
@@ -119,6 +129,31 @@ function setKeyVal(kv: IKeyVal, start: number, end: number, val: string, isKey: 
     }
 }
 
+function getDate(val: string, format: string): Date {
+    if (!val) {
+        return dates.today();
+    } else {
+        switch (val.toLowerCase()) {
+            case DATES.TODAY:
+                return dates.today();
+            case DATES.TOMORROW:
+                return dates.tomorrow();
+            case DATES.YESTERDAY:
+                return dates.yesterday();
+            case DATES.STARTOFMONTH:
+                return dates.startOfMonth();
+            case DATES.ENDOFMONTH:
+                return dates.endOfMonth();
+            case DATES.STARTOFYEAR:
+                return dates.startOfYear();
+            case DATES.ENDOFYEAR:
+                return dates.endOfYear();
+            default:
+                return dates.strToDate(val, format);
+        }
+    }
+}
+
 function checkVal(kv: IKeyVal): boolean {
     if (!kv.key) {
         return false;
@@ -132,21 +167,7 @@ function checkVal(kv: IKeyVal): boolean {
                         val = args.length > 0 ? args[0] : _undefined,
                         format = args.length > 1 ? args[1] : "YYYYMMDD";
 
-                    if (!val) {
-                        kv.val = getDate(DATES.TODAY);
-                    } else {
-                        switch (val) {
-                            case DATES.TODAY:
-                            case DATES.YESTERDAY:
-                            case DATES.TOMORROW:
-                            case DATES.ENDOFMONTH:
-                                kv.val = getDate(val);
-                                break;
-                            default:
-                                kv.val = strToDate(val, format);
-                                break;
-                        }
-                    }
+                    kv.val = getDate(val, format);
                 }
                 break;
             case TAG.NONE:
