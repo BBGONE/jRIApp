@@ -39,6 +39,7 @@
     <TypeScriptCompile Include="jriapp_shared.ts" />
     <TypeScriptCompile Include="jriapp_shared\errors.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\anylist.ts" />
+    <TypeScriptCompile Include="jriapp_shared\utils\dates.ts" />
     <TypeScriptCompile Include="jriapp_shared\utils\ideferred.ts" />
     <TypeScriptCompile Include="jriapp_shared\lang.ts" />
     <TypeScriptCompile Include="jriapp_shared\object.ts" />

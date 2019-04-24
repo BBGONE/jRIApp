@@ -5,6 +5,7 @@ export * from "./jriapp_shared/errors";
 export * from "./jriapp_shared/object";
 export * from "./jriapp_shared/utils/jsonbag";
 export * from "./jriapp_shared/utils/jsonarray";
+export * from "./jriapp_shared/utils/dates";
 export { createWeakMap } from "./jriapp_shared/utils/weakmap";
 
 export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "./jriapp_shared/lang";

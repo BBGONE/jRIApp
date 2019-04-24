@@ -1,12 +1,12 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { Utils, BRACKETS, LocaleERRS as ERRS } from "jriapp_shared";
+import { Utils, BRACKETS, LocaleERRS as ERRS, DateUtils, DATES } from "jriapp_shared";
 import { TBindingInfo } from "../int";
 
 import { bootstrap } from "../bootstrap";
 
 const { isNumeric, isBoolString, _undefined, isString } = Utils.check,
     { format, fastTrim: trim, startsWith, endsWith, trimQuotes } = Utils.str,
-    { parseBool, convertToDate } = Utils.core, { resolvePath, getBraceLen } = Utils.sys;
+    { parseBool } = Utils.core, { strToDate, getDate } = DateUtils, { resolvePath, getBraceLen } = Utils.sys;
 
 const getRX = /^get[(].+[)]$/g, spaceRX = /^\s+$/;
 
@@ -132,7 +132,21 @@ function checkVal(kv: IKeyVal): boolean {
                         val = args.length > 0 ? args[0] : _undefined,
                         format = args.length > 1 ? args[1] : "YYYYMMDD";
 
-                    kv.val = convertToDate(val, format);
+                    if (!val) {
+                        kv.val = getDate(DATES.TODAY);
+                    } else {
+                        switch (val) {
+                            case DATES.TODAY:
+                            case DATES.YESTERDAY:
+                            case DATES.TOMORROW:
+                            case DATES.ENDOFMONTH:
+                                kv.val = getDate(val);
+                                break;
+                            default:
+                                kv.val = strToDate(val, format);
+                                break;
+                        }
+                    }
                 }
                 break;
             case TAG.NONE:

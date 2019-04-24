@@ -7,7 +7,7 @@ import { bootstrap } from "./bootstrap";
 import { IDatepicker } from "jriapp/int";
 
 const utils = Utils, { isNt, isNumber } = utils.check, { format, stripNonNumeric, formatNumber } = utils.str,
-    { round, strToDate, dateToStr } = utils.core, boot = bootstrap, ERRS = LocaleERRS;
+    { round } = utils.core, { strToDate, dateToStr } = utils.dates, boot = bootstrap, ERRS = LocaleERRS;
 
 export const NUM_CONV = { None: 0, Integer: 1, Decimal: 2, Float: 3, SmallInt: 4 };
 

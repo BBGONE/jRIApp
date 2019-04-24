@@ -32,13 +32,6 @@ define("jriapp_shared/consts", ["require", "exports"], function (require, export
         SIDE[SIDE["LEFT"] = 1] = "LEFT";
         SIDE[SIDE["RIGHT"] = 2] = "RIGHT";
     })(SIDE = exports.SIDE || (exports.SIDE = {}));
-    var DATES;
-    (function (DATES) {
-        DATES["TODAY"] = "today";
-        DATES["TOMORROW"] = "tomorrow";
-        DATES["YESTERDAY"] = "yesterday";
-        DATES["ENDOFMONTH"] = "endofmonth";
-    })(DATES = exports.DATES || (exports.DATES = {}));
     exports.APP_NAME = "app";
     exports.DUMY_ERROR = "DUMMY_ERROR";
 });
@@ -386,7 +379,7 @@ define("jriapp_shared/utils/strutils", ["require", "exports", "jriapp_shared/uti
     exports.StringUtils = StringUtils;
     var trim = StringUtils.trim;
 });
-define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/lang"], function (require, exports, strutils_1, checks_2, lang_1) {
+define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks"], function (require, exports, strutils_1, checks_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var isHasProp = checks_2.Checks.isHasProp, _undefined = checks_2.Checks._undefined, isBoolean = checks_2.Checks.isBoolean, isArray = checks_2.Checks.isArray, isSimpleObject = checks_2.Checks.isSimpleObject, isNt = checks_2.Checks.isNt, isString = checks_2.Checks.isString, formatStr = strutils_1.StringUtils.format, trim = strutils_1.StringUtils.fastTrim, getOwnPropertyNames = Object.getOwnPropertyNames, getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor, objectKeys = Object.keys;
@@ -441,43 +434,6 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         }
         return to;
     }
-    function strToDate(val, format) {
-        if (format === void 0) { format = "YYYYMMDD"; }
-        if (!val) {
-            return null;
-        }
-        var m = moment(val, format);
-        if (!m.isValid()) {
-            throw new Error(formatStr(lang_1.ERRS.ERR_CONV_INVALID_DATE, val));
-        }
-        return m.toDate();
-    }
-    function dateToStr(val, format) {
-        if (format === void 0) { format = "YYYYMMDD"; }
-        if (isNt(val)) {
-            return "";
-        }
-        return moment(val).format(format);
-    }
-    function convertToDate(val, format) {
-        if (format === void 0) { format = "YYYYMMDD"; }
-        if (val === _undefined) {
-            return moment().startOf('day').toDate();
-        }
-        switch (val) {
-            case "today":
-                return moment().startOf('day').toDate();
-            case "tomorrow":
-                return moment().startOf('day').add(1, 'days').toDate();
-            case "yesterday":
-                return moment().startOf('day').subtract(1, 'days').toDate();
-            case "endofmonth":
-                return moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
-            default:
-                return moment(val, format).toDate();
-        }
-    }
-    exports.convertToDate = convertToDate;
     function assignStrings(target, source) {
         if (isNt(target)) {
             target = {};
@@ -636,9 +592,6 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         })();
         CoreUtils.hasProp = isHasProp;
         CoreUtils.clone = clone;
-        CoreUtils.strToDate = strToDate;
-        CoreUtils.dateToStr = dateToStr;
-        CoreUtils.convertToDate = convertToDate;
         CoreUtils.extend = extend;
         CoreUtils.assignStrings = assignStrings;
         return CoreUtils;
@@ -883,7 +836,7 @@ define("jriapp_shared/collection/int", ["require", "exports"], function (require
         ITEM_EVENTS["destroyed"] = "destroyed";
     })(ITEM_EVENTS = exports.ITEM_EVENTS || (exports.ITEM_EVENTS = {}));
 });
-define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils"], function (require, exports, lang_2, checks_3, strUtils_1) {
+define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils"], function (require, exports, lang_1, checks_3, strUtils_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var isFunc = checks_3.Checks.isFunc, isHasProp = checks_3.Checks.isHasProp, isArray = checks_3.Checks.isArray, isNt = checks_3.Checks.isNt, _undefined = checks_3.Checks._undefined, startsWith = strUtils_1.StringUtils.startsWith, trim = strUtils_1.StringUtils.fastTrim, trimBrackets = strUtils_1.StringUtils.trimBrackets, format = strUtils_1.StringUtils.format, trimQuotes = strUtils_1.StringUtils.trimQuotes;
@@ -1033,7 +986,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lan
                 }
             }
             if (test !== 0) {
-                throw new Error(format(lang_2.ERRS.ERR_EXPR_BRACES_INVALID, val));
+                throw new Error(format(lang_1.ERRS.ERR_EXPR_BRACES_INVALID, val));
             }
             return cnt;
         };
@@ -1182,7 +1135,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lan
     exports.SysUtils = SysUtils;
     var sys = SysUtils;
 });
-define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/utils/sysutils", "jriapp_shared/lang"], function (require, exports, consts_1, sysutils_1, lang_3) {
+define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/utils/sysutils", "jriapp_shared/lang"], function (require, exports, consts_1, sysutils_1, lang_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var sys = sysutils_1.SysUtils;
@@ -1330,13 +1283,13 @@ define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/consts", "j
         __extends(ValidationError, _super);
         function ValidationError(validations, item) {
             var _this = this;
-            var message = lang_3.ERRS.ERR_VALIDATION + "\r\n";
+            var message = lang_2.ERRS.ERR_VALIDATION + "\r\n";
             validations.forEach(function (err, i) {
                 if (i > 0) {
                     message = message + "\r\n";
                 }
                 if (!!err.fieldName) {
-                    message = message + " " + lang_3.STRS.TEXT.txtField + ": '" + err.fieldName + "'  " + err.errors.join(", ");
+                    message = message + " " + lang_2.STRS.TEXT.txtField + ": '" + err.fieldName + "'  " + err.errors.join(", ");
                 }
                 else {
                     message = message + err.errors.join(", ");
@@ -1452,7 +1405,7 @@ define("jriapp_shared/utils/debug", ["require", "exports", "jriapp_shared/int"],
     }());
     exports.DEBUG = DEBUG;
 });
-define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils", "jriapp_shared/utils/debug"], function (require, exports, lang_4, checks_4, strutils_2, debug_1) {
+define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils", "jriapp_shared/utils/debug"], function (require, exports, lang_3, checks_4, strutils_2, debug_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var isFunc = checks_4.Checks.isFunc, format = strutils_2.StringUtils.format, debug = debug_1.DEBUG;
@@ -1564,13 +1517,13 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
         EventHelper.add = function (ev, name, handler, nmspace, context, priority) {
             if (!ev) {
                 debug.checkStartDebugger();
-                throw new Error(format(lang_4.ERRS.ERR_ASSERTION_FAILED, "ev is a valid object"));
+                throw new Error(format(lang_3.ERRS.ERR_ASSERTION_FAILED, "ev is a valid object"));
             }
             if (!isFunc(handler)) {
-                throw new Error(lang_4.ERRS.ERR_EVENT_INVALID_FUNC);
+                throw new Error(lang_3.ERRS.ERR_EVENT_INVALID_FUNC);
             }
             if (!name) {
-                throw new Error(format(lang_4.ERRS.ERR_EVENT_INVALID, "[Empty]"));
+                throw new Error(format(lang_3.ERRS.ERR_EVENT_INVALID, "[Empty]"));
             }
             var n = name, ns = !nmspace ? "*" : "" + nmspace;
             var list = ev[n];
@@ -1631,7 +1584,7 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
     }());
     exports.EventHelper = EventHelper;
 });
-define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/error", "jriapp_shared/utils/eventhelper"], function (require, exports, lang_5, sysutils_2, checks_5, error_1, eventhelper_1) {
+define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/error", "jriapp_shared/utils/eventhelper"], function (require, exports, lang_4, sysutils_2, checks_5, error_1, eventhelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var isHasProp = checks_5.Checks.isHasProp, evHelper = eventhelper_1.EventHelper, sys = sysutils_2.SysUtils, signature = { signature: "BaseObject" };
@@ -1722,19 +1675,19 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
         };
         ObjectEvents.prototype.raise = function (name, args) {
             if (!name) {
-                throw new Error(lang_5.ERRS.ERR_EVENT_INVALID);
+                throw new Error(lang_4.ERRS.ERR_EVENT_INVALID);
             }
             evHelper.raise(this._owner, this._events, name, args);
         };
         ObjectEvents.prototype.raiseProp = function (name) {
             if (!name) {
-                throw new Error(lang_5.ERRS.ERR_PROP_NAME_EMPTY);
+                throw new Error(lang_4.ERRS.ERR_PROP_NAME_EMPTY);
             }
             evHelper.raiseProp(this._owner, this._events, name, { property: name });
         };
         ObjectEvents.prototype.onProp = function (prop, handler, nmspace, context, priority) {
             if (!prop) {
-                throw new Error(lang_5.ERRS.ERR_PROP_NAME_EMPTY);
+                throw new Error(lang_4.ERRS.ERR_PROP_NAME_EMPTY);
             }
             if (!this._events) {
                 this._events = {};
@@ -2760,14 +2713,82 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
     }());
     exports.HttpUtils = HttpUtils;
 });
-define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred"], function (require, exports, coreutils_5, debug_2, error_4, logger_1, sysutils_4, async_2, http_1, strutils_4, checks_9, arrhelper_2, deferred_5) {
+define("jriapp_shared/utils/dates", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/lang"], function (require, exports, strutils_4, checks_9, lang_5) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var isNt = checks_9.Checks.isNt, formatStr = strutils_4.StringUtils.format;
+    var DATES;
+    (function (DATES) {
+        DATES["TODAY"] = "today";
+        DATES["TOMORROW"] = "tomorrow";
+        DATES["YESTERDAY"] = "yesterday";
+        DATES["ENDOFMONTH"] = "endofmonth";
+    })(DATES = exports.DATES || (exports.DATES = {}));
+    var PERIOD;
+    (function (PERIOD) {
+        PERIOD["YEAR"] = "year";
+        PERIOD["MONTH"] = "month";
+        PERIOD["WEEK"] = "week";
+        PERIOD["DAY"] = "day";
+        PERIOD["HOUR"] = "hour";
+        PERIOD["MINUTE"] = "minute";
+        PERIOD["SECOND"] = "second";
+    })(PERIOD = exports.PERIOD || (exports.PERIOD = {}));
+    function strToDate(val, format) {
+        if (format === void 0) { format = "YYYYMMDD"; }
+        if (!val) {
+            return null;
+        }
+        var m = moment(val, format);
+        if (!m.isValid()) {
+            throw new Error(formatStr(lang_5.ERRS.ERR_CONV_INVALID_DATE, val));
+        }
+        return m.toDate();
+    }
+    function dateToStr(val, format) {
+        if (format === void 0) { format = "YYYYMMDD"; }
+        if (isNt(val)) {
+            return "";
+        }
+        return moment(val).format(format);
+    }
+    function getDate(val) {
+        if (val === void 0) { val = "today"; }
+        switch (val) {
+            case "today":
+                return moment().startOf('day').toDate();
+            case "tomorrow":
+                return moment().startOf('day').add(1, 'days').toDate();
+            case "yesterday":
+                return moment().startOf('day').subtract(1, 'days').toDate();
+            case "endofmonth":
+                return moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
+            default:
+                throw new Error(formatStr(lang_5.ERRS.ERR_CONV_INVALID_DATE, val));
+        }
+    }
+    function add(dt, val, period) {
+        return moment(dt).add(val, period).toDate();
+    }
+    var DateUtils = (function () {
+        function DateUtils() {
+        }
+        DateUtils.strToDate = strToDate;
+        DateUtils.dateToStr = dateToStr;
+        DateUtils.getDate = getDate;
+        DateUtils.add = add;
+        return DateUtils;
+    }());
+    exports.DateUtils = DateUtils;
+});
+define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred", "jriapp_shared/utils/dates"], function (require, exports, coreutils_5, debug_2, error_4, logger_1, sysutils_4, async_2, http_1, strutils_5, checks_10, arrhelper_2, deferred_5, dates_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Utils = (function () {
         function Utils() {
         }
-        Utils.check = checks_9.Checks;
-        Utils.str = strutils_4.StringUtils;
+        Utils.check = checks_10.Checks;
+        Utils.str = strutils_5.StringUtils;
         Utils.arr = arrhelper_2.ArrayHelper;
         Utils.http = http_1.HttpUtils;
         Utils.core = coreutils_5.CoreUtils;
@@ -2777,6 +2798,7 @@ define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/
         Utils.debug = debug_2.DEBUG;
         Utils.sys = sysutils_4.SysUtils;
         Utils.queue = deferred_5.getTaskQueue();
+        Utils.dates = dates_1.DateUtils;
         return Utils;
     }());
     exports.Utils = Utils;
@@ -5272,10 +5294,10 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
     }(base_1.BaseCollection));
     exports.BaseList = BaseList;
 });
-define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/strutils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/validation", "jriapp_shared/collection/list", "jriapp_shared/errors"], function (require, exports, coreutils_7, sysutils_5, strutils_5, debounce_2, item_1, validation_2, list_1, errors_8) {
+define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/strutils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/validation", "jriapp_shared/collection/list", "jriapp_shared/errors"], function (require, exports, coreutils_7, sysutils_5, strutils_6, debounce_2, item_1, validation_2, list_1, errors_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var getValue = coreutils_7.CoreUtils.getValue, setValue = coreutils_7.CoreUtils.setValue, startsWith = strutils_5.StringUtils.startsWith, trimBrackets = strutils_5.StringUtils.trimBrackets, sys = sysutils_5.SysUtils;
+    var getValue = coreutils_7.CoreUtils.getValue, setValue = coreutils_7.CoreUtils.setValue, startsWith = strutils_6.StringUtils.startsWith, trimBrackets = strutils_6.StringUtils.trimBrackets, sys = sysutils_5.SysUtils;
     var AnyItemAspect = (function (_super) {
         __extends(AnyItemAspect, _super);
         function AnyItemAspect() {
@@ -5715,10 +5737,10 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
     }(list_2.BaseList));
     exports.BaseDictionary = BaseDictionary;
 });
-define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/checks"], function (require, exports, checks_10) {
+define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/checks"], function (require, exports, checks_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var isNt = checks_10.Checks.isNt;
+    var isNt = checks_11.Checks.isNt;
     var Lazy = (function () {
         function Lazy(factory) {
             this._val = null;
@@ -5764,7 +5786,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, consts_3, int_2, errors_9, object_7, jsonbag_1, jsonarray_1, weakmap_1, lang_11, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/dates", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, consts_3, int_2, errors_9, object_7, jsonbag_1, jsonarray_1, dates_2, weakmap_1, lang_11, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5776,6 +5798,7 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_s
     __export(object_7);
     __export(jsonbag_1);
     __export(jsonarray_1);
+    __export(dates_2);
     exports.createWeakMap = weakmap_1.createWeakMap;
     exports.LocaleSTRS = lang_11.STRS;
     exports.LocaleERRS = lang_11.ERRS;

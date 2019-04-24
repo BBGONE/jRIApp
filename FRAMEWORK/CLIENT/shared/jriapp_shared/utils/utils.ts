@@ -11,6 +11,7 @@ import { Checks } from "./checks";
 import { ArrayHelper } from "./arrhelper";
 import { ITaskQueue } from "./ideferred";
 import { getTaskQueue } from "./deferred";
+import { DateUtils } from "./dates";
 
 export class Utils {
     static readonly check = Checks;
@@ -24,4 +25,5 @@ export class Utils {
     static readonly debug = DEBUG;
     static readonly sys = SysUtils;
     static readonly queue: ITaskQueue = getTaskQueue();
+    static readonly dates = DateUtils;
 }

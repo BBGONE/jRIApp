@@ -504,8 +504,8 @@ export class Bootstrap extends BaseObject implements IDataProvider, ISvcStore {
     unregisterSvc(name: string): void {
         unregisterSvc(this, name);
     }
-    getSvc<T = any>(name: string): T {
-        const obj = getSvc(this, name);
+    getSvc<T = any>(name: string, ...args: any[]): T {
+        const obj = getSvc(this, name, ...args);
         if (!obj) {
             throw new Error(`The service: ${name} is not registered`);
         }

@@ -14,12 +14,6 @@ declare module "jriapp_shared/consts" {
         LEFT = 1,
         RIGHT = 2
     }
-    export const enum DATES {
-        TODAY = "today",
-        TOMORROW = "tomorrow",
-        YESTERDAY = "yesterday",
-        ENDOFMONTH = "endofmonth"
-    }
     export const APP_NAME = "app";
     export const DUMY_ERROR = "DUMMY_ERROR";
 }
@@ -211,9 +205,7 @@ declare module "jriapp_shared/utils/strutils" {
 }
 declare module "jriapp_shared/utils/coreutils" {
     import { IIndexer } from "jriapp_shared/int";
-    import { DATES } from "jriapp_shared/consts";
     import { Checks } from "jriapp_shared/utils/checks";
-    export function convertToDate(val: string | DATES, format?: string): Date;
     export class CoreUtils {
         static getNewID(prefix?: string): string;
         static readonly getTimeZoneOffset: () => number;
@@ -225,9 +217,6 @@ declare module "jriapp_shared/utils/coreutils" {
         static parseBool(a: any): boolean;
         static round(num: number, decimals: number): number;
         static readonly clone: (obj: any, target?: any) => any;
-        static readonly strToDate: (val: string, format?: string) => Date;
-        static readonly dateToStr: (val: Date, format?: string) => string;
-        static readonly convertToDate: (val: string | DATES, format?: string) => Date;
         static merge<S, T>(source: S, target?: T): S & T;
         static readonly extend: <T, U>(target: T, ...source: U[]) => T & U;
         static memoize<T>(fn: () => T): () => T;
@@ -1010,6 +999,29 @@ declare module "jriapp_shared/utils/http" {
         static ajaxTimeOut: number;
     }
 }
+declare module "jriapp_shared/utils/dates" {
+    export const enum DATES {
+        TODAY = "today",
+        TOMORROW = "tomorrow",
+        YESTERDAY = "yesterday",
+        ENDOFMONTH = "endofmonth"
+    }
+    export const enum PERIOD {
+        YEAR = "year",
+        MONTH = "month",
+        WEEK = "week",
+        DAY = "day",
+        HOUR = "hour",
+        MINUTE = "minute",
+        SECOND = "second"
+    }
+    export class DateUtils {
+        static readonly strToDate: (val: string, format?: string) => Date;
+        static readonly dateToStr: (val: Date, format?: string) => string;
+        static readonly getDate: (val: DATES | undefined) => Date;
+        static readonly add: (dt: Date, val: number, period: PERIOD) => Date;
+    }
+}
 declare module "jriapp_shared/utils/utils" {
     import { CoreUtils } from "jriapp_shared/utils/coreutils";
     import { DEBUG } from "jriapp_shared/utils/debug";
@@ -1022,6 +1034,7 @@ declare module "jriapp_shared/utils/utils" {
     import { Checks } from "jriapp_shared/utils/checks";
     import { ArrayHelper } from "jriapp_shared/utils/arrhelper";
     import { ITaskQueue } from "jriapp_shared/utils/ideferred";
+    import { DateUtils } from "jriapp_shared/utils/dates";
     export class Utils {
         static readonly check: typeof Checks;
         static readonly str: typeof StringUtils;
@@ -1034,6 +1047,7 @@ declare module "jriapp_shared/utils/utils" {
         static readonly debug: typeof DEBUG;
         static readonly sys: typeof SysUtils;
         static readonly queue: ITaskQueue;
+        static readonly dates: typeof DateUtils;
     }
 }
 declare module "jriapp_shared/utils/waitqueue" {
@@ -1488,6 +1502,7 @@ declare module "jriapp_shared" {
     export * from "jriapp_shared/object";
     export * from "jriapp_shared/utils/jsonbag";
     export * from "jriapp_shared/utils/jsonarray";
+    export * from "jriapp_shared/utils/dates";
     export { createWeakMap } from "jriapp_shared/utils/weakmap";
     export { STRS as LocaleSTRS, ERRS as LocaleERRS } from "jriapp_shared/lang";
     export { BaseCollection } from "jriapp_shared/collection/base";

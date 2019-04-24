@@ -113,7 +113,7 @@ define("jriapp/int", ["require", "exports"], function (require, exports) {
 define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_1, bootstrap_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _undefined = _a._undefined, isString = _a.isString, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, endsWith = _b.endsWith, trimQuotes = _b.trimQuotes, _c = jriapp_shared_1.Utils.core, parseBool = _c.parseBool, convertToDate = _c.convertToDate, _d = jriapp_shared_1.Utils.sys, resolvePath = _d.resolvePath, getBraceLen = _d.getBraceLen;
+    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _undefined = _a._undefined, isString = _a.isString, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, endsWith = _b.endsWith, trimQuotes = _b.trimQuotes, parseBool = jriapp_shared_1.Utils.core.parseBool, strToDate = jriapp_shared_1.DateUtils.strToDate, getDate = jriapp_shared_1.DateUtils.getDate, _c = jriapp_shared_1.Utils.sys, resolvePath = _c.resolvePath, getBraceLen = _c.getBraceLen;
     var getRX = /^get[(].+[)]$/g, spaceRX = /^\s+$/;
     var TOKEN;
     (function (TOKEN) {
@@ -217,7 +217,22 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
                 case "3":
                     {
                         var args = getExprArgs(kv.val), val = args.length > 0 ? args[0] : _undefined, format_1 = args.length > 1 ? args[1] : "YYYYMMDD";
-                        kv.val = convertToDate(val, format_1);
+                        if (!val) {
+                            kv.val = getDate("today");
+                        }
+                        else {
+                            switch (val) {
+                                case "today":
+                                case "yesterday":
+                                case "tomorrow":
+                                case "endofmonth":
+                                    kv.val = getDate(val);
+                                    break;
+                                default:
+                                    kv.val = strToDate(val, format_1);
+                                    break;
+                            }
+                        }
                     }
                     break;
                 case "":
@@ -2355,7 +2370,11 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             unregisterSvc(this, name);
         };
         Bootstrap.prototype.getSvc = function (name) {
-            var obj = getSvc(this, name);
+            var args = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
+            }
+            var obj = getSvc.apply(void 0, [this, name].concat(args));
             if (!obj) {
                 throw new Error("The service: " + name + " is not registered");
             }
@@ -2483,7 +2502,7 @@ define("jriapp/utils/viewchecks", ["require", "exports"], function (require, exp
 define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_11, bootstrap_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_11.Utils, _a = utils.check, isNt = _a.isNt, isNumber = _a.isNumber, _b = utils.str, format = _b.format, stripNonNumeric = _b.stripNonNumeric, formatNumber = _b.formatNumber, _c = utils.core, round = _c.round, strToDate = _c.strToDate, dateToStr = _c.dateToStr, boot = bootstrap_3.bootstrap, ERRS = jriapp_shared_11.LocaleERRS;
+    var utils = jriapp_shared_11.Utils, _a = utils.check, isNt = _a.isNt, isNumber = _a.isNumber, _b = utils.str, format = _b.format, stripNonNumeric = _b.stripNonNumeric, formatNumber = _b.formatNumber, round = utils.core.round, _c = utils.dates, strToDate = _c.strToDate, dateToStr = _c.dateToStr, boot = bootstrap_3.bootstrap, ERRS = jriapp_shared_11.LocaleERRS;
     exports.NUM_CONV = { None: 0, Integer: 1, Decimal: 2, Float: 3, SmallInt: 4 };
     var BaseConverter = (function () {
         function BaseConverter() {
@@ -4654,6 +4673,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.21.12";
+    exports.VERSION = "2.22.0";
     bootstrap_7.Bootstrap._initFramework();
 });

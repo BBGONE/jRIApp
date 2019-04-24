@@ -1,9 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IIndexer } from "../int";
-import { DATES } from "../consts";
 import { StringUtils } from "./strutils";
 import { Checks } from "./checks";
-import { ERRS } from "../lang";
 
 const { isHasProp, _undefined, isBoolean, isArray, isSimpleObject, isNt, isString } = Checks,
     { format: formatStr, fastTrim: trim } = StringUtils, { getOwnPropertyNames, getOwnPropertyDescriptor, keys: objectKeys } = Object;
@@ -59,44 +57,6 @@ function extend<T, U>(target: T, ...source: U[]): T & U {
         }
     }
     return to;
-}
-
-function strToDate(val: string, format: string = "YYYYMMDD"): Date {
-    if (!val) {
-        return null;
-    }
-
-    const m = moment(val, format);
-    if (!m.isValid()) {
-        throw new Error(formatStr(ERRS.ERR_CONV_INVALID_DATE, val));
-    }
-    return m.toDate();
-}
-
-function dateToStr(val: Date, format: string = "YYYYMMDD"): string {
-    if (isNt(val)) {
-        return "";
-    }
-    return moment(val).format(format);
-}
-
-export function convertToDate(val: string | DATES, format: string = "YYYYMMDD"): Date {
-    if (!val) {
-        return moment().startOf('day').toDate();
-    }
-
-    switch (val) {
-        case DATES.TODAY:
-            return moment().startOf('day').toDate();
-        case DATES.TOMORROW:
-            return moment().startOf('day').add(1, 'days').toDate();
-        case DATES.YESTERDAY:
-            return moment().startOf('day').subtract(1, 'days').toDate();
-        case DATES.ENDOFMONTH:
-            return moment().startOf('month').add(1, 'months').subtract(1, 'days').toDate();
-        default:
-            return moment(val, format).toDate();
-    }
 }
 
 function assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: U): T {
@@ -226,9 +186,6 @@ export class CoreUtils {
         return parseFloat(num.toFixed(decimals));
     }
     static readonly clone: (obj: any, target?: any) => any = clone;
-    static readonly strToDate: (val: string, format?: string) => Date = strToDate;
-    static readonly dateToStr: (val: Date, format?: string) => string = dateToStr;
-    static readonly convertToDate: (val: string | DATES, format?: string) => Date = convertToDate;
     static merge<S, T>(source: S, target?: T): S & T {
         if (!target) {
             target = <any>{};

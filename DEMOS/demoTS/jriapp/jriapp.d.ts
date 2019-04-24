@@ -696,7 +696,7 @@ declare module "jriapp/bootstrap" {
         startApp<TApp extends IApplication>(appFactory: () => TApp, onStartUp?: (app: TApp) => void): IPromise<TApp>;
         registerSvc(name: string, obj: any): void;
         unregisterSvc(name: string): void;
-        getSvc<T = any>(name: string): T;
+        getSvc<T = any>(name: string, ...args: any[]): T;
         getOptions(name: string): string;
         registerConverter(name: string, obj: IConverter): void;
         registerElView(name: string, elViewType: any): void;
@@ -1013,5 +1013,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.21.12";
+    export const VERSION = "2.22.0";
 }
