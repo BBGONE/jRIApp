@@ -14,7 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], function (require, exports, RIAPP, DEMODB, COMMON, MONTHPICKER) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, dates = utils.dates;
     var UppercaseConverter = (function (_super) {
         __extends(UppercaseConverter, _super);
         function UppercaseConverter() {
@@ -46,7 +46,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
         }
         YearMonthConverter.prototype.convertToSource = function (val, param, dataContext) {
             if (utils.check.isString(val)) {
-                return moment('01/' + val, 'DD/' + param).toDate();
+                return dates.strToDate('01/' + val, 'DD/' + param);
             }
             else {
                 return null;
@@ -54,7 +54,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
         };
         YearMonthConverter.prototype.convertToTarget = function (val, param, dataContext) {
             if (utils.check.isDate(val)) {
-                return moment(val).format(param);
+                return dates.dateToStr(val, param);
             }
             else {
                 return "";

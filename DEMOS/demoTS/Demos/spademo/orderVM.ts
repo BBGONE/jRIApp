@@ -9,7 +9,7 @@ import { CustomerVM } from "./customerVM";
 import { AddressVM } from "./addressVM";
 import { OrderDetailVM } from "./orderDetVM";
 
-let utils = RIAPP.Utils;
+const utils = RIAPP.Utils, dates = utils.dates;
 
 export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.ITabsEvents {
     private _customerVM: CustomerVM;
@@ -58,10 +58,10 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
 
 
         this._dbSet.addOnItemAdded(function (_s, args) {
-            let item = args.item;
+            const item = args.item;
             item.Customer = self.currentCustomer;
-            item.OrderDate = moment().toDate();
-            item.DueDate = moment().add(7, 'days').toDate();
+            item.OrderDate = new Date();
+            item.DueDate = dates.add(new Date(), 7, RIAPP.PERIOD.DAY);
             item.OnlineOrderFlag = false;
         }, self.uniqueID);
 

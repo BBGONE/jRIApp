@@ -1777,7 +1777,7 @@ define("orderDetVM", ["require", "exports", "jriapp", "productVM"], function (re
 define("orderVM", ["require", "exports", "jriapp", "domainModel", "gridEvents", "addressVM", "orderDetVM"], function (require, exports, RIAPP, DEMODB, gridEvents_1, addressVM_1, orderDetVM_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = RIAPP.Utils;
+    var utils = RIAPP.Utils, dates = utils.dates;
     var OrderVM = (function (_super) {
         __extends(OrderVM, _super);
         function OrderVM(customerVM) {
@@ -1811,8 +1811,8 @@ define("orderVM", ["require", "exports", "jriapp", "domainModel", "gridEvents", 
             _this._dbSet.addOnItemAdded(function (_s, args) {
                 var item = args.item;
                 item.Customer = self.currentCustomer;
-                item.OrderDate = moment().toDate();
-                item.DueDate = moment().add(7, 'days').toDate();
+                item.OrderDate = new Date();
+                item.DueDate = dates.add(new Date(), 7, "day");
                 item.OnlineOrderFlag = false;
             }, self.uniqueID);
             _this._addNewCommand = new RIAPP.Command(function () {

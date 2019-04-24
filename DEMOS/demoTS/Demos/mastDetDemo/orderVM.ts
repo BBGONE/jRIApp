@@ -9,7 +9,7 @@ import { CustomerVM } from "./customerVM";
 import { OrderDetailVM } from "./orderDetVM";
 import { AddressVM } from "./addressVM";
 
-let utils = RIAPP.Utils, $ = uiMOD.$;
+const utils = RIAPP.Utils, $ = uiMOD.$, dates = utils.dates;
 
 export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.ITabsEvents {
     private _customerVM: CustomerVM;
@@ -56,18 +56,16 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
         }, self.uniqueID);
 
         this._dbSet.addOnItemAdded(function (_s, args) {
-            //can be solved soon with generics
-            let item = args.item;
+            const item = args.item;
             item.Customer = self.currentCustomer;
-            //datejs extension
-            item.OrderDate = moment().toDate();
-            item.DueDate = moment().add(7, 'days').toDate();
+            item.OrderDate = new Date();
+            item.DueDate = dates.add(new Date(), 7, RIAPP.PERIOD.DAY);
             item.OnlineOrderFlag = false;
         }, self.uniqueID);
 
-        //adds new order - uses dialog to fill the data
+        // adds new order - uses dialog to fill the data
         this._addNewCommand = new RIAPP.Command(function () {
-            //the dialog shown by the datagrid
+            // the dialog shown by the datagrid
             self._dbSet.addNew();
         });
 

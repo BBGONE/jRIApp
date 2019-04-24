@@ -3,7 +3,7 @@ import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
 import * as MONTHPICKER from "monthpicker";
 
-let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, dates = utils.dates;
 
 export class UppercaseConverter extends RIAPP.BaseConverter {
     convertToSource(val: any, param: any, dataContext: any): any {
@@ -25,19 +25,20 @@ export class UppercaseConverter extends RIAPP.BaseConverter {
 export class YearMonthConverter extends RIAPP.BaseConverter {
     convertToSource(val: any, param: string, dataContext: any): any {
         if (utils.check.isString(val)) {
-            return moment('01/' + val, 'DD/' + param).toDate();
+            return dates.strToDate('01/' + val, 'DD/' + param);
         } else {
             return null;
         }
     }
     convertToTarget(val: any, param: string, dataContext: any): any {
         if (utils.check.isDate(val)) {
-            return moment(val).format(param);
+            return dates.dateToStr(val, param);
         } else {
             return "";
         }
     }
 }
+
 export class NotConverter extends RIAPP.BaseConverter {
     convertToSource(val: any, param: any, dataContext: any): any {
             return !val;
