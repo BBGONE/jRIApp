@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { Utils, BRACKETS, LocaleERRS as ERRS, DateUtils } from "jriapp_shared";
+import { Utils, BRACKETS, LocaleERRS as ERRS, DateUtils, TIME_RANGE } from "jriapp_shared";
 import { TBindingInfo } from "../int";
 
 import { bootstrap } from "../bootstrap";
@@ -41,13 +41,10 @@ const enum PARSE_TYPE {
 }
 
 const enum DATES {
+    NOW = "now",
     TODAY = "today",
     TOMORROW = "tomorrow",
-    YESTERDAY = "yesterday",
-    STARTOFMONTH = "startofmonth",
-    ENDOFMONTH = "endofmonth",
-    STARTOFYEAR = "startofyear",
-    ENDOFYEAR = "endofyear"
+    YESTERDAY = "yesterday"
 }
 
 const len_this = TOKEN.THIS.length;
@@ -133,23 +130,24 @@ function getDate(val: string, format: string): Date {
     if (!val) {
         return dates.today();
     } else {
-        switch (val.toLowerCase()) {
-            case DATES.TODAY:
-                return dates.today();
-            case DATES.TOMORROW:
-                return dates.tomorrow();
-            case DATES.YESTERDAY:
-                return dates.yesterday();
-            case DATES.STARTOFMONTH:
-                return dates.startOfMonth();
-            case DATES.ENDOFMONTH:
-                return dates.endOfMonth();
-            case DATES.STARTOFYEAR:
-                return dates.startOfYear();
-            case DATES.ENDOFYEAR:
-                return dates.endOfYear();
-            default:
-                return dates.strToDate(val, format);
+        const lower = val.toLowerCase();
+        if (startsWith(lower, "startof")) {
+            return dates.startOf(lower.substr("startof".length) as TIME_RANGE);
+        } else if (startsWith(lower, "endof")) {
+            return dates.endOf(lower.substr("endof".length) as TIME_RANGE);
+        } else {
+            switch (val.toLowerCase()) {
+                case DATES.NOW:
+                    return dates.now();
+                case DATES.TODAY:
+                    return dates.today();
+                case DATES.TOMORROW:
+                    return dates.tomorrow();
+                case DATES.YESTERDAY:
+                    return dates.yesterday();
+                default:
+                    return dates.strToDate(val, format);
+            }
         }
     }
 }

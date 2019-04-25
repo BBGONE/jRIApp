@@ -147,13 +147,10 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
     })(PARSE_TYPE || (PARSE_TYPE = {}));
     var DATES;
     (function (DATES) {
+        DATES["NOW"] = "now";
         DATES["TODAY"] = "today";
         DATES["TOMORROW"] = "tomorrow";
         DATES["YESTERDAY"] = "yesterday";
-        DATES["STARTOFMONTH"] = "startofmonth";
-        DATES["ENDOFMONTH"] = "endofmonth";
-        DATES["STARTOFYEAR"] = "startofyear";
-        DATES["ENDOFYEAR"] = "endofyear";
     })(DATES || (DATES = {}));
     var len_this = "this.".length;
     function getCurlyBraceParts(val) {
@@ -223,23 +220,26 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
             return dates.today();
         }
         else {
-            switch (val.toLowerCase()) {
-                case "today":
-                    return dates.today();
-                case "tomorrow":
-                    return dates.tomorrow();
-                case "yesterday":
-                    return dates.yesterday();
-                case "startofmonth":
-                    return dates.startOfMonth();
-                case "endofmonth":
-                    return dates.endOfMonth();
-                case "startofyear":
-                    return dates.startOfYear();
-                case "endofyear":
-                    return dates.endOfYear();
-                default:
-                    return dates.strToDate(val, format);
+            var lower = val.toLowerCase();
+            if (startsWith(lower, "startof")) {
+                return dates.startOf(lower.substr("startof".length));
+            }
+            else if (startsWith(lower, "endof")) {
+                return dates.endOf(lower.substr("endof".length));
+            }
+            else {
+                switch (val.toLowerCase()) {
+                    case "now":
+                        return dates.now();
+                    case "today":
+                        return dates.today();
+                    case "tomorrow":
+                        return dates.tomorrow();
+                    case "yesterday":
+                        return dates.yesterday();
+                    default:
+                        return dates.strToDate(val, format);
+                }
             }
         }
     }
@@ -4693,6 +4693,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.22.2";
+    exports.VERSION = "2.23.0";
     bootstrap_7.Bootstrap._initFramework();
 });

@@ -223,6 +223,8 @@ declare module "jriapp_shared/utils/coreutils" {
         static forEachProp<T>(map: IIndexer<T>, fn: (name: string, val?: T) => void): void;
         static toArray<T>(map: IIndexer<T>): T[];
         static readonly assignStrings: <T extends U, U extends IIndexer<any>>(target: T, source: U) => T;
+        static pipe<T extends any[], R>(fn1: (...args: T) => R, ...fns: Array<(a: R) => R>): (...args: T) => R;
+        static compose<R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>): (a: R) => R;
     }
 }
 declare module "jriapp_shared/lang" {
@@ -1000,7 +1002,7 @@ declare module "jriapp_shared/utils/http" {
     }
 }
 declare module "jriapp_shared/utils/dates" {
-    export const enum PERIOD {
+    export const enum TIME_KIND {
         YEAR = "year",
         MONTH = "month",
         WEEK = "week",
@@ -1009,18 +1011,18 @@ declare module "jriapp_shared/utils/dates" {
         MINUTE = "minute",
         SECOND = "second"
     }
+    export type TIME_RANGE = TIME_KIND.YEAR | TIME_KIND.MONTH | TIME_KIND.WEEK | TIME_KIND.DAY;
     export class DateUtils {
         static readonly strToDate: (val: string, format?: string) => Date;
         static readonly dateToStr: (val: Date, format?: string) => string;
-        static readonly add: (dt: Date, val: number, period: PERIOD) => Date;
+        static readonly add: (dt: Date, val: number, period: TIME_KIND) => Date;
         static readonly trim: (dt: Date) => Date;
         static today(): Date;
+        static now(): Date;
         static yesterday(dt?: Date): Date;
         static tomorrow(dt?: Date): Date;
-        static startOfMonth(dt?: Date): Date;
-        static endOfMonth(dt?: Date): Date;
-        static startOfYear(dt?: Date): Date;
-        static endOfYear(dt?: Date): Date;
+        static startOf(period: TIME_RANGE, dt?: Date): Date;
+        static endOf(period: TIME_RANGE, dt?: Date): Date;
     }
 }
 declare module "jriapp_shared/utils/utils" {

@@ -437,6 +437,7 @@ namespace RIAppDemo.BLL.DataServices
             salesorderheader.SalesOrderNumber = DateTime.Now.Ticks.ToString();
             salesorderheader.ModifiedDate = DateTime.Now;
             salesorderheader.rowguid = Guid.NewGuid();
+            salesorderheader.RevisionNumber = 1;
             DB.SalesOrderHeaders.Add(salesorderheader);
         }
 

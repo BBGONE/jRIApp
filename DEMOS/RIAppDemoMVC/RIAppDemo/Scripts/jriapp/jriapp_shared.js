@@ -586,6 +586,27 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             }
             return r;
         };
+        CoreUtils.pipe = function (fn1) {
+            var fns = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                fns[_i - 1] = arguments[_i];
+            }
+            var piped = fns.reduce(function (prevFn, nextFn) { return function (value) { return nextFn(prevFn(value)); }; }, function (value) { return value; });
+            return function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                return piped(fn1.apply(void 0, args));
+            };
+        };
+        CoreUtils.compose = function (fn1) {
+            var fns = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                fns[_i - 1] = arguments[_i];
+            }
+            return fns.reduce(function (prevFn, nextFn) { return function (value) { return prevFn(nextFn(value)); }; }, fn1);
+        };
         CoreUtils.getTimeZoneOffset = (function () {
             var dt = new Date(), tz = dt.getTimezoneOffset();
             return function () { return tz; };
@@ -2717,16 +2738,16 @@ define("jriapp_shared/utils/dates", ["require", "exports", "jriapp_shared/utils/
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var isNt = checks_9.Checks.isNt, formatStr = strutils_4.StringUtils.format;
-    var PERIOD;
-    (function (PERIOD) {
-        PERIOD["YEAR"] = "year";
-        PERIOD["MONTH"] = "month";
-        PERIOD["WEEK"] = "week";
-        PERIOD["DAY"] = "day";
-        PERIOD["HOUR"] = "hour";
-        PERIOD["MINUTE"] = "minute";
-        PERIOD["SECOND"] = "second";
-    })(PERIOD = exports.PERIOD || (exports.PERIOD = {}));
+    var TIME_KIND;
+    (function (TIME_KIND) {
+        TIME_KIND["YEAR"] = "year";
+        TIME_KIND["MONTH"] = "month";
+        TIME_KIND["WEEK"] = "week";
+        TIME_KIND["DAY"] = "day";
+        TIME_KIND["HOUR"] = "hour";
+        TIME_KIND["MINUTE"] = "minute";
+        TIME_KIND["SECOND"] = "second";
+    })(TIME_KIND = exports.TIME_KIND || (exports.TIME_KIND = {}));
     function strToDate(val, format) {
         if (format === void 0) { format = "YYYYMMDD"; }
         if (!val) {
@@ -2757,23 +2778,20 @@ define("jriapp_shared/utils/dates", ["require", "exports", "jriapp_shared/utils/
         DateUtils.today = function () {
             return moment().startOf("day").toDate();
         };
+        DateUtils.now = function () {
+            return new Date();
+        };
         DateUtils.yesterday = function (dt) {
             return moment(dt).startOf("day").add(-1, "day").toDate();
         };
         DateUtils.tomorrow = function (dt) {
             return moment(dt).startOf("day").add(1, "day").toDate();
         };
-        DateUtils.startOfMonth = function (dt) {
-            return moment(dt).startOf("month").toDate();
+        DateUtils.startOf = function (period, dt) {
+            return moment(dt).startOf(period).toDate();
         };
-        DateUtils.endOfMonth = function (dt) {
-            return moment(dt).endOf("month").toDate();
-        };
-        DateUtils.startOfYear = function (dt) {
-            return moment(dt).startOf("year").toDate();
-        };
-        DateUtils.endOfYear = function (dt) {
-            return moment(dt).endOf("year").toDate();
+        DateUtils.endOf = function (period, dt) {
+            return moment(dt).endOf(period).toDate();
         };
         DateUtils.strToDate = strToDate;
         DateUtils.dateToStr = dateToStr;

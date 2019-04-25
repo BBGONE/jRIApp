@@ -59,7 +59,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
             const item = args.item;
             item.Customer = self.currentCustomer;
             item.OrderDate = new Date();
-            item.DueDate = dates.add(new Date(), 7, RIAPP.PERIOD.DAY);
+            item.DueDate = dates.add(new Date(), 7, RIAPP.TIME_KIND.DAY);
             item.OnlineOrderFlag = false;
         }, self.uniqueID);
 

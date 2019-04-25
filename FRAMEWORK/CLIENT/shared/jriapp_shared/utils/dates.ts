@@ -5,7 +5,7 @@ import { ERRS } from "../lang";
 
 const { isNt } = Checks, { format: formatStr } = StringUtils;
 
-export const enum PERIOD {
+export const enum TIME_KIND {
     YEAR = "year",
     MONTH = "month",
     WEEK = "week",
@@ -14,6 +14,8 @@ export const enum PERIOD {
     MINUTE = "minute",
     SECOND = "second"
 }
+
+export type TIME_RANGE = TIME_KIND.YEAR | TIME_KIND.MONTH | TIME_KIND.WEEK | TIME_KIND.DAY;
 
 function strToDate(val: string, format: string = "YYYYMMDD"): Date {
     if (!val) {
@@ -34,38 +36,35 @@ function dateToStr(val: Date, format: string = "YYYYMMDD"): string {
     return moment(val).format(format);
 }
 
-function add(dt: Date, val: number, period: PERIOD): Date {
+function add(dt: Date, val: number, period: TIME_KIND): Date {
     return moment(dt).add(val, period).toDate();
 }
 
 function trim(dt: Date): Date {
-    return moment(dt).startOf(PERIOD.DAY).toDate();
+    return moment(dt).startOf(TIME_KIND.DAY).toDate();
 }
 
 export class DateUtils {
     static readonly strToDate: (val: string, format?: string) => Date = strToDate;
     static readonly dateToStr: (val: Date, format?: string) => string = dateToStr;
-    static readonly add: (dt: Date, val: number, period: PERIOD) => Date = add;
+    static readonly add: (dt: Date, val: number, period: TIME_KIND) => Date = add;
     static readonly trim: (dt: Date) => Date = trim;
     static today(): Date {
-        return moment().startOf(PERIOD.DAY).toDate();
+        return moment().startOf(TIME_KIND.DAY).toDate();
+    }
+    static now(): Date {
+        return new Date();
     }
     static yesterday(dt?: Date): Date {
-        return moment(dt).startOf(PERIOD.DAY).add(-1, PERIOD.DAY).toDate();
+        return moment(dt).startOf(TIME_KIND.DAY).add(-1, TIME_KIND.DAY).toDate();
     }
     static tomorrow(dt?: Date): Date {
-        return moment(dt).startOf(PERIOD.DAY).add(1, PERIOD.DAY).toDate();
+        return moment(dt).startOf(TIME_KIND.DAY).add(1, TIME_KIND.DAY).toDate();
     }
-    static startOfMonth(dt?: Date): Date {
-        return moment(dt).startOf(PERIOD.MONTH).toDate();
+    static startOf(period: TIME_RANGE, dt?: Date): Date {
+        return moment(dt).startOf(period).toDate();
     }
-    static endOfMonth(dt?: Date): Date {
-        return moment(dt).endOf(PERIOD.MONTH).toDate();
-    }
-    static startOfYear(dt?: Date): Date {
-        return moment(dt).startOf(PERIOD.YEAR).toDate();
-    }
-    static endOfYear(dt?: Date): Date {
-        return moment(dt).endOf(PERIOD.YEAR).toDate();
+    static endOf(period: TIME_RANGE, dt?: Date): Date {
+        return moment(dt).endOf(period).toDate();
     }
 }
