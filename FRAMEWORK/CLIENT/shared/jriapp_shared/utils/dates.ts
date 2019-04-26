@@ -29,26 +29,39 @@ function strToDate(val: string, format: string = "YYYYMMDD"): Date {
     return m.toDate();
 }
 
-function dateToStr(val: Date, format: string = "YYYYMMDD"): string {
-    if (isNt(val)) {
+function dateToStr(dt: Date, format: string = "YYYYMMDD"): string {
+    if (isNt(dt)) {
         return "";
     }
-    return moment(val).format(format);
+    return moment(dt).format(format);
 }
 
 function add(dt: Date, val: number, period: TIME_KIND): Date {
     return moment(dt).add(val, period).toDate();
 }
 
-function trim(dt: Date): Date {
-    return moment(dt).startOf(TIME_KIND.DAY).toDate();
-}
-
 export class DateUtils {
     static readonly strToDate: (val: string, format?: string) => Date = strToDate;
-    static readonly dateToStr: (val: Date, format?: string) => string = dateToStr;
+    static strToDatePartial(format?: string) {
+        return (val: string) => strToDate(val, format);
+    }
+    static readonly dateToStr: (dt: Date, format?: string) => string = dateToStr;
+    static dateToStrPartial(format?: string) {
+        return (dt: Date) => dateToStr(dt, format);
+    }
     static readonly add: (dt: Date, val: number, period: TIME_KIND) => Date = add;
-    static readonly trim: (dt: Date) => Date = trim;
+    static addPartial1(period: TIME_KIND) {
+        return (dt: Date, val: number) => add(dt, val, period);
+    }
+    static addPartial2(period: TIME_KIND) {
+        return (val: number) => (dt: Date) => add(dt, val, period);
+    }
+    static addPartial3(period: TIME_KIND) {
+        return (dt: Date) => (val: number) => add(dt, val, period);
+    }
+    static trim(dt: Date): Date {
+        return moment(dt).startOf(TIME_KIND.DAY).toDate();
+    }
     static today(): Date {
         return moment().startOf(TIME_KIND.DAY).toDate();
     }

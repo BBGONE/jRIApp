@@ -2759,22 +2759,37 @@ define("jriapp_shared/utils/dates", ["require", "exports", "jriapp_shared/utils/
         }
         return m.toDate();
     }
-    function dateToStr(val, format) {
+    function dateToStr(dt, format) {
         if (format === void 0) { format = "YYYYMMDD"; }
-        if (isNt(val)) {
+        if (isNt(dt)) {
             return "";
         }
-        return moment(val).format(format);
+        return moment(dt).format(format);
     }
     function add(dt, val, period) {
         return moment(dt).add(val, period).toDate();
     }
-    function trim(dt) {
-        return moment(dt).startOf("day").toDate();
-    }
     var DateUtils = (function () {
         function DateUtils() {
         }
+        DateUtils.strToDatePartial = function (format) {
+            return function (val) { return strToDate(val, format); };
+        };
+        DateUtils.dateToStrPartial = function (format) {
+            return function (dt) { return dateToStr(dt, format); };
+        };
+        DateUtils.addPartial1 = function (period) {
+            return function (dt, val) { return add(dt, val, period); };
+        };
+        DateUtils.addPartial2 = function (period) {
+            return function (val) { return function (dt) { return add(dt, val, period); }; };
+        };
+        DateUtils.addPartial3 = function (period) {
+            return function (dt) { return function (val) { return add(dt, val, period); }; };
+        };
+        DateUtils.trim = function (dt) {
+            return moment(dt).startOf("day").toDate();
+        };
         DateUtils.today = function () {
             return moment().startOf("day").toDate();
         };
@@ -2796,7 +2811,6 @@ define("jriapp_shared/utils/dates", ["require", "exports", "jriapp_shared/utils/
         DateUtils.strToDate = strToDate;
         DateUtils.dateToStr = dateToStr;
         DateUtils.add = add;
-        DateUtils.trim = trim;
         return DateUtils;
     }());
     exports.DateUtils = DateUtils;

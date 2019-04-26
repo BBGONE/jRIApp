@@ -1014,9 +1014,14 @@ declare module "jriapp_shared/utils/dates" {
     export type TIME_RANGE = TIME_KIND.YEAR | TIME_KIND.MONTH | TIME_KIND.WEEK | TIME_KIND.DAY;
     export class DateUtils {
         static readonly strToDate: (val: string, format?: string) => Date;
-        static readonly dateToStr: (val: Date, format?: string) => string;
+        static strToDatePartial(format?: string): (val: string) => Date;
+        static readonly dateToStr: (dt: Date, format?: string) => string;
+        static dateToStrPartial(format?: string): (dt: Date) => string;
         static readonly add: (dt: Date, val: number, period: TIME_KIND) => Date;
-        static readonly trim: (dt: Date) => Date;
+        static addPartial1(period: TIME_KIND): (dt: Date, val: number) => Date;
+        static addPartial2(period: TIME_KIND): (val: number) => (dt: Date) => Date;
+        static addPartial3(period: TIME_KIND): (dt: Date) => (val: number) => Date;
+        static trim(dt: Date): Date;
         static today(): Date;
         static now(): Date;
         static yesterday(dt?: Date): Date;
