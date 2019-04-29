@@ -41,6 +41,14 @@ function add(dt: Date, val: number, period: TIME_KIND): Date {
 }
 
 export class DateUtils {
+    static isValid(val: string, format: string = "YYYYMMDD"): boolean {
+        if (!val) {
+            return false;
+        }
+
+        const m = moment(val, format);
+        return m.isValid();
+    }
     static readonly strToDate: (val: string, format?: string) => Date = strToDate;
     static strToDatePartial(format?: string) {
         return (val: string) => strToDate(val, format);

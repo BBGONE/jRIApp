@@ -2772,6 +2772,14 @@ define("jriapp_shared/utils/dates", ["require", "exports", "jriapp_shared/utils/
     var DateUtils = (function () {
         function DateUtils() {
         }
+        DateUtils.isValid = function (val, format) {
+            if (format === void 0) { format = "YYYYMMDD"; }
+            if (!val) {
+                return false;
+            }
+            var m = moment(val, format);
+            return m.isValid();
+        };
         DateUtils.strToDatePartial = function (format) {
             return function (val) { return strToDate(val, format); };
         };

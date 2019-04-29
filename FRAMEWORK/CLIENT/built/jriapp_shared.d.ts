@@ -1013,6 +1013,7 @@ declare module "jriapp_shared/utils/dates" {
     }
     export type TIME_RANGE = TIME_KIND.YEAR | TIME_KIND.MONTH | TIME_KIND.WEEK | TIME_KIND.DAY;
     export class DateUtils {
+        static isValid(val: string, format?: string): boolean;
         static readonly strToDate: (val: string, format?: string) => Date;
         static strToDatePartial(format?: string): (val: string) => Date;
         static readonly dateToStr: (dt: Date, format?: string) => string;
