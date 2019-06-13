@@ -54,7 +54,10 @@ export function parseContentAttr(contentAttr: string): IContentOptions {
         }
     } else if (!!attr.template) {
         contentOptions.template = attr.template;
-        attr.template = null;
+        contentOptions.css = attr.css;
+        if (attr.readOnly !== _undefined) {
+            contentOptions.readOnly = parseBool(attr.readOnly);
+        }
     }
     return contentOptions;
 }

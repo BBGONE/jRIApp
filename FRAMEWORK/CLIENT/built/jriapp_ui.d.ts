@@ -79,8 +79,10 @@ declare module "jriapp_ui/content/template" {
         private _isEditing;
         private _dataContext;
         private _templateID;
+        private readonly _options;
         constructor(options: IConstructorContentOptions);
         dispose(): void;
+        protected updateCss(): void;
         private getTemplateID;
         private createTemplate;
         protected cleanUp(): void;

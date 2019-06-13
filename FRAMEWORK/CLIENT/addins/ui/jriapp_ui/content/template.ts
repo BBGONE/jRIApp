@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { BaseObject, LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import {
-    IContent, IApplication, ITemplate, ITemplateInfo, IConstructorContentOptions
+    IContent, IApplication, ITemplate, ITemplateInfo, IConstructorContentOptions, IContentOptions
 } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { bootstrap } from "jriapp/bootstrap";
@@ -17,6 +17,7 @@ export class TemplateContent extends BaseObject implements IContent {
     private _isEditing: boolean;
     private _dataContext: any;
     private _templateID: string;
+    private readonly _options: IContentOptions;
 
     constructor(options: IConstructorContentOptions) {
         super();
@@ -34,6 +35,7 @@ export class TemplateContent extends BaseObject implements IContent {
         this._dataContext = options.dataContext;
         this._templateInfo = options.contentOptions.template;
         this._template = null;
+        this._options = options.contentOptions;
         dom.addClass([this._parentEl], cssStyles.content);
     }
     dispose(): void {
@@ -42,11 +44,41 @@ export class TemplateContent extends BaseObject implements IContent {
         }
         this.setDisposing();
         dom.removeClass([this._parentEl], cssStyles.content);
+        const displayInfo = this._options.css;
+        if (!!displayInfo && !!displayInfo.readCss) {
+            dom.removeClass([this._parentEl], displayInfo.readCss);
+        }
+        if (!!displayInfo && !!displayInfo.editCss) {
+            dom.removeClass([this._parentEl], displayInfo.editCss);
+        }
         this.cleanUp();
         this._parentEl = null;
         this._dataContext = null;
         this._templateInfo = null;
         super.dispose();
+    }
+    protected updateCss(): void {
+        const displayInfo = this._options.css, parentEl = this._parentEl;
+
+        if (this._isEditing) {
+            if (!!displayInfo) {
+                if (!!displayInfo.editCss) {
+                    dom.addClass([parentEl], displayInfo.editCss);
+                }
+                if (!!displayInfo.readCss) {
+                    dom.removeClass([parentEl], displayInfo.readCss);
+                }
+            }
+        } else {
+            if (!!displayInfo) {
+                if (!!displayInfo.readCss) {
+                    dom.addClass([parentEl], displayInfo.readCss);
+                }
+                if (!!displayInfo.editCss) {
+                    dom.removeClass([parentEl], displayInfo.editCss);
+                }
+            }
+        }
     }
     private getTemplateID(): string {
         if (!this._templateInfo) {
@@ -87,6 +119,7 @@ export class TemplateContent extends BaseObject implements IContent {
                 this._templateID = id;
                 this._template = this.createTemplate(this.parentEl);
             }
+            this.updateCss();
         } catch (ex) {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }

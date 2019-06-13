@@ -354,6 +354,7 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
             _this._dataContext = options.dataContext;
             _this._templateInfo = options.contentOptions.template;
             _this._template = null;
+            _this._options = options.contentOptions;
             dom.addClass([_this._parentEl], "ria-content-field");
             return _this;
         }
@@ -363,11 +364,41 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
             }
             this.setDisposing();
             dom.removeClass([this._parentEl], "ria-content-field");
+            var displayInfo = this._options.css;
+            if (!!displayInfo && !!displayInfo.readCss) {
+                dom.removeClass([this._parentEl], displayInfo.readCss);
+            }
+            if (!!displayInfo && !!displayInfo.editCss) {
+                dom.removeClass([this._parentEl], displayInfo.editCss);
+            }
             this.cleanUp();
             this._parentEl = null;
             this._dataContext = null;
             this._templateInfo = null;
             _super.prototype.dispose.call(this);
+        };
+        TemplateContent.prototype.updateCss = function () {
+            var displayInfo = this._options.css, parentEl = this._parentEl;
+            if (this._isEditing) {
+                if (!!displayInfo) {
+                    if (!!displayInfo.editCss) {
+                        dom.addClass([parentEl], displayInfo.editCss);
+                    }
+                    if (!!displayInfo.readCss) {
+                        dom.removeClass([parentEl], displayInfo.readCss);
+                    }
+                }
+            }
+            else {
+                if (!!displayInfo) {
+                    if (!!displayInfo.readCss) {
+                        dom.addClass([parentEl], displayInfo.readCss);
+                    }
+                    if (!!displayInfo.editCss) {
+                        dom.removeClass([parentEl], displayInfo.editCss);
+                    }
+                }
+            }
         };
         TemplateContent.prototype.getTemplateID = function () {
             if (!this._templateInfo) {
@@ -406,6 +437,7 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
                     this._templateID = id;
                     this._template = this.createTemplate(this.parentEl);
                 }
+                this.updateCss();
             }
             catch (ex) {
                 ERROR.reThrow(ex, this.handleError(ex, this));
@@ -3491,7 +3523,10 @@ define("jriapp_ui/content/int", ["require", "exports", "jriapp_shared", "jriapp/
         }
         else if (!!attr.template) {
             contentOptions.template = attr.template;
-            attr.template = null;
+            contentOptions.css = attr.css;
+            if (attr.readOnly !== _undefined) {
+                contentOptions.readOnly = parseBool(attr.readOnly);
+            }
         }
         return contentOptions;
     }
