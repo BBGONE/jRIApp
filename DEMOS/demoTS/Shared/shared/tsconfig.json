@@ -13,6 +13,16 @@
     "noImplicitThis": true,
     "noImplicitReturns": true
   },
+ "files": [
+    "common.ts",
+    "autocomplete.ts",
+    "header.ts",
+    "mixobj.ts",
+    "monthpicker.ts",
+    "ssevents.ts",
+    "uploader.ts",
+    "websocket.ts"
+  ],
   "include": [
     "../../jriapp/jriapp_shared.d.ts",
     "../../jriapp/jriapp.d.ts",

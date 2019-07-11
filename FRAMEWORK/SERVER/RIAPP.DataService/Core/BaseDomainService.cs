@@ -6,9 +6,7 @@ using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -148,33 +146,7 @@ namespace RIAPP.DataService.Core
             }
         }
 
-        protected virtual async Task AuthorizeChangeSet(ChangeSet changeSet)
-        {
-            RunTimeMetadata metadata = this.GetMetadata();
-            foreach (DbSet dbSet in changeSet.dbSets)
-            {
-                //methods on domain service which are attempted to be executed by client (SaveChanges triggers their execution)
-                Dictionary<string, MethodInfoData> domainServiceMethods = new Dictionary<string, MethodInfoData>();
-                DbSetInfo dbInfo = metadata.DbSets[dbSet.dbSetName];
-
-                dbSet.rows.Aggregate<RowInfo, Dictionary<string, MethodInfoData>>(domainServiceMethods, (dict, rowInfo) => {
-                    MethodInfoData method = rowInfo.GetCRUDMethodInfo(metadata, dbInfo.dbSetName);
-                    if (method == null)
-                        throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
-                            dbInfo.EntityType.Name, rowInfo.changeType));
-                    string dicKey = string.Format("{0}:{1}", method.OwnerType.FullName, method.MethodInfo.Name);
-                    if (!dict.ContainsKey(dicKey))
-                    {
-                        dict.Add(dicKey, method);
-                    }
-                    return dict;
-                });
-
-                IAuthorizer authorizer = ServiceContainer.GetAuthorizer();
-                await authorizer.CheckUserRightsToExecute(domainServiceMethods.Values);
-            } //foreach (var dbSet in changeSet.dbSets)
-        }
-        #endregion
+       #endregion
 
         #region DataService Data Operations
 
@@ -191,220 +163,6 @@ namespace RIAPP.DataService.Core
             return await ServiceGetData(getInfo);
         }
 
-        protected async Task<QueryResponse> ExecQuery(QueryRequest queryInfo)
-        {
-            RunTimeMetadata metadata = this.GetMetadata();
-            MethodDescription method = metadata.GetQueryMethod(queryInfo.dbSetName, queryInfo.queryName);
-            IAuthorizer authorizer = ServiceContainer.GetAuthorizer();
-            await authorizer.CheckUserRightsToExecute(method.methodData);
-            queryInfo.dbSetInfo = metadata.DbSets[queryInfo.dbSetName];
-            bool isMultyPageRequest = queryInfo.dbSetInfo.enablePaging && queryInfo.pageCount > 1;
-
-            QueryResult queryResult = null;
-            int? totalCount = null;
-            LinkedList<object> methParams = new LinkedList<object>();
-
-            for (int i = 0; i < method.parameters.Count; ++i)
-            {
-                methParams.AddLast(queryInfo.paramInfo.GetValue(method.parameters[i].name, method, ServiceContainer));
-            }
-
-            var req = new RequestContext(this, queryInfo: queryInfo, operation: ServiceOperationType.Query);
-            using (var callContext = new RequestCallContext(req))
-            {
-                IServiceOperationsHelper serviceHelper = this.ServiceContainer.GetServiceHelper();
-                object instance = serviceHelper.GetMethodOwner(method.methodData);
-                object invokeRes = method.methodData.MethodInfo.Invoke(instance, methParams.ToArray());
-                queryResult = (QueryResult) await serviceHelper.GetMethodResult(invokeRes);
-
-
-                IEnumerable<object> entities = queryResult.Result;
-                totalCount = queryResult.TotalCount;
-                RowGenerator rowGenerator = new RowGenerator(queryInfo.dbSetInfo, entities, ServiceContainer.GetDataHelper());
-                IEnumerable<Row> rows = rowGenerator.CreateRows();
-
-                SubsetsGenerator subsetsGenerator = new SubsetsGenerator(this);
-                SubsetList subResults = subsetsGenerator.CreateSubsets(queryResult.subResults);
-
-                QueryResponse res = new QueryResponse
-                {
-                    pageIndex = queryInfo.pageIndex,
-                    pageCount = queryInfo.pageCount,
-                    dbSetName = queryInfo.dbSetName,
-                    names = queryInfo.dbSetInfo.GetNames(),
-                    totalCount = totalCount,
-                    extraInfo = queryResult.extraInfo,
-                    rows = rows,
-                    subsets = subResults,
-                    error = null
-                };
-
-                return res;
-            }
-        }
-
-        protected async Task<bool> ApplyChangeSet(ChangeSet changeSet)
-        {
-            await AuthorizeChangeSet(changeSet);
-            RunTimeMetadata metadata = this.GetMetadata();
-            ChangeSetGraph graph = new ChangeSetGraph(changeSet, metadata);
-            graph.Prepare();
-
-            foreach (var rowInfo in graph.InsertList)
-            {
-                DbSet dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
-                var req = new RequestContext(this, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
-                    operation: ServiceOperationType.SaveChanges);
-                using (var callContext = new RequestCallContext(req))
-                {
-                    rowInfo.changeState = new EntityChangeState {ParentRows = graph.GetParents(rowInfo)};
-                    ApplyChangesToEntity(rowInfo);
-                }
-            }
-
-            foreach (RowInfo rowInfo in graph.UpdateList)
-            {
-                DbSet dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
-                var req = new RequestContext(this, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
-                    operation: ServiceOperationType.SaveChanges);
-                using (var callContext = new RequestCallContext(req))
-                {
-                    rowInfo.changeState = new EntityChangeState();
-                    ApplyChangesToEntity(rowInfo);
-                }
-            }
-
-            foreach (RowInfo rowInfo in graph.DeleteList)
-            {
-                DbSet dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
-                var req = new RequestContext(this, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
-                    operation: ServiceOperationType.SaveChanges);
-                using (var callContext = new RequestCallContext(req))
-                {
-                    rowInfo.changeState = new EntityChangeState();
-                    ApplyChangesToEntity(rowInfo);
-                }
-            }
-
-            bool hasErrors = false;
-            IServiceOperationsHelper serviceHelper = this.ServiceContainer.GetServiceHelper();
-
-            //Validation step
-            foreach (RowInfo rowInfo in graph.InsertList)
-            {
-                DbSet dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
-                var req = new RequestContext(this, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
-                    operation: ServiceOperationType.SaveChanges);
-                using (var callContext = new RequestCallContext(req))
-                {
-                    if (!await serviceHelper.ValidateEntity(metadata, req))
-                    {
-                        rowInfo.invalid = rowInfo.changeState.ValidationErrors;
-                        hasErrors = true;
-                    }
-                }
-            }
-
-            //Validation step
-            foreach (var rowInfo in graph.UpdateList)
-            {
-                DbSet dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
-                var req = new RequestContext(this, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
-                    operation: ServiceOperationType.SaveChanges);
-                using (var callContext = new RequestCallContext(req))
-                {
-                    if (!await serviceHelper.ValidateEntity(metadata, req))
-                    {
-                        rowInfo.invalid = rowInfo.changeState.ValidationErrors;
-                        hasErrors = true;
-                    }
-                }
-            }
-
-            if (hasErrors)
-                return false;
-
-            var reqCntxt = new RequestContext(this, changeSet: changeSet, operation: ServiceOperationType.SaveChanges);
-            using (var callContext = new RequestCallContext(reqCntxt))
-            {
-                await ExecuteChangeSet();
-
-
-                foreach (RowInfo rowInfo in graph.AllList)
-                {
-                    if (rowInfo.changeType != ChangeType.Deleted)
-                        serviceHelper.UpdateRowInfoAfterUpdates(rowInfo);
-                    else
-                        rowInfo.values = null;
-                }
-
-
-                //Track changes step
-                foreach (RowInfo rowInfo in graph.AllList)
-                {
-                    TrackChangesToEntity(rowInfo);
-                }
-            }
-            //OK, All updates are commited
-            return true;
-        }
-
-        protected async Task<InvokeResponse> InvokeMethod(InvokeRequest invokeInfo)
-        {
-            RunTimeMetadata metadata = this.GetMetadata();
-            MethodDescription method = metadata.GetInvokeMethod(invokeInfo.methodName);
-            IAuthorizer authorizer = ServiceContainer.GetAuthorizer();
-            await authorizer.CheckUserRightsToExecute(method.methodData);
-            List<object> methParams = new List<object>();
-            for (int i = 0; i < method.parameters.Count; ++i)
-            {
-                methParams.Add(invokeInfo.paramInfo.GetValue(method.parameters[i].name, method, ServiceContainer));
-            }
-            var req = new RequestContext(this, operation: ServiceOperationType.InvokeMethod);
-            using (var callContext = new RequestCallContext(req))
-            {
-                IServiceOperationsHelper serviceHelper = this.ServiceContainer.GetServiceHelper();
-                object instance = serviceHelper.GetMethodOwner(method.methodData);
-                object invokeRes = method.methodData.MethodInfo.Invoke(instance, methParams.ToArray());
-                object meth_result = await serviceHelper.GetMethodResult(invokeRes);
-                InvokeResponse res = new InvokeResponse();
-                if (method.methodResult)
-                    res.result = meth_result;
-                return res;
-            }
-        }
-
-        protected async Task<RefreshInfo> RefreshRowInfo(RefreshInfo info)
-        {
-            RunTimeMetadata metadata = this.GetMetadata();
-            info.dbSetInfo = metadata.DbSets[info.dbSetName];
-            MethodInfoData methodData = metadata.GetOperationMethodInfo(info.dbSetName, MethodType.Refresh);
-            if (methodData == null)
-                throw new InvalidOperationException(string.Format(ErrorStrings.ERR_REC_REFRESH_INVALID,
-                    info.dbSetInfo.EntityType.Name, GetType().Name));
-            info.rowInfo.dbSetInfo = info.dbSetInfo;
-            IAuthorizer authorizer = ServiceContainer.GetAuthorizer();
-            await authorizer.CheckUserRightsToExecute(methodData);
-            var req = new RequestContext(this, rowInfo: info.rowInfo, operation: ServiceOperationType.RowRefresh);
-            using (var callContext = new RequestCallContext(req))
-            {
-                IServiceOperationsHelper serviceHelper = this.ServiceContainer.GetServiceHelper();
-                object instance = serviceHelper.GetMethodOwner(methodData);
-                object invokeRes = methodData.MethodInfo.Invoke(instance, new object[] { info });
-                object dbEntity = await serviceHelper.GetMethodResult(invokeRes);
-
-                RefreshInfo rri = new RefreshInfo { rowInfo = info.rowInfo, dbSetName = info.dbSetName };
-                if (dbEntity != null)
-                {
-                    serviceHelper.UpdateRowInfoFromEntity(dbEntity, info.rowInfo);
-                } else { 
-                    rri.rowInfo = null;
-                }
-
-                return rri;
-            }
-        }
-
         #endregion
 
         #region IDomainService Methods
@@ -417,7 +175,7 @@ namespace RIAPP.DataService.Core
                 ICodeGenProvider codeGen = codeGenfactory.GetCodeGen(this, args.lang);
                 return codeGen.GenerateScript(args.comment, args.isDraft);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 this._OnError(ex);
                 throw;
@@ -454,7 +212,7 @@ namespace RIAPP.DataService.Core
                 RunTimeMetadata metadata = this.GetMetadata();
                 MetadataResult result = new MetadataResult() { methods = metadata.MethodDescriptions };
                 result.associations.AddRange(metadata.Associations.Values);
-                result.dbSets.AddRange(metadata.DbSets.Values.OrderBy(d=>d.dbSetName));
+                result.dbSets.AddRange(metadata.DbSets.Values.OrderBy(d => d.dbSetName));
                 return result;
             }
             catch (Exception ex)
@@ -466,90 +224,42 @@ namespace RIAPP.DataService.Core
 
         public async Task<QueryResponse> ServiceGetData(QueryRequest queryRequest)
         {
-            QueryResponse res = null;
-            try
-            {
-                res = await ExecQuery(queryRequest);
-            }
-            catch (Exception ex)
-            {
-                if (ex is TargetInvocationException)
-                    ex = ex.InnerException;
-                res = new QueryResponse
-                {
-                    pageIndex = queryRequest.pageIndex,
-                    pageCount = queryRequest.pageCount,
-                    rows = new Row[0],
-                    dbSetName = queryRequest.dbSetName,
-                    totalCount = null,
-                    error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name)
-                };
-                _OnError(ex);
-            }
-            return res;
+            QueryOperationsUseCase uc = new QueryOperationsUseCase(this, (err) => _OnError(err));
+            var output = new QueryOperationsOutput();
+
+            bool res = await uc.Handle(queryRequest, output);
+
+            return output.Response;
         }
 
         public async Task<ChangeSet> ServiceApplyChangeSet(ChangeSet changeSet)
         {
-            bool res = true;
-            try
-            {
-                res = await ApplyChangeSet(changeSet);
-                if (!res)
-                {
-                    throw new ValidationException(ErrorStrings.ERR_SVC_CHANGES_ARENOT_VALID);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (ex is TargetInvocationException)
-                    ex = ex.InnerException;
-                changeSet.error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name);
-                _OnError(ex);
-            }
-            return changeSet;
+            var uc = new CRUDOperationsUseCase(this, (err) => this._OnError(err), (row) => this.TrackChangesToEntity(row), () => this.ExecuteChangeSet());
+            var output = new CRUDOperationsOutput();
+
+            bool res = await uc.Handle(changeSet, output);
+
+            return output.Response;
         }
 
         public async Task<RefreshInfo> ServiceRefreshRow(RefreshInfo refreshInfo)
         {
-            RefreshInfo res = null;
-            try
-            {
-                res = await RefreshRowInfo(refreshInfo);
-            }
-            catch (Exception ex)
-            {
-                if (ex is System.Reflection.TargetInvocationException)
-                    ex = ex.InnerException;
-                res = new RefreshInfo
-                {
-                    dbSetName = refreshInfo.dbSetName,
-                    error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name),
-                    rowInfo = null
-                };
-                _OnError(ex);
-            }
-            return res;
+            RefreshOperationsUseCase uc = new RefreshOperationsUseCase(this, (err) => _OnError(err));
+            var output = new RefreshOperationsOutput();
+
+            bool res = await uc.Handle(refreshInfo, output);
+
+            return output.Response;
         }
 
         public async Task<InvokeResponse> ServiceInvokeMethod(InvokeRequest parameters)
         {
-            InvokeResponse res = null;
-            try
-            {
-                res = await InvokeMethod(parameters);
-            }
-            catch (Exception ex)
-            {
-                if (ex is TargetInvocationException)
-                    ex = ex.InnerException;
-                res = new InvokeResponse {
-                    result = null,
-                    error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name)
-                };
-                _OnError(ex);
-            }
-            return res;
+            InvokeOperationsUseCase uc = new InvokeOperationsUseCase(this, (err) => _OnError(err));
+            var output = new InvokeOperationsOutput();
+
+            bool res = await uc.Handle(parameters, output);
+
+            return output.Response;
         }
         #endregion
 

@@ -18,7 +18,7 @@ namespace RIAPP.DataService.Core.Types
     }
 
     [DataContract]
-    public class ChangeSet
+    public class ChangeSet: IUseCaseRequest<ChangeSet>
     {
         public ChangeSet()
         {

@@ -3,7 +3,7 @@
 namespace RIAPP.DataService.Core.Types
 {
     [DataContract]
-    public class QueryRequest
+    public class QueryRequest: IUseCaseRequest<QueryResponse>
     {
         [DataMember]
         public string dbSetName { get; set; }

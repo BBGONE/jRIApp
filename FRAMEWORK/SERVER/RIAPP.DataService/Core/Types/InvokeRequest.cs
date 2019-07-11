@@ -3,7 +3,7 @@
 namespace RIAPP.DataService.Core.Types
 {
     [DataContract]
-    public class InvokeRequest
+    public class InvokeRequest: IUseCaseRequest<InvokeResponse>
     {
         [DataMember]
         public string methodName { get; set; }

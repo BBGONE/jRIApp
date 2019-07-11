@@ -64,9 +64,11 @@ namespace RIAPP.DataService.Core.Config
                 return new TypeScriptProviderFactory<TService>(options.ClientTypes);
             });
 
+            var serviceFactory = ActivatorUtilities.CreateFactory(typeof(TService), new Type[] { typeof(IServiceContainer<TService>) });
+
             services.TryAddScoped<TService>((sp) => {
                 var sc = sp.GetRequiredService<IServiceContainer<TService>>();
-                return ActivatorUtilities.CreateInstance<TService>(sp, sc);
+                return (TService)serviceFactory(sp, new object[] { sc });
             });
         }
     }

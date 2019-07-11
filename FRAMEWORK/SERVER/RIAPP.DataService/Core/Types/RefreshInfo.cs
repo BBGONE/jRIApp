@@ -3,7 +3,7 @@
 namespace RIAPP.DataService.Core.Types
 {
     [DataContract]
-    public class RefreshInfo
+    public class RefreshInfo: IUseCaseRequest<RefreshInfo>
     {
         [DataMember]
         public string dbSetName { get; set; }
