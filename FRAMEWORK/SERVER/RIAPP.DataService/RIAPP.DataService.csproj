@@ -177,13 +177,10 @@
     <Compile Include="Core\Types\ValidationErrorInfo.cs" />
     <Compile Include="Core\Types\Value.cs" />
     <Compile Include="Core\Types\ValueChange.cs" />
-    <Compile Include="Core\UseCases\CRUDOperationsOutput.cs" />
     <Compile Include="Core\UseCases\CRUDOperationsUseCase.cs" />
-    <Compile Include="Core\UseCases\InvokeOperationsOutput.cs" />
     <Compile Include="Core\UseCases\InvokeOperationsUseCase.cs" />
-    <Compile Include="Core\UseCases\QueryOperationsOutput.cs" />
+    <Compile Include="Core\UseCases\OperationOutput.cs" />
     <Compile Include="Core\UseCases\QueryOperationsUseCase.cs" />
-    <Compile Include="Core\UseCases\RefreshOperationsOutput.cs" />
     <Compile Include="Core\UseCases\RefreshOperationsUseCase.cs" />
     <Compile Include="Core\ValidatorContainer.cs" />
     <Compile Include="Extensions\Config\ServiceConfigureEx.cs" />

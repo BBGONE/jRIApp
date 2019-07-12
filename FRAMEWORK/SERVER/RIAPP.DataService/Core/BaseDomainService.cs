@@ -222,45 +222,47 @@ namespace RIAPP.DataService.Core
             }
         }
 
-        public async Task<QueryResponse> ServiceGetData(QueryRequest queryRequest)
+
+        public async Task<QueryResponse> ServiceGetData(QueryRequest message)
         {
             QueryOperationsUseCase uc = new QueryOperationsUseCase(this, (err) => _OnError(err));
-            var output = new QueryOperationsOutput();
+            var output = new OperationOutput<QueryResponse>();
 
-            bool res = await uc.Handle(queryRequest, output);
+            bool res = await uc.Handle(message, output);
 
             return output.Response;
         }
 
-        public async Task<ChangeSet> ServiceApplyChangeSet(ChangeSet changeSet)
+        public async Task<ChangeSet> ServiceApplyChangeSet(ChangeSet message)
         {
             var uc = new CRUDOperationsUseCase(this, (err) => this._OnError(err), (row) => this.TrackChangesToEntity(row), () => this.ExecuteChangeSet());
-            var output = new CRUDOperationsOutput();
+            var output = new OperationOutput<ChangeSet>();
 
-            bool res = await uc.Handle(changeSet, output);
+            bool res = await uc.Handle(message, output);
 
             return output.Response;
         }
 
-        public async Task<RefreshInfo> ServiceRefreshRow(RefreshInfo refreshInfo)
+        public async Task<RefreshInfo> ServiceRefreshRow(RefreshInfo message)
         {
             RefreshOperationsUseCase uc = new RefreshOperationsUseCase(this, (err) => _OnError(err));
-            var output = new RefreshOperationsOutput();
+            var output = new OperationOutput<RefreshInfo>();
 
-            bool res = await uc.Handle(refreshInfo, output);
+            bool res = await uc.Handle(message, output);
 
             return output.Response;
         }
 
-        public async Task<InvokeResponse> ServiceInvokeMethod(InvokeRequest parameters)
+        public async Task<InvokeResponse> ServiceInvokeMethod(InvokeRequest message)
         {
             InvokeOperationsUseCase uc = new InvokeOperationsUseCase(this, (err) => _OnError(err));
-            var output = new InvokeOperationsOutput();
+            var output = new OperationOutput<InvokeResponse>();
 
-            bool res = await uc.Handle(parameters, output);
+            bool res = await uc.Handle(message, output);
 
             return output.Response;
         }
+
         #endregion
 
         #region IDisposable Members
