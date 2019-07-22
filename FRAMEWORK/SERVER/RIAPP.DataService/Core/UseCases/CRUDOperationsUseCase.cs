@@ -18,10 +18,11 @@ namespace RIAPP.DataService.Core
         private readonly RunTimeMetadata _metadata;
         private readonly IServiceContainer _serviceContainer;
         private readonly IServiceOperationsHelper _serviceHelper;
+        private readonly IAuthorizer _authorizer;
         private readonly Action<Exception> _onError;
         private readonly Action<RowInfo> _trackChanges;
         private readonly Func<Task> _executeChangeSet;
-
+        
         public CRUDOperationsUseCase(BaseDomainService service, Action<Exception> onError, Action<RowInfo> trackChanges, Func<Task> executeChangeSet)
         {
             _service = service;
@@ -31,6 +32,7 @@ namespace RIAPP.DataService.Core
             _metadata = this._service.GetMetadata();
             _serviceContainer = this._service.ServiceContainer;
             _serviceHelper = _serviceContainer.GetServiceHelper();
+            _authorizer = _serviceContainer.GetAuthorizer();
         }
 
         private void CheckRowInfo(RowInfo rowInfo)
@@ -74,8 +76,7 @@ namespace RIAPP.DataService.Core
                     return dict;
                 });
 
-                IAuthorizer authorizer = _serviceContainer.GetAuthorizer();
-                await authorizer.CheckUserRightsToExecute(domainServiceMethods.Values);
+                await _authorizer.CheckUserRightsToExecute(domainServiceMethods.Values);
             } //foreach (var dbSet in changeSet.dbSets)
         }
 
