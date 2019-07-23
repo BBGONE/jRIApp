@@ -40,7 +40,6 @@ namespace RIAPP.DataService.EF2
                 
                 transScope.Complete();
             }
-            await this.AfterExecuteChangeSet();
         }
         
         private void GenerateFieldInfos(DbSetInfo dbSetInfo, string[] keys, EdmProperty[] edmProps)

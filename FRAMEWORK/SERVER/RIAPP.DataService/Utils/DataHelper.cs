@@ -1,14 +1,14 @@
-﻿using RIAPP.DataService.Core.Metadata;
+﻿using RIAPP.DataService.Core;
+using RIAPP.DataService.Core.Metadata;
 using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Resources;
-using RIAPP.DataService.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace RIAPP.DataService.Core
+namespace RIAPP.DataService.Utils
 {
     public class DataHelper
     {

@@ -70,7 +70,7 @@ namespace RIAPP.DataService.LinqSql
                         }
                     }
                     bool isArray = false;
-                    fieldInfo.dataType = this.ServiceContainer.GetValueConverter().DataTypeFromType(propInfo2.PropertyType, out isArray);
+                    fieldInfo.dataType = this.ServiceContainer.ValueConverter.DataTypeFromType(propInfo2.PropertyType, out isArray);
                     if (colAttr.DbType.IndexOf("NOT NULL", StringComparison.OrdinalIgnoreCase) > 0)
                         fieldInfo.isNullable = false;
                     fieldInfo.fieldType = colAttr.IsVersion?FieldType.RowTimeStamp: FieldType.None;
@@ -133,7 +133,7 @@ namespace RIAPP.DataService.LinqSql
                 
                 transScope.Complete();
             }
-            return this.AfterExecuteChangeSet();
+            return Task.CompletedTask;
         }
         #endregion
 

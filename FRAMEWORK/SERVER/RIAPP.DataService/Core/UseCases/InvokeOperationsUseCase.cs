@@ -10,23 +10,26 @@ using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Core
 {
-    public class InvokeOperationsUseCase : IInvokeOperationsUseCase
+    public class InvokeOperationsUseCase<TService> : IInvokeOperationsUseCase<TService>
+         where TService : BaseDomainService
     {
         private readonly BaseDomainService _service;
         private readonly RunTimeMetadata _metadata;
-        private readonly IServiceContainer _serviceContainer;
-        private readonly IServiceOperationsHelper _serviceHelper;
-        private readonly IAuthorizer _authorizer;
+        private readonly IServiceContainer<TService> _serviceContainer;
+        private readonly IServiceOperationsHelper<TService> _serviceHelper;
+        private readonly IAuthorizer<TService> _authorizer;
+        private readonly IDataHelper<TService> _dataHelper;
         private readonly Action<Exception> _onError;
 
-        public InvokeOperationsUseCase(BaseDomainService service, Action<Exception> onError)
+        public InvokeOperationsUseCase(IServiceContainer<TService> serviceContainer, BaseDomainService service, Action<Exception> onError)
         {
             _service = service;
             _onError = onError ?? throw new ArgumentNullException(nameof(onError));
             _metadata = this._service.GetMetadata();
-            _serviceContainer = this._service.ServiceContainer;
+            _serviceContainer = serviceContainer;
             _serviceHelper = _serviceContainer.GetServiceHelper();
             _authorizer = _serviceContainer.GetAuthorizer();
+            _dataHelper = _serviceContainer.GetDataHelper();
         }
 
         public async Task<bool> Handle(InvokeRequest message, IOutputPort<InvokeResponse> outputPort)
@@ -38,9 +41,9 @@ namespace RIAPP.DataService.Core
                 List<object> methParams = new List<object>();
                 for (int i = 0; i < method.parameters.Count; ++i)
                 {
-                    methParams.Add(message.paramInfo.GetValue(method.parameters[i].name, method, _serviceContainer));
+                    methParams.Add(message.paramInfo.GetValue(method.parameters[i].name, method, _dataHelper));
                 }
-                var req = new RequestContext(_service, operation: ServiceOperationType.InvokeMethod);
+                var req = new RequestContext(_service, _serviceHelper, operation: ServiceOperationType.InvokeMethod);
                 using (var callContext = new RequestCallContext(req))
                 {
                     object instance = _serviceHelper.GetMethodOwner(method.methodData);

@@ -11,22 +11,23 @@ using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Core
 {
-    public class QueryOperationsUseCase : IQueryOperationsUseCase
+    public class QueryOperationsUseCase<TService> : IQueryOperationsUseCase<TService>
+         where TService : BaseDomainService
     {
         private readonly BaseDomainService _service;
         private readonly RunTimeMetadata _metadata;
-        private readonly IServiceContainer _serviceContainer;
-        private readonly IServiceOperationsHelper _serviceHelper;
-        private readonly IAuthorizer _authorizer;
-        private readonly IDataHelper _dataHelper;
+        private readonly IServiceContainer<TService> _serviceContainer;
+        private readonly IServiceOperationsHelper<TService> _serviceHelper;
+        private readonly IAuthorizer<TService> _authorizer;
+        private readonly IDataHelper<TService> _dataHelper;
         private readonly Action<Exception> _onError;
 
-        public QueryOperationsUseCase(BaseDomainService service, Action<Exception> onError)
+        public QueryOperationsUseCase(IServiceContainer<TService> serviceContainer, BaseDomainService service, Action<Exception> onError)
         {
             _service = service;
             _onError = onError ?? throw new ArgumentNullException(nameof(onError));
             _metadata = this._service.GetMetadata();
-            _serviceContainer = this._service.ServiceContainer;
+            _serviceContainer = serviceContainer;
             _serviceHelper = _serviceContainer.GetServiceHelper();
             _dataHelper = _serviceContainer.GetDataHelper();
             _authorizer = _serviceContainer.GetAuthorizer();
@@ -47,10 +48,10 @@ namespace RIAPP.DataService.Core
 
                 for (int i = 0; i < method.parameters.Count; ++i)
                 {
-                    methParams.AddLast(message.paramInfo.GetValue(method.parameters[i].name, method, _serviceContainer));
+                    methParams.AddLast(message.paramInfo.GetValue(method.parameters[i].name, method, _dataHelper));
                 }
 
-                var req = new RequestContext(_service, queryInfo: message, operation: ServiceOperationType.Query);
+                var req = new RequestContext(_service, _serviceHelper, queryInfo: message, operation: ServiceOperationType.Query);
                 using (var callContext = new RequestCallContext(req))
                 {
                     object instance = _serviceHelper.GetMethodOwner(method.methodData);
@@ -63,7 +64,7 @@ namespace RIAPP.DataService.Core
                     RowGenerator rowGenerator = new RowGenerator(message.dbSetInfo, entities, _dataHelper);
                     IEnumerable<Row> rows = rowGenerator.CreateRows();
 
-                    SubsetsGenerator subsetsGenerator = new SubsetsGenerator(_service);
+                    SubsetsGenerator subsetsGenerator = new SubsetsGenerator(_service.GetMetadata(), _dataHelper);
                     SubsetList subResults = subsetsGenerator.CreateSubsets(queryResult.subResults);
 
                     QueryResponse res = new QueryResponse

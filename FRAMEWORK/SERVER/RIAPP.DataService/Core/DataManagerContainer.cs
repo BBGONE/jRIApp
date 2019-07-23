@@ -10,10 +10,11 @@ namespace RIAPP.DataService.Core
         private readonly IServiceContainer<TService> _serviceContainer;
         private readonly IDataManagerRegister _dataManagerRegister;
 
-        public DataManagerContainer(IServiceContainer<TService> serviceContainer, IDataManagerRegister dataManagerRegister)
+        public DataManagerContainer(IServiceContainer<TService> serviceContainer, 
+            IDataManagerRegister dataManagerRegister)
         {
-            _serviceContainer = serviceContainer;
-            _dataManagerRegister = dataManagerRegister;
+            _serviceContainer = serviceContainer ?? throw new ArgumentNullException(nameof(serviceContainer));
+            _dataManagerRegister = dataManagerRegister ?? throw new ArgumentNullException(nameof(dataManagerRegister));
         }
 
         public object GetDataManager(Type modelType)

@@ -8,14 +8,16 @@ namespace RIAPP.DataService.Core
 {
     public class RequestContext : IEntityVersionProvider
     {
-        public RequestContext(BaseDomainService dataService,
+        public RequestContext(BaseDomainService dataService, 
+            IServiceOperationsHelper serviceHelper,
             DbSet dbSet = null,
             ChangeSet changeSet = null,
             RowInfo rowInfo = null,
             QueryRequest queryInfo = null,
             ServiceOperationType operation = ServiceOperationType.None)
         {
-            DataService = dataService;
+            DataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
+            ServiceHelper = serviceHelper ?? throw new ArgumentNullException(nameof(serviceHelper));
             CurrentDbSet = dbSet;
             CurrentChangeSet = changeSet;
             CurrentRowInfo = rowInfo;
@@ -58,12 +60,31 @@ namespace RIAPP.DataService.Core
             }
         }
 
-        private IServiceOperationsHelper ServiceHelper
+        public IServiceOperationsHelper ServiceHelper
         {
-            get { return DataService.ServiceContainer.GetServiceHelper(); }
+            get;
         }
 
-        public BaseDomainService DataService { get; }
+        public IDataHelper DataHelper
+        {
+            get
+            {
+                return ServiceHelper.DataHelper;
+            }
+        }
+
+        public IValidationHelper ValidationHelper
+        {
+            get
+            {
+                return ServiceHelper.ValidationHelper;
+            }
+        }
+
+        public BaseDomainService DataService
+        {
+            get;
+        }
 
         #region Private Fields
 

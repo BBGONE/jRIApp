@@ -1,4 +1,4 @@
-﻿using Net451.Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using RIAPP.DataService.Core.CodeGen;
 using RIAPP.DataService.Core.Security;
 using RIAPP.DataService.Utils;
@@ -13,27 +13,27 @@ namespace RIAPP.DataService.Core
     {
         private IDisposable _scope;
         private readonly IServiceProvider _provider;
-        private readonly Lazy<ISerializer> _serializer;
+        private readonly ISerializer _serializer;
 
-        public ServiceContainer(IServiceProvider serviceProvider)
+        public ServiceContainer(IServiceProvider serviceProvider, ISerializer serializer)
         {
-            _provider = serviceProvider;
+            _provider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+           _serializer =  serializer ?? throw new ArgumentNullException(nameof(serializer));
             _scope = null;
-            _serializer =  new Lazy<ISerializer>(()=> serviceProvider.GetRequiredService<ISerializer>(), true);
         }
 
-        private ServiceContainer(ServiceContainer<TService> serviceContainer)
+        private ServiceContainer(ServiceContainer<TService> serviceContainer, ISerializer serializer)
         {
             IServiceScopeFactory scopeFactory = serviceContainer.GetRequiredService<IServiceScopeFactory>();
             IServiceScope scope = scopeFactory.CreateScope();
             _provider = scope.ServiceProvider;
             _scope = scope;
-            _serializer = new Lazy<ISerializer>(() => _provider.GetRequiredService<ISerializer>(), true);
+            _serializer = serializer;
         }
 
         public IServiceContainer CreateScope()
         {
-            return new ServiceContainer<TService>(this);
+            return new ServiceContainer<TService>(this, _serializer);
         }
 
         public object GetService(Type serviceType)
@@ -61,101 +61,100 @@ namespace RIAPP.DataService.Core
             return _provider.GetServices<T>();
         }
 
+        public IServiceProvider ServiceProvider
+        {
+            get
+            {
+                return _provider;
+            }
+        }
 
         public ISerializer Serializer
         {
             get
             {
-                return _serializer.Value;
+                return _serializer;
             }
         }
 
-        public IUserProvider UserProvider
+        IDataHelper IServiceContainer.DataHelper
         {
             get
             {
-                return GetRequiredService<IUserProvider>();
+                return this.GetDataHelper();
             }
         }
 
-        IAuthorizer IServiceContainer.GetAuthorizer()
+        IValueConverter IServiceContainer.ValueConverter
         {
-            return this.GetAuthorizer();
+            get
+            {
+                return this.GetValueConverter();
+            }
         }
 
-        IValueConverter IServiceContainer.GetValueConverter()
+        IAuthorizer IServiceContainer.Authorizer
         {
-            return this.GetValueConverter();
+            get
+            {
+                return this.GetAuthorizer();
+            }
         }
 
-        IDataHelper IServiceContainer.GetDataHelper()
+        ICodeGenFactory IServiceContainer.CodeGenFactory
         {
-            return this.GetDataHelper();
+            get
+            {
+                return this.GetCodeGenFactory();
+            }
         }
 
-        IValidationHelper IServiceContainer.GetValidationHelper()
+        IDataManagerContainer IServiceContainer.DataManagerContainer
         {
-            return this.GetValidationHelper();
+            get
+            {
+                return this.GetDataManagerContainer();
+            }
         }
 
-        IServiceOperationsHelper IServiceContainer.GetServiceHelper()
+        IValidatorContainer IServiceContainer.ValidatorContainer
         {
-            return this.GetServiceHelper();
+            get
+            {
+                return this.GetValidatorContainer();
+            }
         }
 
-        ICodeGenFactory IServiceContainer.GetCodeGenFactory()
+        ICRUDOperationsUseCaseFactory IServiceContainer.CRUDOperationsUseCaseFactory
         {
-            return this.GetCodeGenFactory();
+            get
+            {
+                return this.GetCRUDOperationsUseCaseFactory();
+            }
         }
 
-        IDataManagerContainer IServiceContainer.GetDataManagerContainer()
+        IQueryOperationsUseCaseFactory IServiceContainer.QueryOperationsUseCaseFactory
         {
-            return this.GetDataManagerContainer();
+            get
+            {
+                return this.GetQueryOperationsUseCaseFactory();
+            }
         }
 
-        IValidatorContainer IServiceContainer.GetValidatorContainer()
+        IRefreshOperationsUseCaseFactory IServiceContainer.RefreshOperationsUseCaseFactory
         {
-            return this.GetValidatorContainer();
+            get
+            {
+                return this.GetRefreshOperationsUseCaseFactory();
+            }
         }
 
-        public IAuthorizer<TService> GetAuthorizer()
+        IInvokeOperationsUseCaseFactory IServiceContainer.InvokeOperationsUseCaseFactory
         {
-            return GetRequiredService<IAuthorizer<TService>>(); 
-        }
-
-        public IValueConverter<TService> GetValueConverter()
-        {
-            return GetRequiredService<IValueConverter<TService>>();
-        }
-
-        public IDataHelper<TService> GetDataHelper()
-        {
-            return GetRequiredService<IDataHelper<TService>>();
-        }
-
-        public IValidationHelper<TService> GetValidationHelper()
-        {
-            return GetRequiredService<IValidationHelper<TService>>();
-        }
-
-        public IServiceOperationsHelper<TService> GetServiceHelper()
-        {
-            return GetRequiredService<IServiceOperationsHelper<TService>>();
-        }
-
-        public ICodeGenFactory<TService> GetCodeGenFactory()
-        {
-            return GetRequiredService<ICodeGenFactory<TService>>();
-        }
-
-        public IDataManagerContainer<TService> GetDataManagerContainer()
-        {
-            return GetRequiredService<IDataManagerContainer<TService>>();
-        }
-
-        public IValidatorContainer<TService> GetValidatorContainer()
-        {
-            return GetRequiredService<IValidatorContainer<TService>>();
+            get
+            {
+                return this.GetInvokeOperationsUseCaseFactory();
+            }
         }
 
         public void Dispose()

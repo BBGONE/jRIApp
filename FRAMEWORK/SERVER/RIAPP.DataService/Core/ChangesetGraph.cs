@@ -35,8 +35,8 @@ namespace RIAPP.DataService.Core
 
         public ChangeSetGraph(ChangeSet changeSet, RunTimeMetadata metadata)
         {
-            this.ChangeSet = changeSet;
-            this._metadata = metadata;
+            this.ChangeSet = changeSet ?? throw new ArgumentNullException(nameof(changeSet));
+            this._metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         }
 
         public ChangeSet ChangeSet { get; }

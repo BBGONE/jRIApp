@@ -8,4 +8,11 @@ namespace RIAPP.DataService.Core
     {
         ICRUDOperationsUseCase Create(BaseDomainService service, Action<Exception> onError, Action<RowInfo> trackChanges, Func<Task> executeChangeSet);
     }
+
+    public interface ICRUDOperationsUseCaseFactory<TService>: ICRUDOperationsUseCaseFactory
+        where TService: BaseDomainService
+    {
+        ICRUDOperationsUseCase<TService> Create(TService service, Action<Exception> onError, Action<RowInfo> trackChanges, Func<Task> executeChangeSet);
+    }
+
 }

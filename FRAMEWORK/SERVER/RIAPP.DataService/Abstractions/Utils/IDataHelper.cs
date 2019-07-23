@@ -1,8 +1,9 @@
-﻿using RIAPP.DataService.Core.Metadata;
+﻿using RIAPP.DataService.Core;
+using RIAPP.DataService.Core.Metadata;
 using RIAPP.DataService.Core.Types;
 using System;
 
-namespace RIAPP.DataService.Core
+namespace RIAPP.DataService.Utils
 {
     public interface IDataHelper
     {

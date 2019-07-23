@@ -1,5 +1,6 @@
 ﻿using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Core.Metadata;
+using RIAPP.DataService.Utils;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -40,7 +41,7 @@ namespace RIAPP.DataService.Core.Types
         [DataMember]
         public List<MethodParameter> parameters { get; set; }
 
-        public object GetValue(string name, MethodDescription methodDescription, IServiceContainer serviceContainer)
+        public object GetValue(string name, MethodDescription methodDescription, IDataHelper dataHelper)
         {
             var par = parameters.Where(p => p.name == name).FirstOrDefault();
             if (par == null)
@@ -51,7 +52,7 @@ namespace RIAPP.DataService.Core.Types
                 throw new DomainServiceException(string.Format("Method: {0} has no parameter with a name: {1}",
                     methodDescription.methodName, name));
             }
-            return serviceContainer.GetDataHelper().ParseParameter(paraminfo.ParameterType, paraminfo, paraminfo.isArray,
+            return dataHelper.ParseParameter(paraminfo.ParameterType, paraminfo, paraminfo.isArray,
                 par.value);
         }
     }

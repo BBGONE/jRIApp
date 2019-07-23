@@ -1,5 +1,6 @@
 ﻿using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Resources;
+using RIAPP.DataService.Utils;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -56,7 +57,7 @@ namespace RIAPP.DataService.Core.Types
             }
         }
 
-        public static void Initialize(this DbSetInfo dbSetInfo, IServiceContainer services)
+        public static void Initialize(this DbSetInfo dbSetInfo, IDataHelper dataHelper)
         {
             dbSetInfo._fieldsByNames = new Dictionary<string, Field>();
             var i = 0;
@@ -65,7 +66,7 @@ namespace RIAPP.DataService.Core.Types
 
             for (i = 0; i < cnt; ++i)
             {
-                services.GetDataHelper().ForEachFieldInfo("", fieldInfos[i], (fullName, fieldInfo) =>
+                dataHelper.ForEachFieldInfo("", fieldInfos[i], (fullName, fieldInfo) =>
                 {
                     fieldInfo._FullName = fullName;
                     dbSetInfo._fieldsByNames.Add(fullName, fieldInfo);

@@ -1,4 +1,4 @@
-﻿using Net451.Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using RIAPP.DataService.EF2;
 using RIAppDemo.BLL.Models;
 using RIAppDemo.DAL.EF;

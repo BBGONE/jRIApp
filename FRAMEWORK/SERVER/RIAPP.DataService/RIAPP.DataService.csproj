@@ -34,11 +34,11 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Net451.Microsoft.Extensions.DependencyInjection, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\EmailMVC\packages\Net451.Microsoft.Extensions.DependencyInjection.2.0.2\lib\net451\Net451.Microsoft.Extensions.DependencyInjection.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\DEMOS\RIAppDemoMVC\packages\Microsoft.Extensions.DependencyInjection.2.2.0\lib\net461\Microsoft.Extensions.DependencyInjection.dll</HintPath>
     </Reference>
-    <Reference Include="Net451.Microsoft.Extensions.DependencyInjection.Abstractions, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\EmailMVC\packages\Net451.Microsoft.Extensions.DependencyInjection.Abstractions.2.0.2\lib\net451\Net451.Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\DEMOS\RIAppDemoMVC\packages\Microsoft.Extensions.DependencyInjection.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -60,7 +60,6 @@
     <Compile Include="Abstractions\Config\IDataManagerRegister.cs" />
     <Compile Include="Abstractions\Config\IServiceOptions.cs" />
     <Compile Include="Abstractions\Config\IValidatorRegister.cs" />
-    <Compile Include="Abstractions\Core\IDataHelper.cs" />
     <Compile Include="Abstractions\Core\IDataManager.cs" />
     <Compile Include="Abstractions\Core\IDataManagerContainer.cs" />
     <Compile Include="Abstractions\Core\IDataServiceComponent.cs" />
@@ -88,6 +87,7 @@
     <Compile Include="Abstractions\Security\IAuthorizer.cs" />
     <Compile Include="Abstractions\Security\IOverrideAuthorizeData.cs" />
     <Compile Include="Abstractions\Security\IUserProvider.cs" />
+    <Compile Include="Abstractions\Utils\IDataHelper.cs" />
     <Compile Include="Abstractions\Utils\IMultiMap.cs" />
     <Compile Include="Abstractions\Utils\ISerializer.cs" />
     <Compile Include="Abstractions\Utils\IValidationHelper.cs" />
@@ -122,7 +122,6 @@
     <Compile Include="Core\Config\ServiceOptions.cs" />
     <Compile Include="Core\Config\ServiceTypeDescriptor.cs" />
     <Compile Include="Core\Config\ValidatorRegister.cs" />
-    <Compile Include="Core\DataHelper.cs" />
     <Compile Include="Core\DataManagerContainer.cs" />
     <Compile Include="Core\EntityChangeState.cs" />
     <Compile Include="Core\Exceptions\AccessDeniedException.cs" />
@@ -194,6 +193,7 @@
     <Compile Include="Core\ValidatorContainer.cs" />
     <Compile Include="Extensions\Config\ServiceConfigureEx.cs" />
     <Compile Include="Extensions\Config\ServiceOptionsEx.cs" />
+    <Compile Include="Extensions\Core\ServiceContainerEx.cs" />
     <Compile Include="Extensions\Exceptions\ExceptionEx.cs" />
     <Compile Include="Extensions\Metadata\MethodInfoEx.cs" />
     <Compile Include="Extensions\Query\QueryEx.cs" />
@@ -209,6 +209,7 @@
       <DependentUpon>ErrorStrings.resx</DependentUpon>
     </Compile>
     <Compile Include="Utils\CallContext.cs" />
+    <Compile Include="Utils\DataHelper.cs" />
     <Compile Include="Utils\DateTimeHelper.cs" />
     <Compile Include="Utils\DiffGram.cs" />
     <Compile Include="Utils\DynamicLinq\AssemblyBuilderFactory.cs" />

@@ -36,7 +36,7 @@ namespace RIAPP.DataService.EF
                 
                 transScope.Complete();
             }
-            return this.AfterExecuteChangeSet();
+            return Task.CompletedTask;
         }
 
         protected virtual DataType DataTypeFromType(string fullName, out bool isArray)

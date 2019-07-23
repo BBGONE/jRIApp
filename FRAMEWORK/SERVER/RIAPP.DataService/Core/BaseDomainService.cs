@@ -3,7 +3,6 @@ using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Core.Metadata;
 using RIAPP.DataService.Core.Security;
 using RIAPP.DataService.Core.Types;
-using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils;
 using System;
 using System.Linq;
@@ -14,17 +13,17 @@ namespace RIAPP.DataService.Core
 {
     public abstract class BaseDomainService : IDomainService, IDataServiceComponent
     {
-        private readonly object _lockObj = new  object();
-
         public BaseDomainService(IServiceContainer serviceContainer)
         {
             this.ServiceContainer = serviceContainer;
-            this.User = serviceContainer.UserProvider.User;
         }
 
         public ClaimsPrincipal User
         {
-            get;
+            get
+            {
+                return this.ServiceContainer.GetUserProvider().User;
+            }
         }
 
         public ISerializer Serializer
@@ -42,7 +41,7 @@ namespace RIAPP.DataService.Core
 
         public RunTimeMetadata GetMetadata()
         {
-            return MetadataHelper.GetInitializedMetadata(this);
+            return MetadataHelper.GetInitializedMetadata(this, this.ServiceContainer.DataHelper, this.ServiceContainer.ValueConverter);
         }
 
         protected internal void _OnError(Exception ex)
@@ -73,42 +72,7 @@ namespace RIAPP.DataService.Core
 
         protected virtual Task AfterExecuteChangeSet()
         {
-            return this.ServiceContainer.GetServiceHelper().AfterExecuteChangeSet();
-        }
-
-        protected virtual void ApplyChangesToEntity(RowInfo rowInfo)
-        {
-            RunTimeMetadata metadata = this.GetMetadata();
-            DbSetInfo dbSetInfo = rowInfo.dbSetInfo;
-            if (dbSetInfo.EntityType == null)
-                throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_ENTITYTYPE_INVALID,
-                    dbSetInfo.dbSetName));
-            try
-            {
-                IServiceOperationsHelper serviceHelper = this.ServiceContainer.GetServiceHelper();
-                switch (rowInfo.changeType)
-                {
-                    case ChangeType.Added:
-                        serviceHelper.InsertEntity(metadata, rowInfo);
-                        break;
-                    case ChangeType.Deleted:
-                        serviceHelper.DeleteEntity(metadata, rowInfo);
-                        break;
-                    case ChangeType.Updated:
-                        serviceHelper.UpdateEntity(metadata, rowInfo);
-                        break;
-                    default:
-                        throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
-                            dbSetInfo.EntityType.Name, rowInfo.changeType));
-                }
-            }
-            catch (Exception ex)
-            {
-                object dbEntity = rowInfo.changeState?.Entity;
-                rowInfo.changeState = new EntityChangeState {Entity = dbEntity, Error = ex};
-                _OnError(ex);
-                throw new DummyException(ex.Message, ex);
-            }
+            return Task.CompletedTask;
         }
 
         protected virtual void TrackChangesToEntity(RowInfo rowInfo)
@@ -145,14 +109,15 @@ namespace RIAPP.DataService.Core
                 _OnError(ex);
             }
         }
-
-       #endregion
+        
+        #endregion
 
         #region DataService Data Operations
 
         /// <summary>
         ///     Utility method to obtain data from the dataservice's query method
-        ///     mainly used to embed data on page load, and fill classifiers for lookup data
+        ///     mainly used to embed query data on a page load.
+        ///     best for small datasets which needs to be present on the client when the page loads
         /// </summary>
         /// <param name="dbSetName"></param>
         /// <param name="queryName"></param>
@@ -169,13 +134,13 @@ namespace RIAPP.DataService.Core
 
         public string ServiceCodeGen(CodeGenArgs args)
         {
-            ICodeGenFactory codeGenfactory = this.ServiceContainer.GetCodeGenFactory();
+            ICodeGenFactory codeGenfactory = this.ServiceContainer.CodeGenFactory;
             try
             {
                 ICodeGenProvider codeGen = codeGenfactory.GetCodeGen(this, args.lang);
                 return codeGen.GenerateScript(args.comment, args.isDraft);
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 this._OnError(ex);
                 throw;
@@ -189,7 +154,7 @@ namespace RIAPP.DataService.Core
                 await Task.CompletedTask;
                 RunTimeMetadata metadata = this.GetMetadata();
                 Permissions result = new Permissions() { serverTimezone = DateTimeHelper.GetTimezoneOffset() };
-                IAuthorizer authorizer = ServiceContainer.GetAuthorizer();
+                IAuthorizer authorizer = ServiceContainer.Authorizer;
                 foreach (var dbInfo in metadata.DbSets.Values)
                 {
                     DbSetPermit permissions = await authorizer.GetDbSetPermissions(metadata, dbInfo.dbSetName);
@@ -212,7 +177,7 @@ namespace RIAPP.DataService.Core
                 RunTimeMetadata metadata = this.GetMetadata();
                 MetadataResult result = new MetadataResult() { methods = metadata.MethodDescriptions };
                 result.associations.AddRange(metadata.Associations.Values);
-                result.dbSets.AddRange(metadata.DbSets.Values.OrderBy(d => d.dbSetName));
+                result.dbSets.AddRange(metadata.DbSets.Values.OrderBy(d=>d.dbSetName));
                 return result;
             }
             catch (Exception ex)
@@ -222,12 +187,10 @@ namespace RIAPP.DataService.Core
             }
         }
 
-
-
         public async Task<QueryResponse> ServiceGetData(QueryRequest message)
         {
-            var factory = this.ServiceContainer.GetRequiredService<IQueryOperationsUseCaseFactory>();
-            IQueryOperationsUseCase uc = factory.Create(this, (err) => _OnError(err));
+            var factory = this.ServiceContainer.QueryOperationsUseCaseFactory;
+            IQueryOperationsUseCase uc  = factory.Create(this, (err) => _OnError(err));
             var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<QueryResponse, QueryResponse>>();
 
             bool res = await uc.Handle(message, output);
@@ -237,10 +200,17 @@ namespace RIAPP.DataService.Core
 
         public async Task<ChangeSet> ServiceApplyChangeSet(ChangeSet message)
         {
-            var factory = this.ServiceContainer.GetRequiredService<ICRUDOperationsUseCaseFactory>();
-            ICRUDOperationsUseCase uc = factory.Create(this, (err) => this._OnError(err), (row) => this.TrackChangesToEntity(row), () => this.ExecuteChangeSet());
+            var factory = this.ServiceContainer.CRUDOperationsUseCaseFactory;
+            ICRUDOperationsUseCase uc = factory.Create(this, 
+                (err) => this._OnError(err),
+                (row) => this.TrackChangesToEntity(row),
+                async () =>
+                {
+                    await this.ExecuteChangeSet();
+                    await this.AfterExecuteChangeSet();
+                });
             var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<ChangeSet, ChangeSet>>();
-
+            
             bool res = await uc.Handle(message, output);
 
             return output.Response;
@@ -248,7 +218,7 @@ namespace RIAPP.DataService.Core
 
         public async Task<RefreshInfo> ServiceRefreshRow(RefreshInfo message)
         {
-            var factory = this.ServiceContainer.GetRequiredService<IRefreshOperationsUseCaseFactory>();
+            var factory = this.ServiceContainer.RefreshOperationsUseCaseFactory;
             IRefreshOperationsUseCase uc = factory.Create(this, (err) => _OnError(err));
             var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<RefreshInfo, RefreshInfo>>();
 
@@ -259,7 +229,7 @@ namespace RIAPP.DataService.Core
 
         public async Task<InvokeResponse> ServiceInvokeMethod(InvokeRequest message)
         {
-            var factory = this.ServiceContainer.GetRequiredService<IInvokeOperationsUseCaseFactory>();
+            var factory = this.ServiceContainer.InvokeOperationsUseCaseFactory;
             IInvokeOperationsUseCase uc = factory.Create(this, (err) => _OnError(err));
             var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<InvokeResponse, InvokeResponse>>();
 
@@ -267,7 +237,6 @@ namespace RIAPP.DataService.Core
 
             return output.Response;
         }
-
         #endregion
 
         #region IDisposable Members

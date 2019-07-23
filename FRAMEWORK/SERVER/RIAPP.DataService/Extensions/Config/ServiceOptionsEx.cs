@@ -1,4 +1,4 @@
-﻿using Net451.Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using RIAPP.DataService.Utils.Extensions;
 using System;
 

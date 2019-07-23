@@ -1,5 +1,5 @@
-﻿using Net451.Microsoft.Extensions.DependencyInjection;
-using Net451.Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using RIAPP.DataService.Core.CodeGen;
 using RIAPP.DataService.Core.Config;
 using RIAPP.DataService.Core.Security;
@@ -65,31 +65,32 @@ namespace RIAPP.DataService.Core.Config
             });
 
             services.AddScoped<ICodeGenProviderFactory<TService>>((sp) => {
-                return new TypeScriptProviderFactory<TService>(options.ClientTypes);
+                var sc = sp.GetRequiredService<IServiceContainer<TService>>();
+                return new TypeScriptProviderFactory<TService>(sc, options.ClientTypes);
             });
 
             #endregion
 
             #region UseCases
-            var crudCaseFactory = ActivatorUtilities.CreateFactory(typeof(CRUDOperationsUseCase), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>), typeof(Action<RowInfo>), typeof(Func<Task>) });
+            var crudCaseFactory = ActivatorUtilities.CreateFactory(typeof(CRUDOperationsUseCase<TService>), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>), typeof(Action<RowInfo>), typeof(Func<Task>) });
 
-            services.TryAddSingleton<ICRUDOperationsUseCaseFactory>((sp) => new CRUDOperationsUseCaseFactory((svc, onError, trackChanges, executeChangeSet) =>
-                (ICRUDOperationsUseCase)crudCaseFactory(sp, new object[] { svc, onError, trackChanges, executeChangeSet })));
+            services.TryAddScoped<ICRUDOperationsUseCaseFactory<TService>>((sp) => new CRUDOperationsUseCaseFactory<TService>((svc, onError, trackChanges, executeChangeSet) =>
+                (ICRUDOperationsUseCase<TService>)crudCaseFactory(sp, new object[] { svc, onError, trackChanges, executeChangeSet })));
 
-            var queryCaseFactory = ActivatorUtilities.CreateFactory(typeof(QueryOperationsUseCase), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>) });
+            var queryCaseFactory = ActivatorUtilities.CreateFactory(typeof(QueryOperationsUseCase<TService>), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>) });
 
-            services.TryAddSingleton<IQueryOperationsUseCaseFactory>((sp) => new QueryOperationsUseCaseFactory((svc, onError) =>
-                (IQueryOperationsUseCase)queryCaseFactory(sp, new object[] { svc, onError })));
+            services.TryAddScoped<IQueryOperationsUseCaseFactory<TService>>((sp) => new QueryOperationsUseCaseFactory<TService>((svc, onError) =>
+                (IQueryOperationsUseCase<TService>)queryCaseFactory(sp, new object[] { svc, onError })));
 
-            var refreshCaseFactory = ActivatorUtilities.CreateFactory(typeof(RefreshOperationsUseCase), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>) });
+            var refreshCaseFactory = ActivatorUtilities.CreateFactory(typeof(RefreshOperationsUseCase<TService>), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>) });
 
-            services.TryAddSingleton<IRefreshOperationsUseCaseFactory>((sp) => new RefreshOperationsUseCaseFactory((svc, onError) =>
-                (IRefreshOperationsUseCase)refreshCaseFactory(sp, new object[] { svc, onError })));
+            services.TryAddScoped<IRefreshOperationsUseCaseFactory<TService>>((sp) => new RefreshOperationsUseCaseFactory<TService>((svc, onError) =>
+                (IRefreshOperationsUseCase<TService>)refreshCaseFactory(sp, new object[] { svc, onError })));
 
-            var invokeCaseFactory = ActivatorUtilities.CreateFactory(typeof(InvokeOperationsUseCase), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>) });
+            var invokeCaseFactory = ActivatorUtilities.CreateFactory(typeof(InvokeOperationsUseCase<TService>), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>) });
 
-            services.TryAddSingleton<IInvokeOperationsUseCaseFactory>((sp) => new InvokeOperationsUseCaseFactory((svc, onError) =>
-                (IInvokeOperationsUseCase)invokeCaseFactory(sp, new object[] { svc, onError })));
+            services.TryAddScoped<IInvokeOperationsUseCaseFactory<TService>>((sp) => new InvokeOperationsUseCaseFactory<TService>((svc, onError) =>
+                (IInvokeOperationsUseCase<TService>)invokeCaseFactory(sp, new object[] { svc, onError })));
 
             services.TryAddTransient(typeof(IResponsePresenter<,>), typeof(OperationOutput<,>));
             #endregion

@@ -15,9 +15,9 @@ namespace RIAPP.DataService.Core
 
         public RowGenerator(DbSetInfo dbSetInfo, IEnumerable<object> dataSource, IDataHelper dataHelper)
         {
-            _dbSetInfo = dbSetInfo;
-            _dataSource = dataSource;
-            _dataHelper = dataHelper;
+            _dbSetInfo = dbSetInfo ?? throw new ArgumentNullException(nameof(dbSetInfo));
+            _dataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
+            _dataHelper = dataHelper ?? throw new ArgumentNullException(nameof(dataHelper));
             fieldInfos = _dbSetInfo.GetInResultFields();
             pkInfos = _dbSetInfo.GetPKFields();
         }

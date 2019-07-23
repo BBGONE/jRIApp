@@ -15,7 +15,7 @@ namespace RIAPP.DataService.Utils
 
         public ValidationHelper(IValueConverter<TService> valueConverter)
         {
-            this.valueConverter = valueConverter;
+            this.valueConverter = valueConverter ?? throw new ArgumentNullException(nameof(valueConverter));
         }
 
         public void CheckString(Field fieldInfo, string val)

@@ -9,21 +9,22 @@ using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Core
 {
-    public class RefreshOperationsUseCase : IRefreshOperationsUseCase
+    public class RefreshOperationsUseCase<TService> : IRefreshOperationsUseCase<TService>
+         where TService : BaseDomainService
     {
         private readonly BaseDomainService _service;
         private readonly RunTimeMetadata _metadata;
-        private readonly IServiceContainer _serviceContainer;
-        private readonly IServiceOperationsHelper _serviceHelper;
-        private readonly IAuthorizer _authorizer;
+        private readonly IServiceContainer<TService> _serviceContainer;
+        private readonly IServiceOperationsHelper<TService> _serviceHelper;
+        private readonly IAuthorizer<TService> _authorizer;
         private readonly Action<Exception> _onError;
 
-        public RefreshOperationsUseCase(BaseDomainService service, Action<Exception> onError)
+        public RefreshOperationsUseCase(IServiceContainer<TService> serviceContainer, BaseDomainService service, Action<Exception> onError)
         {
             _service = service;
             _onError = onError ?? throw new ArgumentNullException(nameof(onError));
             _metadata = this._service.GetMetadata();
-            _serviceContainer = this._service.ServiceContainer;
+            _serviceContainer = serviceContainer;
             _serviceHelper = _serviceContainer.GetServiceHelper();
             _authorizer = _serviceContainer.GetAuthorizer();
         }
@@ -39,7 +40,7 @@ namespace RIAPP.DataService.Core
                         message.dbSetInfo.EntityType.Name, GetType().Name));
                 message.rowInfo.dbSetInfo = message.dbSetInfo;
                 await _authorizer.CheckUserRightsToExecute(methodData);
-                var req = new RequestContext(_service, rowInfo: message.rowInfo, operation: ServiceOperationType.RowRefresh);
+                var req = new RequestContext(_service, _serviceHelper, rowInfo: message.rowInfo, operation: ServiceOperationType.RowRefresh);
                 using (var callContext = new RequestCallContext(req))
                 {
                     object instance = _serviceHelper.GetMethodOwner(methodData);

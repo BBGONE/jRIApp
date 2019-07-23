@@ -13,13 +13,8 @@ namespace RIAPP.DataService.Core.CodeGen
 
         public ComplexTypeBuilder(DotNet2TS dotNet2TS)
         {
-            _dotNet2TS = dotNet2TS;
+            _dotNet2TS = dotNet2TS ?? throw new ArgumentNullException(nameof(dotNet2TS));
             _complexTypes = new Dictionary<string, string>();
-        }
-
-        protected internal IServiceContainer ServiceContainer
-        {
-            get { return _dotNet2TS.ServiceContainer; }
         }
 
         private static string TrimEnd(string s)

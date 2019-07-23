@@ -1,5 +1,6 @@
 ﻿using RIAPP.DataService.Core.Metadata;
 using RIAPP.DataService.Core.Types;
+using RIAPP.DataService.Utils;
 using System;
 using System.Threading.Tasks;
 
@@ -7,6 +8,10 @@ namespace RIAPP.DataService.Core
 {
     public interface IServiceOperationsHelper
     {
+        IDataHelper DataHelper { get;  }
+
+        IValidationHelper ValidationHelper { get; }
+
         Task AfterExecuteChangeSet();
         void ApplyValues(object entity, RowInfo rowInfo, string path, ValueChange[] values, bool isOriginal);
         void CheckValuesChanges(RowInfo rowInfo, string path, ValueChange[] values);

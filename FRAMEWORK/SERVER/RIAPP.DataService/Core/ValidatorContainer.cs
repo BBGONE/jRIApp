@@ -9,10 +9,11 @@ namespace RIAPP.DataService.Core
         private readonly IServiceContainer<TService> _serviceContainer;
         private readonly IValidatorRegister _validatorRegister;
 
-        public ValidatorContainer(IServiceContainer<TService> serviceContainer, IValidatorRegister validatorRegister)
+        public ValidatorContainer(IServiceContainer<TService> serviceContainer, 
+            IValidatorRegister validatorRegister)
         {
-            _serviceContainer = serviceContainer;
-            _validatorRegister = validatorRegister;
+            _serviceContainer = serviceContainer ?? throw new ArgumentNullException(nameof(serviceContainer));
+            _validatorRegister = validatorRegister ?? throw new ArgumentNullException(nameof(validatorRegister));
         }
 
         public IValidator GetValidator(Type modelType)

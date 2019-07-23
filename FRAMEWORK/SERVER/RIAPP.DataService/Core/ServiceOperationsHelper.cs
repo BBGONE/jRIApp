@@ -18,20 +18,31 @@ namespace RIAPP.DataService.Core
         ///     Already created instances of DataManagers indexed by modelType
         /// </summary>
         private readonly ConcurrentDictionary<Type, object> _dataManagers;
+        private readonly IDataHelper<TService> _dataHelper;
+        private readonly IDataManagerContainer<TService> _dataManagerContainer;
+        private readonly IValidatorContainer<TService> _validatorsContainer;
+        private readonly IValidationHelper<TService> _validationHelper;
         private TService _domainService;
 
-        public ServiceOperationsHelper(TService domainService)
+        public IDataHelper DataHelper => _dataHelper;
+
+        public IValidationHelper ValidationHelper => _validationHelper;
+
+        public ServiceOperationsHelper(TService domainService, 
+            IDataHelper<TService> dataHelper, 
+            IValidationHelper<TService> validationHelper, 
+            IDataManagerContainer<TService> dataManagerContainer, 
+            IValidatorContainer<TService> validatorsContainer)
         {
-            _domainService = domainService;
+            _domainService = domainService ?? throw new ArgumentNullException(nameof(domainService));
+            _dataHelper = dataHelper ?? throw new ArgumentNullException(nameof(dataHelper));
+            _validationHelper = validationHelper ?? throw new ArgumentNullException(nameof(validationHelper));
+            _dataManagerContainer = dataManagerContainer ?? throw new ArgumentNullException(nameof(dataManagerContainer));
+            _validatorsContainer = validatorsContainer ?? throw new ArgumentNullException(nameof(validatorsContainer));
             _dataManagers = new ConcurrentDictionary<Type, object>();
         }
 
-        private IServiceContainer _serviceContainer
-        {
-            get { return _domainService.ServiceContainer; }
-        }
-
-        public void Dispose()
+         public void Dispose()
         {
             _domainService = null;
             IDisposable[] dataManagers = _dataManagers.Values.Where(m => m is IDisposable).Select(m => (IDisposable)m).ToArray();
@@ -47,7 +58,7 @@ namespace RIAPP.DataService.Core
                 return _domainService;
             RunTimeMetadata metadata = _domainService.GetMetadata();
             object managerInstance = _dataManagers.GetOrAdd(methodData.EntityType,
-                t => { return _serviceContainer.GetDataManagerContainer().GetDataManager(t); });
+                t => { return _dataManagerContainer.GetDataManager(t); });
             return managerInstance;
         }
 
@@ -61,11 +72,10 @@ namespace RIAPP.DataService.Core
         public void ApplyValues(object entity, RowInfo rowInfo, string path, ValueChange[] values, bool isOriginal)
         {
             DbSetInfo dbSetInfo = rowInfo.dbSetInfo;
-            IDataHelper dataHelper = _serviceContainer.GetDataHelper();
             Array.ForEach(values, val =>
             {
                 string fullName = path + val.fieldName;
-                Field fieldInfo = dataHelper.GetFieldInfo(dbSetInfo, fullName);
+                Field fieldInfo = _dataHelper.GetFieldInfo(dbSetInfo, fullName);
                 if (!fieldInfo.GetIsIncludeInResult())
                     return;
                 //Server Side calculated fields are never set on entities from updates
@@ -86,11 +96,10 @@ namespace RIAPP.DataService.Core
         private void ApplyValue(object entity, RowInfo rowInfo, string fullName, Field fieldInfo, ValueChange val,
             bool isOriginal)
         {
-            IDataHelper dataHelper = _serviceContainer.GetDataHelper();
             if (isOriginal)
             {
                 if ((val.flags & ValueFlags.Setted) == ValueFlags.Setted)
-                    dataHelper.SetFieldValue(entity, fullName, fieldInfo, val.orig);
+                    _dataHelper.SetFieldValue(entity, fullName, fieldInfo, val.orig);
             }
             else
             {
@@ -100,7 +109,7 @@ namespace RIAPP.DataService.Core
                         {
                             // for delete fill only original values
                             if ((val.flags & ValueFlags.Setted) == ValueFlags.Setted)
-                                dataHelper.SetFieldValue(entity, fullName, fieldInfo, val.orig);
+                                _dataHelper.SetFieldValue(entity, fullName, fieldInfo, val.orig);
                         }
                         break;
                     case ChangeType.Added:
@@ -119,7 +128,7 @@ namespace RIAPP.DataService.Core
                                         entity.GetType().Name, fieldInfo.fieldName));
                                 }
 
-                                dataHelper.SetFieldValue(entity, fullName, fieldInfo, val.val);
+                                _dataHelper.SetFieldValue(entity, fullName, fieldInfo, val.val);
                             }
                         }
                         break;
@@ -137,7 +146,7 @@ namespace RIAPP.DataService.Core
                                         fieldInfo.fieldName));
                                 }
 
-                                dataHelper.SetFieldValue(entity, fullName, fieldInfo, val.val);
+                                _dataHelper.SetFieldValue(entity, fullName, fieldInfo, val.val);
                             }
                             else if ((val.flags & ValueFlags.Setted) == ValueFlags.Setted)
                             {
@@ -148,7 +157,7 @@ namespace RIAPP.DataService.Core
                                         fieldInfo.fieldName));
                                 }
 
-                                dataHelper.SetFieldValue(entity, fullName, fieldInfo, val.val);
+                                _dataHelper.SetFieldValue(entity, fullName, fieldInfo, val.val);
                             }
                         }
                         break;
@@ -160,17 +169,16 @@ namespace RIAPP.DataService.Core
         {
             DbSetInfo dbSetInfo = rowInfo.dbSetInfo;
             ValuesList values = rowInfo.values;
-            ApplyValues(entity, rowInfo, "", rowInfo.values.ToArray(), isOriginal);
-            IDataHelper dataHelper = _serviceContainer.GetDataHelper();
+            ApplyValues(entity, rowInfo, "", values.ToArray(), isOriginal);
 
             if (!isOriginal && rowInfo.changeType == ChangeType.Added)
             {
                 foreach (ParentChildNode pn in rowInfo.changeState.ParentRows)
                 {
-                    if (!dataHelper.SetValue(entity, pn.Association.childToParentName, pn.ParentRow.changeState.Entity, false))
+                    if (!_dataHelper.SetValue(entity, pn.Association.childToParentName, pn.ParentRow.changeState.Entity, false))
                     {
                         throw new DomainServiceException(string.Format(ErrorStrings.ERR_CAN_NOT_SET_PARENT_FIELD,
-                            pn.Association.childToParentName, rowInfo.dbSetInfo.EntityType.Name));
+                            pn.Association.childToParentName, dbSetInfo.EntityType.Name));
                     }
                 }
             }
@@ -178,11 +186,10 @@ namespace RIAPP.DataService.Core
 
         public void UpdateValuesFromEntity(object entity, string path, DbSetInfo dbSetInfo, ValueChange[] values)
         {
-            IDataHelper dataHelper = _serviceContainer.GetDataHelper();
             Array.ForEach(values, val =>
             {
                 string fullName = path + val.fieldName;
-                Field fieldInfo = dataHelper.GetFieldInfo(dbSetInfo, fullName);
+                Field fieldInfo = _dataHelper.GetFieldInfo(dbSetInfo, fullName);
                 if (!fieldInfo.GetIsIncludeInResult())
                     return;
                 if (fieldInfo.fieldType == FieldType.Object && val.nested != null)
@@ -191,7 +198,7 @@ namespace RIAPP.DataService.Core
                 }
                 else
                 {
-                    val.val = dataHelper.SerializeField(entity, fullName, fieldInfo);
+                    val.val = _dataHelper.SerializeField(entity, fullName, fieldInfo);
                     val.flags = val.flags | ValueFlags.Refreshed;
                 }
             });
@@ -200,11 +207,10 @@ namespace RIAPP.DataService.Core
         public void CheckValuesChanges(RowInfo rowInfo, string path, ValueChange[] values)
         {
             DbSetInfo dbSetInfo = rowInfo.dbSetInfo;
-            IDataHelper dataHelper = _serviceContainer.GetDataHelper();
             Array.ForEach(values, val =>
             {
                 string fullName = path + val.fieldName;
-                Field fieldInfo = dataHelper.GetFieldInfo(dbSetInfo, fullName);
+                Field fieldInfo = _dataHelper.GetFieldInfo(dbSetInfo, fullName);
                 if (!fieldInfo.GetIsIncludeInResult())
                     return;
                 if (fieldInfo.fieldType == FieldType.Object && val.nested != null)
@@ -236,11 +242,10 @@ namespace RIAPP.DataService.Core
         public bool isEntityValueChanged(RowInfo rowInfo, string fullName, Field fieldInfo, out string newVal)
         {
             var changeState = rowInfo.changeState;
-            var dataHelper = _serviceContainer.GetDataHelper();
             string oldVal = null;
-            newVal = dataHelper.SerializeField(changeState.Entity, fullName, fieldInfo);
+            newVal = _dataHelper.SerializeField(changeState.Entity, fullName, fieldInfo);
             if (changeState.OriginalEntity != null)
-                oldVal = dataHelper.SerializeField(changeState.OriginalEntity, fullName, fieldInfo);
+                oldVal = _dataHelper.SerializeField(changeState.OriginalEntity, fullName, fieldInfo);
             return newVal != oldVal;
         }
 
@@ -358,15 +363,12 @@ namespace RIAPP.DataService.Core
 
         public async Task<bool> ValidateEntity(RunTimeMetadata metadata, RequestContext requestContext)
         {
-            IValidatorContainer validatorsContainer = _serviceContainer.GetValidatorContainer();
             RowInfo rowInfo = requestContext.CurrentRowInfo;
             DbSetInfo dbSetInfo = rowInfo.dbSetInfo;
             IEnumerable<ValidationErrorInfo> errs1 = null;
             IEnumerable<ValidationErrorInfo> errs2 = null;
             LinkedList<string> mustBeChecked = new LinkedList<string>();
             LinkedList<string> skipCheckList = new LinkedList<string>();
-            IDataHelper dataHelper = _serviceContainer.GetDataHelper();
-            IValidationHelper validationHelper = _serviceContainer.GetValidationHelper();
 
             if (rowInfo.changeType == ChangeType.Added)
             {
@@ -381,14 +383,14 @@ namespace RIAPP.DataService.Core
 
             foreach (Field fieldInfo in dbSetInfo.fieldInfos)
             {
-                dataHelper.ForEachFieldInfo("", fieldInfo, (fullName, f) =>
+                _dataHelper.ForEachFieldInfo("", fieldInfo, (fullName, f) =>
                 {
                     if (!f.GetIsIncludeInResult())
                         return;
                     if (f.fieldType == FieldType.Object || f.fieldType == FieldType.ServerCalculated)
                         return;
 
-                    string value = dataHelper.SerializeField(rowInfo.changeState.Entity, fullName, f);
+                    string value = _dataHelper.SerializeField(rowInfo.changeState.Entity, fullName, f);
 
                     switch (rowInfo.changeType)
                     {
@@ -397,7 +399,7 @@ namespace RIAPP.DataService.Core
                                 bool isSkip = f.isAutoGenerated || skipCheckList.Any(n => n == fullName);
                                 if (!isSkip)
                                 {
-                                    validationHelper.CheckValue(f, value);
+                                    _validationHelper.CheckValue(f, value);
                                     mustBeChecked.AddLast(fullName);
                                 }
                             }
@@ -408,7 +410,7 @@ namespace RIAPP.DataService.Core
                                 bool isChanged = isEntityValueChanged(rowInfo, fullName, f, out newVal);
                                 if (isChanged)
                                 {
-                                    validationHelper.CheckValue(f, newVal);
+                                    _validationHelper.CheckValue(f, newVal);
                                     mustBeChecked.AddLast(fullName);
                                 }
                             }
@@ -433,7 +435,7 @@ namespace RIAPP.DataService.Core
                 errs1 = Enumerable.Empty<ValidationErrorInfo>();
             }
 
-            IValidator validator = validatorsContainer.GetValidator(rowInfo.dbSetInfo.EntityType);
+            IValidator validator = _validatorsContainer.GetValidator(rowInfo.dbSetInfo.EntityType);
             if (validator != null)
             {
                 errs2 = await validator.ValidateModelAsync(rowInfo.changeState.Entity,

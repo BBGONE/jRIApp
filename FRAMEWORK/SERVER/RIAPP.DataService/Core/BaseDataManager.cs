@@ -10,7 +10,7 @@ namespace RIAPP.DataService.Core
     {
         public TDataService DataService
         {
-            get { return (TDataService) RequestContext.DataService; }
+            get { return (TDataService)RequestContext.DataService; }
         }
 
         protected RequestContext RequestContext
@@ -40,7 +40,7 @@ namespace RIAPP.DataService.Core
 
         public virtual Task AfterExecuteChangeSet()
         {
-            return Task.FromResult(string.Empty);
+            return Task.CompletedTask;
         }
 
         public IServiceContainer ServiceContainer

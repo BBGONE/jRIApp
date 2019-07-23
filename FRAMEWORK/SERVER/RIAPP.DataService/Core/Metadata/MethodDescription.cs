@@ -1,4 +1,5 @@
 ﻿using RIAPP.DataService.Core.Types;
+using RIAPP.DataService.Utils;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Serialization;
@@ -51,14 +52,14 @@ namespace RIAPP.DataService.Core.Metadata
         ///     Generates Data Services' method description which is convertable to JSON
         ///     and can be consumed by clients
         /// </summary>
-        public static MethodDescription FromMethodInfo(MethodInfoData data, IServiceContainer container)
+        public static MethodDescription FromMethodInfo(MethodInfoData data, IValueConverter valueConverter)
         {
             var methDescription = new MethodDescription(data);
             //else Result is Converted to JSON
             var paramsInfo = data.MethodInfo.GetParameters();
             for (var i = 0; i < paramsInfo.Length; ++i)
             {
-                var param = ParamMetadata.FromParamInfo(paramsInfo[i], container);
+                var param = ParamMetadata.FromParamInfo(paramsInfo[i], valueConverter);
                 param.ordinal = i;
                 methDescription.parameters.Add(param);
             }

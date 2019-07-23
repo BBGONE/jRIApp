@@ -2,11 +2,12 @@
 
 namespace RIAPP.DataService.Core
 {
-    public class QueryOperationsUseCaseFactory: IQueryOperationsUseCaseFactory
+    public class QueryOperationsUseCaseFactory<TService>: IQueryOperationsUseCaseFactory<TService>
+        where TService : BaseDomainService
     {
-        private readonly Func<BaseDomainService, Action<Exception>, IQueryOperationsUseCase> _func;
+        private readonly Func<BaseDomainService, Action<Exception>, IQueryOperationsUseCase<TService>> _func;
 
-        public QueryOperationsUseCaseFactory(Func<BaseDomainService, Action<Exception>, IQueryOperationsUseCase> func)
+        public QueryOperationsUseCaseFactory(Func<BaseDomainService, Action<Exception>, IQueryOperationsUseCase<TService>> func)
         {
             this._func = func;
         }
@@ -15,5 +16,11 @@ namespace RIAPP.DataService.Core
         {
             return this._func(service, onError);
         }
+
+        public IQueryOperationsUseCase<TService> Create(TService service, Action<Exception> onError)
+        {
+            return this._func(service, onError);
+        }
+
     }
 }

@@ -17,10 +17,11 @@ namespace RIAPP.DataService.Core.CodeGen
         private readonly List<Type> _clientTypes;
         private readonly RunTimeMetadata _metadata;
         private readonly StringBuilder _sb = new StringBuilder(4096);
-        private readonly IServiceContainer _serviceContainer;
         private readonly List<DbSetInfo> _dbSets;
         private readonly List<Association> _associations;
         private readonly ISerializer _serializer;
+        private readonly IValueConverter _valueConverter;
+        private readonly IDataHelper _dataHelper;
 
         private readonly CodeGenTemplate _entityTemplate = new CodeGenTemplate("Entity.txt");
         private readonly CodeGenTemplate _entityIntfTemplate = new CodeGenTemplate("EntityInterface.txt");
@@ -29,12 +30,16 @@ namespace RIAPP.DataService.Core.CodeGen
         private readonly CodeGenTemplate _listItemTemplate = new CodeGenTemplate("ListItem.txt");
         private readonly CodeGenTemplate _dbSetTemplate = new CodeGenTemplate("DbSet.txt");
 
-        public TypeScriptHelper(IServiceContainer serviceContainer, RunTimeMetadata metadata,
+        public TypeScriptHelper(ISerializer serializer, 
+            IDataHelper dataHelper, 
+            IValueConverter valueConverter, 
+            RunTimeMetadata metadata,
             IEnumerable<Type> clientTypes)
         {
-            _serviceContainer = serviceContainer ?? throw new ArgumentException("converter parameter must not be null", "serviceContainer");
-            _metadata = metadata ?? throw new ArgumentException("metadata parameter must not be null", "metadata");
-            _serializer = _serviceContainer.Serializer;
+            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+            _dataHelper = dataHelper ?? throw new ArgumentNullException(nameof(dataHelper));
+            _valueConverter = valueConverter ?? throw new ArgumentNullException(nameof(valueConverter));
+            _metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
             _clientTypes = new List<Type>(clientTypes ?? Enumerable.Empty<Type>());
             _dbSets = _metadata.DbSets.Values.OrderBy(v => v.dbSetName).ToList();
             _associations = _metadata.Associations.Values.OrderBy(a => a.name).ToList();
@@ -81,7 +86,7 @@ namespace RIAPP.DataService.Core.CodeGen
 
         public string CreateTypeScript(string comment = null)
         {
-            using (var dotNet2TS = new DotNet2TS(_serviceContainer))
+            using (var dotNet2TS = new DotNet2TS(_valueConverter))
             {
                 dotNet2TS.NewClientTypeAdded += _OnNewClientTypeAdded;
                 _sb.Length = 0;
@@ -219,7 +224,9 @@ namespace RIAPP.DataService.Core.CodeGen
                     {
                         //if this is complex type parse parameter to create its typescript interface
                         if (paramInfo.dataType == DataType.None)
+                        {
                             dotNet2TS.RegisterType(paramInfo.ParameterType);
+                        }
                     });
                 }
             }
@@ -493,12 +500,11 @@ namespace RIAPP.DataService.Core.CodeGen
         {
             var entityType = GetEntityTypeName(dbSetInfo.dbSetName);
             var entityInterfaceName = GetEntityInterfaceName(dbSetInfo.dbSetName);
-            var dataHelper = _serviceContainer.GetDataHelper();
             var sb = new StringBuilder(256);
 
             dbSetInfo.fieldInfos.ForEach(fieldInfo =>
             {
-                dataHelper.ForEachFieldInfo("", fieldInfo, (fullName, f) =>
+                _dataHelper.ForEachFieldInfo("", fieldInfo, (fullName, f) =>
                 {
                     if (f.fieldType == FieldType.Calculated)
                     {

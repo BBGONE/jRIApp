@@ -3,6 +3,7 @@ using RIAPP.DataService.Core.CodeGen;
 using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Resources;
+using RIAPP.DataService.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,13 +18,15 @@ namespace RIAPP.DataService.Core.Metadata
     {
         private static readonly MetadataCache _metadataCache = new MetadataCache();
 
-        public static RunTimeMetadata GetInitializedMetadata(BaseDomainService domainService)
+        public static RunTimeMetadata GetInitializedMetadata(BaseDomainService domainService, 
+            IDataHelper dataHelper, 
+            IValueConverter valueConverter)
         {
             RunTimeMetadata result = _metadataCache.GetOrAdd(domainService.GetType(), (svcType) => {
                 RunTimeMetadata metadata = null;
                 try
                 {
-                    metadata = InitMetadata(domainService);
+                    metadata = InitMetadata(domainService, dataHelper, valueConverter);
                 }
                 catch (Exception ex)
                 {
@@ -36,14 +39,14 @@ namespace RIAPP.DataService.Core.Metadata
             return result;
         }
 
-        private static RunTimeMetadata InitMetadata(BaseDomainService domainService)
+        private static RunTimeMetadata InitMetadata(BaseDomainService domainService, IDataHelper dataHelper, IValueConverter valueConverter)
         {
             RunTimeMetadata cachedMetadata = new RunTimeMetadata();
 
             //called on every data manager registered while bootstrapping
             try
             {
-                InitCachedMetadata(domainService, cachedMetadata);
+                InitCachedMetadata(domainService, cachedMetadata, dataHelper, valueConverter);
             }
             catch (Exception ex)
             {
@@ -58,7 +61,7 @@ namespace RIAPP.DataService.Core.Metadata
             return cachedMetadata;
         }
 
-        private static void InitCachedMetadata(BaseDomainService domainService, RunTimeMetadata cachedMetadata)
+        private static void InitCachedMetadata(BaseDomainService domainService, RunTimeMetadata cachedMetadata, IDataHelper dataHelper, IValueConverter valueConverter)
         {
             DesignTimeMetadata metadata = domainService.GetDesignTimeMetadata(false);
             var serviceContainer = domainService.ServiceContainer;
@@ -71,15 +74,15 @@ namespace RIAPP.DataService.Core.Metadata
 
             foreach (DbSetInfo dbSetInfo in cachedMetadata.DbSets.Values)
             {
-                dbSetInfo.Initialize(serviceContainer);
+                dbSetInfo.Initialize(dataHelper);
             }
 
-            foreach(var descriptor in serviceContainer.GetDataManagerContainer().Descriptors)
+            foreach(var descriptor in serviceContainer.DataManagerContainer.Descriptors)
             {
-                ProcessMethodDescriptions(serviceContainer, descriptor.ImplementationType, cachedMetadata);
+                ProcessMethodDescriptions(valueConverter, descriptor.ImplementationType, cachedMetadata);
             }
 
-            ProcessMethodDescriptions(serviceContainer, domainService.GetType(), cachedMetadata);
+            ProcessMethodDescriptions(valueConverter, domainService.GetType(), cachedMetadata);
 
             foreach (var assoc in metadata.Associations)
             {
@@ -173,7 +176,6 @@ namespace RIAPP.DataService.Core.Metadata
                 }
             } //foreach (var assoc in metadata.Associations)
         }
-
 
         private static MethodType _GetMethodType(MethodInfo methodInfo, IEnumerable<MethodInfoData> crudMethods)
         {
@@ -304,13 +306,13 @@ namespace RIAPP.DataService.Core.Metadata
             return allList;
         }
 
-        private static MethodsList GetSvcMethods(IEnumerable<MethodInfoData> allList, IServiceContainer serviceContainer)
+        private static MethodsList GetSvcMethods(IEnumerable<MethodInfoData> allList, IValueConverter valueConverter)
         {
             var queryAndInvokes = allList.GetQueryAndInvokeOnly().ToArray();
             var methodList = new MethodsList();
             Array.ForEach(queryAndInvokes, info =>
             {
-                var methodDescription = MethodDescription.FromMethodInfo(info, serviceContainer);
+                var methodDescription = MethodDescription.FromMethodInfo(info, valueConverter);
                 methodList.Add(methodDescription);
             });
             return methodList;
@@ -321,10 +323,10 @@ namespace RIAPP.DataService.Core.Metadata
         ///     and generates from this methods their invocation method descriptions
         /// </summary>
         /// <returns></returns>
-        private static void ProcessMethodDescriptions(IServiceContainer serviceContainer, Type fromType, RunTimeMetadata metadata)
+        private static void ProcessMethodDescriptions(IValueConverter valueConverter, Type fromType, RunTimeMetadata metadata)
         {
             var allList = GetAllMethods(fromType);
-            var svcMethods = GetSvcMethods(allList, serviceContainer);
+            var svcMethods = GetSvcMethods(allList, valueConverter);
             metadata.InitSvcMethods(svcMethods);
 
             var otherMethods = allList.GetOthersOnly();

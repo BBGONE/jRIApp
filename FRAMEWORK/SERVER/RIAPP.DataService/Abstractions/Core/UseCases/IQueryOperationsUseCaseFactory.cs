@@ -6,4 +6,10 @@ namespace RIAPP.DataService.Core
     {
         IQueryOperationsUseCase Create(BaseDomainService service, Action<Exception> onError);
     }
+
+    public interface IQueryOperationsUseCaseFactory<TService>: IQueryOperationsUseCaseFactory
+        where TService : BaseDomainService
+    {
+        IQueryOperationsUseCase<TService> Create(TService service, Action<Exception> onError);
+    }
 }

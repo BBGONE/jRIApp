@@ -1,6 +1,7 @@
 ﻿using RIAPP.DataService.Annotations.CodeGen;
 using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Core.Types;
+using RIAPP.DataService.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,13 +25,12 @@ namespace RIAPP.DataService.Core.CodeGen
         // a container for available services (something like dependency injection container)
         // maps type name to its definition
         private readonly Dictionary<string, string> _tsTypes = new Dictionary<string, string>();
+        private readonly IValueConverter _valueConverter;
 
-        public DotNet2TS(IServiceContainer serviceContainer)
+        public DotNet2TS(IValueConverter valueConverter)
         {
-            ServiceContainer = serviceContainer;
+            _valueConverter = valueConverter ?? throw new ArgumentNullException(nameof(valueConverter));
         }
-
-        protected internal IServiceContainer ServiceContainer { get; }
 
         public event EventHandler<NewTypeArgs> NewClientTypeAdded;
 
@@ -77,7 +77,7 @@ namespace RIAPP.DataService.Core.CodeGen
                     isEnum = true;
                 }
 
-                var dtype = ServiceContainer.GetValueConverter().DataTypeFromType(t, out isArray);
+                var dtype = _valueConverter.DataTypeFromType(t, out isArray);
                 res = GetTSTypeNameFromDataType(dtype);
                 if (isArray || isEnumerable)
                     res = string.Format("{0}[]", res);
@@ -123,7 +123,7 @@ namespace RIAPP.DataService.Core.CodeGen
                         isFirst = false;
                     }
                 }
-                registeredName = GetTypeInterface(t, typeName, extendsSb?.ToString());
+                registeredName = GetTypeInterface(t, typeName, extendsSb == null ? null : extendsSb.ToString());
             }
             else
             {
@@ -275,7 +275,7 @@ namespace RIAPP.DataService.Core.CodeGen
 
         public DataType DataTypeFromDotNetType(Type type, out bool isArray)
         {
-            return ServiceContainer.GetValueConverter().DataTypeFromType(type, out isArray);
+            return _valueConverter.DataTypeFromType(type, out isArray);
         }
 
         void IDisposable.Dispose()
