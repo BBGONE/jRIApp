@@ -62,7 +62,7 @@ namespace RIAPP.DataService.Core.Query
             FilterInfo filter, DbSetInfo dbInfo)
             where T : class
         {
-            var dataHelper = RequestContext.Current.DataHelper;
+            var dataHelper = dataService.ServiceContainer.DataHelper;
             var result = entities;
             if (filter == null || filter.filterItems == null || filter.filterItems.Count == 0)
                 return result;
@@ -237,7 +237,7 @@ namespace RIAPP.DataService.Core.Query
         public static IQueryable<T> GetRefreshedEntityQuery<T>(this IDataServiceComponent dataService, IQueryable<T> entities, RefreshInfo info)
             where T : class
         {
-            var dataHelper = RequestContext.Current.DataHelper;
+            var dataHelper = dataService.ServiceContainer.DataHelper;
             var keyValue = info.rowInfo.GetPKValues(dataHelper);
             return FindEntityQuery(entities, info.rowInfo, keyValue);
         }

@@ -82,6 +82,7 @@
     <Compile Include="Abstractions\Core\UseCases\IUseCaseRequest.cs" />
     <Compile Include="Abstractions\Core\UseCases\IUseCaseRequestHandler.cs" />
     <Compile Include="Abstractions\Metadata\IDateConversionData.cs" />
+    <Compile Include="Abstractions\Metadata\IMetaDataProvider.cs" />
     <Compile Include="Abstractions\Security\IAllowAnonymous.cs" />
     <Compile Include="Abstractions\Security\IAuthorizeData.cs" />
     <Compile Include="Abstractions\Security\IAuthorizer.cs" />

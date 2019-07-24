@@ -15,7 +15,8 @@ namespace RIAPP.DataService.Core.CodeGen
         private readonly IDataHelper _dataHelper;
         private readonly IValueConverter _valueConverter;
 
-        public TypeScriptProvider(TService owner,
+        public TypeScriptProvider(
+            IMetaDataProvider owner,
             ISerializer serializer,
             IDataHelper dataHelper,
             IValueConverter valueConverter, 
@@ -35,7 +36,7 @@ namespace RIAPP.DataService.Core.CodeGen
             get;
         }
 
-        public TService Owner { get; }
+        public IMetaDataProvider Owner { get; }
 
         public virtual string GenerateScript(string comment = null, bool isDraft = false)
         {

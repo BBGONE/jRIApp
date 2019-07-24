@@ -1,4 +1,4 @@
-﻿using RIAPP.DataService.Core;
+﻿using RIAPP.DataService.Core.Metadata;
 
 namespace RIAPP.DataService.Core.CodeGen
 {
@@ -15,6 +15,6 @@ namespace RIAPP.DataService.Core.CodeGen
     public interface ICodeGenProvider<TService> : ICodeGenProvider
             where TService : BaseDomainService
     {
-         TService Owner { get; }
+        IMetaDataProvider Owner { get; }
     }
 }

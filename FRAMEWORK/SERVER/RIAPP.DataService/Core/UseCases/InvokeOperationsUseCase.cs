@@ -43,7 +43,7 @@ namespace RIAPP.DataService.Core
                 {
                     methParams.Add(message.paramInfo.GetValue(method.parameters[i].name, method, _dataHelper));
                 }
-                var req = new RequestContext(_service, _serviceHelper, operation: ServiceOperationType.InvokeMethod);
+                var req = new RequestContext(_service, operation: ServiceOperationType.InvokeMethod);
                 using (var callContext = new RequestCallContext(req))
                 {
                     object instance = _serviceHelper.GetMethodOwner(method.methodData);

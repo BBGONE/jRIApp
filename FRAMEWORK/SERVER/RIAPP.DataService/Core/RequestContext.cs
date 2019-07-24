@@ -9,7 +9,6 @@ namespace RIAPP.DataService.Core
     public class RequestContext : IEntityVersionProvider
     {
         public RequestContext(BaseDomainService dataService, 
-            IServiceOperationsHelper serviceHelper,
             DbSet dbSet = null,
             ChangeSet changeSet = null,
             RowInfo rowInfo = null,
@@ -17,7 +16,6 @@ namespace RIAPP.DataService.Core
             ServiceOperationType operation = ServiceOperationType.None)
         {
             DataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
-            ServiceHelper = serviceHelper ?? throw new ArgumentNullException(nameof(serviceHelper));
             CurrentDbSet = dbSet;
             CurrentChangeSet = changeSet;
             CurrentRowInfo = rowInfo;
@@ -60,27 +58,6 @@ namespace RIAPP.DataService.Core
             }
         }
 
-        public IServiceOperationsHelper ServiceHelper
-        {
-            get;
-        }
-
-        public IDataHelper DataHelper
-        {
-            get
-            {
-                return ServiceHelper.DataHelper;
-            }
-        }
-
-        public IValidationHelper ValidationHelper
-        {
-            get
-            {
-                return ServiceHelper.ValidationHelper;
-            }
-        }
-
         public BaseDomainService DataService
         {
             get;
@@ -96,24 +73,24 @@ namespace RIAPP.DataService.Core
 
         object IEntityVersionProvider.GetOriginal()
         {
-            return ServiceHelper.GetOriginalEntity(CurrentRowInfo);
+            return this.DataService.ServiceContainer.ServiceHelper.GetOriginalEntity(CurrentRowInfo);
         }
 
         public object GetParent(Type entityType)
         {
-            return ServiceHelper.GetParentEntity(entityType, CurrentRowInfo);
+            return this.DataService.ServiceContainer.ServiceHelper.GetParentEntity(entityType, CurrentRowInfo);
         }
 
         public TModel GetOriginal<TModel>()
             where TModel : class
         {
-            return ServiceHelper.GetOriginalEntity<TModel>(CurrentRowInfo);
+            return this.DataService.ServiceContainer.ServiceHelper.GetOriginalEntity<TModel>(CurrentRowInfo);
         }
 
         public TModel GetParent<TModel>()
             where TModel : class
         {
-            return ServiceHelper.GetParentEntity<TModel>(CurrentRowInfo);
+            return this.DataService.ServiceContainer.ServiceHelper.GetParentEntity<TModel>(CurrentRowInfo);
         }
 
         #endregion

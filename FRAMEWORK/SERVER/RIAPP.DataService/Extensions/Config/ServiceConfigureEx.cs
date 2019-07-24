@@ -13,7 +13,7 @@ namespace RIAPP.DataService.Core.Config
 {
     public static class ServiceConfigureEx
     {
-        public static void AddDomainService<TService>(this IServiceCollection services,
+        public static void AddDomainService<TService>(this IServiceCollection services, 
             Action<ServiceOptions> configure)
          where TService : BaseDomainService
         {
@@ -21,7 +21,7 @@ namespace RIAPP.DataService.Core.Config
             configure?.Invoke(options);
 
             var getUser = options.UserFactory ?? throw new ArgumentNullException(nameof(options.UserFactory), ErrorStrings.ERR_NO_USER);
-
+            
             services.TryAddScoped<IUserProvider>((sp) => new UserProvider(() => getUser(sp)));
 
             services.TryAddScoped<IAuthorizer<TService>, Authorizer<TService>>();
@@ -72,7 +72,7 @@ namespace RIAPP.DataService.Core.Config
             #endregion
 
             #region UseCases
-            var crudCaseFactory = ActivatorUtilities.CreateFactory(typeof(CRUDOperationsUseCase<TService>), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>), typeof(Action<RowInfo>), typeof(Func<Task>) });
+            var crudCaseFactory = ActivatorUtilities.CreateFactory(typeof(CRUDOperationsUseCase<TService>), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>), typeof(Action<RowInfo>), typeof(Func<IServiceOperationsHelper, Task>) });
 
             services.TryAddScoped<ICRUDOperationsUseCaseFactory<TService>>((sp) => new CRUDOperationsUseCaseFactory<TService>((svc, onError, trackChanges, executeChangeSet) =>
                 (ICRUDOperationsUseCase<TService>)crudCaseFactory(sp, new object[] { svc, onError, trackChanges, executeChangeSet })));
@@ -95,8 +95,8 @@ namespace RIAPP.DataService.Core.Config
             services.TryAddTransient(typeof(IResponsePresenter<,>), typeof(OperationOutput<,>));
             #endregion
 
-            var serviceFactory = ActivatorUtilities.CreateFactory(typeof(TService), new Type[] { typeof(IServiceContainer<TService>) });
-
+            var serviceFactory = ActivatorUtilities.CreateFactory(typeof(TService), new Type[] { typeof(IServiceContainer<TService>) } );
+            
             services.TryAddScoped<TService>((sp) => {
                 var sc = sp.GetRequiredService<IServiceContainer<TService>>();
                 return (TService)serviceFactory(sp, new object[] { sc });

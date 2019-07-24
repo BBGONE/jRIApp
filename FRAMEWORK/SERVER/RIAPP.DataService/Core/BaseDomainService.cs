@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Core
 {
-    public abstract class BaseDomainService : IDomainService, IDataServiceComponent
+    public abstract class BaseDomainService : IDomainService, IDataServiceComponent, IMetaDataProvider
     {
         public BaseDomainService(IServiceContainer serviceContainer)
         {
@@ -44,6 +44,11 @@ namespace RIAPP.DataService.Core
             return MetadataHelper.GetInitializedMetadata(this, this.ServiceContainer.DataHelper, this.ServiceContainer.ValueConverter);
         }
 
+        DesignTimeMetadata IMetaDataProvider.GetDesignTimeMetadata(bool isDraft)
+        {
+            return this.GetDesignTimeMetadata(isDraft);
+        }
+
         protected internal void _OnError(Exception ex)
         {
             if (ex is DummyException)
@@ -52,7 +57,7 @@ namespace RIAPP.DataService.Core
         }
 
         #region Overridable Methods
-        protected internal abstract DesignTimeMetadata GetDesignTimeMetadata(bool isDraft);
+        protected abstract DesignTimeMetadata GetDesignTimeMetadata(bool isDraft);
       
         /// <summary>
         ///     Can be used for tracking what is changed by CRUD methods
@@ -204,10 +209,11 @@ namespace RIAPP.DataService.Core
             ICRUDOperationsUseCase uc = factory.Create(this, 
                 (err) => this._OnError(err),
                 (row) => this.TrackChangesToEntity(row),
-                async () =>
+                async (serviceHelper) =>
                 {
                     await this.ExecuteChangeSet();
                     await this.AfterExecuteChangeSet();
+                    await serviceHelper.AfterExecuteChangeSet();
                 });
             var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<ChangeSet, ChangeSet>>();
             

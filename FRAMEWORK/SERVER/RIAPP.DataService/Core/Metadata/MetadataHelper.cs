@@ -23,30 +23,36 @@ namespace RIAPP.DataService.Core.Metadata
             IValueConverter valueConverter)
         {
             RunTimeMetadata result = _metadataCache.GetOrAdd(domainService.GetType(), (svcType) => {
-                RunTimeMetadata metadata = null;
+                RunTimeMetadata runTimeMetadata = null;
                 try
                 {
-                    metadata = InitMetadata(domainService, dataHelper, valueConverter);
+                    DesignTimeMetadata designTimeMetadata = ((IMetaDataProvider)domainService).GetDesignTimeMetadata(false);
+                    IDataManagerContainer dataManagerContainer = domainService.ServiceContainer.DataManagerContainer;
+                    runTimeMetadata = InitMetadata(domainService, designTimeMetadata, dataHelper, valueConverter, dataManagerContainer);
                 }
                 catch (Exception ex)
                 {
                     domainService._OnError(ex);
                     throw new DummyException(ex.Message, ex);
                 }
-                return metadata;
+                return runTimeMetadata;
             });
 
             return result;
         }
 
-        private static RunTimeMetadata InitMetadata(BaseDomainService domainService, IDataHelper dataHelper, IValueConverter valueConverter)
+        private static RunTimeMetadata InitMetadata(BaseDomainService domainService,
+            DesignTimeMetadata designTimeMetadata,
+            IDataHelper dataHelper, 
+            IValueConverter valueConverter,
+            IDataManagerContainer dataManagerContainer)
         {
-            RunTimeMetadata cachedMetadata = new RunTimeMetadata();
+            RunTimeMetadata runTimeMetadata = new RunTimeMetadata();
 
-            //called on every data manager registered while bootstrapping
+            // called on every data manager registered while bootstrapping
             try
             {
-                InitCachedMetadata(domainService, cachedMetadata, dataHelper, valueConverter);
+                InitCachedMetadata(domainService.GetType(), designTimeMetadata, runTimeMetadata, dataHelper, valueConverter, dataManagerContainer);
             }
             catch (Exception ex)
             {
@@ -55,53 +61,55 @@ namespace RIAPP.DataService.Core.Metadata
             }
             finally
             {
-                cachedMetadata.InitCompleted();
+                runTimeMetadata.InitCompleted();
             }
 
-            return cachedMetadata;
+            return runTimeMetadata;
         }
 
-        private static void InitCachedMetadata(BaseDomainService domainService, RunTimeMetadata cachedMetadata, IDataHelper dataHelper, IValueConverter valueConverter)
+        private static void InitCachedMetadata(Type domainServiceType, 
+            DesignTimeMetadata designTimeMetadata, 
+            RunTimeMetadata runTimeMetadata,
+            IDataHelper dataHelper, 
+            IValueConverter valueConverter, 
+            IDataManagerContainer dataManagerContainer)
         {
-            DesignTimeMetadata metadata = domainService.GetDesignTimeMetadata(false);
-            var serviceContainer = domainService.ServiceContainer;
-
-            foreach (DbSetInfo dbSetInfo in metadata.DbSets)
+            foreach (DbSetInfo dbSetInfo in designTimeMetadata.DbSets)
             {
-              // indexed by dbSetName
-                cachedMetadata.DbSets.Add(dbSetInfo.dbSetName, dbSetInfo);
+                // indexed by dbSetName
+                runTimeMetadata.DbSets.Add(dbSetInfo.dbSetName, dbSetInfo);
             }
 
-            foreach (DbSetInfo dbSetInfo in cachedMetadata.DbSets.Values)
+            foreach (DbSetInfo dbSetInfo in runTimeMetadata.DbSets.Values)
             {
                 dbSetInfo.Initialize(dataHelper);
             }
 
-            foreach(var descriptor in serviceContainer.DataManagerContainer.Descriptors)
+            foreach(var descriptor in dataManagerContainer.Descriptors)
             {
-                ProcessMethodDescriptions(valueConverter, descriptor.ImplementationType, cachedMetadata);
+                ProcessMethodDescriptions(descriptor.ImplementationType, runTimeMetadata, valueConverter);
             }
 
-            ProcessMethodDescriptions(valueConverter, domainService.GetType(), cachedMetadata);
+            ProcessMethodDescriptions(domainServiceType, runTimeMetadata, valueConverter);
 
-            foreach (var assoc in metadata.Associations)
+            foreach (var assoc in designTimeMetadata.Associations)
             {
                 if (string.IsNullOrWhiteSpace(assoc.name))
                 {
                     throw new DomainServiceException(ErrorStrings.ERR_ASSOC_EMPTY_NAME);
                 }
-                if (!cachedMetadata.DbSets.ContainsKey(assoc.parentDbSetName))
+                if (!runTimeMetadata.DbSets.ContainsKey(assoc.parentDbSetName))
                 {
                     throw new DomainServiceException(string.Format(ErrorStrings.ERR_ASSOC_INVALID_PARENT, assoc.name,
                         assoc.parentDbSetName));
                 }
-                if (!cachedMetadata.DbSets.ContainsKey(assoc.childDbSetName))
+                if (!runTimeMetadata.DbSets.ContainsKey(assoc.childDbSetName))
                 {
                     throw new DomainServiceException(string.Format(ErrorStrings.ERR_ASSOC_INVALID_CHILD, assoc.name,
                         assoc.childDbSetName));
                 }
-                var childDb = cachedMetadata.DbSets[assoc.childDbSetName];
-                var parentDb = cachedMetadata.DbSets[assoc.parentDbSetName];
+                var childDb = runTimeMetadata.DbSets[assoc.childDbSetName];
+                var parentDb = runTimeMetadata.DbSets[assoc.parentDbSetName];
                 var parentDbFields = parentDb.GetFieldByNames();
                 var childDbFields = childDb.GetFieldByNames();
 
@@ -143,7 +151,7 @@ namespace RIAPP.DataService.Core.Metadata
                     }
                 }
                 //indexed by Name
-                cachedMetadata.Associations.Add(assoc.name, assoc);
+                runTimeMetadata.Associations.Add(assoc.name, assoc);
 
                 if (!string.IsNullOrEmpty(assoc.childToParentName))
                 {
@@ -323,7 +331,7 @@ namespace RIAPP.DataService.Core.Metadata
         ///     and generates from this methods their invocation method descriptions
         /// </summary>
         /// <returns></returns>
-        private static void ProcessMethodDescriptions(IValueConverter valueConverter, Type fromType, RunTimeMetadata metadata)
+        private static void ProcessMethodDescriptions(Type fromType, RunTimeMetadata metadata, IValueConverter valueConverter)
         {
             var allList = GetAllMethods(fromType);
             var svcMethods = GetSvcMethods(allList, valueConverter);

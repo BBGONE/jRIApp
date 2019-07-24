@@ -123,7 +123,7 @@ namespace RIAPP.DataService.Core.CodeGen
                         isFirst = false;
                     }
                 }
-                registeredName = GetTypeInterface(t, typeName, extendsSb == null ? null : extendsSb.ToString());
+                registeredName = GetTypeInterface(t, typeName, extendsSb?.ToString());
             }
             else
             {

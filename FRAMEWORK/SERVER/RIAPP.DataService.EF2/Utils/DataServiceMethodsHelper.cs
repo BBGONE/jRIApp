@@ -18,7 +18,7 @@ namespace RIAPP.DataService.EF2.Utils
             return propertyInfo.Name;
         }
           
-        private static string createDbSetMethods(DbSetInfo dbSetInfo, string tableName)
+        private static string CreateDbSetMethods(DbSetInfo dbSetInfo, string tableName)
         {
             var sb = new StringBuilder(512);
 
@@ -64,16 +64,17 @@ namespace RIAPP.DataService.EF2.Utils
              return sb.ToString();
         }
 
-        public static string CreateMethods(MetadataResult metadata, DbContext DB) 
+        public static string CreateMethods(RunTimeMetadata metadata, DbContext DB) 
         {
             var sb = new StringBuilder(4096);
 
-            metadata.dbSets.ForEach((dbSetInfo) =>
+            var dbSets = metadata.DbSets.Values.OrderBy(d => d.dbSetName).ToList();
+            dbSets.ForEach(dbSetInfo =>
             {
                 string tableName = GetTableName(DB, dbSetInfo.EntityType);
                 if (tableName == string.Empty)
                     return;
-                sb.AppendLine(createDbSetMethods(dbSetInfo, tableName));
+                sb.AppendLine(CreateDbSetMethods(dbSetInfo, tableName));
             });
             return sb.ToString();
         }

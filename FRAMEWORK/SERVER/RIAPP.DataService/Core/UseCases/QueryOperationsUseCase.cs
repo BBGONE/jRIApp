@@ -51,7 +51,7 @@ namespace RIAPP.DataService.Core
                     methParams.AddLast(message.paramInfo.GetValue(method.parameters[i].name, method, _dataHelper));
                 }
 
-                var req = new RequestContext(_service, _serviceHelper, queryInfo: message, operation: ServiceOperationType.Query);
+                var req = new RequestContext(_service, queryInfo: message, operation: ServiceOperationType.Query);
                 using (var callContext = new RequestCallContext(req))
                 {
                     object instance = _serviceHelper.GetMethodOwner(method.methodData);

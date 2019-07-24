@@ -77,6 +77,15 @@ namespace RIAPP.DataService.Core
             }
         }
 
+
+        IServiceOperationsHelper IServiceContainer.ServiceHelper
+        {
+            get
+            {
+                return this.GetServiceHelper();
+            }
+        }
+
         IDataHelper IServiceContainer.DataHelper
         {
             get

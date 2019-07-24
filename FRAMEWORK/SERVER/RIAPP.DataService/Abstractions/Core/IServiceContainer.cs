@@ -12,6 +12,8 @@ namespace RIAPP.DataService.Core
         ISerializer Serializer { get; }
         IServiceContainer CreateScope();
 
+        IServiceOperationsHelper ServiceHelper { get; }
+
         IDataHelper DataHelper { get; }
 
         IValueConverter ValueConverter { get; }

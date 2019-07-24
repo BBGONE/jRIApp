@@ -40,7 +40,7 @@ namespace RIAPP.DataService.Core
                         message.dbSetInfo.EntityType.Name, GetType().Name));
                 message.rowInfo.dbSetInfo = message.dbSetInfo;
                 await _authorizer.CheckUserRightsToExecute(methodData);
-                var req = new RequestContext(_service, _serviceHelper, rowInfo: message.rowInfo, operation: ServiceOperationType.RowRefresh);
+                var req = new RequestContext(_service, rowInfo: message.rowInfo, operation: ServiceOperationType.RowRefresh);
                 using (var callContext = new RequestCallContext(req))
                 {
                     object instance = _serviceHelper.GetMethodOwner(methodData);

@@ -22,9 +22,9 @@ namespace RIAPP.DataService.Core
         private readonly IAuthorizer<TService> _authorizer;
         private readonly Action<Exception> _onError;
         private readonly Action<RowInfo> _trackChanges;
-        private readonly Func<Task> _executeChangeSet;
+        private readonly Func<IServiceOperationsHelper, Task> _executeChangeSet;
         
-        public CRUDOperationsUseCase(IServiceContainer<TService> serviceContainer, BaseDomainService service, Action<Exception> onError, Action<RowInfo> trackChanges, Func<Task> executeChangeSet)
+        public CRUDOperationsUseCase(IServiceContainer<TService> serviceContainer, BaseDomainService service, Action<Exception> onError, Action<RowInfo> trackChanges, Func<IServiceOperationsHelper, Task> executeChangeSet)
         {
             _service = service;
             _onError = onError ?? throw new ArgumentNullException(nameof(onError));
@@ -52,7 +52,7 @@ namespace RIAPP.DataService.Core
         private RequestContext CreateRequestContext(ChangeSet changeSet, RowInfo rowInfo)
         {
             DbSet dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.dbSetInfo.dbSetName).Single();
-            return new RequestContext(_service, _serviceHelper, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
+            return new RequestContext(_service, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
                 operation: ServiceOperationType.SaveChanges);
         }
 
@@ -187,11 +187,10 @@ namespace RIAPP.DataService.Core
 
         private async Task CommitChanges(ChangeSet changeSet, ChangeSetGraph graph)
         {
-            var req = new RequestContext(_service, _serviceHelper, changeSet: changeSet, operation: ServiceOperationType.SaveChanges);
+            var req = new RequestContext(_service, changeSet: changeSet, operation: ServiceOperationType.SaveChanges);
             using (var callContext = new RequestCallContext(req))
             {
-                await _executeChangeSet();
-                await _serviceHelper.AfterExecuteChangeSet();
+                await _executeChangeSet(_serviceHelper);
 
                 foreach (RowInfo rowInfo in graph.AllList)
                 {

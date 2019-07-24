@@ -19,7 +19,7 @@ namespace RIAPP.DataService.EF2.Utils
 
         public override string GenerateScript(string comment = null, bool isDraft = false)
         {
-            var metadata = this.Owner.ServiceGetMetadata();
+            var metadata = this.Owner.GetMetadata();
             return DataServiceMethodsHelper.CreateMethods(metadata, this._db);
         }
     }
