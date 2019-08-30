@@ -109,28 +109,30 @@ export class BasicContent extends BaseObject implements IContent {
             fieldInfo = this.getFieldInfo();
         if (this._isEditing && this.getIsCanBeEdited()) {
             if (!!displayInfo) {
-                if (!!displayInfo.editCss) {
-                    dom.addClass([parentEl], displayInfo.editCss);
-                }
                 if (!!displayInfo.readCss) {
                     dom.removeClass([parentEl], displayInfo.readCss);
+                }
+                if (!!displayInfo.editCss) {
+                    dom.addClass([parentEl], displayInfo.editCss);
                 }
             }
             if (!!fieldInfo && !fieldInfo.isNullable) {
                 dom.addClass([parentEl], cssStyles.required);
             }
+            dom.addClass([parentEl], cssStyles.editMode);
         } else {
             if (!!displayInfo) {
-                if (!!displayInfo.readCss) {
-                    dom.addClass([parentEl], displayInfo.readCss);
-                }
                 if (!!displayInfo.editCss) {
                     dom.removeClass([parentEl], displayInfo.editCss);
+                }
+                if (!!displayInfo.readCss) {
+                    dom.addClass([parentEl], displayInfo.readCss);
                 }
             }
             if (!!fieldInfo && !fieldInfo.isNullable) {
                 dom.removeClass([parentEl], cssStyles.required);
             }
+            dom.removeClass([parentEl], cssStyles.editMode);
         }
     }
     protected getIsCanBeEdited(): boolean {

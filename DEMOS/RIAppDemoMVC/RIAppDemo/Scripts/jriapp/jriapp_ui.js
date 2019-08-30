@@ -19,6 +19,7 @@ define("jriapp_ui/int", ["require", "exports"], function (require, exports) {
         cssStyles["fieldError"] = "ria-field-error";
         cssStyles["content"] = "ria-content-field";
         cssStyles["required"] = "ria-required-field";
+        cssStyles["editMode"] = "ria-edit-mode";
         cssStyles["checkbox"] = "ria-checkbox";
         cssStyles["commandLink"] = "ria-command-link";
         cssStyles["checkedNull"] = "ria-checked-null";
@@ -114,29 +115,31 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
             var displayInfo = this._options.css, parentEl = this._parentEl, fieldInfo = this.getFieldInfo();
             if (this._isEditing && this.getIsCanBeEdited()) {
                 if (!!displayInfo) {
-                    if (!!displayInfo.editCss) {
-                        dom.addClass([parentEl], displayInfo.editCss);
-                    }
                     if (!!displayInfo.readCss) {
                         dom.removeClass([parentEl], displayInfo.readCss);
+                    }
+                    if (!!displayInfo.editCss) {
+                        dom.addClass([parentEl], displayInfo.editCss);
                     }
                 }
                 if (!!fieldInfo && !fieldInfo.isNullable) {
                     dom.addClass([parentEl], "ria-required-field");
                 }
+                dom.addClass([parentEl], "ria-edit-mode");
             }
             else {
                 if (!!displayInfo) {
-                    if (!!displayInfo.readCss) {
-                        dom.addClass([parentEl], displayInfo.readCss);
-                    }
                     if (!!displayInfo.editCss) {
                         dom.removeClass([parentEl], displayInfo.editCss);
+                    }
+                    if (!!displayInfo.readCss) {
+                        dom.addClass([parentEl], displayInfo.readCss);
                     }
                 }
                 if (!!fieldInfo && !fieldInfo.isNullable) {
                     dom.removeClass([parentEl], "ria-required-field");
                 }
+                dom.removeClass([parentEl], "ria-edit-mode");
             }
         };
         BasicContent.prototype.getIsCanBeEdited = function () {

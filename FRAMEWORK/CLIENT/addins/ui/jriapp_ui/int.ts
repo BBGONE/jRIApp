@@ -12,6 +12,7 @@ export const enum cssStyles {
     fieldError = "ria-field-error",
     content = "ria-content-field",
     required = "ria-required-field",
+    editMode = "ria-edit-mode",
     checkbox = "ria-checkbox",
     commandLink = "ria-command-link",
     checkedNull = "ria-checked-null",
