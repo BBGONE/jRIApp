@@ -278,6 +278,8 @@ declare module "jriapp/int" {
         css: {
             readCss?: string;
             editCss?: string;
+            elReadCss?: string;
+            elEditCss?: string;
         };
         template: ITemplateInfo;
         fieldName: string;
@@ -1013,5 +1015,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.23.3";
+    export const VERSION = "2.23.5";
 }

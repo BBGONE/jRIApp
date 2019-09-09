@@ -14,12 +14,7 @@ export interface IAbortable {
     abort(reason?: string): void;
 }
 
-export interface IThenable<T> {
-    then<TResult1 = T, TResult2 = never>(
-        onFulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1> | IThenable<TResult1> | IPromise<TResult1> | IStatefulPromise<TResult1>) | undefined | null,
-        onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2> | IThenable<TResult2> | IPromise<TResult2> | IStatefulPromise<TResult2>) | undefined | null
-    ): IThenable<TResult1 | TResult2>;
-}
+export type IThenable<T> = PromiseLike<T>;
 
 export interface IPromise<T> {
     then<TResult1 = T, TResult2 = never>(

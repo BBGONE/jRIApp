@@ -253,7 +253,12 @@ export interface IContentOptions {
     readOnly: boolean;
     initContentFn: (content: IExternallyCachable) => void;
     fieldInfo: IFieldInfo;
-    css: { readCss?: string; editCss?: string; };
+    css: {
+        readCss?: string; // applied to the parent (wrapper) of the element
+        editCss?: string; // applied to the parent (wrapper) of the element
+        elReadCss?: string; // applied directly to the element
+        elEditCss?: string; // applied directly to the element
+    };
     template: ITemplateInfo;
     fieldName: string;
     options: any;

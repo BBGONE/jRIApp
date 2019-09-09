@@ -239,7 +239,7 @@ export class Application extends BaseObject implements IApplication {
                 const promise = setupPromise1.then(() => {
                     self.objEvents.raise(APP_EVENTS.startup, {});
                     const onStartupRes2: any = (!!onStartUp) ? onStartUp.apply(self, [self]) : null;
-                    let setupPromise2: IThenable<void>;
+                    let setupPromise2: IThenable<any>;
 
                     if (isThenable(onStartupRes2))  {
                         setupPromise2 = onStartupRes2.then(() => {

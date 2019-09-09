@@ -96,14 +96,22 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
                 return;
             }
             this.setDisposing();
-            var displayInfo = this._options.css;
+            var el = this._el, css = this._options.css;
             dom.removeClass([this._parentEl], "ria-content-field");
             dom.removeClass([this._parentEl], "ria-required-field");
-            if (!!displayInfo && !!displayInfo.readCss) {
-                dom.removeClass([this._parentEl], displayInfo.readCss);
-            }
-            if (!!displayInfo && !!displayInfo.editCss) {
-                dom.removeClass([this._parentEl], displayInfo.editCss);
+            if (!!css) {
+                if (!!css.readCss) {
+                    dom.removeClass([this._parentEl], css.readCss);
+                }
+                if (!!css.editCss) {
+                    dom.removeClass([this._parentEl], css.editCss);
+                }
+                if (!!el && !!css.elReadCss) {
+                    dom.removeClass([el], css.elReadCss);
+                }
+                if (!!el && !!css.elEditCss) {
+                    dom.removeClass([el], css.elEditCss);
+                }
             }
             this.cleanUp();
             this._parentEl = null;
@@ -112,14 +120,20 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
             _super.prototype.dispose.call(this);
         };
         BasicContent.prototype.updateCss = function () {
-            var displayInfo = this._options.css, parentEl = this._parentEl, fieldInfo = this.getFieldInfo();
+            var css = this._options.css, parentEl = this._parentEl, el = this.el, fieldInfo = this.getFieldInfo();
             if (this._isEditing && this.getIsCanBeEdited()) {
-                if (!!displayInfo) {
-                    if (!!displayInfo.readCss) {
-                        dom.removeClass([parentEl], displayInfo.readCss);
+                if (!!css) {
+                    if (!!css.readCss) {
+                        dom.removeClass([parentEl], css.readCss);
                     }
-                    if (!!displayInfo.editCss) {
-                        dom.addClass([parentEl], displayInfo.editCss);
+                    if (!!css.editCss) {
+                        dom.addClass([parentEl], css.editCss);
+                    }
+                    if (!!el && !!css.elReadCss) {
+                        dom.removeClass([el], css.elReadCss);
+                    }
+                    if (!!el && !!css.elEditCss) {
+                        dom.addClass([el], css.elEditCss);
                     }
                 }
                 if (!!fieldInfo && !fieldInfo.isNullable) {
@@ -128,12 +142,18 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
                 dom.addClass([parentEl], "ria-edit-mode");
             }
             else {
-                if (!!displayInfo) {
-                    if (!!displayInfo.editCss) {
-                        dom.removeClass([parentEl], displayInfo.editCss);
+                if (!!css) {
+                    if (!!css.editCss) {
+                        dom.removeClass([parentEl], css.editCss);
                     }
-                    if (!!displayInfo.readCss) {
-                        dom.addClass([parentEl], displayInfo.readCss);
+                    if (!!css.readCss) {
+                        dom.addClass([parentEl], css.readCss);
+                    }
+                    if (!!el && !!css.elEditCss) {
+                        dom.removeClass([el], css.elEditCss);
+                    }
+                    if (!!el && !!css.elReadCss) {
+                        dom.addClass([el], css.elReadCss);
                     }
                 }
                 if (!!fieldInfo && !fieldInfo.isNullable) {

@@ -110,6 +110,7 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
             this._listBox.addOnRefreshed(this.onListRefreshed, this.uniqueID, this);
             return this._listBox;
         }
+
         // IF NO ELEMENT VIEW in THE CACHE - proceed creating new ElView
         const listBox = this.createListBox(lookUpOptions);
         const args2: TObjCreatedArgs = {

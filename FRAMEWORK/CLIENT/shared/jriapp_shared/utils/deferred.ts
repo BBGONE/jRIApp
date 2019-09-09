@@ -299,7 +299,7 @@ export class Promise<T> implements IStatefulPromise<T> {
 
     static all<T>(): IStatefulPromise<T[]> {
         const args: any[] = arrHelper.fromList(arguments);
-        return (args.length === 1 && isArray(args[0])) ? whenAll(args[0]) : whenAll(args);
+        return (args.length === 1 && isArray(args[0])) ? whenAll(<any>args[0]) : whenAll(args);
     }
 
     static race<T>(...promises: Array<IPromise<T>>): IPromise<T>;
@@ -308,7 +308,7 @@ export class Promise<T> implements IStatefulPromise<T> {
 
     static race<T>(): IPromise<T> {
         const args: any[] = arrHelper.fromList(arguments);
-        return (args.length === 1 && isArray(args[0])) ? race(args[0]) : race(args);
+        return (args.length === 1 && isArray(args[0])) ? race(<any>args[0]) : race(args);
     }
 
     static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T> {

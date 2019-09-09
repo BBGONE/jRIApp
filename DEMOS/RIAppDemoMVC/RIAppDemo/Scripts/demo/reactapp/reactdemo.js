@@ -231,7 +231,7 @@ define("views/tempview", ["require", "exports", "react", "views/reactview", "act
         var _a;
         switch (action.type) {
             case "CHANGE_PROP":
-                return __assign({}, state, (_a = {}, _a[action.name] = action.value, _a));
+                return __assign(__assign({}, state), (_a = {}, _a[action.name] = action.value, _a));
             default:
                 return state || initialState;
         }
@@ -472,7 +472,7 @@ define("views/pagerview", ["require", "exports", "react", "react-redux", "views/
         var _a;
         switch (action.type) {
             case "CHANGE_PROP":
-                return __assign({}, state, (_a = {}, _a[action.name] = action.value, _a));
+                return __assign(__assign({}, state), (_a = {}, _a[action.name] = action.value, _a));
             default:
                 return state || initialState;
         }

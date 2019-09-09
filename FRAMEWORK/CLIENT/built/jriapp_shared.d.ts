@@ -34,9 +34,7 @@ declare module "jriapp_shared/utils/ideferred" {
     export interface IAbortable {
         abort(reason?: string): void;
     }
-    export interface IThenable<T> {
-        then<TResult1 = T, TResult2 = never>(onFulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1> | IThenable<TResult1> | IPromise<TResult1> | IStatefulPromise<TResult1>) | undefined | null, onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2> | IThenable<TResult2> | IPromise<TResult2> | IStatefulPromise<TResult2>) | undefined | null): IThenable<TResult1 | TResult2>;
-    }
+    export type IThenable<T> = PromiseLike<T>;
     export interface IPromise<T> {
         then<TResult1 = T, TResult2 = never>(onFulfilled?: ((value: T) => TResult1 | IThenable<TResult1>) | undefined | null, onRejected?: ((reason: any) => TResult2 | IThenable<TResult2>) | undefined | null): IPromise<TResult1 | TResult2>;
         catch<TResult = never>(onRejected?: ((reason: any) => TResult | IThenable<TResult>) | undefined | null): IPromise<T | TResult>;
@@ -223,7 +221,7 @@ declare module "jriapp_shared/utils/coreutils" {
         static forEachProp<T>(map: IIndexer<T>, fn: (name: string, val?: T) => void): void;
         static toArray<T>(map: IIndexer<T>): T[];
         static readonly assignStrings: <T extends U, U extends IIndexer<any>>(target: T, source: U) => T;
-        static pipe<T extends any[], R>(fn1: (...args: T) => R, ...fns: Array<(a: R) => R>): (...args: T) => R;
+        static pipe<T, R>(fn1: (...args: T[]) => R, ...fns: Array<(a: R) => R>): (...args: T[]) => R;
         static compose<R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>): (a: R) => R;
     }
 }
@@ -1092,7 +1090,7 @@ declare module "jriapp_shared/collection/utils" {
     export const CollUtils: {
         getObjectField: (name: string, flds: IFieldInfo[]) => IFieldInfo;
         walkField: <T>(fld: IFieldInfo, fn: WalkFieldCB<T>, parentRes?: T) => void;
-        walkFields: <T>(flds: IFieldInfo[], fn: WalkFieldCB<T>, parentRes?: T) => void;
+        walkFields: <T_1>(flds: IFieldInfo[], fn: WalkFieldCB<T_1>, parentRes?: T_1) => void;
         getPKFields(fieldInfos: IFieldInfo[]): IFieldInfo[];
         initVals: (flds: IFieldInfo[], vals: any) => any;
         copyVals: (flds: IFieldInfo[], from: any, to: any) => any;
