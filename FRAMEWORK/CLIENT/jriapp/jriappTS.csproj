@@ -57,9 +57,11 @@
   </PropertyGroup>
   <ItemGroup>
     <TypeScriptCompile Include="jriapp\int.ts" />
+    <TypeScriptCompile Include="jriapp\parsing\int.ts" />
+    <TypeScriptCompile Include="jriapp\parsing\helper.ts" />
+    <TypeScriptCompile Include="jriapp\utils\parser.ts" />
     <TypeScriptCompile Include="jriapp\utils\dom.ts" />
     <TypeScriptCompile Include="jriapp\utils\domevents.ts" />
-    <TypeScriptCompile Include="jriapp\utils\parser.ts" />
     <TypeScriptCompile Include="jriapp\utils\viewchecks.ts" />
     <TypeScriptCompile Include="jriapp\app.ts" />
     <TypeScriptCompile Include="jriapp.ts" />

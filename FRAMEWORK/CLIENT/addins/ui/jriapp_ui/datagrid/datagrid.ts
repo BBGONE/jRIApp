@@ -542,11 +542,13 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         };
         let options: IColumnInfo;
 
+
         const tempOpts = parser.parseOptions(columnAttr);
-        if (tempOpts.length > 0) {
-            options = extend(defaultOp, tempOpts[0]);
-        } else {
+
+        if (!tempOpts) {
             options = defaultOp;
+        } else {
+            options = extend(defaultOp, tempOpts);
         }
 
         if (!!contentAttr) {

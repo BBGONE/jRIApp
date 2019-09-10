@@ -164,7 +164,7 @@ declare module "jriapp_shared/int" {
 declare module "jriapp_shared/utils/checks" {
     import { IThenable } from "jriapp_shared/utils/ideferred";
     export class Checks {
-        static readonly _undefined: any;
+        static readonly _undefined: undefined;
         static isHasProp(obj: any, prop: string): boolean;
         static isNull(a: any): a is void;
         static isUndefined(a: any): a is void;

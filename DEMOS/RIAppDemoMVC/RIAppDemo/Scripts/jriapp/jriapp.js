@@ -117,11 +117,10 @@ define("jriapp/int", ["require", "exports"], function (require, exports) {
     }());
     exports.ButtonCss = ButtonCss;
 });
-define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_1, bootstrap_1) {
+define("jriapp/parsing/int", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _undefined = _a._undefined, isString = _a.isString, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, endsWith = _b.endsWith, trimQuotes = _b.trimQuotes, parseBool = jriapp_shared_1.Utils.core.parseBool, dates = jriapp_shared_1.DateUtils, _c = jriapp_shared_1.Utils.sys, resolvePath = _c.resolvePath, getBraceLen = _c.getBraceLen;
-    var getRX = /^get[(].+[)]$/g, spaceRX = /^\s+$/;
+    exports.getRX = /^get[(].+[)]$/g, exports.spaceRX = /^\s+$/;
     var TOKEN;
     (function (TOKEN) {
         TOKEN["DELIMETER1"] = ":";
@@ -134,7 +133,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         TOKEN["GET"] = "get";
         TOKEN["DATE"] = "date";
         TOKEN["INJECT"] = "inject";
-    })(TOKEN || (TOKEN = {}));
+    })(TOKEN = exports.TOKEN || (exports.TOKEN = {}));
     var TAG;
     (function (TAG) {
         TAG["NONE"] = "";
@@ -145,513 +144,598 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/bo
         TAG["INJECT"] = "4";
         TAG["BRACE"] = "5";
         TAG["INDEXER"] = "6";
-    })(TAG || (TAG = {}));
+    })(TAG = exports.TAG || (exports.TAG = {}));
     var PARSE_TYPE;
     (function (PARSE_TYPE) {
         PARSE_TYPE[PARSE_TYPE["NONE"] = 0] = "NONE";
         PARSE_TYPE[PARSE_TYPE["BINDING"] = 1] = "BINDING";
         PARSE_TYPE[PARSE_TYPE["VIEW"] = 2] = "VIEW";
-    })(PARSE_TYPE || (PARSE_TYPE = {}));
+    })(PARSE_TYPE = exports.PARSE_TYPE || (exports.PARSE_TYPE = {}));
     var DATES;
     (function (DATES) {
         DATES["NOW"] = "now";
         DATES["TODAY"] = "today";
         DATES["TOMORROW"] = "tomorrow";
         DATES["YESTERDAY"] = "yesterday";
-    })(DATES || (DATES = {}));
-    var len_this = "this.".length;
-    function getCurlyBraceParts(val) {
-        var i, ch;
-        var parts = [], len = val.length;
-        for (i = 0; i < len; i += 1) {
-            ch = val.charAt(i);
-            switch (ch) {
-                case "{":
-                    var braceLen = getBraceLen(val, i, 1);
-                    parts.push(trim(val.substr(i + 1, braceLen - 2)));
-                    i += (braceLen - 1);
+    })(DATES = exports.DATES || (exports.DATES = {}));
+    exports.THIS_LEN = "this.".length;
+});
+define("jriapp/parsing/helper", ["require", "exports", "jriapp_shared", "jriapp/parsing/int", "jriapp/bootstrap"], function (require, exports, jriapp_shared_1, int_1, bootstrap_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _undefined = _a._undefined, isString = _a.isString, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, trimQuotes = _b.trimQuotes, _c = jriapp_shared_1.Utils.core, parseBool = _c.parseBool, extend = _c.extend, dates = jriapp_shared_1.DateUtils, _d = jriapp_shared_1.Utils.sys, getBraceLen = _d.getBraceLen, resolvePath = _d.resolvePath;
+    var Funcs = (function () {
+        function Funcs() {
+        }
+        Funcs.setKeyVal = function (kv, start, end, val, isKey, isLit) {
+            if (start > -1 && start < end) {
+                var str = val.substring(start, end);
+                var v = !isLit ? trim(str) : str;
+                if (!v) {
+                    return;
+                }
+                if (isKey) {
+                    kv.key += v;
+                }
+                else {
+                    kv.val += v;
+                }
+            }
+        };
+        Funcs.getDate = function (val, format) {
+            if (!val) {
+                return dates.today();
+            }
+            else {
+                var lower = val.toLowerCase();
+                if (startsWith(lower, "startof")) {
+                    return dates.startOf(lower.substr("startof".length));
+                }
+                else if (startsWith(lower, "endof")) {
+                    return dates.endOf(lower.substr("endof".length));
+                }
+                else {
+                    switch (val.toLowerCase()) {
+                        case "now":
+                            return dates.now();
+                        case "today":
+                            return dates.today();
+                        case "tomorrow":
+                            return dates.tomorrow();
+                        case "yesterday":
+                            return dates.yesterday();
+                        default:
+                            return dates.strToDate(val, format);
+                    }
+                }
+            }
+        };
+        Funcs.getTag = function (val, start, end) {
+            var token = trim(val.substring(start, end));
+            var tag = "";
+            switch (token) {
+                case "bind":
+                    tag = "1";
+                    break;
+                case "get":
+                    tag = "2";
+                    break;
+                case "inject":
+                    tag = "4";
+                    break;
+                case "date":
+                    tag = "3";
                     break;
                 default:
-                    if (!spaceRX.test(ch)) {
-                        throw new Error(format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, val));
-                    }
-                    break;
+                    throw new Error("Unknown token: \"" + token + "\" in expression " + val);
             }
-        }
-        return parts;
-    }
-    function getBraceContent(val, brace) {
-        var ch, start = 0;
-        var len = val.length;
-        var br1;
-        switch (brace) {
-            case 0:
-                br1 = "(";
-                break;
-            case 1:
-                br1 = "{";
-                break;
-            case 2:
-                br1 = "[";
-                break;
-        }
-        for (var i = 0; i < len; i += 1) {
-            if (start < 0) {
-                start = i;
+            return tag;
+        };
+        Funcs.checkVal = function (kv) {
+            if (!kv.key) {
+                return false;
             }
-            ch = val.charAt(i);
-            if (ch === br1) {
-                var braceLen = getBraceLen(val, i, brace);
-                return trim(val.substr(i + 1, braceLen - 2));
-            }
-        }
-        throw new Error("Invalid Expression: " + val);
-    }
-    function setKeyVal(kv, start, end, val, isKey, isLit) {
-        if (start > -1 && start < end) {
-            var str = val.substring(start, end);
-            var v = !isLit ? trim(str) : str;
-            if (!v) {
-                return;
-            }
-            if (isKey) {
-                kv.key += v;
-            }
-            else {
-                kv.val += v;
-            }
-        }
-    }
-    function getDate(val, format) {
-        if (!val) {
-            return dates.today();
-        }
-        else {
-            var lower = val.toLowerCase();
-            if (startsWith(lower, "startof")) {
-                return dates.startOf(lower.substr("startof".length));
-            }
-            else if (startsWith(lower, "endof")) {
-                return dates.endOf(lower.substr("endof".length));
-            }
-            else {
-                switch (val.toLowerCase()) {
-                    case "now":
-                        return dates.now();
-                    case "today":
-                        return dates.today();
-                    case "tomorrow":
-                        return dates.tomorrow();
-                    case "yesterday":
-                        return dates.yesterday();
-                    default:
-                        return dates.strToDate(val, format);
-                }
-            }
-        }
-    }
-    function checkVal(kv) {
-        if (!kv.key) {
-            return false;
-        }
-        if (!!kv.val) {
-            switch (kv.tag) {
-                case "3":
-                    {
-                        var args = getExprArgs(kv.val), val = args.length > 0 ? args[0] : _undefined, format_1 = args.length > 1 ? args[1] : "YYYYMMDD";
-                        kv.val = getDate(val, format_1);
-                    }
-                    break;
-                case "":
-                    {
-                        if (isNumeric(kv.val)) {
-                            kv.val = Number(kv.val);
-                        }
-                        else if (isBoolString(kv.val)) {
-                            kv.val = parseBool(kv.val);
-                        }
-                    }
-                    break;
-            }
-        }
-        return true;
-    }
-    function getTag(val, start, end) {
-        var token = trim(val.substring(start, end));
-        var tag = "";
-        switch (token) {
-            case "bind":
-                tag = "1";
-                break;
-            case "get":
-                tag = "2";
-                break;
-            case "inject":
-                tag = "4";
-                break;
-            case "date":
-                tag = "3";
-                break;
-            default:
-                throw new Error("Unknown token: \"" + token + "\" in expression " + val);
-        }
-        return tag;
-    }
-    function getKeyVals(val) {
-        var i, ch, literal, parts = [], kv = { tag: "", key: "", val: "" }, isKey = true, start = -1;
-        var len = val.length;
-        for (i = 0; i < len; i += 1) {
-            if (start < 0) {
-                start = i;
-            }
-            ch = val.charAt(i);
-            if (!literal) {
-                switch (ch) {
-                    case "'":
-                    case '"':
-                        setKeyVal(kv, start, i, val, isKey, false);
-                        literal = ch;
-                        start = i + 1;
-                        if (kv.tag === "") {
-                            kv.tag = "0";
-                        }
-                        break;
-                    case "(":
-                        if (!isKey && start < i) {
-                            var tag = getTag(val, start, i);
-                            var braceLen_1 = getBraceLen(val, i, 0);
-                            setKeyVal(kv, i + 1, i + braceLen_1 - 1, val, isKey, false);
-                            if (kv.tag !== "") {
-                                throw new Error("Invalid tag: " + trim(val.substring(start, i)) + " and value: " + kv.val + " in expression: " + val);
+            if (!!kv.val) {
+                switch (kv.tag) {
+                    case "3":
+                        {
+                            var args = funcs.getExprArgs(kv.val);
+                            var val = args.length > 0 ? args[0] : _undefined;
+                            if (isString(val)) {
+                                var format_1 = args.length > 1 ? args[1] : "YYYYMMDD";
+                                if (!isString(format_1)) {
+                                    throw new Error("Invalid expression with key: " + kv.key + " val: " + kv.val);
+                                }
+                                kv.val = funcs.getDate(val, format_1);
                             }
-                            kv.tag = tag;
-                            i += (braceLen_1 - 1);
-                            start = -1;
-                        }
-                        else {
-                            throw new Error("Invalid: \"" + ch + "\" in expression " + val);
-                        }
-                        break;
-                    case "[":
-                        setKeyVal(kv, start, i, val, isKey, false);
-                        var braceLen = getBraceLen(val, i, 2);
-                        var str = trimQuotes(val.substring(i + 1, i + braceLen - 1));
-                        if (!str) {
-                            throw new Error("Invalid: \"" + ch + "\" in expression " + val);
-                        }
-                        if (isKey) {
-                            kv.key += "[" + str + "]";
-                        }
-                        else {
-                            kv.val += "[" + str + "]";
-                            if (kv.tag !== "") {
-                                throw new Error("Invalid value: " + kv.val + " in expression: " + val);
+                            else {
+                                if (!!val) {
+                                    throw new Error("Invalid expression with key: " + kv.key + " val: " + kv.val);
+                                }
+                                kv.val = funcs.getDate(_undefined, _undefined);
                             }
-                            kv.tag = "6";
                         }
-                        i += (braceLen - 1);
-                        start = -1;
                         break;
-                    case "{":
-                        if (!isKey) {
-                            var test = trim(val.substring(start, i));
-                            if (!!test) {
-                                throw new Error("Invalid word: \"" + test + "{\" in expression " + val);
+                    case "":
+                        {
+                            if (isNumeric(kv.val)) {
+                                kv.val = Number(kv.val);
                             }
-                            var braceLen_2 = getBraceLen(val, i, 1);
-                            kv.val = val.substring(i + 1, i + braceLen_2 - 1);
-                            if (kv.tag !== "") {
-                                throw new Error("Invalid value: " + kv.val + " after brace \"{\" in expression: " + val);
+                            else if (isBoolString(kv.val)) {
+                                kv.val = parseBool(kv.val);
                             }
-                            kv.tag = "5";
-                            i += (braceLen_2 - 1);
-                            start = -1;
-                        }
-                        else {
-                            throw new Error("Invalid: \"" + ch + "\" in expression " + val);
-                        }
-                        break;
-                    case ",":
-                        setKeyVal(kv, start, i, val, isKey, false);
-                        start = -1;
-                        parts.push(kv);
-                        kv = { tag: "", key: "", val: "" };
-                        isKey = true;
-                        break;
-                    case ":":
-                    case "=":
-                        setKeyVal(kv, start, i, val, isKey, false);
-                        if (kv.tag !== "" || !isKey) {
-                            throw new Error("Invalid \"" + ch + "\" at the start of: " + val.substring(i) + " in expression: " + val);
-                        }
-                        start = -1;
-                        isKey = false;
-                        break;
-                    case ")":
-                    case "}":
-                    case "]":
-                        throw new Error("Invalid: \"" + ch + "\" in expression " + val);
-                    default:
-                        if (kv.tag !== "" && kv.tag !== "6") {
-                            if (ch !== "\t" && ch !== " " && ch !== "\n" && ch !== "\r")
-                                throw new Error("Invalid: \"" + ch + "\" at the start of: " + val.substring(i) + " in expression: " + val);
                         }
                         break;
                 }
             }
-            else {
-                switch (ch) {
-                    case "'":
-                    case '"':
-                        if (literal === ch) {
-                            var i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
-                            if (next === ch) {
-                                setKeyVal(kv, start, i + 1, val, isKey, true);
-                                i += 1;
+            return true;
+        };
+        Funcs.getKeyVals = function (val) {
+            var i, ch, literal, parts = [], kv = { tag: "", key: "", val: "" }, isKey = true, start = -1;
+            var len = val.length;
+            for (i = 0; i < len; i += 1) {
+                if (start < 0) {
+                    start = i;
+                }
+                ch = val.charAt(i);
+                if (!literal) {
+                    switch (ch) {
+                        case "'":
+                        case '"':
+                            funcs.setKeyVal(kv, start, i, val, isKey, false);
+                            literal = ch;
+                            start = i + 1;
+                            if (kv.tag === "") {
+                                kv.tag = "0";
+                            }
+                            break;
+                        case "(":
+                            if (!isKey && start < i) {
+                                var tag = funcs.getTag(val, start, i);
+                                var braceLen_1 = getBraceLen(val, i, 0);
+                                funcs.setKeyVal(kv, i + 1, i + braceLen_1 - 1, val, isKey, false);
+                                if (kv.tag !== "") {
+                                    throw new Error("Invalid tag: " + trim(val.substring(start, i)) + " and value: " + kv.val + " in expression: " + val);
+                                }
+                                kv.tag = tag;
+                                i += (braceLen_1 - 1);
                                 start = -1;
                             }
                             else {
-                                setKeyVal(kv, start, i, val, isKey, true);
-                                literal = null;
-                                start = -1;
+                                throw new Error("Invalid: \"" + ch + "\" in expression " + val);
                             }
-                        }
-                        break;
-                }
-            }
-        }
-        setKeyVal(kv, start, i, val, isKey, false);
-        parts.push(kv);
-        parts = parts.filter(function (kv) {
-            return checkVal(kv);
-        });
-        return parts;
-    }
-    function getExprArgs(expr) {
-        var i, ch, literal, parts = [], start = -1, seekNext = false;
-        var len = expr.length;
-        var current = "";
-        for (i = 0; i < len; i += 1) {
-            if (start < 0) {
-                start = i;
-            }
-            ch = expr.charAt(i);
-            if (!literal) {
-                switch (ch) {
-                    case "'":
-                    case '"':
-                        literal = ch;
-                        current += expr.substring(start, i);
-                        start = i + 1;
-                        break;
-                    case ',':
-                        {
-                            if (seekNext && (current != "" || trim(expr.substring(start, i)) != ""))
-                                throw new Error("Invalid expression arguments: " + expr);
-                            if (!seekNext) {
-                                current += expr.substring(start, i);
-                                parts.push(current);
+                            break;
+                        case "[":
+                            funcs.setKeyVal(kv, start, i, val, isKey, false);
+                            var braceLen = getBraceLen(val, i, 2);
+                            var str = trimQuotes(val.substring(i + 1, i + braceLen - 1));
+                            if (!str) {
+                                throw new Error("Invalid: \"" + ch + "\" in expression " + val);
+                            }
+                            if (isKey) {
+                                kv.key += "[" + str + "]";
                             }
                             else {
-                                seekNext = false;
+                                kv.val += "[" + str + "]";
+                                if (kv.tag !== "") {
+                                    throw new Error("Invalid value: " + kv.val + " in expression: " + val);
+                                }
+                                kv.tag = "6";
                             }
-                            start = -1;
-                            current = "";
-                        }
-                        break;
-                    case '{':
-                        {
-                            if (trim(current) !== "")
-                                throw new Error("Invalid expression arguments: " + expr);
-                            var braceLen = getBraceLen(expr, i, 1);
-                            var val = expr.substring(i + 1, i + braceLen - 1);
-                            var obj = parseOption(0, val, null);
-                            parts.push(obj);
                             i += (braceLen - 1);
                             start = -1;
-                            current = "";
-                            seekNext = true;
-                        }
-                        break;
-                }
-            }
-            else {
-                switch (ch) {
-                    case "'":
-                    case '"':
-                        if (literal === ch) {
-                            var i1 = i + 1, next = i1 < len ? expr.charAt(i1) : null;
-                            if (next === ch) {
-                                current += expr.substring(start, i + 1);
-                                i += 1;
-                                start = i + 1;
+                            break;
+                        case "{":
+                            if (!isKey) {
+                                var test = trim(val.substring(start, i));
+                                if (!!test) {
+                                    throw new Error("Invalid word: \"" + test + "{\" in expression " + val);
+                                }
+                                var braceLen_2 = getBraceLen(val, i, 1);
+                                kv.val = val.substring(i + 1, i + braceLen_2 - 1);
+                                if (kv.tag !== "") {
+                                    throw new Error("Invalid value: " + kv.val + " after brace \"{\" in expression: " + val);
+                                }
+                                kv.tag = "5";
+                                i += (braceLen_2 - 1);
+                                start = -1;
                             }
                             else {
-                                current += expr.substring(start, i);
-                                literal = null;
-                                start = i + 1;
+                                throw new Error("Invalid: \"" + ch + "\" in expression " + val);
                             }
-                        }
-                        break;
+                            break;
+                        case ",":
+                            funcs.setKeyVal(kv, start, i, val, isKey, false);
+                            start = -1;
+                            parts.push(kv);
+                            kv = { tag: "", key: "", val: "" };
+                            isKey = true;
+                            break;
+                        case ":":
+                        case "=":
+                            funcs.setKeyVal(kv, start, i, val, isKey, false);
+                            if (kv.tag !== "" || !isKey) {
+                                throw new Error("Invalid \"" + ch + "\" at the start of: " + val.substring(i) + " in expression: " + val);
+                            }
+                            start = -1;
+                            isKey = false;
+                            break;
+                        case ")":
+                        case "}":
+                        case "]":
+                            throw new Error("Invalid: \"" + ch + "\" in expression " + val);
+                        default:
+                            if (kv.tag !== "" && kv.tag !== "6") {
+                                if (ch !== "\t" && ch !== " " && ch !== "\n" && ch !== "\r")
+                                    throw new Error("Invalid: \"" + ch + "\" at the start of: " + val.substring(i) + " in expression: " + val);
+                            }
+                            break;
+                    }
+                }
+                else {
+                    switch (ch) {
+                        case "'":
+                        case '"':
+                            if (literal === ch) {
+                                var i1 = i + 1, next = i1 < len ? val.charAt(i1) : null;
+                                if (next === ch) {
+                                    funcs.setKeyVal(kv, start, i + 1, val, isKey, true);
+                                    i += 1;
+                                    start = -1;
+                                }
+                                else {
+                                    funcs.setKeyVal(kv, start, i, val, isKey, true);
+                                    literal = null;
+                                    start = -1;
+                                }
+                            }
+                            break;
+                    }
                 }
             }
-        }
-        if (start > -1) {
-            if (seekNext && (current != "" || trim(expr.substring(start, i)) != ""))
-                throw new Error("Invalid expression arguments: " + expr);
-            current += expr.substring(start, i);
-            parts.push(current);
-        }
-        return parts.map(function (p) { return isString(p) ? trim(p) : p; });
-    }
-    function getSvc(id) {
-        var _a;
-        var args = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            args[_i - 1] = arguments[_i];
-        }
-        var argsdata = [];
-        for (var i = 0; i < args.length; ++i) {
-            var val = args[i];
-            if (isNumeric(val)) {
-                argsdata[i] = Number(val);
+            funcs.setKeyVal(kv, start, i, val, isKey, false);
+            parts.push(kv);
+            parts = parts.filter(function (kv) {
+                return funcs.checkVal(kv);
+            });
+            return parts;
+        };
+        Funcs.getExprArgs = function (expr) {
+            var i, ch, literal, parts = [], start = -1, seekNext = false;
+            var len = expr.length;
+            var current = "";
+            for (i = 0; i < len; i += 1) {
+                if (start < 0) {
+                    start = i;
+                }
+                ch = expr.charAt(i);
+                if (!literal) {
+                    switch (ch) {
+                        case "'":
+                        case '"':
+                            literal = ch;
+                            current += expr.substring(start, i);
+                            start = i + 1;
+                            break;
+                        case ',':
+                            {
+                                if (seekNext && (current != "" || trim(expr.substring(start, i)) != ""))
+                                    throw new Error("Invalid expression arguments: " + expr);
+                                if (!seekNext) {
+                                    current += expr.substring(start, i);
+                                    parts.push(current);
+                                }
+                                else {
+                                    seekNext = false;
+                                }
+                                start = -1;
+                                current = "";
+                            }
+                            break;
+                        case '{':
+                            {
+                                if (trim(current) !== "")
+                                    throw new Error("Invalid expression arguments: " + expr);
+                                var braceLen = getBraceLen(expr, i, 1);
+                                var val = expr.substring(i + 1, i + braceLen - 1);
+                                var obj = helper.parseOption(0, val, null);
+                                parts.push(obj);
+                                i += (braceLen - 1);
+                                start = -1;
+                                current = "";
+                                seekNext = true;
+                            }
+                            break;
+                    }
+                }
+                else {
+                    switch (ch) {
+                        case "'":
+                        case '"':
+                            if (literal === ch) {
+                                var i1 = i + 1, next = i1 < len ? expr.charAt(i1) : null;
+                                if (next === ch) {
+                                    current += expr.substring(start, i + 1);
+                                    i += 1;
+                                    start = i + 1;
+                                }
+                                else {
+                                    current += expr.substring(start, i);
+                                    literal = null;
+                                    start = i + 1;
+                                }
+                            }
+                            break;
+                    }
+                }
             }
-            else if (isBoolString(val)) {
-                argsdata[i] = parseBool(val);
+            if (start > -1) {
+                if (seekNext && (current != "" || trim(expr.substring(start, i)) != ""))
+                    throw new Error("Invalid expression arguments: " + expr);
+                current += expr.substring(start, i);
+                parts.push(current);
             }
-            else {
-                argsdata[i] = val;
-            }
+            return parts.map(function (p) { return isString(p) ? trim(p) : p; });
+        };
+        return Funcs;
+    }());
+    var funcs = Funcs;
+    var Helper = (function () {
+        function Helper() {
         }
-        return (_a = bootstrap_1.bootstrap.app).getSvc.apply(_a, __spreadArrays([trimQuotes(id)], argsdata));
-    }
-    function getOptions(id) {
-        return bootstrap_1.bootstrap.app.getOptions(trimQuotes(id));
-    }
-    function parseById(parse_type, id, dataContext) {
-        var options = getOptions(id);
-        return parseOption(parse_type, options, dataContext);
-    }
-    function isGetExpr(val) {
-        return !!val && getRX.test(val);
-    }
-    function parseOption(parse_type, part, dataContext) {
-        var res = parse_type === 1 ? {
-            targetPath: "",
-            sourcePath: "",
-            to: "",
-            target: null,
-            source: null,
-            mode: "OneWay",
-            converter: null,
-            param: null,
-            isBind: false
-        } : {};
-        part = trim(part);
-        if (isGetExpr(part)) {
-            var id = getBraceContent(part, 0);
-            return parseById(parse_type, trim(id), dataContext);
-        }
-        var kvals = getKeyVals(part);
-        kvals.forEach(function (kv) {
-            var isBind = false, bindparts;
-            if (parse_type === 1 && !kv.val && startsWith(kv.key, "this.")) {
-                kv.val = kv.key.substr(len_this);
-                kv.key = "targetPath";
-            }
-            var checkIsBind = parse_type === 2 || parse_type === 1;
-            if (checkIsBind && kv.tag === "1") {
-                bindparts = getExprArgs(kv.val);
-                isBind = bindparts.length > 0;
-            }
-            if (isBind) {
-                switch (parse_type) {
-                    case 2:
-                        var source = dataContext || bootstrap_1.bootstrap.app;
-                        if (bindparts.length > 1) {
-                            source = resolvePath(bootstrap_1.bootstrap.app, bindparts[1]);
-                        }
-                        res[kv.key] = resolvePath(source, bindparts[0]);
-                        break;
-                    case 1:
-                        if (bindparts.length > 0 && kv.key === "param") {
-                            res[kv.key] = bindparts;
-                            res.isBind = true;
-                        }
+        Helper.getCurlyBraceParts = function (val) {
+            var i, ch;
+            var parts = [], len = val.length;
+            for (i = 0; i < len; i += 1) {
+                ch = val.charAt(i);
+                switch (ch) {
+                    case "{":
+                        var braceLen = getBraceLen(val, i, 1);
+                        parts.push(trim(val.substr(i + 1, braceLen - 2)));
+                        i += (braceLen - 1);
                         break;
                     default:
-                        res[kv.key] = kv.val;
-                        break;
-                }
-            }
-            else {
-                switch (kv.tag) {
-                    case "5":
-                        res[kv.key] = parseOption(parse_type, kv.val, dataContext);
-                        break;
-                    case "2":
-                        res[kv.key] = parseById(0, kv.val, dataContext);
-                        break;
-                    case "4":
-                        {
-                            var args = getExprArgs(kv.val);
-                            var id = args[0], rest = args.slice(1);
-                            res[kv.key] = getSvc.apply(void 0, __spreadArrays([id], rest));
+                        if (!int_1.spaceRX.test(ch)) {
+                            throw new Error(format(jriapp_shared_1.LocaleERRS.ERR_EXPR_BRACES_INVALID, val));
                         }
                         break;
-                    default:
-                        res[kv.key] = kv.val;
-                        break;
                 }
             }
-        });
-        return res;
+            return parts;
+        };
+        Helper.getBraceContent = function (val, brace) {
+            var ch, start = 0;
+            var len = val.length;
+            var br1;
+            switch (brace) {
+                case 0:
+                    br1 = "(";
+                    break;
+                case 1:
+                    br1 = "{";
+                    break;
+                case 2:
+                    br1 = "[";
+                    break;
+            }
+            for (var i = 0; i < len; i += 1) {
+                if (start < 0) {
+                    start = i;
+                }
+                ch = val.charAt(i);
+                if (ch === br1) {
+                    var braceLen = getBraceLen(val, i, brace);
+                    return trim(val.substr(i + 1, braceLen - 2));
+                }
+            }
+            throw new Error("Invalid Expression: " + val);
+        };
+        Helper.getSvc = function (id) {
+            var _a;
+            var args = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
+            }
+            var argsdata = [];
+            for (var i = 0; i < args.length; ++i) {
+                var val = args[i];
+                if (isNumeric(val)) {
+                    argsdata[i] = Number(val);
+                }
+                else if (isBoolString(val)) {
+                    argsdata[i] = parseBool(val);
+                }
+                else {
+                    argsdata[i] = val;
+                }
+            }
+            return (_a = bootstrap_1.bootstrap.app).getSvc.apply(_a, __spreadArrays([trimQuotes(id)], argsdata));
+        };
+        Helper.isGetExpr = function (val) {
+            return !!val && int_1.getRX.test(val);
+        };
+        Helper.getGetParts = function (str) {
+            var args = funcs.getExprArgs(str);
+            return args.map(function (id) {
+                if (!isString(id)) {
+                    throw new Error("Invalid get expression: " + str);
+                }
+                return trim(helper.getOptions(trim(id)));
+            });
+        };
+        Helper.getOptions = function (id) {
+            return bootstrap_1.bootstrap.app.getOptions(trimQuotes(id));
+        };
+        Helper.parseGetExpr = function (parseType, strExpr, dataContext) {
+            var parts = helper.getGetParts(strExpr);
+            return helper.parseOptions(parseType, parts, dataContext);
+        };
+        Helper.parseOptions = function (parseType, parts, dataContext) {
+            var first = parts[0], rest = parts.slice(1);
+            var obj = helper.parseOption(parseType, first, dataContext) || {};
+            if (rest.length > 0) {
+                rest.forEach(function (val) {
+                    var obj2 = helper.parseOption(parseType, val, dataContext);
+                    obj = extend(obj, obj2);
+                });
+            }
+            return obj;
+        };
+        Helper.parseOption = function (parseType, part, dataContext) {
+            var res = parseType === 1 ? {
+                targetPath: "",
+                sourcePath: "",
+                to: "",
+                target: null,
+                source: null,
+                mode: "OneWay",
+                converter: null,
+                param: null,
+                isBind: false
+            } : {};
+            part = trim(part);
+            if (helper.isGetExpr(part)) {
+                var expr = helper.getBraceContent(part, 0);
+                return helper.parseGetExpr(parseType, expr, dataContext);
+            }
+            var kvals = funcs.getKeyVals(part);
+            kvals.forEach(function (kv) {
+                var isBind = false, bindparts;
+                if (parseType === 1 && !kv.val && startsWith(kv.key, "this.")) {
+                    kv.val = kv.key.substr(int_1.THIS_LEN);
+                    kv.key = "targetPath";
+                }
+                var checkIsBind = parseType === 2 || parseType === 1;
+                if (checkIsBind && kv.tag === "1") {
+                    bindparts = funcs.getExprArgs(kv.val);
+                    isBind = bindparts.length > 0;
+                }
+                if (isBind) {
+                    switch (parseType) {
+                        case 2:
+                            var source = dataContext || bootstrap_1.bootstrap.app;
+                            if (bindparts.length > 1) {
+                                if (isString(bindparts[1])) {
+                                    source = resolvePath(bootstrap_1.bootstrap.app, bindparts[1]);
+                                }
+                                else {
+                                    throw new Error("Invalid expression with key: " + kv.key + " val: " + kv.val);
+                                }
+                            }
+                            if (isString(bindparts[0])) {
+                                res[kv.key] = resolvePath(source, bindparts[0]);
+                            }
+                            else {
+                                throw new Error("Invalid expression with key: " + kv.key + " val: " + kv.val);
+                            }
+                            break;
+                        case 1:
+                            if (bindparts.length > 0 && kv.key === "param") {
+                                res[kv.key] = bindparts;
+                                res.isBind = true;
+                            }
+                            break;
+                        default:
+                            res[kv.key] = kv.val;
+                            break;
+                    }
+                }
+                else {
+                    switch (kv.tag) {
+                        case "5":
+                            res[kv.key] = helper.parseOption(parseType, kv.val, dataContext);
+                            break;
+                        case "2":
+                            {
+                                res[kv.key] = helper.parseGetExpr(0, kv.val, dataContext);
+                            }
+                            break;
+                        case "4":
+                            {
+                                var args = funcs.getExprArgs(kv.val);
+                                var id = args[0], rest = args.slice(1);
+                                if (isString(id)) {
+                                    res[kv.key] = helper.getSvc.apply(helper, __spreadArrays([id], rest));
+                                }
+                                else {
+                                    throw new Error("Invalid expression with key: " + kv.key + " val: " + kv.val);
+                                }
+                            }
+                            break;
+                        default:
+                            res[kv.key] = kv.val;
+                            break;
+                    }
+                }
+            });
+            return res;
+        };
+        return Helper;
+    }());
+    exports.Helper = Helper;
+    var helper = Helper;
+});
+define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/parsing/helper"], function (require, exports, jriapp_shared_2, helper_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var _a = jriapp_shared_2.Utils.str, trim = _a.fastTrim, startsWith = _a.startsWith, endsWith = _a.endsWith, isGetExpr = helper_1.Helper.isGetExpr, getBraceContent = helper_1.Helper.getBraceContent, getCurlyBraceParts = helper_1.Helper.getCurlyBraceParts, getGetParts = helper_1.Helper.getGetParts, parseOptions = helper_1.Helper.parseOptions;
+    function _appendPart(parts, str) {
+        if (startsWith(str, "{") && endsWith(str, "}")) {
+            var subparts = getCurlyBraceParts(str);
+            for (var k = 0; k < subparts.length; k += 1) {
+                parts.push(subparts[k]);
+            }
+        }
+        else {
+            parts.push(str);
+        }
     }
-    function parseOptions(parse_type, strs, dataContext) {
-        var res = [];
+    function _getParts(strs) {
         var parts = [];
         for (var i = 0; i < strs.length; i += 1) {
-            var str = trim(strs[i]);
-            if (isGetExpr(str)) {
-                var id = getBraceContent(str, 0);
-                str = trim(getOptions(trim(id)));
-            }
-            if (startsWith(str, "{") && endsWith(str, "}")) {
-                var subparts = getCurlyBraceParts(str);
-                for (var k = 0; k < subparts.length; k += 1) {
-                    parts.push(subparts[k]);
-                }
-            }
-            else {
-                parts.push(str);
-            }
+            _appendPart(parts, trim(strs[i]));
         }
-        for (var j = 0; j < parts.length; j += 1) {
-            res.push(parseOption(parse_type, parts[j], dataContext));
+        return parts;
+    }
+    function _parseOptions(parseType, options, dataContext) {
+        var parts = [];
+        if (isGetExpr(options)) {
+            var ids = getBraceContent(options, 0);
+            var args = getGetParts(ids);
+            args.forEach(function (val) {
+                _appendPart(parts, val);
+            });
+            return parseOptions(parseType, parts, dataContext);
         }
-        return res;
+        else {
+            _appendPart(parts, options);
+            return parseOptions(parseType, parts, dataContext);
+        }
+    }
+    function _parseOptionsArr(parseType, strs, dataContext) {
+        var parts = _getParts(strs);
+        return parts.map(function (part) { return _parseOptions(parseType, part, dataContext); });
     }
     var Parser = (function () {
         function Parser() {
         }
         Parser.parseOptions = function (options) {
-            return parseOptions(0, [options], null);
+            return _parseOptions(0, options, null);
         };
         Parser.parseBindings = function (bindings) {
-            return parseOptions(1, bindings, null);
+            return _parseOptionsArr(1, bindings, null);
         };
         Parser.parseViewOptions = function (options, dataContext) {
-            var res = parseOptions(2, [options], dataContext);
-            return (!!res && res.length > 0) ? res[0] : {};
+            return _parseOptions(2, options, dataContext);
         };
         return Parser;
     }());
     exports.Parser = Parser;
 });
-define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/parser"], function (require, exports, jriapp_shared_2, bootstrap_2, parser_1) {
+define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/parser"], function (require, exports, jriapp_shared_3, bootstrap_2, parser_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_2.Utils, format = utils.str.format, parser = parser_1.Parser, ERRS = jriapp_shared_2.LocaleERRS;
+    var utils = jriapp_shared_3.Utils, format = utils.str.format, parser = parser_1.Parser, ERRS = jriapp_shared_3.LocaleERRS;
     function createElViewFactory(register) {
         return new ElViewFactory(register);
     }
@@ -690,7 +774,7 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstra
     }());
     var ElViewStore = (function () {
         function ElViewStore() {
-            this._weakmap = jriapp_shared_2.createWeakMap();
+            this._weakmap = jriapp_shared_3.createWeakMap();
         }
         ElViewStore.prototype.dispose = function () {
         };
@@ -798,12 +882,12 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstra
             configurable: true
         });
         return ElViewFactory;
-    }(jriapp_shared_2.BaseObject));
+    }(jriapp_shared_3.BaseObject));
 });
-define("jriapp/content", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_3) {
+define("jriapp/content", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var ERRS = jriapp_shared_3.LocaleERRS;
+    var ERRS = jriapp_shared_4.LocaleERRS;
     function createContentFactoryList() {
         return new FactoryList();
     }
@@ -835,10 +919,10 @@ define("jriapp/content", ["require", "exports", "jriapp_shared"], function (requ
         return FactoryList;
     }());
 });
-define("jriapp/defaults", ["require", "exports", "jriapp_shared", "jriapp/int"], function (require, exports, jriapp_shared_4, int_1) {
+define("jriapp/defaults", ["require", "exports", "jriapp_shared", "jriapp/int"], function (require, exports, jriapp_shared_5, int_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_4.Utils, endsWith = utils.str.endsWith;
+    var utils = jriapp_shared_5.Utils, endsWith = utils.str.endsWith;
     var Defaults = (function (_super) {
         __extends(Defaults, _super);
         function Defaults() {
@@ -956,19 +1040,19 @@ define("jriapp/defaults", ["require", "exports", "jriapp_shared", "jriapp/int"],
         });
         Object.defineProperty(Defaults.prototype, "ButtonsCSS", {
             get: function () {
-                return int_1.ButtonCss;
+                return int_2.ButtonCss;
             },
             enumerable: true,
             configurable: true
         });
         return Defaults;
-    }(jriapp_shared_4.BaseObject));
+    }(jriapp_shared_5.BaseObject));
     exports.Defaults = Defaults;
 });
-define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_5) {
+define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_5.Utils, isFunc = utils.check.isFunc, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, format = utils.str.format, _b = utils.defer, createDeferred = _b.createDeferred, reject = _b.reject, ERRS = jriapp_shared_5.LocaleERRS, DEBUG = utils.debug, LOG = utils.log;
+    var utils = jriapp_shared_6.Utils, isFunc = utils.check.isFunc, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, format = utils.str.format, _b = utils.defer, createDeferred = _b.createDeferred, reject = _b.reject, ERRS = jriapp_shared_6.LocaleERRS, DEBUG = utils.debug, LOG = utils.log;
     var LOADER_EVENTS;
     (function (LOADER_EVENTS) {
         LOADER_EVENTS["loaded"] = "loaded";
@@ -1009,7 +1093,7 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
             var _this = _super.call(this) || this;
             var self = _this;
             _this._promises = [];
-            _this._waitQueue = new jriapp_shared_5.WaitQueue(self);
+            _this._waitQueue = new jriapp_shared_6.WaitQueue(self);
             return _this;
         }
         TemplateLoader.prototype.dispose = function () {
@@ -1112,13 +1196,13 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
             configurable: true
         });
         return TemplateLoader;
-    }(jriapp_shared_5.BaseObject));
+    }(jriapp_shared_6.BaseObject));
     exports.TemplateLoader = TemplateLoader;
 });
-define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_6) {
+define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_6.Utils, _a = utils.check, isFunc = _a.isFunc, isString = _a.isString, isNt = _a.isNt, arrHelper = utils.arr, format = utils.str.format, debug = utils.debug, ERRS = jriapp_shared_6.LocaleERRS;
+    var utils = jriapp_shared_7.Utils, _a = utils.check, isFunc = _a.isFunc, isString = _a.isString, isNt = _a.isNt, arrHelper = utils.arr, format = utils.str.format, debug = utils.debug, ERRS = jriapp_shared_7.LocaleERRS;
     var EventWrap = (function () {
         function EventWrap(ev, target) {
             this._ev = ev;
@@ -1371,7 +1455,7 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
         return EventHelper;
     }());
     var helper = EventHelper;
-    var weakmap = jriapp_shared_6.createWeakMap();
+    var weakmap = jriapp_shared_7.createWeakMap();
     function isDelegateArgs(a) {
         return (!a) ? false : isFunc(a.matchElement);
     }
@@ -1420,10 +1504,10 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
     }());
     exports.DomEvents = DomEvents;
 });
-define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils/domevents"], function (require, exports, jriapp_shared_7, domevents_1) {
+define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils/domevents"], function (require, exports, jriapp_shared_8, domevents_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var fromList = jriapp_shared_7.Utils.arr.fromList, fastTrim = jriapp_shared_7.Utils.str.fastTrim, win = window, doc = win.document, queue = jriapp_shared_7.Utils.queue, hasClassList = ("classList" in window.document.documentElement), weakmap = jriapp_shared_7.createWeakMap();
+    var fromList = jriapp_shared_8.Utils.arr.fromList, fastTrim = jriapp_shared_8.Utils.str.fastTrim, win = window, doc = win.document, queue = jriapp_shared_8.Utils.queue, hasClassList = ("classList" in window.document.documentElement), weakmap = jriapp_shared_8.createWeakMap();
     var _isTemplateTagAvailable = false;
     var _checkDOMReady = (function () {
         var funcs = [], hack = doc.documentElement.doScroll, domContentLoaded = "DOMContentLoaded";
@@ -1717,11 +1801,11 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
     }());
     exports.DomUtils = DomUtils;
 });
-define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/int"], function (require, exports, jriapp_shared_8, dom_1, int_2) {
+define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/int"], function (require, exports, jriapp_shared_9, dom_1, int_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_8.Utils, doc = dom_1.DomUtils.document, arrHelper = utils.arr, _a = utils.str, format = _a.format, ltrim = _a.ltrim, rtrim = _a.rtrim;
-    exports.frameworkJS = int_2.Config.frameworkJS || "jriapp.js";
+    var utils = jriapp_shared_9.Utils, doc = dom_1.DomUtils.document, arrHelper = utils.arr, _a = utils.str, format = _a.format, ltrim = _a.ltrim, rtrim = _a.rtrim;
+    exports.frameworkJS = int_3.Config.frameworkJS || "jriapp.js";
     var stylesDir = "css", imageDir = "img";
     function fn_getFrameworkPath() {
         var name = exports.frameworkJS;
@@ -1747,7 +1831,7 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/util
         function PathHelper() {
         }
         PathHelper.appendBust = function (url) {
-            var bust = int_2.Config.bust;
+            var bust = int_3.Config.bust;
             if (!bust) {
                 return url;
             }
@@ -1802,8 +1886,8 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/util
         PathHelper.getFrameworkPath = function () {
             var res = _cache["root"];
             if (!res) {
-                if (!!int_2.Config.frameworkPath) {
-                    res = int_2.Config.frameworkPath;
+                if (!!int_3.Config.frameworkPath) {
+                    res = int_3.Config.frameworkPath;
                 }
                 if (!res) {
                     res = fn_getFrameworkPath();
@@ -1838,10 +1922,10 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/util
     }());
     exports.PathHelper = PathHelper;
 });
-define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_shared/utils/async", "jriapp/utils/dom", "jriapp/utils/path"], function (require, exports, jriapp_shared_9, async_1, dom_2, path_1) {
+define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_shared/utils/async", "jriapp/utils/dom", "jriapp/utils/path"], function (require, exports, jriapp_shared_10, async_1, dom_2, path_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var _resolve = async_1.AsyncUtils.resolve, _whenAll = async_1.AsyncUtils.whenAll, createDeferred = async_1.AsyncUtils.createDeferred, utils = jriapp_shared_9.Utils, dom = dom_2.DomUtils, arrHelper = utils.arr, doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
+    var _resolve = async_1.AsyncUtils.resolve, _whenAll = async_1.AsyncUtils.whenAll, createDeferred = async_1.AsyncUtils.createDeferred, utils = jriapp_shared_10.Utils, dom = dom_2.DomUtils, arrHelper = utils.arr, doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
     var _stylesLoader = null;
     exports.frameworkCss = "jriapp.css";
     function createCssLoader() {
@@ -1953,11 +2037,11 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
         return StylesLoader;
     }());
 });
-define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/dom", "jriapp_shared/utils/deferred", "jriapp_shared/utils/queue"], function (require, exports, jriapp_shared_10, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, dom_3, deferred_1, queue_1) {
+define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/dom", "jriapp_shared/utils/deferred", "jriapp_shared/utils/queue"], function (require, exports, jriapp_shared_11, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, dom_3, deferred_1, queue_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_10.Utils, dom = dom_3.DomUtils, win = dom.window, doc = win.document, isFunc = utils.check.isFunc, _a = utils.defer, createDeferred = _a.createDeferred, delay = _a.delay, resolve = _a.resolve, _b = utils.core, forEachProp = _b.forEachProp, getNewID = _b.getNewID, getValue = _b.getValue, setValue = _b.setValue, removeValue = _b.removeValue, _c = utils.str, format = _c.format, fastTrim = _c.fastTrim, ERROR = utils.err, ERRS = jriapp_shared_10.LocaleERRS;
-    exports.subscribeWeakMap = jriapp_shared_10.createWeakMap(), exports.selectableProviderWeakMap = jriapp_shared_10.createWeakMap();
+    var utils = jriapp_shared_11.Utils, dom = dom_3.DomUtils, win = dom.window, doc = win.document, isFunc = utils.check.isFunc, _a = utils.defer, createDeferred = _a.createDeferred, delay = _a.delay, resolve = _a.resolve, _b = utils.core, forEachProp = _b.forEachProp, getNewID = _b.getNewID, getValue = _b.getValue, setValue = _b.setValue, removeValue = _b.removeValue, _c = utils.str, format = _c.format, fastTrim = _c.fastTrim, ERROR = utils.err, ERRS = jriapp_shared_11.LocaleERRS;
+    exports.subscribeWeakMap = jriapp_shared_11.createWeakMap(), exports.selectableProviderWeakMap = jriapp_shared_11.createWeakMap();
     (function () {
         var win = dom.window;
         if (!win.Promise) {
@@ -2020,7 +2104,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             }
         };
         return _ObjectEvents;
-    }(jriapp_shared_10.ObjectEvents));
+    }(jriapp_shared_11.ObjectEvents));
     function registerConverter(root, name, obj) {
         var name2 = "cnv." + name;
         if (!getObject(root, name2)) {
@@ -2203,7 +2287,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                 self.objEvents.raise("unload", {});
             }, this._uniqueID);
             win.onerror = function (msg, url, linenumber) {
-                if (!!msg && msg.toString().indexOf(jriapp_shared_10.DUMY_ERROR) > -1) {
+                if (!!msg && msg.toString().indexOf(jriapp_shared_11.DUMY_ERROR) > -1) {
                     return true;
                 }
                 alert("Error: " + msg + "\nURL: " + url + "\nLine Number: " + linenumber);
@@ -2500,7 +2584,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             configurable: true
         });
         return Bootstrap;
-    }(jriapp_shared_10.BaseObject));
+    }(jriapp_shared_11.BaseObject));
     exports.Bootstrap = Bootstrap;
     exports.bootstrap = new Bootstrap();
 });
@@ -2526,10 +2610,10 @@ define("jriapp/utils/viewchecks", ["require", "exports"], function (require, exp
     }());
     exports.ViewChecks = ViewChecks;
 });
-define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_11, bootstrap_3) {
+define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_12, bootstrap_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_11.Utils, _a = utils.check, isNt = _a.isNt, isNumber = _a.isNumber, _b = utils.str, format = _b.format, stripNonNumeric = _b.stripNonNumeric, formatNumber = _b.formatNumber, round = utils.core.round, _c = utils.dates, strToDate = _c.strToDate, dateToStr = _c.dateToStr, boot = bootstrap_3.bootstrap, ERRS = jriapp_shared_11.LocaleERRS;
+    var utils = jriapp_shared_12.Utils, _a = utils.check, isNt = _a.isNt, isNumber = _a.isNumber, _b = utils.str, format = _b.format, stripNonNumeric = _b.stripNonNumeric, formatNumber = _b.formatNumber, round = utils.core.round, _c = utils.dates, strToDate = _c.strToDate, dateToStr = _c.dateToStr, boot = bootstrap_3.bootstrap, ERRS = jriapp_shared_12.LocaleERRS;
     exports.NUM_CONV = { None: 0, Integer: 1, Decimal: 2, Float: 3, SmallInt: 4 };
     var BaseConverter = (function () {
         function BaseConverter() {
@@ -2738,10 +2822,10 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
     boot.registerConverter("floatConverter", floatConverter);
     boot.registerConverter("notConverter", new NotConverter());
 });
-define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_12, bootstrap_4) {
+define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_13, bootstrap_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_12.Utils, _a = utils.check, isString = _a.isString, isUndefined = _a.isUndefined, isNt = _a.isNt, _undefined = _a._undefined, isHasProp = _a.isHasProp, format = utils.str.format, _b = utils.core, getNewID = _b.getNewID, forEachProp = _b.forEachProp, sys = utils.sys, debug = utils.debug, log = utils.log, ERRS = jriapp_shared_12.LocaleERRS;
+    var utils = jriapp_shared_13.Utils, _a = utils.check, isString = _a.isString, isUndefined = _a.isUndefined, isNt = _a.isNt, _undefined = _a._undefined, isHasProp = _a.isHasProp, format = utils.str.format, _b = utils.core, getNewID = _b.getNewID, forEachProp = _b.forEachProp, sys = utils.sys, debug = utils.debug, log = utils.log, ERRS = jriapp_shared_13.LocaleERRS;
     var resolvePath = sys.resolvePath, getPathParts = sys.getPathParts, getErrorNotification = sys.getErrorNotification, getProp = sys.getProp, setProp = sys.setProp, boot = bootstrap_4.bootstrap;
     sys.isBinding = function (obj) {
         return (!!obj && obj instanceof Binding);
@@ -3455,13 +3539,13 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
             configurable: true
         });
         return Binding;
-    }(jriapp_shared_12.BaseObject));
+    }(jriapp_shared_13.BaseObject));
     exports.Binding = Binding;
 });
-define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/viewchecks", "jriapp/utils/dom"], function (require, exports, jriapp_shared_13, bootstrap_5, viewchecks_1, dom_4) {
+define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/viewchecks", "jriapp/utils/dom"], function (require, exports, jriapp_shared_14, bootstrap_5, viewchecks_1, dom_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_13.Utils, reject = utils.defer.reject, dom = dom_4.DomUtils, viewChecks = viewchecks_1.ViewChecks, _a = utils.check, isFunc = _a.isFunc, isThenable = _a.isThenable, format = utils.str.format, arrHelper = utils.arr, sys = utils.sys, boot = bootstrap_5.bootstrap, ERRS = jriapp_shared_13.LocaleERRS, ERROR = utils.err, doc = dom.document;
+    var utils = jriapp_shared_14.Utils, reject = utils.defer.reject, dom = dom_4.DomUtils, viewChecks = viewchecks_1.ViewChecks, _a = utils.check, isFunc = _a.isFunc, isThenable = _a.isThenable, format = utils.str.format, arrHelper = utils.arr, sys = utils.sys, boot = bootstrap_5.bootstrap, ERRS = jriapp_shared_14.LocaleERRS, ERROR = utils.err, doc = dom.document;
     var css;
     (function (css) {
         css["templateContainer"] = "ria-template-container";
@@ -3723,12 +3807,12 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
             configurable: true
         });
         return Template;
-    }(jriapp_shared_13.BaseObject));
+    }(jriapp_shared_14.BaseObject));
 });
-define("jriapp/utils/lifetime", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_14) {
+define("jriapp/utils/lifetime", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_15) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_14.Utils;
+    var utils = jriapp_shared_15.Utils;
     var LifeTimeScope = (function (_super) {
         __extends(LifeTimeScope, _super);
         function LifeTimeScope() {
@@ -3774,13 +3858,13 @@ define("jriapp/utils/lifetime", ["require", "exports", "jriapp_shared"], functio
             return "LifeTimeScope";
         };
         return LifeTimeScope;
-    }(jriapp_shared_14.BaseObject));
+    }(jriapp_shared_15.BaseObject));
     exports.LifeTimeScope = LifeTimeScope;
 });
-define("jriapp/utils/propwatcher", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_15) {
+define("jriapp/utils/propwatcher", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_16) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var coreUtils = jriapp_shared_15.Utils.core;
+    var coreUtils = jriapp_shared_16.Utils.core;
     var PropWatcher = (function (_super) {
         __extends(PropWatcher, _super);
         function PropWatcher() {
@@ -3838,13 +3922,13 @@ define("jriapp/utils/propwatcher", ["require", "exports", "jriapp_shared"], func
             configurable: true
         });
         return PropWatcher;
-    }(jriapp_shared_15.BaseObject));
+    }(jriapp_shared_16.BaseObject));
     exports.PropWatcher = PropWatcher;
 });
-define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_16) {
+define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_17) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var getNewID = jriapp_shared_16.Utils.core.getNewID;
+    var getNewID = jriapp_shared_17.Utils.core.getNewID;
     var CMD_EVENTS;
     (function (CMD_EVENTS) {
         CMD_EVENTS["can_execute_changed"] = "canExecute_changed";
@@ -3903,7 +3987,7 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             configurable: true
         });
         return Command;
-    }(jriapp_shared_16.BaseObject));
+    }(jriapp_shared_17.BaseObject));
     exports.Command = Command;
     var BaseCommand = (function (_super) {
         __extends(BaseCommand, _super);
@@ -3974,13 +4058,13 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
             configurable: true
         });
         return ViewModel;
-    }(jriapp_shared_16.BaseObject));
+    }(jriapp_shared_17.BaseObject));
     exports.ViewModel = ViewModel;
 });
-define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/utils/sloader"], function (require, exports, jriapp_shared_17, sloader_2) {
+define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/utils/sloader"], function (require, exports, jriapp_shared_18, sloader_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_17.Utils, forEachProp = utils.core.forEachProp, startsWith = utils.str.startsWith, _a = utils.defer, _reject = _a.reject, _resolve = _a.resolve, _whenAll = _a.whenAll, createDeferred = _a.createDeferred, arrHelper = utils.arr, CSSPrefix = "css!";
+    var utils = jriapp_shared_18.Utils, forEachProp = utils.core.forEachProp, startsWith = utils.str.startsWith, _a = utils.defer, _reject = _a.reject, _resolve = _a.resolve, _whenAll = _a.whenAll, createDeferred = _a.createDeferred, arrHelper = utils.arr, CSSPrefix = "css!";
     var _moduleLoader = null;
     function create() {
         if (!_moduleLoader) {
@@ -4115,10 +4199,10 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
         return ModuleLoader;
     }());
 });
-define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/utils/lifetime", "jriapp/utils/dom", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/utils/parser"], function (require, exports, jriapp_shared_18, lifetime_1, dom_5, mloader_1, binding_1, viewchecks_2, parser_2) {
+define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/utils/lifetime", "jriapp/utils/dom", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/utils/parser"], function (require, exports, jriapp_shared_19, lifetime_1, dom_5, mloader_1, binding_1, viewchecks_2, parser_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_18.Utils, createDeferred = utils.defer.createDeferred, viewChecks = viewchecks_2.ViewChecks, dom = dom_5.DomUtils, _a = utils.str, startsWith = _a.startsWith, fastTrim = _a.fastTrim, parser = parser_2.Parser, forEachProp = utils.core.forEachProp, _b = utils.arr, fromList = _b.fromList, toMap = _b.toMap;
+    var utils = jriapp_shared_19.Utils, createDeferred = utils.defer.createDeferred, viewChecks = viewchecks_2.ViewChecks, dom = dom_5.DomUtils, _a = utils.str, startsWith = _a.startsWith, fastTrim = _a.fastTrim, parser = parser_2.Parser, forEachProp = utils.core.forEachProp, _b = utils.arr, fromList = _b.fromList, toMap = _b.toMap;
     function createDataBindSvc(app) {
         return new DataBindingService(app);
     }
@@ -4292,7 +4376,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
                 lftm.dispose();
                 self.handleError(err, self);
                 setTimeout(function () {
-                    defer.reject(new jriapp_shared_18.DummyError(err));
+                    defer.reject(new jriapp_shared_19.DummyError(err));
                 }, 0);
             }
             return defer.promise();
@@ -4317,12 +4401,12 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
             return new binding_1.Binding(opts);
         };
         return DataBindingService;
-    }(jriapp_shared_18.BaseObject));
+    }(jriapp_shared_19.BaseObject));
 });
-define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/dom", "jriapp/utils/tloader", "jriapp/elview", "jriapp/databindsvc"], function (require, exports, jriapp_shared_19, bootstrap_6, dom_6, tloader_2, elview_2, databindsvc_1) {
+define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/dom", "jriapp/utils/tloader", "jriapp/elview", "jriapp/databindsvc"], function (require, exports, jriapp_shared_20, bootstrap_6, dom_6, tloader_2, elview_2, databindsvc_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_19.Utils, dom = dom_6.DomUtils, doc = dom.document, format = utils.str.format, isThenable = utils.check.isThenable, boot = bootstrap_6.bootstrap, sys = utils.sys, ERRS = jriapp_shared_19.LocaleERRS, _a = utils.core, forEachProp = _a.forEachProp, getNewID = _a.getNewID, memoize = _a.memoize, _b = utils.defer, createDeferred = _b.createDeferred, resolve = _b.resolve, reject = _b.reject, http = utils.http;
+    var utils = jriapp_shared_20.Utils, dom = dom_6.DomUtils, doc = dom.document, format = utils.str.format, isThenable = utils.check.isThenable, boot = bootstrap_6.bootstrap, sys = utils.sys, ERRS = jriapp_shared_20.LocaleERRS, _a = utils.core, forEachProp = _a.forEachProp, getNewID = _a.getNewID, memoize = _a.memoize, _b = utils.defer, createDeferred = _b.createDeferred, resolve = _b.resolve, reject = _b.reject, http = utils.http;
     var APP_EVENTS;
     (function (APP_EVENTS) {
         APP_EVENTS["startup"] = "startup";
@@ -4342,7 +4426,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             if (!options) {
                 options = {};
             }
-            var self = _this, moduleInits = options.modulesInits || {}, appName = jriapp_shared_19.APP_NAME;
+            var self = _this, moduleInits = options.modulesInits || {}, appName = jriapp_shared_20.APP_NAME;
             _this._appName = appName;
             _this._options = options;
             if (!!boot.app) {
@@ -4668,18 +4752,18 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             configurable: true
         });
         return Application;
-    }(jriapp_shared_19.BaseObject));
+    }(jriapp_shared_20.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/deferred", "jriapp/consts", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_7, jriapp_shared_20, const_1, int_3, jsonbag_1, deferred_2, consts_1, dom_7, viewchecks_3, converter_1, bootstrap_8, binding_2, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
+define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/deferred", "jriapp/consts", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_7, jriapp_shared_21, const_1, int_4, jsonbag_1, deferred_2, consts_1, dom_7, viewchecks_3, converter_1, bootstrap_8, binding_2, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
     }
     Object.defineProperty(exports, "__esModule", { value: true });
-    __export(jriapp_shared_20);
+    __export(jriapp_shared_21);
     __export(const_1);
-    __export(int_3);
+    __export(int_4);
     __export(jsonbag_1);
     exports.Promise = deferred_2.Promise;
     exports.KEYS = consts_1.KEYS;
@@ -4700,6 +4784,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.23.5";
+    exports.VERSION = "2.23.6";
     bootstrap_7.Bootstrap._initFramework();
 });

@@ -36,10 +36,12 @@ export function parseContentAttr(contentAttr: string): IContentOptions {
 
     const tempOpts = parser.parseOptions(contentAttr);
 
-    if (tempOpts.length === 0) {
+    if (!tempOpts) {
         return contentOptions;
     }
-    const attr: IDataContentAttr = tempOpts[0];
+
+    const attr: IDataContentAttr = tempOpts;
+
     if (!attr.template && !!attr.fieldName) {
         contentOptions.css = attr.css;
         contentOptions.fieldName = attr.fieldName;

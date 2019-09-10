@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IThenable } from "./ideferred";
 const GUID_RX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const _undefined: any = void (0);
+const _undefined: undefined = void (0);
 
 function isNt(a: any): a is void {
     return (a === null || a === _undefined);
@@ -20,7 +20,7 @@ function isNumber(a: any): a is Number {
 }
 
 export class Checks {
-    static readonly _undefined: any = _undefined;
+    static readonly _undefined: undefined = _undefined;
     static isHasProp(obj: any, prop: string): boolean {
         return (!obj) ? false : (prop in obj);
     }

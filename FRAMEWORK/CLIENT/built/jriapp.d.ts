@@ -345,12 +345,69 @@ declare module "jriapp/int" {
         appRoot?: Document | HTMLElement;
     }
 }
+declare module "jriapp/parsing/int" {
+    export const getRX: RegExp, spaceRX: RegExp;
+    export const enum TOKEN {
+        DELIMETER1 = ":",
+        DELIMETER2 = "=",
+        COMMA = ",",
+        THIS = "this.",
+        PARAM = "param",
+        TARGET_PATH = "targetPath",
+        BIND = "bind",
+        GET = "get",
+        DATE = "date",
+        INJECT = "inject"
+    }
+    export const enum TAG {
+        NONE = "",
+        LITERAL = "0",
+        BIND = "1",
+        GET = "2",
+        DATE = "3",
+        INJECT = "4",
+        BRACE = "5",
+        INDEXER = "6"
+    }
+    export const enum PARSE_TYPE {
+        NONE = 0,
+        BINDING = 1,
+        VIEW = 2
+    }
+    export const enum DATES {
+        NOW = "now",
+        TODAY = "today",
+        TOMORROW = "tomorrow",
+        YESTERDAY = "yesterday"
+    }
+    export const THIS_LEN: number;
+    export interface IKeyVal {
+        tag?: TAG;
+        key: string;
+        val: any;
+    }
+}
+declare module "jriapp/parsing/helper" {
+    import { BRACKETS } from "jriapp_shared";
+    import { PARSE_TYPE } from "jriapp/parsing/int";
+    export class Helper {
+        static getCurlyBraceParts(val: string): string[];
+        static getBraceContent(val: string, brace: BRACKETS): string;
+        static getSvc(id: string, ...args: any[]): string;
+        static isGetExpr(val: string): boolean;
+        static getGetParts(str: string): string[];
+        static getOptions(id: string): string;
+        static parseGetExpr(parseType: PARSE_TYPE, strExpr: string, dataContext: any): object;
+        static parseOptions(parseType: PARSE_TYPE, parts: string[], dataContext: any): object;
+        static parseOption(parseType: PARSE_TYPE, part: string, dataContext: any): object;
+    }
+}
 declare module "jriapp/utils/parser" {
     import { TBindingInfo } from "jriapp/int";
     export class Parser {
-        static parseOptions(options: string): any[];
+        static parseOptions(options: string): object;
         static parseBindings(bindings: string[]): TBindingInfo[];
-        static parseViewOptions(options: string, dataContext: any): any;
+        static parseViewOptions(options: string, dataContext: any): object;
     }
 }
 declare module "jriapp/elview" {
@@ -1015,5 +1072,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.23.5";
+    export const VERSION = "2.23.6";
 }

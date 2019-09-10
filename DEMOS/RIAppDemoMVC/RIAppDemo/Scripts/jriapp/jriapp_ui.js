@@ -3527,10 +3527,10 @@ define("jriapp_ui/content/int", ["require", "exports", "jriapp_shared", "jriapp/
             options: null
         };
         var tempOpts = parser.parseOptions(contentAttr);
-        if (tempOpts.length === 0) {
+        if (!tempOpts) {
             return contentOptions;
         }
-        var attr = tempOpts[0];
+        var attr = tempOpts;
         if (!attr.template && !!attr.fieldName) {
             contentOptions.css = attr.css;
             contentOptions.fieldName = attr.fieldName;
@@ -5727,11 +5727,11 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             };
             var options;
             var tempOpts = parser.parseOptions(columnAttr);
-            if (tempOpts.length > 0) {
-                options = extend(defaultOp, tempOpts[0]);
+            if (!tempOpts) {
+                options = defaultOp;
             }
             else {
-                options = defaultOp;
+                options = extend(defaultOp, tempOpts);
             }
             if (!!contentAttr) {
                 options.content = int_2.parseContentAttr(contentAttr);
