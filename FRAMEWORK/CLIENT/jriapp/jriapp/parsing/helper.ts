@@ -403,7 +403,7 @@ export class Helper {
         throw new Error("Invalid Expression: " + val);
     }
 
-    static getSvc(id: string, ...args: any[]): string {
+    static getSvc(id: string, ...args: any[]): any {
         const argsdata: any[] = [];
         for (let i = 0; i < args.length; ++i) {
             const val = args[i];

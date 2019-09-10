@@ -393,7 +393,7 @@ declare module "jriapp/parsing/helper" {
     export class Helper {
         static getCurlyBraceParts(val: string): string[];
         static getBraceContent(val: string, brace: BRACKETS): string;
-        static getSvc(id: string, ...args: any[]): string;
+        static getSvc(id: string, ...args: any[]): any;
         static isGetExpr(val: string): boolean;
         static getGetParts(str: string): string[];
         static getOptions(id: string): string;
@@ -1072,5 +1072,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.23.6";
+    export const VERSION = "2.23.7";
 }
