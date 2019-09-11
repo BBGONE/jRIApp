@@ -679,43 +679,38 @@ define("jriapp/parsing/helper", ["require", "exports", "jriapp_shared", "jriapp/
 define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/parsing/helper"], function (require, exports, jriapp_shared_2, helper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var _a = jriapp_shared_2.Utils.str, trim = _a.fastTrim, startsWith = _a.startsWith, endsWith = _a.endsWith, isGetExpr = helper_1.Helper.isGetExpr, getBraceContent = helper_1.Helper.getBraceContent, getCurlyBraceParts = helper_1.Helper.getCurlyBraceParts, getGetParts = helper_1.Helper.getGetParts, parseOptions = helper_1.Helper.parseOptions;
+    var _a = jriapp_shared_2.Utils.str, trim = _a.fastTrim, startsWith = _a.startsWith, endsWith = _a.endsWith, isGetExpr = helper_1.Helper.isGetExpr, getBraceContent = helper_1.Helper.getBraceContent, getCurlyBraceParts = helper_1.Helper.getCurlyBraceParts, getGetParts = helper_1.Helper.getGetParts, parseOptions = helper_1.Helper.parseOptions, parseOption = helper_1.Helper.parseOption;
     function _appendPart(parts, str) {
         if (startsWith(str, "{") && endsWith(str, "}")) {
             var subparts = getCurlyBraceParts(str);
             for (var k = 0; k < subparts.length; k += 1) {
-                parts.push(subparts[k]);
+                parts.push(trim(subparts[k]));
             }
         }
         else {
             parts.push(str);
         }
     }
-    function _getParts(strs) {
+    function _splitIntoParts(str) {
         var parts = [];
-        for (var i = 0; i < strs.length; i += 1) {
-            _appendPart(parts, trim(strs[i]));
+        if (isGetExpr(str)) {
+            var ids = getBraceContent(str, 0);
+            var args = getGetParts(ids);
+            args.forEach(function (val) {
+                _appendPart(parts, trim(val));
+            });
+        }
+        else {
+            _appendPart(parts, trim(str));
         }
         return parts;
     }
     function _parseOptions(parseType, options, dataContext) {
-        var parts = [];
-        if (isGetExpr(options)) {
-            var ids = getBraceContent(options, 0);
-            var args = getGetParts(ids);
-            args.forEach(function (val) {
-                _appendPart(parts, val);
-            });
-            return parseOptions(parseType, parts, dataContext);
-        }
-        else {
-            _appendPart(parts, options);
-            return parseOptions(parseType, parts, dataContext);
-        }
+        var parts = _splitIntoParts(options);
+        return parseOptions(parseType, parts, dataContext);
     }
-    function _parseOptionsArr(parseType, strs, dataContext) {
-        var parts = _getParts(strs);
-        return parts.map(function (part) { return _parseOptions(parseType, part, dataContext); });
+    function _parseBindings(parseType, bindings, dataContext) {
+        return bindings.map(function (str) { return parseOption(parseType, str, dataContext); });
     }
     var Parser = (function () {
         function Parser() {
@@ -726,16 +721,12 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/pa
         Parser.parseBindings = function (bindings) {
             var parts = [];
             bindings.forEach(function (str) {
-                if (isGetExpr(str)) {
-                    var ids = getBraceContent(str, 0);
-                    var args = getGetParts(ids);
-                    parts = __spreadArrays(parts, args);
-                }
-                else {
-                    parts = __spreadArrays(parts, [str]);
+                var arr = _splitIntoParts(str);
+                for (var i = 0; i < arr.length; ++i) {
+                    parts.push(arr[i]);
                 }
             });
-            return _parseOptionsArr(1, parts, null);
+            return _parseBindings(1, parts, null);
         };
         Parser.parseViewOptions = function (options, dataContext) {
             return _parseOptions(2, options, dataContext);
@@ -4796,6 +4787,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.23.7";
+    exports.VERSION = "2.23.8";
     bootstrap_7.Bootstrap._initFramework();
 });
