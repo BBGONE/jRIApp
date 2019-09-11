@@ -90,7 +90,7 @@ define("jriapp_shared/utils/checks", ["require", "exports"], function (require, 
         Checks.isObject = function (a) {
             return (isNt(a)) ? false : (typeof a === "object");
         };
-        Checks.isSimpleObject = function (a) {
+        Checks.isPlainObject = function (a) {
             if (!!a && typeof a == 'object') {
                 var proto = Object.getPrototypeOf(a);
                 return proto === Object.prototype || proto === null;
@@ -382,7 +382,7 @@ define("jriapp_shared/utils/strutils", ["require", "exports", "jriapp_shared/uti
 define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks"], function (require, exports, strutils_1, checks_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var isHasProp = checks_2.Checks.isHasProp, _undefined = checks_2.Checks._undefined, isBoolean = checks_2.Checks.isBoolean, isArray = checks_2.Checks.isArray, isSimpleObject = checks_2.Checks.isSimpleObject, isNt = checks_2.Checks.isNt, isString = checks_2.Checks.isString, formatStr = strutils_1.StringUtils.format, trim = strutils_1.StringUtils.fastTrim, getOwnPropertyNames = Object.getOwnPropertyNames, getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor, objectKeys = Object.keys;
+    var isHasProp = checks_2.Checks.isHasProp, _undefined = checks_2.Checks._undefined, isBoolean = checks_2.Checks.isBoolean, isArray = checks_2.Checks.isArray, isPlainObject = checks_2.Checks.isPlainObject, isNt = checks_2.Checks.isNt, isString = checks_2.Checks.isString, formatStr = strutils_1.StringUtils.format, trim = strutils_1.StringUtils.fastTrim, getOwnPropertyNames = Object.getOwnPropertyNames, getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor, objectKeys = Object.keys;
     var UUID_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
     var NEWID_MAP = {};
     function clone(obj, target) {
@@ -397,7 +397,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
                 res.push(clone(obj[i], null));
             }
         }
-        else if (isSimpleObject(obj)) {
+        else if (isPlainObject(obj)) {
             res = target || {};
             var keys = getOwnPropertyNames(obj), len = keys.length;
             for (var i = 0; i < len; i += 1) {
@@ -438,13 +438,13 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         if (isNt(target)) {
             target = {};
         }
-        if (!isSimpleObject(source)) {
+        if (!isPlainObject(source)) {
             return target;
         }
         var keys = objectKeys(source), len = keys.length;
         for (var i = 0; i < len; i += 1) {
             var p = keys[i], tval = target[p], sval = source[p];
-            if (isSimpleObject(sval)) {
+            if (isPlainObject(sval)) {
                 target[p] = assignStrings(tval, sval);
             }
             else if (isString(sval)) {

@@ -170,7 +170,7 @@ declare module "jriapp_shared/utils/checks" {
         static isUndefined(a: any): a is void;
         static readonly isNt: (a: any) => a is void;
         static isObject(a: any): boolean;
-        static isSimpleObject(a: any): boolean;
+        static isPlainObject(a: any): boolean;
         static readonly isString: (a: any) => a is string;
         static readonly isFunc: (a: any) => a is (...args: any[]) => any;
         static isBoolean(a: any): a is boolean;

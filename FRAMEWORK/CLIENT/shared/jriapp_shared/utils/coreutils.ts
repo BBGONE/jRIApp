@@ -3,7 +3,7 @@ import { IIndexer } from "../int";
 import { StringUtils } from "./strutils";
 import { Checks } from "./checks";
 
-const { isHasProp, _undefined, isBoolean, isArray, isSimpleObject, isNt, isString } = Checks,
+const { isHasProp, _undefined, isBoolean, isArray, isPlainObject, isNt, isString } = Checks,
     { format: formatStr, fastTrim: trim } = StringUtils, { getOwnPropertyNames, getOwnPropertyDescriptor, keys: objectKeys } = Object;
 const UUID_CHARS: string[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
 const NEWID_MAP: IIndexer<number> = {};
@@ -21,8 +21,8 @@ function clone(obj: any, target?: any): any {
         for (let i = 0; i < len; i += 1) {
             res.push(clone(obj[i], null));
         }
-    } else if (isSimpleObject(obj)) {
-        // clone only simple objects
+    } else if (isPlainObject(obj)) {
+        // clone only plain objects
         res = target || {};
         const keys = getOwnPropertyNames(obj), len = keys.length;
         for (let i = 0; i < len; i += 1) {
@@ -63,7 +63,7 @@ function assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: 
     if (isNt(target)) {
         target = <any>{};
     }
-    if (!isSimpleObject(source)) {
+    if (!isPlainObject(source)) {
         return target;
     }
    
@@ -71,7 +71,7 @@ function assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: 
   
     for (let i = 0; i < len; i += 1) {
         const p = keys[i], tval = target[p], sval = source[p];
-        if (isSimpleObject(sval)) {
+        if (isPlainObject(sval)) {
             target[p] = <any>assignStrings(tval, sval);
         } else if (isString(sval)) {
             target[p] = <any>sval;

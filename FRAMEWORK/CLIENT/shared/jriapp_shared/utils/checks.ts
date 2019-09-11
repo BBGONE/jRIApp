@@ -34,7 +34,7 @@ export class Checks {
     static isObject(a: any): boolean {
         return (isNt(a)) ? false : (typeof a === "object");
     }
-    static isSimpleObject(a: any): boolean {
+    static isPlainObject(a: any): boolean {
         if (!!a && typeof a == 'object') {
             const proto = Object.getPrototypeOf(a);
             return proto === Object.prototype || proto === null;

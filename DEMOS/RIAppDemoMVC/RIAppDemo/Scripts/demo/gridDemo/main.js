@@ -3040,7 +3040,7 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
             ButtonsCSS.OK = 'icon icon-ok';
             ButtonsCSS.Cancel = 'icon icon-remove';
         });
-        var convertArg = function (p2) { return RIAPP.Utils.check.isSimpleObject(p2) ? JSON.stringify(p2, null, 2) : p2; };
+        var convertArg = function (p2) { return RIAPP.Utils.check.isPlainObject(p2) ? JSON.stringify(p2, null, 2) : p2; };
         return bootstrap.startApp(function () {
             return new app_1.DemoApplication(options);
         }, function (app) {

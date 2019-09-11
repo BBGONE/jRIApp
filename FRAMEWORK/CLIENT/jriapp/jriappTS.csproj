@@ -1,106 +1,17 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.3.6.2\build\Microsoft.TypeScript.MSBuild.props" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.3.6.2\build\Microsoft.TypeScript.MSBuild.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <ProjectGuid>{1BF71F16-DB40-4BF1-A9BB-CF053FBD0F03}</ProjectGuid>
-    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
-    <OutputType>Library</OutputType>
-    <OutputPath>bin</OutputPath>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <DebugType>full</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
-    <UseIISExpress>true</UseIISExpress>
-    <IISExpressSSLPort />
-    <IISExpressAnonymousAuthentication />
-    <IISExpressWindowsAuthentication />
-    <IISExpressUseClassicPipelineMode />
-    <UseGlobalApplicationHostFile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <Use64BitIISExpress />
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
   </PropertyGroup>
-  <PropertyGroup>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
-  </PropertyGroup>
-  <PropertyGroup>
-    <RootNamespace>jriappTS</RootNamespace>
-  </PropertyGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\WebApplications\Microsoft.WebApplication.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\WebApplications\Microsoft.WebApplication.targets')" />
-  <ProjectExtensions>
-    <VisualStudio>
-      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
-        <WebProjectProperties>
-          <UseIIS>True</UseIIS>
-          <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>1258</DevelopmentServerPort>
-          <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:1258/</IISUrl>
-          <NTLMAuthentication>False</NTLMAuthentication>
-          <UseCustomServer>False</UseCustomServer>
-          <CustomServerUrl>
-          </CustomServerUrl>
-          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
-        </WebProjectProperties>
-      </FlavorProperties>
-    </VisualStudio>
-  </ProjectExtensions>
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
-    <TypeScriptSourceMap>False</TypeScriptSourceMap>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
-    <TypeScriptSourceMap>false</TypeScriptSourceMap>
-  </PropertyGroup>
+
   <ItemGroup>
-    <TypeScriptCompile Include="jriapp\int.ts" />
-    <TypeScriptCompile Include="jriapp\parsing\int.ts" />
-    <TypeScriptCompile Include="jriapp\parsing\helper.ts" />
-    <TypeScriptCompile Include="jriapp\utils\parser.ts" />
-    <TypeScriptCompile Include="jriapp\utils\dom.ts" />
-    <TypeScriptCompile Include="jriapp\utils\domevents.ts" />
-    <TypeScriptCompile Include="jriapp\utils\viewchecks.ts" />
-    <TypeScriptCompile Include="jriapp\app.ts" />
-    <TypeScriptCompile Include="jriapp.ts" />
-    <TypeScriptCompile Include="jriapp\databindsvc.ts" />
-    <TypeScriptCompile Include="jriapp\content.ts" />
-    <TypeScriptCompile Include="jriapp\elview.ts" />
-    <TypeScriptCompile Include="jriapp\binding.ts" />
-    <TypeScriptCompile Include="jriapp\bootstrap.ts" />
-    <TypeScriptCompile Include="jriapp\consts.ts" />
-    <TypeScriptCompile Include="jriapp\converter.ts" />
-    <TypeScriptCompile Include="jriapp\defaults.ts" />
-    <TypeScriptCompile Include="jriapp\mvvm.ts" />
-    <TypeScriptCompile Include="jriapp\utils\mloader.ts" />
-    <TypeScriptCompile Include="jriapp\utils\path.ts" />
-    <TypeScriptCompile Include="jriapp\template.ts" />
-    <TypeScriptCompile Include="jriapp\utils\tloader.ts" />
-    <TypeScriptCompile Include="jriapp\utils\sloader.ts" />
-    <TypeScriptCompile Include="jriapp\utils\propwatcher.ts" />
-    <TypeScriptCompile Include="jriapp\utils\lifetime.ts" />
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="3.6.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="tsconfig.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <TypeScriptModuleKind>amd</TypeScriptModuleKind>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.TypeScript.MSBuild.3.6.2\build\Microsoft.TypeScript.MSBuild.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.TypeScript.MSBuild.3.6.2\build\Microsoft.TypeScript.MSBuild.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.TypeScript.MSBuild.3.6.2\build\Microsoft.TypeScript.MSBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.TypeScript.MSBuild.3.6.2\build\Microsoft.TypeScript.MSBuild.targets'))" />
-  </Target>
-  <Import Project="..\packages\Microsoft.TypeScript.MSBuild.3.6.2\build\Microsoft.TypeScript.MSBuild.targets" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.3.6.2\build\Microsoft.TypeScript.MSBuild.targets')" />
+
 </Project>

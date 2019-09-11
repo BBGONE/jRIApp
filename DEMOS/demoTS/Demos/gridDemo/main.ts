@@ -70,7 +70,7 @@ export function start(options: IMainOptions) {
         ButtonsCSS.Cancel = 'icon icon-remove';
     });
 
-    const convertArg = (p2: any) => RIAPP.Utils.check.isSimpleObject(p2) ? JSON.stringify(p2, null, 2) : p2;
+    const convertArg = (p2: any) => RIAPP.Utils.check.isPlainObject(p2) ? JSON.stringify(p2, null, 2) : p2;
 
     // create and start application here
     return bootstrap.startApp(() => {

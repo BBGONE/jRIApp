@@ -1,24 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27428.2037
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29201.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demos", "Demos\Demos.csproj", "{4BCCAAB0-F3B9-44FE-B237-ECE697EAA6BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demos", "Demos\Demos.csproj", "{6C52C3BE-4213-4D8F-82D7-978B46D2F591}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{817BDCFC-7C40-4029-933A-66AF8407F1F1}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "built", "built", "{E8715A3A-108B-40C6-8FE7-E82762F9E4B2}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "thirdparty", "thirdparty", "{F4893B6B-075F-4A50-B0DE-79CB5CD79821}"
-	ProjectSection(SolutionItems) = preProject
-		thirdparty\jquery.d.ts = thirdparty\jquery.d.ts
-		thirdparty\jqueryui.d.ts = thirdparty\jqueryui.d.ts
-		thirdparty\moment.d.ts = thirdparty\moment.d.ts
-		thirdparty\qtip2.d.ts = thirdparty\qtip2.d.ts
-		thirdparty\require.d.ts = thirdparty\require.d.ts
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "jriapp", "jriapp", "{C749D1C0-C894-46D4-8DBB-7FB2CE43A7D5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "jriapp", "jriapp", "{ED26101B-C40A-429A-8E6E-23D685491B3E}"
 	ProjectSection(SolutionItems) = preProject
 		jriapp\jriapp.d.ts = jriapp\jriapp.d.ts
 		jriapp\jriapp_db.d.ts = jriapp\jriapp_db.d.ts
@@ -27,25 +14,36 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "jriapp", "jriapp", "{C749D1
 		jriapp\jriapp_ui.d.ts = jriapp\jriapp_ui.d.ts
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "thirdparty", "thirdparty", "{27E3B17B-E7F1-442B-8F90-676AB825D781}"
+	ProjectSection(SolutionItems) = preProject
+		thirdparty\jquery.d.ts = thirdparty\jquery.d.ts
+		thirdparty\jqueryui.d.ts = thirdparty\jqueryui.d.ts
+		thirdparty\moment.d.ts = thirdparty\moment.d.ts
+		thirdparty\qtip2.d.ts = thirdparty\qtip2.d.ts
+		thirdparty\require.d.ts = thirdparty\require.d.ts
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{E96B3FC3-DA59-4C57-B6D8-72C40140741E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4BCCAAB0-F3B9-44FE-B237-ECE697EAA6BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4BCCAAB0-F3B9-44FE-B237-ECE697EAA6BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4BCCAAB0-F3B9-44FE-B237-ECE697EAA6BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4BCCAAB0-F3B9-44FE-B237-ECE697EAA6BF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{817BDCFC-7C40-4029-933A-66AF8407F1F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{817BDCFC-7C40-4029-933A-66AF8407F1F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{817BDCFC-7C40-4029-933A-66AF8407F1F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{817BDCFC-7C40-4029-933A-66AF8407F1F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C52C3BE-4213-4D8F-82D7-978B46D2F591}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C52C3BE-4213-4D8F-82D7-978B46D2F591}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C52C3BE-4213-4D8F-82D7-978B46D2F591}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C52C3BE-4213-4D8F-82D7-978B46D2F591}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E96B3FC3-DA59-4C57-B6D8-72C40140741E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E96B3FC3-DA59-4C57-B6D8-72C40140741E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E96B3FC3-DA59-4C57-B6D8-72C40140741E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E96B3FC3-DA59-4C57-B6D8-72C40140741E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {F78845E5-FBB2-454F-A114-B6E33907E497}
+		SolutionGuid = {5074BC02-1919-4BDD-A517-3CF939F0F8F4}
 	EndGlobalSection
 EndGlobal
