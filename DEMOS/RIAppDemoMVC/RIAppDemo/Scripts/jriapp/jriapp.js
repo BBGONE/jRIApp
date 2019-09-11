@@ -479,6 +479,7 @@ define("jriapp/parsing/helper", ["require", "exports", "jriapp_shared", "jriapp/
         };
         return Funcs;
     }());
+    exports.Funcs = Funcs;
     var funcs = Funcs;
     var Helper = (function () {
         function Helper() {
@@ -723,7 +724,18 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/pa
             return _parseOptions(0, options, null);
         };
         Parser.parseBindings = function (bindings) {
-            return _parseOptionsArr(1, bindings, null);
+            var parts = [];
+            bindings.forEach(function (str) {
+                if (isGetExpr(str)) {
+                    var ids = getBraceContent(str, 0);
+                    var args = getGetParts(ids);
+                    parts = __spreadArrays(parts, args);
+                }
+                else {
+                    parts = __spreadArrays(parts, [str]);
+                }
+            });
+            return _parseOptionsArr(1, parts, null);
         };
         Parser.parseViewOptions = function (options, dataContext) {
             return _parseOptions(2, options, dataContext);
@@ -4784,6 +4796,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.23.6";
+    exports.VERSION = "2.23.7";
     bootstrap_7.Bootstrap._initFramework();
 });

@@ -389,7 +389,15 @@ declare module "jriapp/parsing/int" {
 }
 declare module "jriapp/parsing/helper" {
     import { BRACKETS } from "jriapp_shared";
-    import { PARSE_TYPE } from "jriapp/parsing/int";
+    import { TAG, IKeyVal, PARSE_TYPE } from "jriapp/parsing/int";
+    export class Funcs {
+        static setKeyVal(kv: IKeyVal, start: number, end: number, val: string, isKey: boolean, isLit: boolean): void;
+        static getDate(val: string | null | undefined, format: string | undefined): Date;
+        static getTag(val: string, start: number, end: number): TAG;
+        static checkVal(kv: IKeyVal): boolean;
+        static getKeyVals(val: string): IKeyVal[];
+        static getExprArgs(expr: string): Array<string | object>;
+    }
     export class Helper {
         static getCurlyBraceParts(val: string): string[];
         static getBraceContent(val: string, brace: BRACKETS): string;
@@ -1072,5 +1080,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.23.6";
+    export const VERSION = "2.23.7";
 }

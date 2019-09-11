@@ -7,7 +7,7 @@ const { isNumeric, isBoolString, _undefined, isString } = Utils.check,
     { format, fastTrim: trim, startsWith, trimQuotes } = Utils.str,
     { parseBool, extend } = Utils.core, dates = DateUtils, { getBraceLen, resolvePath } = Utils.sys;
 
-class Funcs {
+export class Funcs {
     static setKeyVal(kv: IKeyVal, start: number, end: number, val: string, isKey: boolean, isLit: boolean): void {
         if (start > -1 && start < end) {
             const str = val.substring(start, end);

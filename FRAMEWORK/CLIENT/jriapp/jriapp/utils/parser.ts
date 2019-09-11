@@ -38,7 +38,7 @@ function _parseOptions(parseType: PARSE_TYPE, options: string, dataContext: any)
         args.forEach((val) => {
             _appendPart(parts, val);
         });
-
+       
         return parseOptions(parseType, parts, dataContext);
     } else {
         _appendPart(parts, options);
@@ -56,7 +56,17 @@ export class Parser {
         return _parseOptions(PARSE_TYPE.NONE, options, null);
     }
     static parseBindings(bindings: string[]): TBindingInfo[] {
-        return <any>_parseOptionsArr(PARSE_TYPE.BINDING, bindings, null);
+        let parts: string[] = [];
+        bindings.forEach((str) => {
+            if (isGetExpr(str)) {
+                const ids = getBraceContent(str, BRACKETS.ROUND);
+                const args = getGetParts(ids);
+                parts = [...parts, ...args];
+            } else {
+                parts = [...parts, str];
+            }
+        });
+        return <any>_parseOptionsArr(PARSE_TYPE.BINDING, parts, null);
     }
     static parseViewOptions(options: string, dataContext: any): object {
         return _parseOptions(PARSE_TYPE.VIEW, options, dataContext);
