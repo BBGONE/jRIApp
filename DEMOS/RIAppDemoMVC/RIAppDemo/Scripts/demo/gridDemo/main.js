@@ -2911,9 +2911,15 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             var viewport = this.grid._getInternal().getWrapper();
             var headerHeight = header.offsetHeight;
             var tableHeight = viewport.clientHeight;
+            var lastGripOffset = 5;
             for (var i = 0; i < data.len; i++) {
-                var colInfo = data.columns[i];
-                colInfo.grip.style.left = ((colInfo.column.offsetLeft - table.offsetLeft + colInfo.column.offsetWidth + data.cellspacing / 2) + PX);
+                var colInfo = data.columns[i], leftPos = (colInfo.column.offsetLeft - table.offsetLeft + colInfo.column.offsetWidth + data.cellspacing / 2);
+                if (i == data.len - 1) {
+                    if ((leftPos + lastGripOffset) > data.w) {
+                        leftPos = data.w - lastGripOffset;
+                    }
+                }
+                colInfo.grip.style.left = (leftPos + PX);
                 colInfo.grip.style.height = ((data.options.headerOnly ? headerHeight : (headerHeight + tableHeight)) + PX);
             }
             this.grid.updateColumnsSize();

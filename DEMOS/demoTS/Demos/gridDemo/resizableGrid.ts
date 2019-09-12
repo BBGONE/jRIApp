@@ -330,10 +330,10 @@ export class ResizableGrid extends uiMOD.DataGridElView {
                 DOM.append(grip, inner);
             }
             DOM.append(grip, RIAPP.DOM.fromHTML('<div class="' + SIGNATURE + '"></div>'));
-            if (index == data.len - 1) {  //if the current grip is the last one 
-                DOM.addClass([grip], "JCLRLastGrip");    //add a different css class to stlye it in a different way if needed
+            if (index == data.len - 1) {  // if the current grip is the last one 
+                DOM.addClass([grip], "JCLRLastGrip");    // add a different css class to style it in a different way if needed
                 if (data.fixed)
-                    grip.innerHTML = "";   //if the table resizing mode is set to fixed, the last grip is removed since table width can not change
+                    grip.innerHTML = "";   // if the table resizing mode is set to fixed, the last grip is removed since table width can not change
             }
 
 
@@ -371,17 +371,23 @@ export class ResizableGrid extends uiMOD.DataGridElView {
         if (this.getIsStateDirty())
             return;
         const data: IResizeInfo = this._resizeInfo;
-        data.gripContainer.style.width = (data.w + PX);	//the grip's container width is updated
+        data.gripContainer.style.width = (data.w + PX);	// the grip's container width is updated
         const table = this.grid.table;
         const header = this.grid._getInternal().getHeader();
         const viewport = this.grid._getInternal().getWrapper();
         const headerHeight = header.offsetHeight;
         const tableHeight = viewport.clientHeight;
+        const lastGripOffset = 5;
 
-        for (let i = 0; i < data.len; i++) {	//for each column
-            let colInfo = data.columns[i];
-            //height and position of the grip is updated according to the table layout
-            colInfo.grip.style.left = ((colInfo.column.offsetLeft - table.offsetLeft + colInfo.column.offsetWidth + data.cellspacing / 2) + PX);
+        for (let i = 0; i < data.len; i++) {	// for each column
+            let colInfo = data.columns[i], leftPos = (colInfo.column.offsetLeft - table.offsetLeft + colInfo.column.offsetWidth + data.cellspacing / 2);
+            if (i == data.len - 1) {
+                if ((leftPos + lastGripOffset) > data.w) {
+                    leftPos = data.w - lastGripOffset;
+                }
+            }
+            // height and position of the grip is updated according to the table layout
+            colInfo.grip.style.left = (leftPos + PX);
             colInfo.grip.style.height = ((data.options.headerOnly ? headerHeight : (headerHeight + tableHeight)) + PX);
         }
 
