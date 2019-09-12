@@ -2,7 +2,7 @@
 <b>JavaScript (TypeScript actually) HTML5 RIA framework for creating data centric applications</b>
 <br/>
 <p>
-I have moved it to NET.Core <a href="https://github.com/BBGONE/JRIApp.Core" target="_blank"><b>JRIApp.Core</b></a>. Also the new version was restyled with bootstrap 4.
+I have moved the DEMO to the <b>ASP NET.Core</b> platform <a href="https://github.com/BBGONE/JRIApp.Core" target="_blank"><b>JRIApp.Core</b></a>. Also the new DEMO version have been restyled with twitter bootstrap 4.
 </p>
 <p>
 <b>jRIApp</b> – is an application framework for developing rich internet applications - RIA’s. It consists of two parts – 
