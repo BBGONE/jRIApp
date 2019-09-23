@@ -8,54 +8,64 @@
 
 @section CssImport
 {
-    <link href="@Url.Content("~/Scripts/dynatree/skin/ui.dynatree.css", true)" rel="stylesheet" type="text/css"/>
+    <link href="@Url.Content("~/Scripts/dynatree/skin/ui.dynatree.css", true)" rel="stylesheet" type="text/css" />
+
+    <style type="text/css">
+
+        #demoHeader label {
+            color: Blue;
+        }
+
+        #demoContent {
+            height: 80px;
+            overflow: visible;
+            position: relative;
+            vertical-align: top;
+        }
+
+        #tree {
+            height: 600px;
+            overflow: visible;
+            padding: 5px;
+        }
+
+        #demoContent > fieldset {
+            border-radius: 5px;
+        }
+
+        #demoContent fieldset > legend {
+            color: Blue;
+            font-weight: bold;
+        }
+
+        #demoContent .radioItem {
+            display: inline-block;
+            margin: 4px;
+            padding: 4px;
+        }
+
+        .stackPanelItem {
+            width: 170px;
+        }
+
+            .stackPanelItem fieldset {
+                border-radius: 5px;
+            }
+
+                .stackPanelItem fieldset legend {
+                    color: Blue;
+                    font-weight: bold;
+                }
+    </style>
 }
 
-@section JSImport
+@section JSStaticImport
 {
     <script src="@Url.Content("~/Scripts/dynatree/jquery.dynatree.min.js", true)" type="text/javascript"></script>
 }
 
-<style type="text/css">
-    #demoHeader label { color: Blue; }
-
-    #demoContent {
-        height: 80px;
-        overflow: visible;
-        position: relative;
-        vertical-align: top;
-    }
-
-    #tree {
-        height: 600px;
-        overflow: visible;
-        padding: 5px;
-    }
-
-    #demoContent > fieldset { border-radius: 5px; }
-
-    #demoContent fieldset > legend {
-        color: Blue;
-        font-weight: bold;
-    }
-
-    #demoContent .radioItem {
-        display: inline-block;
-        margin: 4px;
-        padding: 4px;
-    }
-
-    .stackPanelItem { width: 170px; }
-
-    .stackPanelItem fieldset { border-radius: 5px; }
-
-    .stackPanelItem fieldset legend {
-        color: Blue;
-        font-weight: bold;
-    }
-</style>
-
-<script type="text/javascript">
+@section JSDynamicImport {
+    <script type="text/javascript">
     require(["filesDemo"],
         function(DEMO) {
             var mainOptions = {
@@ -70,7 +80,8 @@
 
             DEMO.start(mainOptions);
         });
-</script>
+    </script>
+}
 
 <h2 class="ex8">@ViewBag.Title</h2>
 

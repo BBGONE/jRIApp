@@ -1,4 +1,4 @@
-﻿export interface IPagerModel {
+﻿export interface IPagerState {
     total: number;
     current: number;
     visiblePages: number;

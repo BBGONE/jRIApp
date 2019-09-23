@@ -6,45 +6,64 @@
     ViewBag.Title = "JsonDB Editing Demo (example of editing raw json)";
 }
 
-<style type="text/css">
-    .space {
-        display: inline-block;
-        width: 10px;
-    }
+@section CssImport
+{
+    <style type="text/css">
 
-    #demoHeader label { color: Blue; }
+        .space {
+            display: inline-block;
+            width: 10px;
+        }
 
-    #demoContent {
-        height: 600px;
-        overflow: visible;
-        vertical-align: top;
-    }
+        #demoHeader label {
+            color: Blue;
+        }
 
-    .customerTableWrap {
-        height: 100%;
-        width: 100%;
-    }
+        #demoContent {
+            height: 600px;
+            overflow: visible;
+            vertical-align: top;
+        }
 
-    .custInfo { color: Blue; }
+        .customerTableWrap {
+            height: 100%;
+            width: 100%;
+        }
 
-    .custEdit { }
+        .custInfo {
+            color: Blue;
+        }
 
-    .listbox-edit select { width: 75%; }
+        .custEdit {
+        }
 
-    .qtyEdit > input[type="text"] {
-        min-width: 20px;
-        width: 45px;
-    }
+        .listbox-edit select {
+            width: 75%;
+        }
 
-    form.customerInfo {
-        padding: 15px;
-        width: 100%;
-    }
+        .qtyEdit > input[type="text"] {
+            min-width: 20px;
+            width: 45px;
+        }
 
-    table.ria-data-table tr:nth-child(even) { background-color: #ECF2F6; }
-</style>
+        form.customerInfo {
+            padding: 15px;
+            width: 100%;
+        }
 
-<script type="text/javascript">
+        table.ria-data-table tr:nth-child(even) {
+            background-color: #ECF2F6;
+        }
+    </style>
+}
+
+@section JSStaticImport
+{
+
+}
+
+@section JSDynamicImport {
+    <script type="text/javascript">
     require(["jsondbDemo", "jriapp_ui", "jriapp_ru"],
         function(DEMO, UI, LANG) {
             $("#loading").fadeIn();
@@ -65,33 +84,34 @@
                 $("#loading").fadeOut(1000);
             });
         });
-</script>
+    </script>
+}
 
 <h2 class="ex8">@ViewBag.Title</h2>
 
 <div id="demoContent" style="opacity:0;" data-bind="this.isBusy,to=dbContext.isBusy" data-view="busy">
     <div style="height: 85%; vertical-align: top;">
         <table data-name="gridCustomers" data-bind="this.dataSource,to=dbSet,source=customerVM"
-                data-view-options="wrapCss:customerTableWrap,isHandleAddNew:true,editor:{templateID:customerEditTemplate,width:550,height:650,submitOnOK:false,title:'Customer editing'},details:{templateID:custDetTemplate}">
+               data-view-options="wrapCss:customerTableWrap,isHandleAddNew:true,editor:{templateID:customerEditTemplate,width:550,height:650,submitOnOK:false,title:'Customer editing'},details:{templateID:custDetTemplate}">
             <thead>
-            <tr>
-                <th data-column="width:35px,type:row_expander"></th>
-                <th data-column="width:50px,type:row_actions"></th>
-                <th data-column="width:80px,sortable:true,title:ID" data-content="fieldName:CustomerID,readOnly:true"></th>
-                <th data-column="width:45%,title:Customer Name" data-content="template={readID=nameTemplate}"></th>
-                <th data-column="width:35%,title:E-Mail" data-content="template={readID=emailTemplate}"></th>
-                <th data-column="width:20%,title:Phone" data-content="template={readID=phoneTemplate}"></th>
-                <th data-column="width:150px,title:Modified" data-content="template={readID=dateTemplate}"></th>
-            </tr>
+                <tr>
+                    <th data-column="width:35px,type:row_expander"></th>
+                    <th data-column="width:50px,type:row_actions"></th>
+                    <th data-column="width:80px,sortable:true,title:ID" data-content="fieldName:CustomerID,readOnly:true"></th>
+                    <th data-column="width:45%,title:Customer Name" data-content="template={readID=nameTemplate}"></th>
+                    <th data-column="width:35%,title:E-Mail" data-content="template={readID=emailTemplate}"></th>
+                    <th data-column="width:20%,title:Phone" data-content="template={readID=phoneTemplate}"></th>
+                    <th data-column="width:150px,title:Modified" data-content="template={readID=dateTemplate}"></th>
+                </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
     <div style="border: none; height: 15%; margin-top: 40px; text-align: left; width: 100%;">
         <!--pager-->
-        <div style="float: left;" 
-             data-bind="this.dataSource,to=dbSet,source=customerVM" 
-             data-view="pager" 
+        <div style="float: left;"
+             data-bind="this.dataSource,to=dbSet,source=customerVM"
+             data-view="pager"
              data-view-options="sliderSize:10"></div>
         <div style="float: left; padding-left: 10px; padding-top: 10px;">
             <span>Total rows:</span>&nbsp;<span data-bind="this.value,to=dbSet.totalCount,source=customerVM"></span>
@@ -192,8 +212,8 @@
                         ModifiedDate:
                     </td>
                     <td>
-                        <input type="text" style="width:180px;" 
-                         data-bind="this.value,to=Customer[ModifiedDate],converter=dateTimeConverter,param='DD.MM.YYYY HH:mm:ss',mode=TwoWay" />
+                        <input type="text" style="width:180px;"
+                               data-bind="this.value,to=Customer[ModifiedDate],converter=dateTimeConverter,param='DD.MM.YYYY HH:mm:ss',mode=TwoWay" />
                     </td>
                 </tr>
             </tbody>
@@ -233,7 +253,7 @@
 <script id="custDetTemplate" type="text/x-template">
     <div style="margin: 0px; min-height: 400px; width: 100%;">
         <table style="font-size: 9pt; margin-bottom: 3px;"
-               data-bind="this.dataSource,to=Customer.Addresses" 
+               data-bind="this.dataSource,to=Customer.Addresses"
                data-view-options="isHandleAddNew:true,editor:{templateID:addressEditTemplate,width:550,height:400,submitOnOK:false,title:'Address editing'}">
             <thead>
                 <tr>

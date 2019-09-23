@@ -16,6 +16,12 @@
   ],
   "include": [
     "node_modules/redux",
+    "abstractions",
+    "actions",
+    "components",
+    "views",
+    "app.ts",
+    "main.ts",
     "../../built/shared/shared.d.ts",
     "../../jriapp/jriapp_shared.d.ts",
     "../../jriapp/jriapp.d.ts",

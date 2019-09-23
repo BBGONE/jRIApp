@@ -1,10 +1,10 @@
 import { connect } from 'react-redux';
-import { IPagerModel } from "../abstractions/pager";
-import { propertyChanged, Action } from "../actions/pager-actions";
+import { IPagerState } from "../abstractions/pager";
+import { propertyChanged, Action } from "../actions/pager";
 import Pager from './pager';
 
 
-const mapStateToProps = (storeData: IPagerModel) => {
+const mapStateToProps = (storeData: IPagerState) => {
     return storeData;
 }
 

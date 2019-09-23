@@ -20,6 +20,25 @@
             color: blue;
         }
 
+        div[data-view="templatedview"] + div[data-view="templatedview"] {
+            margin-top: 10px;
+        }
+
+        .demo-row {
+            margin: 0;
+            border: 1px solid black;
+            padding: 3px 5px 5px 8px;
+        }
+
+            .demo-row + .demo-row {
+                margin-left: 8px;
+            }
+
+            .demo-row.selected {
+                color: blue;
+                font-weight: bold;
+            }
+
         div[data-view="pagerview"] {
             margin-bottom: 15px;
         }
@@ -62,51 +81,71 @@
     </style>
 }
 
-<script src="@Url.Content("~/Scripts/demo/reactapp/reactdemo.js", true)" type="text/javascript"></script>
+@section JSStaticImport {
+}
 
-<script type="text/javascript">
-    require(["main", "jriapp", "jriapp_ui"],
-        function (DEMO, RIAPP, UI) {
-            var mainOptions = {
-                modulesInits: {}
-            };
+@section JSDynamicImport {
+    <script src="@Url.Content("~/Scripts/demo/reactapp/reactdemo.js", true)" type="text/javascript"></script>
 
-            DEMO.start(mainOptions).then(function () {
-                $("#demoContent").animate({ opacity: 1 }, 1000);
-                $("#loading").fadeOut(1000);
-            }, function (err) {
-                $("#loading").fadeOut(1000);
+    <script type="text/javascript">
+        require(["main", "jriapp", "jriapp_ui"],
+            function (DEMO, RIAPP, UI) {
+                var mainOptions = {
+                    modulesInits: {}
+                };
+
+                DEMO.start(mainOptions).then(function () {
+                    $("#demoContent").animate({ opacity: 1 }, 1000);
+                    $("#loading").fadeOut(1000);
+                }, function (err) {
+                    $("#loading").fadeOut(1000);
+                });
+
+
             });
-        
-           
-        });
-</script>
+    </script>
+}
 
 <h2 class="ex8">@ViewBag.Title</h2>
 
+
 <div id="demoContent" style="opacity:0;">
-    <div data-view="tempview" data-bind-1="this.value,to=temperature,mode=TwoWay,source=testObj"
-         data-bind-2="this.title,to=val,source={val='This is a React component demo'}"></div>
+    <div data-view="simpleview" data-bind-1="this.value,to=testValue,mode=TwoWay,source=testObj"
+         data-bind-2="this.title,to=val,source={val='This is a React component demo'}">
+    </div>
     <fieldset>
-        <legend>This is a databound text input</legend>
-        <input type="text" data-bind="this.value,to=temperature,mode=TwoWay,source=testObj"
+        <legend>This is an ordinary databound text input</legend>
+        <input type="text" data-bind="this.value,to=testValue,mode=TwoWay,source=testObj"
                data-view-options="updateOnKeyUp=true"
                style="width: 250px" />
     </fieldset>
     <p style="text-indent:2em;font-family:'Courier New';margin:10px 0;">
-        The both above text inputs are databound to  the test object's (<i>viewmodel's</i>) temperature property in the twoway mode.
-        So if one component changes the value then the other component displays the current (<i>changed</i>) value. But the first component is created using the react
-        and the temperature is exposed through the object's property,
-        and the second one is an ordinary input text field (<i>just databound</i>).
+        The both above text inputs are databound to  the test object's (<i>viewmodel's</i>) testValue property in a twoway mode.
+        So if one component changes the value then the other component displays the current (<i>changed</i>) value. But the first component is created using <mark>the React</mark>
+        and the second one is an ordinary input text field.
         It shows that an incapsulated react components can be handled indistinguishably from any other frameworks controls (<i>element views</i>).<br />
-        The react libraries just add 98kb (<i>not much</i>) to the scripts on the page.
+        The react libraries just add 98kb (<em>not much</em>) to the scripts on the page.
     </p>
+
+    <h4 style="margin-top:40px;margin-bottom:10px;">You can also use JRIApp Templates inside of React components and use <mark>DataBinding</mark> in them</h4>
+
+    <div data-view="templatedview" data-bind-1="this.rows,to=rows,source=testObj" data-bind-2="this.selectedRow,to=selectedRow,mode=TwoWay,source=testObj"
+         data-view-options="templateId=testTemplate,keyName=num">
+    </div>
+    <div data-view="templatedview" data-bind-1="this.rows,to=rows,source=testObj" data-bind-2="this.selectedRow,to=selectedRow,mode=TwoWay,source=testObj"
+         data-view-options="templateId=testTemplate,keyName=num">
+    </div>
+    <button class="btn btn-sm btn-info" style="width:10em; margin: 10px 0;" data-bind-1="this.command,to=reverseCommand,source=testObj">
+        Reverse
+    </button>
+
+    <h4 style="margin-top:40px;">This is a react pager demo (three pagers)</h4>
     <p style="text-indent:2em;font-family:'Courier New';margin:10px 0;">
-        Below is a pager implemented in the react and incapsulated in the framework's  element view. The properties are exposed and can be databound as in ordinary
-        controls (<i>just to show - one property is databound and displayed below the pager</i>).
+        Below is a Pager implemented in the react and incapsulated in the framework's element view. The properties are exposed and can be databound as in ordinary
+        controls (<em>just to show - one property is databound and displayed below the pager</em>).
         It shows that the react components are easily incapsulated and used on the page alongside the ordinary controls.
     </p>
-    <h4 style="margin-top:40px;">This is a react pager demo (three pagers)</h4>
+
     <div data-view="pagerview"
          data-bind-1="this.current,to=page,mode=TwoWay,source=testObj"
          data-view-options="total=25,current=5,visiblePages=10">
@@ -121,5 +160,11 @@
     </div>
     <strong>Current Page Index:</strong>&nbsp;<span data-bind-1="this.value,to=page,source=testObj"></span>
 </div>
+
+<script id="testTemplate" type="text/x-template">
+    <div style="color:black; margin-bottom:4px;">This is a template:</div>
+    <span data-bind="this.value,to=num"></span>)
+    <span style="margin-left:0.375em;" data-bind="this.value,to=someVal"></span>
+</script>
 
 @Html.Partial("_WaitLoad")

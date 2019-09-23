@@ -11,6 +11,13 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -25,12 +32,18 @@ var __assign = (this && this.__assign) || function () {
 define("testobject", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var demoRows = [{ num: 1, someVal: "someVal1" }, { num: 2, someVal: "someVal2" }, { num: 3, someVal: "someVal3" }, { num: 4, someVal: "someVal4" }, { num: 5, someVal: "someVal5" }];
     var TestObject = (function (_super) {
         __extends(TestObject, _super);
         function TestObject(app) {
             var _this = _super.call(this, app) || this;
-            _this._temperature = "0";
+            _this._testValue = "0";
             _this._page = 1;
+            _this._rows = demoRows;
+            _this._reverseCommand = new RIAPP.Command(function () {
+                _this.rows = __spreadArrays(_this._rows).reverse();
+            });
+            _this._selectedRow = null;
             return _this;
         }
         TestObject.prototype.dispose = function () {
@@ -40,14 +53,27 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
             this.setDisposing();
             _super.prototype.dispose.call(this);
         };
-        Object.defineProperty(TestObject.prototype, "temperature", {
+        Object.defineProperty(TestObject.prototype, "testValue", {
             get: function () {
-                return this._temperature;
+                return this._testValue;
             },
             set: function (v) {
-                if (this._temperature !== v) {
-                    this._temperature = v;
-                    this.objEvents.raiseProp("temperature");
+                if (this._testValue !== v) {
+                    this._testValue = v;
+                    this.objEvents.raiseProp("testValue");
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TestObject.prototype, "rows", {
+            get: function () {
+                return this._rows;
+            },
+            set: function (v) {
+                if (this._rows !== v) {
+                    this._rows = v;
+                    this.objEvents.raiseProp("rows");
                 }
             },
             enumerable: true,
@@ -61,6 +87,24 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
                 if (this._page !== v) {
                     this._page = v;
                     this.objEvents.raiseProp("page");
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TestObject.prototype, "reverseCommand", {
+            get: function () { return this._reverseCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TestObject.prototype, "selectedRow", {
+            get: function () {
+                return this._selectedRow;
+            },
+            set: function (v) {
+                if (this._selectedRow !== v) {
+                    this._selectedRow = v;
+                    this.objEvents.raiseProp("selectedRow");
                 }
             },
             enumerable: true,
@@ -106,7 +150,7 @@ define("app", ["require", "exports", "jriapp", "testobject"], function (require,
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
 });
-define("views/reactview", ["require", "exports", "jriapp", "jriapp_ui", "react-dom", "redux"], function (require, exports, RIAPP, uiMOD, react_dom_1, Redux) {
+define("views/react", ["require", "exports", "jriapp", "jriapp_ui", "react-dom", "redux"], function (require, exports, RIAPP, uiMOD, react_dom_1, Redux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function mergeOptions(options, defaults) {
@@ -204,11 +248,11 @@ define("views/reactview", ["require", "exports", "jriapp", "jriapp_ui", "react-d
     }(uiMOD.BaseElView));
     exports.ReactElView = ReactElView;
 });
-define("abstractions/temp", ["require", "exports"], function (require, exports) {
+define("abstractions/simple", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("actions/temp-actions", ["require", "exports"], function (require, exports) {
+define("actions/simple", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function propertyChanged(name, value) {
@@ -216,7 +260,7 @@ define("actions/temp-actions", ["require", "exports"], function (require, export
     }
     exports.propertyChanged = propertyChanged;
 });
-define("views/tempview", ["require", "exports", "react", "views/reactview", "actions/temp-actions"], function (require, exports, React, reactview_1, temp_actions_1) {
+define("views/simple", ["require", "exports", "react", "views/react", "actions/simple"], function (require, exports, React, react_1, simple_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var spacerStyle = {
@@ -238,15 +282,15 @@ define("views/tempview", ["require", "exports", "react", "views/reactview", "act
     };
     var reducer = function (initialState) { return function (state, action) { return _reducer(initialState, state, action); }; };
     var defaults = { value: "0", title: "" };
-    var TempElView = (function (_super) {
-        __extends(TempElView, _super);
-        function TempElView(el, options) {
+    var SimpleElView = (function (_super) {
+        __extends(SimpleElView, _super);
+        function SimpleElView(el, options) {
             var _this = this;
-            var initialState = reactview_1.mergeOptions(options, defaults);
+            var initialState = react_1.mergeOptions(options, defaults);
             _this = _super.call(this, el, options, reducer(initialState)) || this;
             return _this;
         }
-        TempElView.prototype.storeChanged = function (current, previous) {
+        SimpleElView.prototype.storeChanged = function (current, previous) {
             var shouldRerender = false;
             if (current.title !== previous.title) {
                 this.objEvents.raiseProp("title");
@@ -258,7 +302,7 @@ define("views/tempview", ["require", "exports", "react", "views/reactview", "act
             }
             return shouldRerender;
         };
-        TempElView.prototype.getMarkup = function () {
+        SimpleElView.prototype.getMarkup = function () {
             var _this = this;
             var model = this.state, styles = { spacer: spacerStyle, span: spanStyle }, actions = { tempChanged: function (temp) { _this.value = temp; } };
             return (React.createElement("fieldset", null,
@@ -267,34 +311,34 @@ define("views/tempview", ["require", "exports", "react", "views/reactview", "act
                 React.createElement("span", { style: styles.spacer }, "You entered: "),
                 React.createElement("span", { style: styles.span }, model.value)));
         };
-        Object.defineProperty(TempElView.prototype, "value", {
+        Object.defineProperty(SimpleElView.prototype, "value", {
             get: function () {
                 return this.state.value;
             },
             set: function (v) {
-                this.dispatch(temp_actions_1.propertyChanged("value", v));
+                this.dispatch(simple_1.propertyChanged("value", v));
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(TempElView.prototype, "title", {
+        Object.defineProperty(SimpleElView.prototype, "title", {
             get: function () {
                 return this.state.title;
             },
             set: function (v) {
-                this.dispatch(temp_actions_1.propertyChanged("title", v));
+                this.dispatch(simple_1.propertyChanged("title", v));
             },
             enumerable: true,
             configurable: true
         });
-        TempElView.prototype.toString = function () {
-            return "TempElView";
+        SimpleElView.prototype.toString = function () {
+            return "SimpleElView";
         };
-        return TempElView;
-    }(reactview_1.ReactElView));
-    exports.TempElView = TempElView;
+        return SimpleElView;
+    }(react_1.ReactElView));
+    exports.SimpleElView = SimpleElView;
     function initModule(app) {
-        app.registerElView("tempview", TempElView);
+        app.registerElView("simpleview", SimpleElView);
     }
     exports.initModule = initModule;
 });
@@ -302,7 +346,7 @@ define("abstractions/pager", ["require", "exports"], function (require, exports)
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("actions/pager-actions", ["require", "exports"], function (require, exports) {
+define("actions/pager", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function propertyChanged(name, value) {
@@ -450,7 +494,7 @@ define("components/pager", ["require", "exports", "react"], function (require, e
     }
     exports.default = Pager;
 });
-define("components/connected-pager", ["require", "exports", "react-redux", "actions/pager-actions", "components/pager"], function (require, exports, react_redux_1, pager_actions_1, pager_1) {
+define("components/connected-pager", ["require", "exports", "react-redux", "actions/pager", "components/pager"], function (require, exports, react_redux_1, pager_1, pager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var mapStateToProps = function (storeData) {
@@ -459,13 +503,13 @@ define("components/connected-pager", ["require", "exports", "react-redux", "acti
     var mapDispatchToProps = function (dispatch) {
         return {
             onPageChanged: function (newPage) {
-                dispatch(pager_actions_1.propertyChanged("current", newPage));
+                dispatch(pager_1.propertyChanged("current", newPage));
             }
         };
     };
-    exports.default = react_redux_1.connect(mapStateToProps, mapDispatchToProps)(pager_1.default);
+    exports.default = react_redux_1.connect(mapStateToProps, mapDispatchToProps)(pager_2.default);
 });
-define("views/pagerview", ["require", "exports", "react", "react-redux", "views/reactview", "actions/pager-actions", "components/connected-pager"], function (require, exports, React, react_redux_2, reactview_2, pager_actions_2, connected_pager_1) {
+define("views/pager", ["require", "exports", "react", "react-redux", "views/react", "actions/pager", "components/connected-pager"], function (require, exports, React, react_redux_2, react_2, pager_3, connected_pager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var _reducer = function (initialState, state, action) {
@@ -483,7 +527,7 @@ define("views/pagerview", ["require", "exports", "react", "react-redux", "views/
         __extends(PagerElView, _super);
         function PagerElView(el, options) {
             var _this = this;
-            var initialState = reactview_2.mergeOptions(options, defaults);
+            var initialState = react_2.mergeOptions(options, defaults);
             _this = _super.call(this, el, options, reducer(initialState)) || this;
             return _this;
         }
@@ -509,7 +553,7 @@ define("views/pagerview", ["require", "exports", "react", "react-redux", "views/
                 return this.state.total;
             },
             set: function (v) {
-                this.dispatch(pager_actions_2.propertyChanged("total", v));
+                this.dispatch(pager_3.propertyChanged("total", v));
             },
             enumerable: true,
             configurable: true
@@ -519,7 +563,7 @@ define("views/pagerview", ["require", "exports", "react", "react-redux", "views/
                 return this.state.current;
             },
             set: function (v) {
-                this.dispatch(pager_actions_2.propertyChanged("current", v));
+                this.dispatch(pager_3.propertyChanged("current", v));
             },
             enumerable: true,
             configurable: true
@@ -529,7 +573,7 @@ define("views/pagerview", ["require", "exports", "react", "react-redux", "views/
                 return this.state.visiblePages;
             },
             set: function (v) {
-                this.dispatch(pager_actions_2.propertyChanged("visiblePages", v));
+                this.dispatch(pager_3.propertyChanged("visiblePages", v));
             },
             enumerable: true,
             configurable: true
@@ -538,14 +582,207 @@ define("views/pagerview", ["require", "exports", "react", "react-redux", "views/
             return "PagerElView";
         };
         return PagerElView;
-    }(reactview_2.ReactElView));
+    }(react_2.ReactElView));
     exports.PagerElView = PagerElView;
     function initModule(app) {
         app.registerElView("pagerview", PagerElView);
     }
     exports.initModule = initModule;
 });
-define("main", ["require", "exports", "jriapp", "app", "views/tempview", "views/pagerview"], function (require, exports, RIAPP, app_1, tempview_1, pagerview_1) {
+define("abstractions/templated", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("actions/templated", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function propertyChanged(name, value) {
+        return { type: "CHANGE_PROP", name: name, value: value };
+    }
+    exports.propertyChanged = propertyChanged;
+});
+define("components/template", ["require", "exports", "react", "jriapp/template", "jriapp_shared/utils/weakmap"], function (require, exports, React, template_1, weakmap_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var weakmap = weakmap_1.createWeakMap();
+    function _updateTemplate(el, props) {
+        if (!!el) {
+            var template = _getTemplate(el);
+            if (!!template) {
+                template.templateID = props.templateId;
+                template.dataContext = props.dataContext;
+            }
+        }
+    }
+    function _disposeTemplate(el) {
+        if (!!el) {
+            var template = weakmap.get(el);
+            if (!!template) {
+                template.dispose();
+                weakmap.delete(el);
+            }
+        }
+    }
+    function _getTemplate(el) {
+        if (!!el) {
+            var template = weakmap.get(el);
+            if (!template) {
+                template = template_1.createTemplate({ parentEl: el });
+                weakmap.set(el, template);
+            }
+            return template;
+        }
+        else {
+            return null;
+        }
+    }
+    var Template = (function (_super) {
+        __extends(Template, _super);
+        function Template(props) {
+            var _this = _super.call(this, props) || this;
+            _this._handleClick = function (e) {
+                if (!!_this.props.onClick) {
+                    _this.props.onClick(_this.props.dataContext);
+                }
+            };
+            _this._setRef = function (element) {
+                if (_this._elRef !== element) {
+                    _disposeTemplate(_this._elRef);
+                    _this._elRef = element;
+                }
+            };
+            _this._elRef = null;
+            return _this;
+        }
+        Template.prototype.componentDidMount = function () {
+            _updateTemplate(this._elRef, this.props);
+        };
+        Template.prototype.componentDidUpdate = function () {
+            _updateTemplate(this._elRef, this.props);
+        };
+        Template.prototype.shouldComponentUpdate = function (nextProps) {
+            var templateChanged = this.props.dataContext !== nextProps.dataContext || this.props.templateId !== nextProps.templateId;
+            var res = this.props.className !== nextProps.className || this.props.style !== nextProps.style || this.props.onClick !== nextProps.onClick;
+            if (templateChanged && !res) {
+                if (!!this._elRef) {
+                    _updateTemplate(this._elRef, nextProps);
+                }
+                else {
+                    res = true;
+                }
+            }
+            return res;
+        };
+        Template.prototype.render = function () {
+            var style = this.props.style ? this.props.style : {};
+            var css = this.props.className ? this.props.className : "";
+            return React.createElement("div", { onClick: this._handleClick, className: css, style: style, ref: this._setRef });
+        };
+        return Template;
+    }(React.Component));
+    exports.default = Template;
+});
+define("views/templated", ["require", "exports", "react", "views/react", "actions/templated", "components/template"], function (require, exports, React, react_3, templated_1, template_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var rowStyle = {
+        display: 'inline-block',
+    };
+    var _reducer = function (initialState, state, action) {
+        var _a;
+        switch (action.type) {
+            case "CHANGE_PROP":
+                return __assign(__assign({}, state), (_a = {}, _a[action.name] = action.value, _a));
+            default:
+                return state || initialState;
+        }
+    };
+    var reducer = function (initialState) { return function (state, action) { return _reducer(initialState, state, action); }; };
+    var defaults = { templateId: "", keyName: "", selectedRow: null };
+    var TemplatedElView = (function (_super) {
+        __extends(TemplatedElView, _super);
+        function TemplatedElView(el, options) {
+            var _this = this;
+            var initialState = react_3.mergeOptions(options, defaults);
+            _this = _super.call(this, el, options, reducer(initialState)) || this;
+            _this._handleClick = _this._handleClick.bind(_this);
+            return _this;
+        }
+        TemplatedElView.prototype._handleClick = function (row) {
+            this.selectedRow = row;
+        };
+        TemplatedElView.prototype.storeChanged = function (current, previous) {
+            var shouldRerender = false;
+            if (current.templateId !== previous.templateId) {
+                this.objEvents.raiseProp("templateId");
+                shouldRerender = true;
+            }
+            if (current.rows !== previous.rows) {
+                this.objEvents.raiseProp("rows");
+                shouldRerender = true;
+            }
+            if (current.selectedRow !== previous.selectedRow) {
+                this.objEvents.raiseProp("selectedRow");
+                shouldRerender = true;
+            }
+            return shouldRerender;
+        };
+        TemplatedElView.prototype.getMarkup = function () {
+            var _this = this;
+            var _a = this.state, keyName = _a.keyName, templateId = _a.templateId, rows = _a.rows, selectedRow = _a.selectedRow;
+            return (React.createElement(React.Fragment, null, rows.map(function (row) {
+                return (React.createElement(template_2.default, { key: "" + row[keyName], onClick: _this._handleClick, className: (!!selectedRow && selectedRow[keyName] === row[keyName]) ? 'demo-row selected' : 'demo-row', style: rowStyle, templateId: templateId, dataContext: row }));
+            })));
+        };
+        Object.defineProperty(TemplatedElView.prototype, "templateId", {
+            get: function () {
+                return this.state.templateId;
+            },
+            set: function (v) {
+                this.dispatch(templated_1.propertyChanged("templateId", v));
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TemplatedElView.prototype, "rows", {
+            get: function () {
+                return this.state.rows;
+            },
+            set: function (v) {
+                this.dispatch(templated_1.propertyChanged("rows", v));
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TemplatedElView.prototype, "keyName", {
+            get: function () {
+                return this.state.keyName;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TemplatedElView.prototype, "selectedRow", {
+            get: function () {
+                return this.state.selectedRow;
+            },
+            set: function (v) {
+                this.dispatch(templated_1.propertyChanged("selectedRow", v));
+            },
+            enumerable: true,
+            configurable: true
+        });
+        TemplatedElView.prototype.toString = function () {
+            return "TemplatedElView";
+        };
+        return TemplatedElView;
+    }(react_3.ReactElView));
+    exports.TemplatedElView = TemplatedElView;
+    function initModule(app) {
+        app.registerElView("templatedview", TemplatedElView);
+    }
+    exports.initModule = initModule;
+});
+define("main", ["require", "exports", "jriapp", "app", "views/simple", "views/pager", "views/templated"], function (require, exports, RIAPP, app_1, simple_2, pager_4, templated_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
@@ -556,8 +793,9 @@ define("main", ["require", "exports", "jriapp", "app", "views/tempview", "views/
     });
     function start(options) {
         options.modulesInits = utils.core.extend(options.modulesInits || {}, {
-            "tempview": tempview_1.initModule,
-            "pagerview": pagerview_1.initModule
+            "simpleview": simple_2.initModule,
+            "templatedview": templated_2.initModule,
+            "pagerview": pager_4.initModule
         });
         return bootstrap.startApp(function () {
             return new app_1.DemoApplication(options);

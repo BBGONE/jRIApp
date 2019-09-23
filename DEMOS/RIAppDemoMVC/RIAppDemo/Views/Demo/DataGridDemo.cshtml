@@ -6,131 +6,137 @@
     ViewBag.Title = "DataGrid Demo ";
 }
 
-<style type="text/css">
-    .productTableWrap {
-        height: calc(100% - 40px);
-        width: 100%;
-    }
-
-    .productTableContainer {
-        overflow: auto !important;
-    }
-
-    .productTableHeader {
-    }
-
-    .orderDetailTableWrap {
-        max-height: 180px;
-        width: 100%;
-    }
-
-    table.ria-data-table td.number-display {
-        color: blue;
-        font-weight: bold;
-    }
-
-    table.ria-data-table td.number-edit input[type="text"] {
-        color: black;
-    }
-
-    .name-display {
-        color: blue;
-        font-weight: bold;
-    }
-
-    .name-edit input[type="text"] {
-        color: black;
-    }
-
-    .name-edit textarea {
-        color: black;
-    }
-
-    .listbox-edit select {
-        width: 75%;
-    }
-
-    .ria-data-table td.weightCell {
-        text-align: right;
-    }
-
-    .ria-data-table td.dateCell {
-        text-align: right;
-    }
-
-    .ria-data-table td.activeCell {
-        text-align: center;
-    }
-
-    .weightCol {
-        font-weight: bolder;
-    }
-
-    .rowInactive > td.ria-data-cell {
-        color: gray;
-        text-decoration: line-through;
-    }
-
-    table.ria-data-table tr:nth-child(even) {
-        background-color: #ECF2F6;
-    }
-
-    .ui-datepicker select.ui-datepicker-month,
-    .ui-datepicker select.ui-datepicker-year {
-        min-height: 28px;
-    }
-
-    .ui-datepicker select.ui-datepicker-month {
-        margin-right: 3px;
-        width: 80px;
-    }
-
-    .gray-bgc {
-        background-color: #ECF2F6;
-    }
-
-    .white-bgc {
-        background-color: #FFFFFF;
-    }
-
-    .leftOffset {
-        margin-left: 5px;
-    }
-
-
-    div.someClass {
-        color: gray;
-    }
-
-    div.bold span {
-        font-weight: bold;
-        font-size: larger;
-    }
-
-    div.bold {
-        color: black;
-    }
-
-        div.bold.lsize {
-            color: red;
+@section CssImport {
+    <style type="text/css">
+        .productTableWrap {
+            height: calc(100% - 40px);
+            width: 100%;
         }
 
-        div.bold.msize {
-            color: green;
+        .productTableContainer {
+            overflow: auto !important;
         }
 
-        div.bold.ssize {
+        .productTableHeader {
+        }
+
+        .orderDetailTableWrap {
+            max-height: 180px;
+            width: 100%;
+        }
+
+        table.ria-data-table td.number-display {
             color: blue;
+            font-weight: bold;
         }
 
-        div.bold.nsize {
-            color: darkgoldenrod;
+        table.ria-data-table td.number-edit input[type="text"] {
+            color: black;
         }
-</style>
 
-<script src="@Url.Content("~/Scripts/demo/gridDemo/main.js", true)" type="text/javascript"></script>
+        .name-display {
+            color: blue;
+            font-weight: bold;
+        }
 
-<script type="text/javascript">
+        .name-edit input[type="text"] {
+            color: black;
+        }
+
+        .name-edit textarea {
+            color: black;
+        }
+
+        .listbox-edit select {
+            width: 75%;
+        }
+
+        .ria-data-table td.weightCell {
+            text-align: right;
+        }
+
+        .ria-data-table td.dateCell {
+            text-align: right;
+        }
+
+        .ria-data-table td.activeCell {
+            text-align: center;
+        }
+
+        .weightCol {
+            font-weight: bolder;
+        }
+
+        .rowInactive > td.ria-data-cell {
+            color: gray;
+            text-decoration: line-through;
+        }
+
+        table.ria-data-table tr:nth-child(even) {
+            background-color: #ECF2F6;
+        }
+
+        .ui-datepicker select.ui-datepicker-month,
+        .ui-datepicker select.ui-datepicker-year {
+            min-height: 28px;
+        }
+
+        .ui-datepicker select.ui-datepicker-month {
+            margin-right: 3px;
+            width: 80px;
+        }
+
+        .gray-bgc {
+            background-color: #ECF2F6;
+        }
+
+        .white-bgc {
+            background-color: #FFFFFF;
+        }
+
+        .leftOffset {
+            margin-left: 5px;
+        }
+
+
+        div.someClass {
+            color: gray;
+        }
+
+        div.bold span {
+            font-weight: bold;
+            font-size: larger;
+        }
+
+        div.bold {
+            color: black;
+        }
+
+            div.bold.lsize {
+                color: red;
+            }
+
+            div.bold.msize {
+                color: green;
+            }
+
+            div.bold.ssize {
+                color: blue;
+            }
+
+            div.bold.nsize {
+                color: darkgoldenrod;
+            }
+    </style>
+}
+
+@section JSStaticImport {
+}
+
+@section JSDynamicImport {
+    <script src="@Url.Content("~/Scripts/demo/gridDemo/main.js", true)" type="text/javascript"></script>
+
+    <script type="text/javascript">
     require(["gridDemo/main", "jriapp_ui", "jriapp_ru"],
         function (DEMO, UI, LANG) {
             $("#loading").fadeIn();
@@ -164,7 +170,8 @@
                 $("#loading").fadeOut(1000);
             });
         });
-</script>
+    </script>
+}
 
 <h2 class="ex8" style="display: inline-block;">@ViewBag.Title</h2>
 
@@ -197,9 +204,9 @@
         <tr>
             <td>
                 <label for="prodNum">Product Number:</label>
-                <input type="text" id="prodNum" placeholder="Product number" 
-                       data-bind-1="this.value,to=filter.prodNumber,mode=TwoWay" 
-                       data-bind-2="this.toolTip,to=filter.searchTextToolTip"/>
+                <input type="text" id="prodNum" placeholder="Product number"
+                       data-bind-1="this.value,to=filter.prodNumber,mode=TwoWay"
+                       data-bind-2="this.toolTip,to=filter.searchTextToolTip" />
             </td>
             <td>
                 <div data-bind="this.dataContext,to=filter" data-view="dataform">
@@ -213,14 +220,14 @@
             <td>
                 <label for="prodMCat">Main Category:</label>
                 <select id="prodMCat" size="1" class="span3" data-bind="get(prodMCatDataBind)"
-    @*
+                        @*
     Providing the datasource through the options - not using databinding
     bind(ParentCategories,productVM.filter) takes two arguments - the first is the path, the second is the source
     the second parameter is optional. Their semantics is the same as in the usual databinding.
     We could write it without the source argument, like that -
     data-view-options="valuePath=ProductCategoryID,textPath=Name,dataSource=bind(filter.ParentCategories)"></select>
     *@
-                 data-view-options="valuePath=ProductCategoryID,textPath=Name,dataSource=bind(ParentCategories,productVM.filter)"></select>
+                        data-view-options="valuePath=ProductCategoryID,textPath=Name,dataSource=bind(ParentCategories,productVM.filter)"></select>
             </td>
             <td>
                 <label for="prodSCat">Sub Category:</label>
@@ -259,17 +266,17 @@
             <td colspan="4">
                 <div style="display: inline-block;">
                     <label for="saleStart1">Sales Start Date Begin:</label>
-                    <input type="text" id="saleStart1" placeholder="Enter Date" 
-                           data-bind="this.value,to=filter.saleStart1,mode=TwoWay,converter=dateConverter" 
+                    <input type="text" id="saleStart1" placeholder="Enter Date"
+                           data-bind="this.value,to=filter.saleStart1,mode=TwoWay,converter=dateConverter"
                            data-view="datepicker"
-                           data-view-options="get(salesDateOptions)"/>
+                           data-view-options="get(salesDateOptions)" />
                 </div>
                 <div style="display: inline-block; margin-left: 5px;">
                     <label for="saleStart2">Sales Start Date End:</label>
-                    <input type="text" id="saleStart2" placeholder="Enter Date" 
-                           data-bind="this.value,to=filter.saleStart2,mode=TwoWay,converter=dateConverter" 
+                    <input type="text" id="saleStart2" placeholder="Enter Date"
+                           data-bind="this.value,to=filter.saleStart2,mode=TwoWay,converter=dateConverter"
                            data-view="datepicker"
-                           data-view-options="get(salesDateOptions)"/>
+                           data-view-options="get(salesDateOptions)" />
                 </div>
             </td>
         </tr>
@@ -295,7 +302,7 @@
     details:{templateID:productDetailsTemplate}
 </script>
 
-<div id="demoContent" style="opacity:0;" data-bind="this.isBusy,to=dbContext.isBusy" 
+<div id="demoContent" style="opacity:0;" data-bind="this.isBusy,to=dbContext.isBusy"
      data-view="busy">
     <div style="height: 85%; vertical-align: top;">
         <table data-name="gridProducts" data-bind1="this.dataSource,to=dbSet,source=productVM"
@@ -304,29 +311,29 @@
                data-view="resizable_grid"
                data-view-options="get(gridProductsOptions)">
             <thead>
-            <tr>
-                <th data-column="width:35px,type:row_expander,tip='Row expander'"></th>
-                <th data-column="width:50px,type:row_actions,tip='Row actions'"></th>
-                <th data-column="width:40px,type:row_selector,tip='Column selector'"></th>
-                <th data-column="width:100px,sortable:false,templateID:productNumberTemplate,tip='Product number column implemented using template!!!'" data-content="fieldName:ProductNumber,css:{readCss:'number-display',editCss:'number-edit'}"></th>
-                <th data-column="width:25%,sortable:true,title:Name,tip='Product name'" data-content="fieldName:Name"></th>
-                <th data-column="width:90px,title:'Weight',sortable:true,rowCellCss:weightCell,colCellCss:weightCol,tip='Example of a tooltip in the datagrid column''s header'" data-content="fieldName:Weight"></th>
-                <th data-column="width:15%,title=CategoryID,sortable:true,sortMemberName=ProductCategoryID" data-content="fieldName=ProductCategoryID,name:lookup,options:{dataSource=dbContext.dbSets.ProductCategory,valuePath=ProductCategoryID,textPath=Name}"></th>
-                <th data-column="width:100px,sortable:true,rowCellCss:dateCell,title='SellStartDate',tip='Start of the sales'" data-content="fieldName=SellStartDate"></th>
-                <th data-column="width:100px,sortable:true,rowCellCss:dateCell,title='SellEndDate',tip='End of the sales'" data-content="fieldName=SellEndDate"></th>
-                <th data-column="width:90px,sortable:true,rowCellCss:activeCell,title='IsActive',sortMemberName=SellEndDate" data-content="fieldName=IsActive"></th>
-                <th data-column="width:10%,title=Size,sortable:true,sortMemberName=Size" data-content="template={readID=sizeDisplayTemplate}"></th>
-            </tr>
+                <tr>
+                    <th data-column="width:35px,type:row_expander,tip='Row expander'"></th>
+                    <th data-column="width:50px,type:row_actions,tip='Row actions'"></th>
+                    <th data-column="width:40px,type:row_selector,tip='Column selector'"></th>
+                    <th data-column="width:100px,sortable:false,templateID:productNumberTemplate,tip='Product number column implemented using template!!!'" data-content="fieldName:ProductNumber,css:{readCss:'number-display',editCss:'number-edit'}"></th>
+                    <th data-column="width:25%,sortable:true,title:Name,tip='Product name'" data-content="fieldName:Name"></th>
+                    <th data-column="width:90px,title:'Weight',sortable:true,rowCellCss:weightCell,colCellCss:weightCol,tip='Example of a tooltip in the datagrid column''s header'" data-content="fieldName:Weight"></th>
+                    <th data-column="width:15%,title=CategoryID,sortable:true,sortMemberName=ProductCategoryID" data-content="fieldName=ProductCategoryID,name:lookup,options:{dataSource=dbContext.dbSets.ProductCategory,valuePath=ProductCategoryID,textPath=Name}"></th>
+                    <th data-column="width:100px,sortable:true,rowCellCss:dateCell,title='SellStartDate',tip='Start of the sales'" data-content="fieldName=SellStartDate"></th>
+                    <th data-column="width:100px,sortable:true,rowCellCss:dateCell,title='SellEndDate',tip='End of the sales'" data-content="fieldName=SellEndDate"></th>
+                    <th data-column="width:90px,sortable:true,rowCellCss:activeCell,title='IsActive',sortMemberName=SellEndDate" data-content="fieldName=IsActive"></th>
+                    <th data-column="width:10%,title=Size,sortable:true,sortMemberName=Size" data-content="template={readID=sizeDisplayTemplate}"></th>
+                </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
     <div style="border: none; height: 15%; margin-top: 20px; text-align: left; width: 100%;">
         <!--pager-->
-        <div style="float: left;" 
-             data-bind-1="this.dataSource,to=dbSet,source=productVM" 
+        <div style="float: left;"
+             data-bind-1="this.dataSource,to=dbSet,source=productVM"
              @*when the pager is selected than the datagrid gets keydown and keyup events*@
-             data-bind-2="this.parentControl,to=grid,source=productVM" 
+             data-bind-2="this.parentControl,to=grid,source=productVM"
              data-view="pager"
              data-view-options="sliderSize:5,showTip:false,showInfo:true"></div>
         <button class="btn btn-info btn-small" style="float: right;" data-bind="this.command,to=addNewCommand,mode=OneWay,source=productVM"><i class="icon-plus"></i>&nbsp;New Product</button>
@@ -348,8 +355,8 @@
 <script id="productNumberTemplate" type="text/x-template">
     <div style="margin-top: 2px; border: 1px solid blue; border-radius: 3px 4px; width:95%; height:90%;">
         <div style="position: relative; top: 50%; transform: translateY(-50%);">
-            <a style="color: white;" data-name="Product Number Column" data-bind1="this.command,to=columnCommand,source=productVM" 
-               data-bind2="this.commandParam,to=currentItem,source=productVM" 
+            <a style="color: white;" data-name="Product Number Column" data-bind1="this.command,to=columnCommand,source=productVM"
+               data-bind2="this.commandParam,to=currentItem,source=productVM"
                data-view-options="stopPropagation=true">Product #</a>
         </div>
     </div>

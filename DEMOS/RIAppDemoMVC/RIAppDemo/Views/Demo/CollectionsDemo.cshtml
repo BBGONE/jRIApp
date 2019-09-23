@@ -5,124 +5,132 @@
     ViewBag.Title = "Collections Demo";
 }
 
-<style type="text/css">
-    #demoHeader label {
-        color: Blue;
-    }
+@section CssImport {
+    <style type="text/css">
+        #demoHeader label {
+            color: Blue;
+        }
 
-    #demoContent {
-        height: 600px;
-        overflow: visible;
-        position: relative;
-        vertical-align: top;
-    }
+        #demoContent {
+            height: 600px;
+            overflow: visible;
+            position: relative;
+            vertical-align: top;
+        }
 
-        #demoContent > fieldset {
+            #demoContent > fieldset {
+                border-radius: 5px;
+            }
+
+            #demoContent fieldset > legend {
+                color: Blue;
+                font-weight: bold;
+            }
+
+            #demoContent .radioItem {
+                display: inline-block;
+                margin: 4px;
+                padding: 4px;
+            }
+
+        div.ria-stackpanel .ria-current-item {
+            outline: 1px dashed black;
+            box-sizing: border-box;
+        }
+
+        .stackPanelItemV {
+            background-color: ButtonFace;
+            color: ButtonText;
+            height: auto;
+            margin: 3px 0px 3px 0px;
+            min-width: 120px;
+            padding: 4px;
+            width: auto;
+        }
+
+        .stackPanelItemH {
+            background-color: ButtonFace;
+            color: ButtonText;
+            height: auto;
+            margin: 0px 3px 0px 3px;
+            padding: 4px;
+            width: 140px;
+        }
+
+        .stackPanelV {
+            border: 1px solid gray;
+            float: left;
+            max-height: 250px;
+            min-height: 65px;
+            overflow: auto;
+            width: 150px;
+        }
+
+        .stackPanelH {
+            border: 1px solid gray;
+            float: left;
+            height: 65px;
+            margin-left: 15px;
+            max-width: 650px;
+            min-width: 145px;
+            overflow: auto;
+        }
+
+        .ria-stack-panel-item fieldset {
             border-radius: 5px;
         }
 
-        #demoContent fieldset > legend {
-            color: Blue;
-            font-weight: bold;
+            .ria-stack-panel-item fieldset legend {
+                color: blue;
+                font-weight: bold;
+            }
+
+        ul.ria-stackpanel, ol.ria-stackpanel {
+            padding-left: 20px;
+            margin: 0;
         }
 
-        #demoContent .radioItem {
-            display: inline-block;
-            margin: 4px;
-            padding: 4px;
+        li.ria-stackpanel-item > div.list-item {
+            padding: 3px 8px;
+            margin-left: 5px;
         }
 
-    div.ria-stackpanel .ria-current-item {
-        outline: 1px dashed black;
-        box-sizing: border-box;
-    }
-
-    .stackPanelItemV {
-        background-color: ButtonFace;
-        color: ButtonText;
-        height: auto;
-        margin: 3px 0px 3px 0px;
-        min-width: 120px;
-        padding: 4px;
-        width: auto;
-    }
-
-    .stackPanelItemH {
-        background-color: ButtonFace;
-        color: ButtonText;
-        height: auto;
-        margin: 0px 3px 0px 3px;
-        padding: 4px;
-        width: 140px;
-    }
-
-    .stackPanelV {
-        border: 1px solid gray;
-        float: left;
-        max-height: 250px;
-        min-height: 65px;
-        overflow: auto;
-        width: 150px;
-    }
-
-    .stackPanelH {
-        border: 1px solid gray;
-        float: left;
-        height: 65px;
-        margin-left: 15px;
-        max-width: 650px;
-        min-width: 145px;
-        overflow: auto;
-    }
-
-    .ria-stack-panel-item fieldset {
-        border-radius: 5px;
-    }
-
-        .ria-stack-panel-item fieldset legend {
-            color: blue;
-            font-weight: bold;
+        li.ria-current-item > div.list-item {
+            outline: 1px dashed black;
         }
+    </style>
+}
 
-    ul.ria-stackpanel, ol.ria-stackpanel {
-        padding-left: 20px;
-        margin: 0;
-    }
 
-    li.ria-stackpanel-item > div.list-item {
-        padding: 3px 8px;
-        margin-left: 5px;
-    }
+@section JSStaticImport {
+}
 
-    li.ria-current-item > div.list-item {
-        outline: 1px dashed black;
-    }
-</style>
-
-<script type="text/javascript">
-    require(["jriapp", "collectionDemo", "jriapp_ui", "jriapp_ru"],
-        function (RIAPP, DEMO, UI, LANG) {
-            //for example - subscribe to init event
-            RIAPP.bootstrap.init(function (bootstrap) {
-                console.log('bootstrap initialized');
-            });
-
-            //create and start application here
-            let promise = RIAPP.bootstrap.startApp(function () {
-                return new DEMO.DemoApplication(DEMO.appOptions);
-            },
-                function (app) {
-                    console.log('application starting');
+@section JSDynamicImport {
+    <script type="text/javascript">
+        require(["jriapp", "collectionDemo", "jriapp_ui", "jriapp_ru"],
+            function (RIAPP, DEMO, UI, LANG) {
+                //for example - subscribe to init event
+                RIAPP.bootstrap.init(function (bootstrap) {
+                    console.log('bootstrap initialized');
                 });
 
-            promise.then(function () {
-                $("#demoContent").animate({ opacity: 1 }, 1000);
-                console.log('application started successfuly');
-            }, function (err) {
-                console.log('application failed to start');
+                //create and start application here
+                let promise = RIAPP.bootstrap.startApp(function () {
+                    return new DEMO.DemoApplication(DEMO.appOptions);
+                },
+                    function (app) {
+                        console.log('application starting');
+                    });
+
+                promise.then(function () {
+                    $("#demoContent").animate({ opacity: 1 }, 1000);
+                    console.log('application started successfuly');
+                }, function (err) {
+                    console.log('application failed to start');
+                });
             });
-        });
-</script>
+    </script>
+}
 
 <h2 class="ex8">@ViewBag.Title</h2>
 <!--using dataform is convenient because it sets a datacontext scope for all its content-->

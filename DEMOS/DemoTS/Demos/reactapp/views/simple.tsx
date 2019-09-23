@@ -1,11 +1,11 @@
 ﻿import * as RIAPP from "jriapp";
 import * as React from "react";
 import * as Redux from 'redux';
-import { ReactElView, mergeOptions } from "./reactview";
-import { propertyChanged, Action, ActionTypes } from "../actions/temp-actions";
-import { ITempActions, ITempModel } from "../abstractions/temp";
+import { ReactElView, mergeOptions } from "./react";
+import { propertyChanged, Action, ActionTypes } from "../actions/simple";
+import { ISimpleActions, ISimpleState } from "../abstractions/simple";
 
-export interface ITempViewOptions extends RIAPP.IViewOptions
+export interface ISimpleViewOptions extends RIAPP.IViewOptions
 {
     value?: string;
 }
@@ -21,7 +21,7 @@ const spanStyle = {
 };
 
 
-const _reducer = (initialState: ITempModel, state: ITempModel, action: Redux.Action) => {
+const _reducer = (initialState: ISimpleState, state: ISimpleState, action: Redux.Action) => {
     switch (action.type) {
         case ActionTypes.CHANGE_PROP:
             return {
@@ -32,19 +32,19 @@ const _reducer = (initialState: ITempModel, state: ITempModel, action: Redux.Act
             return state || initialState;
     }
 };
-const reducer = (initialState: ITempModel) => (state: ITempModel, action: Redux.Action) => _reducer(initialState, state, action);
-const defaults = { value: "0", title: "" } as ITempModel;
+const reducer = (initialState: ISimpleState) => (state: ISimpleState, action: Redux.Action) => _reducer(initialState, state, action);
+const defaults = { value: "0", title: "" } as ISimpleState;
 
 /**
-  Demo element view wich renders the Temperature React component
+  Demo element view which renders a Simple React component
  */
-export class TempElView extends ReactElView<ITempModel> {
-    constructor(el: HTMLElement, options: ITempViewOptions) {
+export class SimpleElView extends ReactElView<ISimpleState> {
+    constructor(el: HTMLElement, options: ISimpleViewOptions) {
         const initialState = mergeOptions(options, defaults);
         super(el, options, reducer(initialState));
     }
     // override
-    storeChanged(current: ITempModel, previous: ITempModel): boolean {
+    storeChanged(current: ISimpleState, previous: ISimpleState): boolean {
         let shouldRerender = false;
 
         if (current.title !== previous.title) {
@@ -60,10 +60,10 @@ export class TempElView extends ReactElView<ITempModel> {
         return shouldRerender;
     }
     // override
-    getMarkup(): any {
-        const model: ITempModel = this.state,
+    getMarkup(): JSX.Element {
+        const model: ISimpleState = this.state,
             styles = { spacer: spacerStyle, span: spanStyle },
-            actions: ITempActions = { tempChanged: (temp: string) => { this.value = temp; } };
+            actions: ISimpleActions = { tempChanged: (temp: string) => { this.value = temp; } };
 
         return (
             <fieldset>
@@ -87,10 +87,10 @@ export class TempElView extends ReactElView<ITempModel> {
         this.dispatch(propertyChanged("title", v));
     }
     toString(): string {
-        return "TempElView";
+        return "SimpleElView";
     }
 }
 
 export function initModule(app: RIAPP.Application) {
-    app.registerElView("tempview", TempElView);
+    app.registerElView("simpleview", SimpleElView);
 }

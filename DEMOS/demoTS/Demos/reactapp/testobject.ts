@@ -1,13 +1,23 @@
 ﻿import * as RIAPP from "jriapp";
 
+const demoRows: { num: number, someVal: string }[] = [{ num: 1, someVal: "someVal1" }, { num: 2, someVal: "someVal2" }, { num: 3, someVal: "someVal3" }, { num: 4, someVal: "someVal4" }, { num: 5, someVal: "someVal5" }];
+
 export class TestObject extends RIAPP.ViewModel<RIAPP.Application> {
-    private _temperature: string;
+    private _testValue: string;
     private _page: number;
+    private _rows: object[];
+    private _reverseCommand: RIAPP.ICommand;
+    private _selectedRow: object;
 
     constructor(app: RIAPP.Application) {
         super(app);
-        this._temperature = "0";
+        this._testValue = "0";
         this._page = 1;
+        this._rows = demoRows;
+        this._reverseCommand = new RIAPP.Command(() => {
+            this.rows = [...this._rows].reverse();
+        });
+        this._selectedRow = null;
     }
     dispose(): void {
         if (this.getIsDisposed()) {
@@ -16,13 +26,23 @@ export class TestObject extends RIAPP.ViewModel<RIAPP.Application> {
         this.setDisposing();
         super.dispose();
     }
-    get temperature(): string {
-        return this._temperature;
+    get testValue(): string {
+        return this._testValue;
     }
-    set temperature(v: string) {
-        if (this._temperature !== v) {
-            this._temperature = v;
-            this.objEvents.raiseProp("temperature");
+    set testValue(v: string) {
+        if (this._testValue !== v) {
+            this._testValue = v;
+            this.objEvents.raiseProp("testValue");
+        }
+    }
+
+    get rows(): object[] {
+        return this._rows;
+    }
+    set rows(v: object[]) {
+        if (this._rows !== v) {
+            this._rows = v;
+            this.objEvents.raiseProp("rows");
         }
     }
 
@@ -33,6 +53,18 @@ export class TestObject extends RIAPP.ViewModel<RIAPP.Application> {
         if (this._page !== v) {
             this._page = v;
             this.objEvents.raiseProp("page");
+        }
+    }
+
+    get reverseCommand() { return this._reverseCommand; }
+
+    get selectedRow(): object {
+        return this._selectedRow;
+    }
+    set selectedRow(v: object) {
+        if (this._selectedRow !== v) {
+            this._selectedRow = v;
+            this.objEvents.raiseProp("selectedRow");
         }
     }
 }

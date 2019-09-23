@@ -20,31 +20,6 @@
     <link href="@Url.Asset("/Scripts/qtip/jquery.qtip.min.css", false)" rel="stylesheet" type="text/css"/>
 
     @RenderSection("CssImport", false)
-
-    <script src="@Url.Asset("/Scripts/jquery/jquery-3.1.1.min.js", false)" type="text/javascript"></script>
-    <script src="@Url.Asset("/Scripts/bootstrap/js/bootstrap.min.js", false)" type="text/javascript"></script>
-    <script src="@Url.Asset("/Scripts/jquery/ui/jquery-ui.min.js", false)" type="text/javascript"></script>
-    <script src="@Url.Asset("/Scripts/moment/moment.min.js", false)" type="text/javascript"></script>
-    <script src="@Url.Asset("/Scripts/qtip/jquery.qtip.min.js", false)" type="text/javascript"></script>
-
-    @RenderSection("JSImport", false)
-
-    <script src="@Url.Asset("/Scripts/require.min.js", false)" type="text/javascript"></script>
-    @Scripts.Render("~/bundles/jriapp")
-    @Scripts.Render("~/bundles/shared")
-   
-    <script type="text/javascript">
-        var jriapp_config = {
-            frameworkPath: '@Url.Asset("/Scripts/jriapp/", true)',
-            debugLevel: 0
-        };
-
-        var config = {
-            baseUrl: "@Url.Asset("/Scripts/demo/", true)",
-            waitSeconds: 10
-        };
-        requirejs.config(config);
-    </script>
 </head>
 <body>
     <div>
@@ -60,6 +35,33 @@
             @RenderSection("Footer", false)
         </footer>
     </div>
+
+    <script src="@Url.Asset("/Scripts/jquery/jquery-3.1.1.min.js", false)" type="text/javascript"></script>
+    <script src="@Url.Asset("/Scripts/bootstrap/js/bootstrap.min.js", false)" type="text/javascript"></script>
+    <script src="@Url.Asset("/Scripts/jquery/ui/jquery-ui.min.js", false)" type="text/javascript"></script>
+    <script src="@Url.Asset("/Scripts/moment/moment.min.js", false)" type="text/javascript"></script>
+    <script src="@Url.Asset("/Scripts/qtip/jquery.qtip.min.js", false)" type="text/javascript"></script>
+
+    @RenderSection("JSStaticImport", false)
+
+    <script src="@Url.Asset("/Scripts/require.min.js", false)" type="text/javascript"></script>
+    @Scripts.Render("~/bundles/jriapp")
+    @Scripts.Render("~/bundles/shared")
+
+    <script type="text/javascript">
+        var jriapp_config = {
+            frameworkPath: '@Url.Asset("/Scripts/jriapp/", true)',
+            debugLevel: 0
+        };
+
+        var config = {
+            baseUrl: "@Url.Asset("/Scripts/demo/", true)",
+            waitSeconds: 10
+        };
+        requirejs.config(config);
+    </script>
+
+    @RenderSection("JSDynamicImport", false)
 
     <script id="errorTemplate" type="text/x-template">
         @*error dialog template*@

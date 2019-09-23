@@ -6,51 +6,59 @@
     ViewBag.Title = "TreeView Demo";
 }
 
-<style type="text/css">
+@section CssImport
+{
+    <style type="text/css">
 
-    #demoHeader label {
-        color: Blue;
-    }
-
-    .dynatree-container {
-        max-height: 450px;
-        overflow: auto;
-        width: 600px;
-        box-sizing: border-box;
-    }
-
-        .dynatree-container li:last-child {
-            background-image: none;
+        #demoHeader label {
+            color: Blue;
         }
 
-    span.dynatree-title {
-        display: inline-block;
-        margin-left: 5px;
-        box-sizing: border-box;
-    }
+        .dynatree-container {
+            max-height: 450px;
+            overflow: auto;
+            width: 600px;
+            box-sizing: border-box;
+        }
 
-    .dynatree-container li:last-child .dynatree-exp span.dynatree-expander /* Collapsed, last sibling */ {
-        background-position: 0px -96px;
-    }
+            .dynatree-container li:last-child {
+                background-image: none;
+            }
 
-    .dynatree-container li:last-child .dynatree-exp-e span.dynatree-expander /* Expanded, last sibling */ {
-        background-position: -32px -80px;
-    }
+        span.dynatree-title {
+            display: inline-block;
+            margin-left: 5px;
+            box-sizing: border-box;
+        }
 
-    .ria-stackpanel .ria-stackpanel-item {
-        margin: 0 !important;
-    }
+        .dynatree-container li:last-child .dynatree-exp span.dynatree-expander /* Collapsed, last sibling */ {
+            background-position: 0px -96px;
+        }
 
-    span.dynatree-icon {
-        margin-left: 0 !important;
-    }
+        .dynatree-container li:last-child .dynatree-exp-e span.dynatree-expander /* Expanded, last sibling */ {
+            background-position: -32px -80px;
+        }
 
-    ul.dynatree-container ul {
-        padding: 0 0 0 22px !important;
-    }
-</style>
+        .ria-stackpanel .ria-stackpanel-item {
+            margin: 0 !important;
+        }
 
-<script type="text/javascript">
+        span.dynatree-icon {
+            margin-left: 0 !important;
+        }
+
+        ul.dynatree-container ul {
+            padding: 0 0 0 22px !important;
+        }
+    </style>
+}
+
+@section JSStaticImport
+{
+}
+
+@section JSDynamicImport {
+    <script type="text/javascript">
     require(["treeDemo", "jriapp_ui", "jriapp_ru"],
         function(DEMO, UI, LANG) {
             var mainOptions = {
@@ -72,10 +80,11 @@
                 $("#main").animate({opacity: 1}, 1000);
             });
         });
-</script>
+    </script>
+}
 
 <h2 class="ex8">@ViewBag.Title</h2>
-<div id="main" style="opacity:0;" >
+<div id="main" style="opacity:0;">
     @*
         syncSetDatasource:true option allows to redraw all tree graph in one timeframe
         also, instead of ordinary databinding we set dataSource through constructor options here

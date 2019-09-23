@@ -1,6 +1,5 @@
 ﻿import * as RIAPP from "jriapp";
 import * as uiMOD from "jriapp_ui";
-import * as React from "react";
 import { render as renderReact, unmountComponentAtNode } from "react-dom";
 import * as Redux from "redux";
 
@@ -45,7 +44,7 @@ export abstract class ReactElView<S> extends uiMOD.BaseElView {
     }
 
     abstract storeChanged(current: S, previous: S): boolean;
-    abstract getMarkup(): React.ReactElement;
+    abstract getMarkup(): JSX.Element;
 
     private _render(): void {
         if (this.getIsStateDirty()) {

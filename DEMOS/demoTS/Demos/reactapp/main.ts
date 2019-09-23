@@ -1,7 +1,8 @@
 ﻿import * as RIAPP from "jriapp";
 import { DemoApplication } from "./app";
-import { initModule as initTempView } from "./views/tempview";
-import { initModule as initPagerView } from "./views/pagerview";
+import { initModule as initSimpleView } from "./views/simple";
+import { initModule as initPagerView } from "./views/pager";
+import { initModule as initTemplatedView } from "./views/templated";
 
 const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
@@ -14,7 +15,8 @@ bootstrap.objEvents.addOnError(function (_s, args) {
 
 export function start(options: RIAPP.IAppOptions) {
     options.modulesInits = utils.core.extend(options.modulesInits || {}, {
-        "tempview": initTempView,
+        "simpleview": initSimpleView,
+        "templatedview": initTemplatedView,
         "pagerview": initPagerView
     });
    

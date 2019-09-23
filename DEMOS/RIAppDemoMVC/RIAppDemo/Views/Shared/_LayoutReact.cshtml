@@ -20,6 +20,21 @@
     <link href="@Url.Asset("/Scripts/qtip/jquery.qtip.min.css", false)" rel="stylesheet" type="text/css"/>
 
     @RenderSection("CssImport", false)
+</head>
+<body>
+    <div>
+        <div style="border-bottom: 1px #5C87B2 solid;">
+            <div>
+                @Html.Partial("_MenuPartial")
+            </div>
+        </div>
+        <div id="bodyDiv">
+            @RenderBody()
+        </div>
+        <footer>
+            @RenderSection("Footer", false)
+        </footer>
+    </div>
 
     <script src="@Url.Asset("/Scripts/jquery/jquery-3.1.1.min.js", false)" type="text/javascript"></script>
     <script src="@Url.Asset("/Scripts/bootstrap/js/bootstrap.min.js", false)" type="text/javascript"></script>
@@ -27,12 +42,12 @@
     <script src="@Url.Asset("/Scripts/moment/moment.min.js", false)" type="text/javascript"></script>
     <script src="@Url.Asset("/Scripts/qtip/jquery.qtip.min.js", false)" type="text/javascript"></script>
 
-    @RenderSection("JSImport", false)
+    @RenderSection("JSStaticImport", false)
 
     <script src="@Url.Asset("/Scripts/require.min.js", false)" type="text/javascript"></script>
     @Scripts.Render("~/bundles/jriapp")
     @Scripts.Render("~/bundles/shared")
-   
+
     <script type="text/javascript">
         var jriapp_config = {
             frameworkPath: '@Url.Asset("/Scripts/jriapp/", true)',
@@ -51,21 +66,8 @@
         };
         requirejs.config(config);
     </script>
-</head>
-<body>
-    <div>
-        <div style="border-bottom: 1px #5C87B2 solid;">
-            <div>
-                @Html.Partial("_MenuPartial")
-            </div>
-        </div>
-        <div id="bodyDiv">
-            @RenderBody()
-        </div>
-        <footer>
-            @RenderSection("Footer", false)
-        </footer>
-    </div>
+
+    @RenderSection("JSDynamicImport", false)
 
     <script id="errorTemplate" type="text/x-template">
         @*error dialog template*@
