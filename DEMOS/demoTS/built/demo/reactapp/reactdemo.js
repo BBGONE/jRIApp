@@ -29,10 +29,53 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+define("abstractions/tabs", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("testobject", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var demoRows = [{ num: 1, someVal: "someVal1" }, { num: 2, someVal: "someVal2" }, { num: 3, someVal: "someVal3" }, { num: 4, someVal: "someVal4" }, { num: 5, someVal: "someVal5" }];
+    var demoTabs = [{
+            name: "tab1", heading: {
+                templateId: "tabHeadingTemplate",
+                dataContext: { text: "heading tab1" }
+            },
+            content: {
+                templateId: "tabContentTemplate1",
+                dataContext: { text: "content tab1", info: "this text is taken from info property", description: "<em>this is displayed in template</em>" }
+            }
+        },
+        {
+            name: "tab2", heading: {
+                templateId: "tabHeadingTemplate",
+                dataContext: { text: "heading tab2" }
+            },
+            content: {
+                templateId: "tabContentTemplate2",
+                dataContext: {
+                    text: "content tab2", otherData: {
+                        subj: "Cloud Computing / Networking & Server",
+                        title: "Pro PowerShell for Amazon Web Services, 2nd Edition"
+                    }, description: "<em>this is displayed in template</em>"
+                }
+            }
+        },
+        {
+            name: "tab3", heading: {
+                templateId: "tabHeadingTemplate",
+                dataContext: { text: "heading tab3" }
+            },
+            content: {
+                templateId: "tabContentTemplate3",
+                dataContext: {
+                    text: "content tab3", details: {
+                        cover: "Paperback", pages: 616
+                    }, description: "<em>this is displayed in template</em>"
+                }
+            }
+        }];
     var TestObject = (function (_super) {
         __extends(TestObject, _super);
         function TestObject(app) {
@@ -44,6 +87,7 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
                 _this.rows = __spreadArrays(_this._rows).reverse();
             });
             _this._selectedRow = null;
+            _this._tabs = demoTabs;
             return _this;
         }
         TestObject.prototype.dispose = function () {
@@ -106,6 +150,13 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
                     this._selectedRow = v;
                     this.objEvents.raiseProp("selectedRow");
                 }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TestObject.prototype, "tabs", {
+            get: function () {
+                return this._tabs;
             },
             enumerable: true,
             configurable: true
@@ -248,11 +299,7 @@ define("views/react", ["require", "exports", "jriapp", "jriapp_ui", "react-dom",
     }(uiMOD.BaseElView));
     exports.ReactElView = ReactElView;
 });
-define("abstractions/simple", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("actions/simple", ["require", "exports"], function (require, exports) {
+define("actions/common", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function propertyChanged(name, value) {
@@ -260,7 +307,7 @@ define("actions/simple", ["require", "exports"], function (require, exports) {
     }
     exports.propertyChanged = propertyChanged;
 });
-define("views/simple", ["require", "exports", "react", "views/react", "actions/simple"], function (require, exports, React, react_1, simple_1) {
+define("views/simple", ["require", "exports", "react", "views/react", "actions/common"], function (require, exports, React, react_1, common_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var spacerStyle = {
@@ -304,10 +351,10 @@ define("views/simple", ["require", "exports", "react", "views/react", "actions/s
         };
         SimpleElView.prototype.getMarkup = function () {
             var _this = this;
-            var model = this.state, styles = { spacer: spacerStyle, span: spanStyle }, actions = { tempChanged: function (temp) { _this.value = temp; } };
+            var model = this.state, styles = { spacer: spacerStyle, span: spanStyle };
             return (React.createElement("fieldset", null,
                 React.createElement("legend", null, model.title ? model.title : 'This is a React component'),
-                React.createElement("input", { value: model.value, onChange: function (e) { return actions.tempChanged(e.target.value); } }),
+                React.createElement("input", { value: model.value, onChange: function (e) { _this.value = e.target.value; } }),
                 React.createElement("span", { style: styles.spacer }, "You entered: "),
                 React.createElement("span", { style: styles.span }, model.value)));
         };
@@ -316,7 +363,7 @@ define("views/simple", ["require", "exports", "react", "views/react", "actions/s
                 return this.state.value;
             },
             set: function (v) {
-                this.dispatch(simple_1.propertyChanged("value", v));
+                this.dispatch(common_1.propertyChanged("value", v));
             },
             enumerable: true,
             configurable: true
@@ -326,7 +373,7 @@ define("views/simple", ["require", "exports", "react", "views/react", "actions/s
                 return this.state.title;
             },
             set: function (v) {
-                this.dispatch(simple_1.propertyChanged("title", v));
+                this.dispatch(common_1.propertyChanged("title", v));
             },
             enumerable: true,
             configurable: true
@@ -345,14 +392,6 @@ define("views/simple", ["require", "exports", "react", "views/react", "actions/s
 define("abstractions/pager", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("actions/pager", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    function propertyChanged(name, value) {
-        return { type: "CHANGE_PROP", name: name, value: value };
-    }
-    exports.propertyChanged = propertyChanged;
 });
 define("components/pager", ["require", "exports", "react"], function (require, exports, React) {
     "use strict";
@@ -494,7 +533,7 @@ define("components/pager", ["require", "exports", "react"], function (require, e
     }
     exports.default = Pager;
 });
-define("components/connected-pager", ["require", "exports", "react-redux", "actions/pager", "components/pager"], function (require, exports, react_redux_1, pager_1, pager_2) {
+define("components/connected-pager", ["require", "exports", "react-redux", "actions/common", "components/pager"], function (require, exports, react_redux_1, common_2, pager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var mapStateToProps = function (storeData) {
@@ -503,13 +542,13 @@ define("components/connected-pager", ["require", "exports", "react-redux", "acti
     var mapDispatchToProps = function (dispatch) {
         return {
             onPageChanged: function (newPage) {
-                dispatch(pager_1.propertyChanged("current", newPage));
+                dispatch(common_2.propertyChanged("current", newPage));
             }
         };
     };
-    exports.default = react_redux_1.connect(mapStateToProps, mapDispatchToProps)(pager_2.default);
+    exports.default = react_redux_1.connect(mapStateToProps, mapDispatchToProps)(pager_1.default);
 });
-define("views/pager", ["require", "exports", "react", "react-redux", "views/react", "actions/pager", "components/connected-pager"], function (require, exports, React, react_redux_2, react_2, pager_3, connected_pager_1) {
+define("views/pager", ["require", "exports", "react", "react-redux", "views/react", "actions/common", "components/connected-pager"], function (require, exports, React, react_redux_2, react_2, common_3, connected_pager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var _reducer = function (initialState, state, action) {
@@ -553,7 +592,7 @@ define("views/pager", ["require", "exports", "react", "react-redux", "views/reac
                 return this.state.total;
             },
             set: function (v) {
-                this.dispatch(pager_3.propertyChanged("total", v));
+                this.dispatch(common_3.propertyChanged("total", v));
             },
             enumerable: true,
             configurable: true
@@ -563,7 +602,7 @@ define("views/pager", ["require", "exports", "react", "react-redux", "views/reac
                 return this.state.current;
             },
             set: function (v) {
-                this.dispatch(pager_3.propertyChanged("current", v));
+                this.dispatch(common_3.propertyChanged("current", v));
             },
             enumerable: true,
             configurable: true
@@ -573,7 +612,7 @@ define("views/pager", ["require", "exports", "react", "react-redux", "views/reac
                 return this.state.visiblePages;
             },
             set: function (v) {
-                this.dispatch(pager_3.propertyChanged("visiblePages", v));
+                this.dispatch(common_3.propertyChanged("visiblePages", v));
             },
             enumerable: true,
             configurable: true
@@ -592,14 +631,6 @@ define("views/pager", ["require", "exports", "react", "react-redux", "views/reac
 define("abstractions/templated", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("actions/templated", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    function propertyChanged(name, value) {
-        return { type: "CHANGE_PROP", name: name, value: value };
-    }
-    exports.propertyChanged = propertyChanged;
 });
 define("components/template", ["require", "exports", "react", "jriapp/template", "jriapp_shared/utils/weakmap"], function (require, exports, React, template_1, weakmap_1) {
     "use strict";
@@ -682,7 +713,7 @@ define("components/template", ["require", "exports", "react", "jriapp/template",
     }(React.Component));
     exports.default = Template;
 });
-define("views/templated", ["require", "exports", "react", "views/react", "actions/templated", "components/template"], function (require, exports, React, react_3, templated_1, template_2) {
+define("views/templated", ["require", "exports", "react", "views/react", "actions/common", "components/template"], function (require, exports, React, react_3, common_4, template_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var rowStyle = {
@@ -739,7 +770,7 @@ define("views/templated", ["require", "exports", "react", "views/react", "action
                 return this.state.templateId;
             },
             set: function (v) {
-                this.dispatch(templated_1.propertyChanged("templateId", v));
+                this.dispatch(common_4.propertyChanged("templateId", v));
             },
             enumerable: true,
             configurable: true
@@ -749,7 +780,7 @@ define("views/templated", ["require", "exports", "react", "views/react", "action
                 return this.state.rows;
             },
             set: function (v) {
-                this.dispatch(templated_1.propertyChanged("rows", v));
+                this.dispatch(common_4.propertyChanged("rows", v));
             },
             enumerable: true,
             configurable: true
@@ -766,7 +797,7 @@ define("views/templated", ["require", "exports", "react", "views/react", "action
                 return this.state.selectedRow;
             },
             set: function (v) {
-                this.dispatch(templated_1.propertyChanged("selectedRow", v));
+                this.dispatch(common_4.propertyChanged("selectedRow", v));
             },
             enumerable: true,
             configurable: true
@@ -782,7 +813,119 @@ define("views/templated", ["require", "exports", "react", "views/react", "action
     }
     exports.initModule = initModule;
 });
-define("main", ["require", "exports", "jriapp", "app", "views/simple", "views/pager", "views/templated"], function (require, exports, RIAPP, app_1, simple_2, pager_4, templated_2) {
+define("components/tabs", ["require", "exports", "react", "components/template"], function (require, exports, React, template_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var Tab = function (props) {
+        return (React.createElement(template_3.default, { onClick: function () {
+                if (props.onClick) {
+                    props.onClick(props.name);
+                }
+            }, className: props.isActive ? "demo-tab active" : "demo-tab", templateId: props.heading.templateId, dataContext: props.heading.dataContext }));
+    };
+    var Tabs = (function (_super) {
+        __extends(Tabs, _super);
+        function Tabs() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this._handleTabClick = function (name) {
+                if (!!_this.props.onClick)
+                    _this.props.onClick(name);
+            };
+            return _this;
+        }
+        Tabs.prototype.render = function () {
+            var _this = this;
+            var activeTab = null;
+            var _a = this.props, tabs = _a.tabs, activeName = _a.activeName;
+            if (!!activeName) {
+                var temp = tabs.filter(function (t) { return t.name === activeName; });
+                if (temp.length > 0)
+                    activeTab = temp[0];
+            }
+            if (!activeTab && tabs.length > 0) {
+                activeTab = tabs[0];
+            }
+            return (React.createElement(React.Fragment, null,
+                React.createElement("div", { className: "demo-tabs" }, tabs.map(function (tab) {
+                    return (React.createElement(Tab, { key: tab.name, onClick: _this._handleTabClick, name: tab.name, heading: tab.heading, isActive: activeTab === tab }));
+                })),
+                !!activeTab && (React.createElement(template_3.default, { className: "demo-tabs-content", templateId: activeTab.content.templateId, dataContext: activeTab.content.dataContext })),
+                !activeTab && (React.createElement("div", { className: "demo-tabs-content" }))));
+        };
+        return Tabs;
+    }(React.Component));
+    exports.default = Tabs;
+});
+define("views/tabs", ["require", "exports", "react", "views/react", "actions/common", "components/tabs"], function (require, exports, React, react_4, common_5, tabs_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var _reducer = function (initialState, state, action) {
+        var _a;
+        switch (action.type) {
+            case "CHANGE_PROP":
+                return __assign(__assign({}, state), (_a = {}, _a[action.name] = action.value, _a));
+            default:
+                return state || initialState;
+        }
+    };
+    var reducer = function (initialState) { return function (state, action) { return _reducer(initialState, state, action); }; };
+    var defaults = { activeTabName: "", tabs: [] };
+    var TabsElView = (function (_super) {
+        __extends(TabsElView, _super);
+        function TabsElView(el, options) {
+            var _this = this;
+            var initialState = react_4.mergeOptions(options, defaults);
+            _this = _super.call(this, el, options, reducer(initialState)) || this;
+            return _this;
+        }
+        TabsElView.prototype.storeChanged = function (current, previous) {
+            var shouldRerender = false;
+            if (current.activeTabName !== previous.activeTabName) {
+                this.objEvents.raiseProp("activeTabName");
+                shouldRerender = true;
+            }
+            if (current.tabs !== previous.tabs) {
+                this.objEvents.raiseProp("tabs");
+                shouldRerender = true;
+            }
+            return shouldRerender;
+        };
+        TabsElView.prototype.getMarkup = function () {
+            var _this = this;
+            return (React.createElement(tabs_1.default, { onClick: function (name) { _this.activeTabName = name; }, activeName: this.activeTabName, tabs: this.tabs }));
+        };
+        Object.defineProperty(TabsElView.prototype, "activeTabName", {
+            get: function () {
+                return this.state.activeTabName;
+            },
+            set: function (v) {
+                this.dispatch(common_5.propertyChanged("activeTabName", v));
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TabsElView.prototype, "tabs", {
+            get: function () {
+                return this.state.tabs;
+            },
+            set: function (v) {
+                this.dispatch(common_5.propertyChanged("tabs", v));
+            },
+            enumerable: true,
+            configurable: true
+        });
+        TabsElView.prototype.toString = function () {
+            return "TabsElView";
+        };
+        return TabsElView;
+    }(react_4.ReactElView));
+    exports.TabsElView = TabsElView;
+    function initModule(app) {
+        app.registerElView("tabsview", TabsElView);
+    }
+    exports.initModule = initModule;
+});
+define("main", ["require", "exports", "jriapp", "app", "views/simple", "views/pager", "views/templated", "views/tabs"], function (require, exports, RIAPP, app_1, simple_1, pager_2, templated_1, tabs_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
@@ -793,9 +936,10 @@ define("main", ["require", "exports", "jriapp", "app", "views/simple", "views/pa
     });
     function start(options) {
         options.modulesInits = utils.core.extend(options.modulesInits || {}, {
-            "simpleview": simple_2.initModule,
-            "templatedview": templated_2.initModule,
-            "pagerview": pager_4.initModule
+            "simpleview": simple_1.initModule,
+            "templatedview": templated_1.initModule,
+            "pagerview": pager_2.initModule,
+            "tabsview": tabs_2.initModule,
         });
         return bootstrap.startApp(function () {
             return new app_1.DemoApplication(options);

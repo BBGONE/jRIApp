@@ -3,6 +3,7 @@ import { DemoApplication } from "./app";
 import { initModule as initSimpleView } from "./views/simple";
 import { initModule as initPagerView } from "./views/pager";
 import { initModule as initTemplatedView } from "./views/templated";
+import { initModule as initTabsView } from "./views/tabs";
 
 const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
@@ -17,7 +18,9 @@ export function start(options: RIAPP.IAppOptions) {
     options.modulesInits = utils.core.extend(options.modulesInits || {}, {
         "simpleview": initSimpleView,
         "templatedview": initTemplatedView,
-        "pagerview": initPagerView
+        "pagerview": initPagerView,
+        "tabsview": initTabsView,
+
     });
    
     //create and start application here

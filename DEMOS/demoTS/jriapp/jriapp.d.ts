@@ -396,6 +396,7 @@ declare module "jriapp/parsing/helper" {
         static getTag(val: string, start: number, end: number): TAG;
         static checkVal(kv: IKeyVal): boolean;
         static getKeyVals(val: string): IKeyVal[];
+        static reduceKeyVal(kv: IKeyVal, parseType: PARSE_TYPE, dataContext: any, res: any): void;
         static getExprArgs(expr: string): Array<string | object>;
     }
     export class Helper {
@@ -1080,5 +1081,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.23.8";
+    export const VERSION = "2.25.6";
 }

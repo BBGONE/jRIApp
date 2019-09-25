@@ -9,6 +9,10 @@
 @section CssImport
 {
     <style type="text/css">
+        .col-form-label {
+            padding-top: calc(.375rem + 1px);
+        }
+
         #demoContent {
             height: 600px;
             overflow: visible;
@@ -78,6 +82,40 @@
                 border-bottom-color: rgb(221, 221, 221);
                 border-left-color: rgb(221, 221, 221);
             }
+
+        .demo-tabs {
+            margin: 0;
+            width: 500px;
+            display: flex;
+        }
+
+        .demo-tab {
+            flex: 1;
+            flex-basis: 150px;
+            display: inline-block;
+            margin: 0;
+            border: 1px solid #808080;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            height: 40px;
+            width: 150px;
+            padding: 5px;
+            text-align: center;
+        }
+
+            .demo-tab.active {
+                font-weight: bold;
+            }
+
+        .demo-tabs-content {
+            margin: 0;
+            padding: 5px;
+            border: 1px solid #808080;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            min-height: 80px;
+            width: 500px
+        }
     </style>
 }
 
@@ -110,6 +148,7 @@
 
 
 <div id="demoContent" style="opacity:0;">
+
     <div data-view="simpleview" data-bind-1="this.value,to=testValue,mode=TwoWay,source=testObj"
          data-bind-2="this.title,to=val,source={val='This is a React component demo'}">
     </div>
@@ -135,12 +174,19 @@
     <div data-view="templatedview" data-bind-1="this.rows,to=rows,source=testObj" data-bind-2="this.selectedRow,to=selectedRow,mode=TwoWay,source=testObj"
          data-view-options="templateId=testTemplate,keyName=num">
     </div>
-    <button class="btn btn-sm btn-info" style="width:10em; margin: 10px 0;" data-bind-1="this.command,to=reverseCommand,source=testObj">
+    <button class="btn btn-small btn-info" style="width:10em; margin:8px 0;"
+            data-bind-1="this.command,to=reverseCommand,source=testObj">
         Reverse
     </button>
 
-    <h4 style="margin-top:40px;">This is a react pager demo (three pagers)</h4>
-    <p style="text-indent:2em;font-family:'Courier New';margin:10px 0;">
+    <h4 style="margin-top:40px;margin-bottom:10px;">This is a react tabs demo (uses <mark>templates</mark> for heading and contents)</h4>
+
+    <div data-view="tabsview"
+         data-view-options="activeTabName=tab2,tabs=bind(tabs,testObj)">
+    </div>
+
+    <h4 style="margin-top:40px;margin-bottom:10px;">This is a react pager demo (three pagers)</h4>
+    <p style="text-indent:2em;font-family:'Courier New';margin-bottom:10px;">
         Below is a Pager implemented in the react and incapsulated in the framework's element view. The properties are exposed and can be databound as in ordinary
         controls (<em>just to show - one property is databound and displayed below the pager</em>).
         It shows that the react components are easily incapsulated and used on the page alongside the ordinary controls.
@@ -165,6 +211,67 @@
     <div style="color:black; margin-bottom:4px;">This is a template:</div>
     <span data-bind="this.value,to=num"></span>)
     <span style="margin-left:0.375em;" data-bind="this.value,to=someVal"></span>
+</script>
+
+<script id="tabHeadingTemplate" type="text/x-template">
+    <span style="vertical-align:middle;" data-bind="this.value,to=text"></span>
+</script>
+
+<script id="tabContentTemplate1" type="text/x-template">
+    <div style="text-align:center; margin-bottom:1em;" data-bind="this.html,to=description"></div>
+    <table style="margin-left:5px; table-layout:fixed; border-collapse:collapse;">
+        <tr>
+            <td style="color:blue; width:4em;">Text:</td>
+            <td><span data-bind="this.value,to=text"></span></td>
+        </tr>
+        <tr>
+            <td style="color:blue; width:4em;">Info:</td>
+            <td><span data-bind="this.value,to=info"></span></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div data-view="simpleview" data-bind-1="this.value,to=testValue,mode=TwoWay,source=testObj"
+                     data-bind-2="this.title,to=val,source={val='This is a React component demo'}">
+                </div>
+            </td>
+        </tr>
+    </table>
+</script>
+
+<script id="tabContentTemplate2" type="text/x-template">
+    <div style="text-align:center; margin-bottom:1em;" data-bind="this.html,to=description"></div>
+    <table style="margin-left:5px;">
+        <tr>
+            <td style="color:blue;">Text:</td>
+            <td><span data-bind="this.value,to=text"></span></td>
+        </tr>
+        <tr>
+            <td style="color:blue;">Subject:</td>
+            <td><span data-bind="this.value,to=otherData.subj"></span></td>
+        </tr>
+        <tr>
+            <td style="color:blue;">Title:</td>
+            <td><span data-bind="this.value,to=otherData.title"></span></td>
+        </tr>
+    </table>
+</script>
+
+<script id="tabContentTemplate3" type="text/x-template">
+    <div style="text-align:center; margin-bottom:1em;" data-bind="this.html,to=description"></div>
+    <table style="margin-left:5px;">
+        <tr>
+            <td style="color:blue;">Text:</td>
+            <td><span data-bind="this.value,to=text"></span></td>
+        </tr>
+        <tr>
+            <td style="color:blue;">Cover:</td>
+            <td><span data-bind="this.value,to=details.cover"></span></td>
+        </tr>
+        <tr>
+            <td style="color:blue;">Pages:</td>
+            <td><span data-bind="this.value,to=details.pages"></span></td>
+        </tr>
+    </table>
 </script>
 
 @Html.Partial("_WaitLoad")

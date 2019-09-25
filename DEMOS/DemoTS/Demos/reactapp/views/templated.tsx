@@ -2,7 +2,7 @@
 import * as React from "react";
 import * as Redux from 'redux';
 import { ReactElView, mergeOptions } from "./react";
-import { propertyChanged, Action, ActionTypes } from "../actions/templated";
+import { propertyChanged, PropChangedAction, CommonActionTypes } from "../actions/common";
 import { ITemplatedState } from "../abstractions/templated";
 import Template from "../components/template";
 
@@ -18,10 +18,10 @@ const rowStyle = {
 
 const _reducer = (initialState: ITemplatedState, state: ITemplatedState, action: Redux.Action) => {
     switch (action.type) {
-        case ActionTypes.CHANGE_PROP:
+        case CommonActionTypes.CHANGE_PROP:
             return {
                 ...state,
-                [(action as Action<any>).name]: (action as Action<any>).value
+                [(action as PropChangedAction<any, ITemplatedState>).name]: (action as PropChangedAction<any, ITemplatedState>).value
             };
         default:
             return state || initialState;
@@ -84,13 +84,13 @@ export class TemplatedElView extends ReactElView<ITemplatedState> {
         return this.state.templateId;
     }
     set templateId(v: string) {
-        this.dispatch(propertyChanged("templateId", v));
+        this.dispatch(propertyChanged<string, ITemplatedState>("templateId", v));
     }
     get rows(): object[] {
         return this.state.rows;
     }
     set rows(v: object[]) {
-        this.dispatch(propertyChanged("rows", v));
+        this.dispatch(propertyChanged<object[], ITemplatedState>("rows", v));
     }
     get keyName(): string {
         return this.state.keyName;
@@ -99,7 +99,7 @@ export class TemplatedElView extends ReactElView<ITemplatedState> {
         return this.state.selectedRow;
     }
     set selectedRow(v: any) {
-        this.dispatch(propertyChanged("selectedRow", v));
+        this.dispatch(propertyChanged<any, ITemplatedState>("selectedRow", v));
     }
     toString(): string {
         return "TemplatedElView";

@@ -163,7 +163,14 @@ define("jriapp/parsing/int", ["require", "exports"], function (require, exports)
 define("jriapp/parsing/helper", ["require", "exports", "jriapp_shared", "jriapp/parsing/int", "jriapp/bootstrap"], function (require, exports, jriapp_shared_1, int_1, bootstrap_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var _a = jriapp_shared_1.Utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _undefined = _a._undefined, isString = _a.isString, _b = jriapp_shared_1.Utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, trimQuotes = _b.trimQuotes, _c = jriapp_shared_1.Utils.core, parseBool = _c.parseBool, extend = _c.extend, dates = jriapp_shared_1.DateUtils, _d = jriapp_shared_1.Utils.sys, getBraceLen = _d.getBraceLen, resolvePath = _d.resolvePath;
+    var utils = jriapp_shared_1.Utils, _a = utils.check, isNumeric = _a.isNumeric, isBoolString = _a.isBoolString, _undefined = _a._undefined, isString = _a.isString, _b = utils.str, format = _b.format, trim = _b.fastTrim, startsWith = _b.startsWith, trimQuotes = _b.trimQuotes, _c = utils.core, parseBool = _c.parseBool, extend = _c.extend, dates = jriapp_shared_1.DateUtils, _d = jriapp_shared_1.Utils.sys, getBraceLen = _d.getBraceLen, resolvePath = _d.resolvePath, debug = utils.debug, log = utils.log;
+    function _reportBug(bug) {
+        if (!debug.isDebugging()) {
+            return;
+        }
+        debug.checkStartDebugger();
+        log.error(bug);
+    }
     var Funcs = (function () {
         function Funcs() {
         }
@@ -400,6 +407,78 @@ define("jriapp/parsing/helper", ["require", "exports", "jriapp_shared", "jriapp/
             });
             return parts;
         };
+        Funcs.reduceKeyVal = function (kv, parseType, dataContext, res) {
+            var isBind = false, bindparts;
+            var checkIsBind = parseType === 2 || parseType === 1;
+            if (checkIsBind && kv.tag === "1") {
+                bindparts = funcs.getExprArgs(kv.val);
+                isBind = bindparts.length > 0;
+            }
+            if (isBind) {
+                switch (parseType) {
+                    case 2:
+                        var source = dataContext || bootstrap_1.bootstrap.app;
+                        if (bindparts.length > 1) {
+                            if (isString(bindparts[1])) {
+                                source = resolvePath(bootstrap_1.bootstrap.app, bindparts[1]);
+                                if (!source) {
+                                    throw new Error("Invalid source in the bind expression, see key: " + kv.key + "   val: " + kv.val);
+                                }
+                            }
+                            else {
+                                throw new Error("Invalid second parameter in the bind expression, see key: " + kv.key + "   val: " + kv.val);
+                            }
+                        }
+                        if (isString(bindparts[0])) {
+                            var boundValue = resolvePath(source, bindparts[0]);
+                            if (boundValue === _undefined) {
+                                throw new Error("The bind expression returns UNDEFINED value, see key: " + kv.key + "   val: " + kv.val);
+                            }
+                            res[kv.key] = boundValue;
+                        }
+                        else {
+                            throw new Error("Invalid bind expression, see key: " + kv.key + "   val: " + kv.val);
+                        }
+                        break;
+                    case 1:
+                        if (bindparts.length > 0 && kv.key === "param") {
+                            res[kv.key] = bindparts;
+                            res.isBind = true;
+                        }
+                        break;
+                    default:
+                        res[kv.key] = kv.val;
+                        break;
+                }
+            }
+            else {
+                switch (kv.tag) {
+                    case "5":
+                        res[kv.key] = helper.parseOption(parseType, kv.val, dataContext);
+                        break;
+                    case "2":
+                        {
+                            res[kv.key] = helper.parseGetExpr(0, kv.val, dataContext);
+                        }
+                        break;
+                    case "4":
+                        {
+                            var args = funcs.getExprArgs(kv.val);
+                            var id = args[0], rest = args.slice(1);
+                            if (isString(id)) {
+                                res[kv.key] = helper.getSvc.apply(helper, __spreadArrays([id], rest));
+                            }
+                            else {
+                                throw new Error("Invalid expression with key: " + kv.key + "   val: " + kv.val);
+                            }
+                        }
+                        break;
+                    default:
+                        res[kv.key] = kv.val;
+                        break;
+                }
+            }
+        };
         Funcs.getExprArgs = function (expr) {
             var i, ch, literal, parts = [], start = -1, seekNext = false;
             var len = expr.length;
@@ -601,72 +680,16 @@ define("jriapp/parsing/helper", ["require", "exports", "jriapp_shared", "jriapp/
             }
             var kvals = funcs.getKeyVals(part);
             kvals.forEach(function (kv) {
-                var isBind = false, bindparts;
                 if (parseType === 1 && !kv.val && startsWith(kv.key, "this.")) {
                     kv.val = kv.key.substr(int_1.THIS_LEN);
                     kv.key = "targetPath";
                 }
-                var checkIsBind = parseType === 2 || parseType === 1;
-                if (checkIsBind && kv.tag === "1") {
-                    bindparts = funcs.getExprArgs(kv.val);
-                    isBind = bindparts.length > 0;
+                try {
+                    funcs.reduceKeyVal(kv, parseType, dataContext, res);
                 }
-                if (isBind) {
-                    switch (parseType) {
-                        case 2:
-                            var source = dataContext || bootstrap_1.bootstrap.app;
-                            if (bindparts.length > 1) {
-                                if (isString(bindparts[1])) {
-                                    source = resolvePath(bootstrap_1.bootstrap.app, bindparts[1]);
-                                }
-                                else {
-                                    throw new Error("Invalid expression with key: " + kv.key + " val: " + kv.val);
-                                }
-                            }
-                            if (isString(bindparts[0])) {
-                                res[kv.key] = resolvePath(source, bindparts[0]);
-                            }
-                            else {
-                                throw new Error("Invalid expression with key: " + kv.key + " val: " + kv.val);
-                            }
-                            break;
-                        case 1:
-                            if (bindparts.length > 0 && kv.key === "param") {
-                                res[kv.key] = bindparts;
-                                res.isBind = true;
-                            }
-                            break;
-                        default:
-                            res[kv.key] = kv.val;
-                            break;
-                    }
-                }
-                else {
-                    switch (kv.tag) {
-                        case "5":
-                            res[kv.key] = helper.parseOption(parseType, kv.val, dataContext);
-                            break;
-                        case "2":
-                            {
-                                res[kv.key] = helper.parseGetExpr(0, kv.val, dataContext);
-                            }
-                            break;
-                        case "4":
-                            {
-                                var args = funcs.getExprArgs(kv.val);
-                                var id = args[0], rest = args.slice(1);
-                                if (isString(id)) {
-                                    res[kv.key] = helper.getSvc.apply(helper, __spreadArrays([id], rest));
-                                }
-                                else {
-                                    throw new Error("Invalid expression with key: " + kv.key + " val: " + kv.val);
-                                }
-                            }
-                            break;
-                        default:
-                            res[kv.key] = kv.val;
-                            break;
-                    }
+                catch (err) {
+                    res[kv.key] = _undefined;
+                    _reportBug(err);
                 }
             });
             return res;
@@ -4787,6 +4810,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.23.8";
+    exports.VERSION = "2.25.6";
     bootstrap_7.Bootstrap._initFramework();
 });
