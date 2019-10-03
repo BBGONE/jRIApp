@@ -502,6 +502,7 @@ declare module "jriapp_ui/dialog" {
         fn_OnClose?: (dialog: DataEditDialog) => void;
         fn_OnOK?: (dialog: DataEditDialog) => DIALOG_ACTION;
         fn_OnShow?: (dialog: DataEditDialog) => void;
+        fn_OnOpen?: (dialog: DataEditDialog) => void;
         fn_OnCancel?: (dialog: DataEditDialog) => DIALOG_ACTION;
         fn_OnTemplateCreated?: (template: ITemplate) => void;
         fn_OnTemplateDestroy?: (template: ITemplate) => void;
@@ -523,6 +524,7 @@ declare module "jriapp_ui/dialog" {
         private _fnOnClose;
         private _fnOnOK;
         private _fnOnShow;
+        private _fnOnOpen;
         private _fnOnCancel;
         private _fnOnTemplateCreated;
         private _fnOnTemplateDestroy;
@@ -551,10 +553,12 @@ declare module "jriapp_ui/dialog" {
         protected _getCancelButton(): JQuery;
         protected _getRefreshButton(): JQuery;
         protected _getAllButtons(): JQuery[];
+        protected _updateStyles(): void;
         protected _disableButtons(isDisable: boolean): void;
         protected _onOk(): void;
         protected _onCancel(): void;
         protected _onRefresh(): void;
+        protected _onOpen(): void;
         protected _onClose(): void;
         protected _onShow(): void;
         show(): IPromise<DataEditDialog>;

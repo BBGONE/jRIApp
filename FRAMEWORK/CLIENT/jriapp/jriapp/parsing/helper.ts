@@ -3,9 +3,17 @@ import { Utils, BRACKETS, LocaleERRS as ERRS, DateUtils, TIME_RANGE } from "jria
 import { spaceRX, getRX, DATES, TAG, TOKEN, IKeyVal, PARSE_TYPE, THIS_LEN } from "./int";
 import { bootstrap } from "../bootstrap";
 
-const { isNumeric, isBoolString, _undefined, isString } = Utils.check,
-    { format, fastTrim: trim, startsWith, trimQuotes } = Utils.str,
-    { parseBool, extend } = Utils.core, dates = DateUtils, { getBraceLen, resolvePath } = Utils.sys;
+const utils = Utils, { isNumeric, isBoolString, _undefined, isString } = utils.check,
+    { format, fastTrim: trim, startsWith, trimQuotes } = utils.str,
+    { parseBool, extend } = utils.core, dates = DateUtils, { getBraceLen, resolvePath } = Utils.sys, debug = utils.debug, log = utils.log;
+
+function _reportBug(bug: string): void {
+    if (!debug.isDebugging()) {
+        return;
+    }
+    debug.checkStartDebugger();
+    log.error(bug);
+}
 
 export class Funcs {
     static setKeyVal(kv: IKeyVal, start: number, end: number, val: string, isKey: boolean, isLit: boolean): void {
@@ -255,6 +263,82 @@ export class Funcs {
         return parts;
     }
 
+    static reduceKeyVal(kv: IKeyVal, parseType: PARSE_TYPE, dataContext: any, res: any): void {
+        let isBind = false, bindparts: Array<string | object>;
+        const checkIsBind = parseType === PARSE_TYPE.VIEW || parseType === PARSE_TYPE.BINDING;
+
+        if (checkIsBind && kv.tag === TAG.BIND) {
+            bindparts = funcs.getExprArgs(kv.val);
+            isBind = bindparts.length > 0;
+        }
+
+        if (isBind) {
+            switch (parseType) {
+                case PARSE_TYPE.VIEW:
+                    let source = dataContext || bootstrap.app;
+
+                    if (bindparts.length > 1) {
+                        // resolve source (second path in the array)
+                        if (isString(bindparts[1])) {
+                            source = resolvePath(bootstrap.app, bindparts[1] as string);
+                            if (!source) {
+                                throw new Error(`Invalid source in the bind expression, see key: ${kv.key}   val: ${kv.val}`);
+                            }
+                        } else {
+                            throw new Error(`Invalid second parameter in the bind expression, see key: ${kv.key}   val: ${kv.val}`);
+                        }
+                    }
+
+                    if (isString(bindparts[0])) {
+                        const boundValue = resolvePath(source, bindparts[0] as string);
+                        if (boundValue === _undefined) {
+                            throw new Error(`The bind expression returns UNDEFINED value, see key: ${kv.key}   val: ${kv.val}`);
+                        }
+                        res[kv.key] = boundValue;
+                    } else {
+                        throw new Error(`Invalid bind expression, see key: ${kv.key}   val: ${kv.val}`);
+                    }
+                    break;
+                case PARSE_TYPE.BINDING:
+                    if (bindparts.length > 0 && kv.key === TOKEN.PARAM) {
+                        // converter Param - the bind expression
+                        // the real binding is processed in the Binding class, see _isBindParam member there
+                        res[kv.key] = bindparts;
+                        res.isBind = true;
+                    }
+                    break;
+                default:
+                    res[kv.key] = kv.val;
+                    break;
+            }
+        } else {
+            switch (kv.tag) {
+                case TAG.BRACE:
+                    res[kv.key] = helper.parseOption(parseType, kv.val, dataContext);
+                    break;
+                case TAG.GET:
+                    {
+                        res[kv.key] = helper.parseGetExpr(PARSE_TYPE.NONE, kv.val, dataContext);
+                    }
+                    break;
+                case TAG.INJECT:
+                    {
+                        const args = funcs.getExprArgs(kv.val);
+                        let [id, ...rest] = args;
+
+                        if (isString(id)) {
+                            res[kv.key] = helper.getSvc(id, ...rest);
+                        } else {
+                            throw new Error(`Invalid expression with key: ${kv.key}   val: ${kv.val}`);
+                        }
+                    }
+                    break;
+                default:
+                    res[kv.key] = kv.val;
+                    break;
+            }
+        }
+    }
     /**
       * resolve arguments by parsing content of expression: part1, part2 or stringDate,format? or id
     */
@@ -439,7 +523,7 @@ export class Helper {
 
     static parseGetExpr(parseType: PARSE_TYPE, strExpr: string, dataContext: any): object {
         const parts = helper.getGetParts(strExpr);
-        return helper.parseOptions(parseType, parts, dataContext);
+        return helper.parseOptions(parseType, parts, dataContext); 
     }
 
     static parseOptions(parseType: PARSE_TYPE, parts: string[], dataContext: any): object {
@@ -478,75 +562,16 @@ export class Helper {
         const kvals = funcs.getKeyVals(part);
 
         kvals.forEach(function (kv) {
-            let isBind = false, bindparts: Array<string | object>;
-
             if (parseType === PARSE_TYPE.BINDING && !kv.val && startsWith(kv.key, TOKEN.THIS)) {
                 kv.val = kv.key.substr(THIS_LEN); // extract property
                 kv.key = TOKEN.TARGET_PATH;
             }
 
-            const checkIsBind = parseType === PARSE_TYPE.VIEW || parseType === PARSE_TYPE.BINDING;
-
-            if (checkIsBind && kv.tag === TAG.BIND) {
-                bindparts = funcs.getExprArgs(kv.val);
-                isBind = bindparts.length > 0;
-            }
-
-            if (isBind) {
-                switch (parseType) {
-                    case PARSE_TYPE.VIEW:
-                        let source = dataContext || bootstrap.app;
-                        if (bindparts.length > 1) {
-                            // resolve source (second path in the array)
-                            if (isString(bindparts[1])) {
-                                source = resolvePath(bootstrap.app, bindparts[1]);
-                            } else {
-                                throw new Error(`Invalid expression with key: ${kv.key} val: ${kv.val}`);
-                            }
-                        }
-
-                        if (isString(bindparts[0])) {
-                            res[kv.key] = resolvePath(source, bindparts[0]);
-                        } else {
-                            throw new Error(`Invalid expression with key: ${kv.key} val: ${kv.val}`);
-                        }
-                        break;
-                    case PARSE_TYPE.BINDING:
-                        if (bindparts.length > 0 && kv.key === TOKEN.PARAM) {
-                            res[kv.key] = bindparts;
-                            res.isBind = true;
-                        }
-                        break;
-                    default:
-                        res[kv.key] = kv.val;
-                        break;
-                }
-            } else {
-                switch (kv.tag) {
-                    case TAG.BRACE:
-                        res[kv.key] = helper.parseOption(parseType, kv.val, dataContext);
-                        break;
-                    case TAG.GET:
-                        {
-                            res[kv.key] = helper.parseGetExpr(PARSE_TYPE.NONE, kv.val, dataContext);
-                        }
-                        break;
-                    case TAG.INJECT:
-                        {
-                            const args = funcs.getExprArgs(kv.val);
-                            let [id, ...rest] = args;
-
-                            if (isString(id)) {
-                                res[kv.key] = helper.getSvc(id, ...rest);
-                            } else {
-                                throw new Error(`Invalid expression with key: ${kv.key} val: ${kv.val}`);
-                            }
-                        }
-                        break;
-                    default:
-                        res[kv.key] = kv.val;
-                        break;
-                }
+            try {
+                funcs.reduceKeyVal(kv, parseType, dataContext, res);
+            } catch (err) {
+                res[kv.key] = _undefined;
+                _reportBug(err);
             }
         });
 
