@@ -412,6 +412,10 @@ declare module "jriapp_db/dbcontext" {
         error: any;
         isHandled: boolean;
     };
+    export type TSubmittingArgs = {
+        isCancelled: boolean;
+    };
+    export type TSubmittedArgs = {};
     export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any, TAssoc = any> extends BaseObject {
         private _requestHeaders;
         private _requests;
@@ -456,6 +460,8 @@ declare module "jriapp_db/dbcontext" {
         protected _getUrl(action: string): string;
         protected _onDataOperError(ex: any, oper: DATA_OPER): boolean;
         protected _onSubmitError(error: any): void;
+        protected _onSubmitting(): boolean;
+        protected _onSubmitted(): void;
         protected waitForNotBusy(callback: () => void): void;
         protected waitForNotSubmiting(callback: () => void): void;
         protected _loadInternal(context: {
@@ -499,6 +505,10 @@ declare module "jriapp_db/dbcontext" {
         offOnDisposed(nmspace?: string): void;
         addOnError(handler: TErrorHandler<DbContext>, nmspace?: string, context?: object): void;
         offOnError(nmspace?: string): void;
+        addOnSubmitting(fn: TEventHandler<DbContext, TSubmittingArgs>, nmspace?: string, context?: IBaseObject): void;
+        offOnSubmitting(nmspace?: string): void;
+        addOnSubmitted(fn: TEventHandler<DbContext, TSubmittedArgs>, nmspace?: string, context?: IBaseObject): void;
+        offOnSubmitted(nmspace?: string): void;
         addOnSubmitError(fn: TEventHandler<DbContext, TSubmitErrArgs>, nmspace?: string, context?: IBaseObject): void;
         offOnSubmitError(nmspace?: string): void;
         addOnDbSetCreating(fn: TEventHandler<this, TDbSetCreatingArgs>, nmspace?: string, context?: IBaseObject): void;

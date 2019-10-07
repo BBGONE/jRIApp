@@ -2432,6 +2432,8 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
     }
     var DBCTX_EVENTS;
     (function (DBCTX_EVENTS) {
+        DBCTX_EVENTS["SUBMITTING"] = "submitting";
+        DBCTX_EVENTS["SUBMITTED"] = "submitted";
         DBCTX_EVENTS["SUBMIT_ERROR"] = "submit_error";
         DBCTX_EVENTS["DBSET_CREATING"] = "dbset_creating";
     })(DBCTX_EVENTS || (DBCTX_EVENTS = {}));
@@ -2767,6 +2769,14 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 this._onDataOperError(error, 1);
             }
         };
+        DbContext.prototype._onSubmitting = function () {
+            var submittingArgs = { isCancelled: false };
+            this.objEvents.raise("submitting", submittingArgs);
+            return !submittingArgs.isCancelled;
+        };
+        DbContext.prototype._onSubmitted = function () {
+            this.objEvents.raise("submitted", {});
+        };
         DbContext.prototype.waitForNotBusy = function (callback) {
             this._waitQueue.enQueue({
                 prop: "isBusy",
@@ -3003,6 +3013,8 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         };
         DbContext.prototype._submitChanges = function (args) {
             var self = this, noChanges = "NO_CHANGES";
+            if (!self._onSubmitting())
+                return;
             args.fn_onStart();
             delay(function () {
                 self._checkDisposed();
@@ -3083,6 +3095,18 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype.offOnError = function (nmspace) {
             this.objEvents.offOnError(nmspace);
         };
+        DbContext.prototype.addOnSubmitting = function (fn, nmspace, context) {
+            this.objEvents.on("submitting", fn, nmspace, context);
+        };
+        DbContext.prototype.offOnSubmitting = function (nmspace) {
+            this.objEvents.off("submitting", nmspace);
+        };
+        DbContext.prototype.addOnSubmitted = function (fn, nmspace, context) {
+            this.objEvents.on("submitted", fn, nmspace, context);
+        };
+        DbContext.prototype.offOnSubmitted = function (nmspace) {
+            this.objEvents.off("submitted", nmspace);
+        };
         DbContext.prototype.addOnSubmitError = function (fn, nmspace, context) {
             this.objEvents.on("submit_error", fn, nmspace, context);
         };
@@ -3144,6 +3168,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     }
                     finally {
                         deferred.resolve();
+                        self._onSubmitted();
                     }
                 }
             };

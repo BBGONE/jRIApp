@@ -67,11 +67,15 @@ interface IRequestPromise {
 }
 
 const enum DBCTX_EVENTS {
+    SUBMITTING = "submitting",
+    SUBMITTED = "submitted",
     SUBMIT_ERROR = "submit_error",
     DBSET_CREATING = "dbset_creating"
 }
 
 export type TSubmitErrArgs = { error: any, isHandled: boolean };
+export type TSubmittingArgs = { isCancelled: boolean };
+export type TSubmittedArgs = { };
 
 export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any, TAssoc = any> extends BaseObject {
     private _requestHeaders: IIndexer<string>;
@@ -435,6 +439,14 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             this._onDataOperError(error, DATA_OPER.Submit);
         }
     }
+    protected _onSubmitting(): boolean {
+        const submittingArgs: TSubmittingArgs = { isCancelled: false };
+        this.objEvents.raise(DBCTX_EVENTS.SUBMITTING, submittingArgs);
+        return !submittingArgs.isCancelled;
+    }
+    protected _onSubmitted(): void {
+        this.objEvents.raise(DBCTX_EVENTS.SUBMITTED, {} as TSubmittedArgs);
+    }
     protected waitForNotBusy(callback: () => void): void {
         this._waitQueue.enQueue({
             prop: "isBusy",
@@ -707,6 +719,9 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         fn_onOk: () => void;
     }): void {
         const self = this, noChanges = "NO_CHANGES";
+        if (!self._onSubmitting())
+            return;
+
         args.fn_onStart();
 
         delay<IChangeSet>(() => {
@@ -791,6 +806,18 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
     offOnError(nmspace?: string): void {
         this.objEvents.offOnError(nmspace);
     }
+    addOnSubmitting(fn: TEventHandler<DbContext, TSubmittingArgs>, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.on(DBCTX_EVENTS.SUBMITTING, fn, nmspace, context);
+    }
+    offOnSubmitting(nmspace?: string): void {
+        this.objEvents.off(DBCTX_EVENTS.SUBMITTING, nmspace);
+    }
+    addOnSubmitted(fn: TEventHandler<DbContext, TSubmittedArgs>, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.on(DBCTX_EVENTS.SUBMITTED, fn, nmspace, context);
+    }
+    offOnSubmitted(nmspace?: string): void {
+        this.objEvents.off(DBCTX_EVENTS.SUBMITTED, nmspace);
+    }
     addOnSubmitError(fn: TEventHandler<DbContext, TSubmitErrArgs>, nmspace?: string, context?: IBaseObject): void {
         this.objEvents.on(DBCTX_EVENTS.SUBMIT_ERROR, fn, nmspace, context);
     }
@@ -855,6 +882,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
                     context.fn_onEnd();
                 } finally {
                     deferred.resolve();
+                    self._onSubmitted();
                 }
             }
         };
