@@ -1,6 +1,7 @@
 ﻿using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -46,10 +47,10 @@ namespace RIAPP.DataService.Core.Types
 
         private static void SetOrdinal(Field[] fieldInfos)
         {
-            int i = 0, cnt = fieldInfos.Length;
-            for (i = 0; i < cnt; ++i)
+            int cnt = fieldInfos.Length;
+            for (int i = 0; i < cnt; ++i)
             {
-                fieldInfos[i]._ordinal = i;
+                fieldInfos[i].SetOrdinal(i);
                 if (fieldInfos[i].fieldType == FieldType.Object)
                 {
                     SetOrdinal(fieldInfos[i].nested.ToArray());
@@ -60,15 +61,14 @@ namespace RIAPP.DataService.Core.Types
         public static void Initialize(this DbSetInfo dbSetInfo, IDataHelper dataHelper)
         {
             dbSetInfo._fieldsByNames = new Dictionary<string, Field>();
-            var i = 0;
             var fieldInfos = dbSetInfo.fieldInfos.ToArray();
-            var cnt = fieldInfos.Length;
+            int cnt = fieldInfos.Length;
 
-            for (i = 0; i < cnt; ++i)
+            for (int i = 0; i < cnt; ++i)
             {
                 dataHelper.ForEachFieldInfo("", fieldInfos[i], (fullName, fieldInfo) =>
                 {
-                    fieldInfo._FullName = fullName;
+                    fieldInfo.SetFullName(fullName);
                     dbSetInfo._fieldsByNames.Add(fullName, fieldInfo);
                 });
             }
@@ -79,6 +79,36 @@ namespace RIAPP.DataService.Core.Types
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_DBSET_HAS_NO_PK, dbSetInfo.dbSetName));
             }
             var fbn = dbSetInfo.GetFieldByNames();
+        }
+
+        public static FieldsList GetFieldInfos(this DbSetInfo dbSetInfo)
+        {
+            return dbSetInfo._fieldInfos;
+        }
+
+        public static void SetFieldInfos(this DbSetInfo dbSetInfo, FieldsList value)
+        {
+            dbSetInfo._fieldInfos = value;
+        }
+
+        public static bool GetIsTrackChanges(this DbSetInfo dbSetInfo)
+        {
+            return dbSetInfo._isTrackChanges;
+        }
+
+        public static void SetIsTrackChanges(this DbSetInfo dbSetInfo, bool value)
+        {
+            dbSetInfo._isTrackChanges = value;
+        }
+
+        public static Type GetEntityType(this DbSetInfo dbSetInfo)
+        {
+            return dbSetInfo._EntityType;
+        }
+
+        public static void SetEntityType(this DbSetInfo dbSetInfo, Type value)
+        {
+            dbSetInfo._EntityType = value;
         }
     }
 }

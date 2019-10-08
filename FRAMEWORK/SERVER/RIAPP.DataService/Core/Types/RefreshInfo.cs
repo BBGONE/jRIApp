@@ -14,7 +14,6 @@ namespace RIAPP.DataService.Core.Types
         [DataMember]
         public ErrorInfo error { get; set; }
 
-        [IgnoreDataMember]
-        public DbSetInfo dbSetInfo { get; set; }
+        internal DbSetInfo _dbSetInfo { get; set; }
     }
 }

@@ -25,10 +25,7 @@ namespace RIAPP.DataService.Mvc
             response.ContentType = ResultContentType;
             response.Buffer = false;
             var stream = context.HttpContext.Response.OutputStream;
-            using (var writer = new StreamWriter(stream, Encoding.UTF8, 1024*32, true))
-            {
-                _serializer.Serialize(Data, writer);
-            }
+            _serializer.SerializeAsync(Data, stream).GetAwaiter().GetResult();
             response.End();
         }
     }

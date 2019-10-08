@@ -12,14 +12,14 @@ namespace RIAPP.DataService.Core.Metadata
     {
         public MethodDescription(MethodInfoData data)
         {
-            methodData = data;
+            _methodData = data;
             parameters = new List<ParamMetadata>();
         }
 
         [DataMember]
         public string methodName
         {
-            get { return methodData.MethodInfo.Name; }
+            get { return _methodData.MethodInfo.Name; }
         }
 
         [DataMember]
@@ -31,7 +31,7 @@ namespace RIAPP.DataService.Core.Metadata
         {
             get
             {
-                var returnType = methodData.MethodInfo.ReturnType;
+                var returnType = _methodData.MethodInfo.ReturnType;
                 var isVoid = returnType == typeof(void) || returnType == typeof(Task);
                 return !isVoid;
             }
@@ -41,12 +41,11 @@ namespace RIAPP.DataService.Core.Metadata
         [Description("Is it a Query method")]
         public bool isQuery
         {
-            get { return methodData.MethodType == MethodType.Query; }
+            get { return _methodData.MethodType == MethodType.Query; }
         }
 
 
-        [IgnoreDataMember]
-        public MethodInfoData methodData { get; }
+        internal MethodInfoData _methodData { get; }
 
         /// <summary>
         ///     Generates Data Services' method description which is convertable to JSON
@@ -57,7 +56,7 @@ namespace RIAPP.DataService.Core.Metadata
             var methDescription = new MethodDescription(data);
             //else Result is Converted to JSON
             var paramsInfo = data.MethodInfo.GetParameters();
-            for (var i = 0; i < paramsInfo.Length; ++i)
+            for (int i = 0; i < paramsInfo.Length; ++i)
             {
                 var param = ParamMetadata.FromParamInfo(paramsInfo[i], valueConverter);
                 param.ordinal = i;

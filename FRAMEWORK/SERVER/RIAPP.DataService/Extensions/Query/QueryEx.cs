@@ -187,13 +187,13 @@ namespace RIAPP.DataService.Core.Query
             totalCountQuery = null;
             var reqCtxt = RequestContext.Current;
             var queryInfo = reqCtxt.CurrentQueryInfo;
-            entities = PerformFilter(dataService, entities, queryInfo.filterInfo, queryInfo.dbSetInfo);
+            entities = PerformFilter(dataService, entities, queryInfo.filterInfo, queryInfo.GetDbSetInfo());
             if (queryInfo.isIncludeTotalCount)
             {
                 totalCountQuery = entities;
             }
             entities = PerformSort(dataService, entities, queryInfo.sortInfo);
-            entities = GetPage(dataService, entities, queryInfo.pageIndex, queryInfo.pageSize, queryInfo.pageCount, queryInfo.dbSetInfo);
+            entities = GetPage(dataService, entities, queryInfo.pageIndex, queryInfo.pageSize, queryInfo.pageCount, queryInfo.GetDbSetInfo());
             return entities;
         }
 
@@ -256,7 +256,7 @@ namespace RIAPP.DataService.Core.Query
             if (pkValues == null || pkValues.Length < 1 || pkValues.Any(kv => kv == null))
             {
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_ROWINFO_PKVAL_INVALID,
-                    rowInfo.dbSetInfo.EntityType.Name, string.Join(";", pkValues)));
+                    rowInfo.GetDbSetInfo().GetEntityType().Name, string.Join(";", pkValues)));
             }
 
            return entities.Where(predicate, pkValues);

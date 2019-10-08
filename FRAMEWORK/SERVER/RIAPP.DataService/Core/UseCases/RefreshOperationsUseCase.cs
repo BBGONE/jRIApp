@@ -33,12 +33,12 @@ namespace RIAPP.DataService.Core
         {
             try
             {
-                message.dbSetInfo = _metadata.DbSets[message.dbSetName];
+                message.SetDbSetInfo(_metadata.DbSets[message.dbSetName]);
                 MethodInfoData methodData = _metadata.GetOperationMethodInfo(message.dbSetName, MethodType.Refresh);
                 if (methodData == null)
                     throw new InvalidOperationException(string.Format(ErrorStrings.ERR_REC_REFRESH_INVALID,
-                        message.dbSetInfo.EntityType.Name, GetType().Name));
-                message.rowInfo.dbSetInfo = message.dbSetInfo;
+                        message.GetDbSetInfo().GetEntityType().Name, GetType().Name));
+                message.rowInfo.SetDbSetInfo(message.GetDbSetInfo());
                 await _authorizer.CheckUserRightsToExecute(methodData);
                 var req = new RequestContext(_service, rowInfo: message.rowInfo, operation: ServiceOperationType.RowRefresh);
                 using (var callContext = new RequestCallContext(req))

@@ -33,7 +33,6 @@ namespace RIAPP.DataService.Core.Types
         [DataMember]
         public bool isIncludeTotalCount { get; set; }
 
-        [IgnoreDataMember]
-        public DbSetInfo dbSetInfo { get; set; }
+        internal DbSetInfo _dbSetInfo { get; set; }
     }
 }

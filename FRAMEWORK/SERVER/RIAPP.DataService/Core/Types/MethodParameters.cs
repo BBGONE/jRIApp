@@ -52,7 +52,7 @@ namespace RIAPP.DataService.Core.Types
                 throw new DomainServiceException(string.Format("Method: {0} has no parameter with a name: {1}",
                     methodDescription.methodName, name));
             }
-            return dataHelper.ParseParameter(paraminfo.ParameterType, paraminfo, paraminfo.isArray,
+            return dataHelper.ParseParameter(paraminfo.GetParameterType(), paraminfo, paraminfo.isArray,
                 par.value);
         }
     }

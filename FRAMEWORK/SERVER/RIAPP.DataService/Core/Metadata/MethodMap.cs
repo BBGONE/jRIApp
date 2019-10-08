@@ -9,12 +9,12 @@ namespace RIAPP.DataService.Core.Metadata
     {
         public IEnumerable<MethodDescription> GetQueryMethods(string dbSetName)
         {
-            return this[dbSetName].Where(m => m.methodData.MethodType == MethodType.Query);
+            return this[dbSetName].Where(m => m.GetMethodData().MethodType == MethodType.Query);
         }
 
         public IEnumerable<MethodDescription> GetInvokeMethods()
         {
-            return this[""].Where(m => m.methodData.MethodType == MethodType.Invoke);
+            return this[""].Where(m => m.GetMethodData().MethodType == MethodType.Invoke);
         }
 
         public MethodDescription GetQueryMethod(string dbSetName, string queryName)

@@ -160,27 +160,29 @@ namespace RIAPP.DataService.Core.Metadata
                         assoc.fieldRels.Aggregate(sb, (a, b) => a.Append((a.Length == 0 ? "" : ",") + b.childField),
                             a => a).ToString();
                     //add navigation field to dbSet's field collection
-                    childDb.fieldInfos.Add(new Field
+                    var fld = new Field
                     {
                         fieldName = assoc.childToParentName,
                         fieldType = FieldType.Navigation,
                         dataType = DataType.None,
-                        dependentOn = dependentOn,
-                        _TypeScriptDataType = TypeScriptHelper.GetEntityInterfaceName(parentDb.dbSetName)
-                    });
+                        dependentOn = dependentOn
+                    };
+                    fld.SetTypeScriptDataType(TypeScriptHelper.GetEntityInterfaceName(parentDb.dbSetName));
+                    childDb.fieldInfos.Add(fld);
                 }
 
                 if (!string.IsNullOrEmpty(assoc.parentToChildrenName))
                 {
                     var sb = new StringBuilder(120);
-                    //add navigation field to dbSet's field collection
-                    parentDb.fieldInfos.Add(new Field
+                    var fld = new Field
                     {
                         fieldName = assoc.parentToChildrenName,
                         fieldType = FieldType.Navigation,
-                        dataType = DataType.None,
-                        _TypeScriptDataType = string.Format("{0}[]", TypeScriptHelper.GetEntityInterfaceName(childDb.dbSetName))
-                    });
+                        dataType = DataType.None
+                    };
+                    fld.SetTypeScriptDataType($"{TypeScriptHelper.GetEntityInterfaceName(childDb.dbSetName)}[]");
+                    //add navigation field to dbSet's field collection
+                    parentDb.fieldInfos.Add(fld);
                 }
             } //foreach (var assoc in metadata.Associations)
         }

@@ -98,7 +98,7 @@ namespace RIAPP.DataService.Core
 
         private static string GetKey(RowInfo rowInfo)
         {
-            return string.Format("{0}:{1}", rowInfo.dbSetInfo.dbSetName, rowInfo.clientKey);
+            return string.Format("{0}:{1}", rowInfo.GetDbSetInfo().dbSetName, rowInfo.clientKey);
         }
 
         private Dictionary<string, RowInfo> GetRowsMap()
@@ -107,13 +107,13 @@ namespace RIAPP.DataService.Core
             foreach (var dbSet in ChangeSet.dbSets)
             {
                 var dbSetInfo = _metadata.DbSets[dbSet.dbSetName];
-                if (dbSetInfo.EntityType == null)
+                if (dbSetInfo.GetEntityType() == null)
                     throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_ENTITYTYPE_INVALID,
                         dbSetInfo.dbSetName));
 
                 foreach (var rowInfo in dbSet.rows)
                 {
-                    rowInfo.dbSetInfo = dbSetInfo;
+                    rowInfo.SetDbSetInfo(dbSetInfo);
                     result.Add(GetKey(rowInfo), rowInfo);
                 }
             }
@@ -142,7 +142,7 @@ namespace RIAPP.DataService.Core
             {
                 foreach (var rowInfo in dbSet.rows)
                 {
-                    var dbSetInfo = rowInfo.dbSetInfo;
+                    var dbSetInfo = rowInfo.GetDbSetInfo();
                     _allList.AddLast(rowInfo);
                     switch (rowInfo.changeType)
                     {
@@ -157,7 +157,7 @@ namespace RIAPP.DataService.Core
                             break;
                         default:
                             throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
-                                dbSetInfo.EntityType.Name, rowInfo.changeType));
+                                dbSetInfo.GetEntityType().Name, rowInfo.changeType));
                     }
                 }
             }

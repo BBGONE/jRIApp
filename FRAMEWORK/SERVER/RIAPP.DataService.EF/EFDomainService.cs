@@ -123,9 +123,9 @@ namespace RIAPP.DataService.EF
                 Type entityType = this.GetEntityType2(entityTypeName);
                 DbSetInfo dbSetInfo = new DbSetInfo()
                 {
-                    dbSetName = entityTypeName,
-                    EntityType = entityType
+                    dbSetName = entityTypeName
                 };
+                dbSetInfo.SetEntityType(entityType);
                 metadata.DbSets.Add(dbSetInfo);
                 var edmProps = entityEdmType.Properties.ToArray();
 

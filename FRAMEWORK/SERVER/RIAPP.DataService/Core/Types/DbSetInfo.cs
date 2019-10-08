@@ -18,7 +18,7 @@ namespace RIAPP.DataService.Core.Types
         public DbSetInfo()
         {
             _inResultFields = new Lazy<Field[]>(
-                    () => _fieldInfos.Where(f => f.GetIsIncludeInResult()).OrderBy(f => f._ordinal).ToArray(), true);
+                    () => _fieldInfos.Where(f => f.GetIsIncludeInResult()).OrderBy(f => f.GetOrdinal()).ToArray(), true);
             _pkFields =  new Lazy<Field[]>(
                     () => fieldInfos.Where(fi => fi.isPrimaryKey > 0).OrderBy(fi => fi.isPrimaryKey).ToArray(), true);
             _timestampField = new Lazy<Field>(() => fieldInfos.Where(fi => fi.fieldType == FieldType.RowTimeStamp).FirstOrDefault(),
@@ -26,7 +26,7 @@ namespace RIAPP.DataService.Core.Types
 
             enablePaging = true;
             pageSize = 100;
-            isTrackChanges = false;
+            _isTrackChanges = false;
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
@@ -66,13 +66,11 @@ namespace RIAPP.DataService.Core.Types
             return _timestampField.Value;
         }
 
-        [IgnoreDataMember]
-        public Type EntityType { get; set; }
+       
+        internal Type _EntityType { get; set; }
 
         [DefaultValue(false)]
-        [IgnoreDataMember]
-        public bool isTrackChanges { get; set; }
-
+        internal bool _isTrackChanges { get; set; }
         #endregion
     }
 }

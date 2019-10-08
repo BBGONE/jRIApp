@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Utils
 {
@@ -7,7 +8,7 @@ namespace RIAPP.DataService.Utils
     {
         string Serialize(object obj);
 
-        void Serialize(object obj, TextWriter writer);
+        Task SerializeAsync<T>(T obj, Stream stream);
 
         object DeSerialize(string input, Type targetType);
     }

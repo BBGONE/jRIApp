@@ -10,6 +10,8 @@ namespace RIAPP.DataService.Core.Types
             changeType = ChangeType.None;
             values = new ValuesList();
             serverKey = string.Empty;
+            _dbSetInfo = null;
+            _changeState = null;
         }
 
         [DataMember]
@@ -39,11 +41,8 @@ namespace RIAPP.DataService.Core.Types
         [DataMember]
         public ValidationErrorInfo[] invalid { get; set; }
 
-        [IgnoreDataMember]
-        public DbSetInfo dbSetInfo { get; set; }
+        internal DbSetInfo _dbSetInfo { get; set; }
 
-
-        [IgnoreDataMember]
-        public EntityChangeState changeState { get; set; }
+        internal EntityChangeState _changeState { get; set; }
     }
 }

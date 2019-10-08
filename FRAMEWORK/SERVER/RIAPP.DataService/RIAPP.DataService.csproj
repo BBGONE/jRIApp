@@ -196,10 +196,14 @@
     <Compile Include="Extensions\Config\ServiceOptionsEx.cs" />
     <Compile Include="Extensions\Core\ServiceContainerEx.cs" />
     <Compile Include="Extensions\Exceptions\ExceptionEx.cs" />
+    <Compile Include="Extensions\Metadata\MethodDescriptionEx.cs" />
     <Compile Include="Extensions\Metadata\MethodInfoEx.cs" />
+    <Compile Include="Extensions\Metadata\ParamMetadataEx.cs" />
     <Compile Include="Extensions\Query\QueryEx.cs" />
     <Compile Include="Extensions\Types\DbSetInfoEx.cs" />
     <Compile Include="Extensions\Types\FieldEx.cs" />
+    <Compile Include="Extensions\Types\QueryRequestEx.cs" />
+    <Compile Include="Extensions\Types\RefreshInfoEx.cs" />
     <Compile Include="Extensions\Types\RowInfoEx.cs" />
     <Compile Include="Extensions\Utils\ServiceCollectionEx.cs" />
     <Compile Include="Extensions\Utils\StringEx.cs" />

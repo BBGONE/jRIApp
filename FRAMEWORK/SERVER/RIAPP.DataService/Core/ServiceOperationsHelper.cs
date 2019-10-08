@@ -71,7 +71,7 @@ namespace RIAPP.DataService.Core
 
         public void ApplyValues(object entity, RowInfo rowInfo, string path, ValueChange[] values, bool isOriginal)
         {
-            DbSetInfo dbSetInfo = rowInfo.dbSetInfo;
+            DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
             Array.ForEach(values, val =>
             {
                 string fullName = path + val.fieldName;
@@ -167,18 +167,18 @@ namespace RIAPP.DataService.Core
 
         public void UpdateEntityFromRowInfo(object entity, RowInfo rowInfo, bool isOriginal)
         {
-            DbSetInfo dbSetInfo = rowInfo.dbSetInfo;
+            DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
             ValuesList values = rowInfo.values;
             ApplyValues(entity, rowInfo, "", values.ToArray(), isOriginal);
 
             if (!isOriginal && rowInfo.changeType == ChangeType.Added)
             {
-                foreach (ParentChildNode pn in rowInfo.changeState.ParentRows)
+                foreach (ParentChildNode pn in rowInfo.GetChangeState().ParentRows)
                 {
-                    if (!_dataHelper.SetValue(entity, pn.Association.childToParentName, pn.ParentRow.changeState.Entity, false))
+                    if (!_dataHelper.SetValue(entity, pn.Association.childToParentName, pn.ParentRow.GetChangeState().Entity, false))
                     {
                         throw new DomainServiceException(string.Format(ErrorStrings.ERR_CAN_NOT_SET_PARENT_FIELD,
-                            pn.Association.childToParentName, dbSetInfo.EntityType.Name));
+                            pn.Association.childToParentName, dbSetInfo.GetEntityType().Name));
                     }
                 }
             }
@@ -206,7 +206,7 @@ namespace RIAPP.DataService.Core
 
         public void CheckValuesChanges(RowInfo rowInfo, string path, ValueChange[] values)
         {
-            DbSetInfo dbSetInfo = rowInfo.dbSetInfo;
+            DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
             Array.ForEach(values, val =>
             {
                 string fullName = path + val.fieldName;
@@ -231,7 +231,7 @@ namespace RIAPP.DataService.Core
 
         public void UpdateRowInfoFromEntity(object entity, RowInfo rowInfo)
         {
-            DbSetInfo dbSetInfo = rowInfo.dbSetInfo;
+            DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
             UpdateValuesFromEntity(entity, "", dbSetInfo, rowInfo.values.ToArray());
             if (rowInfo.changeType == ChangeType.Added)
             {
@@ -241,7 +241,7 @@ namespace RIAPP.DataService.Core
 
         public bool isEntityValueChanged(RowInfo rowInfo, string fullName, Field fieldInfo, out string newVal)
         {
-            var changeState = rowInfo.changeState;
+            var changeState = rowInfo.GetChangeState();
             string oldVal = null;
             newVal = _dataHelper.SerializeField(changeState.Entity, fullName, fieldInfo);
             if (changeState.OriginalEntity != null)
@@ -265,7 +265,7 @@ namespace RIAPP.DataService.Core
             {
                 throw new DomainServiceException(ErrorStrings.ERR_METH_APPLY_INVALID);
             }
-            return rowInfo.changeState.OriginalEntity;
+            return rowInfo.GetChangeState().OriginalEntity;
         }
 
         public T GetOriginalEntity<T>(RowInfo rowInfo)
@@ -287,13 +287,13 @@ namespace RIAPP.DataService.Core
             {
                 throw new DomainServiceException(ErrorStrings.ERR_METH_APPLY_INVALID);
             }
-            var parents = rowInfo.changeState.ParentRows;
+            var parents = rowInfo.GetChangeState().ParentRows;
             if (parents.Length == 0)
                 return null;
 
             return
-                parents.Where(p => p.ParentRow.dbSetInfo.EntityType == entityType)
-                    .Select(p => p.ParentRow.changeState.Entity)
+                parents.Where(p => p.ParentRow.GetDbSetInfo().GetEntityType() == entityType)
+                    .Select(p => p.ParentRow.GetChangeState().Entity)
                     .FirstOrDefault();
         }
 
@@ -306,36 +306,36 @@ namespace RIAPP.DataService.Core
 
         public void InsertEntity(RunTimeMetadata metadata, RowInfo rowInfo)
         {
-            DbSetInfo dbSetInfo = rowInfo.dbSetInfo;
+            DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
             if (rowInfo.changeType != ChangeType.Added)
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
-                    dbSetInfo.EntityType.Name, rowInfo.changeType));
+                    dbSetInfo.GetEntityType().Name, rowInfo.changeType));
             MethodInfoData methodData = metadata.GetOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Insert);
             if (methodData == null)
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_INSERT_NOT_IMPLEMENTED,
-                    dbSetInfo.EntityType.Name, GetType().Name));
-            var dbEntity = Activator.CreateInstance(dbSetInfo.EntityType);
+                    dbSetInfo.GetEntityType().Name, GetType().Name));
+            var dbEntity = Activator.CreateInstance(dbSetInfo.GetEntityType());
             UpdateEntityFromRowInfo(dbEntity, rowInfo, false);
-            rowInfo.changeState.Entity = dbEntity;
+            rowInfo.GetChangeState().Entity = dbEntity;
             var instance = GetMethodOwner(methodData);
             methodData.MethodInfo.Invoke(instance, new[] { dbEntity });
         }
 
         public void UpdateEntity(RunTimeMetadata metadata, RowInfo rowInfo)
         {
-            DbSetInfo dbSetInfo = rowInfo.dbSetInfo;
+            DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
             if (rowInfo.changeType != ChangeType.Updated)
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
-                    dbSetInfo.EntityType.Name, rowInfo.changeType));
+                    dbSetInfo.GetEntityType().Name, rowInfo.changeType));
             MethodInfoData methodData = metadata.GetOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Update);
             if (methodData == null)
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_UPDATE_NOT_IMPLEMENTED,
-                    dbSetInfo.EntityType.Name, GetType().Name));
-            var dbEntity = Activator.CreateInstance(dbSetInfo.EntityType);
+                    dbSetInfo.GetEntityType().Name, GetType().Name));
+            var dbEntity = Activator.CreateInstance(dbSetInfo.GetEntityType());
             UpdateEntityFromRowInfo(dbEntity, rowInfo, false);
             var original = GetOriginalEntity(dbEntity, rowInfo);
-            rowInfo.changeState.Entity = dbEntity;
-            rowInfo.changeState.OriginalEntity = original;
+            rowInfo.GetChangeState().Entity = dbEntity;
+            rowInfo.GetChangeState().OriginalEntity = original;
             var instance = GetMethodOwner(methodData);
             //apply this changes to entity that is in the database (this is done in user domain service method)
             methodData.MethodInfo.Invoke(instance, new[] { dbEntity });
@@ -343,20 +343,20 @@ namespace RIAPP.DataService.Core
 
         public void DeleteEntity(RunTimeMetadata metadata, RowInfo rowInfo)
         {
-            DbSetInfo dbSetInfo = rowInfo.dbSetInfo;
+            DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
             if (rowInfo.changeType != ChangeType.Deleted)
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
-                    dbSetInfo.EntityType.Name, rowInfo.changeType));
+                    dbSetInfo.GetEntityType().Name, rowInfo.changeType));
 
             MethodInfoData methodData = metadata.GetOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Delete);
             if (methodData == null)
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_DELETE_NOT_IMPLEMENTED,
-                    dbSetInfo.EntityType.Name, GetType().Name));
+                    dbSetInfo.GetEntityType().Name, GetType().Name));
 
-            var dbEntity = Activator.CreateInstance(dbSetInfo.EntityType);
+            var dbEntity = Activator.CreateInstance(dbSetInfo.GetEntityType());
             UpdateEntityFromRowInfo(dbEntity, rowInfo, true);
-            rowInfo.changeState.Entity = dbEntity;
-            rowInfo.changeState.OriginalEntity = dbEntity;
+            rowInfo.GetChangeState().Entity = dbEntity;
+            rowInfo.GetChangeState().OriginalEntity = dbEntity;
             var instance = GetMethodOwner(methodData);
             methodData.MethodInfo.Invoke(instance, new[] { dbEntity });
         }
@@ -364,7 +364,7 @@ namespace RIAPP.DataService.Core
         public async Task<bool> ValidateEntity(RunTimeMetadata metadata, RequestContext requestContext)
         {
             RowInfo rowInfo = requestContext.CurrentRowInfo;
-            DbSetInfo dbSetInfo = rowInfo.dbSetInfo;
+            DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
             IEnumerable<ValidationErrorInfo> errs1 = null;
             IEnumerable<ValidationErrorInfo> errs2 = null;
             LinkedList<string> mustBeChecked = new LinkedList<string>();
@@ -372,7 +372,7 @@ namespace RIAPP.DataService.Core
 
             if (rowInfo.changeType == ChangeType.Added)
             {
-                foreach (ParentChildNode pn in rowInfo.changeState.ParentRows)
+                foreach (ParentChildNode pn in rowInfo.GetChangeState().ParentRows)
                 {
                     foreach (FieldRel frel in pn.Association.fieldRels)
                     {
@@ -390,7 +390,7 @@ namespace RIAPP.DataService.Core
                     if (f.fieldType == FieldType.Object || f.fieldType == FieldType.ServerCalculated)
                         return;
 
-                    string value = _dataHelper.SerializeField(rowInfo.changeState.Entity, fullName, f);
+                    string value = _dataHelper.SerializeField(rowInfo.GetChangeState().Entity, fullName, f);
 
                     switch (rowInfo.changeType)
                     {
@@ -419,14 +419,14 @@ namespace RIAPP.DataService.Core
                 });
             }
 
-            rowInfo.changeState.ChangedFieldNames = mustBeChecked.ToArray();
+            rowInfo.GetChangeState().ChangedFieldNames = mustBeChecked.ToArray();
 
             MethodInfoData methodData = metadata.GetOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Validate);
             if (methodData != null)
             {
                 var instance = GetMethodOwner(methodData);
                 var invokeRes = methodData.MethodInfo.Invoke(instance,
-                    new[] { rowInfo.changeState.Entity, rowInfo.changeState.ChangedFieldNames });
+                    new[] { rowInfo.GetChangeState().Entity, rowInfo.GetChangeState().ChangedFieldNames });
                 errs1 = (IEnumerable<ValidationErrorInfo>)await GetMethodResult(invokeRes);
             }
 
@@ -435,11 +435,11 @@ namespace RIAPP.DataService.Core
                 errs1 = Enumerable.Empty<ValidationErrorInfo>();
             }
 
-            IValidator validator = _validatorsContainer.GetValidator(rowInfo.dbSetInfo.EntityType);
+            IValidator validator = _validatorsContainer.GetValidator(rowInfo.GetDbSetInfo().GetEntityType());
             if (validator != null)
             {
-                errs2 = await validator.ValidateModelAsync(rowInfo.changeState.Entity,
-                            rowInfo.changeState.ChangedFieldNames);
+                errs2 = await validator.ValidateModelAsync(rowInfo.GetChangeState().Entity,
+                            rowInfo.GetChangeState().ChangedFieldNames);
             }
 
             if (errs2 == null)
@@ -449,9 +449,9 @@ namespace RIAPP.DataService.Core
 
             errs1 = errs1.Concat(errs2);
 
-            rowInfo.changeState.ValidationErrors = errs1.ToArray();
+            rowInfo.GetChangeState().ValidationErrors = errs1.ToArray();
 
-            return rowInfo.changeState.ValidationErrors.Length == 0;
+            return rowInfo.GetChangeState().ValidationErrors.Length == 0;
         }
 
         public async Task<object> GetMethodResult(object invokeRes)

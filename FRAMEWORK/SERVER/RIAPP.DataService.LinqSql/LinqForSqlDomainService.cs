@@ -44,9 +44,9 @@ namespace RIAPP.DataService.LinqSql
                 Type entityType = propInfo.PropertyType.GetGenericArguments().First();
                 DbSetInfo dbSetInfo = new DbSetInfo()
                 {
-                    dbSetName = entityType.Name,
-                    EntityType = entityType
+                    dbSetName = entityType.Name
                 };
+                dbSetInfo.SetEntityType(entityType);
                 metadata.DbSets.Add(dbSetInfo);
                 PropertyInfo[] fieldPropList = entityType.GetProperties().Where(p => p.IsDefined(typeof(System.Data.Linq.Mapping.ColumnAttribute), false)).ToArray();
                 short pkNum = 0;

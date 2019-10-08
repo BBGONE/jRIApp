@@ -37,7 +37,7 @@ namespace RIAPP.DataService.Core
             try
             {
                 MethodDescription method = _metadata.GetInvokeMethod(message.methodName);
-                await _authorizer.CheckUserRightsToExecute(method.methodData);
+                await _authorizer.CheckUserRightsToExecute(method.GetMethodData());
                 List<object> methParams = new List<object>();
                 for (int i = 0; i < method.parameters.Count; ++i)
                 {
@@ -46,8 +46,8 @@ namespace RIAPP.DataService.Core
                 var req = new RequestContext(_service, operation: ServiceOperationType.InvokeMethod);
                 using (var callContext = new RequestCallContext(req))
                 {
-                    object instance = _serviceHelper.GetMethodOwner(method.methodData);
-                    object invokeRes = method.methodData.MethodInfo.Invoke(instance, methParams.ToArray());
+                    object instance = _serviceHelper.GetMethodOwner(method.GetMethodData());
+                    object invokeRes = method.GetMethodData().MethodInfo.Invoke(instance, methParams.ToArray());
                     object meth_result = await _serviceHelper.GetMethodResult(invokeRes);
                     InvokeResponse res = new InvokeResponse();
                     if (method.methodResult)

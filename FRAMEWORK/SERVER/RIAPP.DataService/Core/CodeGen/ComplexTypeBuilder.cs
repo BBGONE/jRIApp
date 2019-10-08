@@ -38,7 +38,7 @@ namespace RIAPP.DataService.Core.CodeGen
                 typeName = string.Format("{0}_{1}{2}", dbSetInfo.dbSetName, fieldInfo.fieldName, level);
             }
             string interfaceName= string.Format("I{0}", typeName);
-            fieldInfo._TypeScriptDataType = typeName;
+            fieldInfo.SetTypeScriptDataType(typeName);
 
             var sbProperties = new StringBuilder();
             var sbFieldsDef = new StringBuilder();
@@ -49,12 +49,12 @@ namespace RIAPP.DataService.Core.CodeGen
             {
                 var dataType = GetFieldDataType(f);
                 sbProperties.AppendFormat("\tget {0}(): {2} {{ return this.getValue('{1}'); }}", f.fieldName,
-                    f._FullName, dataType);
+                    f.GetFullName(), dataType);
                 sbProperties.AppendLine();
                 if (!f.isReadOnly)
                 {
                     sbProperties.AppendFormat("\tset {0}(v: {2}) {{ this.setValue('{1}', v); }}", f.fieldName,
-                        f._FullName, dataType);
+                        f.GetFullName(), dataType);
                     sbProperties.AppendLine();
                 }
 
@@ -66,7 +66,7 @@ namespace RIAPP.DataService.Core.CodeGen
             {
                 var dataType = GetFieldDataType(f);
                 sbProperties.AppendFormat("\tget {0}(): {2} {{ return this.getEntity()._getCalcFieldVal('{1}'); }}",
-                    f.fieldName, f._FullName, dataType);
+                    f.fieldName, f.GetFullName(), dataType);
                 sbProperties.AppendLine();
 
                 sbInterfaceFields.AppendFormat("\treadonly {0}: {1};", f.fieldName, dataType);

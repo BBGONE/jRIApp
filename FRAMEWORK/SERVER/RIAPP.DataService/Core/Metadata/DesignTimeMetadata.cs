@@ -25,7 +25,7 @@ namespace RIAPP.DataService.Core.Metadata
 
         public string ToXML()
         {
-            Type dbSetType = DbSets.Any() ? DbSets.First().EntityType : GetType();
+            Type dbSetType = DbSets.Any() ? DbSets.First().GetEntityType() : GetType();
 
             XNamespace ns_dal = $"clr-namespace:{dbSetType.Namespace};assembly={dbSetType.Assembly.GetName().Name}";
 
@@ -38,12 +38,10 @@ namespace RIAPP.DataService.Core.Metadata
                     from dbset in DbSets
                     select new XElement(NS_DATA + "DbSetInfo",
                         new XAttribute("dbSetName", dbset.dbSetName),
-                        dbset.isTrackChanges
-                            ? new[] {new XAttribute("isTrackChanges", dbset.isTrackChanges)}
-                            : new XAttribute[0],
+                        new[] {new XAttribute("isTrackChanges", dbset.GetIsTrackChanges())},
                         new XAttribute("enablePaging", dbset.enablePaging),
                         dbset.enablePaging ? new[] {new XAttribute("pageSize", dbset.pageSize)} : new XAttribute[0],
-                        new XAttribute("EntityType", string.Format("{{x:Type dal:{0}}}", dbset.EntityType.Name)),
+                        new XAttribute("EntityType", string.Format("{{x:Type dal:{0}}}", dbset.GetEntityType().Name)),
                         new XElement(NS_DATA + "DbSetInfo.fieldInfos", _FieldsToXElements(dbset.fieldInfos)
                             ))),
                 new XElement(NS_DATA + "Metadata.Associations",
@@ -94,15 +92,16 @@ namespace RIAPP.DataService.Core.Metadata
 
                     var dbSetInfo = new DbSetInfo
                     {
-                        dbSetName = (string) xdbSet.Attribute("dbSetName"),
-                        EntityType = _entityType
+                        dbSetName = (string) xdbSet.Attribute("dbSetName")
                     };
+                    dbSetInfo.SetEntityType(_entityType);
+
                     if (xdbSet.Attributes("enablePaging").Any())
-                        dbSetInfo.enablePaging = (bool) xdbSet.Attribute("enablePaging");
+                        dbSetInfo.enablePaging = (bool)xdbSet.Attribute("enablePaging");
                     if (xdbSet.Attributes("pageSize").Any())
-                        dbSetInfo.pageSize = (int) xdbSet.Attribute("pageSize");
+                        dbSetInfo.pageSize = (int)xdbSet.Attribute("pageSize");
                     if (xdbSet.Attributes("isTrackChanges").Any())
-                        dbSetInfo.isTrackChanges = (bool) xdbSet.Attribute("isTrackChanges");
+                        dbSetInfo.SetIsTrackChanges((bool)xdbSet.Attribute("isTrackChanges"));
                     metadata.DbSets.Add(dbSetInfo);
 
                     var xFields = xdbSet.Element(NS_DATA + "DbSetInfo.fieldInfos");

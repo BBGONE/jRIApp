@@ -15,5 +15,35 @@ namespace RIAPP.DataService.Core.Types
                             })
                     .ToArray();
         }
+
+        public static int GetOrdinal(this Field field)
+        {
+            return field._ordinal;
+        }
+
+        public static void SetOrdinal(this Field field, int ordinal)
+        {
+            field._ordinal = ordinal;
+        }
+
+        public static string GetFullName(this Field field)
+        {
+            return field._FullName;
+        }
+
+        public static void SetFullName(this Field field, string fullName)
+        {
+            field._FullName = fullName;
+        }
+
+        public static string GetTypeScriptDataType(this Field field)
+        {
+            return field._TypeScriptDataType;
+        }
+
+        public static void SetTypeScriptDataType(this Field field, string typeScriptDataType)
+        {
+            field._TypeScriptDataType = typeScriptDataType;
+        }
     }
 }

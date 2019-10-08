@@ -18,7 +18,7 @@ namespace RIAPP.DataService.Core.Metadata
         {
             DbSets = new DbSetsDictionary();
             Associations = new AssociationsDictionary();
-            _dbSetsByTypeLookUp = new Lazy<ILookup<Type, DbSetInfo>>(() => { return DbSets.Values.ToLookup(v => v.EntityType); }, true);
+            _dbSetsByTypeLookUp = new Lazy<ILookup<Type, DbSetInfo>>(() => { return DbSets.Values.ToLookup(v => v.GetEntityType()); }, true);
             _svcMethods = new MethodMap();
             _operMethods = new OperationalMethods();
         }
@@ -35,7 +35,7 @@ namespace RIAPP.DataService.Core.Metadata
                 if (md.isQuery)
                 {
                     //First check QueryAtrribute if it contains info for Entity Type or DbSet Name
-                    QueryAttribute queryAttribute = (QueryAttribute)md.methodData.MethodInfo.GetCustomAttributes(typeof(QueryAttribute), false).FirstOrDefault();
+                    QueryAttribute queryAttribute = (QueryAttribute)md.GetMethodData().MethodInfo.GetCustomAttributes(typeof(QueryAttribute), false).FirstOrDefault();
 
                     string dbSetName = queryAttribute.DbSetName;
                     if (!string.IsNullOrWhiteSpace(dbSetName))
@@ -46,7 +46,7 @@ namespace RIAPP.DataService.Core.Metadata
                     }
                     else
                     {
-                        System.Type entityType = queryAttribute.EntityType ?? md.methodData.EntityType;
+                        System.Type entityType = queryAttribute.EntityType ?? md.GetMethodData().EntityType;
 
                         IEnumerable<DbSetInfo> dbSets = dbSetsByTypeLookUp[entityType];
                         if (!dbSets.Any())

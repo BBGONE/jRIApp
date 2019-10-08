@@ -18,7 +18,7 @@ namespace RIAPP.DataService.Core.Types
         {
             _nested = new Lazy<FieldsList>(() => fieldType == FieldType.Object ? new FieldsList() : null, true);
             _nestedInResultFields = new Lazy<Field[]>(() => fieldType == FieldType.Object
-                            ? nested.Where(f => f.GetIsIncludeInResult()).OrderBy(f => f._ordinal).ToArray()
+                            ? nested.Where(f => f.GetIsIncludeInResult()).OrderBy(f => f.GetOrdinal()).ToArray()
                             : new Field[0], true);
             isPrimaryKey = 0;
             dataType = DataType.None;
@@ -127,18 +127,12 @@ namespace RIAPP.DataService.Core.Types
             //set { _nested = new Lazy<FieldsList>(() => value, false); }
         }
 
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [IgnoreDataMember]
-        public int _ordinal { get; set; }
+        internal int _ordinal { get; set; }
 
-        //It is used only for Navigation and ComplexType fields
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [IgnoreDataMember]
-        public string _TypeScriptDataType { get; set; }
+        // used only for Navigation and ComplexType fields
+        internal string _TypeScriptDataType { get; set; }
 
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [IgnoreDataMember]
-        public string _FullName { get; set; }
+        internal string _FullName { get; set; }
 
         public Field[] GetNestedInResultFields()
         {

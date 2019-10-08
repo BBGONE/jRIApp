@@ -38,9 +38,9 @@ namespace RIAPP.DataService.Core
             try
             {
                 MethodDescription method = _metadata.GetQueryMethod(message.dbSetName, message.queryName);
-                await _authorizer.CheckUserRightsToExecute(method.methodData);
-                message.dbSetInfo = _metadata.DbSets[message.dbSetName];
-                bool isMultyPageRequest = message.dbSetInfo.enablePaging && message.pageCount > 1;
+                await _authorizer.CheckUserRightsToExecute(method.GetMethodData());
+                message.SetDbSetInfo(_metadata.DbSets[message.dbSetName]);
+                bool isMultyPageRequest = message.GetDbSetInfo().enablePaging && message.pageCount > 1;
 
                 QueryResult queryResult = null;
                 int? totalCount = null;
@@ -54,14 +54,14 @@ namespace RIAPP.DataService.Core
                 var req = new RequestContext(_service, queryInfo: message, operation: ServiceOperationType.Query);
                 using (var callContext = new RequestCallContext(req))
                 {
-                    object instance = _serviceHelper.GetMethodOwner(method.methodData);
-                    object invokeRes = method.methodData.MethodInfo.Invoke(instance, methParams.ToArray());
+                    object instance = _serviceHelper.GetMethodOwner(method.GetMethodData());
+                    object invokeRes = method.GetMethodData().MethodInfo.Invoke(instance, methParams.ToArray());
                     queryResult = (QueryResult)await _serviceHelper.GetMethodResult(invokeRes);
 
 
                     IEnumerable<object> entities = queryResult.Result;
                     totalCount = queryResult.TotalCount;
-                    RowGenerator rowGenerator = new RowGenerator(message.dbSetInfo, entities, _dataHelper);
+                    RowGenerator rowGenerator = new RowGenerator(message.GetDbSetInfo(), entities, _dataHelper);
                     IEnumerable<Row> rows = rowGenerator.CreateRows();
 
                     SubsetsGenerator subsetsGenerator = new SubsetsGenerator(_service.GetMetadata(), _dataHelper);
@@ -72,7 +72,7 @@ namespace RIAPP.DataService.Core
                         pageIndex = message.pageIndex,
                         pageCount = message.pageCount,
                         dbSetName = message.dbSetName,
-                        names = message.dbSetInfo.GetNames(),
+                        names = message.GetDbSetInfo().GetNames(),
                         totalCount = totalCount,
                         extraInfo = queryResult.extraInfo,
                         rows = rows,

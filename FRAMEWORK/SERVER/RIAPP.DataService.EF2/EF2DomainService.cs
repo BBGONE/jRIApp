@@ -119,9 +119,9 @@ namespace RIAPP.DataService.EF2
                 Type entityType = this.GetEntityType2(entityTypeName);
                 DbSetInfo dbSetInfo = new DbSetInfo()
                 {
-                    dbSetName = entityTypeName,
-                    EntityType = entityType
+                    dbSetName = entityTypeName
                 };
+                dbSetInfo.SetEntityType(entityType);
                 metadata.DbSets.Add(dbSetInfo);
                 var edmProps = entityEdmType.Properties.ToArray();
                 this.GenerateFieldInfos(dbSetInfo, keys, edmProps);
@@ -143,7 +143,8 @@ namespace RIAPP.DataService.EF2
                 //string entitySetName = entitySetsDic[name].EntitySetName;
 
                 Type entityType = this.GetEntityType2(entityTypeName);
-                DbSetInfo dbSetInfo = new DbSetInfo() { dbSetName = entityTypeName, EntityType = entityType };
+                DbSetInfo dbSetInfo = new DbSetInfo() { dbSetName = entityTypeName };
+                dbSetInfo.SetEntityType(entityType);
                 metadata.DbSets.Add(dbSetInfo);
                 var edmProps = entityEdmType.Properties.ToArray();
                 this.GenerateFieldInfos(dbSetInfo, keys, edmProps);
