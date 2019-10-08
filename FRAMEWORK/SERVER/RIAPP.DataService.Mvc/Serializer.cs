@@ -11,14 +11,7 @@ namespace RIAPP.DataService.Mvc
     {
         public string Serialize(object obj)
         {
-            var serializer = new JsonSerializer();
-            serializer.NullValueHandling = NullValueHandling.Include;
-            StringWriter writer = new StringWriter();
-            using (JsonWriter jsonWriter = new JsonTextWriter(writer))
-            {
-                serializer.Serialize(writer, obj);
-            }
-            return writer.ToString();
+            return JsonConvert.SerializeObject(obj);
         }
 
         public Task SerializeAsync<T>(T obj, Stream stream)
