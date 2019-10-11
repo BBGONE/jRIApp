@@ -63,7 +63,6 @@ class ModuleLoader implements IModuleLoader {
         this._loads = {};
         this._cssLoads = {};
     }
-
     load(names: string[]): IPromise<void> {
         const self = this;
 
@@ -160,6 +159,6 @@ class ModuleLoader implements IModuleLoader {
         // append slash (if not present)
         url = url.replace(/\/?$/, '/');
         // convert the name to url
-        return `${config.cssPath}${name}`;
+        return `${url}${name}`;
     }
 }

@@ -17,6 +17,7 @@
     "jriapp_shared.ts"
   ],
   "include": [
-    "../thirdparty/moment.d.ts"
+    "../thirdparty/moment.d.ts",
+    "global.d.ts"
   ]
 }

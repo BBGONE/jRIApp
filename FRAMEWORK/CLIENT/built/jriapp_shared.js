@@ -49,7 +49,7 @@ define("jriapp_shared/utils/ideferred", ["require", "exports"], function (requir
 define("jriapp_shared/int", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Config = window.jriapp_config || {};
+    exports.Config = jriapp_config || {};
     exports.DebugLevel = (!exports.Config.debugLevel) ? 0 : exports.Config.debugLevel;
     var TPriority;
     (function (TPriority) {

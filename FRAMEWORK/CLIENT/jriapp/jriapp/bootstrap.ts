@@ -30,8 +30,8 @@ export const subscribeWeakMap: IWeakMap = createWeakMap(), selectableProviderWea
 (function () {
     const win: any = dom.window;
 
-    // check if promise implemented
-    if (!win.Promise) {
+    // check if promise globally available
+    if (!("Promise" in win)) {
         win.Promise = Promise;
     }
 

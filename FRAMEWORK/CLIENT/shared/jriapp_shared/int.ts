@@ -7,8 +7,8 @@ export interface IConfig {
     debugLevel?: DEBUG_LEVEL;
 }
 
-// get config variable
-export const Config: IConfig = (<any>window).jriapp_config || {};
+// get global config variable
+export const Config: IConfig = jriapp_config || {};
 export let DebugLevel = (!Config.debugLevel) ? DEBUG_LEVEL.NONE : Config.debugLevel;
 
 export type TEventHandler<T = any, U = any> = (sender: T, args: U) => void;

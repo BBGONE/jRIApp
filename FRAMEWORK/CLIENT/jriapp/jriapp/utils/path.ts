@@ -107,9 +107,10 @@ export class PathHelper {
     static getFrameworkPath(): string {
         let res = _cache["root"];
         if (!res) {
-            // we have a provided jriapp root already in global variable
+            //if we have a provided jriapp root already in global variable
             if (!!config.frameworkPath) {
-                res = config.frameworkPath;
+               // append slash (if not present)
+               res = config.frameworkPath.replace(/\/?$/, '/');
             }
 
             // still no result

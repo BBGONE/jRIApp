@@ -1913,7 +1913,7 @@ define("jriapp/utils/path", ["require", "exports", "jriapp_shared", "jriapp/util
             var res = _cache["root"];
             if (!res) {
                 if (!!int_3.Config.frameworkPath) {
-                    res = int_3.Config.frameworkPath;
+                    res = int_3.Config.frameworkPath.replace(/\/?$/, '/');
                 }
                 if (!res) {
                     res = fn_getFrameworkPath();
@@ -2070,7 +2070,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
     exports.subscribeWeakMap = jriapp_shared_11.createWeakMap(), exports.selectableProviderWeakMap = jriapp_shared_11.createWeakMap();
     (function () {
         var win = dom.window;
-        if (!win.Promise) {
+        if (!("Promise" in win)) {
             win.Promise = deferred_1.Promise;
         }
         if (!win.requestAnimationFrame) {
@@ -4217,7 +4217,7 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/i
             }
             var url = int_4.Config.cssPath || "";
             url = url.replace(/\/?$/, '/');
-            return "" + int_4.Config.cssPath + name;
+            return "" + url + name;
         };
         return ModuleLoader;
     }());
