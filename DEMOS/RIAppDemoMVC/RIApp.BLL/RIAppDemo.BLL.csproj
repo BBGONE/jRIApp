@@ -59,16 +59,16 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataServices\Config\DataManagerConfig.cs" />
-    <Compile Include="DataServices\Config\FolderBrowserServiceConfig .cs" />
-    <Compile Include="DataServices\Config\RIAppDemoServiceEFConfig.cs" />
-    <Compile Include="DataServices\Config\SvcOptions.cs" />
-    <Compile Include="DataServices\Config\ThumbnailServiceConfig.cs" />
-    <Compile Include="DataServices\Config\ValidatorConfig.cs" />
-    <Compile Include="DataServices\DataManagers\AdWDataManager.cs" />
-    <Compile Include="DataServices\DataManagers\LookUpProductDM.cs" />
-    <Compile Include="DataServices\DataManagers\ProductDM .cs" />
-    <Compile Include="DataServices\DataManagers\CustomerAddressDM.cs" />
+    <Compile Include="Config\DataManagerConfig.cs" />
+    <Compile Include="Config\FolderBrowserServiceConfig .cs" />
+    <Compile Include="Config\RIAppDemoServiceEFConfig.cs" />
+    <Compile Include="Config\SvcOptions.cs" />
+    <Compile Include="Config\ThumbnailServiceConfig.cs" />
+    <Compile Include="Config\ValidatorConfig.cs" />
+    <Compile Include="DataManagers\AdWDataManager.cs" />
+    <Compile Include="DataManagers\LookUpProductDM.cs" />
+    <Compile Include="DataManagers\ProductDM .cs" />
+    <Compile Include="DataManagers\CustomerAddressDM.cs" />
     <Compile Include="DataServices\FolderBrowserService.cs" />
     <Compile Include="DataServices\RIAppDemoServiceEF.cs" />
     <Compile Include="DataServices\TumbnailService.cs" />
