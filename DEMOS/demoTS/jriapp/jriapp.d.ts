@@ -72,9 +72,10 @@ declare module "jriapp/consts" {
 }
 declare module "jriapp/int" {
     import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "jriapp/consts";
-    import { IBaseObject, IDisposable, IIndexer, IPromise, IErrorHandler, TEventHandler, IConfig, IValidationInfo } from "jriapp_shared";
+    import { IBaseObject, IDisposable, IIndexer, IPromise, IErrorHandler, IConfig, TEventHandler, IValidationInfo } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     export interface IJRIAppConfig extends IConfig {
+        cssPath?: string;
         frameworkPath?: string;
         frameworkJS?: string;
         bust?: string;
@@ -1081,5 +1082,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.25.6";
+    export const VERSION = "2.25.7";
 }

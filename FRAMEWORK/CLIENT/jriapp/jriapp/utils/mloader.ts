@@ -1,13 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils, IIndexer, IPromise, IDeferred } from "jriapp_shared";
-import { IModuleLoader } from "../int";
+import { IModuleLoader, Config as config } from "../int";
 import { createCssLoader as createCSSLoader } from "./sloader";
 
 const utils = Utils, { forEachProp } = utils.core, { startsWith } = utils.str,
     { reject: _reject, resolve: _resolve, whenAll: _whenAll, createDeferred } = utils.defer,
     arrHelper = utils.arr, CSSPrefix = "css!";
-//ambient require function
-declare var require: any;
 
 let _moduleLoader: IModuleLoader = null;
 
@@ -77,27 +75,21 @@ class ModuleLoader implements IModuleLoader {
 
         if (forLoad.length > 0) {
             forLoad.forEach((name) => {
-                self._loads[name] = {
+                const load = {
                     name: name,
                     err: null,
                     state: LOAD_STATE.LOADING,
                     defered: createDeferred<any>(true)
-                };
-            });
-
-            //load the modules providing module names to ambient require
-            require(forLoad, () => {
-                forLoad.forEach((name) => {
-                    const load = self._loads[name];
+                } as IModuleLoad;
+                self._loads[name] = load;
+                // dynamic import thanks to typescript
+                import(name).then(() => {
                     load.state = LOAD_STATE.LOADED;
                     load.defered.resolve();
-                });
-            }, (err: any) => {
-                forLoad.forEach((name) => {
-                    const load = self._loads[name];
+                }, (err: any) => {
                     load.state = LOAD_STATE.LOADED;
                     load.err = err;
-                    load.defered.reject(utils.str.format("Error loading modules: {0}", err));
+                    load.defered.reject(`Error loading modules: ${"" + err}`);
                 });
             });
         }
@@ -110,7 +102,7 @@ class ModuleLoader implements IModuleLoader {
     }
     whenAllLoaded(): IPromise<void> {
         const loads: IModuleLoad[] = [];
-        forEachProp(this._loads, (name, val) => {
+        forEachProp(this._loads, (_, val) => {
             loads.push(val);
         });
         return whenAll(loads);
@@ -164,7 +156,10 @@ class ModuleLoader implements IModuleLoader {
             name = name.substr(CSSPrefix.length);
         }
 
-        //convert the name to url using ambient require
-        return require.toUrl(name);
+        let url = config.cssPath || "";
+        // append slash (if not present)
+        url = url.replace(/\/?$/, '/');
+        // convert the name to url
+        return `${config.cssPath}${name}`;
     }
 }

@@ -11,13 +11,15 @@
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noImplicitThis": true,
-    "noImplicitReturns": true
+    "noImplicitReturns": true,
+    "lib": [ "es2015", "dom" ]
   },
   "files": [
     "jriapp.ts"
   ],
   "include": [
-    "../built/jriapp_shared.d.ts"
+    "../built/jriapp_shared.d.ts",
+    "global.d.ts"
   ],
   "exclude": [
     "node_modules"

@@ -1,19 +1,20 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "./consts";
 import {
-    IBaseObject, IDisposable, IIndexer, IPromise, IErrorHandler, TEventHandler, IConfig, IValidationInfo
+    IBaseObject, IDisposable, IIndexer, IPromise, IErrorHandler, IConfig, TEventHandler, IValidationInfo
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 
 // config global variable can be used using this interface
 export interface IJRIAppConfig extends IConfig {
+    cssPath?: string; // "/Content/styles/"
     frameworkPath?: string; // "/Scripts/jriapp/"
     frameworkJS?: string; // "jriapp.js"
     bust?: string; // "bust=xyz"
 }
 
 // get config variable
-export const Config: IJRIAppConfig = (<any>window).jriapp_config || {};
+export const Config: IJRIAppConfig = jriapp_config || {};
 
 export class ButtonCss {
     static Edit: string = "jriapp-actions jriapp-edit";

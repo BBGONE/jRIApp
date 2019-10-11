@@ -105,7 +105,7 @@ define("jriapp/consts", ["require", "exports"], function (require, exports) {
 define("jriapp/int", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Config = window.jriapp_config || {};
+    exports.Config = jriapp_config || {};
     var ButtonCss = (function () {
         function ButtonCss() {
         }
@@ -4087,7 +4087,7 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
     }(jriapp_shared_17.BaseObject));
     exports.ViewModel = ViewModel;
 });
-define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/utils/sloader"], function (require, exports, jriapp_shared_18, sloader_2) {
+define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/int", "jriapp/utils/sloader"], function (require, exports, jriapp_shared_18, int_4, sloader_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = jriapp_shared_18.Utils, forEachProp = utils.core.forEachProp, startsWith = utils.str.startsWith, _a = utils.defer, _reject = _a.reject, _resolve = _a.resolve, _whenAll = _a.whenAll, createDeferred = _a.createDeferred, arrHelper = utils.arr, CSSPrefix = "css!";
@@ -4143,25 +4143,20 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
             });
             if (forLoad.length > 0) {
                 forLoad.forEach(function (name) {
-                    self._loads[name] = {
+                    var load = {
                         name: name,
                         err: null,
                         state: 1,
                         defered: createDeferred(true)
                     };
-                });
-                require(forLoad, function () {
-                    forLoad.forEach(function (name) {
-                        var load = self._loads[name];
+                    self._loads[name] = load;
+                    new Promise(function (resolve_1, reject_1) { require([name], resolve_1, reject_1); }).then(function () {
                         load.state = 2;
                         load.defered.resolve();
-                    });
-                }, function (err) {
-                    forLoad.forEach(function (name) {
-                        var load = self._loads[name];
+                    }, function (err) {
                         load.state = 2;
                         load.err = err;
-                        load.defered.reject(utils.str.format("Error loading modules: {0}", err));
+                        load.defered.reject("Error loading modules: " + ("" + err));
                     });
                 });
             }
@@ -4172,7 +4167,7 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
         };
         ModuleLoader.prototype.whenAllLoaded = function () {
             var loads = [];
-            forEachProp(this._loads, function (name, val) {
+            forEachProp(this._loads, function (_, val) {
                 loads.push(val);
             });
             return whenAll(loads);
@@ -4220,7 +4215,9 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/u
             if (this.isCSS(name)) {
                 name = name.substr(CSSPrefix.length);
             }
-            return require.toUrl(name);
+            var url = int_4.Config.cssPath || "";
+            url = url.replace(/\/?$/, '/');
+            return "" + int_4.Config.cssPath + name;
         };
         return ModuleLoader;
     }());
@@ -4781,7 +4778,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
     }(jriapp_shared_20.BaseObject));
     exports.Application = Application;
 });
-define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/deferred", "jriapp/consts", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_7, jriapp_shared_21, const_1, int_4, jsonbag_1, deferred_2, consts_1, dom_7, viewchecks_3, converter_1, bootstrap_8, binding_2, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
+define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jriapp_shared/collection/const", "jriapp_shared/collection/int", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/deferred", "jriapp/consts", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/converter", "jriapp/bootstrap", "jriapp/binding", "jriapp/template", "jriapp/utils/lifetime", "jriapp/utils/propwatcher", "jriapp/mvvm", "jriapp/app"], function (require, exports, bootstrap_7, jriapp_shared_21, const_1, int_5, jsonbag_1, deferred_2, consts_1, dom_7, viewchecks_3, converter_1, bootstrap_8, binding_2, template_1, lifetime_2, propwatcher_1, mvvm_1, app_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -4789,7 +4786,7 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     Object.defineProperty(exports, "__esModule", { value: true });
     __export(jriapp_shared_21);
     __export(const_1);
-    __export(int_4);
+    __export(int_5);
     __export(jsonbag_1);
     exports.Promise = deferred_2.Promise;
     exports.KEYS = consts_1.KEYS;
@@ -4810,6 +4807,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.25.6";
+    exports.VERSION = "2.25.7";
     bootstrap_7.Bootstrap._initFramework();
 });
