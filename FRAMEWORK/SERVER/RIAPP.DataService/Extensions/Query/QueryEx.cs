@@ -209,11 +209,11 @@ namespace RIAPP.DataService.Core.Query
         {
             IQueryable<T> countQuery = null;
             IQueryable<T> result = PerformQuery(dataService, entities, out countQuery);
-            Task<int?> dataCount = Task.FromResult<int?>(null);
+            Func<Task<int?>> dataCount = () => Task.FromResult<int?>(null);
 
             if (countQuery != null && totalCountFunc != null)
             {
-                dataCount = totalCountFunc(countQuery).ContinueWith(t => {
+                dataCount = () => totalCountFunc(countQuery).ContinueWith(t => {
                     return (int?)t.Result;
                 }, TaskContinuationOptions.ExecuteSynchronously);
             }
@@ -224,8 +224,7 @@ namespace RIAPP.DataService.Core.Query
         public static IQueryable<T> PerformQuery<T>(this IDataServiceComponent dataService, IQueryable<T> entities, ref int? totalCount)
             where T : class
         {
-            IQueryable<T> countQuery = null;
-            IQueryable <T> result = PerformQuery(dataService, entities, out countQuery);
+            IQueryable <T> result = PerformQuery(dataService, entities, out var countQuery);
 
             if (countQuery != null && !totalCount.HasValue)
             {

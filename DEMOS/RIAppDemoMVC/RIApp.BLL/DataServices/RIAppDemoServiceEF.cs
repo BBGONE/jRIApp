@@ -293,7 +293,7 @@ namespace RIAppDemo.BLL.DataServices
 
             // perform query
             var customersResult = this.PerformQuery(customers, (countQuery) => countQuery.CountAsync());
-            int? totalCount = await customersResult.Count;
+            int? totalCount = await customersResult.CountAsync();
             List<Customer> customersList = await customersResult.Data.ToListAsync();
 
             var queryRes = new QueryResult<Customer>(customersList, totalCount);
