@@ -10,7 +10,7 @@ import {
 import { getObject, registerObject } from "./bootstrap";
 import { Parser } from "./utils/parser";
 
-const utils = Utils, { format } = utils.str, parser = Parser, ERRS = LocaleERRS;
+const utils = Utils, { Indexer } = utils.core, { format } = utils.str, parser = Parser, ERRS = LocaleERRS;
 
 export function createElViewFactory(register: IElViewRegister): IElViewFactory {
     return new ElViewFactory(register);
@@ -25,11 +25,11 @@ class ElViewRegister implements IElViewRegister, IDataProvider {
     private _next: IElViewRegister;
 
     constructor(next?: IElViewRegister) {
-        this._exports = {};
+        this._exports = Indexer();
         this._next = next;
     }
     dispose(): void {
-        this._exports = {};
+        this._exports = Indexer();
     }
     registerElView(name: string, vwType: IViewType): void {
         if (!getObject(this, name)) {
@@ -146,7 +146,7 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
             const attr = el.getAttribute(DATA_ATTR.DATA_VIEW_OPTIONS);
             options = <IViewOptions>parser.parseViewOptions(attr, dataContext);
         } else {
-            options = {};
+            options = Indexer();
         }
        
         return { el: el, name: viewName, options: options };

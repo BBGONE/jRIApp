@@ -3,6 +3,7 @@ import * as uiMOD from "jriapp_ui";
 
 const utils = RIAPP.Utils, DOM = RIAPP.DOM, doc = RIAPP.DOM.document, head = RIAPP.DOM.queryOne<Element>(doc, "head");
 let drag: HTMLElement = null;	//reference to the current grip that is being dragged
+const { forEach, Indexer } = utils.core;
 
 //common strings for packing
 let PX = "px";
@@ -55,8 +56,7 @@ interface IOptions {
     onResize: (e: Event) => void;	//callback function fired when the dragging process is over
 }
 
-let _gridsCount = 0;
-let _created_grids: RIAPP.IIndexer<ResizableGrid> = {};
+let _gridsCount = 0, _created_grids: RIAPP.IIndexer<ResizableGrid> = Indexer();
 
 function _gridCreated(grid: ResizableGrid) {
     _created_grids[grid.uniqueID] = grid;
@@ -229,7 +229,7 @@ let onGripMouseDown = function (this: HTMLElement, e: TouchEvent | MouseEvent): 
  * table layout according to the browser's size synchronizing related grips 
  */
 let onResize = function () {
-    RIAPP.Utils.core.forEachProp(_created_grids, (name, gridView) => {
+    forEach(_created_grids, (_, gridView) => {
         gridView.syncGrips();
     });
 };

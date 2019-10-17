@@ -11,7 +11,7 @@ import { CollUtils } from "./utils";
 import { ValidationError } from "../errors";
 import { Validations } from "./validation";
 
-const utils = Utils, { forEachProp, getValue, setValue } = utils.core, { isNt } = utils.check,
+const utils = Utils, { forEach, getValue, setValue, Indexer } = utils.core, { isNt } = utils.check,
     sys = utils.sys, ERROR = utils.err, { cloneVals, walkFields } = CollUtils;
 
 const enum AspectFlags {
@@ -89,7 +89,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
         const bag = this._valueBag;
         this._valueBag = null;
         if (!!bag) {
-            forEachProp(bag, (name, val) => {
+            forEach(bag, (name, val) => {
                 disposeVal(val, coll.uniqueID);
             });
         }
@@ -313,7 +313,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
             return "";
         }
         const res: string[] = [];
-        forEachProp(itemErrors, (name, errs) => {
+        forEach(itemErrors, (name, errs) => {
             for (let i = 0; i < errs.length; i += 1) {
                 res.push(`${name}: ${errs[i]}`);
             }
@@ -338,7 +338,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
         }
         internal.onEditing(item, true, false);
         if (!!this._valueBag && this.isEditing) {
-            forEachProp(this._valueBag, (name, obj) => {
+            forEach(this._valueBag, (name, obj) => {
                 if (!!obj && sys.isEditable(obj.val)) {
                     obj.val.beginEdit();
                 }
@@ -355,7 +355,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
         internal.onBeforeEditing(item, false, false);
         let customEndEdit = true;
         if (!!this._valueBag) {
-            forEachProp(this._valueBag, (name, obj) => {
+            forEach(this._valueBag, (name, obj) => {
                 if (!!obj && sys.isEditable(obj.val)) {
                     if (!obj.val.endEdit()) {
                         customEndEdit = false;
@@ -380,7 +380,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
             const coll = this.coll, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
             internal.onBeforeEditing(item, false, true);
             if (!!this._valueBag) {
-                forEachProp(this._valueBag, (name, obj) => {
+                forEach(this._valueBag, (name, obj) => {
                     if (!!obj && sys.isEditable(obj.val)) {
                         obj.val.cancelEdit();
                     }
@@ -414,7 +414,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
     getIsHasErrors(): boolean {
         let res = !!this.coll.errors.getErrors(this.item);
         if (!res && !!this._valueBag) {
-            forEachProp(this._valueBag, (name, obj) => {
+            forEach(this._valueBag, (name, obj) => {
                 if (!!obj) {
                     const errNotification = sys.getErrorNotification(obj.val);
                     if (!!errNotification && errNotification.getIsHasErrors()) {
@@ -452,7 +452,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
     getAllErrors(): IValidationInfo[] {
         let res: IValidationInfo[] = [];
         if (!!this._valueBag) {
-            forEachProp(this._valueBag, (name, obj) => {
+            forEach(this._valueBag, (name, obj) => {
                 const errNotification = sys.getErrorNotification(obj.val);
                 if (!!errNotification) {
                     res = res.concat(errNotification.getAllErrors());
@@ -464,7 +464,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
         if (!itemErrors) {
             return res;
         }
-        forEachProp(itemErrors, (name) => {
+        forEach(itemErrors, (name) => {
             let fieldName: string = null;
             if (name !== "*") {
                 fieldName = name;
@@ -483,7 +483,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
             if (isNt(val)) {
                 return;
             }
-            this._valueBag = {};
+            this._valueBag = Indexer();
         }
 
         const oldEntry = this._valueBag[name],  coll = this.coll;

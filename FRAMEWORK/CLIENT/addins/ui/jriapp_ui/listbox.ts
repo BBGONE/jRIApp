@@ -15,7 +15,7 @@ import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
-    { _undefined, isString, isNt } = utils.check, { forEachProp, extend, getNewID } = utils.core, boot = bootstrap, subscribeMap = subscribeWeakMap;
+    { _undefined, isString, isNt } = utils.check, { forEach, extend, getNewID, Indexer } = utils.core, boot = bootstrap, subscribeMap = subscribeWeakMap;
 
 export interface IOptionStateProvider {
     getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
@@ -97,8 +97,8 @@ export class ListBox extends BaseObject implements ISubscriber {
         this._stDebounce = new Debounce();
         this._txtDebounce = new Debounce();
         this._changeDebounce = new Debounce();
-        this._keyMap = {};
-        this._valMap = {};
+        this._keyMap = Indexer();
+        this._valMap = Indexer();
         this._savedVal = _undefined;
         this._fnState = (data: IMappedItem) => {
             if (!data || !data.item || data.item.getIsStateDirty()) {
@@ -213,8 +213,8 @@ export class ListBox extends BaseObject implements ISubscriber {
     }
     private _mapByValue(): void {
         const self = this;
-        this._valMap = {};
-        forEachProp(this._keyMap, (key) => {
+        this._valMap = Indexer();
+        forEach(this._keyMap, (key) => {
             const data = self._keyMap[key], val = fn_Str(self._getValue(data.item));
             if (!!val) {
                 self._valMap[val] = data;
@@ -223,14 +223,14 @@ export class ListBox extends BaseObject implements ISubscriber {
     }
     private _resetText(): void {
         const self = this;
-        forEachProp(this._keyMap, (key) => {
+        forEach(this._keyMap, (key) => {
             const data = self._keyMap[key];
             data.op.text = self._getText(data.item, data.op.index);
         });
     }
     private _resetState(): void {
         const self = this;
-        forEachProp(this._keyMap, (key) => {
+        forEach(this._keyMap, (key) => {
             self._fnState(self._keyMap[key]);
         });
     }
@@ -264,8 +264,8 @@ export class ListBox extends BaseObject implements ISubscriber {
             }
         });
         this.el.options.length = 0;
-        this._keyMap = {};
-        this._valMap = {};
+        this._keyMap = Indexer();
+        this._valMap = Indexer();
     }
     private _refresh(): void {
         const self = this, ds = this.dataSource;

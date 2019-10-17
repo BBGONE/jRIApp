@@ -4,7 +4,7 @@ import { IEntityItem } from "./int";
 import { DbContext } from "./dbcontext";
 import { IDbSetConstructor, TDbSet } from "./dbset";
 
-const utils = Utils, { format } = utils.str;
+const utils = Utils, { Indexer } = utils.core, { format } = utils.str;
 
 const enum DBSETS_EVENTS {
     DBSET_CREATING = "dbset_creating"
@@ -21,7 +21,7 @@ export class DbSets extends BaseObject {
         super();
         this._dbContext = dbContext;
         this._arrDbSets = [];
-        this._dbSets = {};
+        this._dbSets = Indexer();
     }
     dispose(): void {
         if (this.getIsDisposed()) {

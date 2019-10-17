@@ -1019,11 +1019,11 @@ declare module "jriapp/app" {
         private _objMaps;
         private _appName;
         private _extraData;
-        protected _options: IAppOptions;
         private _dataBindingService;
         private _viewFactory;
         private _internal;
         private _appState;
+        protected _options: IAppOptions;
         constructor(options?: IAppOptions);
         dispose(): void;
         private _cleanUpObjMaps;
@@ -1082,5 +1082,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.25.7";
+    export const VERSION = "2.25.8";
 }

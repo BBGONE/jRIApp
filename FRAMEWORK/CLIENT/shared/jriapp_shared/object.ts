@@ -5,11 +5,13 @@ import {
 } from "./int";
 import { ERRS } from "./lang";
 import { SysUtils } from "./utils/sysutils";
+import { CoreUtils } from "./utils/coreutils";
 import { Checks } from "./utils/checks";
 import { ERROR } from "./utils/error";
 import { EventHelper, IEventList } from "./utils/eventhelper";
 
-const { isHasProp } = Checks, evHelper = EventHelper, sys = SysUtils, signature = { signature: "BaseObject" };
+const { isHasProp } = Checks, evHelper = EventHelper, sys = SysUtils, { Indexer } = CoreUtils,
+    signature = { signature: "BaseObject" };
 
 // it can be used in external IBaseObject implementations
 export const objSignature: object = signature;
@@ -81,7 +83,7 @@ export class ObjectEvents implements IObjectEvents {
     }
     on(name: string, handler: TEventHandler, nmspace?: string, context?: object, priority?: TPriority): void {
         if (!this._events) {
-            this._events = {};
+            this._events = Indexer();
         }
         evHelper.add(this._events, name, handler, nmspace, context, priority);
     }
@@ -113,7 +115,7 @@ export class ObjectEvents implements IObjectEvents {
             throw new Error(ERRS.ERR_PROP_NAME_EMPTY);
         }
         if (!this._events) {
-            this._events = {};
+            this._events = Indexer();
         }
         evHelper.add(this._events, "0" + prop, handler, nmspace, context, priority);
     }

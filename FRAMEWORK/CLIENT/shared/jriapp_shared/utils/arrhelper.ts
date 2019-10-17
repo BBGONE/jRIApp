@@ -2,7 +2,7 @@
 import { IIndexer } from "../int";
 import { CoreUtils } from "./coreutils";
 
-const { toArray } = CoreUtils;
+const { toArray, Indexer } = CoreUtils;
  
 export interface IArrayLikeList<T> {
     length: number;
@@ -31,14 +31,14 @@ export class ArrayHelper {
     public static distinct(arr: string[]): string[];
     public static distinct(arr: number[]): number[];
     public static distinct(arr: any[]): any[] {
-        const map = <IIndexer<any>>{}, len = arr.length;
+        const map = Indexer(), len = arr.length;
         for (let i = 0; i < len; i += 1) {
             map["" + arr[i]] = arr[i];
         }
         return toArray(map);
     }
     public static toMap<T extends object>(arr: T[], key: (obj: T) => string): IIndexer<T> {
-        const map = <IIndexer<any>>{}, len = arr.length;
+        const map = Indexer(), len = arr.length;
         for (let i = 0; i < len; i += 1) {
             map[key(arr[i])] = arr[i];
         }

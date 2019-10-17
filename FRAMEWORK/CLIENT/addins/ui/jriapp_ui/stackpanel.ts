@@ -16,7 +16,7 @@ import {
 import { bootstrap, selectableProviderWeakMap } from "jriapp/bootstrap";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
-    { format } = utils.str, { getNewID, extend } = utils.core, boot = bootstrap;
+    { format } = utils.str, { getNewID, extend, Indexer } = utils.core, boot = bootstrap;
 
 const enum css {
     stackpanel = "ria-stackpanel",
@@ -92,7 +92,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         this._uniqueID = getNewID("pnl");
         this._isKeyNavigation = false;
         this._currentItem = null;
-        this._itemMap = {};
+        this._itemMap = Indexer();
         this._selectable = {
             onKeyDown: (key: number, event: Event) => {
                 self._onKeyDown(key, event);
@@ -134,8 +134,8 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         }
         dom.events.offNS(this._el, this.uniqueID);
         this._currentItem = null;
-        this._itemMap = {};
-        this._options = <any>{};
+        this._itemMap = Indexer();
+        this._options = <any>Indexer();
         super.dispose();
     }
     protected _onKeyDown(key: number, event: Event): void {

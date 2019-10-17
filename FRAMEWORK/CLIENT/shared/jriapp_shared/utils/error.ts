@@ -2,9 +2,12 @@
 import { APP_NAME } from "../consts";
 import { DummyError, AbortError } from "../errors";
 import { IIndexer, IErrorHandler } from "../int";
+import { CoreUtils } from "./coreutils";
+
+const { Indexer } = CoreUtils;
 
 export class ERROR {
-    private static _handlers: IIndexer<IErrorHandler> = {};
+    private static _handlers: IIndexer<IErrorHandler> = Indexer();
 
     static addHandler(name: string, handler: IErrorHandler): void {
         ERROR._handlers[name] = handler;

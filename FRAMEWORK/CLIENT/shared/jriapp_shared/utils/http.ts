@@ -7,7 +7,7 @@ import { CoreUtils } from "./coreutils";
 import { AbortablePromise } from "./deferred";
 import { AsyncUtils } from "./async";
 
-const { forEachProp, merge } = CoreUtils, { startsWith, format } = StringUtils, { createDeferred } = AsyncUtils;
+const { forEach, merge, Indexer } = CoreUtils, { startsWith, format } = StringUtils, { createDeferred } = AsyncUtils;
 
 export class HttpUtils {
     public static isStatusOK(status: string | number): boolean {
@@ -43,7 +43,7 @@ export class HttpUtils {
         req.timeout = HttpUtils.ajaxTimeOut * 1000;
         let _headers = <IIndexer<string>>merge(HttpUtils.defaultHeaders);
         _headers = merge(headers, _headers);
-        forEachProp(_headers, (name, val) => {
+        forEach(_headers, (name, val) => {
             req.setRequestHeader(name, val);
         });
         return req;
@@ -61,6 +61,6 @@ export class HttpUtils {
         req.send(null);
         return new AbortablePromise(deferred, req);
     }
-    static defaultHeaders: IIndexer<string> = {};
+    static defaultHeaders: IIndexer<string> = Indexer();
     static ajaxTimeOut: number = 600;
 }

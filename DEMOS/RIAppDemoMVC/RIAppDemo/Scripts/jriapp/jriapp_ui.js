@@ -525,7 +525,7 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
 define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_3.Utils, trimBrackets = utils.str.trimBrackets;
+    var utils = jriapp_shared_3.Utils, Indexer = utils.core.Indexer, trimBrackets = utils.str.trimBrackets;
     var EVENT_CHANGE_TYPE;
     (function (EVENT_CHANGE_TYPE) {
         EVENT_CHANGE_TYPE[EVENT_CHANGE_TYPE["None"] = 0] = "None";
@@ -553,7 +553,7 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
         };
         EventBag.prototype.setProp = function (name, command) {
             if (!this._dic && !!command) {
-                this._dic = {};
+                this._dic = Indexer();
             }
             if (!this._dic) {
                 return;
@@ -1461,7 +1461,7 @@ define("jriapp_ui/content/datetime", ["require", "exports", "jriapp/bootstrap", 
 define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, jriapp_shared_9, dom_8, bootstrap_8, baseview_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_9.Utils, dom = dom_8.DomUtils, doc = dom.document, sys = utils.sys, _a = utils.check, _undefined = _a._undefined, isString = _a.isString, isNt = _a.isNt, _b = utils.core, forEachProp = _b.forEachProp, extend = _b.extend, getNewID = _b.getNewID, boot = bootstrap_8.bootstrap, subscribeMap = bootstrap_8.subscribeWeakMap;
+    var utils = jriapp_shared_9.Utils, dom = dom_8.DomUtils, doc = dom.document, sys = utils.sys, _a = utils.check, _undefined = _a._undefined, isString = _a.isString, isNt = _a.isNt, _b = utils.core, forEach = _b.forEach, extend = _b.extend, getNewID = _b.getNewID, Indexer = _b.Indexer, boot = bootstrap_8.bootstrap, subscribeMap = bootstrap_8.subscribeWeakMap;
     var LISTBOX_EVENTS;
     (function (LISTBOX_EVENTS) {
         LISTBOX_EVENTS["refreshed"] = "refreshed";
@@ -1497,8 +1497,8 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             _this._stDebounce = new jriapp_shared_9.Debounce();
             _this._txtDebounce = new jriapp_shared_9.Debounce();
             _this._changeDebounce = new jriapp_shared_9.Debounce();
-            _this._keyMap = {};
-            _this._valMap = {};
+            _this._keyMap = Indexer();
+            _this._valMap = Indexer();
             _this._savedVal = _undefined;
             _this._fnState = function (data) {
                 if (!data || !data.item || data.item.getIsStateDirty()) {
@@ -1614,8 +1614,8 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype._mapByValue = function () {
             var self = this;
-            this._valMap = {};
-            forEachProp(this._keyMap, function (key) {
+            this._valMap = Indexer();
+            forEach(this._keyMap, function (key) {
                 var data = self._keyMap[key], val = fn_Str(self._getValue(data.item));
                 if (!!val) {
                     self._valMap[val] = data;
@@ -1624,14 +1624,14 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype._resetText = function () {
             var self = this;
-            forEachProp(this._keyMap, function (key) {
+            forEach(this._keyMap, function (key) {
                 var data = self._keyMap[key];
                 data.op.text = self._getText(data.item, data.op.index);
             });
         };
         ListBox.prototype._resetState = function () {
             var self = this;
-            forEachProp(this._keyMap, function (key) {
+            forEach(this._keyMap, function (key) {
                 self._fnState(self._keyMap[key]);
             });
         };
@@ -1663,8 +1663,8 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 }
             });
             this.el.options.length = 0;
-            this._keyMap = {};
-            this._valMap = {};
+            this._keyMap = Indexer();
+            this._valMap = Indexer();
         };
         ListBox.prototype._refresh = function () {
             var self = this, ds = this.dataSource;
@@ -3963,12 +3963,12 @@ define("jriapp_ui/datagrid/cells/expander", ["require", "exports", "jriapp/utils
 define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/datagrid/columns/base"], function (require, exports, jriapp_shared_20, dom_17, bootstrap_14, base_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_20.Utils, dom = dom_17.DomUtils, boot = bootstrap_14.bootstrap;
+    var utils = jriapp_shared_20.Utils, Indexer = utils.core.Indexer, dom = dom_17.DomUtils, boot = bootstrap_14.bootstrap;
     var DataColumn = (function (_super) {
         __extends(DataColumn, _super);
         function DataColumn(grid, options) {
             var _this = _super.call(this, grid, options) || this;
-            _this._objCache = {};
+            _this._objCache = Indexer();
             _this._contentType = null;
             var colClass = "ria-data-column";
             _this._sortOrder = null;
@@ -3985,7 +3985,7 @@ define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_shared"
             this.setDisposing();
             var self = this;
             this._contentType = null;
-            utils.core.forEachProp(self._objCache, function (key) {
+            utils.core.forEach(self._objCache, function (key) {
                 self._objCache[key].dispose();
             });
             self._objCache = null;
@@ -5324,22 +5324,20 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
     exports.COLUMN_TYPE = consts_2.COLUMN_TYPE;
     exports.ROW_ACTION = consts_2.ROW_ACTION;
     exports.DefaultAnimation = animation_2.DefaultAnimation;
-    var utils = jriapp_shared_29.Utils, format = utils.str.format, _a = utils.core, forEachProp = _a.forEachProp, merge = _a.merge, getNewID = _a.getNewID, extend = _a.extend, ERROR = utils.err, sys = utils.sys, dom = dom_29.DomUtils, parser = parser_2.Parser, doc = dom.document, win = dom.window, boot = bootstrap_16.bootstrap;
+    var utils = jriapp_shared_29.Utils, format = utils.str.format, _a = utils.core, forEach = _a.forEach, merge = _a.merge, getNewID = _a.getNewID, extend = _a.extend, Indexer = _a.Indexer, ERROR = utils.err, sys = utils.sys, dom = dom_29.DomUtils, parser = parser_2.Parser, doc = dom.document, win = dom.window, boot = bootstrap_16.bootstrap;
     var _columnWidthInterval, _gridsCount = 0;
-    var _createdGrids = {};
+    var _createdGrids = Indexer();
     function getDataGrids() {
-        var keys = Object.keys(_createdGrids), res = [];
-        for (var i = 0; i < keys.length; i += 1) {
-            var grid = _createdGrids[keys[i]];
-            res.push(grid);
+        var res = [];
+        for (var key in _createdGrids) {
+            res.push(_createdGrids[key]);
         }
         return res;
     }
     exports.getDataGrids = getDataGrids;
     function findDataGrid(gridName) {
-        var keys = Object.keys(_createdGrids);
-        for (var i = 0; i < keys.length; i += 1) {
-            var grid = _createdGrids[keys[i]];
+        for (var key in _createdGrids) {
+            var grid = _createdGrids[key];
             if (!!grid.table && grid.table.getAttribute("data-name") === gridName) {
                 return grid;
             }
@@ -5366,7 +5364,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         }
     }
     function _checkGridWidth() {
-        forEachProp(_createdGrids, function (id) {
+        forEach(_createdGrids, function (id) {
             var grid = _createdGrids[id];
             if (grid.getIsStateDirty()) {
                 return;
@@ -5413,7 +5411,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             dom.addClass([table], "ria-data-table");
             _this._name = table.getAttribute("data-name");
             _this._uniqueID = getNewID("grd");
-            _this._rowMap = {};
+            _this._rowMap = Indexer();
             _this._rows = [];
             _this._columns = [];
             _this._expandedRow = null;
@@ -5977,7 +5975,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             this.table.replaceChild(newTbody, tbody);
             var rows = this._rows;
             this._rows = [];
-            this._rowMap = {};
+            this._rowMap = Indexer();
             rows.forEach(function (row) {
                 row.isDetached = true;
                 row.dispose();
@@ -7322,7 +7320,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
 define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/template", "jriapp_ui/baseview", "jriapp/bootstrap"], function (require, exports, jriapp_shared_31, dom_31, template_7, baseview_9, bootstrap_18) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_31.Utils, dom = dom_31.DomUtils, doc = dom.document, sys = utils.sys, format = utils.str.format, _a = utils.core, getNewID = _a.getNewID, extend = _a.extend, boot = bootstrap_18.bootstrap;
+    var utils = jriapp_shared_31.Utils, dom = dom_31.DomUtils, doc = dom.document, sys = utils.sys, format = utils.str.format, _a = utils.core, getNewID = _a.getNewID, extend = _a.extend, Indexer = _a.Indexer, boot = bootstrap_18.bootstrap;
     var css;
     (function (css) {
         css["stackpanel"] = "ria-stackpanel";
@@ -7370,7 +7368,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             _this._uniqueID = getNewID("pnl");
             _this._isKeyNavigation = false;
             _this._currentItem = null;
-            _this._itemMap = {};
+            _this._itemMap = Indexer();
             _this._selectable = {
                 onKeyDown: function (key, event) {
                     self._onKeyDown(key, event);
@@ -7409,8 +7407,8 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             }
             dom.events.offNS(this._el, this.uniqueID);
             this._currentItem = null;
-            this._itemMap = {};
-            this._options = {};
+            this._itemMap = Indexer();
+            this._options = Indexer();
             _super.prototype.dispose.call(this);
         };
         StackPanel.prototype._onKeyDown = function (key, event) {

@@ -24,7 +24,7 @@ import { DbContext } from "./dbcontext";
 import { EntityAspect } from "./entity_aspect";
 
 const utils = Utils, { isArray, isNt } = utils.check, { format } = utils.str,
-    { getValue, setValue, merge, forEachProp } = utils.core, ERROR = utils.err,
+    { getValue, setValue, merge, forEach, Indexer } = utils.core, ERROR = utils.err,
     { parseValue, stringifyValue } = ValueUtils, { getPKFields, walkField, walkFields, objToVals, initVals, getObjectField } = CollUtils;
 
 function doFieldDependences(dbSet: TDbSet, info: IFieldInfo) {
@@ -115,9 +115,9 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
         this.options.pageSize = dbSetInfo.pageSize;
         this._query = null;
         this._isSubmitOnDelete = false;
-        this._navfldMap = {};
-        this._calcfldMap = {};
-        this._fieldMap = {};
+        this._navfldMap = Indexer();
+        this._calcfldMap = Indexer();
+        this._fieldMap = Indexer();
         this._fieldInfos = fieldInfos;
         this._pkFields = getPKFields(fieldInfos);
         this._isPageFilled = false;
@@ -126,16 +126,16 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
         this._pageDebounce = new Debounce(400);
         // association infos maped by name
         // we should track changes in navigation properties for this associations
-        this._trackAssoc = {};
+        this._trackAssoc = Indexer();
         // map childToParentName by childField as a key
-        this._trackAssocMap = {};
+        this._trackAssocMap = Indexer();
         // map association infos by childToParent fieldname
-        this._childAssocMap = {};
+        this._childAssocMap = Indexer();
         // map association infos by parentToChildren fieldname
-        this._parentAssocMap = {};
+        this._parentAssocMap = Indexer();
 
         this._changeCount = 0;
-        this._changeCache = {};
+        this._changeCache = Indexer();
         this._ignorePageChanged = false;
         fieldInfos.forEach((f) => {
             self._fieldMap[f.fieldName] = f;
@@ -227,8 +227,8 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
         if (!!dbContext) {
             dbContext.objEvents.offNS(this.dbSetName);
         }
-        this._navfldMap = {};
-        this._calcfldMap = {};
+        this._navfldMap = Indexer();
+        this._calcfldMap = Indexer();
         super.dispose();
     }
     abstract itemFactory(aspect: EntityAspect<TItem, TObj, TDbContext>): TItem;
@@ -690,7 +690,7 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
         });
     }
     protected _setItemInvalid(row: IRowInfo): TItem {
-        const item = this.getItemByKey(row.clientKey), errors: IIndexer<string[]> = {};
+        const item = this.getItemByKey(row.clientKey), errors = Indexer<string[]>();
         row.invalid.forEach((err) => {
             if (!err.fieldName) {
                 err.fieldName = "*";
@@ -702,7 +702,7 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
             }
         });
         const res: IValidationInfo[] = [];
-        forEachProp(errors, (fieldName, err) => {
+        forEach(errors, (fieldName, err) => {
             res.push({ fieldName: fieldName, errors: err });
         });
         this.errors.addErrors(item, res);
@@ -710,15 +710,15 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
     }
     protected _getChanges(): IRowInfo[] {
         const changes: IRowInfo[] = [], csh = this._changeCache;
-        forEachProp(csh, (key, item) => {
+        forEach(csh, (key, item) => {
             changes.push(item._aspect._getRowInfo());
         });
         return changes;
     }
     protected _getTrackAssocInfo(): ITrackAssoc[] {
         const self = this, res: ITrackAssoc[] = [], csh = this._changeCache, trackAssoc = self._trackAssoc;
-        forEachProp(csh, (key, item) => {
-            forEachProp(trackAssoc, (assocName, assocInfo) => {
+        forEach(csh, (key, item) => {
+            forEach(trackAssoc, (assocName, assocInfo) => {
                 const parentKey = item._aspect._getFieldVal(assocInfo.childToParentName),
                     childKey = item._key;
                 if (!!parentKey && !!childKey) {
@@ -1000,7 +1000,7 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
             return;
         }
         const csh = this._changeCache;
-        forEachProp(csh, (key) => {
+        forEach(csh, (key) => {
             const item = csh[key];
             item._aspect.acceptChanges();
         });
@@ -1015,7 +1015,7 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
             return;
         }
         const csh = this._changeCache;
-        forEachProp(csh, (key) => {
+        forEach(csh, (key) => {
             const item = csh[key];
             item._aspect.rejectChanges();
         });

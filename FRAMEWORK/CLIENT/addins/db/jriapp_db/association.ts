@@ -13,7 +13,7 @@ import { IAssocConstructorOptions, IEntityItem } from "./int";
 import { DbContext } from "./dbcontext";
 import { TDbSet } from "./dbset";
 
-const utils = Utils, { format } = utils.str, { getNewID, extend } = utils.core, arrHelper = utils.arr;
+const utils = Utils, { format } = utils.str, { getNewID, extend, Indexer } = utils.core, arrHelper = utils.arr;
 
 export class Association extends BaseObject {
     private _uniqueID: string;
@@ -68,8 +68,8 @@ export class Association extends BaseObject {
         });
         this._parentToChildrenName = opts.parentToChildrenName;
         this._childToParentName = opts.childToParentName;
-        this._parentMap = {};
-        this._childMap = {};
+        this._parentMap = Indexer();
+        this._childMap = Indexer();
         this._bindParentDS();
         const changed1 = this._mapParentItems(this._parentDS.items);
         this._bindChildDS();
@@ -77,7 +77,7 @@ export class Association extends BaseObject {
         this._saveParentFKey = null;
         this._saveChildFKey = null;
         this._debounce = new Debounce();
-        this._changed = {};
+        this._changed = Indexer();
         this._notifyBound = self._notify.bind(self);
         self._notifyParentChanged(changed1);
         self._notifyChildrenChanged(changed2);
@@ -89,7 +89,7 @@ export class Association extends BaseObject {
         this.setDisposing();
         this._debounce.dispose();
         this._debounce = null;
-        this._changed = {};
+        this._changed = Indexer();
         this._unbindParentDS();
         this._unbindChildDS();
         this._parentMap = null;
@@ -146,7 +146,7 @@ export class Association extends BaseObject {
         }, self._uniqueID, null, TPriority.High);
     }
     protected _onParentCollChanged(args: ICollChangedArgs<IEntityItem>): void {
-        const self = this, changedKeys: any = {};
+        const self = this, changedKeys = Indexer();
         let item: IEntityItem, changed: string[] = [];
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
@@ -285,7 +285,7 @@ export class Association extends BaseObject {
         }
     }
     protected _onChildCollChanged(args: ICollChangedArgs<IEntityItem>): void {
-        const self = this, items = args.items, changedKeys = {};
+        const self = this, items = args.items, changedKeys = Indexer();
         let item: IEntityItem, changed: string[] = [];
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
@@ -358,7 +358,7 @@ export class Association extends BaseObject {
     }
     private _notify(): void {
         const self = this, changed = self._changed;
-        self._changed = {};
+        self._changed = Indexer();
         try {
             // for loop is more performant than forEach
             const fkeys = Object.keys(changed);
@@ -468,12 +468,12 @@ export class Association extends BaseObject {
     }
     protected _resetChildMap(): void {
         const self = this, fkeys = Object.keys(this._childMap);
-        this._childMap = {};
+        this._childMap = Indexer();
         self._notifyChildrenChanged(fkeys);
     }
     protected _resetParentMap(): void {
         const self = this, fkeys = Object.keys(this._parentMap);
-        this._parentMap = {};
+        this._parentMap = Indexer();
         self._notifyParentChanged(fkeys);
     }
     protected _unMapChildItem(item: IEntityItem): string {
@@ -503,7 +503,7 @@ export class Association extends BaseObject {
         return changedKey;
     }
     protected _mapParentItems(items: IEntityItem[]): string[] {
-        const chngedKeys: any = {}, len = items.length;
+        const chngedKeys = Indexer(), len = items.length;
         for (let i = 0; i < len; i += 1) {
             const item: IEntityItem = items[i];
             const status: ITEM_STATUS = item._aspect.status;
@@ -541,7 +541,7 @@ export class Association extends BaseObject {
         }
     }
     protected _mapChildren(items: IEntityItem[]): string[] {
-        const chngedKeys: any = {}, len = items.length;
+        const chngedKeys = Indexer(), len = items.length;
 
         for (let i = 0; i < len; i += 1) {
             const item: IEntityItem = items[i];

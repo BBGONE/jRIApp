@@ -10,7 +10,7 @@ import { ItemAspect } from "./aspect";
 import { IValidationError } from "../int";
 import { ValidationError } from "../errors";
 
-const utils = Utils, { format } = utils.str, { isArray } = utils.check,
+const utils = Utils, { Indexer } = utils.core, { format } = utils.str, { isArray } = utils.check,
     { walkField, initVals } = CollUtils, sys = utils.sys;
 
 export interface IListItem extends ICollectionItem {
@@ -71,7 +71,7 @@ export abstract class BaseList<TItem extends IListItem, TObj extends IIndexer<an
 
     constructor(props: IPropInfo[]) {
         super();
-        this._fieldMap = {};
+        this._fieldMap = Indexer();
         this._fieldInfos = [];
         this._newKey = 0;
 
@@ -85,7 +85,7 @@ export abstract class BaseList<TItem extends IListItem, TObj extends IIndexer<an
             throw new Error(format(ERRS.ERR_PARAM_INVALID, "props", props));
         }
 
-        self._fieldMap = {};
+        self._fieldMap = Indexer();
         self._fieldInfos = [];
         props.forEach(function (prop) {
             const fldInfo = BaseCollection.getEmptyFieldInfo(prop.name);

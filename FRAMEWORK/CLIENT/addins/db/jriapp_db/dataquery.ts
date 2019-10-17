@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { FILTER_TYPE, SORT_ORDER, DATE_CONVERSION, DATA_TYPE } from "jriapp_shared/collection/const";
-import { IStatefulPromise, BaseObject, Utils, LocaleERRS as ERRS } from "jriapp_shared";
+import { IStatefulPromise, BaseObject, Utils, IIndexer, LocaleERRS as ERRS } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { ValueUtils } from "jriapp_shared/collection/utils";
 import { IEntityItem, IQueryInfo, IFilterInfo, ISortInfo, IQueryResult } from "./int";
@@ -8,8 +8,8 @@ import { DataCache } from "./datacache";
 import { DbSet } from "./dbset";
 import { DbContext } from "./dbcontext";
 
-const utils = Utils, { isNt, isArray, isDate } = utils.check, { format } = utils.str, arrHelper = utils.arr,
-    valUtils = ValueUtils;
+const utils = Utils, { isNt, isArray, isDate } = utils.check, { format } = utils.str, { Indexer } = utils.core,
+    arrHelper = utils.arr, valUtils = ValueUtils;
 
 export interface IInternalQueryMethods {
     clearCache(): void;
@@ -28,7 +28,7 @@ export class DataQuery<TItem extends IEntityItem = IEntityItem, TObj = any> exte
     private _isClearPrevData: boolean;
     private _pageSize: number;
     private _pageIndex: number;
-    private _params: { [name: string]: any; };
+    private _params: IIndexer<any>;
     private _loadPageCount: number;
     private _isClearCacheOnEveryLoad: boolean;
     private _isForAppend: boolean;
@@ -48,7 +48,7 @@ export class DataQuery<TItem extends IEntityItem = IEntityItem, TObj = any> exte
         this._isClearPrevData = true;
         this._pageSize = dbSet.pageSize;
         this._pageIndex = dbSet.pageIndex;
-        this._params = {};
+        this._params = Indexer();
         this._loadPageCount = 1;
         this._isClearCacheOnEveryLoad = true;
         this._isForAppend = false;
@@ -193,7 +193,7 @@ export class DataQuery<TItem extends IEntityItem = IEntityItem, TObj = any> exte
         return this;
     }
     clearParams(): this {
-        this._params = {};
+        this._params = Indexer();
         this._cacheInvalidated = true;
         return this;
     }

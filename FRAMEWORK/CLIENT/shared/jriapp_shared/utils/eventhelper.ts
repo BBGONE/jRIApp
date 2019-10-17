@@ -5,9 +5,10 @@ import {
 import { ERRS } from "../lang";
 import { Checks } from "./checks";
 import { StringUtils } from "./strutils";
+import { CoreUtils } from "./coreutils";
 import { DEBUG } from "./debug";
 
-const { isFunc } = Checks, { format } = StringUtils, debug = DEBUG;
+const { Indexer } = CoreUtils, { isFunc } = Checks, { format } = StringUtils, debug = DEBUG;
 
 
 export type TEventNode = {
@@ -54,7 +55,7 @@ class EventList {
         }
         let obj = list[priority];
         if (!obj) {
-            list[priority] = obj = {};
+            list[priority] = obj = Indexer();
         }
 
         let arr = obj[ns];

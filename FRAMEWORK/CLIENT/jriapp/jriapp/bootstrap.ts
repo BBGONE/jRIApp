@@ -21,7 +21,7 @@ import { createQueue } from "jriapp_shared/utils/queue";
 
 const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document,
     { isFunc } = utils.check, { createDeferred, delay, resolve } = utils.defer,
-    { forEachProp, getNewID, getValue, setValue, removeValue } = utils.core,
+    { forEach, getNewID, getValue, setValue, removeValue, Indexer } = utils.core,
     { format, fastTrim } = utils.str, ERROR = utils.err, ERRS = LocaleERRS;
 
 export const subscribeWeakMap: IWeakMap = createWeakMap(), selectableProviderWeakMap: IWeakMap = createWeakMap();
@@ -186,7 +186,7 @@ export class Bootstrap extends BaseObject implements IDataProvider, ISvcStore {
         this._uniqueID = getNewID("app");
 
         // exported types
-        this._extraData = {};
+        this._extraData = Indexer();
         this._moduleInits = [];
         this._templateLoader = null;
         this._templateLoader = new TemplateLoader();
@@ -223,7 +223,7 @@ export class Bootstrap extends BaseObject implements IDataProvider, ISvcStore {
         const self = this;
         self.objEvents.off();
         self._destroyApp();
-        self._extraData = {};
+        self._extraData = Indexer();
         if (self._templateLoader !== null) {
             self._templateLoader.dispose();
             self._templateLoader = null;
@@ -260,7 +260,7 @@ export class Bootstrap extends BaseObject implements IDataProvider, ISvcStore {
         }, this._uniqueID);
 
         // event delegation - capturing delegated events
-        forEachProp(eventNames, ((name, flag) => {
+        forEach(eventNames, ((name, flag) => {
             const fn_name = "handle_" + name;
             dom.events.on(doc, name, (e) => {
                 const obj: any = subscribeMap.get(e.target);

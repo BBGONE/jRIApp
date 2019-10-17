@@ -6,7 +6,12 @@ import { Checks } from "./checks";
 const { isHasProp, _undefined, isBoolean, isArray, isPlainObject, isNt, isString } = Checks,
     { format: formatStr, fastTrim: trim } = StringUtils, { getOwnPropertyNames, getOwnPropertyDescriptor, keys: objectKeys } = Object;
 const UUID_CHARS: string[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
-const NEWID_MAP: IIndexer<number> = {};
+const NEWID_MAP: IIndexer<number> = Indexer();
+
+function Indexer<T = any>(): IIndexer<T>
+{
+    return Object.create(null);
+}
 
 function clone(obj: any, target?: any): any {
     if (!obj) {
@@ -43,7 +48,7 @@ function extend<T, U>(target: T, ...source: U[]): T & U {
 
     const to = Object(target);
     for (let i = 0; i < source.length; i++) {
-        const nextSource: IIndexer<any> = source[i];
+        const nextSource = source[i] as IIndexer<any>;
         if (nextSource === _undefined || nextSource === null) {
             continue;
         }
@@ -101,7 +106,7 @@ export class CoreUtils {
         for (let i = 0; i < len - 1; i += 1) {
             // create a property if it doesn't exist
             if (!parent[parts[i]]) {
-                parent[parts[i]] = {};
+                parent[parts[i]] = Indexer();
             }
             parent = parent[parts[i]];
         }
@@ -197,24 +202,33 @@ export class CoreUtils {
         return extend(target, source);
     }
     static readonly extend: <T, U>(target: T, ...source: U[]) => T & U = extend;
-    static memoize<T>(fn: () => T): () => T {
-        let res: T;
-        return () => {
-            if (!fn) {
-                return res;
+    static memoize<R>(fn: () => R): () => R;
+    static memoize<T1, R>(fn: (A1: T1) => R): (A1: T1) => R;
+    static memoize<T1, T2, R>(fn: (A1: T1, A2: T2) => R): (A1: T1, A2: T2) => R;
+    static memoize<T1, T2, T3, R>(fn: (A1: T1, A2: T2, A3: T3) => R): (A1: T1, A2: T2, A3: T3) => R;
+    static memoize<T>(fn: (...args: any[]) => T): (...args: any[]) => T {
+        let memo = Indexer();
+        return (...args: any[]) => {
+            let key = "__dummy";
+            if (!!args && args.length > 0) {
+                key = args.join(':');
+            } 
+
+            if (key in memo) {
+                return memo[key];
+            } else {
+                memo[key] = fn(...args);
+                return memo[key];
             }
-            res = fn();
-            fn = null;
-            return res;
         };
     }
-    static forEachProp<T>(map: IIndexer<T>, fn: (name: string, val?: T) => void): void {
+    static readonly Indexer: <T = any>() => IIndexer<T> = Indexer;
+    static forEach<T>(map: IIndexer<T>, fn: (name: string, val: T) => void): void {
         if (!map) {
             return;
         }
-        const names = objectKeys(map), len = names.length;
-        for (let i = 0; i < len; i += 1) {
-            fn(names[i], map[names[i]]);
+        for (let key in map) {
+            fn(key, map[key]);
         }
     }
     static toArray<T>(map: IIndexer<T>): T[] {
@@ -222,9 +236,8 @@ export class CoreUtils {
         if (!map) {
             return r;
         }
-        const keys = objectKeys(map), len = keys.length;
-        for (let i = 0; i < len; i += 1) {
-            r.push(map[keys[i]]);
+        for (let key in map) {
+            r.push(map[key]);
         }
         return r;
     }

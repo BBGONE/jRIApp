@@ -20,7 +20,7 @@ import { createDataBindSvc } from "./databindsvc";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, { format } = utils.str,
     { isThenable } = utils.check, boot = bootstrap, sys = utils.sys, ERRS = LocaleERRS,
-    { forEachProp, getNewID, memoize } = utils.core, { createDeferred, resolve, reject } = utils.defer, http = utils.http;
+    { forEach, getNewID, memoize, Indexer } = utils.core, { createDeferred, resolve, reject } = utils.defer, http = utils.http;
 
 const enum APP_EVENTS {
     startup = "startup"
@@ -35,18 +35,18 @@ export class Application extends BaseObject implements IApplication {
     private _objMaps: any[];
     private _appName: string;
     private _extraData: IIndexer<any>;
-    protected _options: IAppOptions;
     private _dataBindingService: IDataBindingService;
     private _viewFactory: IElViewFactory;
     private _internal: IInternalAppMethods;
     private _appState: AppState;
+    protected _options: IAppOptions;
 
     constructor(options?: IAppOptions) {
         super();
         if (!options) {
-            options = {};
+            options = Indexer();
         }
-        const self = this, moduleInits = options.modulesInits || <IIndexer<(app: IApplication) => void>>{}, appName = APP_NAME;
+        const self = this, moduleInits = options.modulesInits || <IIndexer<(app: IApplication) => void>>Indexer(), appName = APP_NAME;
         this._appName = appName;
         this._options = options;
         if (!!boot.app) {
@@ -60,8 +60,8 @@ export class Application extends BaseObject implements IApplication {
 
         this._objMaps = [];
         // registered exported types
-        this._extraData = {};
-        this._UC = {};
+        this._extraData = Indexer();
+        this._UC = Indexer();
         this._internal = {
             bindTemplate: (templateEl: HTMLElement, dataContext: any) => {
                 return self._dataBindingService.bindTemplate(templateEl, dataContext);
@@ -92,9 +92,9 @@ export class Application extends BaseObject implements IApplication {
             self._dataBindingService.dispose();
             self._dataBindingService = null;
             self._viewFactory.dispose();
-            self._extraData = {};
-            self._moduleInits = {};
-            self._UC = {};
+            self._extraData = Indexer();
+            self._moduleInits = Indexer();
+            self._UC = Indexer();
             self._options = null;
             self._viewFactory = null;
         } finally {
@@ -104,7 +104,7 @@ export class Application extends BaseObject implements IApplication {
     private _cleanUpObjMaps(): void {
         const self = this;
         this._objMaps.forEach((objMap) => {
-            forEachProp(objMap, (name) => {
+            forEach(objMap, (name) => {
                 const obj = objMap[name];
                 if (sys.isBaseObj(obj)) {
                     if (!obj.getIsDisposed()) {

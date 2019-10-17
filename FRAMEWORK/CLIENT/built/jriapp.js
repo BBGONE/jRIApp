@@ -761,7 +761,7 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/pa
 define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/parser"], function (require, exports, jriapp_shared_3, bootstrap_2, parser_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_3.Utils, format = utils.str.format, parser = parser_1.Parser, ERRS = jriapp_shared_3.LocaleERRS;
+    var utils = jriapp_shared_3.Utils, Indexer = utils.core.Indexer, format = utils.str.format, parser = parser_1.Parser, ERRS = jriapp_shared_3.LocaleERRS;
     function createElViewFactory(register) {
         return new ElViewFactory(register);
     }
@@ -772,11 +772,11 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstra
     exports.createElViewRegister = createElViewRegister;
     var ElViewRegister = (function () {
         function ElViewRegister(next) {
-            this._exports = {};
+            this._exports = Indexer();
             this._next = next;
         }
         ElViewRegister.prototype.dispose = function () {
-            this._exports = {};
+            this._exports = Indexer();
         };
         ElViewRegister.prototype.registerElView = function (name, vwType) {
             if (!bootstrap_2.getObject(this, name)) {
@@ -889,7 +889,7 @@ define("jriapp/elview", ["require", "exports", "jriapp_shared", "jriapp/bootstra
                 options = parser.parseViewOptions(attr, dataContext);
             }
             else {
-                options = {};
+                options = Indexer();
             }
             return { el: el, name: viewName, options: options };
         };
@@ -1533,7 +1533,7 @@ define("jriapp/utils/domevents", ["require", "exports", "jriapp_shared"], functi
 define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils/domevents"], function (require, exports, jriapp_shared_8, domevents_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var fromList = jriapp_shared_8.Utils.arr.fromList, fastTrim = jriapp_shared_8.Utils.str.fastTrim, win = window, doc = win.document, queue = jriapp_shared_8.Utils.queue, hasClassList = ("classList" in window.document.documentElement), weakmap = jriapp_shared_8.createWeakMap();
+    var utils = jriapp_shared_8.Utils, fromList = utils.arr.fromList, fastTrim = utils.str.fastTrim, win = window, doc = win.document, queue = jriapp_shared_8.Utils.queue, Indexer = utils.core.Indexer, hasClassList = ("classList" in window.document.documentElement), weakmap = jriapp_shared_8.createWeakMap();
     var _isTemplateTagAvailable = false;
     var _checkDOMReady = (function () {
         var funcs = [], hack = doc.documentElement.doScroll, domContentLoaded = "DOMContentLoaded";
@@ -1578,7 +1578,7 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
         DomUtils.setData = function (el, key, val) {
             var map = weakmap.get(el);
             if (!map) {
-                map = {};
+                map = Indexer();
                 weakmap.set(el, map);
             }
             map[key] = val;
@@ -1693,7 +1693,7 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
             (!nsibling) ? parent.appendChild(elem) : parent.insertBefore(elem, nsibling);
         };
         DomUtils.getClassMap = function (el) {
-            var res = {};
+            var res = Indexer();
             if (!el) {
                 return res;
             }
@@ -1756,7 +1756,7 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
                 var el = elems[j];
                 var map = DomUtils.getClassMap(el);
                 if (removeAll) {
-                    map = {};
+                    map = Indexer();
                 }
                 for (var i = 0; i < toRemove.length; i += 1) {
                     delete map[toRemove[i]];
@@ -2066,7 +2066,7 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
 define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/dom", "jriapp_shared/utils/deferred", "jriapp_shared/utils/queue"], function (require, exports, jriapp_shared_11, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, dom_3, deferred_1, queue_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_11.Utils, dom = dom_3.DomUtils, win = dom.window, doc = win.document, isFunc = utils.check.isFunc, _a = utils.defer, createDeferred = _a.createDeferred, delay = _a.delay, resolve = _a.resolve, _b = utils.core, forEachProp = _b.forEachProp, getNewID = _b.getNewID, getValue = _b.getValue, setValue = _b.setValue, removeValue = _b.removeValue, _c = utils.str, format = _c.format, fastTrim = _c.fastTrim, ERROR = utils.err, ERRS = jriapp_shared_11.LocaleERRS;
+    var utils = jriapp_shared_11.Utils, dom = dom_3.DomUtils, win = dom.window, doc = win.document, isFunc = utils.check.isFunc, _a = utils.defer, createDeferred = _a.createDeferred, delay = _a.delay, resolve = _a.resolve, _b = utils.core, forEach = _b.forEach, getNewID = _b.getNewID, getValue = _b.getValue, setValue = _b.setValue, removeValue = _b.removeValue, Indexer = _b.Indexer, _c = utils.str, format = _c.format, fastTrim = _c.fastTrim, ERROR = utils.err, ERRS = jriapp_shared_11.LocaleERRS;
     exports.subscribeWeakMap = jriapp_shared_11.createWeakMap(), exports.selectableProviderWeakMap = jriapp_shared_11.createWeakMap();
     (function () {
         var win = dom.window;
@@ -2205,7 +2205,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             _this._app = null;
             _this._selectedControl = null;
             _this._uniqueID = getNewID("app");
-            _this._extraData = {};
+            _this._extraData = Indexer();
             _this._moduleInits = [];
             _this._templateLoader = null;
             _this._templateLoader = new tloader_1.TemplateLoader();
@@ -2247,7 +2247,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             var self = this;
             self.objEvents.off();
             self._destroyApp();
-            self._extraData = {};
+            self._extraData = Indexer();
             if (self._templateLoader !== null) {
                 self._templateLoader.dispose();
                 self._templateLoader = null;
@@ -2278,7 +2278,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                 }
                 self.selectedControl = null;
             }, this._uniqueID);
-            forEachProp(eventNames, (function (name, flag) {
+            forEach(eventNames, (function (name, flag) {
                 var fn_name = "handle_" + name;
                 dom.events.on(doc, name, function (e) {
                     var obj = subscribeMap.get(e.target);
@@ -2851,7 +2851,7 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
 define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_13, bootstrap_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_13.Utils, _a = utils.check, isString = _a.isString, isUndefined = _a.isUndefined, isNt = _a.isNt, _undefined = _a._undefined, isHasProp = _a.isHasProp, format = utils.str.format, _b = utils.core, getNewID = _b.getNewID, forEachProp = _b.forEachProp, sys = utils.sys, debug = utils.debug, log = utils.log, ERRS = jriapp_shared_13.LocaleERRS;
+    var utils = jriapp_shared_13.Utils, _a = utils.check, isString = _a.isString, isUndefined = _a.isUndefined, isNt = _a.isNt, _undefined = _a._undefined, isHasProp = _a.isHasProp, format = utils.str.format, _b = utils.core, getNewID = _b.getNewID, forEach = _b.forEach, Indexer = _b.Indexer, sys = utils.sys, debug = utils.debug, log = utils.log, ERRS = jriapp_shared_13.LocaleERRS;
     var resolvePath = sys.resolvePath, getPathParts = sys.getPathParts, getErrorNotification = sys.getErrorNotification, getProp = sys.getProp, setProp = sys.setProp, boot = bootstrap_4.bootstrap;
     sys.isBinding = function (obj) {
         return (!!obj && obj instanceof Binding);
@@ -3005,7 +3005,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
                 throw new Error(format(ERRS.ERR_BIND_TGTPATH_INVALID, options.targetPath));
             }
             _this._srcFixed = (!!options.isSourceFixed);
-            _this._pathItems = {};
+            _this._pathItems = Indexer();
             _this._uniqueID = getNewID("bnd");
             _this._srcEnd = null;
             _this._tgtEnd = null;
@@ -3029,10 +3029,10 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
             }
             this.setDisposing();
             var self = this;
-            forEachProp(this._pathItems, function (key, old) {
+            forEach(this._pathItems, function (key, old) {
                 self._cleanUp(old);
             });
-            this._pathItems = {};
+            this._pathItems = Indexer();
             this._setSource(null);
             this._setTarget(null);
             this._state = null;
@@ -4090,7 +4090,7 @@ define("jriapp/mvvm", ["require", "exports", "jriapp_shared"], function (require
 define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/int", "jriapp/utils/sloader"], function (require, exports, jriapp_shared_18, int_4, sloader_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_18.Utils, forEachProp = utils.core.forEachProp, startsWith = utils.str.startsWith, _a = utils.defer, _reject = _a.reject, _resolve = _a.resolve, _whenAll = _a.whenAll, createDeferred = _a.createDeferred, arrHelper = utils.arr, CSSPrefix = "css!";
+    var utils = jriapp_shared_18.Utils, _a = utils.core, forEach = _a.forEach, Indexer = _a.Indexer, startsWith = utils.str.startsWith, _b = utils.defer, _reject = _b.reject, _resolve = _b.resolve, _whenAll = _b.whenAll, createDeferred = _b.createDeferred, arrHelper = utils.arr, CSSPrefix = "css!";
     var _moduleLoader = null;
     function create() {
         if (!_moduleLoader) {
@@ -4133,8 +4133,8 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/i
     }
     var ModuleLoader = (function () {
         function ModuleLoader() {
-            this._loads = {};
-            this._cssLoads = {};
+            this._loads = Indexer();
+            this._cssLoads = Indexer();
         }
         ModuleLoader.prototype.load = function (names) {
             var self = this;
@@ -4167,7 +4167,7 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/i
         };
         ModuleLoader.prototype.whenAllLoaded = function () {
             var loads = [];
-            forEachProp(this._loads, function (_, val) {
+            forEach(this._loads, function (_, val) {
                 loads.push(val);
             });
             return whenAll(loads);
@@ -4222,10 +4222,10 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/i
         return ModuleLoader;
     }());
 });
-define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/utils/lifetime", "jriapp/utils/dom", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/utils/parser"], function (require, exports, jriapp_shared_19, lifetime_1, dom_5, mloader_1, binding_1, viewchecks_2, parser_2) {
+define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/utils/lifetime", "jriapp/utils/dom", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/parsing/helper", "jriapp/utils/parser"], function (require, exports, jriapp_shared_19, lifetime_1, dom_5, mloader_1, binding_1, viewchecks_2, helper_2, parser_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_19.Utils, createDeferred = utils.defer.createDeferred, viewChecks = viewchecks_2.ViewChecks, dom = dom_5.DomUtils, _a = utils.str, startsWith = _a.startsWith, fastTrim = _a.fastTrim, parser = parser_2.Parser, forEachProp = utils.core.forEachProp, _b = utils.arr, fromList = _b.fromList, toMap = _b.toMap;
+    var utils = jriapp_shared_19.Utils, createDeferred = utils.defer.createDeferred, viewChecks = viewchecks_2.ViewChecks, dom = dom_5.DomUtils, _a = utils.str, startsWith = _a.startsWith, fastTrim = _a.fastTrim, parser = parser_2.Parser, _b = utils.core, forEach = _b.forEach, Indexer = _b.Indexer, _c = utils.arr, fromList = _c.fromList, toMap = _c.toMap, isGetExpr = helper_2.Helper.isGetExpr, getGetParts = helper_2.Helper.getGetParts;
     function createDataBindSvc(app) {
         return new DataBindingService(app);
     }
@@ -4269,20 +4269,30 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
         });
         return result;
     }
-    var arrpush = Array.prototype.push;
+    var _arrpush = [].push;
     function getRequiredModules(el) {
-        var elements = fromList(el.children), reqArr = [];
+        var elements = fromList(el.children), result = [];
         for (var i = 0, len = elements.length; i < len; i += 1) {
             var attr = elements[i].getAttribute("data-require");
             if (!!attr) {
-                arrpush.apply(reqArr, attr.split(","));
+                if (isGetExpr(attr)) {
+                    var parts = getGetParts(attr);
+                    parts.forEach(function (val) {
+                        if (!!val) {
+                            _arrpush.apply(result, val.split(","));
+                        }
+                    });
+                }
+                else {
+                    _arrpush.apply(result, attr.split(","));
+                }
             }
         }
-        if (reqArr.length === 0) {
-            return reqArr;
+        if (result.length === 0) {
+            return result;
         }
-        var hashMap = {};
-        reqArr.forEach(function (name) {
+        var hashMap = Indexer();
+        result.forEach(function (name) {
             if (!name) {
                 return;
             }
@@ -4392,7 +4402,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
                     return bindElem.elView;
                 }).filter(function (v) { return !!v.viewMounted; });
                 var viewMap = toMap(viewsArr, function (v) { return v.uniqueID; });
-                forEachProp(viewMap, function (n, v) { v.viewMounted(); });
+                forEach(viewMap, function (n, v) { v.viewMounted(); });
                 defer.resolve(lftm);
             }
             catch (err) {
@@ -4429,7 +4439,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
 define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/dom", "jriapp/utils/tloader", "jriapp/elview", "jriapp/databindsvc"], function (require, exports, jriapp_shared_20, bootstrap_6, dom_6, tloader_2, elview_2, databindsvc_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_20.Utils, dom = dom_6.DomUtils, doc = dom.document, format = utils.str.format, isThenable = utils.check.isThenable, boot = bootstrap_6.bootstrap, sys = utils.sys, ERRS = jriapp_shared_20.LocaleERRS, _a = utils.core, forEachProp = _a.forEachProp, getNewID = _a.getNewID, memoize = _a.memoize, _b = utils.defer, createDeferred = _b.createDeferred, resolve = _b.resolve, reject = _b.reject, http = utils.http;
+    var utils = jriapp_shared_20.Utils, dom = dom_6.DomUtils, doc = dom.document, format = utils.str.format, isThenable = utils.check.isThenable, boot = bootstrap_6.bootstrap, sys = utils.sys, ERRS = jriapp_shared_20.LocaleERRS, _a = utils.core, forEach = _a.forEach, getNewID = _a.getNewID, memoize = _a.memoize, Indexer = _a.Indexer, _b = utils.defer, createDeferred = _b.createDeferred, resolve = _b.resolve, reject = _b.reject, http = utils.http;
     var APP_EVENTS;
     (function (APP_EVENTS) {
         APP_EVENTS["startup"] = "startup";
@@ -4447,9 +4457,9 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
         function Application(options) {
             var _this = _super.call(this) || this;
             if (!options) {
-                options = {};
+                options = Indexer();
             }
-            var self = _this, moduleInits = options.modulesInits || {}, appName = jriapp_shared_20.APP_NAME;
+            var self = _this, moduleInits = options.modulesInits || Indexer(), appName = jriapp_shared_20.APP_NAME;
             _this._appName = appName;
             _this._options = options;
             if (!!boot.app) {
@@ -4461,8 +4471,8 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             _this._viewFactory = elview_2.createElViewFactory(boot.elViewRegister);
             _this._dataBindingService = databindsvc_1.createDataBindSvc(_this);
             _this._objMaps = [];
-            _this._extraData = {};
-            _this._UC = {};
+            _this._extraData = Indexer();
+            _this._UC = Indexer();
             _this._internal = {
                 bindTemplate: function (templateEl, dataContext) {
                     return self._dataBindingService.bindTemplate(templateEl, dataContext);
@@ -4493,9 +4503,9 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
                 self._dataBindingService.dispose();
                 self._dataBindingService = null;
                 self._viewFactory.dispose();
-                self._extraData = {};
-                self._moduleInits = {};
-                self._UC = {};
+                self._extraData = Indexer();
+                self._moduleInits = Indexer();
+                self._UC = Indexer();
                 self._options = null;
                 self._viewFactory = null;
             }
@@ -4506,7 +4516,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
         Application.prototype._cleanUpObjMaps = function () {
             var self = this;
             this._objMaps.forEach(function (objMap) {
-                forEachProp(objMap, function (name) {
+                forEach(objMap, function (name) {
                     var obj = objMap[name];
                     if (sys.isBaseObj(obj)) {
                         if (!obj.getIsDisposed()) {
@@ -4807,6 +4817,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.25.7";
+    exports.VERSION = "2.25.8";
     bootstrap_7.Bootstrap._initFramework();
 });

@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    Utils, IIndexer, IErrorHandler, IPromise, DummyError, BaseObject
+    Utils, IErrorHandler, IPromise, DummyError, BaseObject
 } from "jriapp_shared";
 import { DATA_ATTR, ELVIEW_NM, BindScope } from "./consts";
 import {
@@ -12,10 +12,13 @@ import { DomUtils } from "./utils/dom";
 import { create as createModulesLoader } from "./utils/mloader";
 import { getBindingOptions, Binding } from "./binding";
 import { ViewChecks } from "./utils/viewchecks";
+import { Helper } from "./parsing/helper";
 import { Parser } from "./utils/parser";
 
 const utils = Utils, { createDeferred } = utils.defer, viewChecks = ViewChecks, dom = DomUtils,
-    { startsWith, fastTrim } = utils.str, parser = Parser, { forEachProp } = utils.core, { fromList, toMap } = utils.arr;
+    { startsWith, fastTrim } = utils.str, parser = Parser, { forEach, Indexer } = utils.core,
+    { fromList, toMap } = utils.arr,
+    { isGetExpr, getGetParts } = Helper;
 
 export function createDataBindSvc(app: IApplication): IDataBindingService {
     return new DataBindingService(app);
@@ -79,23 +82,33 @@ function getBindables(scope: Document | HTMLElement): IBindable[] {
     return result;
 }
 
-const arrpush = Array.prototype.push;
+const _arrpush = [].push;
 
 function getRequiredModules(el: Element): string[] {
-    const elements = fromList(el.children), reqArr: string[] = [];
+    const elements = fromList(el.children), result: string[] = [];
     for (let i = 0, len = elements.length; i < len; i += 1) {
         const attr = elements[i].getAttribute(DATA_ATTR.DATA_REQUIRE);
         if (!!attr) {
-            arrpush.apply(reqArr, attr.split(","));
+            if (isGetExpr(attr)) {
+                const parts = getGetParts(attr);
+                parts.forEach((val) => {
+                    if (!!val) {
+                        _arrpush.apply(result, val.split(","));
+                    }
+                });
+            } else {
+                _arrpush.apply(result, attr.split(","));
+            }
         }
     }
 
-    if (reqArr.length === 0) {
-        return reqArr;
+    if (result.length === 0) {
+        return result;
     }
 
-    const hashMap: IIndexer<any> = {};
-    reqArr.forEach((name) => {
+    const hashMap = Indexer();
+
+    result.forEach((name) => {
         if (!name) {
             return;
         }
@@ -104,6 +117,7 @@ function getRequiredModules(el: Element): string[] {
             hashMap[name] = name;
         }
     });
+
     return Object.keys(hashMap);
 }
 
@@ -226,7 +240,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             }).filter((v) => !!v.viewMounted);
 
             const viewMap = toMap(viewsArr, (v) => v.uniqueID);
-            forEachProp(viewMap, (n, v) => { v.viewMounted(); });
+            forEach(viewMap, (n, v) => { v.viewMounted(); });
 
             defer.resolve(lftm);
         } catch (err) {

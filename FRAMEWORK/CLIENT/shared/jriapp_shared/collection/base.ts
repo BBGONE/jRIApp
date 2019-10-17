@@ -22,7 +22,7 @@ import { ItemAspect } from "./aspect";
 import { ValueUtils, CollUtils } from "./utils";
 import { ValidationError } from "../errors";
 
-const utils = Utils, { forEachProp, getTimeZoneOffset, getNewID } = utils.core,
+const utils = Utils, { forEach, getTimeZoneOffset, getNewID, Indexer } = utils.core,
     { format, startsWith } = utils.str, { _undefined, isArray, isUndefined } = utils.check,
     sys = utils.sys, { stringifyValue } = ValueUtils, { getObjectField } = CollUtils;
 
@@ -58,11 +58,11 @@ export class Errors<TItem extends ICollectionItem> {
     private _owner: BaseCollection<TItem>;
 
     constructor(owner: BaseCollection<TItem>) {
-        this._errors = {};
+        this._errors = Indexer();
         this._owner = owner;
     }
     clear(): void {
-        this._errors = {};
+        this._errors = Indexer();
     }
     validateItem(item: TItem): IValidationInfo[] {
         const args: ICollValidateItemArgs<TItem> = { item: item, result: [] };
@@ -87,7 +87,7 @@ export class Errors<TItem extends ICollectionItem> {
             return;
         }
         if (!this._errors[item._key]) {
-            this._errors[item._key] = {};
+            this._errors[item._key] = Indexer();
         }
         const itemErrors = this._errors[item._key];
         itemErrors[fieldName] = errors;
@@ -132,7 +132,7 @@ export class Errors<TItem extends ICollectionItem> {
     }
     getItemsWithErrors(): TItem[] {
         const res: TItem[] = [];
-        forEachProp(this._errors, (key) => {
+        forEach(this._errors, (key) => {
             const item = this._owner.getItemByKey(key);
             res.push(item);
         });
@@ -171,7 +171,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this._totalCount = 0;
         this._pageIndex = 0;
         this._items = [];
-        this._itemsByKey = {};
+        this._itemsByKey = Indexer();
         this._currentPos = -1;
         this._errors = new Errors(this);
         this._pkInfo = null;
@@ -257,7 +257,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             return this._pkInfo;
         }
         const fldMap = this.getFieldMap(), pk: IFieldInfo[] = [];
-        forEachProp(fldMap, (fldName) => {
+        forEach(fldMap, (fldName) => {
             if (fldMap[fldName].isPrimaryKey > 0) {
                 pk.push(fldMap[fldName]);
             }
@@ -465,7 +465,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         const oldItems = this._items;
         this._errors.clear();
         this._items = [];
-        this._itemsByKey = {};
+        this._itemsByKey = Indexer();
         // dispose items only if this collection owns it!
         if (this._isOwnsItems()) {
             oldItems.forEach((item) => {

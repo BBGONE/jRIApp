@@ -20,7 +20,7 @@ import {
 } from "./error";
 
 const utils = Utils, http = utils.http, { isArray, isNt, isFunc, isString } = utils.check,
-    { format, endsWith } = utils.str, { getTimeZoneOffset, merge } = utils.core, ERROR = utils.err,
+    { format, endsWith } = utils.str, { getTimeZoneOffset, merge, Indexer } = utils.core, ERROR = utils.err,
     { stringifyValue } = ValueUtils, { delay, createDeferred } = utils.defer;
 
 const enum DATA_SVC_METH {
@@ -98,13 +98,13 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         super();
         const self = this;
         this._initState = null;
-        this._requestHeaders = {};
+        this._requestHeaders = Indexer();
         this._requests = [];
         this._dbSets = null;
         this._svcMethods = <TMethods>{};
         this._assoc = <TAssoc>{};
         this._arrAssoc = [];
-        this._queryInfo = {};
+        this._queryInfo = Indexer();
         this._serviceUrl = null;
         this._isSubmiting = false;
         this._isHasChanges = false;
@@ -149,7 +149,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         this._dbSets.dispose();
         this._dbSets = null;
         this._svcMethods = <TMethods>{};
-        this._queryInfo = {};
+        this._queryInfo = Indexer();
         this._serviceUrl = null;
         this._initState = null;
         this._isSubmiting = false;
@@ -273,7 +273,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             data: IInvokeRequest = { methodName: methodName, paramInfo: { parameters: [] } },
             paramInfos = methodInfo.parameters, len = paramInfos.length;
         if (!args) {
-            args = {};
+            args = Indexer();
         }
         for (let i = 0; i < len; i += 1) {
             const pinfo: IQueryParamInfo = paramInfos[i];

@@ -47,14 +47,14 @@ define("jriapp_db/const", ["require", "exports"], function (require, exports) {
 define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_1.Utils, isNt = utils.check.isNt, forEachProp = utils.core.forEachProp;
+    var utils = jriapp_shared_1.Utils, isNt = utils.check.isNt, _a = utils.core, forEach = _a.forEach, Indexer = _a.Indexer;
     var DataCache = (function (_super) {
         __extends(DataCache, _super);
         function DataCache(query) {
             var _this = _super.call(this) || this;
             _this._query = query;
-            _this._pages = {};
-            _this._itemsByKey = {};
+            _this._pages = Indexer();
+            _this._itemsByKey = Indexer();
             _this._totalCount = 0;
             return _this;
         }
@@ -68,7 +68,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function 
         };
         DataCache.prototype._getPrevPageIndex = function (currentPageIndex) {
             var pageIndex = -1;
-            forEachProp(this._pages, function (index, page) {
+            forEach(this._pages, function (_, page) {
                 var cachePageIndex = page.pageIndex;
                 if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex) {
                     pageIndex = cachePageIndex;
@@ -110,8 +110,8 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function 
             return { start: start, end: end, cnt: cnt };
         };
         DataCache.prototype.clear = function () {
-            this._pages = {};
-            this._itemsByKey = {};
+            this._pages = Indexer();
+            this._itemsByKey = Indexer();
         };
         DataCache.prototype.getPage = function (pageIndex) {
             return this._pages[pageIndex];
@@ -249,7 +249,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function 
 define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/datacache"], function (require, exports, jriapp_shared_2, utils_1, datacache_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_2.Utils, _a = utils.check, isNt = _a.isNt, isArray = _a.isArray, isDate = _a.isDate, format = utils.str.format, arrHelper = utils.arr, valUtils = utils_1.ValueUtils;
+    var utils = jriapp_shared_2.Utils, _a = utils.check, isNt = _a.isNt, isArray = _a.isArray, isDate = _a.isDate, format = utils.str.format, Indexer = utils.core.Indexer, arrHelper = utils.arr, valUtils = utils_1.ValueUtils;
     var DataQuery = (function (_super) {
         __extends(DataQuery, _super);
         function DataQuery(dbSet, queryInfo) {
@@ -263,7 +263,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             _this._isClearPrevData = true;
             _this._pageSize = dbSet.pageSize;
             _this._pageIndex = dbSet.pageIndex;
-            _this._params = {};
+            _this._params = Indexer();
             _this._loadPageCount = 1;
             _this._isClearCacheOnEveryLoad = true;
             _this._isForAppend = false;
@@ -410,7 +410,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             return this;
         };
         DataQuery.prototype.clearParams = function () {
-            this._params = {};
+            this._params = Indexer();
             this._cacheInvalidated = true;
             return this;
         };
@@ -594,7 +594,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
 define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base", "jriapp_shared/collection/utils", "jriapp_db/dataquery", "jriapp_db/entity_aspect"], function (require, exports, jriapp_shared_3, base_1, utils_2, dataquery_1, entity_aspect_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_3.Utils, _a = utils.check, isArray = _a.isArray, isNt = _a.isNt, format = utils.str.format, _b = utils.core, getValue = _b.getValue, setValue = _b.setValue, merge = _b.merge, forEachProp = _b.forEachProp, ERROR = utils.err, parseValue = utils_2.ValueUtils.parseValue, stringifyValue = utils_2.ValueUtils.stringifyValue, getPKFields = utils_2.CollUtils.getPKFields, walkField = utils_2.CollUtils.walkField, walkFields = utils_2.CollUtils.walkFields, objToVals = utils_2.CollUtils.objToVals, initVals = utils_2.CollUtils.initVals, getObjectField = utils_2.CollUtils.getObjectField;
+    var utils = jriapp_shared_3.Utils, _a = utils.check, isArray = _a.isArray, isNt = _a.isNt, format = utils.str.format, _b = utils.core, getValue = _b.getValue, setValue = _b.setValue, merge = _b.merge, forEach = _b.forEach, Indexer = _b.Indexer, ERROR = utils.err, parseValue = utils_2.ValueUtils.parseValue, stringifyValue = utils_2.ValueUtils.stringifyValue, getPKFields = utils_2.CollUtils.getPKFields, walkField = utils_2.CollUtils.walkField, walkFields = utils_2.CollUtils.walkFields, objToVals = utils_2.CollUtils.objToVals, initVals = utils_2.CollUtils.initVals, getObjectField = utils_2.CollUtils.getObjectField;
     function doFieldDependences(dbSet, info) {
         if (!info.dependentOn) {
             return;
@@ -628,20 +628,20 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             _this.options.pageSize = dbSetInfo.pageSize;
             _this._query = null;
             _this._isSubmitOnDelete = false;
-            _this._navfldMap = {};
-            _this._calcfldMap = {};
-            _this._fieldMap = {};
+            _this._navfldMap = Indexer();
+            _this._calcfldMap = Indexer();
+            _this._fieldMap = Indexer();
             _this._fieldInfos = fieldInfos;
             _this._pkFields = getPKFields(fieldInfos);
             _this._isPageFilled = false;
             _this._newKey = 0;
             _this._pageDebounce = new jriapp_shared_3.Debounce(400);
-            _this._trackAssoc = {};
-            _this._trackAssocMap = {};
-            _this._childAssocMap = {};
-            _this._parentAssocMap = {};
+            _this._trackAssoc = Indexer();
+            _this._trackAssocMap = Indexer();
+            _this._childAssocMap = Indexer();
+            _this._parentAssocMap = Indexer();
             _this._changeCount = 0;
-            _this._changeCache = {};
+            _this._changeCache = Indexer();
             _this._ignorePageChanged = false;
             fieldInfos.forEach(function (f) {
                 self._fieldMap[f.fieldName] = f;
@@ -732,8 +732,8 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             if (!!dbContext) {
                 dbContext.objEvents.offNS(this.dbSetName);
             }
-            this._navfldMap = {};
-            this._calcfldMap = {};
+            this._navfldMap = Indexer();
+            this._calcfldMap = Indexer();
             _super.prototype.dispose.call(this);
         };
         DbSet.prototype.handleError = function (error, source) {
@@ -1159,7 +1159,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             });
         };
         DbSet.prototype._setItemInvalid = function (row) {
-            var item = this.getItemByKey(row.clientKey), errors = {};
+            var item = this.getItemByKey(row.clientKey), errors = Indexer();
             row.invalid.forEach(function (err) {
                 if (!err.fieldName) {
                     err.fieldName = "*";
@@ -1172,7 +1172,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 }
             });
             var res = [];
-            forEachProp(errors, function (fieldName, err) {
+            forEach(errors, function (fieldName, err) {
                 res.push({ fieldName: fieldName, errors: err });
             });
             this.errors.addErrors(item, res);
@@ -1180,15 +1180,15 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype._getChanges = function () {
             var changes = [], csh = this._changeCache;
-            forEachProp(csh, function (key, item) {
+            forEach(csh, function (key, item) {
                 changes.push(item._aspect._getRowInfo());
             });
             return changes;
         };
         DbSet.prototype._getTrackAssocInfo = function () {
             var self = this, res = [], csh = this._changeCache, trackAssoc = self._trackAssoc;
-            forEachProp(csh, function (key, item) {
-                forEachProp(trackAssoc, function (assocName, assocInfo) {
+            forEach(csh, function (key, item) {
+                forEach(trackAssoc, function (assocName, assocInfo) {
                     var parentKey = item._aspect._getFieldVal(assocInfo.childToParentName), childKey = item._key;
                     if (!!parentKey && !!childKey) {
                         res.push({ assocName: assocName, parentKey: parentKey, childKey: childKey });
@@ -1447,7 +1447,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 return;
             }
             var csh = this._changeCache;
-            forEachProp(csh, function (key) {
+            forEach(csh, function (key) {
                 var item = csh[key];
                 item._aspect.acceptChanges();
             });
@@ -1460,7 +1460,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 return;
             }
             var csh = this._changeCache;
-            forEachProp(csh, function (key) {
+            forEach(csh, function (key) {
                 var item = csh[key];
                 item._aspect.rejectChanges();
             });
@@ -1552,7 +1552,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
 define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_4.Utils, format = utils.str.format;
+    var utils = jriapp_shared_4.Utils, Indexer = utils.core.Indexer, format = utils.str.format;
     var DBSETS_EVENTS;
     (function (DBSETS_EVENTS) {
         DBSETS_EVENTS["DBSET_CREATING"] = "dbset_creating";
@@ -1563,7 +1563,7 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (re
             var _this = _super.call(this) || this;
             _this._dbContext = dbContext;
             _this._arrDbSets = [];
-            _this._dbSets = {};
+            _this._dbSets = Indexer();
             return _this;
         }
         DbSets.prototype.dispose = function () {
@@ -1640,7 +1640,7 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (re
 define("jriapp_db/association", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_5.Utils, format = utils.str.format, _a = utils.core, getNewID = _a.getNewID, extend = _a.extend, arrHelper = utils.arr;
+    var utils = jriapp_shared_5.Utils, format = utils.str.format, _a = utils.core, getNewID = _a.getNewID, extend = _a.extend, Indexer = _a.Indexer, arrHelper = utils.arr;
     var Association = (function (_super) {
         __extends(Association, _super);
         function Association(options) {
@@ -1671,8 +1671,8 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             });
             _this._parentToChildrenName = opts.parentToChildrenName;
             _this._childToParentName = opts.childToParentName;
-            _this._parentMap = {};
-            _this._childMap = {};
+            _this._parentMap = Indexer();
+            _this._childMap = Indexer();
             _this._bindParentDS();
             var changed1 = _this._mapParentItems(_this._parentDS.items);
             _this._bindChildDS();
@@ -1680,7 +1680,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             _this._saveParentFKey = null;
             _this._saveChildFKey = null;
             _this._debounce = new jriapp_shared_5.Debounce();
-            _this._changed = {};
+            _this._changed = Indexer();
             _this._notifyBound = self._notify.bind(self);
             self._notifyParentChanged(changed1);
             self._notifyChildrenChanged(changed2);
@@ -1693,7 +1693,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             this.setDisposing();
             this._debounce.dispose();
             this._debounce = null;
-            this._changed = {};
+            this._changed = Indexer();
             this._unbindParentDS();
             this._unbindChildDS();
             this._parentMap = null;
@@ -1750,7 +1750,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }, self._uniqueID, null, 2);
         };
         Association.prototype._onParentCollChanged = function (args) {
-            var self = this, changedKeys = {};
+            var self = this, changedKeys = Indexer();
             var item, changed = [];
             switch (args.changeType) {
                 case 2:
@@ -1889,7 +1889,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }
         };
         Association.prototype._onChildCollChanged = function (args) {
-            var self = this, items = args.items, changedKeys = {};
+            var self = this, items = args.items, changedKeys = Indexer();
             var item, changed = [];
             switch (args.changeType) {
                 case 2:
@@ -1959,7 +1959,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
         };
         Association.prototype._notify = function () {
             var self = this, changed = self._changed;
-            self._changed = {};
+            self._changed = Indexer();
             try {
                 var fkeys = Object.keys(changed);
                 for (var k = 0; k < fkeys.length; k += 1) {
@@ -2068,12 +2068,12 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
         };
         Association.prototype._resetChildMap = function () {
             var self = this, fkeys = Object.keys(this._childMap);
-            this._childMap = {};
+            this._childMap = Indexer();
             self._notifyChildrenChanged(fkeys);
         };
         Association.prototype._resetParentMap = function () {
             var self = this, fkeys = Object.keys(this._parentMap);
-            this._parentMap = {};
+            this._parentMap = Indexer();
             self._notifyParentChanged(fkeys);
         };
         Association.prototype._unMapChildItem = function (item) {
@@ -2103,7 +2103,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             return changedKey;
         };
         Association.prototype._mapParentItems = function (items) {
-            var chngedKeys = {}, len = items.length;
+            var chngedKeys = Indexer(), len = items.length;
             for (var i = 0; i < len; i += 1) {
                 var item = items[i];
                 var status_1 = item._aspect.status;
@@ -2139,7 +2139,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             }
         };
         Association.prototype._mapChildren = function (items) {
-            var chngedKeys = {}, len = items.length;
+            var chngedKeys = Indexer(), len = items.length;
             for (var i = 0; i < len; i += 1) {
                 var item = items[i];
                 var status_2 = item._aspect.status;
@@ -2404,7 +2404,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
 define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/association", "jriapp_db/error"], function (require, exports, jriapp_shared_7, utils_3, association_1, error_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_7.Utils, http = utils.http, _a = utils.check, isArray = _a.isArray, isNt = _a.isNt, isFunc = _a.isFunc, isString = _a.isString, _b = utils.str, format = _b.format, endsWith = _b.endsWith, _c = utils.core, getTimeZoneOffset = _c.getTimeZoneOffset, merge = _c.merge, ERROR = utils.err, stringifyValue = utils_3.ValueUtils.stringifyValue, _d = utils.defer, delay = _d.delay, createDeferred = _d.createDeferred;
+    var utils = jriapp_shared_7.Utils, http = utils.http, _a = utils.check, isArray = _a.isArray, isNt = _a.isNt, isFunc = _a.isFunc, isString = _a.isString, _b = utils.str, format = _b.format, endsWith = _b.endsWith, _c = utils.core, getTimeZoneOffset = _c.getTimeZoneOffset, merge = _c.merge, Indexer = _c.Indexer, ERROR = utils.err, stringifyValue = utils_3.ValueUtils.stringifyValue, _d = utils.defer, delay = _d.delay, createDeferred = _d.createDeferred;
     var DATA_SVC_METH;
     (function (DATA_SVC_METH) {
         DATA_SVC_METH["Invoke"] = "invoke";
@@ -2443,13 +2443,13 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var _this = _super.call(this) || this;
             var self = _this;
             _this._initState = null;
-            _this._requestHeaders = {};
+            _this._requestHeaders = Indexer();
             _this._requests = [];
             _this._dbSets = null;
             _this._svcMethods = {};
             _this._assoc = {};
             _this._arrAssoc = [];
-            _this._queryInfo = {};
+            _this._queryInfo = Indexer();
             _this._serviceUrl = null;
             _this._isSubmiting = false;
             _this._isHasChanges = false;
@@ -2494,7 +2494,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             this._dbSets.dispose();
             this._dbSets = null;
             this._svcMethods = {};
-            this._queryInfo = {};
+            this._queryInfo = Indexer();
             this._serviceUrl = null;
             this._initState = null;
             this._isSubmiting = false;
@@ -2610,7 +2610,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._getMethodParams = function (methodInfo, args) {
             var self = this, methodName = methodInfo.methodName, data = { methodName: methodName, paramInfo: { parameters: [] } }, paramInfos = methodInfo.parameters, len = paramInfos.length;
             if (!args) {
-                args = {};
+                args = Indexer();
             }
             for (var i = 0; i < len; i += 1) {
                 var pinfo = paramInfos[i];

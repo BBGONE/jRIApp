@@ -4,7 +4,7 @@ import {
 } from "jriapp_shared";
 import { ICommand } from "jriapp/mvvm";
 
-const utils = Utils, { trimBrackets } = utils.str;
+const utils = Utils, { Indexer } = utils.core, { trimBrackets } = utils.str;
 export const enum EVENT_CHANGE_TYPE { None = 0, Added = 1, Deleted = 2, Updated = 3 }
 
 export interface IEventChangedArgs {
@@ -38,7 +38,7 @@ export class EventBag extends BaseObject implements IPropertyBag {
     }
     setProp(name: string, command: ICommand): void {
         if (!this._dic && !!command) {
-            this._dic = {};
+            this._dic = Indexer();
         }
         if (!this._dic) {
             return;

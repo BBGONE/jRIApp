@@ -3,7 +3,7 @@ import { BaseObject, Utils, IIndexer } from "jriapp_shared";
 import { TDataQuery } from "./dataquery";
 import { IEntityItem, ICachedPage, IKV } from "./int";
 
-const utils = Utils, { isNt } = utils.check, { forEachProp } = utils.core;
+const utils = Utils, { isNt } = utils.check, { forEach, Indexer } = utils.core;
 
 
 export class DataCache extends BaseObject {
@@ -15,8 +15,8 @@ export class DataCache extends BaseObject {
     constructor(query: TDataQuery) {
         super();
         this._query = query;
-        this._pages = {};
-        this._itemsByKey = {};
+        this._pages = Indexer();
+        this._itemsByKey = Indexer();
         this._totalCount = 0;
     }
     dispose(): void {
@@ -29,7 +29,7 @@ export class DataCache extends BaseObject {
     }
     private _getPrevPageIndex(currentPageIndex: number) {
         let pageIndex = -1;
-        forEachProp(this._pages, (index, page) => {
+        forEach(this._pages, (_, page) => {
             const cachePageIndex = page.pageIndex;
             if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex) {
                 pageIndex = cachePageIndex;
@@ -75,8 +75,8 @@ export class DataCache extends BaseObject {
         return { start: start, end: end, cnt: cnt };
     }
     clear(): void {
-        this._pages = {};
-        this._itemsByKey = {};
+        this._pages = Indexer();
+        this._itemsByKey = Indexer();
     }
     getPage(pageIndex: number): ICachedPage {
         return this._pages[pageIndex];

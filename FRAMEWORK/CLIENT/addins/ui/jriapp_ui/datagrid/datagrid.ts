@@ -46,26 +46,23 @@ export { IDataGridAnimation, DefaultAnimation } from "./animation";
 import { $ } from "../utils/jquery";
 
 
-const utils = Utils, { format } = utils.str, { forEachProp, merge, getNewID, extend } = utils.core, ERROR = utils.err, sys = utils.sys,
+const utils = Utils, { format } = utils.str, { forEach, merge, getNewID, extend, Indexer } = utils.core, ERROR = utils.err, sys = utils.sys,
     dom = DomUtils, parser = Parser, doc = dom.document, win = dom.window, boot = bootstrap;
 
 let _columnWidthInterval: number, _gridsCount: number = 0;
-const _createdGrids: IIndexer<DataGrid> = {};
+const _createdGrids = Indexer<DataGrid>();
 
 export function getDataGrids(): DataGrid[] {
-    const keys = Object.keys(_createdGrids), res: DataGrid[] = [];
-    for (let i = 0; i < keys.length; i += 1) {
-        const grid = _createdGrids[keys[i]];
-        res.push(grid);
+    const res: DataGrid[] = [];
+    for (let key in _createdGrids) {
+        res.push(_createdGrids[key]);
     }
-
     return res;
 }
 
 export function findDataGrid(gridName: string): DataGrid {
-    const keys = Object.keys(_createdGrids);
-    for (let i = 0; i < keys.length; i += 1) {
-        const grid = _createdGrids[keys[i]];
+    for (let key in _createdGrids) {
+        const grid = _createdGrids[key];
         if (!!grid.table && grid.table.getAttribute(DATA_ATTR.DATA_NAME) === gridName) {
             return grid;
         }
@@ -96,7 +93,7 @@ function _gridDestroyed(grid: DataGrid) {
 }
 
 function _checkGridWidth() {
-    forEachProp(_createdGrids, (id) => {
+    forEach(_createdGrids, (id) => {
         const grid = _createdGrids[id];
         if (grid.getIsStateDirty()) {
             return;
@@ -215,7 +212,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         dom.addClass([table], css.dataTable);
         this._name = table.getAttribute(DATA_ATTR.DATA_NAME);
         this._uniqueID = getNewID("grd");
-        this._rowMap = {};
+        this._rowMap = Indexer();
         this._rows = [];
         this._columns = [];
         this._expandedRow = null;
@@ -542,7 +539,6 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         };
         let options: IColumnInfo;
 
-
         const tempOpts = parser.parseOptions(columnAttr);
 
         if (!tempOpts) {
@@ -783,7 +779,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this.table.replaceChild(newTbody, tbody);
         const rows = this._rows;
         this._rows = [];
-        this._rowMap = {};
+        this._rowMap = Indexer();
         rows.forEach((row) => {
             row.isDetached = true;
             row.dispose();

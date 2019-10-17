@@ -13,7 +13,7 @@ import { ValidationError } from "../errors";
 
 export { ICollValidateFieldArgs } from "../collection/int";
 
-const { getValue, setValue } = CoreUtils, { startsWith, trimBrackets } = StringUtils,
+const { getValue, setValue, Indexer } = CoreUtils, { startsWith, trimBrackets } = StringUtils,
     sys = SysUtils;
 
 export interface IAnyVal {
@@ -170,9 +170,9 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
     // override
     protected createItem(obj?: IAnyVal): IAnyValItem {
         const isNew = !obj;
-        const vals: any = isNew ? { val: {} } : obj;
+        const vals: any = isNew ? { val: Indexer() } : obj;
         if (!vals.val) {
-            vals.val = {};
+            vals.val = Indexer();
         }
         const key = this._getNewKey();
         const aspect = new AnyItemAspect(this, vals, key, isNew);

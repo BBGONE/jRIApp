@@ -9,7 +9,7 @@ import { css } from "../consts";
 import { BaseColumn, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 
-const utils = Utils, dom = DomUtils, boot = bootstrap;
+const utils = Utils, { Indexer } = utils.core, dom = DomUtils, boot = bootstrap;
 
 export class DataColumn extends BaseColumn {
     private _sortOrder: SORT_ORDER;
@@ -20,7 +20,7 @@ export class DataColumn extends BaseColumn {
         super(grid, options);
         // the DataCell caches here listbox (for the LookupContent)
         // so not to create it for every cell - it is only one per column!
-        this._objCache = {};
+        this._objCache = Indexer();
         this._contentType = null;
         let colClass: string = css.dataColumn;
         this._sortOrder = null;
@@ -36,7 +36,7 @@ export class DataColumn extends BaseColumn {
         this.setDisposing();
         const self = this;
         this._contentType = null;
-        utils.core.forEachProp(self._objCache, (key) => {
+        utils.core.forEach(self._objCache, (key) => {
             self._objCache[key].dispose();
         });
         self._objCache = null;

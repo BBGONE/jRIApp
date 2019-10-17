@@ -384,7 +384,10 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
     Object.defineProperty(exports, "__esModule", { value: true });
     var isHasProp = checks_2.Checks.isHasProp, _undefined = checks_2.Checks._undefined, isBoolean = checks_2.Checks.isBoolean, isArray = checks_2.Checks.isArray, isPlainObject = checks_2.Checks.isPlainObject, isNt = checks_2.Checks.isNt, isString = checks_2.Checks.isString, formatStr = strutils_1.StringUtils.format, trim = strutils_1.StringUtils.fastTrim, getOwnPropertyNames = Object.getOwnPropertyNames, getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor, objectKeys = Object.keys;
     var UUID_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
-    var NEWID_MAP = {};
+    var NEWID_MAP = Indexer();
+    function Indexer() {
+        return Object.create(null);
+    }
     function clone(obj, target) {
         if (!obj) {
             return obj;
@@ -469,7 +472,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             var parent = root;
             for (var i = 0; i < len - 1; i += 1) {
                 if (!parent[parts[i]]) {
-                    parent[parts[i]] = {};
+                    parent[parts[i]] = Indexer();
                 }
                 parent = parent[parts[i]];
             }
@@ -556,23 +559,31 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             return extend(target, source);
         };
         CoreUtils.memoize = function (fn) {
-            var res;
+            var memo = Indexer();
             return function () {
-                if (!fn) {
-                    return res;
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
                 }
-                res = fn();
-                fn = null;
-                return res;
+                var key = "__dummy";
+                if (!!args && args.length > 0) {
+                    key = args.join(':');
+                }
+                if (key in memo) {
+                    return memo[key];
+                }
+                else {
+                    memo[key] = fn.apply(void 0, args);
+                    return memo[key];
+                }
             };
         };
-        CoreUtils.forEachProp = function (map, fn) {
+        CoreUtils.forEach = function (map, fn) {
             if (!map) {
                 return;
             }
-            var names = objectKeys(map), len = names.length;
-            for (var i = 0; i < len; i += 1) {
-                fn(names[i], map[names[i]]);
+            for (var key in map) {
+                fn(key, map[key]);
             }
         };
         CoreUtils.toArray = function (map) {
@@ -580,9 +591,8 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
             if (!map) {
                 return r;
             }
-            var keys = objectKeys(map), len = keys.length;
-            for (var i = 0; i < len; i += 1) {
-                r.push(map[keys[i]]);
+            for (var key in map) {
+                r.push(map[key]);
             }
             return r;
         };
@@ -614,6 +624,7 @@ define("jriapp_shared/utils/coreutils", ["require", "exports", "jriapp_shared/ut
         CoreUtils.hasProp = isHasProp;
         CoreUtils.clone = clone;
         CoreUtils.extend = extend;
+        CoreUtils.Indexer = Indexer;
         CoreUtils.assignStrings = assignStrings;
         return CoreUtils;
     }());
@@ -1156,10 +1167,10 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lan
     exports.SysUtils = SysUtils;
     var sys = SysUtils;
 });
-define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/utils/sysutils", "jriapp_shared/lang"], function (require, exports, consts_1, sysutils_1, lang_2) {
+define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/coreutils", "jriapp_shared/lang"], function (require, exports, consts_1, sysutils_1, coreutils_2, lang_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var sys = sysutils_1.SysUtils;
+    var sys = sysutils_1.SysUtils, Indexer = coreutils_2.CoreUtils.Indexer;
     var BaseError = (function () {
         function BaseError(message) {
             this._message = message || "Error";
@@ -1255,7 +1266,7 @@ define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/consts", "j
         });
         Object.defineProperty(AggregateError.prototype, "message", {
             get: function () {
-                var hashMap = {};
+                var hashMap = Indexer();
                 this._errors.forEach(function (err) {
                     if (!err) {
                         return;
@@ -1339,9 +1350,10 @@ define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/consts", "j
     }(BaseError));
     exports.ValidationError = ValidationError;
 });
-define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/errors"], function (require, exports, consts_2, errors_1) {
+define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/errors", "jriapp_shared/utils/coreutils"], function (require, exports, consts_2, errors_1, coreutils_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var Indexer = coreutils_3.CoreUtils.Indexer;
     var ERROR = (function () {
         function ERROR() {
         }
@@ -1403,7 +1415,7 @@ define("jriapp_shared/utils/error", ["require", "exports", "jriapp_shared/consts
         ERROR.abort = function (reason) {
             throw new errors_1.AbortError(reason);
         };
-        ERROR._handlers = {};
+        ERROR._handlers = Indexer();
         return ERROR;
     }());
     exports.ERROR = ERROR;
@@ -1426,10 +1438,10 @@ define("jriapp_shared/utils/debug", ["require", "exports", "jriapp_shared/int"],
     }());
     exports.DEBUG = DEBUG;
 });
-define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils", "jriapp_shared/utils/debug"], function (require, exports, lang_3, checks_4, strutils_2, debug_1) {
+define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/checks", "jriapp_shared/utils/strutils", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug"], function (require, exports, lang_3, checks_4, strutils_2, coreutils_4, debug_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var isFunc = checks_4.Checks.isFunc, format = strutils_2.StringUtils.format, debug = debug_1.DEBUG;
+    var Indexer = coreutils_4.CoreUtils.Indexer, isFunc = checks_4.Checks.isFunc, format = strutils_2.StringUtils.format, debug = debug_1.DEBUG;
     var EventList = (function () {
         function EventList() {
         }
@@ -1462,7 +1474,7 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
             }
             var obj = list[priority];
             if (!obj) {
-                list[priority] = obj = {};
+                list[priority] = obj = Indexer();
             }
             var arr = obj[ns];
             if (!arr) {
@@ -1605,10 +1617,10 @@ define("jriapp_shared/utils/eventhelper", ["require", "exports", "jriapp_shared/
     }());
     exports.EventHelper = EventHelper;
 });
-define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/error", "jriapp_shared/utils/eventhelper"], function (require, exports, lang_4, sysutils_2, checks_5, error_1, eventhelper_1) {
+define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/error", "jriapp_shared/utils/eventhelper"], function (require, exports, lang_4, sysutils_2, coreutils_5, checks_5, error_1, eventhelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var isHasProp = checks_5.Checks.isHasProp, evHelper = eventhelper_1.EventHelper, sys = sysutils_2.SysUtils, signature = { signature: "BaseObject" };
+    var isHasProp = checks_5.Checks.isHasProp, evHelper = eventhelper_1.EventHelper, sys = sysutils_2.SysUtils, Indexer = coreutils_5.CoreUtils.Indexer, signature = { signature: "BaseObject" };
     exports.objSignature = signature;
     sys.isBaseObj = function (obj) {
         return (!!obj && obj.__objSig === signature);
@@ -1681,7 +1693,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
         };
         ObjectEvents.prototype.on = function (name, handler, nmspace, context, priority) {
             if (!this._events) {
-                this._events = {};
+                this._events = Indexer();
             }
             evHelper.add(this._events, name, handler, nmspace, context, priority);
         };
@@ -1711,7 +1723,7 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
                 throw new Error(lang_4.ERRS.ERR_PROP_NAME_EMPTY);
             }
             if (!this._events) {
-                this._events = {};
+                this._events = Indexer();
             }
             evHelper.add(this._events, "0" + prop, handler, nmspace, context, priority);
         };
@@ -1823,10 +1835,10 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
     }());
     exports.BaseObject = BaseObject;
 });
-define("jriapp_shared/utils/arrhelper", ["require", "exports", "jriapp_shared/utils/coreutils"], function (require, exports, coreutils_2) {
+define("jriapp_shared/utils/arrhelper", ["require", "exports", "jriapp_shared/utils/coreutils"], function (require, exports, coreutils_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var toArray = coreutils_2.CoreUtils.toArray;
+    var toArray = coreutils_6.CoreUtils.toArray, Indexer = coreutils_6.CoreUtils.Indexer;
     var ArrayHelper = (function () {
         function ArrayHelper() {
         }
@@ -1845,14 +1857,14 @@ define("jriapp_shared/utils/arrhelper", ["require", "exports", "jriapp_shared/ut
             return [].concat.apply([], arrays);
         };
         ArrayHelper.distinct = function (arr) {
-            var map = {}, len = arr.length;
+            var map = Indexer(), len = arr.length;
             for (var i = 0; i < len; i += 1) {
                 map["" + arr[i]] = arr[i];
             }
             return toArray(map);
         };
         ArrayHelper.toMap = function (arr, key) {
-            var map = {}, len = arr.length;
+            var map = Indexer(), len = arr.length;
             for (var i = 0; i < len; i += 1) {
                 map[key(arr[i])] = arr[i];
             }
@@ -1877,14 +1889,14 @@ define("jriapp_shared/utils/arrhelper", ["require", "exports", "jriapp_shared/ut
     }());
     exports.ArrayHelper = ArrayHelper;
 });
-define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/error", "jriapp_shared/utils/deferred"], function (require, exports, error_2, deferred_1) {
+define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/error", "jriapp_shared/utils/deferred", "jriapp_shared/utils/coreutils"], function (require, exports, error_2, deferred_1, coreutils_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var error = error_2.ERROR, MAX_NUM = 99999900000, win = window;
+    var Indexer = coreutils_7.CoreUtils.Indexer, error = error_2.ERROR, MAX_NUM = 99999900000;
     function createQueue(interval) {
         if (interval === void 0) { interval = 0; }
-        var _tasks = [], _taskMap = {}, _timer = null, _newTaskId = 1;
-        var res = {
+        var _tasks = [], _taskMap = Indexer(), _timer = null, _newTaskId = 1;
+        var _queue = {
             cancel: function (taskId) {
                 var task = _taskMap[taskId];
                 if (!!task) {
@@ -1898,7 +1910,7 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
                 _tasks.push(task);
                 _taskMap[taskId] = task;
                 if (!_timer) {
-                    _timer = win.setTimeout(function () {
+                    _timer = setTimeout(function () {
                         var arr = _tasks;
                         _timer = null;
                         _tasks = [];
@@ -1913,12 +1925,12 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
                                     }
                                 }
                                 catch (err) {
-                                    error.handleError(win, err, win);
+                                    error.handleError(_queue, err, _queue);
                                 }
                             });
                         }
                         finally {
-                            _taskMap = {};
+                            _taskMap = Indexer();
                             for (var i = 0; i < _tasks.length; i += 1) {
                                 _taskMap[_tasks[i].taskId] = _tasks[i];
                             }
@@ -1938,11 +1950,11 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
                         deferred.reject(err);
                     }
                 };
-                res.enque(fn);
+                _queue.enque(fn);
                 return deferred.promise();
             }
         };
-        return res;
+        return _queue;
     }
     exports.createQueue = createQueue;
 });
@@ -2314,10 +2326,10 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
     }());
     exports.Debounce = Debounce;
 });
-define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/strutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/debounce", "jriapp_shared/errors"], function (require, exports, object_1, coreutils_3, strutils_3, sysutils_3, checks_7, debounce_1, errors_3) {
+define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/strutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/debounce", "jriapp_shared/errors"], function (require, exports, object_1, coreutils_8, strutils_3, sysutils_3, checks_7, debounce_1, errors_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var forEachProp = coreutils_3.CoreUtils.forEachProp, getValue = coreutils_3.CoreUtils.getValue, setValue = coreutils_3.CoreUtils.setValue, startsWith = strutils_3.StringUtils.startsWith, trimBrackets = strutils_3.StringUtils.trimBrackets, isArray = checks_7.Checks.isArray, sys = sysutils_3.SysUtils;
+    var forEach = coreutils_8.CoreUtils.forEach, getValue = coreutils_8.CoreUtils.getValue, setValue = coreutils_8.CoreUtils.setValue, Indexer = coreutils_8.CoreUtils.Indexer, startsWith = strutils_3.StringUtils.startsWith, trimBrackets = strutils_3.StringUtils.trimBrackets, isArray = checks_7.Checks.isArray, _undefined = checks_7.Checks._undefined, sys = sysutils_3.SysUtils;
     var BAG_EVENTS;
     (function (BAG_EVENTS) {
         BAG_EVENTS["errors_changed"] = "errors_changed";
@@ -2329,12 +2341,12 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
         function JsonBag(json, jsonChanged) {
             var _this = _super.call(this) || this;
             _this._json = void 0;
-            _this._val = {};
+            _this._val = Indexer();
             _this._saveVal = null;
             _this._debounce = new debounce_1.Debounce();
             _this.resetJson(json);
             _this._jsonChanged = jsonChanged;
-            _this._errors = {};
+            _this._errors = Indexer();
             return _this;
         }
         JsonBag.prototype.dispose = function () {
@@ -2344,8 +2356,8 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
             this.setDisposing();
             this._debounce.dispose();
             this._jsonChanged = null;
-            this._json = void 0;
-            this._val = {};
+            this._json = _undefined;
+            this._val = Indexer();
             _super.prototype.dispose.call(this);
         };
         JsonBag.prototype.isHasProp = function (prop) {
@@ -2459,7 +2471,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
             return true;
         };
         JsonBag.prototype._removeAllErrors = function () {
-            this._errors = {};
+            this._errors = Indexer();
             this._onErrorsChanged();
         };
         JsonBag.prototype.getIsHasErrors = function () {
@@ -2490,7 +2502,7 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
                 return [];
             }
             var res = [];
-            forEachProp(bagErrors, function (name) {
+            forEach(bagErrors, function (name) {
                 var fieldName = null;
                 if (name !== "*") {
                     fieldName = name;
@@ -2670,10 +2682,10 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
     }());
     exports.AsyncUtils = AsyncUtils;
 });
-define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/errors", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/deferred", "jriapp_shared/utils/async"], function (require, exports, strUtils_2, errors_4, coreutils_4, deferred_4, async_1) {
+define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/errors", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/deferred", "jriapp_shared/utils/async"], function (require, exports, strUtils_2, errors_4, coreutils_9, deferred_4, async_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var forEachProp = coreutils_4.CoreUtils.forEachProp, merge = coreutils_4.CoreUtils.merge, startsWith = strUtils_2.StringUtils.startsWith, format = strUtils_2.StringUtils.format, createDeferred = async_1.AsyncUtils.createDeferred;
+    var forEach = coreutils_9.CoreUtils.forEach, merge = coreutils_9.CoreUtils.merge, Indexer = coreutils_9.CoreUtils.Indexer, startsWith = strUtils_2.StringUtils.startsWith, format = strUtils_2.StringUtils.format, createDeferred = async_1.AsyncUtils.createDeferred;
     var HttpUtils = (function () {
         function HttpUtils() {
         }
@@ -2712,7 +2724,7 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
             req.timeout = HttpUtils.ajaxTimeOut * 1000;
             var _headers = merge(HttpUtils.defaultHeaders);
             _headers = merge(headers, _headers);
-            forEachProp(_headers, function (name, val) {
+            forEach(_headers, function (name, val) {
                 req.setRequestHeader(name, val);
             });
             return req;
@@ -2728,7 +2740,7 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
             req.send(null);
             return new deferred_4.AbortablePromise(deferred, req);
         };
-        HttpUtils.defaultHeaders = {};
+        HttpUtils.defaultHeaders = Indexer();
         HttpUtils.ajaxTimeOut = 600;
         return HttpUtils;
     }());
@@ -2823,7 +2835,7 @@ define("jriapp_shared/utils/dates", ["require", "exports", "jriapp_shared/utils/
     }());
     exports.DateUtils = DateUtils;
 });
-define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred", "jriapp_shared/utils/dates"], function (require, exports, coreutils_5, debug_2, error_4, logger_1, sysutils_4, async_2, http_1, strutils_5, checks_10, arrhelper_2, deferred_5, dates_1) {
+define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred", "jriapp_shared/utils/dates"], function (require, exports, coreutils_10, debug_2, error_4, logger_1, sysutils_4, async_2, http_1, strutils_5, checks_10, arrhelper_2, deferred_5, dates_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Utils = (function () {
@@ -2833,7 +2845,7 @@ define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/
         Utils.str = strutils_5.StringUtils;
         Utils.arr = arrhelper_2.ArrayHelper;
         Utils.http = http_1.HttpUtils;
-        Utils.core = coreutils_5.CoreUtils;
+        Utils.core = coreutils_10.CoreUtils;
         Utils.defer = async_2.AsyncUtils;
         Utils.err = error_4.ERROR;
         Utils.log = logger_1.LOGGER;
@@ -2845,17 +2857,17 @@ define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/
     }());
     exports.Utils = Utils;
 });
-define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils"], function (require, exports, object_2, coreutils_6) {
+define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils"], function (require, exports, object_2, coreutils_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var coreUtils = coreutils_6.CoreUtils;
+    var getNewID = coreutils_11.CoreUtils.getNewID, Indexer = coreutils_11.CoreUtils.Indexer, extend = coreutils_11.CoreUtils.extend;
     var WaitQueue = (function (_super) {
         __extends(WaitQueue, _super);
         function WaitQueue(owner) {
             var _this = _super.call(this) || this;
-            _this._uniqueID = coreUtils.getNewID("wq");
+            _this._uniqueID = getNewID("wq");
             _this._owner = owner;
-            _this._queue = {};
+            _this._queue = Indexer();
             return _this;
         }
         WaitQueue.prototype.dispose = function () {
@@ -2864,7 +2876,7 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
             }
             this.setDisposing();
             this._owner.objEvents.offNS(this.uniqueID);
-            this._queue = {};
+            this._queue = Indexer();
             this._owner = null;
             _super.prototype.dispose.call(this);
         };
@@ -2944,7 +2956,7 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
             }
         };
         WaitQueue.prototype.enQueue = function (item) {
-            var opts = coreUtils.extend({
+            var opts = extend({
                 prop: "",
                 groupName: null,
                 predicate: null,
@@ -3279,7 +3291,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
 define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/utils", "jriapp_shared/errors"], function (require, exports, object_3, lang_7, waitqueue_1, utils_2, utils_3, errors_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = utils_2.Utils, _a = utils.core, forEachProp = _a.forEachProp, getTimeZoneOffset = _a.getTimeZoneOffset, getNewID = _a.getNewID, _b = utils.str, format = _b.format, startsWith = _b.startsWith, _c = utils.check, _undefined = _c._undefined, isArray = _c.isArray, isUndefined = _c.isUndefined, sys = utils.sys, stringifyValue = utils_3.ValueUtils.stringifyValue, getObjectField = utils_3.CollUtils.getObjectField;
+    var utils = utils_2.Utils, _a = utils.core, forEach = _a.forEach, getTimeZoneOffset = _a.getTimeZoneOffset, getNewID = _a.getNewID, Indexer = _a.Indexer, _b = utils.str, format = _b.format, startsWith = _b.startsWith, _c = utils.check, _undefined = _c._undefined, isArray = _c.isArray, isUndefined = _c.isUndefined, sys = utils.sys, stringifyValue = utils_3.ValueUtils.stringifyValue, getObjectField = utils_3.CollUtils.getObjectField;
     sys.isCollection = function (obj) {
         return (!!obj && obj instanceof BaseCollection);
     };
@@ -3306,11 +3318,11 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
     })(COLL_EVENTS || (COLL_EVENTS = {}));
     var Errors = (function () {
         function Errors(owner) {
-            this._errors = {};
+            this._errors = Indexer();
             this._owner = owner;
         }
         Errors.prototype.clear = function () {
-            this._errors = {};
+            this._errors = Indexer();
         };
         Errors.prototype.validateItem = function (item) {
             var args = { item: item, result: [] };
@@ -3336,7 +3348,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 return;
             }
             if (!this._errors[item._key]) {
-                this._errors[item._key] = {};
+                this._errors[item._key] = Indexer();
             }
             var itemErrors = this._errors[item._key];
             itemErrors[fieldName] = errors;
@@ -3382,7 +3394,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
         Errors.prototype.getItemsWithErrors = function () {
             var _this = this;
             var res = [];
-            forEachProp(this._errors, function (key) {
+            forEach(this._errors, function (key) {
                 var item = _this._owner.getItemByKey(key);
                 res.push(item);
             });
@@ -3405,7 +3417,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             _this._totalCount = 0;
             _this._pageIndex = 0;
             _this._items = [];
-            _this._itemsByKey = {};
+            _this._itemsByKey = Indexer();
             _this._currentPos = -1;
             _this._errors = new Errors(_this);
             _this._pkInfo = null;
@@ -3491,7 +3503,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 return this._pkInfo;
             }
             var fldMap = this.getFieldMap(), pk = [];
-            forEachProp(fldMap, function (fldName) {
+            forEach(fldMap, function (fldName) {
                 if (fldMap[fldName].isPrimaryKey > 0) {
                     pk.push(fldMap[fldName]);
                 }
@@ -3699,7 +3711,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             var oldItems = this._items;
             this._errors.clear();
             this._items = [];
-            this._itemsByKey = {};
+            this._itemsByKey = Indexer();
             if (this._isOwnsItems()) {
                 oldItems.forEach(function (item) {
                     item._aspect._setIsAttached(false);
@@ -4372,7 +4384,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
 define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_shared/lang", "jriapp_shared/utils/utils"], function (require, exports, lang_8, utils_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = utils_4.Utils, _a = utils.check, isGuid = _a.isGuid, isNumber = _a.isNumber, isString = _a.isString, isArray = _a.isArray, isDate = _a.isDate, isBoolean = _a.isBoolean, format = utils.str.format;
+    var utils = utils_4.Utils, Indexer = utils.core.Indexer, _a = utils.check, isGuid = _a.isGuid, isNumber = _a.isNumber, isString = _a.isString, isArray = _a.isArray, isDate = _a.isDate, isBoolean = _a.isBoolean, format = utils.str.format;
     function fn_toArray(index) {
         var keys = Object.keys(index), result = [], len = keys.length;
         for (var i = 0; i < len; i += 1) {
@@ -4498,7 +4510,7 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
             if (!vals) {
                 return [];
             }
-            var index = {};
+            var index = Indexer();
             vals.forEach(function (val) {
                 var name = !val.fieldName ? "*" : val.fieldName;
                 var test = index[name];
@@ -4518,7 +4530,7 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
 define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/utils", "jriapp_shared/collection/utils", "jriapp_shared/errors", "jriapp_shared/collection/validation"], function (require, exports, object_4, utils_5, utils_6, errors_6, validation_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = utils_5.Utils, _a = utils.core, forEachProp = _a.forEachProp, getValue = _a.getValue, setValue = _a.setValue, isNt = utils.check.isNt, sys = utils.sys, ERROR = utils.err, cloneVals = utils_6.CollUtils.cloneVals, walkFields = utils_6.CollUtils.walkFields;
+    var utils = utils_5.Utils, _a = utils.core, forEach = _a.forEach, getValue = _a.getValue, setValue = _a.setValue, Indexer = _a.Indexer, isNt = utils.check.isNt, sys = utils.sys, ERROR = utils.err, cloneVals = utils_6.CollUtils.cloneVals, walkFields = utils_6.CollUtils.walkFields;
     var AspectFlags;
     (function (AspectFlags) {
         AspectFlags[AspectFlags["IsAttached"] = 0] = "IsAttached";
@@ -4576,7 +4588,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             var bag = this._valueBag;
             this._valueBag = null;
             if (!!bag) {
-                forEachProp(bag, function (name, val) {
+                forEach(bag, function (name, val) {
                     disposeVal(val, coll.uniqueID);
                 });
             }
@@ -4794,7 +4806,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 return "";
             }
             var res = [];
-            forEachProp(itemErrors, function (name, errs) {
+            forEach(itemErrors, function (name, errs) {
                 for (var i = 0; i < errs.length; i += 1) {
                     res.push(name + ": " + errs[i]);
                 }
@@ -4818,7 +4830,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             }
             internal.onEditing(item, true, false);
             if (!!this._valueBag && this.isEditing) {
-                forEachProp(this._valueBag, function (name, obj) {
+                forEach(this._valueBag, function (name, obj) {
                     if (!!obj && sys.isEditable(obj.val)) {
                         obj.val.beginEdit();
                     }
@@ -4835,7 +4847,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             internal.onBeforeEditing(item, false, false);
             var customEndEdit = true;
             if (!!this._valueBag) {
-                forEachProp(this._valueBag, function (name, obj) {
+                forEach(this._valueBag, function (name, obj) {
                     if (!!obj && sys.isEditable(obj.val)) {
                         if (!obj.val.endEdit()) {
                             customEndEdit = false;
@@ -4860,7 +4872,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 var coll = this.coll, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
                 internal.onBeforeEditing(item, false, true);
                 if (!!this._valueBag) {
-                    forEachProp(this._valueBag, function (name, obj) {
+                    forEach(this._valueBag, function (name, obj) {
                         if (!!obj && sys.isEditable(obj.val)) {
                             obj.val.cancelEdit();
                         }
@@ -4895,7 +4907,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.getIsHasErrors = function () {
             var res = !!this.coll.errors.getErrors(this.item);
             if (!res && !!this._valueBag) {
-                forEachProp(this._valueBag, function (name, obj) {
+                forEach(this._valueBag, function (name, obj) {
                     if (!!obj) {
                         var errNotification = sys.getErrorNotification(obj.val);
                         if (!!errNotification && errNotification.getIsHasErrors()) {
@@ -4933,7 +4945,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.getAllErrors = function () {
             var res = [];
             if (!!this._valueBag) {
-                forEachProp(this._valueBag, function (name, obj) {
+                forEach(this._valueBag, function (name, obj) {
                     var errNotification = sys.getErrorNotification(obj.val);
                     if (!!errNotification) {
                         res = res.concat(errNotification.getAllErrors());
@@ -4944,7 +4956,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             if (!itemErrors) {
                 return res;
             }
-            forEachProp(itemErrors, function (name) {
+            forEach(itemErrors, function (name) {
                 var fieldName = null;
                 if (name !== "*") {
                     fieldName = name;
@@ -4964,7 +4976,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 if (isNt(val)) {
                     return;
                 }
-                this._valueBag = {};
+                this._valueBag = Indexer();
             }
             var oldEntry = this._valueBag[name], coll = this.coll;
             if (!!oldEntry && oldEntry.val !== val) {
@@ -5162,7 +5174,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
 define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_9, utils_8, base_1, aspect_1, errors_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = utils_7.Utils, format = utils.str.format, isArray = utils.check.isArray, walkField = utils_8.CollUtils.walkField, initVals = utils_8.CollUtils.initVals, sys = utils.sys;
+    var utils = utils_7.Utils, Indexer = utils.core.Indexer, format = utils.str.format, isArray = utils.check.isArray, walkField = utils_8.CollUtils.walkField, initVals = utils_8.CollUtils.initVals, sys = utils.sys;
     var ListItemAspect = (function (_super) {
         __extends(ListItemAspect, _super);
         function ListItemAspect() {
@@ -5224,7 +5236,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
         __extends(BaseList, _super);
         function BaseList(props) {
             var _this = _super.call(this) || this;
-            _this._fieldMap = {};
+            _this._fieldMap = Indexer();
             _this._fieldInfos = [];
             _this._newKey = 0;
             if (!!props) {
@@ -5237,7 +5249,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             if (!isArray(props) || props.length === 0) {
                 throw new Error(format(lang_9.ERRS.ERR_PARAM_INVALID, "props", props));
             }
-            self._fieldMap = {};
+            self._fieldMap = Indexer();
             self._fieldInfos = [];
             props.forEach(function (prop) {
                 var fldInfo = base_1.BaseCollection.getEmptyFieldInfo(prop.name);
@@ -5336,10 +5348,10 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
     }(base_1.BaseCollection));
     exports.BaseList = BaseList;
 });
-define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/strutils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/validation", "jriapp_shared/collection/list", "jriapp_shared/errors"], function (require, exports, coreutils_7, sysutils_5, strutils_6, debounce_2, item_1, validation_2, list_1, errors_8) {
+define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/strutils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/validation", "jriapp_shared/collection/list", "jriapp_shared/errors"], function (require, exports, coreutils_12, sysutils_5, strutils_6, debounce_2, item_1, validation_2, list_1, errors_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var getValue = coreutils_7.CoreUtils.getValue, setValue = coreutils_7.CoreUtils.setValue, startsWith = strutils_6.StringUtils.startsWith, trimBrackets = strutils_6.StringUtils.trimBrackets, sys = sysutils_5.SysUtils;
+    var getValue = coreutils_12.CoreUtils.getValue, setValue = coreutils_12.CoreUtils.setValue, Indexer = coreutils_12.CoreUtils.Indexer, startsWith = strutils_6.StringUtils.startsWith, trimBrackets = strutils_6.StringUtils.trimBrackets, sys = sysutils_5.SysUtils;
     var AnyItemAspect = (function (_super) {
         __extends(AnyItemAspect, _super);
         function AnyItemAspect() {
@@ -5494,9 +5506,9 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
         };
         AnyList.prototype.createItem = function (obj) {
             var isNew = !obj;
-            var vals = isNew ? { val: {} } : obj;
+            var vals = isNew ? { val: Indexer() } : obj;
             if (!vals.val) {
-                vals.val = {};
+                vals.val = Indexer();
             }
             var key = this._getNewKey();
             var aspect = new AnyItemAspect(this, vals, key, isNew);
@@ -5526,10 +5538,10 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
     }(list_1.BaseList));
     exports.AnyList = AnyList;
 });
-define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/anylist"], function (require, exports, object_6, coreutils_8, anylist_1) {
+define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/anylist"], function (require, exports, object_6, coreutils_13, anylist_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var getNewID = coreutils_8.CoreUtils.getNewID, getValue = coreutils_8.CoreUtils.getValue, setValue = coreutils_8.CoreUtils.setValue;
+    var getNewID = coreutils_13.CoreUtils.getNewID, getValue = coreutils_13.CoreUtils.getValue, setValue = coreutils_13.CoreUtils.setValue;
     var BAG_EVENTS;
     (function (BAG_EVENTS) {
         BAG_EVENTS["errors_changed"] = "errors_changed";

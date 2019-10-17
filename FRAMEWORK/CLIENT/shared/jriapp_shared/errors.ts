@@ -1,10 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DUMY_ERROR } from "./consts";
 import { SysUtils } from "./utils/sysutils";
+import { CoreUtils } from "./utils/coreutils";
 import { IValidationInfo, IValidationError } from "./int";
 import { ERRS, STRS } from "./lang";
 
-const sys = SysUtils;
+const sys = SysUtils, { Indexer } = CoreUtils;
 
 export class BaseError {
     private _message: string;
@@ -69,7 +70,7 @@ export class AggregateError extends BaseError {
     get message(): string {
         const hashMap: {
             [name: string]: any;
-        } = {};
+        } = Indexer();
         this._errors.forEach((err) => {
             if (!err) {
                 return;

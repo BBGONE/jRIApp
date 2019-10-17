@@ -3,8 +3,10 @@ import { IIndexer } from "../int";
 import { ERROR } from "./error";
 import { IPromise } from "./ideferred";
 import { createDefer } from "./deferred";
+import { CoreUtils } from "./coreutils";
 
-const error = ERROR, MAX_NUM = 99999900000, win = window;
+
+const { Indexer } = CoreUtils, error = ERROR, MAX_NUM = 99999900000;
 
 export interface IQueue {
     cancel: (taskId: number) => void;
@@ -18,10 +20,10 @@ interface ITask {
 }
 
 export function createQueue(interval: number = 0): IQueue {
-    let _tasks: ITask[] = [], _taskMap: IIndexer<ITask> = {},
+    let _tasks: ITask[] = [], _taskMap: IIndexer<ITask> = Indexer(),
         _timer: number = null, _newTaskId = 1;
 
-    const res: IQueue = {
+    const _queue: IQueue = {
         cancel: function (taskId: number): void {
             const task = _taskMap[taskId];
             if (!!task) {
@@ -37,7 +39,7 @@ export function createQueue(interval: number = 0): IQueue {
             _taskMap[taskId] = task;
 
             if (!_timer) {
-                _timer = win.setTimeout(() => {
+                _timer = setTimeout(() => {
                     const arr = _tasks;
                     _timer = null;
                     _tasks = [];
@@ -53,13 +55,13 @@ export function createQueue(interval: number = 0): IQueue {
                                     task.func();
                                 }
                             } catch (err) {
-                                error.handleError(win, err, win);
+                                error.handleError(_queue, err, _queue);
                             }
                         });
                     } finally {
                         // reset the map after all the tasks in the queue have been executed
                         // so a task can be cancelled from another task
-                        _taskMap = {};
+                        _taskMap = Indexer();
                         // add tasks which were queued while tasks were executing (from inside the tasks) to the map
                         for (let i = 0; i < _tasks.length; i += 1) {
                             _taskMap[_tasks[i].taskId] = _tasks[i];
@@ -79,10 +81,10 @@ export function createQueue(interval: number = 0): IQueue {
                     deferred.reject(err);
                 }
             };
-            res.enque(fn);
+            _queue.enque(fn);
             return deferred.promise();
         }
     };
 
-    return res;
+    return _queue;
 }
