@@ -4225,7 +4225,7 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/i
 define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/utils/lifetime", "jriapp/utils/dom", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/parsing/helper", "jriapp/utils/parser"], function (require, exports, jriapp_shared_19, lifetime_1, dom_5, mloader_1, binding_1, viewchecks_2, helper_2, parser_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_19.Utils, createDeferred = utils.defer.createDeferred, viewChecks = viewchecks_2.ViewChecks, dom = dom_5.DomUtils, _a = utils.str, startsWith = _a.startsWith, fastTrim = _a.fastTrim, parser = parser_2.Parser, _b = utils.core, forEach = _b.forEach, Indexer = _b.Indexer, _c = utils.arr, fromList = _c.fromList, toMap = _c.toMap, isGetExpr = helper_2.Helper.isGetExpr, getGetParts = helper_2.Helper.getGetParts;
+    var utils = jriapp_shared_19.Utils, createDeferred = utils.defer.createDeferred, viewChecks = viewchecks_2.ViewChecks, dom = dom_5.DomUtils, _a = utils.str, startsWith = _a.startsWith, fastTrim = _a.fastTrim, parser = parser_2.Parser, _b = utils.core, forEach = _b.forEach, Indexer = _b.Indexer, _c = utils.arr, fromList = _c.fromList, toMap = _c.toMap, isGetExpr = helper_2.Helper.isGetExpr, getGetParts = helper_2.Helper.getGetParts, getBraceContent = helper_2.Helper.getBraceContent;
     function createDataBindSvc(app) {
         return new DataBindingService(app);
     }
@@ -4276,7 +4276,8 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
             var attr = elements[i].getAttribute("data-require");
             if (!!attr) {
                 if (isGetExpr(attr)) {
-                    var parts = getGetParts(attr);
+                    var ids = getBraceContent(attr, 0);
+                    var parts = getGetParts(ids);
                     parts.forEach(function (val) {
                         if (!!val) {
                             _arrpush.apply(result, val.split(","));

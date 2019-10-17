@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    Utils, IErrorHandler, IPromise, DummyError, BaseObject
+    Utils, IErrorHandler, IPromise, DummyError, BaseObject, BRACKETS
 } from "jriapp_shared";
 import { DATA_ATTR, ELVIEW_NM, BindScope } from "./consts";
 import {
@@ -18,7 +18,7 @@ import { Parser } from "./utils/parser";
 const utils = Utils, { createDeferred } = utils.defer, viewChecks = ViewChecks, dom = DomUtils,
     { startsWith, fastTrim } = utils.str, parser = Parser, { forEach, Indexer } = utils.core,
     { fromList, toMap } = utils.arr,
-    { isGetExpr, getGetParts } = Helper;
+    { isGetExpr, getGetParts, getBraceContent } = Helper;
 
 export function createDataBindSvc(app: IApplication): IDataBindingService {
     return new DataBindingService(app);
@@ -90,7 +90,8 @@ function getRequiredModules(el: Element): string[] {
         const attr = elements[i].getAttribute(DATA_ATTR.DATA_REQUIRE);
         if (!!attr) {
             if (isGetExpr(attr)) {
-                const parts = getGetParts(attr);
+                const ids = getBraceContent(attr, BRACKETS.ROUND);
+                const parts = getGetParts(ids);
                 parts.forEach((val) => {
                     if (!!val) {
                         _arrpush.apply(result, val.split(","));
