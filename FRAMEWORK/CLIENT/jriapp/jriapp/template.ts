@@ -2,7 +2,7 @@
 import { BaseObject, Utils, LocaleERRS, IPromise } from "jriapp_shared";
 import { DATA_ATTR } from "./consts";
 import {
-    ITemplate, ILifeTimeScope, ITemplateEvents, IApplication, IElView, ITemplateElView
+    ITemplate, ILifeTimeScope, ITemplateEvents, IApplication, IElView, ITemplateElView, TDocInfo
 } from "./int";
 import { bootstrap } from "./bootstrap";
 import { Binding } from "binding";
@@ -80,13 +80,13 @@ class Template extends BaseObject implements ITemplate {
     /**
        * returns a promise which resolves with the loaded template's DOM element
     */
-    private _loadAsync(name: string): IPromise<DocumentFragment> {
+    private _loadAsync(name: string): IPromise<TDocInfo> {
         const self = this, loader = this.app.getTemplateLoader(name);
-        let promise: IPromise<DocumentFragment>;
+        let promise: IPromise<TDocInfo>;
         if (isFunc(loader) && isThenable(promise = loader())) {
             return promise;
         } else {
-            return reject<DocumentFragment>(new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
+            return reject<TDocInfo>(new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID)));
         }
     }
     private _loadTemplate(): IPromise<HTMLElement> {
@@ -97,8 +97,8 @@ class Template extends BaseObject implements ITemplate {
             }
 
             if (!!id) {
-                return self._loadAsync(id).then((fragment) => {
-                    return self._dataBind(templateEl, fragment);
+                return self._loadAsync(id).then((docInfo) => {
+                    return self._dataBind(templateEl, docInfo);
                 }).catch((err) => {
                     if (!!err && !!err.message) {
                         throw err;
@@ -139,7 +139,7 @@ class Template extends BaseObject implements ITemplate {
             this._cleanUp();
         }
     }
-    private _dataBind(el: HTMLElement, fragment: DocumentFragment): IPromise<HTMLElement> {
+    private _dataBind(el: HTMLElement, docInfo: TDocInfo): IPromise<HTMLElement> {
         const self = this;
         if (self.getIsStateDirty()) {
             ERROR.abort();
@@ -147,20 +147,25 @@ class Template extends BaseObject implements ITemplate {
         if (self._isLoaded) {
             self._unloadTemplate();
         }
-        if (!fragment) {
+        if (!docInfo) {
             throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
         }
 
-        el.appendChild(fragment.cloneNode(true));
+        el.appendChild(docInfo.doc.cloneNode(true));
         self._isLoaded = true;
         dom.removeClass([el], css.templateError);
         
         self._onLoading();
-        const promise = self.app._getInternal().bindTemplate(el, this.dataContext);
+
+        const promise = self.app._getInternal().bindTemplate(el, this.dataContext, docInfo.required);
         return promise.then((lftm) => {
             if (self.getIsStateDirty()) {
                 lftm.dispose();
                 ERROR.abort();
+            }
+            // once all assets are loaded, then no need to check again
+            if (!!docInfo.required) {
+                docInfo.required = null;
             }
             self._lfTime = lftm;
             self._updateBindingSource();

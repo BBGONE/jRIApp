@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    Utils, IErrorHandler, IPromise, DummyError, BaseObject, BRACKETS
+    Utils, IErrorHandler, IPromise, DummyError, BaseObject
 } from "jriapp_shared";
 import { DATA_ATTR, ELVIEW_NM, BindScope } from "./consts";
 import {
@@ -12,13 +12,10 @@ import { DomUtils } from "./utils/dom";
 import { create as createModulesLoader } from "./utils/mloader";
 import { getBindingOptions, Binding } from "./binding";
 import { ViewChecks } from "./utils/viewchecks";
-import { Helper } from "./parsing/helper";
 import { Parser } from "./utils/parser";
 
 const utils = Utils, { createDeferred } = utils.defer, viewChecks = ViewChecks, dom = DomUtils,
-    { startsWith, fastTrim } = utils.str, parser = Parser, { forEach, Indexer } = utils.core,
-    { fromList, toMap } = utils.arr,
-    { isGetExpr, getGetParts, getBraceContent } = Helper;
+    { startsWith } = utils.str, parser = Parser, { forEach } = utils.core, { toMap } = utils.arr;
 
 export function createDataBindSvc(app: IApplication): IDataBindingService {
     return new DataBindingService(app);
@@ -82,46 +79,6 @@ function getBindables(scope: Document | HTMLElement): IBindable[] {
     return result;
 }
 
-const _arrpush = [].push;
-
-function getRequiredModules(el: Element): string[] {
-    const elements = fromList(el.children), result: string[] = [];
-    for (let i = 0, len = elements.length; i < len; i += 1) {
-        const attr = elements[i].getAttribute(DATA_ATTR.DATA_REQUIRE);
-        if (!!attr) {
-            if (isGetExpr(attr)) {
-                const ids = getBraceContent(attr, BRACKETS.ROUND);
-                const parts = getGetParts(ids);
-                parts.forEach((val) => {
-                    if (!!val) {
-                        _arrpush.apply(result, val.split(","));
-                    }
-                });
-            } else {
-                _arrpush.apply(result, attr.split(","));
-            }
-        }
-    }
-
-    if (result.length === 0) {
-        return result;
-    }
-
-    const hashMap = Indexer();
-
-    result.forEach((name) => {
-        if (!name) {
-            return;
-        }
-        name = fastTrim(name);
-        if (!!name) {
-            hashMap[name] = name;
-        }
-    });
-
-    return Object.keys(hashMap);
-}
-
 function filterBindables(scope: Document | HTMLElement, bindElems: IBindable[]): IBindable[] {
     // select all dataforms inside the scope
     const forms = bindElems.filter((bindElem) => {
@@ -182,11 +139,11 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             }
         }
     }
-    bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope> {
-        const self = this, requiredModules = getRequiredModules(templateEl);
+    bindTemplate(templateEl: HTMLElement, dataContext: any, required: string[] | null): IPromise<ILifeTimeScope> {
+        const self = this;
         let res: IPromise<ILifeTimeScope>;
-        if (requiredModules.length > 0) {
-            res = self._mloader.load(requiredModules).then(() => {
+        if (!!required && required.length > 0) {
+            res = self._mloader.load(required).then(() => {
                 return self.bindElements({
                     scope: templateEl,
                     bind: BindScope.Template,

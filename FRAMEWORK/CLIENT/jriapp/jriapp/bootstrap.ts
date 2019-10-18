@@ -2,12 +2,12 @@
 import {
     DUMY_ERROR, IIndexer, IBaseObject, IPromise, TErrorHandler,
     TEventHandler, TPriority, LocaleERRS, BaseObject, Utils, ObjectEvents,
-    IObjectEvents, createWeakMap, IWeakMap
+    IObjectEvents, createWeakMap, IWeakMap, BRACKETS
 } from "jriapp_shared";
-import { STORE_KEY, SubscribeFlags } from "./consts";
+import { STORE_KEY, SubscribeFlags, DATA_ATTR } from "./consts";
 import {
     IApplication, ISelectableProvider, IDataProvider, IConverter, ISvcStore,
-    IContentFactoryList, IElViewRegister, IStylesLoader, ISubscriber, TLoaderFunc
+    IContentFactoryList, IElViewRegister, IStylesLoader, ISubscriber, TLoaderFunc, TDocInfo
 } from "./int";
 import { createElViewRegister } from "./elview";
 import { createContentFactoryList } from "./content";
@@ -18,11 +18,14 @@ import { PathHelper } from "./utils/path";
 import { DomUtils } from "./utils/dom";
 import { Promise } from "jriapp_shared/utils/deferred";
 import { createQueue } from "jriapp_shared/utils/queue";
+import { Helper as ParseHelper } from "./parsing/helper";
 
 const utils = Utils, dom = DomUtils, win = dom.window, doc = win.document,
     { isFunc } = utils.check, { createDeferred, delay, resolve } = utils.defer,
-    { forEach, getNewID, getValue, setValue, removeValue, Indexer } = utils.core,
-    { format, fastTrim } = utils.str, ERROR = utils.err, ERRS = LocaleERRS;
+    { forEach, getNewID, getValue, setValue, removeValue, Indexer } = utils.core, { fromList } = utils.arr,
+    { format, fastTrim } = utils.str, ERROR = utils.err, ERRS = LocaleERRS,
+    { isGetExpr, getGetParts, getBraceContent } = ParseHelper;
+
 
 export const subscribeWeakMap: IWeakMap = createWeakMap(), selectableProviderWeakMap: IWeakMap = createWeakMap();
 
@@ -148,6 +151,43 @@ export function getObject(root: IDataProvider, name: string): any {
 function registerOptions(root: IDataProvider, name: string, options: string): void {
     const name2 = STORE_KEY.OPTION + name;
     registerObject(root, name2, options);
+}
+function getRequiredModules(el: DocumentFragment): string[] {
+    const elements = fromList(el.children), result: string[] = [];
+    for (let i = 0, len = elements.length; i < len; i += 1) {
+        const attr = elements[i].getAttribute(DATA_ATTR.DATA_REQUIRE);
+        if (!!attr) {
+            if (isGetExpr(attr)) {
+                const ids = getBraceContent(attr, BRACKETS.ROUND);
+                const parts = getGetParts(ids);
+                parts.forEach((val) => {
+                    if (!!val) {
+                        result.push(...val.split(","));
+                    }
+                });
+            } else {
+                result.push(...attr.split(","));
+            }
+        }
+    }
+
+    if (result.length === 0) {
+        return result;
+    }
+
+    const hashMap = Indexer();
+
+    result.forEach((name) => {
+        if (!name) {
+            return;
+        }
+        name = fastTrim(name);
+        if (!!name) {
+            hashMap[name] = name;
+        }
+    });
+
+    return Object.keys(hashMap);
 }
 
 /**
@@ -335,7 +375,9 @@ export class Bootstrap extends BaseObject implements IDataProvider, ISvcStore {
         });
     }
     private _processTemplate(owner: IDataProvider, name: string, html: string): void {
-        const res = resolve<DocumentFragment>(dom.getDocFragment(fastTrim(html)), true), loader: TLoaderFunc = () => res;
+        const frag = dom.getDocFragment(fastTrim(html)), required = getRequiredModules(frag);
+
+        const res = resolve<TDocInfo>({ doc: frag, required: required }, true), loader: TLoaderFunc = () => res;
         // template already loaded, register function which returns the template immediately
         registerLoader(owner, name, loader);
     }

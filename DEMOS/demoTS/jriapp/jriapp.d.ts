@@ -119,8 +119,12 @@ declare module "jriapp/int" {
         getSvc<T>(name: string): T;
         getSvc(name: string): any;
     }
+    export type TDocInfo = {
+        doc: DocumentFragment;
+        required: string[] | null;
+    };
     export type THTMLLoaderFunc = () => IPromise<string>;
-    export type TLoaderFunc = () => IPromise<DocumentFragment>;
+    export type TLoaderFunc = () => IPromise<TDocInfo>;
     export interface ITemplateLoaderInfo {
         loader: TLoaderFunc;
         owner: IDataProvider;
@@ -220,7 +224,7 @@ declare module "jriapp/int" {
         readonly dataContext: any;
     }
     export interface IDataBindingService extends IDisposable {
-        bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
+        bindTemplate(templateEl: HTMLElement, dataContext: any, required: string[] | null): IPromise<ILifeTimeScope>;
         bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
         setUpBindings(): IPromise<void>;
         bind(opts: TBindingOptions): IBinding;
@@ -314,7 +318,7 @@ declare module "jriapp/int" {
         whenAllLoaded(): IPromise<void>;
     }
     export interface IInternalAppMethods extends IDataProvider {
-        bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
+        bindTemplate(templateEl: HTMLElement, dataContext: any, required: string[] | null): IPromise<ILifeTimeScope>;
         bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
         getTemplateLoaderInfo(name: string): ITemplateLoaderInfo;
     }
@@ -1082,5 +1086,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.25.8";
+    export const VERSION = "2.25.9";
 }

@@ -7,7 +7,7 @@ import { STORE_KEY } from "./consts";
 import {
     IElViewFactory, IViewType, IApplication,
     TBindingOptions, IAppOptions, IInternalAppMethods, IConverter, ITemplateGroupInfo, ITemplateLoaderInfo,
-    IDataBindingService, IBinding, IBindArgs, TLoaderFunc, THTMLLoaderFunc
+    IDataBindingService, IBinding, IBindArgs, TLoaderFunc, THTMLLoaderFunc, TDocInfo
 } from "./int";
 import {
     bootstrap, getOptions, registerSvc, unregisterSvc, getSvc, registerConverter, getConverter,
@@ -63,8 +63,8 @@ export class Application extends BaseObject implements IApplication {
         this._extraData = Indexer();
         this._UC = Indexer();
         this._internal = {
-            bindTemplate: (templateEl: HTMLElement, dataContext: any) => {
-                return self._dataBindingService.bindTemplate(templateEl, dataContext);
+            bindTemplate: (templateEl: HTMLElement, dataContext: any, required: string[] | null) => {
+                return self._dataBindingService.bindTemplate(templateEl, dataContext, required);
             },
             bindElements: (args: IBindArgs) => {
                 return self._dataBindingService.bindElements(args);
@@ -298,7 +298,7 @@ export class Application extends BaseObject implements IApplication {
     // loader must load template and return promise which resolves with the loaded DocumentFragment
     registerTemplateLoader(name: string, loader: THTMLLoaderFunc): void {
         const fn: TLoaderFunc = memoize(() => {
-            return loader().then(html => dom.getDocFragment(html));
+            return loader().then(html => { return { doc: dom.getDocFragment(html), required: null }; });
         });
         registerLoader(this, name, fn);
     }
@@ -309,7 +309,7 @@ export class Application extends BaseObject implements IApplication {
             if (!el) {
                 throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, templateId));
             }
-            return resolve<DocumentFragment>(dom.getDocFragment(el.innerHTML), true);
+            return resolve<TDocInfo>({ doc: dom.getDocFragment(el.innerHTML), required: null }, true);
         });
 
         registerLoader(this, name, fn);
@@ -317,7 +317,7 @@ export class Application extends BaseObject implements IApplication {
     getTemplateLoader(name: string): TLoaderFunc {
         let res = boot.templateLoader.getTemplateLoader(this._getInternal(), name);
         if (!res) {
-            res = () => { return reject<DocumentFragment>(new Error(format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
+            res = () => { return reject<TDocInfo>(new Error(format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name))); };
         }
         return res;
     }

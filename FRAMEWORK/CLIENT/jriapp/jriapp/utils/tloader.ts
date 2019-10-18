@@ -1,6 +1,6 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IPromise, LocaleERRS, BaseObject, WaitQueue, Utils } from "jriapp_shared";
-import { ITemplateGroupInfo, ITemplateLoaderInfo, IDataProvider, THTMLLoaderFunc, TLoaderFunc } from "../int";
+import { ITemplateGroupInfo, ITemplateLoaderInfo, IDataProvider, THTMLLoaderFunc, TLoaderFunc, TDocInfo } from "../int";
 import { STORE_KEY } from "../consts";
 
 
@@ -132,12 +132,12 @@ export class TemplateLoader extends BaseObject {
                         group.promise = self.loadTemplatesAsync(group.owner, group.loader);
                     }
 
-                    const deferred = createDeferred<DocumentFragment>(true);
+                    const deferred = createDeferred<TDocInfo>(true);
 
                     group.promise.then(() => {
                         const info: ITemplateLoaderInfo = context.getTemplateLoaderInfo(name);
                         if (!info) {
-                            const error = format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name), rejected = reject<DocumentFragment>(error, true);
+                            const error = format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name), rejected = reject<TDocInfo>(error, true);
                             // template failed to load, register function which rejects immediately
                             registerLoader(group.owner, name, () => rejected);
                             if (DEBUG.isDebugging()) {
@@ -148,8 +148,8 @@ export class TemplateLoader extends BaseObject {
 
                         const loadPromise = info.loader();
 
-                        loadPromise.then((fragment) => {
-                            deferred.resolve(fragment);
+                        loadPromise.then((docInfo) => {
+                            deferred.resolve(docInfo);
                         }, (err) => {
                             deferred.reject(err);
                         });

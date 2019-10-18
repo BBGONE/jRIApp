@@ -1201,8 +1201,8 @@ define("jriapp/utils/tloader", ["require", "exports", "jriapp_shared"], function
                                 throw new Error(error);
                             }
                             var loadPromise = info.loader();
-                            loadPromise.then(function (fragment) {
-                                deferred.resolve(fragment);
+                            loadPromise.then(function (docInfo) {
+                                deferred.resolve(docInfo);
                             }, function (err) {
                                 deferred.reject(err);
                             });
@@ -2063,10 +2063,10 @@ define("jriapp/utils/sloader", ["require", "exports", "jriapp_shared", "jriapp_s
         return StylesLoader;
     }());
 });
-define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/dom", "jriapp_shared/utils/deferred", "jriapp_shared/utils/queue"], function (require, exports, jriapp_shared_11, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, dom_3, deferred_1, queue_1) {
+define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elview", "jriapp/content", "jriapp/defaults", "jriapp/utils/tloader", "jriapp/utils/sloader", "jriapp/utils/path", "jriapp/utils/dom", "jriapp_shared/utils/deferred", "jriapp_shared/utils/queue", "jriapp/parsing/helper"], function (require, exports, jriapp_shared_11, elview_1, content_1, defaults_1, tloader_1, sloader_1, path_2, dom_3, deferred_1, queue_1, helper_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_11.Utils, dom = dom_3.DomUtils, win = dom.window, doc = win.document, isFunc = utils.check.isFunc, _a = utils.defer, createDeferred = _a.createDeferred, delay = _a.delay, resolve = _a.resolve, _b = utils.core, forEach = _b.forEach, getNewID = _b.getNewID, getValue = _b.getValue, setValue = _b.setValue, removeValue = _b.removeValue, Indexer = _b.Indexer, _c = utils.str, format = _c.format, fastTrim = _c.fastTrim, ERROR = utils.err, ERRS = jriapp_shared_11.LocaleERRS;
+    var utils = jriapp_shared_11.Utils, dom = dom_3.DomUtils, win = dom.window, doc = win.document, isFunc = utils.check.isFunc, _a = utils.defer, createDeferred = _a.createDeferred, delay = _a.delay, resolve = _a.resolve, _b = utils.core, forEach = _b.forEach, getNewID = _b.getNewID, getValue = _b.getValue, setValue = _b.setValue, removeValue = _b.removeValue, Indexer = _b.Indexer, fromList = utils.arr.fromList, _c = utils.str, format = _c.format, fastTrim = _c.fastTrim, ERROR = utils.err, ERRS = jriapp_shared_11.LocaleERRS, isGetExpr = helper_2.Helper.isGetExpr, getGetParts = helper_2.Helper.getGetParts, getBraceContent = helper_2.Helper.getBraceContent;
     exports.subscribeWeakMap = jriapp_shared_11.createWeakMap(), exports.selectableProviderWeakMap = jriapp_shared_11.createWeakMap();
     (function () {
         var win = dom.window;
@@ -2192,6 +2192,40 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
     function registerOptions(root, name, options) {
         var name2 = "opt." + name;
         registerObject(root, name2, options);
+    }
+    function getRequiredModules(el) {
+        var elements = fromList(el.children), result = [];
+        for (var i = 0, len = elements.length; i < len; i += 1) {
+            var attr = elements[i].getAttribute("data-require");
+            if (!!attr) {
+                if (isGetExpr(attr)) {
+                    var ids = getBraceContent(attr, 0);
+                    var parts = getGetParts(ids);
+                    parts.forEach(function (val) {
+                        if (!!val) {
+                            result.push.apply(result, val.split(","));
+                        }
+                    });
+                }
+                else {
+                    result.push.apply(result, attr.split(","));
+                }
+            }
+        }
+        if (result.length === 0) {
+            return result;
+        }
+        var hashMap = Indexer();
+        result.forEach(function (name) {
+            if (!name) {
+                return;
+            }
+            name = fastTrim(name);
+            if (!!name) {
+                hashMap[name] = name;
+            }
+        });
+        return Object.keys(hashMap);
     }
     var Bootstrap = (function (_super) {
         __extends(Bootstrap, _super);
@@ -2348,7 +2382,8 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             });
         };
         Bootstrap.prototype._processTemplate = function (owner, name, html) {
-            var res = resolve(dom.getDocFragment(fastTrim(html)), true), loader = function () { return res; };
+            var frag = dom.getDocFragment(fastTrim(html)), required = getRequiredModules(frag);
+            var res = resolve({ doc: frag, required: required }, true), loader = function () { return res; };
             tloader_1.registerLoader(owner, name, loader);
         };
         Bootstrap.prototype._createObjEvents = function () {
@@ -3640,8 +3675,8 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
                     self._unloadTemplate();
                 }
                 if (!!id) {
-                    return self._loadAsync(id).then(function (fragment) {
-                        return self._dataBind(templateEl, fragment);
+                    return self._loadAsync(id).then(function (docInfo) {
+                        return self._dataBind(templateEl, docInfo);
                     }).catch(function (err) {
                         if (!!err && !!err.message) {
                             throw err;
@@ -3686,7 +3721,7 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
                 this._cleanUp();
             }
         };
-        Template.prototype._dataBind = function (el, fragment) {
+        Template.prototype._dataBind = function (el, docInfo) {
             var self = this;
             if (self.getIsStateDirty()) {
                 ERROR.abort();
@@ -3694,18 +3729,21 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
             if (self._isLoaded) {
                 self._unloadTemplate();
             }
-            if (!fragment) {
+            if (!docInfo) {
                 throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, self.templateID));
             }
-            el.appendChild(fragment.cloneNode(true));
+            el.appendChild(docInfo.doc.cloneNode(true));
             self._isLoaded = true;
             dom.removeClass([el], "ria-template-error");
             self._onLoading();
-            var promise = self.app._getInternal().bindTemplate(el, this.dataContext);
+            var promise = self.app._getInternal().bindTemplate(el, this.dataContext, docInfo.required);
             return promise.then(function (lftm) {
                 if (self.getIsStateDirty()) {
                     lftm.dispose();
                     ERROR.abort();
+                }
+                if (!!docInfo.required) {
+                    docInfo.required = null;
                 }
                 self._lfTime = lftm;
                 self._updateBindingSource();
@@ -4222,10 +4260,10 @@ define("jriapp/utils/mloader", ["require", "exports", "jriapp_shared", "jriapp/i
         return ModuleLoader;
     }());
 });
-define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/utils/lifetime", "jriapp/utils/dom", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/parsing/helper", "jriapp/utils/parser"], function (require, exports, jriapp_shared_19, lifetime_1, dom_5, mloader_1, binding_1, viewchecks_2, helper_2, parser_2) {
+define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/utils/lifetime", "jriapp/utils/dom", "jriapp/utils/mloader", "jriapp/binding", "jriapp/utils/viewchecks", "jriapp/utils/parser"], function (require, exports, jriapp_shared_19, lifetime_1, dom_5, mloader_1, binding_1, viewchecks_2, parser_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_19.Utils, createDeferred = utils.defer.createDeferred, viewChecks = viewchecks_2.ViewChecks, dom = dom_5.DomUtils, _a = utils.str, startsWith = _a.startsWith, fastTrim = _a.fastTrim, parser = parser_2.Parser, _b = utils.core, forEach = _b.forEach, Indexer = _b.Indexer, _c = utils.arr, fromList = _c.fromList, toMap = _c.toMap, isGetExpr = helper_2.Helper.isGetExpr, getGetParts = helper_2.Helper.getGetParts, getBraceContent = helper_2.Helper.getBraceContent;
+    var utils = jriapp_shared_19.Utils, createDeferred = utils.defer.createDeferred, viewChecks = viewchecks_2.ViewChecks, dom = dom_5.DomUtils, startsWith = utils.str.startsWith, parser = parser_2.Parser, forEach = utils.core.forEach, toMap = utils.arr.toMap;
     function createDataBindSvc(app) {
         return new DataBindingService(app);
     }
@@ -4268,41 +4306,6 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
             }
         });
         return result;
-    }
-    var _arrpush = [].push;
-    function getRequiredModules(el) {
-        var elements = fromList(el.children), result = [];
-        for (var i = 0, len = elements.length; i < len; i += 1) {
-            var attr = elements[i].getAttribute("data-require");
-            if (!!attr) {
-                if (isGetExpr(attr)) {
-                    var ids = getBraceContent(attr, 0);
-                    var parts = getGetParts(ids);
-                    parts.forEach(function (val) {
-                        if (!!val) {
-                            _arrpush.apply(result, val.split(","));
-                        }
-                    });
-                }
-                else {
-                    _arrpush.apply(result, attr.split(","));
-                }
-            }
-        }
-        if (result.length === 0) {
-            return result;
-        }
-        var hashMap = Indexer();
-        result.forEach(function (name) {
-            if (!name) {
-                return;
-            }
-            name = fastTrim(name);
-            if (!!name) {
-                hashMap[name] = name;
-            }
-        });
-        return Object.keys(hashMap);
     }
     function filterBindables(scope, bindElems) {
         var forms = bindElems.filter(function (bindElem) {
@@ -4353,11 +4356,11 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
                 }
             }
         };
-        DataBindingService.prototype.bindTemplate = function (templateEl, dataContext) {
-            var self = this, requiredModules = getRequiredModules(templateEl);
+        DataBindingService.prototype.bindTemplate = function (templateEl, dataContext, required) {
+            var self = this;
             var res;
-            if (requiredModules.length > 0) {
-                res = self._mloader.load(requiredModules).then(function () {
+            if (!!required && required.length > 0) {
+                res = self._mloader.load(required).then(function () {
                     return self.bindElements({
                         scope: templateEl,
                         bind: 1,
@@ -4475,8 +4478,8 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
             _this._extraData = Indexer();
             _this._UC = Indexer();
             _this._internal = {
-                bindTemplate: function (templateEl, dataContext) {
-                    return self._dataBindingService.bindTemplate(templateEl, dataContext);
+                bindTemplate: function (templateEl, dataContext, required) {
+                    return self._dataBindingService.bindTemplate(templateEl, dataContext, required);
                 },
                 bindElements: function (args) {
                     return self._dataBindingService.bindElements(args);
@@ -4690,7 +4693,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
         };
         Application.prototype.registerTemplateLoader = function (name, loader) {
             var fn = memoize(function () {
-                return loader().then(function (html) { return dom.getDocFragment(html); });
+                return loader().then(function (html) { return { doc: dom.getDocFragment(html), required: null }; });
             });
             tloader_2.registerLoader(this, name, fn);
         };
@@ -4700,7 +4703,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
                 if (!el) {
                     throw new Error(format(ERRS.ERR_TEMPLATE_ID_INVALID, templateId));
                 }
-                return resolve(dom.getDocFragment(el.innerHTML), true);
+                return resolve({ doc: dom.getDocFragment(el.innerHTML), required: null }, true);
             });
             tloader_2.registerLoader(this, name, fn);
         };
@@ -4818,6 +4821,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.25.8";
+    exports.VERSION = "2.25.9";
     bootstrap_7.Bootstrap._initFramework();
 });

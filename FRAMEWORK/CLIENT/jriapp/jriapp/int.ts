@@ -62,8 +62,10 @@ export interface ISvcStore {
     getSvc(name: string): any;
 }
 
+export type TDocInfo = { doc: DocumentFragment; required: string[] | null };
+
 export type THTMLLoaderFunc = () => IPromise<string>;
-export type TLoaderFunc = () => IPromise<DocumentFragment>;
+export type TLoaderFunc = () => IPromise<TDocInfo>;
 
 
 export interface ITemplateLoaderInfo {
@@ -186,7 +188,7 @@ export interface IBindArgs  {
 }
 
 export interface IDataBindingService extends IDisposable {
-    bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
+    bindTemplate(templateEl: HTMLElement, dataContext: any, required: string[] | null): IPromise<ILifeTimeScope>;
     bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
     setUpBindings(): IPromise<void>;
     bind(opts: TBindingOptions): IBinding;
@@ -301,7 +303,7 @@ export interface IModuleLoader {
 
 // --Application interfaces
 export interface IInternalAppMethods extends IDataProvider {
-    bindTemplate(templateEl: HTMLElement, dataContext: any): IPromise<ILifeTimeScope>;
+    bindTemplate(templateEl: HTMLElement, dataContext: any, required: string[] | null): IPromise<ILifeTimeScope>;
     bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
     getTemplateLoaderInfo(name: string): ITemplateLoaderInfo;
 }
