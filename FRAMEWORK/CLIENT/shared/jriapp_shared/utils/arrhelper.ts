@@ -22,15 +22,21 @@ export class ArrayHelper {
     public static fromList<T>(list: IArrayLikeList<any>): T[];
     public static fromList<T>(list: IArrayLikeList<T>): T[];
     public static fromList(list: IArrayLikeList<any>): any[] {
+        if (!list)
+            return [];
         return [].slice.call(list);
     }
     public static merge<T>(arrays: Array<Array<T>>): Array<T> {
+        if (!arrays)
+            return [];
         return [].concat.apply([], arrays);
     }
 
     public static distinct(arr: string[]): string[];
     public static distinct(arr: number[]): number[];
     public static distinct(arr: any[]): any[] {
+        if (!arr)
+            return [];
         const map = Indexer(), len = arr.length;
         for (let i = 0; i < len; i += 1) {
             map["" + arr[i]] = arr[i];
@@ -38,7 +44,10 @@ export class ArrayHelper {
         return toArray(map);
     }
     public static toMap<T extends object>(arr: T[], key: (obj: T) => string): IIndexer<T> {
-        const map = Indexer(), len = arr.length;
+        const map = Indexer();
+        if (!arr)
+            return map;
+        const len = arr.length;
         for (let i = 0; i < len; i += 1) {
             map[key(arr[i])] = arr[i];
         }

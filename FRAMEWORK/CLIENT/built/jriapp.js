@@ -1595,12 +1595,16 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
                 delete map[key];
             }
         };
-        DomUtils.isContained = function (oNode, oCont) {
-            if (!oNode) {
+        DomUtils.isContained = function (node, container) {
+            if (!node) {
                 return false;
             }
-            while (!!(oNode = oNode.parentNode)) {
-                if (oNode === oCont) {
+            var contains = container.contains;
+            if (!!contains) {
+                return contains.call(container, node);
+            }
+            while (!!(node = node.parentNode)) {
+                if (node === container) {
                     return true;
                 }
             }
@@ -4821,6 +4825,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "2.25.9";
+    exports.VERSION = "2.25.11";
     bootstrap_7.Bootstrap._initFramework();
 });

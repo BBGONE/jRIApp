@@ -1851,12 +1851,18 @@ define("jriapp_shared/utils/arrhelper", ["require", "exports", "jriapp_shared/ut
             }
         };
         ArrayHelper.fromList = function (list) {
+            if (!list)
+                return [];
             return [].slice.call(list);
         };
         ArrayHelper.merge = function (arrays) {
+            if (!arrays)
+                return [];
             return [].concat.apply([], arrays);
         };
         ArrayHelper.distinct = function (arr) {
+            if (!arr)
+                return [];
             var map = Indexer(), len = arr.length;
             for (var i = 0; i < len; i += 1) {
                 map["" + arr[i]] = arr[i];
@@ -1864,7 +1870,10 @@ define("jriapp_shared/utils/arrhelper", ["require", "exports", "jriapp_shared/ut
             return toArray(map);
         };
         ArrayHelper.toMap = function (arr, key) {
-            var map = Indexer(), len = arr.length;
+            var map = Indexer();
+            if (!arr)
+                return map;
+            var len = arr.length;
             for (var i = 0; i < len; i += 1) {
                 map[key(arr[i])] = arr[i];
             }

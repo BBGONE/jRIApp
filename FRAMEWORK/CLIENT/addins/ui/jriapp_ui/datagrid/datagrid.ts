@@ -817,7 +817,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             return;
         }
         selectableProviderWeakMap.delete(this._contaner);
-        this._header.remove();
+        dom.removeNode(this._header);
         this._header = null;
         // first call to remove wrap div
         dom.unwrap(this.table);

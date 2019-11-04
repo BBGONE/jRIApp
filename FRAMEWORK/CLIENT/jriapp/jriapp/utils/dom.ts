@@ -85,12 +85,17 @@ export class DomUtils {
             delete map[key];
         }
     }
-    static isContained(oNode: any, oCont: any): boolean {
-        if (!oNode) {
+    static isContained(node: Node, container: Node): boolean {
+        if (!node) {
             return false;
         }
-        while (!!(oNode = oNode.parentNode)) {
-            if (oNode === oCont) {
+        const contains = container.contains;
+        if (!!contains) {
+            return contains.call(container, node);
+        }
+
+        while (!!(node = node.parentNode)) {
+            if (node === container) {
                 return true;
             }
         }

@@ -6010,7 +6010,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 return;
             }
             bootstrap_16.selectableProviderWeakMap.delete(this._contaner);
-            this._header.remove();
+            dom.removeNode(this._header);
             this._header = null;
             dom.unwrap(this.table);
             dom.unwrap(this.table);

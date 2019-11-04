@@ -644,7 +644,7 @@ declare module "jriapp/utils/dom" {
         static getData(el: Node, key: string): any;
         static setData(el: Node, key: string, val: any): void;
         static removeData(el: Node, key?: string): void;
-        static isContained(oNode: any, oCont: any): boolean;
+        static isContained(node: Node, container: Node): boolean;
         static getDocFragment(html: string): DocumentFragment;
         static fromHTML(html: string): HTMLElement[];
         static queryAll<T>(root: Document | Element, selector: string): T[];
@@ -1086,5 +1086,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "2.25.9";
+    export const VERSION = "2.25.11";
 }
