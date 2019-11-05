@@ -3303,8 +3303,6 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             case 1:
             case 3:
             case 2:
-            case 6:
-            case 1:
                 return true;
             default:
                 return false;
@@ -3427,37 +3425,8 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             if (fn_isNotSubmittable(fieldInfo)) {
                 return res;
             }
-            if (fieldInfo.fieldType === 5) {
-                res = { fieldName: fieldInfo.fieldName, val: null, orig: null, flags: 0, nested: [] };
-                var len = fieldInfo.nested.length;
-                for (var i = 0; i < len; i += 1) {
-                    var tmp = self._getValueChange(fullName + "." + fieldInfo.nested[i].fieldName, fieldInfo.nested[i], changedOnly);
-                    if (!!tmp) {
-                        res.nested.push(tmp);
-                    }
-                }
-            }
-            else {
-                var newVal = dbSet._getInternal().getStrValue(self._getValue(fullName, 0), fieldInfo), oldV = !self.hasOrigVals ? newVal : dbSet._getInternal().getStrValue(self._getValue(fullName, 2), fieldInfo), isChanged = (oldV !== newVal);
-                if (isChanged) {
-                    res = {
-                        fieldName: fieldInfo.fieldName,
-                        val: newVal,
-                        orig: oldV,
-                        flags: (1 | 2),
-                        nested: null
-                    };
-                }
-                else if (fieldInfo.isPrimaryKey > 0 || fieldInfo.fieldType === 4 || fieldInfo.isNeedOriginal) {
-                    res = {
-                        fieldName: fieldInfo.fieldName,
-                        val: newVal,
-                        orig: oldV,
-                        flags: 2,
-                        nested: null
-                    };
-                }
-                else {
+            switch (fieldInfo.fieldType) {
+                case 6:
                     res = {
                         fieldName: fieldInfo.fieldName,
                         val: null,
@@ -3465,7 +3434,47 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                         flags: 0,
                         nested: null
                     };
-                }
+                    break;
+                case 5:
+                    res = { fieldName: fieldInfo.fieldName, val: null, orig: null, flags: 0, nested: [] };
+                    var len = fieldInfo.nested.length;
+                    for (var i = 0; i < len; i += 1) {
+                        var tmp = self._getValueChange(fullName + "." + fieldInfo.nested[i].fieldName, fieldInfo.nested[i], changedOnly);
+                        if (!!tmp) {
+                            res.nested.push(tmp);
+                        }
+                    }
+                    break;
+                default:
+                    var newVal = dbSet._getInternal().getStrValue(self._getValue(fullName, 0), fieldInfo), oldV = !self.hasOrigVals ? newVal : dbSet._getInternal().getStrValue(self._getValue(fullName, 2), fieldInfo), isChanged = (oldV !== newVal);
+                    if (isChanged) {
+                        res = {
+                            fieldName: fieldInfo.fieldName,
+                            val: newVal,
+                            orig: oldV,
+                            flags: (1 | 2),
+                            nested: null
+                        };
+                    }
+                    else if (fieldInfo.isPrimaryKey > 0 || fieldInfo.fieldType === 4 || fieldInfo.isNeedOriginal) {
+                        res = {
+                            fieldName: fieldInfo.fieldName,
+                            val: newVal,
+                            orig: oldV,
+                            flags: 2,
+                            nested: null
+                        };
+                    }
+                    else {
+                        res = {
+                            fieldName: fieldInfo.fieldName,
+                            val: null,
+                            orig: null,
+                            flags: 0,
+                            nested: null
+                        };
+                    }
+                    break;
             }
             if (changedOnly) {
                 if (fieldInfo.fieldType === 5) {

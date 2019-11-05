@@ -22,8 +22,6 @@ function fn_isNotSubmittable(fieldInfo: IFieldInfo) {
         case FIELD_TYPE.ClientOnly:
         case FIELD_TYPE.Navigation:
         case FIELD_TYPE.Calculated:
-        case FIELD_TYPE.ServerCalculated:
-        case FIELD_TYPE.ClientOnly:
             return true;
         default:
             return false;
@@ -150,40 +148,12 @@ export class EntityAspect<TItem extends IEntityItem = IEntityItem, TObj extends 
     protected _getValueChange(fullName: string, fieldInfo: IFieldInfo, changedOnly: boolean): IValueChange {
         const self = this, dbSet = self.dbSet;
         let res: IValueChange = null;
+
         if (fn_isNotSubmittable(fieldInfo)) {
             return res;
         }
-
-        if (fieldInfo.fieldType === FIELD_TYPE.Object) {
-            res = { fieldName: fieldInfo.fieldName, val: null, orig: null, flags: FLAGS.None, nested: [] };
-            const len = fieldInfo.nested.length;
-            for (let i = 0; i < len; i += 1) {
-                const tmp = self._getValueChange(fullName + "." + fieldInfo.nested[i].fieldName, fieldInfo.nested[i], changedOnly);
-                if (!!tmp) {
-                    res.nested.push(tmp);
-                }
-            }
-        } else {
-            const newVal = dbSet._getInternal().getStrValue(self._getValue(fullName, VALS_VERSION.Current), fieldInfo),
-                oldV = !self.hasOrigVals ? newVal : dbSet._getInternal().getStrValue(self._getValue(fullName, VALS_VERSION.Original), fieldInfo),
-                isChanged = (oldV !== newVal);
-            if (isChanged) {
-                res = {
-                    fieldName: fieldInfo.fieldName,
-                    val: newVal,
-                    orig: oldV,
-                    flags: (FLAGS.Changed | FLAGS.Setted),
-                    nested: null
-                };
-            } else if (fieldInfo.isPrimaryKey > 0 || fieldInfo.fieldType === FIELD_TYPE.RowTimeStamp || fieldInfo.isNeedOriginal) {
-                res = {
-                    fieldName: fieldInfo.fieldName,
-                    val: newVal,
-                    orig: oldV,
-                    flags: FLAGS.Setted,
-                    nested: null
-                };
-            } else {
+        switch (fieldInfo.fieldType) {
+            case FIELD_TYPE.ServerCalculated:
                 res = {
                     fieldName: fieldInfo.fieldName,
                     val: null,
@@ -191,7 +161,47 @@ export class EntityAspect<TItem extends IEntityItem = IEntityItem, TObj extends 
                     flags: FLAGS.None,
                     nested: null
                 };
-            }
+                break;
+            case FIELD_TYPE.Object:
+                res = { fieldName: fieldInfo.fieldName, val: null, orig: null, flags: FLAGS.None, nested: [] };
+                const len = fieldInfo.nested.length;
+                for (let i = 0; i < len; i += 1) {
+                    const tmp = self._getValueChange(fullName + "." + fieldInfo.nested[i].fieldName, fieldInfo.nested[i], changedOnly);
+                    if (!!tmp) {
+                        res.nested.push(tmp);
+                    }
+                }
+                break;
+            default:
+                const newVal = dbSet._getInternal().getStrValue(self._getValue(fullName, VALS_VERSION.Current), fieldInfo),
+                    oldV = !self.hasOrigVals ? newVal : dbSet._getInternal().getStrValue(self._getValue(fullName, VALS_VERSION.Original), fieldInfo),
+                    isChanged = (oldV !== newVal);
+                if (isChanged) {
+                    res = {
+                        fieldName: fieldInfo.fieldName,
+                        val: newVal,
+                        orig: oldV,
+                        flags: (FLAGS.Changed | FLAGS.Setted),
+                        nested: null
+                    };
+                } else if (fieldInfo.isPrimaryKey > 0 || fieldInfo.fieldType === FIELD_TYPE.RowTimeStamp || fieldInfo.isNeedOriginal) {
+                    res = {
+                        fieldName: fieldInfo.fieldName,
+                        val: newVal,
+                        orig: oldV,
+                        flags: FLAGS.Setted,
+                        nested: null
+                    };
+                } else {
+                    res = {
+                        fieldName: fieldInfo.fieldName,
+                        val: null,
+                        orig: null,
+                        flags: FLAGS.None,
+                        nested: null
+                    };
+                }
+                break;
         }
 
         if (changedOnly) {
