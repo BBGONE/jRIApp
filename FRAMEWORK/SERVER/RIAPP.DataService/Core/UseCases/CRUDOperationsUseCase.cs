@@ -22,14 +22,20 @@ namespace RIAPP.DataService.Core
         private readonly IAuthorizer<TService> _authorizer;
         private readonly Action<Exception> _onError;
         private readonly Action<RowInfo> _trackChanges;
-        private readonly Func<IServiceOperationsHelper, Task> _executeChangeSet;
+        private readonly ChangeSetExecutor _executeChangeSet;
+        private readonly AfterChangeSetExecuted _afterChangeSetExecuted;
         
-        public CRUDOperationsUseCase(IServiceContainer<TService> serviceContainer, BaseDomainService service, Action<Exception> onError, Action<RowInfo> trackChanges, Func<IServiceOperationsHelper, Task> executeChangeSet)
+        public CRUDOperationsUseCase(IServiceContainer<TService> serviceContainer, 
+            BaseDomainService service, 
+            Action<Exception> onError, Action<RowInfo> trackChanges, 
+            ChangeSetExecutor executeChangeSet, 
+            AfterChangeSetExecuted afterChangeSetExecuted)
         {
             _service = service;
             _onError = onError ?? throw new ArgumentNullException(nameof(onError));
             _trackChanges = trackChanges ?? throw new ArgumentNullException(nameof(trackChanges));
             _executeChangeSet = executeChangeSet ?? throw new ArgumentNullException(nameof(executeChangeSet));
+            _afterChangeSetExecuted = afterChangeSetExecuted ?? throw new ArgumentNullException(nameof(afterChangeSetExecuted));
             _metadata = this._service.GetMetadata();
             _serviceContainer = serviceContainer;
             _serviceHelper = _serviceContainer.GetServiceHelper();
@@ -81,7 +87,7 @@ namespace RIAPP.DataService.Core
             } //foreach (var dbSet in changeSet.dbSets)
         }
 
-        private void Insert(ChangeSet changeSet, ChangeSetGraph graph, RowInfo rowInfo)
+        private void Insert(ChangeSet changeSet, IChangeSetGraph graph, RowInfo rowInfo)
         {
             this.CheckRowInfo(rowInfo);
            
@@ -114,7 +120,7 @@ namespace RIAPP.DataService.Core
             }
         }
 
-        private void ApplyChanges(ChangeSet changeSet, ChangeSetGraph graph)
+        private void ApplyChanges(ChangeSet changeSet, IChangeSetGraph graph)
         {
             RowInfo currentRowInfo = null;
 
@@ -149,7 +155,7 @@ namespace RIAPP.DataService.Core
             }
         }
 
-        private async Task ValidateChanges(ChangeSet changeSet, ChangeSetGraph graph)
+        private async Task ValidateChanges(ChangeSet changeSet, IChangeSetGraph graph)
         {
             bool hasErrors = false;
 
@@ -185,12 +191,12 @@ namespace RIAPP.DataService.Core
                 throw new ValidationException(ErrorStrings.ERR_SVC_CHANGES_ARENOT_VALID);
         }
 
-        private async Task CommitChanges(ChangeSet changeSet, ChangeSetGraph graph)
+        private async Task CommitChanges(ChangeSet changeSet, IChangeSetGraph graph)
         {
             var req = new RequestContext(_service, changeSet: changeSet, operation: ServiceOperationType.SaveChanges);
             using (var callContext = new RequestCallContext(req))
             {
-                await _executeChangeSet(_serviceHelper);
+                await _executeChangeSet();
 
                 foreach (RowInfo rowInfo in graph.AllList)
                 {
@@ -199,10 +205,12 @@ namespace RIAPP.DataService.Core
                     else
                         rowInfo.values = null;
                 }
+
+                await _afterChangeSetExecuted(_serviceHelper);
             }
         }
 
-        private void TrackChanges(ChangeSetGraph graph)
+        private void TrackChanges(IChangeSetGraph graph)
         {
             foreach (RowInfo rowInfo in graph.AllList)
             {

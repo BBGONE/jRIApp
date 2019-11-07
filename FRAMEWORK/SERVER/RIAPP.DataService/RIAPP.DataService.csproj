@@ -131,6 +131,7 @@
     <Compile Include="Core\Exceptions\DummyException.cs" />
     <Compile Include="Core\Exceptions\UnsupportedTypeException.cs" />
     <Compile Include="Core\Exceptions\ValidationException.cs" />
+    <Compile Include="Abstractions\Core\IChangeSetGraph.cs" />
     <Compile Include="Core\Metadata\DesignTimeMetadata.cs" />
     <Compile Include="Core\Metadata\MetadataCache.cs" />
     <Compile Include="Core\Metadata\MetadataHelper.cs" />

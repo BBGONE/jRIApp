@@ -15,7 +15,7 @@ namespace RIAPP.DataService.Core
         where TService: BaseDomainService
     {
         /// <summary>
-        ///     Already created instances of DataManagers indexed by modelType
+        ///    Already created instances of DataManagers indexed by modelType
         /// </summary>
         private readonly ConcurrentDictionary<Type, object> _dataManagers;
         private readonly IDataHelper<TService> _dataHelper;
@@ -62,7 +62,7 @@ namespace RIAPP.DataService.Core
             return managerInstance;
         }
 
-        public async Task AfterExecuteChangeSet()
+        public async Task AfterExecuteChangeSet(ChangeSet message)
         {
             IEnumerable<IDataManager> dataManagers = _dataManagers.Values.Select(m => (IDataManager)m);
             foreach (IDataManager dataManager in dataManagers)

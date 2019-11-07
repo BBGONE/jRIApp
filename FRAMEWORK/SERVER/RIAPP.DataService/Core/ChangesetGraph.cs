@@ -22,7 +22,7 @@ namespace RIAPP.DataService.Core
         public Association Association { get; set; }
     }
 
-    internal class ChangeSetGraph
+    internal class ChangeSetGraph : IChangeSetGraph
     {
         private readonly LinkedList<RowInfo> _allList = new LinkedList<RowInfo>();
         private readonly LinkedList<RowInfo> _deleteList = new LinkedList<RowInfo>();

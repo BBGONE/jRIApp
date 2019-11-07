@@ -72,10 +72,10 @@ namespace RIAPP.DataService.Core.Config
             #endregion
 
             #region UseCases
-            var crudCaseFactory = ActivatorUtilities.CreateFactory(typeof(CRUDOperationsUseCase<TService>), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>), typeof(Action<RowInfo>), typeof(Func<IServiceOperationsHelper, Task>) });
+            var crudCaseFactory = ActivatorUtilities.CreateFactory(typeof(CRUDOperationsUseCase<TService>), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>), typeof(Action<RowInfo>), typeof(ChangeSetExecutor), typeof(AfterChangeSetExecuted) });
 
-            services.TryAddScoped<ICRUDOperationsUseCaseFactory<TService>>((sp) => new CRUDOperationsUseCaseFactory<TService>((svc, onError, trackChanges, executeChangeSet) =>
-                (ICRUDOperationsUseCase<TService>)crudCaseFactory(sp, new object[] { svc, onError, trackChanges, executeChangeSet })));
+            services.TryAddScoped<ICRUDOperationsUseCaseFactory<TService>>((sp) => new CRUDOperationsUseCaseFactory<TService>((svc, onError, trackChanges, executeChangeSet, afterChangeSetExecuted) =>
+                (ICRUDOperationsUseCase<TService>)crudCaseFactory(sp, new object[] { svc, onError, trackChanges, executeChangeSet, afterChangeSetExecuted })));
 
             var queryCaseFactory = ActivatorUtilities.CreateFactory(typeof(QueryOperationsUseCase<TService>), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>) });
 

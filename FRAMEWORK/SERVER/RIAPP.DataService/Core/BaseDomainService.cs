@@ -75,7 +75,7 @@ namespace RIAPP.DataService.Core
 
         protected abstract Task ExecuteChangeSet();
 
-        protected virtual Task AfterExecuteChangeSet()
+        protected virtual Task AfterExecuteChangeSet(ChangeSet message)
         {
             return Task.CompletedTask;
         }
@@ -208,15 +208,20 @@ namespace RIAPP.DataService.Core
         public async Task<ChangeSet> ServiceApplyChangeSet(ChangeSet message)
         {
             var factory = this.ServiceContainer.CRUDOperationsUseCaseFactory;
-            ICRUDOperationsUseCase uc = factory.Create(this, 
+            ICRUDOperationsUseCase uc = factory.Create(this,
                 (err) => this._OnError(err),
                 (row) => this.TrackChangesToEntity(row),
-                async (serviceHelper) =>
+                async () =>
                 {
                     await this.ExecuteChangeSet();
-                    await this.AfterExecuteChangeSet();
-                    await serviceHelper.AfterExecuteChangeSet();
-                });
+                },
+                async (serviceHelper) =>
+                {
+                    await this.AfterExecuteChangeSet(message);
+                    await serviceHelper.AfterExecuteChangeSet(message);
+                }
+            );
+
             var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<ChangeSet, ChangeSet>>();
             
             bool res = await uc.Handle(message, output);
