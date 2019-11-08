@@ -68,7 +68,7 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
         }
 
         [Refresh]
-        public async Task<Product> RefreshProduct(RefreshInfo refreshInfo)
+        public async Task<Product> RefreshProduct(RefreshInfoRequest refreshInfo)
         {
             var query = DataService.GetRefreshedEntityQuery(DB.Products, refreshInfo);
             return await query.SingleAsync();

@@ -17,8 +17,8 @@ namespace RIAPP.DataService.Core
         MetadataResult ServiceGetMetadata();
 
         Task<QueryResponse> ServiceGetData(QueryRequest request);
-        Task<ChangeSet> ServiceApplyChangeSet(ChangeSet changeSet);
-        Task<RefreshInfo> ServiceRefreshRow(RefreshInfo rowInfo);
+        Task<ChangeSetResponse> ServiceApplyChangeSet(ChangeSetRequest changeSet);
+        Task<RefreshInfoResponse> ServiceRefreshRow(RefreshInfoRequest rowInfo);
         Task<InvokeResponse> ServiceInvokeMethod(InvokeRequest invokeInfo);
     }
 }

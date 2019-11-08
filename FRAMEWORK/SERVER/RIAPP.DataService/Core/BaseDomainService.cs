@@ -75,7 +75,7 @@ namespace RIAPP.DataService.Core
 
         protected abstract Task ExecuteChangeSet();
 
-        protected virtual Task AfterExecuteChangeSet(ChangeSet message)
+        protected virtual Task AfterExecuteChangeSet(ChangeSetRequest message)
         {
             return Task.CompletedTask;
         }
@@ -205,7 +205,7 @@ namespace RIAPP.DataService.Core
             return output.Response;
         }
 
-        public async Task<ChangeSet> ServiceApplyChangeSet(ChangeSet message)
+        public async Task<ChangeSetResponse> ServiceApplyChangeSet(ChangeSetRequest message)
         {
             var factory = this.ServiceContainer.CRUDOperationsUseCaseFactory;
             ICRUDOperationsUseCase uc = factory.Create(this,
@@ -222,18 +222,18 @@ namespace RIAPP.DataService.Core
                 }
             );
 
-            var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<ChangeSet, ChangeSet>>();
+            var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<ChangeSetResponse, ChangeSetResponse>>();
             
             bool res = await uc.Handle(message, output);
 
             return output.Response;
         }
 
-        public async Task<RefreshInfo> ServiceRefreshRow(RefreshInfo message)
+        public async Task<RefreshInfoResponse> ServiceRefreshRow(RefreshInfoRequest message)
         {
             var factory = this.ServiceContainer.RefreshOperationsUseCaseFactory;
             IRefreshOperationsUseCase uc = factory.Create(this, (err) => _OnError(err));
-            var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<RefreshInfo, RefreshInfo>>();
+            var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<RefreshInfoResponse, RefreshInfoResponse>>();
 
             bool res = await uc.Handle(message, output);
 

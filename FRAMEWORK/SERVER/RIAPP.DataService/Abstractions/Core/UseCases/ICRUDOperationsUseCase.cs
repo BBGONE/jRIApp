@@ -2,7 +2,7 @@
 
 namespace RIAPP.DataService.Core
 {
-    public interface ICRUDOperationsUseCase : IUseCaseRequestHandler<ChangeSet, ChangeSet>
+    public interface ICRUDOperationsUseCase : IUseCaseRequestHandler<ChangeSetRequest, ChangeSetResponse>
     {
     }
 

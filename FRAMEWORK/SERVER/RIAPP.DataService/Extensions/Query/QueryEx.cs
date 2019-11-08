@@ -233,7 +233,7 @@ namespace RIAPP.DataService.Core.Query
             return result;
         }
 
-        public static IQueryable<T> GetRefreshedEntityQuery<T>(this IDataServiceComponent dataService, IQueryable<T> entities, RefreshInfo info)
+        public static IQueryable<T> GetRefreshedEntityQuery<T>(this IDataServiceComponent dataService, IQueryable<T> entities, RefreshInfoRequest info)
             where T : class
         {
             var dataHelper = dataService.ServiceContainer.DataHelper;

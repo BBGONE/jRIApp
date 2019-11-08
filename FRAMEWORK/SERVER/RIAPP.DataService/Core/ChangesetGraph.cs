@@ -33,13 +33,13 @@ namespace RIAPP.DataService.Core
         private readonly LinkedList<ParentChildNode> updateNodes = new LinkedList<ParentChildNode>();
 
 
-        public ChangeSetGraph(ChangeSet changeSet, RunTimeMetadata metadata)
+        public ChangeSetGraph(ChangeSetRequest changeSet, RunTimeMetadata metadata)
         {
             this.ChangeSet = changeSet ?? throw new ArgumentNullException(nameof(changeSet));
             this._metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         }
 
-        public ChangeSet ChangeSet { get; }
+        public ChangeSetRequest ChangeSet { get; }
 
         public IEnumerable<RowInfo> InsertList
         {

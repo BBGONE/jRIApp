@@ -116,32 +116,32 @@ namespace RIAPP.DataService.Mvc
         [HttpPost]
         public async Task<ActionResult> PerformQuery([SericeParamsBinder] QueryRequest request)
         {
-            var res = await DomainService.ServiceGetData(request);
-            return new ChunkedResult<QueryResponse>(res, Serializer);
+            var response = await DomainService.ServiceGetData(request);
+            return new ChunkedResult<QueryResponse>(response, Serializer);
         }
 
         [ActionName("save")]
         [HttpPost]
-        public async Task<ActionResult> Save([SericeParamsBinder] ChangeSet changeSet)
+        public async Task<ActionResult> Save([SericeParamsBinder] ChangeSetRequest changeSet)
         {
-            var res = await DomainService.ServiceApplyChangeSet(changeSet);
-            return new ChunkedResult<ChangeSet>(res, Serializer);
+            var response = await DomainService.ServiceApplyChangeSet(changeSet);
+            return new ChunkedResult<ChangeSetResponse>(response, Serializer);
         }
 
         [ActionName("refresh")]
         [HttpPost]
-        public async Task<ActionResult> Refresh([SericeParamsBinder] RefreshInfo refreshInfo)
+        public async Task<ActionResult> Refresh([SericeParamsBinder] RefreshInfoRequest refreshInfo)
         {
-            var res = await DomainService.ServiceRefreshRow(refreshInfo);
-            return new ChunkedResult<RefreshInfo>(res, Serializer);
+            var response = await DomainService.ServiceRefreshRow(refreshInfo);
+            return new ChunkedResult<RefreshInfoResponse>(response, Serializer);
         }
 
         [ActionName("invoke")]
         [HttpPost]
         public async Task<ActionResult> Invoke([SericeParamsBinder] InvokeRequest invokeInfo)
         {
-            var res = await DomainService.ServiceInvokeMethod(invokeInfo);
-            return new ChunkedResult<InvokeResponse>(res, Serializer);
+            var response = await DomainService.ServiceInvokeMethod(invokeInfo);
+            return new ChunkedResult<InvokeResponse>(response, Serializer);
         }
 
         protected TService GetDomainService()

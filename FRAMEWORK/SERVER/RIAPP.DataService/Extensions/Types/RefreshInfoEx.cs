@@ -2,12 +2,12 @@
 {
     public static class RefreshInfoEx
     {
-        public static DbSetInfo GetDbSetInfo(this RefreshInfo refreshInfo)
+        public static DbSetInfo GetDbSetInfo(this RefreshInfoRequest refreshInfo)
         {
             return refreshInfo._dbSetInfo;
         }
 
-        public static void SetDbSetInfo(this RefreshInfo refreshInfo, DbSetInfo dbSetInfo)
+        public static void SetDbSetInfo(this RefreshInfoRequest refreshInfo, DbSetInfo dbSetInfo)
         {
             refreshInfo._dbSetInfo = dbSetInfo;
         }

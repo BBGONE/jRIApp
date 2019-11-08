@@ -156,7 +156,9 @@
     <Compile Include="Core\ServiceOperationType.cs" />
     <Compile Include="Core\SubsetsGenerator.cs" />
     <Compile Include="Core\Types\Association.cs" />
-    <Compile Include="Core\Types\ChangeSet.cs" />
+    <Compile Include="Core\Types\ChangeSetResponse.cs" />
+    <Compile Include="Core\Types\ChangeSetRequest.cs" />
+    <Compile Include="Core\Types\DbSet.cs" />
     <Compile Include="Core\Types\DbSetInfo.cs" />
     <Compile Include="Core\Types\DbSetPermit.cs" />
     <Compile Include="Core\Types\Enums.cs" />
@@ -172,7 +174,8 @@
     <Compile Include="Core\Types\QueryRequest.cs" />
     <Compile Include="Core\Types\QueryResponse.cs" />
     <Compile Include="Core\Types\QueryResult.cs" />
-    <Compile Include="Core\Types\RefreshInfo.cs" />
+    <Compile Include="Core\Types\RefreshInfoResponse.cs" />
+    <Compile Include="Core\Types\RefreshInfoRequest.cs" />
     <Compile Include="Core\Types\Row.cs" />
     <Compile Include="Core\Types\RowInfo.cs" />
     <Compile Include="Core\Types\SortInfo.cs" />

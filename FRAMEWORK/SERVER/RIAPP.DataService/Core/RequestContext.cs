@@ -10,7 +10,7 @@ namespace RIAPP.DataService.Core
     {
         public RequestContext(BaseDomainService dataService, 
             DbSet dbSet = null,
-            ChangeSet changeSet = null,
+            ChangeSetRequest changeSet = null,
             RowInfo rowInfo = null,
             QueryRequest queryInfo = null,
             ServiceOperationType operation = ServiceOperationType.None)
@@ -42,7 +42,7 @@ namespace RIAPP.DataService.Core
 
         public DbSet CurrentDbSet { get; }
 
-        public ChangeSet CurrentChangeSet { get; }
+        public ChangeSetRequest CurrentChangeSet { get; }
 
         public RowInfo CurrentRowInfo { get; }
 

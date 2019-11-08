@@ -29,7 +29,7 @@ namespace RIAPP.DataService.Core
             _authorizer = _serviceContainer.GetAuthorizer();
         }
 
-        public async Task<bool> Handle(RefreshInfo message, IOutputPort<RefreshInfo> outputPort)
+        public async Task<bool> Handle(RefreshInfoRequest message, IOutputPort<RefreshInfoResponse> outputPort)
         {
             try
             {
@@ -47,17 +47,17 @@ namespace RIAPP.DataService.Core
                     object invokeRes = methodData.MethodInfo.Invoke(instance, new object[] { message });
                     object dbEntity = await _serviceHelper.GetMethodResult(invokeRes);
 
-                    RefreshInfo res = new RefreshInfo { rowInfo = message.rowInfo, dbSetName = message.dbSetName };
+                    RefreshInfoResponse response = new RefreshInfoResponse { rowInfo = message.rowInfo, dbSetName = message.dbSetName };
                     if (dbEntity != null)
                     {
                         _serviceHelper.UpdateRowInfoFromEntity(dbEntity, message.rowInfo);
                     }
                     else
                     {
-                        res.rowInfo = null;
+                        response.rowInfo = null;
                     }
 
-                    outputPort.Handle(res);
+                    outputPort.Handle(response);
                 }
             }
             catch (Exception ex)
@@ -65,12 +65,15 @@ namespace RIAPP.DataService.Core
 
                 if (ex is System.Reflection.TargetInvocationException)
                     ex = ex.InnerException;
-                var res = new RefreshInfo
+
+                var response = new RefreshInfoResponse
                 {
                     dbSetName = message.dbSetName,
                     error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name),
                     rowInfo = null
                 };
+
+                outputPort.Handle(response);
 
                 _onError(ex);
             }

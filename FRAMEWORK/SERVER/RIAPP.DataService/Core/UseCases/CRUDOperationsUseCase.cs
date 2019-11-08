@@ -55,14 +55,14 @@ namespace RIAPP.DataService.Core
                                 dbSetInfo.GetEntityType().Name, rowInfo.changeType));
         }
 
-        private RequestContext CreateRequestContext(ChangeSet changeSet, RowInfo rowInfo)
+        private RequestContext CreateRequestContext(ChangeSetRequest changeSet, RowInfo rowInfo)
         {
             DbSet dbSet = changeSet.dbSets.Where(d => d.dbSetName == rowInfo.GetDbSetInfo().dbSetName).Single();
             return new RequestContext(_service, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
                 operation: ServiceOperationType.SaveChanges);
         }
 
-        protected virtual async Task AuthorizeChanges(ChangeSet changeSet)
+        protected virtual async Task AuthorizeChanges(ChangeSetRequest changeSet)
         {
             foreach (DbSet dbSet in changeSet.dbSets)
             {
@@ -87,7 +87,7 @@ namespace RIAPP.DataService.Core
             } //foreach (var dbSet in changeSet.dbSets)
         }
 
-        private void Insert(ChangeSet changeSet, IChangeSetGraph graph, RowInfo rowInfo)
+        private void Insert(ChangeSetRequest changeSet, IChangeSetGraph graph, RowInfo rowInfo)
         {
             this.CheckRowInfo(rowInfo);
            
@@ -98,7 +98,7 @@ namespace RIAPP.DataService.Core
             }
         }
 
-        private void Update(ChangeSet changeSet, RowInfo rowInfo)
+        private void Update(ChangeSetRequest changeSet, RowInfo rowInfo)
         {
             this.CheckRowInfo(rowInfo);
 
@@ -109,7 +109,7 @@ namespace RIAPP.DataService.Core
             }
         }
 
-        private void Delete(ChangeSet changeSet, RowInfo rowInfo)
+        private void Delete(ChangeSetRequest changeSet, RowInfo rowInfo)
         {
             this.CheckRowInfo(rowInfo);
 
@@ -120,7 +120,7 @@ namespace RIAPP.DataService.Core
             }
         }
 
-        private void ApplyChanges(ChangeSet changeSet, IChangeSetGraph graph)
+        private void ApplyChanges(ChangeSetRequest changeSet, IChangeSetGraph graph)
         {
             RowInfo currentRowInfo = null;
 
@@ -155,7 +155,7 @@ namespace RIAPP.DataService.Core
             }
         }
 
-        private async Task ValidateChanges(ChangeSet changeSet, IChangeSetGraph graph)
+        private async Task ValidateChanges(ChangeSetRequest changeSet, IChangeSetGraph graph)
         {
             bool hasErrors = false;
 
@@ -191,9 +191,10 @@ namespace RIAPP.DataService.Core
                 throw new ValidationException(ErrorStrings.ERR_SVC_CHANGES_ARENOT_VALID);
         }
 
-        private async Task CommitChanges(ChangeSet changeSet, IChangeSetGraph graph)
+        private async Task CommitChanges(ChangeSetRequest changeSet, IChangeSetGraph graph)
         {
             var req = new RequestContext(_service, changeSet: changeSet, operation: ServiceOperationType.SaveChanges);
+
             using (var callContext = new RequestCallContext(req))
             {
                 await _executeChangeSet();
@@ -217,8 +218,10 @@ namespace RIAPP.DataService.Core
             }
         }
 
-        public async Task<bool> Handle(ChangeSet message, IOutputPort<ChangeSet> outputPort)
+        public async Task<bool> Handle(ChangeSetRequest message, IOutputPort<ChangeSetResponse> outputPort)
         {
+            ChangeSetResponse response = new ChangeSetResponse(message);
+
             try
             {
                 await AuthorizeChanges(message);
@@ -238,13 +241,13 @@ namespace RIAPP.DataService.Core
             {
                 if (ex is TargetInvocationException)
                     ex = ex.InnerException;
-                message.error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name);
+                response.error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name);
                 _onError(ex);
             }
 
-            outputPort.Handle(message);
+            outputPort.Handle(response);
 
-            return message.error == null;
+            return response.error == null;
         }
     }
 }

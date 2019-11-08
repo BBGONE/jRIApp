@@ -60,6 +60,7 @@ namespace RIAPP.DataService.Core
             {
                 if (ex is TargetInvocationException)
                     ex = ex.InnerException;
+
                 var res = new InvokeResponse
                 {
                     result = null,

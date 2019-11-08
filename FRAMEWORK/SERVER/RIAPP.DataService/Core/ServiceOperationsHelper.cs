@@ -62,7 +62,7 @@ namespace RIAPP.DataService.Core
             return managerInstance;
         }
 
-        public async Task AfterExecuteChangeSet(ChangeSet message)
+        public async Task AfterExecuteChangeSet(ChangeSetRequest message)
         {
             IEnumerable<IDataManager> dataManagers = _dataManagers.Values.Select(m => (IDataManager)m);
             foreach (IDataManager dataManager in dataManagers)

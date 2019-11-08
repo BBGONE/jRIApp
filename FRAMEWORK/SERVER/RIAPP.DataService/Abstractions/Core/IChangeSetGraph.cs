@@ -6,7 +6,7 @@ namespace RIAPP.DataService.Core
     public interface IChangeSetGraph
     {
         IEnumerable<RowInfo> AllList { get; }
-        ChangeSet ChangeSet { get; }
+        ChangeSetRequest ChangeSet { get; }
         IEnumerable<RowInfo> DeleteList { get; }
         IEnumerable<RowInfo> InsertList { get; }
         IEnumerable<RowInfo> UpdateList { get; }
