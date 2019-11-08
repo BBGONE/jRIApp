@@ -197,6 +197,7 @@ namespace RIAPP.DataService.Core
             using (var callContext = new RequestCallContext(req))
             {
                 await _executeChangeSet();
+                await _afterChangeSetExecuted(_serviceHelper);
 
                 foreach (RowInfo rowInfo in graph.AllList)
                 {
@@ -205,8 +206,6 @@ namespace RIAPP.DataService.Core
                     else
                         rowInfo.values = null;
                 }
-
-                await _afterChangeSetExecuted(_serviceHelper);
             }
         }
 
