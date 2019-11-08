@@ -62,11 +62,22 @@ namespace RIAPP.DataService.Core
             return managerInstance;
         }
 
-        public async Task AfterExecuteChangeSet(ChangeSetRequest message)
+        public async Task AfterExecuteChangeSet(ChangeSetRequest changeSet)
         {
             IEnumerable<IDataManager> dataManagers = _dataManagers.Values.Select(m => (IDataManager)m);
             foreach (IDataManager dataManager in dataManagers)
-                await dataManager.AfterExecuteChangeSet();
+            {
+                await dataManager.AfterExecuteChangeSet(changeSet);
+            }
+        }
+
+        public async Task AddRefreshedRows(ChangeSetRequest changeSet, SubResultList refreshResults)
+        {
+            IEnumerable<IDataManager> dataManagers = _dataManagers.Values.Select(m => (IDataManager)m);
+            foreach (IDataManager dataManager in dataManagers)
+            {
+                await dataManager.AddRefreshedRows(changeSet, refreshResults);
+            }
         }
 
         public void ApplyValues(object entity, RowInfo rowInfo, string path, ValueChange[] values, bool isOriginal)

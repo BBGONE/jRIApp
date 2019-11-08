@@ -5,9 +5,9 @@ import {
     BaseObject, Utils, WaitQueue, Lazy, IStatefulPromise, IAbortablePromise, PromiseState } from "jriapp_shared";
 import { ValueUtils } from "jriapp_shared/collection/utils";
 import {
-    IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IAssocConstructorOptions,
+    IEntityItem, IRefreshRequest, IRefreshResponse, IQueryResult, IQueryInfo, IAssociationInfo, IAssocConstructorOptions,
     IPermissionsInfo, IInvokeRequest, IInvokeResponse, IQueryRequest, IQueryResponse, ITrackAssoc,
-    IChangeSet, IRowInfo, IQueryParamInfo
+    IChangeRequest, IChangeResponse, IRowInfo, IQueryParamInfo, ISubset
 } from "./int";
 import { DATA_OPER, REFRESH_MODE } from "./const";
 import { TDbSet } from "./dbset";
@@ -53,7 +53,7 @@ function fn_checkError(svcError: { name: string; message?: string; }, oper: DATA
 }
 
 export interface IInternalDbxtMethods {
-    onItemRefreshed(res: IRefreshRowInfo, item: IEntityItem): void;
+    onItemRefreshed(res: IRefreshResponse, item: IEntityItem): void;
     refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem>;
     getQueryInfo(name: string): IQueryInfo;
     onDbSetHasChangesChanged(eSet: TDbSet): void;
@@ -113,7 +113,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         this._serverTimezone = getTimeZoneOffset();
         this._waitQueue = new WaitQueue(this);
         this._internal = {
-            onItemRefreshed: (res: IRefreshRowInfo, item: IEntityItem) => {
+            onItemRefreshed: (res: IRefreshResponse, item: IEntityItem) => {
                 self._onItemRefreshed(res, item);
             },
             refreshItem: (item: IEntityItem) => {
@@ -332,14 +332,18 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             return dbSet._getInternal().fillFromCache({ reason: reason, query: query });
         });
     }
-    protected _loadSubsets(response: IQueryResponse, isClearAll: boolean): void {
-        const self = this, isHasSubsets = isArray(response.subsets) && response.subsets.length > 0;
+    protected _loadSubsets(subsets: ISubset[], refreshOnly: boolean = false, isClearAll: boolean = false): void {
+        const self = this, isHasSubsets = isArray(subsets) && subsets.length > 0;
         if (!isHasSubsets) {
             return;
         }
-        response.subsets.forEach((loadResult) => {
-            const dbSet = self.getDbSet(loadResult.dbSetName);
-            dbSet.fillData(loadResult, !isClearAll);
+        subsets.forEach((subset) => {
+            const dbSet = self.getDbSet(subset.dbSetName);
+            if (!refreshOnly) {
+                dbSet.fillData(subset, !isClearAll);
+            } else {
+                dbSet.refreshData(subset);
+            }
         });
     }
     protected _onLoaded(response: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
@@ -360,18 +364,18 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
                     res: response,
                     reason: reason,
                     query: query,
-                    onFillEnd: () => { self._loadSubsets(response, isClearAll); }
+                    onFillEnd: () => { self._loadSubsets(response.subsets, false, isClearAll); }
                 });
         });
     }
-    protected _dataSaved(changes: IChangeSet): void {
+    protected _dataSaved(response: IChangeResponse): void {
         const self = this;
         try {
             try {
-                fn_checkError(changes.error, DATA_OPER.Submit);
+                fn_checkError(response.error, DATA_OPER.Submit);
             } catch (ex) {
                 const submitted: IEntityItem[] = [], notvalid: IEntityItem[] = [];
-                changes.dbSets.forEach((jsDB) => {
+                response.dbSets.forEach((jsDB) => {
                     const dbSet = self._dbSets.getDbSet(jsDB.dbSetName);
                     jsDB.rows.forEach((row) => {
                         const item = dbSet.getItemByKey(row.clientKey);
@@ -388,7 +392,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
                 throw new SubmitError(ex, submitted, notvalid);
             }
 
-            changes.dbSets.forEach((jsDB) => {
+            response.dbSets.forEach((jsDB) => {
                 self._dbSets.getDbSet(jsDB.dbSetName)._getInternal().commitChanges(jsDB.rows);
             });
         } catch (ex) {
@@ -396,8 +400,8 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             ERROR.throwDummy(ex);
         }
     }
-    protected _getChanges(): IChangeSet {
-        const changeSet: IChangeSet = { dbSets: [], error: null, trackAssocs: [] };
+    protected _getChanges(): IChangeRequest {
+        const request: IChangeRequest = { dbSets: [], trackAssocs: [] };
         this._dbSets.arrDbSets.forEach((dbSet) => {
             dbSet.endEdit();
             const changes: IRowInfo[] = dbSet._getInternal().getChanges();
@@ -408,10 +412,10 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             // and provides child to parent map of the keys for the new entities
             const trackAssoc: ITrackAssoc[] = dbSet._getInternal().getTrackAssocInfo(),
                 jsDB = { dbSetName: dbSet.dbSetName, rows: changes };
-            changeSet.dbSets.push(jsDB);
-            changeSet.trackAssocs = changeSet.trackAssocs.concat(trackAssoc);
+            request.dbSets.push(jsDB);
+            request.trackAssocs = request.trackAssocs.concat(trackAssoc);
         });
-        return changeSet;
+        return request;
     }
     protected _getUrl(action: string): string {
         let loadUrl = this.serviceUrl;
@@ -539,7 +543,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             context.fn_onErr(err);
         });
     }
-    protected _onItemRefreshed(res: IRefreshRowInfo, item: IEntityItem): void {
+    protected _onItemRefreshed(res: IRefreshResponse, item: IEntityItem): void {
         try {
             fn_checkError(res.error, DATA_OPER.Refresh);
             if (!res.rowInfo) {
@@ -560,17 +564,16 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         fn_onStart: () => void;
         fn_onEnd: () => void;
         fn_onErr: (ex: any) => void;
-        fn_onOK: (res: IRefreshRowInfo) => void;
+        fn_onOK: (res: IRefreshResponse) => void;
     }) {
         const self = this;
         args.fn_onStart();
 
         delay<string>(() => {
             self._checkDisposed();
-            const request: IRefreshRowInfo = {
+            const request: IRefreshRequest = {
                 dbSetName: args.item._aspect.dbSetName,
-                rowInfo: args.item._aspect._getRowInfo(),
-                error: null
+                rowInfo: args.item._aspect._getRowInfo()
             };
 
             args.item._aspect._checkCanRefresh();
@@ -580,8 +583,8 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             self._addRequestPromise(reqPromise, DATA_OPER.Refresh);
             return reqPromise;
         }).then((res: string) => {
-            return <IRefreshRowInfo>JSON.parse(res);
-        }).then((res: IRefreshRowInfo) => {
+            return <IRefreshResponse>JSON.parse(res);
+        }).then((res: IRefreshResponse) => {
             self._checkDisposed();
             args.fn_onOK(res);
         }).catch((err) => {
@@ -609,7 +612,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
                     deferred.reject();
                 }
             },
-            fn_onOK: (res: IRefreshRowInfo) => {
+            fn_onOK: (res: IRefreshResponse) => {
                 try {
                     self._onItemRefreshed(res, item);
                     context.fn_onEnd();
@@ -724,7 +727,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
 
         args.fn_onStart();
 
-        delay<IChangeSet>(() => {
+        delay<IChangeRequest>(() => {
             self._checkDisposed();
             const res = self._getChanges();
             if (res.dbSets.length === 0) {
@@ -736,10 +739,13 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             self._addRequestPromise(reqPromise, DATA_OPER.Submit);
             return reqPromise;
         }).then((res: string) => {
-            return <IChangeSet>JSON.parse(res);
-        }).then((res: IChangeSet) => {
+            return <IChangeResponse>JSON.parse(res);
+        }).then((res: IChangeResponse) => {
             self._checkDisposed();
             self._dataSaved(res);
+            if (!!res.subsets) {
+                self._loadSubsets(res.subsets, true);
+            }
         }).then(() => {
             self._checkDisposed();
             args.fn_onOk();

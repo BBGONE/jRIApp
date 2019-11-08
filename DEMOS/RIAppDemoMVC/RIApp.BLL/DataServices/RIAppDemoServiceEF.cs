@@ -56,7 +56,7 @@ namespace RIAppDemo.BLL.DataServices
         }
 
         /// <summary>
-        ///     Error logging could be implemented here
+        ///  Error logging could be implemented here
         /// </summary>
         /// <param name="ex"></param>
         protected override void OnError(Exception ex)

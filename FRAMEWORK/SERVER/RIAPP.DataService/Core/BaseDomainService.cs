@@ -80,6 +80,11 @@ namespace RIAPP.DataService.Core
             return Task.CompletedTask;
         }
 
+        protected virtual Task AddRefreshedRows(ChangeSetRequest changeSet, SubResultList refreshResults)
+        {
+            return Task.CompletedTask;
+        }
+
         protected virtual void TrackChangesToEntity(RowInfo rowInfo)
         {
             var dbSetInfo = rowInfo.GetDbSetInfo();
@@ -205,7 +210,7 @@ namespace RIAPP.DataService.Core
             return output.Response;
         }
 
-        public async Task<ChangeSetResponse> ServiceApplyChangeSet(ChangeSetRequest message)
+        public async Task<ChangeSetResponse> ServiceApplyChangeSet(ChangeSetRequest changeSet)
         {
             var factory = this.ServiceContainer.CRUDOperationsUseCaseFactory;
             ICRUDOperationsUseCase uc = factory.Create(this,
@@ -217,14 +222,19 @@ namespace RIAPP.DataService.Core
                 },
                 async (serviceHelper) =>
                 {
-                    await this.AfterExecuteChangeSet(message);
-                    await serviceHelper.AfterExecuteChangeSet(message);
+                    await this.AfterExecuteChangeSet(changeSet);
+                    await serviceHelper.AfterExecuteChangeSet(changeSet);
+                },
+                async (serviceHelper, subResults) =>
+                {
+                    await this.AddRefreshedRows(changeSet, subResults);
+                    await serviceHelper.AddRefreshedRows(changeSet, subResults);
                 }
             );
 
             var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<ChangeSetResponse, ChangeSetResponse>>();
             
-            bool res = await uc.Handle(message, output);
+            bool res = await uc.Handle(changeSet, output);
 
             return output.Response;
         }

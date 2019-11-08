@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace RIAPP.DataService.Core.Types
 {
@@ -15,5 +16,8 @@ namespace RIAPP.DataService.Core.Types
 
         [DataMember]
         public ErrorInfo error { get; set; }
+     
+        [DataMember]
+        public IEnumerable<Subset> subsets { get; set; }
     }
 }

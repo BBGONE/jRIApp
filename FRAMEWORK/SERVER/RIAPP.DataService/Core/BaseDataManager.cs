@@ -1,5 +1,6 @@
 ﻿using RIAPP.DataService.Core.Types;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Core
@@ -8,6 +9,15 @@ namespace RIAPP.DataService.Core
         where TModel : class
         where TDataService : BaseDomainService
     {
+        public IEnumerable<DbSetInfo> DbSetInfo
+        {
+            get
+            {
+                var metadata = DataService.GetMetadata();
+                return metadata.dbSetsByTypeLookUp[typeof(TModel)];
+            }
+        }
+
         public TDataService DataService
         {
             get { return (TDataService)RequestContext.DataService; }
@@ -38,7 +48,12 @@ namespace RIAPP.DataService.Core
             throw new NotImplementedException();
         }
 
-        public virtual Task AfterExecuteChangeSet()
+        public virtual Task AfterExecuteChangeSet(ChangeSetRequest changeSet)
+        {
+            return Task.CompletedTask;
+        }
+
+        public virtual Task AddRefreshedRows(ChangeSetRequest changeSet, SubResultList refreshResults)
         {
             return Task.CompletedTask;
         }

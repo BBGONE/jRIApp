@@ -6,21 +6,31 @@ namespace RIAPP.DataService.Core
     public class CRUDOperationsUseCaseFactory<TService> : ICRUDOperationsUseCaseFactory<TService>
         where TService:BaseDomainService
     {
-        private readonly Func<BaseDomainService, Action<Exception>, Action<RowInfo>, ChangeSetExecutor, AfterChangeSetExecuted, ICRUDOperationsUseCase<TService>> _func;
+        private readonly Func<BaseDomainService, Action<Exception>, Action<RowInfo>, ChangeSetExecutor, AfterChangeSetExecuted, SubResultsExecutor, ICRUDOperationsUseCase<TService>> _func;
 
-        public CRUDOperationsUseCaseFactory(Func<BaseDomainService, Action<Exception>, Action<RowInfo>, ChangeSetExecutor, AfterChangeSetExecuted, ICRUDOperationsUseCase<TService>> func)
+        public CRUDOperationsUseCaseFactory(Func<BaseDomainService, Action<Exception>, Action<RowInfo>, ChangeSetExecutor, AfterChangeSetExecuted, SubResultsExecutor, ICRUDOperationsUseCase<TService>> func)
         {
             this._func = func;
         }
 
-        public ICRUDOperationsUseCase Create(BaseDomainService service, Action<Exception> onError, Action<RowInfo> trackChanges, ChangeSetExecutor executeChangeSet, AfterChangeSetExecuted afterChangeSetExecuted)
+        public ICRUDOperationsUseCase Create(BaseDomainService service, 
+            Action<Exception> onError, 
+            Action<RowInfo> trackChanges, 
+            ChangeSetExecutor executeChangeSet, 
+            AfterChangeSetExecuted afterChangeSetExecuted, 
+            SubResultsExecutor subResultsExecutor)
         {
-            return this._func(service, onError, trackChanges, executeChangeSet, afterChangeSetExecuted);
+            return this._func(service, onError, trackChanges, executeChangeSet, afterChangeSetExecuted, subResultsExecutor);
         }
 
-        public ICRUDOperationsUseCase<TService> Create(TService service, Action<Exception> onError, Action<RowInfo> trackChanges, ChangeSetExecutor executeChangeSet, AfterChangeSetExecuted afterChangeSetExecuted)
+        public ICRUDOperationsUseCase<TService> Create(TService service, 
+            Action<Exception> onError, 
+            Action<RowInfo> trackChanges, 
+            ChangeSetExecutor executeChangeSet, 
+            AfterChangeSetExecuted afterChangeSetExecuted, 
+            SubResultsExecutor subResultsExecutor)
         {
-            return this._func(service, onError, trackChanges, executeChangeSet, afterChangeSetExecuted);
+            return this._func(service, onError, trackChanges, executeChangeSet, afterChangeSetExecuted, subResultsExecutor);
         }
     }
 }

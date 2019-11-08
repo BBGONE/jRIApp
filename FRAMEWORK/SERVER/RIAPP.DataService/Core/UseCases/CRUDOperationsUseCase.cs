@@ -20,25 +20,30 @@ namespace RIAPP.DataService.Core
         private readonly IServiceContainer<TService> _serviceContainer;
         private readonly IServiceOperationsHelper<TService> _serviceHelper;
         private readonly IAuthorizer<TService> _authorizer;
+        private readonly IDataHelper<TService> _dataHelper;
         private readonly Action<Exception> _onError;
         private readonly Action<RowInfo> _trackChanges;
         private readonly ChangeSetExecutor _executeChangeSet;
         private readonly AfterChangeSetExecuted _afterChangeSetExecuted;
-        
+        private readonly SubResultsExecutor _addRefreshedRows;
+
         public CRUDOperationsUseCase(IServiceContainer<TService> serviceContainer, 
             BaseDomainService service, 
             Action<Exception> onError, Action<RowInfo> trackChanges, 
             ChangeSetExecutor executeChangeSet, 
-            AfterChangeSetExecuted afterChangeSetExecuted)
+            AfterChangeSetExecuted afterChangeSetExecuted,
+            SubResultsExecutor addRefreshedRows)
         {
             _service = service;
             _onError = onError ?? throw new ArgumentNullException(nameof(onError));
             _trackChanges = trackChanges ?? throw new ArgumentNullException(nameof(trackChanges));
             _executeChangeSet = executeChangeSet ?? throw new ArgumentNullException(nameof(executeChangeSet));
             _afterChangeSetExecuted = afterChangeSetExecuted ?? throw new ArgumentNullException(nameof(afterChangeSetExecuted));
+            _addRefreshedRows = addRefreshedRows ?? throw new ArgumentNullException(nameof(addRefreshedRows));
             _metadata = this._service.GetMetadata();
             _serviceContainer = serviceContainer;
             _serviceHelper = _serviceContainer.GetServiceHelper();
+            _dataHelper = _serviceContainer.GetDataHelper();
             _authorizer = _serviceContainer.GetAuthorizer();
         }
 
@@ -191,9 +196,9 @@ namespace RIAPP.DataService.Core
                 throw new ValidationException(ErrorStrings.ERR_SVC_CHANGES_ARENOT_VALID);
         }
 
-        private async Task CommitChanges(ChangeSetRequest changeSet, IChangeSetGraph graph)
+        private async Task CommitChanges(ChangeSetRequest request, ChangeSetResponse response, IChangeSetGraph graph)
         {
-            var req = new RequestContext(_service, changeSet: changeSet, operation: ServiceOperationType.SaveChanges);
+            var req = new RequestContext(_service, changeSet: request, operation: ServiceOperationType.SaveChanges);
 
             using (var callContext = new RequestCallContext(req))
             {
@@ -204,9 +209,12 @@ namespace RIAPP.DataService.Core
                 {
                     if (rowInfo.changeType != ChangeType.Deleted)
                         _serviceHelper.UpdateRowInfoAfterUpdates(rowInfo);
-                    else
-                        rowInfo.values = null;
                 }
+
+                var subResults = new SubResultList();
+                await _addRefreshedRows(_serviceHelper, subResults);
+                SubsetsGenerator subsetsGenerator = new SubsetsGenerator(_service.GetMetadata(), _dataHelper);
+                response.subsets = subsetsGenerator.CreateSubsets(subResults);
             }
         }
 
@@ -233,7 +241,7 @@ namespace RIAPP.DataService.Core
 
                 await this.ValidateChanges(message, graph);
 
-                await this.CommitChanges(message, graph);
+                await this.CommitChanges(message, response, graph);
 
                 this.TrackChanges(graph);
             }

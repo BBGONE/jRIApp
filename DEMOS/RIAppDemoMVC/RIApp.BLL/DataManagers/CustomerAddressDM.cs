@@ -11,6 +11,35 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
 {
     public class CustomerAddressDM : AdWDataManager<CustomerAddress>
     {
+        /// <summary>
+        /// Refresh Customer's custom ServerCalculated field 'AddressCount' on insert or delete
+        /// </summary>
+        /// <param name="changeSet"></param>
+        /// <param name="refreshResult"></param>
+        /// <returns></returns>
+        public override async Task AddRefreshedRows(ChangeSetRequest changeSet, SubResultList refreshResult)
+        {
+            var dbSetInfo = this.DbSetInfo.First();
+            var dbCustAddr = changeSet.dbSets.FirstOrDefault(d => d.dbSetName == dbSetInfo.dbSetName);
+            if (dbCustAddr != null)
+            {
+                int[] custIDs = dbCustAddr.rows.Where(r => r.changeType == ChangeType.Deleted || r.changeType == ChangeType.Added).Select(r => r.values.First(v => v.fieldName == "CustomerID").val).Select(id => int.Parse(id)).ToArray();
+                var customersList = await DB.Customers.AsNoTracking().Where(c => custIDs.Contains(c.CustomerID)).ToListAsync();
+                var customerAddress = await DB.CustomerAddresses.AsNoTracking().Where(ca => custIDs.Contains(ca.CustomerID)).Select(ca => ca.CustomerID).ToListAsync();
+
+                customersList.ForEach(customer => {
+                    customer.AddressCount = customerAddress.Count(id => id == customer.CustomerID);
+                });
+
+                var subResult = new SubResult
+                {
+                    dbSetName = "Customer",
+                    Result = customersList
+                };
+                refreshResult.Add(subResult);
+            }
+        }
+
         [Query]
         public async Task<QueryResult<CustomerAddress>> ReadCustomerAddress()
         {

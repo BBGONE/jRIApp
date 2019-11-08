@@ -13,6 +13,9 @@ namespace RIAPP.DataService.Core
         IValidationHelper ValidationHelper { get; }
 
         Task AfterExecuteChangeSet(ChangeSetRequest message);
+
+        Task AddRefreshedRows(ChangeSetRequest changeSet, SubResultList refreshResults);
+
         void ApplyValues(object entity, RowInfo rowInfo, string path, ValueChange[] values, bool isOriginal);
         void CheckValuesChanges(RowInfo rowInfo, string path, ValueChange[] values);
         void DeleteEntity(RunTimeMetadata metadata, RowInfo rowInfo);

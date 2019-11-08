@@ -1296,6 +1296,20 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         DbSet.prototype._getInternal = function () {
             return _super.prototype._getInternal.call(this);
         };
+        DbSet.prototype.refreshData = function (data) {
+            var self = this;
+            data.rows.forEach(function (row) {
+                var key = row.k;
+                if (!key) {
+                    throw new Error(jriapp_shared_3.LocaleERRS.ERR_KEY_IS_EMPTY);
+                }
+                var item = self.getItemByKey(key);
+                if (!!item) {
+                    self._refreshValues("", item, row.v, data.names, 1);
+                }
+                return item;
+            });
+        };
         DbSet.prototype.fillData = function (data, isAppend) {
             var self = this, reason = 0;
             this._destroyQuery();
@@ -2666,14 +2680,21 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 return dbSet._getInternal().fillFromCache({ reason: reason, query: query });
             });
         };
-        DbContext.prototype._loadSubsets = function (response, isClearAll) {
-            var self = this, isHasSubsets = isArray(response.subsets) && response.subsets.length > 0;
+        DbContext.prototype._loadSubsets = function (subsets, refreshOnly, isClearAll) {
+            if (refreshOnly === void 0) { refreshOnly = false; }
+            if (isClearAll === void 0) { isClearAll = false; }
+            var self = this, isHasSubsets = isArray(subsets) && subsets.length > 0;
             if (!isHasSubsets) {
                 return;
             }
-            response.subsets.forEach(function (loadResult) {
-                var dbSet = self.getDbSet(loadResult.dbSetName);
-                dbSet.fillData(loadResult, !isClearAll);
+            subsets.forEach(function (subset) {
+                var dbSet = self.getDbSet(subset.dbSetName);
+                if (!refreshOnly) {
+                    dbSet.fillData(subset, !isClearAll);
+                }
+                else {
+                    dbSet.refreshData(subset);
+                }
             });
         };
         DbContext.prototype._onLoaded = function (response, query, reason) {
@@ -2693,19 +2714,19 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     res: response,
                     reason: reason,
                     query: query,
-                    onFillEnd: function () { self._loadSubsets(response, isClearAll); }
+                    onFillEnd: function () { self._loadSubsets(response.subsets, false, isClearAll); }
                 });
             });
         };
-        DbContext.prototype._dataSaved = function (changes) {
+        DbContext.prototype._dataSaved = function (response) {
             var self = this;
             try {
                 try {
-                    fn_checkError(changes.error, 1);
+                    fn_checkError(response.error, 1);
                 }
                 catch (ex) {
                     var submitted_1 = [], notvalid_1 = [];
-                    changes.dbSets.forEach(function (jsDB) {
+                    response.dbSets.forEach(function (jsDB) {
                         var dbSet = self._dbSets.getDbSet(jsDB.dbSetName);
                         jsDB.rows.forEach(function (row) {
                             var item = dbSet.getItemByKey(row.clientKey);
@@ -2721,7 +2742,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     });
                     throw new error_1.SubmitError(ex, submitted_1, notvalid_1);
                 }
-                changes.dbSets.forEach(function (jsDB) {
+                response.dbSets.forEach(function (jsDB) {
                     self._dbSets.getDbSet(jsDB.dbSetName)._getInternal().commitChanges(jsDB.rows);
                 });
             }
@@ -2731,7 +2752,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }
         };
         DbContext.prototype._getChanges = function () {
-            var changeSet = { dbSets: [], error: null, trackAssocs: [] };
+            var request = { dbSets: [], trackAssocs: [] };
             this._dbSets.arrDbSets.forEach(function (dbSet) {
                 dbSet.endEdit();
                 var changes = dbSet._getInternal().getChanges();
@@ -2739,10 +2760,10 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                     return;
                 }
                 var trackAssoc = dbSet._getInternal().getTrackAssocInfo(), jsDB = { dbSetName: dbSet.dbSetName, rows: changes };
-                changeSet.dbSets.push(jsDB);
-                changeSet.trackAssocs = changeSet.trackAssocs.concat(trackAssoc);
+                request.dbSets.push(jsDB);
+                request.trackAssocs = request.trackAssocs.concat(trackAssoc);
             });
-            return changeSet;
+            return request;
         };
         DbContext.prototype._getUrl = function (action) {
             var loadUrl = this.serviceUrl;
@@ -2870,8 +2891,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 self._checkDisposed();
                 var request = {
                     dbSetName: args.item._aspect.dbSetName,
-                    rowInfo: args.item._aspect._getRowInfo(),
-                    error: null
+                    rowInfo: args.item._aspect._getRowInfo()
                 };
                 args.item._aspect._checkCanRefresh();
                 var url = self._getUrl("refresh"), reqPromise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
@@ -3032,6 +3052,9 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }).then(function (res) {
                 self._checkDisposed();
                 self._dataSaved(res);
+                if (!!res.subsets) {
+                    self._loadSubsets(res.subsets, true);
+                }
             }).then(function () {
                 self._checkDisposed();
                 args.fn_onOk();

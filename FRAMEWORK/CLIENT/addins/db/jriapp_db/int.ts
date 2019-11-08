@@ -84,6 +84,12 @@ export interface IErrorInfo {
     message: string;
 }
 
+export interface ISubset {
+    names: IFieldName[];
+    rows: IRowData[];
+    dbSetName: string;
+}
+
 export interface IInvokeRequest {
     methodName: string;
     paramInfo: IParamInfo;
@@ -94,7 +100,12 @@ export interface IInvokeResponse {
     error: IErrorInfo;
 }
 
-export interface IRefreshRowInfo {
+export interface IRefreshRequest {
+    dbSetName: string;
+    rowInfo: IRowInfo;
+}
+
+export interface IRefreshResponse {
     dbSetName: string;
     rowInfo: IRowInfo;
     error: { name: string; message: string; };
@@ -153,10 +164,15 @@ export interface ITrackAssoc {
     childKey: string;
 }
 
-export interface IChangeSet {
+export interface IChangeRequest {
+    dbSets: { dbSetName: string; rows: IRowInfo[]; }[];
+    trackAssocs: ITrackAssoc[];
+}
+
+export interface IChangeResponse {
     dbSets: { dbSetName: string; rows: IRowInfo[]; }[];
     error: { name: string; message: string; };
-    trackAssocs: ITrackAssoc[];
+    subsets: ISubset[] | null | undefined;
 }
 
 export interface IFilterInfo {
@@ -166,7 +182,6 @@ export interface IFilterInfo {
 export interface ISortInfo {
     sortItems: { fieldName: string; sortOrder: SORT_ORDER; }[];
 }
-
 
 export interface IQueryRequest {
     dbSetName: string;
@@ -197,12 +212,6 @@ export interface IQueryResult<TItem extends IEntityItem> {
     outOfBandData: any;
 }
 
-export interface ISubset {
-    names: IFieldName[];
-    rows: IRowData[];
-    dbSetName: string;
-}
-
 export interface IQueryResponse {
     names: IFieldName[];
     rows: IRowData[];
@@ -212,7 +221,7 @@ export interface IQueryResponse {
     totalCount: number;
     extraInfo: any;
     error: IErrorInfo;
-    subsets: ISubset[];
+    subsets: ISubset[] | null | undefined;
 }
 
 

@@ -23,7 +23,7 @@ namespace RIAPP.DataService.Core.Metadata
             _operMethods = new OperationalMethods();
         }
 
-        ILookup<Type, DbSetInfo> dbSetsByTypeLookUp
+        public ILookup<Type, DbSetInfo> dbSetsByTypeLookUp
         {
             get { return _dbSetsByTypeLookUp.Value; }
         }
