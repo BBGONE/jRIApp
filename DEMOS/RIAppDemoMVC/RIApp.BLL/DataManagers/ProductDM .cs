@@ -25,7 +25,7 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
 
             var subResult = new SubResult
             {
-                dbSetName = "SalesOrderDetail",
+                dbSetName = this.GetSetInfosByEntityType(typeof(SalesOrderDetail)).Single().dbSetName,
                 Result = await DB.SalesOrderDetails.AsNoTracking().Where(sod => productIDs.Contains(sod.ProductID)).ToListAsync()
             };
 

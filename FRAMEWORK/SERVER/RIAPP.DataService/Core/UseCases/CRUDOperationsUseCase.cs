@@ -25,21 +25,21 @@ namespace RIAPP.DataService.Core
         private readonly Action<RowInfo> _trackChanges;
         private readonly ChangeSetExecutor _executeChangeSet;
         private readonly AfterChangeSetExecuted _afterChangeSetExecuted;
-        private readonly SubResultsExecutor _addRefreshedRows;
+        private readonly AfterChangeSetCommited _afterChangeSetCommited;
 
         public CRUDOperationsUseCase(IServiceContainer<TService> serviceContainer, 
             BaseDomainService service, 
             Action<Exception> onError, Action<RowInfo> trackChanges, 
             ChangeSetExecutor executeChangeSet, 
             AfterChangeSetExecuted afterChangeSetExecuted,
-            SubResultsExecutor addRefreshedRows)
+            AfterChangeSetCommited afterChangeSetCommited)
         {
             _service = service;
             _onError = onError ?? throw new ArgumentNullException(nameof(onError));
             _trackChanges = trackChanges ?? throw new ArgumentNullException(nameof(trackChanges));
             _executeChangeSet = executeChangeSet ?? throw new ArgumentNullException(nameof(executeChangeSet));
             _afterChangeSetExecuted = afterChangeSetExecuted ?? throw new ArgumentNullException(nameof(afterChangeSetExecuted));
-            _addRefreshedRows = addRefreshedRows ?? throw new ArgumentNullException(nameof(addRefreshedRows));
+            _afterChangeSetCommited = afterChangeSetCommited ?? throw new ArgumentNullException(nameof(afterChangeSetCommited));
             _metadata = this._service.GetMetadata();
             _serviceContainer = serviceContainer;
             _serviceHelper = _serviceContainer.GetServiceHelper();
@@ -196,14 +196,15 @@ namespace RIAPP.DataService.Core
                 throw new ValidationException(ErrorStrings.ERR_SVC_CHANGES_ARENOT_VALID);
         }
 
-        private async Task CommitChanges(ChangeSetRequest request, ChangeSetResponse response, IChangeSetGraph graph)
+        private async Task CommitChanges(ChangeSetRequest changeSet, ChangeSetResponse response, IChangeSetGraph graph)
         {
-            var req = new RequestContext(_service, changeSet: request, operation: ServiceOperationType.SaveChanges);
+            var req = new RequestContext(_service, changeSet: changeSet, operation: ServiceOperationType.SaveChanges);
 
             using (var callContext = new RequestCallContext(req))
             {
                 await _executeChangeSet();
-                await _afterChangeSetExecuted(_serviceHelper);
+                await _serviceHelper.AfterExecuteChangeSet(changeSet);
+                await _afterChangeSetExecuted();
 
                 foreach (RowInfo rowInfo in graph.AllList)
                 {
@@ -212,7 +213,9 @@ namespace RIAPP.DataService.Core
                 }
 
                 var subResults = new SubResultList();
-                await _addRefreshedRows(_serviceHelper, subResults);
+                await _serviceHelper.AfterChangeSetCommited(changeSet, subResults);
+                await _afterChangeSetCommited(subResults);
+
                 SubsetsGenerator subsetsGenerator = new SubsetsGenerator(_service.GetMetadata(), _dataHelper);
                 response.subsets = subsetsGenerator.CreateSubsets(subResults);
             }

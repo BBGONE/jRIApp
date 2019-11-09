@@ -1297,17 +1297,16 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             return _super.prototype._getInternal.call(this);
         };
         DbSet.prototype.refreshData = function (data) {
-            var self = this;
+            var _this = this;
             data.rows.forEach(function (row) {
                 var key = row.k;
                 if (!key) {
                     throw new Error(jriapp_shared_3.LocaleERRS.ERR_KEY_IS_EMPTY);
                 }
-                var item = self.getItemByKey(key);
+                var item = _this.getItemByKey(key);
                 if (!!item) {
-                    self._refreshValues("", item, row.v, data.names, 1);
+                    _this._refreshValues("", item, row.v, data.names, 1);
                 }
-                return item;
             });
         };
         DbSet.prototype.fillData = function (data, isAppend) {
@@ -4615,4 +4614,5 @@ define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/datavie
     __export(entity_aspect_2);
     __export(error_3);
     __export(complexprop_1);
+    exports.VERSION = "3.0.0";
 });

@@ -241,6 +241,10 @@ declare module "jriapp_db/dbset" {
         createEntityFromObj(obj: TObj, key?: string): TItem;
         createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem;
         _getInternal(): IInternalDbSetMethods<TItem, TObj>;
+        refreshData(data: {
+            names: IFieldName[];
+            rows: IRowData[];
+        }): void;
         fillData(data: {
             names: IFieldName[];
             rows: IRowData[];
@@ -395,14 +399,14 @@ declare module "jriapp_db/error" {
 declare module "jriapp_db/dbcontext" {
     import { COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
     import { IIndexer, IVoidPromise, IBaseObject, TEventHandler, TErrorHandler, BaseObject, IStatefulPromise, IAbortablePromise } from "jriapp_shared";
-    import { IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IInvokeResponse, IQueryResponse, IChangeSet } from "jriapp_db/int";
+    import { IEntityItem, IRefreshResponse, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IInvokeResponse, IQueryResponse, IChangeRequest, IChangeResponse, ISubset } from "jriapp_db/int";
     import { DATA_OPER } from "jriapp_db/const";
     import { TDbSet } from "jriapp_db/dbset";
     import { DbSets, TDbSetCreatingArgs } from "jriapp_db/dbsets";
     import { Association } from "jriapp_db/association";
     import { TDataQuery } from "jriapp_db/dataquery";
     export interface IInternalDbxtMethods {
-        onItemRefreshed(res: IRefreshRowInfo, item: IEntityItem): void;
+        onItemRefreshed(res: IRefreshResponse, item: IEntityItem): void;
         refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem>;
         getQueryInfo(name: string): IQueryInfo;
         onDbSetHasChangesChanged(eSet: TDbSet): void;
@@ -453,10 +457,10 @@ declare module "jriapp_db/dbcontext" {
             [paramName: string]: any;
         }): IStatefulPromise<IInvokeResponse>;
         protected _loadFromCache(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
-        protected _loadSubsets(response: IQueryResponse, isClearAll: boolean): void;
+        protected _loadSubsets(subsets: ISubset[], refreshOnly?: boolean, isClearAll?: boolean): void;
         protected _onLoaded(response: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
-        protected _dataSaved(changes: IChangeSet): void;
-        protected _getChanges(): IChangeSet;
+        protected _dataSaved(response: IChangeResponse): void;
+        protected _getChanges(): IChangeRequest;
         protected _getUrl(action: string): string;
         protected _onDataOperError(ex: any, oper: DATA_OPER): boolean;
         protected _onSubmitError(error: any): void;
@@ -477,14 +481,14 @@ declare module "jriapp_db/dbcontext" {
             fn_onOK: (res: IQueryResult<IEntityItem>) => void;
             fn_onErr: (ex: any) => void;
         }): void;
-        protected _onItemRefreshed(res: IRefreshRowInfo, item: IEntityItem): void;
+        protected _onItemRefreshed(res: IRefreshResponse, item: IEntityItem): void;
         protected _loadRefresh(args: {
             item: IEntityItem;
             dbSet: TDbSet;
             fn_onStart: () => void;
             fn_onEnd: () => void;
             fn_onErr: (ex: any) => void;
-            fn_onOK: (res: IRefreshRowInfo) => void;
+            fn_onOK: (res: IRefreshResponse) => void;
         }): void;
         protected _refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem>;
         protected _getQueryInfo(name: string): IQueryInfo;
@@ -663,6 +667,11 @@ declare module "jriapp_db/int" {
         name: string;
         message: string;
     }
+    export interface ISubset {
+        names: IFieldName[];
+        rows: IRowData[];
+        dbSetName: string;
+    }
     export interface IInvokeRequest {
         methodName: string;
         paramInfo: IParamInfo;
@@ -671,7 +680,11 @@ declare module "jriapp_db/int" {
         result: any;
         error: IErrorInfo;
     }
-    export interface IRefreshRowInfo {
+    export interface IRefreshRequest {
+        dbSetName: string;
+        rowInfo: IRowInfo;
+    }
+    export interface IRefreshResponse {
         dbSetName: string;
         rowInfo: IRowInfo;
         error: {
@@ -728,7 +741,14 @@ declare module "jriapp_db/int" {
         parentKey: string;
         childKey: string;
     }
-    export interface IChangeSet {
+    export interface IChangeRequest {
+        dbSets: {
+            dbSetName: string;
+            rows: IRowInfo[];
+        }[];
+        trackAssocs: ITrackAssoc[];
+    }
+    export interface IChangeResponse {
         dbSets: {
             dbSetName: string;
             rows: IRowInfo[];
@@ -737,7 +757,7 @@ declare module "jriapp_db/int" {
             name: string;
             message: string;
         };
-        trackAssocs: ITrackAssoc[];
+        subsets: ISubset[] | null | undefined;
     }
     export interface IFilterInfo {
         filterItems: {
@@ -778,11 +798,6 @@ declare module "jriapp_db/int" {
         reason: COLL_CHANGE_REASON;
         outOfBandData: any;
     }
-    export interface ISubset {
-        names: IFieldName[];
-        rows: IRowData[];
-        dbSetName: string;
-    }
     export interface IQueryResponse {
         names: IFieldName[];
         rows: IRowData[];
@@ -792,7 +807,7 @@ declare module "jriapp_db/int" {
         totalCount: number;
         extraInfo: any;
         error: IErrorInfo;
-        subsets: ISubset[];
+        subsets: ISubset[] | null | undefined;
     }
     export interface ICalcFieldImpl<TItem extends IEntityItem> {
         getFunc: (item: TItem) => any;
@@ -959,4 +974,5 @@ declare module "jriapp_db" {
     export * from "jriapp_db/entity_aspect";
     export * from "jriapp_db/error";
     export * from "jriapp_db/complexprop";
+    export const VERSION = "3.0.0";
 }

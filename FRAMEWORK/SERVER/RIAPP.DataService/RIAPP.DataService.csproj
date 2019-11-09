@@ -198,6 +198,7 @@
     <Compile Include="Core\ValidatorContainer.cs" />
     <Compile Include="Extensions\Config\ServiceConfigureEx.cs" />
     <Compile Include="Extensions\Config\ServiceOptionsEx.cs" />
+    <Compile Include="Extensions\Types\DataServiceEx.cs" />
     <Compile Include="Extensions\Core\ServiceContainerEx.cs" />
     <Compile Include="Extensions\Exceptions\ExceptionEx.cs" />
     <Compile Include="Extensions\Metadata\MethodDescriptionEx.cs" />

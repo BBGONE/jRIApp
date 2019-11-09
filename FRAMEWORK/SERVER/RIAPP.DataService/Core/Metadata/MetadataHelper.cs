@@ -276,10 +276,11 @@ namespace RIAPP.DataService.Core.Metadata
             bool isDataManager = dataManagerInterface != null;
             IEnumerable<MethodInfoData> crudMethods = null;
             if (isDataManager)
+            {
                 crudMethods = _GetCRUDMethods(fromType, dataManagerInterface);
+            }
 
-            var allList = methodInfos.Select(m =>
-                        new MethodInfoData
+            var allList = methodInfos.Select(m => new MethodInfoData
                         {
                             OwnerType = fromType,
                             MethodInfo = m,

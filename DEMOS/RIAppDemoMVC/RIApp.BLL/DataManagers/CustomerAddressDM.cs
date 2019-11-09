@@ -17,13 +17,16 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
         /// <param name="changeSet"></param>
         /// <param name="refreshResult"></param>
         /// <returns></returns>
-        public override async Task AddRefreshedRows(ChangeSetRequest changeSet, SubResultList refreshResult)
+        public override async Task AfterChangeSetCommited(ChangeSetRequest changeSet, SubResultList refreshResult)
         {
-            var dbSetInfo = this.DbSetInfo.First();
-            var dbCustAddr = changeSet.dbSets.FirstOrDefault(d => d.dbSetName == dbSetInfo.dbSetName);
+            DbSetInfo custAddrDbSet = this.GetSetInfosByEntityType(typeof(CustomerAddress)).Single();
+            DbSetInfo customerDbSet = this.GetSetInfosByEntityType(typeof(Customer)).Single();
+
+            var dbCustAddr = changeSet.dbSets.FirstOrDefault(d => d.dbSetName == custAddrDbSet.dbSetName);
             if (dbCustAddr != null)
             {
                 int[] custIDs = dbCustAddr.rows.Where(r => r.changeType == ChangeType.Deleted || r.changeType == ChangeType.Added).Select(r => r.values.First(v => v.fieldName == "CustomerID").val).Select(id => int.Parse(id)).ToArray();
+
                 var customersList = await DB.Customers.AsNoTracking().Where(c => custIDs.Contains(c.CustomerID)).ToListAsync();
                 var customerAddress = await DB.CustomerAddresses.AsNoTracking().Where(ca => custIDs.Contains(ca.CustomerID)).Select(ca => ca.CustomerID).ToListAsync();
 
@@ -33,7 +36,7 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
 
                 var subResult = new SubResult
                 {
-                    dbSetName = "Customer",
+                    dbSetName = customerDbSet.dbSetName,
                     Result = customersList
                 };
                 refreshResult.Add(subResult);

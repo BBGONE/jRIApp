@@ -77,11 +77,11 @@ namespace RIAPP.DataService.Core.Config
                 typeof(Action<RowInfo>), 
                 typeof(ChangeSetExecutor), 
                 typeof(AfterChangeSetExecuted),
-                typeof(SubResultsExecutor)
+                typeof(AfterChangeSetCommited)
             });
 
-            services.TryAddScoped<ICRUDOperationsUseCaseFactory<TService>>((sp) => new CRUDOperationsUseCaseFactory<TService>((svc, onError, trackChanges, executeChangeSet, afterChangeSetExecuted, executeSubResults) =>
-                (ICRUDOperationsUseCase<TService>)crudCaseFactory(sp, new object[] { svc, onError, trackChanges, executeChangeSet, afterChangeSetExecuted, executeSubResults })));
+            services.TryAddScoped<ICRUDOperationsUseCaseFactory<TService>>((sp) => new CRUDOperationsUseCaseFactory<TService>((svc, onError, trackChanges, executeChangeSet, afterChangeSetExecuted, afterChangeSetCommited) =>
+                (ICRUDOperationsUseCase<TService>)crudCaseFactory(sp, new object[] { svc, onError, trackChanges, executeChangeSet, afterChangeSetExecuted, afterChangeSetCommited })));
 
             var queryCaseFactory = ActivatorUtilities.CreateFactory(typeof(QueryOperationsUseCase<TService>), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>) });
 

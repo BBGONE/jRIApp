@@ -6,9 +6,9 @@ namespace RIAPP.DataService.Core
     public class CRUDOperationsUseCaseFactory<TService> : ICRUDOperationsUseCaseFactory<TService>
         where TService:BaseDomainService
     {
-        private readonly Func<BaseDomainService, Action<Exception>, Action<RowInfo>, ChangeSetExecutor, AfterChangeSetExecuted, SubResultsExecutor, ICRUDOperationsUseCase<TService>> _func;
+        private readonly Func<BaseDomainService, Action<Exception>, Action<RowInfo>, ChangeSetExecutor, AfterChangeSetExecuted, AfterChangeSetCommited, ICRUDOperationsUseCase<TService>> _func;
 
-        public CRUDOperationsUseCaseFactory(Func<BaseDomainService, Action<Exception>, Action<RowInfo>, ChangeSetExecutor, AfterChangeSetExecuted, SubResultsExecutor, ICRUDOperationsUseCase<TService>> func)
+        public CRUDOperationsUseCaseFactory(Func<BaseDomainService, Action<Exception>, Action<RowInfo>, ChangeSetExecutor, AfterChangeSetExecuted, AfterChangeSetCommited, ICRUDOperationsUseCase<TService>> func)
         {
             this._func = func;
         }
@@ -18,7 +18,7 @@ namespace RIAPP.DataService.Core
             Action<RowInfo> trackChanges, 
             ChangeSetExecutor executeChangeSet, 
             AfterChangeSetExecuted afterChangeSetExecuted, 
-            SubResultsExecutor subResultsExecutor)
+            AfterChangeSetCommited subResultsExecutor)
         {
             return this._func(service, onError, trackChanges, executeChangeSet, afterChangeSetExecuted, subResultsExecutor);
         }
@@ -28,7 +28,7 @@ namespace RIAPP.DataService.Core
             Action<RowInfo> trackChanges, 
             ChangeSetExecutor executeChangeSet, 
             AfterChangeSetExecuted afterChangeSetExecuted, 
-            SubResultsExecutor subResultsExecutor)
+            AfterChangeSetCommited subResultsExecutor)
         {
             return this._func(service, onError, trackChanges, executeChangeSet, afterChangeSetExecuted, subResultsExecutor);
         }

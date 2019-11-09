@@ -14,3 +14,5 @@ export * from "./jriapp_db/dataquery";
 export * from "./jriapp_db/entity_aspect";
 export * from "./jriapp_db/error";
 export * from "./jriapp_db/complexprop";
+
+export const VERSION = "3.0.0";

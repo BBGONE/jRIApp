@@ -3,5 +3,7 @@
     public interface IDataServiceComponent
     {
         IServiceContainer ServiceContainer { get; }
+
+        BaseDomainService DataService { get; }
     }
 }

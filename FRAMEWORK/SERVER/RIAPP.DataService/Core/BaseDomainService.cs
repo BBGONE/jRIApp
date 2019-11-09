@@ -39,6 +39,14 @@ namespace RIAPP.DataService.Core
             get;
         }
 
+        BaseDomainService IDataServiceComponent.DataService 
+        { 
+            get
+            {
+                return this;
+            }
+        }
+
         public RunTimeMetadata GetMetadata()
         {
             return MetadataHelper.GetInitializedMetadata(this, this.ServiceContainer.DataHelper, this.ServiceContainer.ValueConverter);
@@ -80,7 +88,7 @@ namespace RIAPP.DataService.Core
             return Task.CompletedTask;
         }
 
-        protected virtual Task AddRefreshedRows(ChangeSetRequest changeSet, SubResultList refreshResults)
+        protected virtual Task AfterChangeSetCommited(ChangeSetRequest message, SubResultList refreshResult)
         {
             return Task.CompletedTask;
         }
@@ -220,15 +228,13 @@ namespace RIAPP.DataService.Core
                 {
                     await this.ExecuteChangeSet();
                 },
-                async (serviceHelper) =>
+                async () =>
                 {
                     await this.AfterExecuteChangeSet(changeSet);
-                    await serviceHelper.AfterExecuteChangeSet(changeSet);
                 },
-                async (serviceHelper, subResults) =>
+                async (subResults) =>
                 {
-                    await this.AddRefreshedRows(changeSet, subResults);
-                    await serviceHelper.AddRefreshedRows(changeSet, subResults);
+                    await this.AfterChangeSetCommited(changeSet, subResults);
                 }
             );
 

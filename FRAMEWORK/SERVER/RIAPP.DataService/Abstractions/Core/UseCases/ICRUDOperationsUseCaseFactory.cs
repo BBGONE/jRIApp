@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 namespace RIAPP.DataService.Core
 {
     public delegate Task ChangeSetExecutor();
-    public delegate Task AfterChangeSetExecuted(IServiceOperationsHelper serviceOperationHelper);
-    public delegate Task SubResultsExecutor(IServiceOperationsHelper serviceOperationHelper, SubResultList subResults);
+    public delegate Task AfterChangeSetExecuted();
+    public delegate Task AfterChangeSetCommited(SubResultList subResults);
 
     public interface ICRUDOperationsUseCaseFactory
     {
@@ -14,7 +14,7 @@ namespace RIAPP.DataService.Core
             Action<RowInfo> trackChanges, 
             ChangeSetExecutor executeChangeSet, 
             AfterChangeSetExecuted afterChangeSetExecuted,
-            SubResultsExecutor subResultsExecutor);
+            AfterChangeSetCommited afterChangeSetCommited);
     }
 
     public interface ICRUDOperationsUseCaseFactory<TService>: ICRUDOperationsUseCaseFactory
@@ -24,7 +24,7 @@ namespace RIAPP.DataService.Core
             Action<RowInfo> trackChanges, 
             ChangeSetExecutor executeChangeSet, 
             AfterChangeSetExecuted afterChangeSetExecuted,
-            SubResultsExecutor subResultsExecutor);
+            AfterChangeSetCommited afterChangeSetCommited);
     }
 
 }

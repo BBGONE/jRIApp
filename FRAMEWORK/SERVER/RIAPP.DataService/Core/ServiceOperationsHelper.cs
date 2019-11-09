@@ -71,12 +71,12 @@ namespace RIAPP.DataService.Core
             }
         }
 
-        public async Task AddRefreshedRows(ChangeSetRequest changeSet, SubResultList refreshResults)
+        public async Task AfterChangeSetCommited(ChangeSetRequest changeSet, SubResultList refreshResult)
         {
             IEnumerable<IDataManager> dataManagers = _dataManagers.Values.Select(m => (IDataManager)m);
             foreach (IDataManager dataManager in dataManagers)
             {
-                await dataManager.AddRefreshedRows(changeSet, refreshResults);
+                await dataManager.AfterChangeSetCommited(changeSet, refreshResult);
             }
         }
 

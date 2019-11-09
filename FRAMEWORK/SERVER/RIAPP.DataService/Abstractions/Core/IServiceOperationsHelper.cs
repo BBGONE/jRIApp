@@ -14,7 +14,7 @@ namespace RIAPP.DataService.Core
 
         Task AfterExecuteChangeSet(ChangeSetRequest message);
 
-        Task AddRefreshedRows(ChangeSetRequest changeSet, SubResultList refreshResults);
+        Task AfterChangeSetCommited(ChangeSetRequest changeSet, SubResultList refreshResult);
 
         void ApplyValues(object entity, RowInfo rowInfo, string path, ValueChange[] values, bool isOriginal);
         void CheckValuesChanges(RowInfo rowInfo, string path, ValueChange[] values);

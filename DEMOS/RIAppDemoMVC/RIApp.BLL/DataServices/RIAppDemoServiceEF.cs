@@ -306,13 +306,13 @@ namespace RIAppDemo.BLL.DataServices
 
                 var subResult1 = new SubResult
                 {
-                    dbSetName = "CustomerAddress",
+                    dbSetName = this.GetSetInfosByEntityType(typeof(CustomerAddress)).Single().dbSetName,
                     Result = customerAddress
                 };
 
                 var subResult2 = new SubResult
                 {
-                    dbSetName = "Address",
+                    dbSetName = this.GetSetInfosByEntityType(typeof(Address)).Single().dbSetName,
                     Result = await DB.Addresses.AsNoTracking().Where(adr => addressIDs.Contains(adr.AddressID)).ToListAsync()
                 };
 
