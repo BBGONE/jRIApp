@@ -2717,7 +2717,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 });
             });
         };
-        DbContext.prototype._dataSaved = function (response) {
+        DbContext.prototype._dataSaved = function (response, context) {
             var self = this;
             try {
                 try {
@@ -2746,7 +2746,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 });
             }
             catch (ex) {
-                self._onSubmitError(ex);
+                self._onSubmitError(ex, context);
                 ERROR.throwDummy(ex);
             }
         };
@@ -2779,23 +2779,23 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             var err = (ex instanceof error_1.DataOperationError) ? ex : new error_1.DataOperationError(ex, oper);
             return this.handleError(err, this);
         };
-        DbContext.prototype._onSubmitError = function (error) {
+        DbContext.prototype._onSubmitError = function (error, context) {
             if (ERROR.checkIsDummy(error)) {
                 return;
             }
-            var args = { error: error, isHandled: false };
+            var args = { error: error, isHandled: false, context: context };
             this.objEvents.raise("submit_error", args);
             if (!args.isHandled) {
                 this._onDataOperError(error, 1);
             }
         };
-        DbContext.prototype._onSubmitting = function () {
-            var submittingArgs = { isCancelled: false };
+        DbContext.prototype._onSubmitting = function (context) {
+            var submittingArgs = { isCancelled: false, context: context };
             this.objEvents.raise("submitting", submittingArgs);
             return !submittingArgs.isCancelled;
         };
-        DbContext.prototype._onSubmitted = function () {
-            this.objEvents.raise("submitted", {});
+        DbContext.prototype._onSubmitted = function (context) {
+            this.objEvents.raise("submitted", { context: context });
         };
         DbContext.prototype.waitForNotBusy = function (callback) {
             this._waitQueue.enQueue({
@@ -3030,10 +3030,8 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }, query.isClearPrevData ? context.dbSetName : null);
             return deferred.promise();
         };
-        DbContext.prototype._submitChanges = function (args) {
+        DbContext.prototype._submitChanges = function (args, context) {
             var self = this, noChanges = "NO_CHANGES";
-            if (!self._onSubmitting())
-                return;
             args.fn_onStart();
             delay(function () {
                 self._checkDisposed();
@@ -3050,7 +3048,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 return JSON.parse(res);
             }).then(function (res) {
                 self._checkDisposed();
-                self._dataSaved(res);
+                self._dataSaved(res, context);
                 if (!!res.subsets) {
                     self._loadSubsets(res.subsets, true);
                 }
@@ -3161,7 +3159,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }
             var deferred = createDeferred(), submitState = { promise: deferred.promise() };
             this._pendingSubmit = submitState;
-            var context = {
+            var context = Indexer(), args = {
                 fn_onStart: function () {
                     if (!self._isSubmiting) {
                         self._isSubmiting = true;
@@ -3177,8 +3175,8 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 },
                 fn_onErr: function (ex) {
                     try {
-                        context.fn_onEnd();
-                        self._onSubmitError(ex);
+                        args.fn_onEnd();
+                        self._onSubmitError(ex, context);
                     }
                     finally {
                         deferred.reject();
@@ -3186,11 +3184,11 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 },
                 fn_onOk: function () {
                     try {
-                        context.fn_onEnd();
+                        args.fn_onEnd();
                     }
                     finally {
                         deferred.resolve();
-                        self._onSubmitted();
+                        self._onSubmitted(context);
                     }
                 }
             };
@@ -3198,10 +3196,12 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 self.waitForNotBusy(function () {
                     try {
                         self._checkDisposed();
-                        self._submitChanges(context);
+                        if (self._onSubmitting(context)) {
+                            self._submitChanges(args, context);
+                        }
                     }
                     catch (err) {
-                        context.fn_onErr(err);
+                        args.fn_onErr(err);
                     }
                 });
             });
@@ -4614,5 +4614,5 @@ define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/datavie
     __export(entity_aspect_2);
     __export(error_3);
     __export(complexprop_1);
-    exports.VERSION = "3.0.0";
+    exports.VERSION = "3.0.1";
 });

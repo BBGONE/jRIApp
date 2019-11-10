@@ -73,9 +73,9 @@ const enum DBCTX_EVENTS {
     DBSET_CREATING = "dbset_creating"
 }
 
-export type TSubmitErrArgs = { error: any, isHandled: boolean };
-export type TSubmittingArgs = { isCancelled: boolean };
-export type TSubmittedArgs = { };
+export type TSubmitErrArgs = { error: any, isHandled: boolean, context: IIndexer<any> };
+export type TSubmittingArgs = { isCancelled: boolean, context: IIndexer<any> };
+export type TSubmittedArgs = { context: IIndexer<any> };
 
 export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any, TAssoc = any> extends BaseObject {
     private _requestHeaders: IIndexer<string>;
@@ -368,7 +368,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
                 });
         });
     }
-    protected _dataSaved(response: IChangeResponse): void {
+    protected _dataSaved(response: IChangeResponse, context: IIndexer<any>): void {
         const self = this;
         try {
             try {
@@ -396,7 +396,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
                 self._dbSets.getDbSet(jsDB.dbSetName)._getInternal().commitChanges(jsDB.rows);
             });
         } catch (ex) {
-            self._onSubmitError(ex);
+            self._onSubmitError(ex, context);
             ERROR.throwDummy(ex);
         }
     }
@@ -432,24 +432,24 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         const err: DataOperationError = (ex instanceof DataOperationError) ? ex : new DataOperationError(ex, oper);
         return this.handleError(err, this);
     }
-    protected _onSubmitError(error: any): void {
+    protected _onSubmitError(error: any, context: IIndexer<any>): void {
         if (ERROR.checkIsDummy(error)) {
             return;
         }
-        const args: TSubmitErrArgs = { error: error, isHandled: false };
+        const args: TSubmitErrArgs = { error: error, isHandled: false, context: context };
         this.objEvents.raise(DBCTX_EVENTS.SUBMIT_ERROR, args);
         if (!args.isHandled) {
             // this.rejectChanges();
             this._onDataOperError(error, DATA_OPER.Submit);
         }
     }
-    protected _onSubmitting(): boolean {
-        const submittingArgs: TSubmittingArgs = { isCancelled: false };
+    protected _onSubmitting(context: IIndexer<any>): boolean {
+        const submittingArgs: TSubmittingArgs = { isCancelled: false, context: context };
         this.objEvents.raise(DBCTX_EVENTS.SUBMITTING, submittingArgs);
         return !submittingArgs.isCancelled;
     }
-    protected _onSubmitted(): void {
-        this.objEvents.raise(DBCTX_EVENTS.SUBMITTED, {} as TSubmittedArgs);
+    protected _onSubmitted(context: IIndexer<any>): void {
+        this.objEvents.raise(DBCTX_EVENTS.SUBMITTED, { context: context } as TSubmittedArgs);
     }
     protected waitForNotBusy(callback: () => void): void {
         this._waitQueue.enQueue({
@@ -720,11 +720,9 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         fn_onEnd: () => void;
         fn_onErr: (ex: any) => void;
         fn_onOk: () => void;
-    }): void {
+    }, context: IIndexer<any>): void {
         const self = this, noChanges = "NO_CHANGES";
-        if (!self._onSubmitting())
-            return;
-
+       
         args.fn_onStart();
 
         delay<IChangeRequest>(() => {
@@ -742,7 +740,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             return <IChangeResponse>JSON.parse(res);
         }).then((res: IChangeResponse) => {
             self._checkDisposed();
-            self._dataSaved(res);
+            self._dataSaved(res, context);
             if (!!res.subsets) {
                 self._loadSubsets(res.subsets, true);
             }
@@ -856,11 +854,9 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             return this._pendingSubmit.promise;
         }
 
-        const deferred = createDeferred<void>(),
-            submitState = { promise: deferred.promise() };
+        const deferred = createDeferred<void>(), submitState = { promise: deferred.promise() };
         this._pendingSubmit = submitState;
-
-        const context = {
+        const context = Indexer(), args = {
             fn_onStart: () => {
                 if (!self._isSubmiting) {
                     self._isSubmiting = true;
@@ -877,18 +873,18 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             },
             fn_onErr: (ex: any) => {
                 try {
-                    context.fn_onEnd();
-                    self._onSubmitError(ex);
+                    args.fn_onEnd();
+                    self._onSubmitError(ex, context);
                 } finally {
                     deferred.reject();
                 }
             },
             fn_onOk: () => {
                 try {
-                    context.fn_onEnd();
+                    args.fn_onEnd();
                 } finally {
                     deferred.resolve();
-                    self._onSubmitted();
+                    self._onSubmitted(context);
                 }
             }
         };
@@ -897,9 +893,11 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             self.waitForNotBusy(() => {
                 try {
                     self._checkDisposed();
-                    self._submitChanges(context);
+                    if (self._onSubmitting(context)) {
+                        self._submitChanges(args, context);
+                    }
                 } catch (err) {
-                    context.fn_onErr(err);
+                    args.fn_onErr(err);
                 }
             });
         });

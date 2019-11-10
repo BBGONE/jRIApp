@@ -415,11 +415,15 @@ declare module "jriapp_db/dbcontext" {
     export type TSubmitErrArgs = {
         error: any;
         isHandled: boolean;
+        context: IIndexer<any>;
     };
     export type TSubmittingArgs = {
         isCancelled: boolean;
+        context: IIndexer<any>;
     };
-    export type TSubmittedArgs = {};
+    export type TSubmittedArgs = {
+        context: IIndexer<any>;
+    };
     export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any, TAssoc = any> extends BaseObject {
         private _requestHeaders;
         private _requests;
@@ -459,13 +463,13 @@ declare module "jriapp_db/dbcontext" {
         protected _loadFromCache(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
         protected _loadSubsets(subsets: ISubset[], refreshOnly?: boolean, isClearAll?: boolean): void;
         protected _onLoaded(response: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
-        protected _dataSaved(response: IChangeResponse): void;
+        protected _dataSaved(response: IChangeResponse, context: IIndexer<any>): void;
         protected _getChanges(): IChangeRequest;
         protected _getUrl(action: string): string;
         protected _onDataOperError(ex: any, oper: DATA_OPER): boolean;
-        protected _onSubmitError(error: any): void;
-        protected _onSubmitting(): boolean;
-        protected _onSubmitted(): void;
+        protected _onSubmitError(error: any, context: IIndexer<any>): void;
+        protected _onSubmitting(context: IIndexer<any>): boolean;
+        protected _onSubmitted(context: IIndexer<any>): void;
         protected waitForNotBusy(callback: () => void): void;
         protected waitForNotSubmiting(callback: () => void): void;
         protected _loadInternal(context: {
@@ -499,7 +503,7 @@ declare module "jriapp_db/dbcontext" {
             fn_onEnd: () => void;
             fn_onErr: (ex: any) => void;
             fn_onOk: () => void;
-        }): void;
+        }, context: IIndexer<any>): void;
         _getInternal(): IInternalDbxtMethods;
         initialize(options: {
             serviceUrl: string;
@@ -974,5 +978,5 @@ declare module "jriapp_db" {
     export * from "jriapp_db/entity_aspect";
     export * from "jriapp_db/error";
     export * from "jriapp_db/complexprop";
-    export const VERSION = "3.0.0";
+    export const VERSION = "3.0.1";
 }
