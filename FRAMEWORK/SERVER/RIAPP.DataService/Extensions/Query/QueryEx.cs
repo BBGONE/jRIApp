@@ -66,7 +66,7 @@ namespace RIAPP.DataService.Core.Query
             var result = entities;
             if (filter == null || filter.filterItems == null || filter.filterItems.Count == 0)
                 return result;
-            var cnt = 0;
+            int cnt = 0;
             var sb = new StringBuilder();
             var filterParams = new LinkedList<object>();
             foreach (var filterItem in filter.filterItems)
@@ -84,21 +84,14 @@ namespace RIAPP.DataService.Core.Query
                     case FilterType.Equals:
                         if (filterItem.values.Count == 1)
                         {
-                            var val = filterItem.values.FirstOrDefault();
-                            if (val == null)
-                            {
-                                sb.AppendFormat("{0}==NULL", filterItem.fieldName);
-                            }
-                            else
-                            {
-                                sb.AppendFormat("{0}==@{1}", filterItem.fieldName, cnt++);
-                                filterParams.AddLast(dataHelper.DeserializeField(typeof(T), field, val));
-                            }
+                            sb.AppendFormat("{0}=@{1}", filterItem.fieldName, cnt++);
+                            filterParams.AddLast(dataHelper.DeserializeField(typeof(T), field, filterItem.values.FirstOrDefault()));
                         }
                         else
                         {
                             string args = string.Join(",", filterItem.values.Select(v => string.Format("@{0}", cnt++)));
                             sb.AppendFormat("({0} in ({1}))", filterItem.fieldName, args);
+
                             foreach (var v in filterItem.values)
                             {
                                 filterParams.AddLast(dataHelper.DeserializeField(typeof(T), field, v));
@@ -134,18 +127,8 @@ namespace RIAPP.DataService.Core.Query
                         filterParams.AddLast(dataHelper.DeserializeField(typeof(T), field, filterItem.values.FirstOrDefault()));
                         break;
                     case FilterType.NotEq:
-                    {
-                        var val = filterItem.values.FirstOrDefault();
-                        if (val == null)
-                        {
-                            sb.AppendFormat("{0}!=NULL", filterItem.fieldName);
-                        }
-                        else
-                        {
-                            sb.AppendFormat("{0}!=@{1}", filterItem.fieldName, cnt++);
-                            filterParams.AddLast(dataHelper.DeserializeField(typeof(T), field, val));
-                        }
-                    }
+                        sb.AppendFormat("{0}!=@{1}", filterItem.fieldName, cnt++);
+                        filterParams.AddLast(dataHelper.DeserializeField(typeof(T), field, filterItem.values.FirstOrDefault()));
                         break;
                     case FilterType.Between:
                         sb.AppendFormat("({0}>=@{1} and {0}<=@{2})", filterItem.fieldName, cnt++, cnt++);
