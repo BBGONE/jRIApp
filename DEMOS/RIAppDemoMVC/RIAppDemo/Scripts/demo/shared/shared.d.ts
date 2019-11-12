@@ -248,3 +248,63 @@ declare module "websocket" {
         readonly clientID: string;
     }
 }
+declare module "dropdownbox" {
+    import * as RIAPP from "jriapp";
+    import * as uiMOD from "jriapp_ui";
+    export interface IDropDownBoxOptions extends RIAPP.IViewOptions {
+        templateId: string;
+        valuePath: string;
+        textPath: string;
+        width?: any;
+        height?: any;
+    }
+    export interface IDropDownBoxConstructorOptions extends IDropDownBoxOptions {
+        dataSource?: RIAPP.ICollection<RIAPP.ICollectionItem>;
+    }
+    export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITemplateEvents {
+        private _templateId;
+        private _valuePath;
+        private _textPath;
+        private _width;
+        private _height;
+        private _template;
+        protected _dataSource: RIAPP.ICollection<RIAPP.ICollectionItem>;
+        private _$dropDown;
+        private _isOpen;
+        private _grid;
+        private _btnOk;
+        private _btnCancel;
+        private _selected1;
+        private _selected;
+        private _selectedCount;
+        private _btn;
+        templateLoading(template: RIAPP.ITemplate): void;
+        templateLoaded(template: RIAPP.ITemplate, error?: any): void;
+        templateUnLoading(template: RIAPP.ITemplate): void;
+        constructor(el: HTMLInputElement, options: IDropDownBoxConstructorOptions);
+        viewMounted(): void;
+        protected _createTemplate(parentEl: HTMLElement): RIAPP.ITemplate;
+        protected _onClick(): void;
+        protected _onKeyPress(keyCode: number): boolean;
+        protected _hideAsync(): RIAPP.IPromise<void>;
+        protected _updatePosition(): void;
+        protected _onShow(): void;
+        protected _onHide(): void;
+        protected _open(): void;
+        protected _onOpen(): void;
+        protected _hide(): void;
+        protected onRowSelected(row: uiMOD.DataGridRow): void;
+        private _selectItem;
+        protected _updateSelection(): void;
+        dispose(): void;
+        private _clear;
+        readonly templateId: string;
+        readonly info: string;
+        selected: Array<number>;
+        readonly template: RIAPP.ITemplate;
+        readonly dataSource: RIAPP.ICollection<RIAPP.ICollectionItem>;
+        value: string;
+        selectedCount: number;
+    }
+    export function initModule(app: RIAPP.Application): void;
+}

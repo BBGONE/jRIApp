@@ -186,6 +186,26 @@ namespace RIAppDemo.BLL.DataServices
             string userIPaddress = ipAddressService.GetIPAddress();
             //p.s. do something with info and keys
         }
+        
+        /// <summary>
+        /// Can be used to load all classifiers in bulk (in one roundtrip)
+        /// </summary>
+        /// <returns></returns>
+        [Invoke]
+        public DEMOCLS GetClassifiers()
+        {
+            DEMOCLS res = new DEMOCLS
+            {
+                prodCategory = this.DB.ProductCategories.OrderBy(l => l.Name).Select(d => new KeyVal { key = d.ProductCategoryID, val = d.Name }),
+                prodDescription = this.DB.ProductDescriptions.OrderBy(l => l.Description).Select(d => new KeyVal { key = d.ProductDescriptionID, val = d.Description }),
+                prodModel = this.DB.ProductModels.OrderBy(l => l.Name).Select(d => new KeyVal { key = d.ProductModelID, val = d.Name }).ToList()
+            };
+
+            (res.prodModel as List<KeyVal>).Insert(0, new KeyVal() { key = -1, val = "Not Set (Empty)" });
+
+            return res;
+        }
+
 
         #region CustomerJSON
         /// <summary>

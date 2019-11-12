@@ -14,7 +14,7 @@ export class ProductsFilter extends RIAPP.BaseObject {
     private _childCategoryID: number;
     private _selectedCategory: DEMODB.ProductCategory;
     private _selectedModel: DEMODB.ProductModel;
-    private _modelID: number;
+    private _modelID: (number | null)[];
     private _parentCategories: dbMOD.DataView<DEMODB.ProductCategory>;
     private _childCategories: dbMOD.DataView<DEMODB.ProductCategory>;
     private _resetCommand: ResetCommand;
@@ -23,6 +23,12 @@ export class ProductsFilter extends RIAPP.BaseObject {
     private _saleStart2: Date;
     private _sizes: DEMODB.KeyValDictionary;
     private _size: number;
+    // just as an example how several client side dictionaries could be filled in one service call
+    private _prodCatDic: DEMODB.KeyValDictionary;
+    private _prodModDic: DEMODB.KeyValDictionary;
+    private _prodDescDic: DEMODB.KeyValDictionary;
+
+    private _loaded: boolean;
 
     constructor(app: DemoApplication) {
         super();
@@ -57,6 +63,12 @@ export class ProductsFilter extends RIAPP.BaseObject {
         this._sizes.fillItems([{ key: 0, val: 'EMPTY' }, { key: 1, val: 'NOT EMPTY' }, { key: 2, val: 'SMALL SIZE' }, { key: 3, val: 'BIG SIZE' }], true);
         this._size = null;
         this._resetCommand = new ResetCommand(self);
+
+        this._prodCatDic = new DEMODB.KeyValDictionary();
+        this._prodModDic = new DEMODB.KeyValDictionary();
+        this._prodDescDic = new DEMODB.KeyValDictionary();
+
+        this._loaded = false;
     }
     _loadCategories() {
         let query = this.ProductCategories.createReadProductCategoryQuery();
@@ -71,11 +83,27 @@ export class ProductsFilter extends RIAPP.BaseObject {
         //returns promise
         return query.load();
     }
+    _loadClassifiers(): RIAPP.IPromise<DEMODB.IDEMOCLS> {
+        return this.dbContext.serviceMethods.GetClassifiers();
+    }
     //returns a promise
     load() {
-        //load two dbsets simultaneously
-        let promise1 = this._loadCategories(), promise2 = this._loadProductModels();
-        return utils.defer.whenAll<any>([promise1, promise2]);
+        // 3 asynchronous requests, we get the promises for each one
+        let promise1 = this._loadClassifiers().then((res) => {
+            this._prodCatDic.fillItems(res.prodCategory, true);
+            this._prodModDic.fillItems(res.prodModel, true);
+            this._prodDescDic.fillItems(res.prodDescription, true);
+        }), promise2 = this._loadCategories(), promise3 = this._loadProductModels();
+
+        // combine them into one promise - which resolves when all requests are completed
+        return utils.defer.whenAll<any>([promise1, promise2, promise3]).then(() => {
+            this._loaded = true;
+            this.objEvents.raise('loaded', {});
+            this.reset();
+        }, (err) => { this._app.handleError(err, this); });
+    }
+    addOnLoaded(fn: (sender: this, args: {}) => void, nmspace?: string) {
+        this.objEvents.on('loaded', fn, nmspace);
     }
     reset() {
         this.parentCategoryID = null;
@@ -90,6 +118,15 @@ export class ProductsFilter extends RIAPP.BaseObject {
         this.saleStart2 = null;
         this.size = null;
     }
+    get loaded() {
+        return this._loaded;
+    }
+    // demo dictionaries which are loaded from the service call
+    // they can be used for lookups or to bind to select HTML elements to fill the options
+    get prodCatDic() { return this._prodCatDic; }
+    get prodModDic() { return this._prodModDic; }
+    get prodDescDic() { return this._prodDescDic; }
+
     get prodNumber() { return this._prodNumber; }
     set prodNumber(v) {
         if (this._prodNumber != v) {
@@ -119,7 +156,7 @@ export class ProductsFilter extends RIAPP.BaseObject {
             this.objEvents.raiseProp('childCategoryID');
         }
     }
-    get modelID() { return this._modelID; }
+    get modelID(): (number | null)[] { return this._modelID; }
     set modelID(v) {
         if (this._modelID != v) {
             this._modelID = v;

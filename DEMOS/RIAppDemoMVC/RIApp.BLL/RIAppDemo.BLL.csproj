@@ -74,6 +74,7 @@
     <Compile Include="DataServices\TumbnailService.cs" />
     <Compile Include="Models\AddressInfo.cs" />
     <Compile Include="Models\CustomerJSON.cs" />
+    <Compile Include="Models\DEMOCLS.cs" />
     <Compile Include="Models\RadioVal.cs" />
     <Compile Include="Models\StrKeyVal.cs" />
     <Compile Include="Models\HistoryItem.cs" />

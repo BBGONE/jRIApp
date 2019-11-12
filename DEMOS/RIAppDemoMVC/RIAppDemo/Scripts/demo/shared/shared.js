@@ -11,6 +11,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], function (require, exports, RIAPP, dbMOD, uiMOD) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1261,4 +1272,334 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
         return WebSocketsVM;
     }(RIAPP.BaseObject));
     exports.WebSocketsVM = WebSocketsVM;
+});
+define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$, dom = RIAPP.DOM;
+    function findElemViewInTemplate(template, name) {
+        var arr = template.findElViewsByDataName(name);
+        return (!!arr && arr.length > 0) ? arr[0] : null;
+    }
+    function findElemInTemplate(template, name) {
+        var arr = template.findElByDataName(name);
+        return (!!arr && arr.length > 0) ? arr[0] : null;
+    }
+    var DropDownBoxElView = (function (_super) {
+        __extends(DropDownBoxElView, _super);
+        function DropDownBoxElView(el, options) {
+            var _this = _super.call(this, el, options) || this;
+            var self = _this;
+            _this._templateId = options.templateId;
+            if (!!options.dataSource && !utils.sys.isCollection(options.dataSource)) {
+                throw new Error("Не задан источник данных");
+            }
+            _this._template = null;
+            _this._valuePath = options.valuePath;
+            _this._textPath = options.textPath;
+            _this._dataSource = options.dataSource;
+            _this._selected = {};
+            _this._selectedCount = 0;
+            _this._selected1 = {};
+            _this._$dropDown = null;
+            _this._grid = null;
+            _this._btnOk = null;
+            _this._btnCancel = null;
+            _this._width = options.width || '250px';
+            _this._height = options.height || '330px';
+            var $el = $(_this.el);
+            $el.on('click.' + _this.uniqueID, function (e) {
+                e.stopPropagation();
+                self._onClick();
+            });
+            $el.on('keyup.' + _this.uniqueID, function (e) {
+                e.stopPropagation();
+                self._onKeyPress(e.keyCode);
+            });
+            $el.on('keypress.' + _this.uniqueID, function (e) {
+                e.stopPropagation();
+            });
+            _this._isOpen = false;
+            var parentEl = dom.document.createElement("div");
+            _this._template = _this._createTemplate(parentEl);
+            _this._$dropDown = $(parentEl);
+            _this._$dropDown.css({
+                "position": "absolute",
+                "z-index": "10000",
+                "left": "-2000px",
+                "top": "-1000px",
+                "background-color": "white",
+                "border": "1px solid gray",
+                "width": _this._width,
+                "height": _this._height
+            });
+            dom.document.body.appendChild(parentEl);
+            var btn = dom.document.createElement("button");
+            btn.innerHTML = "...";
+            btn.type = "button";
+            $el.after(btn);
+            dom.addClass([btn], "btn lnkbtn btn-info");
+            _this._btn = btn;
+            $(btn).on('click.' + _this.uniqueID, function (e) {
+                e.stopPropagation();
+                self._onClick();
+            });
+            _this._updateSelection();
+            return _this;
+        }
+        DropDownBoxElView.prototype.templateLoading = function (template) {
+        };
+        DropDownBoxElView.prototype.templateLoaded = function (template, error) {
+            if (this.getIsStateDirty() || error)
+                return;
+            var self = this, gridElView = findElemViewInTemplate(template, 'lookupGrid');
+            if (!!gridElView) {
+                this._grid = gridElView.grid;
+            }
+            this._btnOk = findElemInTemplate(template, 'btnOk');
+            this._btnCancel = findElemInTemplate(template, 'btnCancel');
+            $(this._btnOk).click(function () {
+                self._updateSelection();
+                self._hide();
+            });
+            $(this._btnCancel).click(function () {
+                self._hide();
+            });
+        };
+        DropDownBoxElView.prototype.templateUnLoading = function (template) {
+        };
+        DropDownBoxElView.prototype.viewMounted = function () {
+        };
+        DropDownBoxElView.prototype._createTemplate = function (parentEl) {
+            var t = RIAPP.createTemplate({ parentEl: parentEl, dataContext: this, templEvents: this });
+            t.templateID = this._templateId;
+            return t;
+        };
+        DropDownBoxElView.prototype._onClick = function () {
+            var self = this;
+            if (!self._isOpen) {
+                self._open();
+            }
+        };
+        DropDownBoxElView.prototype._onKeyPress = function (keyCode) {
+            if (keyCode === 13) {
+                this._updateSelection();
+            }
+            if (keyCode === 27 || keyCode === 9 || keyCode === 13) {
+                this._hideAsync();
+                return true;
+            }
+            return false;
+        };
+        DropDownBoxElView.prototype._hideAsync = function () {
+            var self = this;
+            return utils.defer.delay(function () {
+                self._hide();
+            }, 100);
+        };
+        DropDownBoxElView.prototype._updatePosition = function () {
+            this._$dropDown.position({
+                my: "left top",
+                at: "left bottom",
+                of: $(this.el),
+                offset: "0 0"
+            });
+        };
+        DropDownBoxElView.prototype._onShow = function () {
+            this.objEvents.raise('show', {});
+        };
+        DropDownBoxElView.prototype._onHide = function () {
+            this.objEvents.raise('hide', {});
+        };
+        DropDownBoxElView.prototype._open = function () {
+            if (this._isOpen)
+                return;
+            var self = this;
+            if (!!this._grid) {
+                var dlg_2 = this._$dropDown.get(0), txtEl_2 = self.el;
+                $(dom.document).on('mousedown.' + this.uniqueID, function (e) {
+                    if (!(dom.isContained(e.target, dlg_2) || dom.isContained(e.target, txtEl_2))) {
+                        self._hideAsync();
+                    }
+                });
+                this._grid.addOnCellDblClicked(function (_s, a) {
+                    self._hide();
+                }, this.uniqueID);
+                this._grid.addOnRowSelected(function (_s, args) {
+                    self.onRowSelected(args.row);
+                }, this.uniqueID, this);
+                bootstrap.selectedControl = self._grid;
+                $(dom.document).on('keyup.' + this.uniqueID, function (e) {
+                    if (bootstrap.selectedControl === self._grid) {
+                        if (self._onKeyPress(e.which))
+                            e.stopPropagation();
+                    }
+                });
+            }
+            this._onOpen();
+            this._updatePosition();
+            this._isOpen = true;
+            this._onShow();
+        };
+        DropDownBoxElView.prototype._onOpen = function () {
+            var self = this, ids = Object.keys(this._selected), grid = self._grid;
+            ids.forEach(function (id) {
+                var item = self.dataSource.getItemByKey(id);
+                var row;
+                if (!!item) {
+                    row = grid.findRowByItem(item);
+                    if (!!row) {
+                        row.isSelected = true;
+                    }
+                }
+            });
+            this._selected1 = __assign({}, this._selected);
+        };
+        DropDownBoxElView.prototype._hide = function () {
+            if (!this._isOpen)
+                return;
+            this._clear(false);
+            $(dom.document).off('.' + this.uniqueID);
+            if (!!this._grid) {
+                this._grid.objEvents.offNS(this.uniqueID);
+            }
+            this._$dropDown.css({ left: "-2000px" });
+            this._isOpen = false;
+            this._onHide();
+        };
+        DropDownBoxElView.prototype.onRowSelected = function (row) {
+            if (!!this._selected1) {
+                this._selectItem(row.item, row.isSelected);
+            }
+        };
+        DropDownBoxElView.prototype._selectItem = function (item, isSelected) {
+            var val = utils.core.getValue(item, this._valuePath);
+            var text = utils.core.getValue(item, this._textPath);
+            var selected = this._selected1;
+            var obj = utils.core.getValue(selected, "" + val);
+            if (isSelected) {
+                if (!obj) {
+                    utils.core.setValue(selected, "" + val, { v: val, text: text });
+                }
+            }
+            else {
+                if (!!obj) {
+                    delete selected["" + val];
+                }
+            }
+        };
+        DropDownBoxElView.prototype._updateSelection = function () {
+            this._selected = __assign({}, this._selected1);
+            this.selectedCount = Object.keys(this._selected).length;
+            this.value = "Selected: " + this._selectedCount;
+            this.objEvents.raiseProp("selected");
+            this.objEvents.raiseProp("info");
+        };
+        DropDownBoxElView.prototype.dispose = function () {
+            if (this.getIsDisposed())
+                return;
+            this.setDisposing();
+            this._hide();
+            $(this.el).off('.' + this.uniqueID);
+            if (!!this._grid) {
+                this._grid = null;
+            }
+            if (!!this._template) {
+                this._template.dispose();
+                this._template = null;
+                this._$dropDown = null;
+            }
+            $(this._btn).remove();
+            this._selected = {};
+            this._selectedCount = 0;
+            this._selected1 = {};
+            this._dataSource = null;
+            _super.prototype.dispose.call(this);
+        };
+        DropDownBoxElView.prototype._clear = function (updateSelection) {
+            this._selected1 = null;
+            try {
+                this._grid.selectRows(false);
+            }
+            finally {
+                this._selected1 = {};
+            }
+            if (updateSelection) {
+                this._updateSelection();
+            }
+        };
+        Object.defineProperty(DropDownBoxElView.prototype, "templateId", {
+            get: function () { return this._templateId; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DropDownBoxElView.prototype, "info", {
+            get: function () {
+                if (this.selectedCount == 0)
+                    return "Nothing selected";
+                var res = [];
+                utils.core.forEach(this._selected, function (k, v) { res.push(v.text); });
+                return res.sort().join(",");
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DropDownBoxElView.prototype, "selected", {
+            get: function () {
+                if (this.selectedCount == 0)
+                    return [];
+                return Object.keys(this._selected).map(function (v) { return parseInt(v); });
+            },
+            set: function (v) {
+                if (!v && this.selectedCount > 0) {
+                    this._clear(true);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DropDownBoxElView.prototype, "template", {
+            get: function () { return this._template; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DropDownBoxElView.prototype, "dataSource", {
+            get: function () { return this._dataSource; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DropDownBoxElView.prototype, "value", {
+            get: function () {
+                return this.el.value;
+            },
+            set: function (v) {
+                var x = this.value, str = "" + v;
+                v = (!v) ? "" : str;
+                if (x !== v) {
+                    this.el.value = v;
+                    this.objEvents.raiseProp("value");
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DropDownBoxElView.prototype, "selectedCount", {
+            get: function () { return this._selectedCount; },
+            set: function (v) {
+                var old = this._selectedCount;
+                if (old !== v) {
+                    this._selectedCount = v;
+                    this.objEvents.raiseProp('selectedCount');
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return DropDownBoxElView;
+    }(uiMOD.InputElView));
+    exports.DropDownBoxElView = DropDownBoxElView;
+    function initModule(app) {
+        app.registerElView('dropdownbox', DropDownBoxElView);
+    }
+    exports.initModule = initModule;
 });

@@ -1,5 +1,6 @@
 ﻿import * as RIAPP from "jriapp";
 import * as COMMON from "common";
+import * as DROPDBOX from "dropdownbox";
 
 import { IMainOptions, DemoApplication } from "./app";
 import * as  ResizableGrid from "./resizableGrid";
@@ -47,7 +48,7 @@ export class SizeConverter extends RIAPP.BaseConverter {
     }
 }
 
-//bootstrap error handler - the last resort (typically display message to the user)
+// bootstrap error handler - the last resort (typically display message to the user)
 bootstrap.objEvents.addOnError(function (_s, args) {
     debugger;
     alert(args.error.message);
@@ -58,6 +59,7 @@ export function start(options: IMainOptions) {
 
     options.modulesInits = {
         "COMMON": COMMON.initModule,
+        "DROPDBOX": DROPDBOX.initModule,
         "ResizableGrid": ResizableGrid.initModule
     };
 

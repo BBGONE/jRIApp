@@ -8,6 +8,21 @@
 
 @section CssImport {
     <style type="text/css">
+        .lnkbtn {
+            padding: 4px 2px !important;
+            margin: 2px 2px 5px 2px;
+            width: 30px;
+            height: 25px;
+            min-width: 25px !important;
+        }
+
+        .dropdownTableWrap {
+            height: 260px;
+            margin: 0px;
+            padding: 0px;
+            width: 100%;
+        }
+
         .productTableWrap {
             height: calc(100% - 40px);
             width: 100%;
@@ -243,15 +258,21 @@
             </td>
             <td>
                 <label for="prodMod">Model:</label>
-                <select id="prodMod" size="1" class="span3"
-                        data-bind-1="this.dataSource,to=filter.ProductModels"
-                        data-bind-2="this.selectedValue,to=filter.modelID,mode=TwoWay"
-                        data-bind-3="this.toolTip,to=filter.selectedModel.Name"
-                        data-bind-4="this.selectedItem,to=filter.selectedModel,mode=TwoWay"
-                        data-bind-5="this.textProvider,to=optionTextProvider"
-                        data-bind-6="this.stateProvider,to=optionStateProvider"
-                        data-view-options="valuePath=ProductModelID,textPath=Name">
-                </select>
+                <input id="prodMod" type="text" style="width:270px; background-color: InfoBackground; cursor: pointer;" readonly="readonly" data-view="dropdownbox"
+                       data-bind-1="this.selected,to=filter.modelID,mode=TwoWay"
+                       data-bind-2="this.toolTip,to=info,source=this"
+                       data-view-options="valuePath=key,textPath=val,dataSource=bind(filter.prodModDic),templateId=prodModTemplate,width:'270px',height:'350px'" />
+                @*
+                    <select id="prodMod" size="1" class="span3"
+                            data-bind-1="this.dataSource,to=filter.ProductModels"
+                            data-bind-2="this.selectedValue,to=filter.modelID,mode=TwoWay"
+                            data-bind-3="this.toolTip,to=filter.selectedModel.Name"
+                            data-bind-4="this.selectedItem,to=filter.selectedModel,mode=TwoWay"
+                            data-bind-5="this.textProvider,to=optionTextProvider"
+                            data-bind-6="this.stateProvider,to=optionStateProvider"
+                            data-view-options="valuePath=ProductModelID,textPath=Name">
+                    </select>
+                *@
             </td>
         </tr>
         <tr>
@@ -361,4 +382,31 @@
         </div>
     </div>
 </script>
+
+<script id="prodModTemplate" type="text/x-template">
+    <div style="height: 98%; margin: 0px; padding: 2px; position: relative;">
+        <div style="margin-left: 1px; position: relative; vertical-align: top;">
+            <table data-name="lookupGrid" data-bind="this.dataSource,to=dataSource"
+                   data-view-options="wrapCss:dropdownTableWrap,isCanEdit:false,isCanDelete:false">
+                <thead>
+                    <tr>
+                        <th data-column="width:30px,type:row_selector" />
+                        <th data-column="width:95%,title:'Model'" data-content="fieldName:val,readOnly:true" />
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <br style="clear: both;" />
+        <div style="margin-left: auto;margin-right:auto;left: 0;right: 0;bottom:5px;text-align:center;position:absolute;">
+            <a class="btn btn-info btn-small" style="width: 95px;" data-name="btnOk">
+                <i class="icon-ok"></i> Ok
+            </a><span style="width: 20px;"></span>
+            <a class="btn btn-info btn-small" style="width: 95px;" data-name="btnCancel">
+                <i class="icon-remove"></i> Cancel
+            </a>
+        </div>
+    </div>
+</script>
+
 @Html.Partial("_WaitLoad")

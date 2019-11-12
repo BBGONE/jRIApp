@@ -1506,7 +1506,7 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
             return [{ "name": "CustAddrToAddress", "parentDbSetName": "Address", "childDbSetName": "CustomerAddress", "childToParentName": "Address", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToAddress2", "parentDbSetName": "AddressInfo", "childDbSetName": "CustomerAddress", "childToParentName": "AddressInfo", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToCustomer", "parentDbSetName": "Customer", "childDbSetName": "CustomerAddress", "childToParentName": "Customer", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdDetailsToOrder", "parentDbSetName": "SalesOrderHeader", "childDbSetName": "SalesOrderDetail", "childToParentName": "SalesOrderHeader", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 1, "fieldRels": [{ "parentField": "SalesOrderID", "childField": "SalesOrderID" }] }, { "name": "OrdDetailsToProduct", "parentDbSetName": "Product", "childDbSetName": "SalesOrderDetail", "childToParentName": "Product", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 0, "fieldRels": [{ "parentField": "ProductID", "childField": "ProductID" }] }, { "name": "OrdersToBillAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address1", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "BillToAddressID" }] }, { "name": "OrdersToCustomer", "parentDbSetName": "Customer", "childDbSetName": "SalesOrderHeader", "childToParentName": "Customer", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdersToShipAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "ShipToAddressID" }] }];
         };
         DbContext.prototype._createMethods = function () {
-            return [{ "methodName": "ReadAddress", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressByIds", "parameters": [{ "name": "addressIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressForCustomers", "parameters": [{ "name": "custIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressInfo", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomer", "parameters": [{ "name": "includeNav", "dataType": 2, "isArray": false, "isNullable": true, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomerAddress", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomerJSON", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProduct", "parameters": [{ "name": "param1", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "param2", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductByIds", "parameters": [{ "name": "productIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductCategory", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductLookUp", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductModel", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesInfo", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesOrderDetail", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesOrderHeader", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "TestComplexInvoke", "parameters": [{ "name": "info", "dataType": 0, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "keys", "dataType": 0, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": false, "isQuery": false }, { "methodName": "TestInvoke", "parameters": [{ "name": "param1", "dataType": 10, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "param2", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": false }];
+            return [{ "methodName": "ReadAddress", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressByIds", "parameters": [{ "name": "addressIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressForCustomers", "parameters": [{ "name": "custIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressInfo", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomer", "parameters": [{ "name": "includeNav", "dataType": 2, "isArray": false, "isNullable": true, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomerAddress", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomerJSON", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProduct", "parameters": [{ "name": "param1", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "param2", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductByIds", "parameters": [{ "name": "productIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductCategory", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductLookUp", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductModel", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesInfo", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesOrderDetail", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesOrderHeader", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "GetClassifiers", "parameters": [], "methodResult": true, "isQuery": false }, { "methodName": "TestComplexInvoke", "parameters": [{ "name": "info", "dataType": 0, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "keys", "dataType": 0, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": false, "isQuery": false }, { "methodName": "TestInvoke", "parameters": [{ "name": "param1", "dataType": 10, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "param2", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": false }];
         };
         return DbContext;
     }(dbMOD.DbContext));
@@ -1584,6 +1584,10 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             _this._sizes.fillItems([{ key: 0, val: 'EMPTY' }, { key: 1, val: 'NOT EMPTY' }, { key: 2, val: 'SMALL SIZE' }, { key: 3, val: 'BIG SIZE' }], true);
             _this._size = null;
             _this._resetCommand = new commands_1.ResetCommand(self);
+            _this._prodCatDic = new DEMODB.KeyValDictionary();
+            _this._prodModDic = new DEMODB.KeyValDictionary();
+            _this._prodDescDic = new DEMODB.KeyValDictionary();
+            _this._loaded = false;
             return _this;
         }
         ProductsFilter.prototype._loadCategories = function () {
@@ -1596,9 +1600,24 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             query.orderBy('Name');
             return query.load();
         };
+        ProductsFilter.prototype._loadClassifiers = function () {
+            return this.dbContext.serviceMethods.GetClassifiers();
+        };
         ProductsFilter.prototype.load = function () {
-            var promise1 = this._loadCategories(), promise2 = this._loadProductModels();
-            return utils.defer.whenAll([promise1, promise2]);
+            var _this = this;
+            var promise1 = this._loadClassifiers().then(function (res) {
+                _this._prodCatDic.fillItems(res.prodCategory, true);
+                _this._prodModDic.fillItems(res.prodModel, true);
+                _this._prodDescDic.fillItems(res.prodDescription, true);
+            }), promise2 = this._loadCategories(), promise3 = this._loadProductModels();
+            return utils.defer.whenAll([promise1, promise2, promise3]).then(function () {
+                _this._loaded = true;
+                _this.objEvents.raise('loaded', {});
+                _this.reset();
+            }, function (err) { _this._app.handleError(err, _this); });
+        };
+        ProductsFilter.prototype.addOnLoaded = function (fn, nmspace) {
+            this.objEvents.on('loaded', fn, nmspace);
         };
         ProductsFilter.prototype.reset = function () {
             this.parentCategoryID = null;
@@ -1612,6 +1631,28 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             this.saleStart2 = null;
             this.size = null;
         };
+        Object.defineProperty(ProductsFilter.prototype, "loaded", {
+            get: function () {
+                return this._loaded;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductsFilter.prototype, "prodCatDic", {
+            get: function () { return this._prodCatDic; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductsFilter.prototype, "prodModDic", {
+            get: function () { return this._prodModDic; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductsFilter.prototype, "prodDescDic", {
+            get: function () { return this._prodDescDic; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ProductsFilter.prototype, "prodNumber", {
             get: function () { return this._prodNumber; },
             set: function (v) {
@@ -2024,8 +2065,8 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
             if (!utils.check.isNt(this._filter.childCategoryID)) {
                 query.where('ProductCategoryID', 0, [this._filter.childCategoryID]);
             }
-            if (!utils.check.isNt(this._filter.modelID)) {
-                query.where('ProductModelID', 0, [this._filter.modelID]);
+            if (utils.check.isArray(this._filter.modelID) && this._filter.modelID.length > 0) {
+                query.where('ProductModelID', 0, this._filter.modelID.map(function (v) { return v == -1 ? null : v; }));
             }
             if (!utils.check.isNt(this._filter.saleStart1) && !utils.check.isNt(this._filter.saleStart2)) {
                 query.where('SellStartDate', 1, [this._filter.saleStart1, this._filter.saleStart2]);
@@ -2993,7 +3034,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
     }
     exports.initModule = initModule;
 });
-define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app", "gridDemo/resizableGrid"], function (require, exports, RIAPP, COMMON, app_1, ResizableGrid) {
+define("gridDemo/main", ["require", "exports", "jriapp", "common", "dropdownbox", "gridDemo/app", "gridDemo/resizableGrid"], function (require, exports, RIAPP, COMMON, DROPDBOX, app_1, ResizableGrid) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
@@ -3037,6 +3078,7 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
     function start(options) {
         options.modulesInits = {
             "COMMON": COMMON.initModule,
+            "DROPDBOX": DROPDBOX.initModule,
             "ResizableGrid": ResizableGrid.initModule
         };
         bootstrap.init(function (bootstrap) {

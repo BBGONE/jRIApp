@@ -283,8 +283,9 @@ export class ProductViewModel extends RIAPP.ViewModel<DemoApplication> implement
         if (!utils.check.isNt(this._filter.childCategoryID)) {
             query.where('ProductCategoryID', RIAPP.FILTER_TYPE.Equals, [this._filter.childCategoryID]);
         }
-        if (!utils.check.isNt(this._filter.modelID)) {
-            query.where('ProductModelID', RIAPP.FILTER_TYPE.Equals, [this._filter.modelID]);
+
+        if (utils.check.isArray(this._filter.modelID) && this._filter.modelID.length > 0) {
+            query.where('ProductModelID', RIAPP.FILTER_TYPE.Equals, this._filter.modelID.map((v) => v == -1 ? null: v));
         }
 
         if (!utils.check.isNt(this._filter.saleStart1) && !utils.check.isNt(this._filter.saleStart2)) {
