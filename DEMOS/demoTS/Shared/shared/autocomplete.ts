@@ -42,34 +42,12 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
     private _width: any;
     private _height: any;
     private _isOpen: boolean;
-    private _lookupGrid: uiMOD.DataGrid;
+    private _grid: uiMOD.DataGrid;
     private _btnOk: HTMLElement;
     private _btnCancel: HTMLElement;
     private _dbContext: dbMOD.DbContext;
     private _minTextLength: number;
 
-    templateLoading(template: RIAPP.ITemplate): void {
-        //noop
-    }
-    templateLoaded(template: RIAPP.ITemplate, error?: any): void {
-        if (this.getIsStateDirty() || error)
-            return;
-        const self = this, gridElView = <uiMOD.DataGridElView>findElemViewInTemplate(template, 'lookupGrid');
-        if (!!gridElView) {
-            this._lookupGrid = gridElView.grid;
-        }
-        this._btnOk = findElemInTemplate(template, 'btnOk');
-        this._btnCancel = findElemInTemplate(template, 'btnCancel');
-        $(this._btnOk).click(() => {
-            self._updateSelection();
-            self._hide();
-        });
-        $(this._btnCancel).click(() => {
-            self._hide();
-        });
-    }
-    templateUnLoading(template: RIAPP.ITemplate): void {
-    }
     constructor(el: HTMLInputElement, options: IAutocompleteOptions) {
         super(el, options);
         const self = this;
@@ -87,7 +65,7 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
         this._loadTimeout = null;
         this._dataContext = null;
         this._isLoading = false;
-        this._lookupGrid = null;
+        this._grid = null;
         this._btnOk = null;
         this._btnCancel = null;
         this._width = options.width || '200px';
@@ -124,6 +102,28 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
             "height": this._height
         });
         dom.document.body.appendChild(parentEl);
+    }
+    templateLoading(template: RIAPP.ITemplate): void {
+        //noop
+    }
+    templateLoaded(template: RIAPP.ITemplate, error?: any): void {
+        if (this.getIsStateDirty() || error)
+            return;
+        const self = this, gridElView = <uiMOD.DataGridElView>findElemViewInTemplate(template, 'lookupGrid');
+        if (!!gridElView) {
+            this._grid = gridElView.grid;
+        }
+        this._btnOk = findElemInTemplate(template, 'btnOk');
+        this._btnCancel = findElemInTemplate(template, 'btnCancel');
+        $(this._btnOk).click(() => {
+            self._updateSelection();
+            self._hide();
+        });
+        $(this._btnCancel).click(() => {
+            self._hide();
+        });
+    }
+    templateUnLoading(template: RIAPP.ITemplate): void {
     }
     protected _createGridDataSource(): void {
         this._gridDataSource = this._getDbContext().getDbSet(this._dbSetName);
@@ -204,7 +204,7 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
             return;
         const self = this;
 
-        if (!!this._lookupGrid) {
+        if (!!this._grid) {
             const dlg = this._$dropDown.get(0), txtEl = self.el;
 
             $(dom.document).on('mousedown.' + this.uniqueID, function (e) {
@@ -213,20 +213,23 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
                 }
             });
 
-            this._lookupGrid.addOnCellDblClicked(function (s, a) {
+            this._grid.addOnCellDblClicked(function (s, a) {
                 self._updateSelection();
                 self._hide();
             }, this.uniqueID);
 
-            bootstrap.selectedControl = self._lookupGrid;
+            bootstrap.selectedControl = self._grid;
 
             $(dom.document).on('keyup.' + this.uniqueID, function (e) {
-                if (bootstrap.selectedControl === self._lookupGrid) {
+                if (bootstrap.selectedControl === self._grid) {
                     if (self._onKeyPress(e.which))
                         e.stopPropagation();
                 }
             });
+
+            this._grid.dataSource = this.gridDataSource;
         }
+        
         this._updatePosition();
         this._isOpen = true;
         this._onShow();
@@ -235,10 +238,13 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
         if (!this._isOpen)
             return;
         $(dom.document).off('.' + this.uniqueID);
-        if (!!this._lookupGrid) {
-            this._lookupGrid.objEvents.offNS(this.uniqueID);
+        if (!!this._grid) {
+            this._grid.objEvents.offNS(this.uniqueID);
         }
         this._$dropDown.css({ left: "-2000px" });
+        if (!!this._grid) {
+            this._grid.dataSource = null;
+        }
         this._isOpen = false;
         this._onHide();
     }
@@ -277,8 +283,8 @@ export class AutoCompleteElView extends uiMOD.InputElView<HTMLInputElement> impl
         this.setDisposing();
         this._hide();
         $(this.el).off('.' + this.uniqueID);
-        if (!!this._lookupGrid) {
-            this._lookupGrid = null;
+        if (!!this._grid) {
+            this._grid = null;
         }
         if (!!this._template) {
             this._template.dispose();

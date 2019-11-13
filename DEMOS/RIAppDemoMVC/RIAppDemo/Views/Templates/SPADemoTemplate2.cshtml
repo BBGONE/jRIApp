@@ -115,7 +115,7 @@
     queryName:ReadSalesInfo,
     templateId:custInfoGroup.salePerAutocompleteTemplate,
     width:200px,
-    height:200px
+    height:300px
 </script>
 
 <script  id="custInfoGroup.salespersonTemplate2" type="text/x-template">
@@ -134,7 +134,7 @@
     <div style="height: 97%; margin: 0px; padding: 2px; position: relative;">
         <div style="margin-left: 1px; position: relative; vertical-align: top;"
              data-bind="this.isBusy,to=isLoading" data-view="busy">
-            <table data-name="lookupGrid" data-bind="this.dataSource,to=gridDataSource"
+            <table data-name="lookupGrid" 
                    data-view-options="wrapCss:autocompleteSalePTableWrap,headerCss:autocompleteTableHeader">
                 <thead>
                     <tr>

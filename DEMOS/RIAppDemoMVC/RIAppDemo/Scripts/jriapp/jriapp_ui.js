@@ -6455,7 +6455,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(DataGrid.prototype, "RowSelectorCol", {
+        Object.defineProperty(DataGrid.prototype, "rowSelectorCol", {
             get: function () {
                 return this._rowSelectorCol;
             },
@@ -6545,6 +6545,16 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             },
             set: function (v) {
                 this._options.isUseScrollInto = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DataGrid.prototype, "syncSetDatasource", {
+            get: function () {
+                return this._options.syncSetDatasource;
+            },
+            set: function (v) {
+                this._options.syncSetDatasource = v;
             },
             enumerable: true,
             configurable: true
@@ -9434,7 +9444,7 @@ define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/conten
     exports.JQueryUtils = jquery_8.JQueryUtils;
     exports.$ = jquery_8.$;
     __export(all_1);
-    exports.VERSION = "3.0.1";
+    exports.VERSION = "3.0.2";
     var boot = bootstrap_34.bootstrap;
     factory_1.initContentFactory();
     boot.registerSvc("ITooltipService", tooltip_1.createToolTipSvc());

@@ -359,7 +359,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             _this._loadTimeout = null;
             _this._dataContext = null;
             _this._isLoading = false;
-            _this._lookupGrid = null;
+            _this._grid = null;
             _this._btnOk = null;
             _this._btnCancel = null;
             _this._width = options.width || '200px';
@@ -403,7 +403,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
                 return;
             var self = this, gridElView = findElemViewInTemplate(template, 'lookupGrid');
             if (!!gridElView) {
-                this._lookupGrid = gridElView.grid;
+                this._grid = gridElView.grid;
             }
             this._btnOk = findElemInTemplate(template, 'btnOk');
             this._btnCancel = findElemInTemplate(template, 'btnCancel');
@@ -494,24 +494,25 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             if (this._isOpen)
                 return;
             var self = this;
-            if (!!this._lookupGrid) {
+            if (!!this._grid) {
                 var dlg_1 = this._$dropDown.get(0), txtEl_1 = self.el;
                 $(dom.document).on('mousedown.' + this.uniqueID, function (e) {
                     if (!(dom.isContained(e.target, dlg_1) || dom.isContained(e.target, txtEl_1))) {
                         self._hideAsync();
                     }
                 });
-                this._lookupGrid.addOnCellDblClicked(function (s, a) {
+                this._grid.addOnCellDblClicked(function (s, a) {
                     self._updateSelection();
                     self._hide();
                 }, this.uniqueID);
-                bootstrap.selectedControl = self._lookupGrid;
+                bootstrap.selectedControl = self._grid;
                 $(dom.document).on('keyup.' + this.uniqueID, function (e) {
-                    if (bootstrap.selectedControl === self._lookupGrid) {
+                    if (bootstrap.selectedControl === self._grid) {
                         if (self._onKeyPress(e.which))
                             e.stopPropagation();
                     }
                 });
+                this._grid.dataSource = this.gridDataSource;
             }
             this._updatePosition();
             this._isOpen = true;
@@ -521,10 +522,13 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             if (!this._isOpen)
                 return;
             $(dom.document).off('.' + this.uniqueID);
-            if (!!this._lookupGrid) {
-                this._lookupGrid.objEvents.offNS(this.uniqueID);
+            if (!!this._grid) {
+                this._grid.objEvents.offNS(this.uniqueID);
             }
             this._$dropDown.css({ left: "-2000px" });
+            if (!!this._grid) {
+                this._grid.dataSource = null;
+            }
             this._isOpen = false;
             this._onHide();
         };
@@ -563,8 +567,8 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             this.setDisposing();
             this._hide();
             $(this.el).off('.' + this.uniqueID);
-            if (!!this._lookupGrid) {
-                this._lookupGrid = null;
+            if (!!this._grid) {
+                this._grid = null;
             }
             if (!!this._template) {
                 this._template.dispose();
@@ -1351,6 +1355,9 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
             });
             return _this;
         }
+        DropDownBoxElView.prototype.viewMounted = function () {
+            this._updateSelection();
+        };
         DropDownBoxElView.prototype.templateLoading = function (template) {
         };
         DropDownBoxElView.prototype.templateLoaded = function (template, error) {
@@ -1359,6 +1366,9 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
             var self = this, gridElView = findElemViewInTemplate(template, 'lookupGrid');
             if (!!gridElView) {
                 this._grid = gridElView.grid;
+                if (!!this._grid) {
+                    this._grid.syncSetDatasource = true;
+                }
             }
             this._btnOk = findElemInTemplate(template, 'btnOk');
             this._btnCancel = findElemInTemplate(template, 'btnCancel');
@@ -1371,9 +1381,6 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
             });
         };
         DropDownBoxElView.prototype.templateUnLoading = function (template) {
-        };
-        DropDownBoxElView.prototype.viewMounted = function () {
-            this._updateSelection();
         };
         DropDownBoxElView.prototype._createTemplate = function (parentEl) {
             var t = RIAPP.createTemplate({ parentEl: parentEl, dataContext: this, templEvents: this });
@@ -1440,6 +1447,7 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
                             e.stopPropagation();
                     }
                 });
+                this._grid.dataSource = this.dataSource;
             }
             this._onOpen();
             this._updatePosition();
@@ -1469,6 +1477,9 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
                 this._grid.objEvents.offNS(this.uniqueID);
             }
             this._$dropDown.css({ left: "-2000px" });
+            if (!!this._grid) {
+                this._grid.dataSource = null;
+            }
             this._isOpen = false;
             this._onHide();
         };
@@ -1496,7 +1507,7 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
         DropDownBoxElView.prototype._clear = function (updateSelection) {
             this._selectedClone = null;
             try {
-                this._grid.RowSelectorCol.checked = false;
+                this._grid.rowSelectorCol.checked = false;
                 this._grid.selectRows(false);
             }
             finally {

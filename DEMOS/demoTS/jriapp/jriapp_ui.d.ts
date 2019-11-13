@@ -1275,7 +1275,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         dataSource: ICollection<ICollectionItem>;
         readonly rows: Row[];
         readonly columns: BaseColumn[];
-        readonly RowSelectorCol: RowSelectorColumn;
+        readonly rowSelectorCol: RowSelectorColumn;
         currentItem: ICollectionItem;
         currentRow: Row;
         readonly editingRow: Row;
@@ -1284,6 +1284,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         readonly isCanDelete: boolean;
         readonly isCanAddNew: boolean;
         isUseScrollInto: boolean;
+        syncSetDatasource: boolean;
         readonly animation: IDataGridAnimation;
     }
     export interface IDataGridViewOptions extends IDataGridOptions, IViewOptions {
@@ -1801,5 +1802,5 @@ declare module "jriapp_ui" {
     export { DblClick } from "jriapp_ui/utils/dblclick";
     export { JQueryUtils, $ } from "jriapp_ui/utils/jquery";
     export * from "jriapp_ui/content/all";
-    export const VERSION = "3.0.1";
+    export const VERSION = "3.0.2";
 }

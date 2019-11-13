@@ -49,29 +49,6 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
     private _selectedCount: number;
     private _btn: HTMLButtonElement;
 
-    templateLoading(template: RIAPP.ITemplate): void {
-        //noop
-    }
-    templateLoaded(template: RIAPP.ITemplate, error?: any): void {
-        if (this.getIsStateDirty() || error)
-            return;
-        const self = this, gridElView = <uiMOD.DataGridElView>findElemViewInTemplate(template, 'lookupGrid');
-        if (!!gridElView) {
-            this._grid = gridElView.grid;
-        }
-        this._btnOk = findElemInTemplate(template, 'btnOk');
-        this._btnCancel = findElemInTemplate(template, 'btnCancel');
-        $(this._btnOk).click(() => {
-            self._updateSelection();
-            self._hide();
-        });
-        $(this._btnCancel).click(() => {
-            self._hide();
-        });
-    }
-    templateUnLoading(template: RIAPP.ITemplate): void {
-    }
-
     constructor(el: HTMLInputElement, options: IDropDownBoxConstructorOptions) {
         super(el, options);
         const self = this;
@@ -138,6 +115,31 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
     }
     viewMounted(): void {
         this._updateSelection();
+    }
+    templateLoading(template: RIAPP.ITemplate): void {
+        //noop
+    }
+    templateLoaded(template: RIAPP.ITemplate, error?: any): void {
+        if (this.getIsStateDirty() || error)
+            return;
+        const self = this, gridElView = <uiMOD.DataGridElView>findElemViewInTemplate(template, 'lookupGrid');
+        if (!!gridElView) {
+            this._grid = gridElView.grid;
+            if (!!this._grid) {
+                this._grid.syncSetDatasource = true;
+            }
+        }
+        this._btnOk = findElemInTemplate(template, 'btnOk');
+        this._btnCancel = findElemInTemplate(template, 'btnCancel');
+        $(this._btnOk).click(() => {
+            self._updateSelection();
+            self._hide();
+        });
+        $(this._btnCancel).click(() => {
+            self._hide();
+        });
+    }
+    templateUnLoading(template: RIAPP.ITemplate): void {
     }
     protected _createTemplate(parentEl: HTMLElement): RIAPP.ITemplate {
         const t = RIAPP.createTemplate({ parentEl: parentEl, dataContext: this, templEvents: this });
@@ -211,6 +213,8 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
                         e.stopPropagation();
                 }
             });
+
+            this._grid.dataSource = this.dataSource;
         }
 
         this._onOpen();
@@ -220,10 +224,9 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
     }
     protected _onOpen(): void {
         const self = this, ids = Object.keys(this._selected), grid = self._grid;
-        // console.log("open " + ids.length);
+
         ids.forEach(function (id) {
             const item = self.dataSource.getItemByKey(id);
-
             let row;
             if (!!item) {
                 row = grid.findRowByItem(item);
@@ -244,6 +247,9 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
             this._grid.objEvents.offNS(this.uniqueID);
         }
         this._$dropDown.css({ left: "-2000px" });
+        if (!!this._grid) {
+            this._grid.dataSource = null;
+        }
         this._isOpen = false;
         this._onHide();
     }
@@ -272,7 +278,7 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
     private _clear(updateSelection: boolean) {
         this._selectedClone = null;
         try {
-            this._grid.RowSelectorCol.checked = false;
+            this._grid.rowSelectorCol.checked = false;
             this._grid.selectRows(false);
         }
         finally {
