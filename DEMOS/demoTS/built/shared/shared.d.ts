@@ -274,7 +274,7 @@ declare module "dropdownbox" {
         private _grid;
         private _btnOk;
         private _btnCancel;
-        private _selected1;
+        private _selectedClone;
         private _selected;
         private _selectedCount;
         private _btn;

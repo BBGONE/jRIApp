@@ -1285,6 +1285,11 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
         var arr = template.findElByDataName(name);
         return (!!arr && arr.length > 0) ? arr[0] : null;
     }
+    var TEXT;
+    (function (TEXT) {
+        TEXT["Selected"] = "Selected";
+        TEXT["NoSelection"] = "Nothing selected";
+    })(TEXT || (TEXT = {}));
     var DropDownBoxElView = (function (_super) {
         __extends(DropDownBoxElView, _super);
         function DropDownBoxElView(el, options) {
@@ -1292,7 +1297,7 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
             var self = _this;
             _this._templateId = options.templateId;
             if (!!options.dataSource && !utils.sys.isCollection(options.dataSource)) {
-                throw new Error("Не задан источник данных");
+                throw new Error("Invalid dataSource");
             }
             _this._template = null;
             _this._valuePath = options.valuePath;
@@ -1300,7 +1305,7 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
             _this._dataSource = options.dataSource;
             _this._selected = {};
             _this._selectedCount = 0;
-            _this._selected1 = {};
+            _this._selectedClone = {};
             _this._$dropDown = null;
             _this._grid = null;
             _this._btnOk = null;
@@ -1338,13 +1343,12 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
             btn.innerHTML = "...";
             btn.type = "button";
             $el.after(btn);
-            dom.addClass([btn], "btn lnkbtn btn-info");
+            dom.addClass([btn], "btn-dropdown");
             _this._btn = btn;
             $(btn).on('click.' + _this.uniqueID, function (e) {
                 e.stopPropagation();
                 self._onClick();
             });
-            _this._updateSelection();
             return _this;
         }
         DropDownBoxElView.prototype.templateLoading = function (template) {
@@ -1369,6 +1373,7 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
         DropDownBoxElView.prototype.templateUnLoading = function (template) {
         };
         DropDownBoxElView.prototype.viewMounted = function () {
+            this._updateSelection();
         };
         DropDownBoxElView.prototype._createTemplate = function (parentEl) {
             var t = RIAPP.createTemplate({ parentEl: parentEl, dataContext: this, templEvents: this });
@@ -1453,7 +1458,7 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
                     }
                 }
             });
-            this._selected1 = __assign({}, this._selected);
+            this._selectedClone = __assign({}, this._selected);
         };
         DropDownBoxElView.prototype._hide = function () {
             if (!this._isOpen)
@@ -1468,14 +1473,14 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
             this._onHide();
         };
         DropDownBoxElView.prototype.onRowSelected = function (row) {
-            if (!!this._selected1) {
+            if (!!this._selectedClone) {
                 this._selectItem(row.item, row.isSelected);
             }
         };
         DropDownBoxElView.prototype._selectItem = function (item, isSelected) {
             var val = utils.core.getValue(item, this._valuePath);
             var text = utils.core.getValue(item, this._textPath);
-            var selected = this._selected1;
+            var selected = this._selectedClone;
             var obj = utils.core.getValue(selected, "" + val);
             if (isSelected) {
                 if (!obj) {
@@ -1489,9 +1494,9 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
             }
         };
         DropDownBoxElView.prototype._updateSelection = function () {
-            this._selected = __assign({}, this._selected1);
+            this._selected = __assign({}, this._selectedClone);
             this.selectedCount = Object.keys(this._selected).length;
-            this.value = "Selected: " + this._selectedCount;
+            this.value = "Selected" + ": " + this._selectedCount;
             this.objEvents.raiseProp("selected");
             this.objEvents.raiseProp("info");
         };
@@ -1512,17 +1517,17 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
             $(this._btn).remove();
             this._selected = {};
             this._selectedCount = 0;
-            this._selected1 = {};
+            this._selectedClone = {};
             this._dataSource = null;
             _super.prototype.dispose.call(this);
         };
         DropDownBoxElView.prototype._clear = function (updateSelection) {
-            this._selected1 = null;
+            this._selectedClone = null;
             try {
                 this._grid.selectRows(false);
             }
             finally {
-                this._selected1 = {};
+                this._selectedClone = {};
             }
             if (updateSelection) {
                 this._updateSelection();
@@ -1538,7 +1543,7 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
                 if (this.selectedCount == 0)
                     return "Nothing selected";
                 var res = [];
-                utils.core.forEach(this._selected, function (k, v) { res.push(v.text); });
+                utils.core.forEach(this._selected, function (_, v) { res.push(v.text); });
                 return res.sort().join(",");
             },
             enumerable: true,

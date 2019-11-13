@@ -26,6 +26,11 @@ export interface IDropDownBoxConstructorOptions extends IDropDownBoxOptions {
     dataSource?: RIAPP.ICollection<RIAPP.ICollectionItem>;
 }
 
+const enum TEXT {
+    Selected = "Selected",
+    NoSelection = "Nothing selected"
+}
+
 export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITemplateEvents {
     private _templateId: string;
     private _valuePath: string;
@@ -39,7 +44,7 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
     private _grid: uiMOD.DataGrid;
     private _btnOk: HTMLElement;
     private _btnCancel: HTMLElement;
-    private _selected1: RIAPP.IIndexer<{ val: any; text: string; }>;
+    private _selectedClone: RIAPP.IIndexer<{ val: any; text: string; }>;
     private _selected: RIAPP.IIndexer<{ val: any; text: string; }>;
     private _selectedCount: number;
     private _btn: HTMLButtonElement;
@@ -72,7 +77,7 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
         const self = this;
         this._templateId = options.templateId;
         if (!!options.dataSource && !utils.sys.isCollection(options.dataSource)) {
-            throw new Error("Не задан источник данных");
+            throw new Error("Invalid dataSource");
         }
 
         this._template = null;
@@ -82,7 +87,7 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
 
         this._selected = {};
         this._selectedCount = 0;
-        this._selected1 = {};
+        this._selectedClone = {};
         this._$dropDown = null;
         this._grid = null;
         this._btnOk = null;
@@ -124,16 +129,15 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
         btn.innerHTML = "...";
         btn.type = "button";
         $el.after(btn);
-        dom.addClass([btn], "btn lnkbtn btn-info");
+        dom.addClass([btn], "btn-dropdown");
         this._btn = btn;
         $(btn).on('click.' + this.uniqueID, function (e) {
             e.stopPropagation();
             self._onClick();
         });
-        this._updateSelection();
     }
     viewMounted(): void {
-        
+        this._updateSelection();
     }
     protected _createTemplate(parentEl: HTMLElement): RIAPP.ITemplate {
         const t = RIAPP.createTemplate({ parentEl: parentEl, dataContext: this, templEvents: this });
@@ -228,7 +232,7 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
                 }
             }
         });
-        this._selected1 = { ...this._selected };
+        this._selectedClone = { ...this._selected };
     }
     protected _hide() {
         if (!this._isOpen)
@@ -244,14 +248,14 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
         this._onHide();
     }
     protected onRowSelected(row: uiMOD.DataGridRow): void {
-        if (!!this._selected1) {
+        if (!!this._selectedClone) {
             this._selectItem(row.item, row.isSelected);
         }
     }
     private _selectItem(item: RIAPP.ICollectionItem, isSelected: boolean): void {
         const val = utils.core.getValue(item, this._valuePath);
         const text = utils.core.getValue(item, this._textPath);
-        const selected = this._selected1;
+        const selected = this._selectedClone;
         const obj = utils.core.getValue(selected, "" + val);
 
         if (isSelected) {
@@ -266,9 +270,9 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
         }
     }
     protected _updateSelection(): void {
-        this._selected = { ...this._selected1 };
+        this._selected = { ...this._selectedClone };
         this.selectedCount = Object.keys(this._selected).length;
-        this.value = `Selected: ${this._selectedCount}`;
+        this.value = `${TEXT.Selected}: ${this._selectedCount}`;
         this.objEvents.raiseProp("selected");
         this.objEvents.raiseProp("info");
     }
@@ -289,17 +293,17 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
         $(this._btn).remove();
         this._selected = {};
         this._selectedCount = 0;
-        this._selected1 = {};
+        this._selectedClone = {};
         this._dataSource = null;
         super.dispose();
     }
     private _clear(updateSelection: boolean) {
-        this._selected1 = null;
+        this._selectedClone = null;
         try {
             this._grid.selectRows(false);
         }
         finally {
-            this._selected1 = {};
+            this._selectedClone = {};
         }
 
         if (updateSelection) {
@@ -309,9 +313,9 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
     get templateId() { return this._templateId; }
     get info(): string {
         if (this.selectedCount == 0)
-            return "Nothing selected";
-        let res: string[] = [];
-        utils.core.forEach(this._selected, (k, v) => { res.push(v.text); });
+            return TEXT.NoSelection;
+        const res: string[] = [];
+        utils.core.forEach(this._selected, (_, v) => { res.push(v.text); });
         return res.sort().join(",");
     }
     get selected(): Array<number> {
