@@ -1232,6 +1232,9 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     get columns(): BaseColumn[] {
         return this._columns;
     }
+    get RowSelectorCol(): RowSelectorColumn {
+        return this._rowSelectorCol;
+    }
     get currentItem(): ICollectionItem {
         const ds = this.dataSource;
         return (!ds) ? null : ds.currentItem;

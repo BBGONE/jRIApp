@@ -6455,6 +6455,13 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(DataGrid.prototype, "RowSelectorCol", {
+            get: function () {
+                return this._rowSelectorCol;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(DataGrid.prototype, "currentItem", {
             get: function () {
                 var ds = this.dataSource;
@@ -9427,7 +9434,7 @@ define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/conten
     exports.JQueryUtils = jquery_8.JQueryUtils;
     exports.$ = jquery_8.$;
     __export(all_1);
-    exports.VERSION = "3.0.0";
+    exports.VERSION = "3.0.1";
     var boot = bootstrap_34.bootstrap;
     factory_1.initContentFactory();
     boot.registerSvc("ITooltipService", tooltip_1.createToolTipSvc());

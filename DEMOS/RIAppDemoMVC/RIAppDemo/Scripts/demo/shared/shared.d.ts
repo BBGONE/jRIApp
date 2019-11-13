@@ -295,9 +295,9 @@ declare module "dropdownbox" {
         protected _hide(): void;
         protected onRowSelected(row: uiMOD.DataGridRow): void;
         private _selectItem;
+        private _clear;
         protected _updateSelection(): void;
         dispose(): void;
-        private _clear;
         readonly templateId: string;
         readonly info: string;
         selected: Array<number>;

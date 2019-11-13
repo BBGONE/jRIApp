@@ -1107,6 +1107,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
     import { FillSpaceRow } from "jriapp_ui/datagrid/rows/fillspace";
     import { BaseColumn, IColumnInfo, ICellInfo } from "jriapp_ui/datagrid/columns/base";
     import { DataColumn } from "jriapp_ui/datagrid/columns/data";
+    import { RowSelectorColumn } from "jriapp_ui/datagrid/columns/rowselector";
     export type DataGridCell = BaseCell<BaseColumn>;
     export { Row as DataGridRow } from "jriapp_ui/datagrid/rows/row";
     export { BaseColumn as DataGridColumn } from "jriapp_ui/datagrid/columns/base";
@@ -1274,6 +1275,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         dataSource: ICollection<ICollectionItem>;
         readonly rows: Row[];
         readonly columns: BaseColumn[];
+        readonly RowSelectorCol: RowSelectorColumn;
         currentItem: ICollectionItem;
         currentRow: Row;
         readonly editingRow: Row;
@@ -1799,5 +1801,5 @@ declare module "jriapp_ui" {
     export { DblClick } from "jriapp_ui/utils/dblclick";
     export { JQueryUtils, $ } from "jriapp_ui/utils/jquery";
     export * from "jriapp_ui/content/all";
-    export const VERSION = "3.0.0";
+    export const VERSION = "3.0.1";
 }

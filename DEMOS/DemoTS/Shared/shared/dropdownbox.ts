@@ -269,6 +269,20 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
             }
         }
     }
+    private _clear(updateSelection: boolean) {
+        this._selectedClone = null;
+        try {
+            this._grid.RowSelectorCol.checked = false;
+            this._grid.selectRows(false);
+        }
+        finally {
+            this._selectedClone = {};
+        }
+
+        if (updateSelection) {
+            this._updateSelection();
+        }
+    }
     protected _updateSelection(): void {
         this._selected = { ...this._selectedClone };
         this.selectedCount = Object.keys(this._selected).length;
@@ -296,19 +310,6 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
         this._selectedClone = {};
         this._dataSource = null;
         super.dispose();
-    }
-    private _clear(updateSelection: boolean) {
-        this._selectedClone = null;
-        try {
-            this._grid.selectRows(false);
-        }
-        finally {
-            this._selectedClone = {};
-        }
-
-        if (updateSelection) {
-            this._updateSelection();
-        }
     }
     get templateId() { return this._templateId; }
     get info(): string {

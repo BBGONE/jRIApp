@@ -1493,6 +1493,19 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
                 }
             }
         };
+        DropDownBoxElView.prototype._clear = function (updateSelection) {
+            this._selectedClone = null;
+            try {
+                this._grid.RowSelectorCol.checked = false;
+                this._grid.selectRows(false);
+            }
+            finally {
+                this._selectedClone = {};
+            }
+            if (updateSelection) {
+                this._updateSelection();
+            }
+        };
         DropDownBoxElView.prototype._updateSelection = function () {
             this._selected = __assign({}, this._selectedClone);
             this.selectedCount = Object.keys(this._selected).length;
@@ -1520,18 +1533,6 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
             this._selectedClone = {};
             this._dataSource = null;
             _super.prototype.dispose.call(this);
-        };
-        DropDownBoxElView.prototype._clear = function (updateSelection) {
-            this._selectedClone = null;
-            try {
-                this._grid.selectRows(false);
-            }
-            finally {
-                this._selectedClone = {};
-            }
-            if (updateSelection) {
-                this._updateSelection();
-            }
         };
         Object.defineProperty(DropDownBoxElView.prototype, "templateId", {
             get: function () { return this._templateId; },
