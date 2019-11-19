@@ -20,6 +20,7 @@ export interface IDropDownBoxOptions extends RIAPP.IViewOptions {
     textPath: string;
     width?: any;
     height?: any;
+    name?: string; // if needed to submit a form (name of the element)
 }
 
 export interface IDropDownBoxConstructorOptions extends IDropDownBoxOptions {
@@ -30,6 +31,9 @@ const enum TEXT {
     Selected = "Selected",
     NoSelection = "Nothing selected"
 }
+const css = {
+    BUTTON: "btn-dropdown"
+};
 
 export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITemplateEvents {
     private _templateId: string;
@@ -48,6 +52,8 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
     private _selected: RIAPP.IIndexer<{ val: any; text: string; }>;
     private _selectedCount: number;
     private _btn: HTMLButtonElement;
+    private _name: string | null;
+    private _hidden: HTMLInputElement | null;
 
     constructor(el: HTMLInputElement, options: IDropDownBoxConstructorOptions) {
         super(el, options);
@@ -61,6 +67,7 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
         this._valuePath = options.valuePath;
         this._textPath = options.textPath;
         this._dataSource = options.dataSource;
+        this._name = options.name || null;
 
         this._selected = {};
         this._selectedCount = 0;
@@ -106,12 +113,20 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
         btn.innerHTML = "...";
         btn.type = "button";
         $el.after(btn);
-        dom.addClass([btn], "btn-dropdown");
+        dom.addClass([btn], css.BUTTON);
         this._btn = btn;
         $(btn).on('click.' + this.uniqueID, function (e) {
             e.stopPropagation();
             self._onClick();
         });
+
+        if (!!this._name) {
+            const hidden = dom.document.createElement("input");
+            hidden.type = "hidden";
+            hidden.name = this._name;
+            $el.after(hidden);
+            this._hidden = hidden;
+        }
     }
     viewMounted(): void {
         this._updateSelection();
@@ -293,6 +308,9 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
         this._selected = { ...this._selectedClone };
         this.selectedCount = Object.keys(this._selected).length;
         this.value = `${TEXT.Selected}: ${this._selectedCount}`;
+        if (!!this._hidden) {
+            this._hidden.value = Object.keys(this._selected).join(",");
+        }
         this.objEvents.raiseProp("selected");
         this.objEvents.raiseProp("info");
     }
@@ -311,6 +329,9 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
             this._$dropDown = null;
         }
         $(this._btn).remove();
+        if (!!this._hidden) {
+            $(this._hidden).remove();
+        }
         this._selected = {};
         this._selectedCount = 0;
         this._selectedClone = {};

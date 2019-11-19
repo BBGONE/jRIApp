@@ -257,6 +257,7 @@ declare module "dropdownbox" {
         textPath: string;
         width?: any;
         height?: any;
+        name?: string;
     }
     export interface IDropDownBoxConstructorOptions extends IDropDownBoxOptions {
         dataSource?: RIAPP.ICollection<RIAPP.ICollectionItem>;
@@ -278,6 +279,8 @@ declare module "dropdownbox" {
         private _selected;
         private _selectedCount;
         private _btn;
+        private _name;
+        private _hidden;
         constructor(el: HTMLInputElement, options: IDropDownBoxConstructorOptions);
         viewMounted(): void;
         templateLoading(template: RIAPP.ITemplate): void;
