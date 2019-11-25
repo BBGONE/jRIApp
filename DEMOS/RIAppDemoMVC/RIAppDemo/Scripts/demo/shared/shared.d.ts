@@ -17,9 +17,12 @@ declare module "common" {
         private _baseUri;
         private _id;
         constructor(el: HTMLAnchorElement, options: IDLinkOptions);
-        text: string;
-        href: string;
-        id: string;
+        get text(): string;
+        set text(v: string);
+        get href(): string;
+        set href(v: string);
+        get id(): string;
+        set id(v: string);
     }
     export class FileImgElView extends uiMOD.BaseElView<HTMLImageElement> {
         private _baseUri;
@@ -30,9 +33,12 @@ declare module "common" {
         constructor(el: HTMLImageElement, options: IDLinkOptions);
         dispose(): void;
         reloadImg(): void;
-        fileName: string;
-        src: string;
-        id: string;
+        get fileName(): string;
+        set fileName(v: string);
+        get src(): string;
+        set src(v: string);
+        get id(): string;
+        set id(v: string);
     }
     export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
         private _error;
@@ -43,10 +49,13 @@ declare module "common" {
         constructor(app: RIAPP.IApplication);
         showDialog(): void;
         dispose(): void;
-        error: any;
-        title: string;
-        message: string;
-        readonly errorCount: number;
+        get error(): any;
+        set error(v: any);
+        get title(): string;
+        set title(v: string);
+        get message(): string;
+        set message(v: string);
+        get errorCount(): number;
     }
     export function initModule(app: RIAPP.Application): void;
 }
@@ -105,14 +114,16 @@ declare module "autocomplete" {
         protected setDataContext(v: RIAPP.IBaseObject): void;
         load(str: string): void;
         dispose(): void;
-        readonly fieldName: string;
-        readonly templateId: string;
-        readonly currentSelection: any;
-        readonly template: RIAPP.ITemplate;
-        dataContext: RIAPP.IBaseObject;
-        readonly gridDataSource: RIAPP.ICollection<RIAPP.ICollectionItem>;
-        value: string;
-        readonly isLoading: boolean;
+        get fieldName(): string;
+        get templateId(): string;
+        get currentSelection(): any;
+        get template(): RIAPP.ITemplate;
+        get dataContext(): RIAPP.IBaseObject;
+        set dataContext(v: RIAPP.IBaseObject);
+        get gridDataSource(): RIAPP.ICollection<RIAPP.ICollectionItem>;
+        get value(): string;
+        set value(v: string);
+        get isLoading(): boolean;
     }
     export function initModule(app: RIAPP.Application): void;
 }
@@ -133,9 +144,9 @@ declare module "header" {
         expand(): void;
         collapse(): void;
         updateUI(isUp: boolean): void;
-        readonly expanderCommand: RIAPP.ICommand;
-        readonly $contentPanel: JQuery;
-        readonly $topPanel: JQuery;
+        get expanderCommand(): RIAPP.ICommand;
+        get $contentPanel(): JQuery;
+        get $topPanel(): JQuery;
     }
 }
 declare module "mixobj" {
@@ -190,12 +201,12 @@ declare module "ssevents" {
         close(): void;
         post(message: string, clientID?: string): RIAPP.IAbortablePromise<string>;
         dispose(): void;
-        readonly es: EventSource;
-        readonly openESCommand: RIAPP.ICommand;
-        readonly closeESCommand: RIAPP.ICommand;
-        readonly url: string;
-        readonly baseUrl: string;
-        readonly clientID: string;
+        get es(): EventSource;
+        get openESCommand(): RIAPP.ICommand;
+        get closeESCommand(): RIAPP.ICommand;
+        get url(): string;
+        get baseUrl(): string;
+        get clientID(): string;
     }
 }
 declare module "uploader" {
@@ -212,8 +223,8 @@ declare module "uploader" {
         addOnAddHeaders(fn: (sender: Uploader, args: IAddHeadersArgs) => void, nmspace?: string): void;
         uploadFile(): RIAPP.IPromise<string>;
         protected uploadFileChunk(file: File, chunk: Blob, part: number, total: number): RIAPP.IPromise<number>;
-        readonly uploadUrl: string;
-        readonly fileName: string;
+        get uploadUrl(): string;
+        get fileName(): string;
     }
 }
 declare module "websocket" {
@@ -241,11 +252,12 @@ declare module "websocket" {
         open(): RIAPP.IPromise<any>;
         close(): void;
         dispose(): void;
-        readonly ws: WebSocket;
-        readonly openWsCommand: RIAPP.ICommand;
-        readonly closeWsCommand: RIAPP.ICommand;
-        url: string;
-        readonly clientID: string;
+        get ws(): WebSocket;
+        get openWsCommand(): RIAPP.ICommand;
+        get closeWsCommand(): RIAPP.ICommand;
+        get url(): string;
+        set url(v: string);
+        get clientID(): string;
     }
 }
 declare module "dropdownbox" {
@@ -301,13 +313,16 @@ declare module "dropdownbox" {
         private _clear;
         protected _updateSelection(): void;
         dispose(): void;
-        readonly templateId: string;
-        readonly info: string;
-        selected: Array<number>;
-        readonly template: RIAPP.ITemplate;
-        readonly dataSource: RIAPP.ICollection<RIAPP.ICollectionItem>;
-        value: string;
-        selectedCount: number;
+        get templateId(): string;
+        get info(): string;
+        get selected(): Array<number>;
+        set selected(v: Array<number> | null);
+        get template(): RIAPP.ITemplate;
+        get dataSource(): RIAPP.ICollection<RIAPP.ICollectionItem>;
+        get value(): string;
+        set value(v: string);
+        get selectedCount(): number;
+        set selectedCount(v: number);
     }
     export function initModule(app: RIAPP.Application): void;
 }

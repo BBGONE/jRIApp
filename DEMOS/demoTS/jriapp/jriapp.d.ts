@@ -447,14 +447,21 @@ declare module "jriapp/defaults" {
         private _decPrecision;
         constructor();
         toString(): string;
-        dateFormat: string;
-        timeFormat: string;
-        dateTimeFormat: string;
-        imagesPath: string;
-        decimalPoint: string;
-        thousandSep: string;
-        decPrecision: number;
-        readonly ButtonsCSS: TButtonCss;
+        get dateFormat(): string;
+        set dateFormat(v: string);
+        get timeFormat(): string;
+        set timeFormat(v: string);
+        get dateTimeFormat(): string;
+        set dateTimeFormat(v: string);
+        get imagesPath(): string;
+        set imagesPath(v: string);
+        get decimalPoint(): string;
+        set decimalPoint(v: string);
+        get thousandSep(): string;
+        set thousandSep(v: string);
+        get decPrecision(): number;
+        set decPrecision(v: number);
+        get ButtonsCSS(): TButtonCss;
     }
 }
 declare module "jriapp/utils/tloader" {
@@ -480,7 +487,7 @@ declare module "jriapp/utils/tloader" {
         private _onLoaded;
         loadTemplatesAsync(owner: IDataProvider, loader: THTMLLoaderFunc): IPromise<void>;
         getTemplateLoader(context: ILoaderContext, name: string): TLoaderFunc;
-        readonly isLoading: boolean;
+        get isLoading(): boolean;
     }
 }
 declare module "jriapp/utils/domevents" {
@@ -510,22 +517,24 @@ declare module "jriapp/utils/domevents" {
         private _target;
         private _cancelBubble;
         constructor(ev: TEvent, target: EventTarget | null);
-        readonly type: string;
-        readonly target: EventTarget | null;
-        readonly bubbles: boolean;
-        readonly defaultPrevented: boolean;
-        readonly cancelable: boolean;
-        readonly isTrusted: boolean;
-        returnValue: boolean;
-        readonly srcElement: EventTarget | null;
-        readonly eventPhase: number;
-        cancelBubble: boolean;
-        readonly timeStamp: number;
-        readonly currentTarget: EventTarget;
-        readonly originalEvent: TEvent;
-        readonly AT_TARGET: number;
-        readonly BUBBLING_PHASE: number;
-        readonly CAPTURING_PHASE: number;
+        get type(): string;
+        get target(): EventTarget | null;
+        get bubbles(): boolean;
+        get defaultPrevented(): boolean;
+        get cancelable(): boolean;
+        get isTrusted(): boolean;
+        get returnValue(): boolean;
+        set returnValue(v: boolean);
+        get srcElement(): EventTarget | null;
+        get eventPhase(): number;
+        get cancelBubble(): boolean;
+        set cancelBubble(v: boolean);
+        get timeStamp(): number;
+        get currentTarget(): EventTarget;
+        get originalEvent(): TEvent;
+        get AT_TARGET(): number;
+        get BUBBLING_PHASE(): number;
+        get CAPTURING_PHASE(): number;
         preventDefault(): void;
         stopPropagation(): void;
         stopImmediatePropagation(): void;
@@ -776,15 +785,16 @@ declare module "jriapp/bootstrap" {
         getImagePath(imageName: string): string;
         loadOwnStyle(name: string): IPromise<string>;
         toString(): string;
-        readonly app: IApplication;
-        readonly stylesLoader: IStylesLoader;
-        readonly elViewRegister: IElViewRegister;
-        readonly contentFactory: IContentFactoryList;
-        readonly templateLoader: TemplateLoader;
-        selectedControl: ISelectableProvider;
-        readonly defaults: Defaults;
-        readonly isReady: boolean;
-        readonly state: BootstrapState;
+        get app(): IApplication;
+        get stylesLoader(): IStylesLoader;
+        get elViewRegister(): IElViewRegister;
+        get contentFactory(): IContentFactoryList;
+        get templateLoader(): TemplateLoader;
+        get selectedControl(): ISelectableProvider;
+        set selectedControl(v: ISelectableProvider);
+        get defaults(): Defaults;
+        get isReady(): boolean;
+        get state(): BootstrapState;
     }
     export const bootstrap: Bootstrap;
 }
@@ -894,19 +904,24 @@ declare module "jriapp/binding" {
         updateTarget(): void;
         updateSource(): void;
         toString(): string;
-        readonly uniqueID: string;
-        target: IBaseObject;
-        source: any;
-        readonly targetPath: string[];
-        readonly sourcePath: string[];
-        sourceValue: any;
-        targetValue: any;
-        readonly isSourceFixed: boolean;
-        readonly mode: BINDING_MODE;
-        readonly converter: IConverter;
-        readonly param: any;
-        isDisabled: boolean;
-        readonly app: IApplication;
+        get uniqueID(): string;
+        get target(): IBaseObject;
+        set target(v: IBaseObject);
+        get source(): any;
+        set source(v: any);
+        get targetPath(): string[];
+        get sourcePath(): string[];
+        get sourceValue(): any;
+        set sourceValue(v: any);
+        get targetValue(): any;
+        set targetValue(v: any);
+        get isSourceFixed(): boolean;
+        get mode(): BINDING_MODE;
+        get converter(): IConverter;
+        get param(): any;
+        get isDisabled(): boolean;
+        set isDisabled(v: boolean);
+        get app(): IApplication;
     }
 }
 declare module "jriapp/template" {
@@ -949,7 +964,7 @@ declare module "jriapp/utils/propwatcher" {
         addWatch(obj: IBaseObject, props: string[], fnOnChange: (prop: string) => void): void;
         removeWatch(obj: IBaseObject): void;
         toString(): string;
-        readonly uniqueID: string;
+        get uniqueID(): string;
     }
 }
 declare module "jriapp/mvvm" {
@@ -980,7 +995,7 @@ declare module "jriapp/mvvm" {
         execute(param: TParam): void;
         raiseCanExecuteChanged(): void;
         toString(): string;
-        readonly uniqueID: string;
+        get uniqueID(): string;
     }
     export abstract class BaseCommand<TOwner, TParam = any> extends Command<TParam> {
         private _owner;
@@ -990,7 +1005,7 @@ declare module "jriapp/mvvm" {
         protected _execute(param: TParam): void;
         protected abstract action(param: TParam): void;
         protected abstract isCanExecute(param: TParam): boolean;
-        readonly owner: TOwner;
+        get owner(): TOwner;
     }
     export class ViewModel<TApp extends IApplication = IApplication> extends BaseObject {
         private _uniqueID;
@@ -1001,8 +1016,8 @@ declare module "jriapp/mvvm" {
         addOnError(handler: TErrorHandler<ViewModel<TApp>>, nmspace?: string, context?: object): void;
         offOnError(nmspace?: string): void;
         toString(): string;
-        readonly uniqueID: string;
-        readonly app: TApp;
+        get uniqueID(): string;
+        get app(): TApp;
     }
 }
 declare module "jriapp/utils/mloader" {
@@ -1059,13 +1074,13 @@ declare module "jriapp/app" {
         registerTemplateGroup(name: string, url: string): void;
         getOptions(name: string): string;
         toString(): string;
-        readonly uniqueID: string;
-        readonly options: IAppOptions;
-        readonly appName: string;
-        readonly appRoot: Document | HTMLElement;
-        readonly viewFactory: IElViewFactory;
-        readonly UC: any;
-        readonly app: IApplication;
+        get uniqueID(): string;
+        get options(): IAppOptions;
+        get appName(): string;
+        get appRoot(): Document | HTMLElement;
+        get viewFactory(): IElViewFactory;
+        get UC(): any;
+        get app(): IApplication;
     }
 }
 declare module "jriapp" {

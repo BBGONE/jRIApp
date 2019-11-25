@@ -59,15 +59,17 @@ declare module "jriapp_ui/content/basic" {
         protected afterCreateView(): void;
         render(): void;
         toString(): string;
-        protected readonly lfScope: ILifeTimeScope;
-        readonly parentEl: HTMLElement;
-        readonly el: HTMLElement;
-        readonly view: IContentView;
-        isEditing: boolean;
-        dataContext: any;
-        readonly isReadOnly: boolean;
-        readonly options: IContentOptions;
-        readonly app: IApplication;
+        protected get lfScope(): ILifeTimeScope;
+        get parentEl(): HTMLElement;
+        get el(): HTMLElement;
+        get view(): IContentView;
+        get isEditing(): boolean;
+        set isEditing(v: boolean);
+        get dataContext(): any;
+        set dataContext(v: any);
+        get isReadOnly(): boolean;
+        get options(): IContentOptions;
+        get app(): IApplication;
     }
 }
 declare module "jriapp_ui/content/template" {
@@ -89,11 +91,13 @@ declare module "jriapp_ui/content/template" {
         protected cleanUp(): void;
         render(): void;
         toString(): string;
-        readonly parentEl: HTMLElement;
-        readonly template: ITemplate;
-        isEditing: boolean;
-        dataContext: any;
-        readonly app: IApplication;
+        get parentEl(): HTMLElement;
+        get template(): ITemplate;
+        get isEditing(): boolean;
+        set isEditing(v: boolean);
+        get dataContext(): any;
+        set dataContext(v: any);
+        get app(): IApplication;
     }
 }
 declare module "jriapp_ui/utils/eventbag" {
@@ -118,7 +122,7 @@ declare module "jriapp_ui/utils/eventbag" {
         isHasProp(prop: string): boolean;
         getProp(name: string): ICommand;
         setProp(name: string, command: ICommand): void;
-        readonly isPropertyBag: boolean;
+        get isPropertyBag(): boolean;
         trigger(eventName: string, args?: any): boolean;
         toString(): string;
         dispose(): void;
@@ -132,7 +136,7 @@ declare module "jriapp_ui/utils/propbag" {
         isHasProp(prop: string): boolean;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
-        readonly isPropertyBag: boolean;
+        get isPropertyBag(): boolean;
         toString(): string;
     }
 }
@@ -144,7 +148,7 @@ declare module "jriapp_ui/utils/cssbag" {
         isHasProp(prop: string): boolean;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
-        readonly isPropertyBag: boolean;
+        get isPropertyBag(): boolean;
         toString(): string;
     }
 }
@@ -172,26 +176,32 @@ declare module "jriapp_ui/baseview" {
         protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         isSubscribed(flag: SubscribeFlags): boolean;
         toString(): string;
-        readonly el: TElement;
-        readonly uniqueID: string;
-        isVisible: boolean;
-        validationErrors: IValidationInfo[];
-        readonly dataName: string;
-        toolTip: string;
-        readonly events: IPropertyBag;
-        readonly props: IPropertyBag;
-        readonly classes: IPropertyBag;
-        readonly isDelegationOn: boolean;
-        css: string;
-        readonly app: IApplication;
+        get el(): TElement;
+        get uniqueID(): string;
+        get isVisible(): boolean;
+        set isVisible(v: boolean);
+        get validationErrors(): IValidationInfo[];
+        set validationErrors(v: IValidationInfo[]);
+        get dataName(): string;
+        get toolTip(): string;
+        set toolTip(v: string);
+        get events(): IPropertyBag;
+        get props(): IPropertyBag;
+        get classes(): IPropertyBag;
+        get isDelegationOn(): boolean;
+        get css(): string;
+        set css(v: string);
+        get app(): IApplication;
     }
 }
 declare module "jriapp_ui/input" {
     import { BaseElView } from "jriapp_ui/baseview";
     export class InputElView<TElement extends HTMLInputElement | HTMLTextAreaElement = HTMLInputElement> extends BaseElView<TElement> {
         toString(): string;
-        isEnabled: boolean;
-        value: string;
+        get isEnabled(): boolean;
+        set isEnabled(v: boolean);
+        get value(): string;
+        set value(v: string);
     }
 }
 declare module "jriapp_ui/textbox" {
@@ -213,7 +223,8 @@ declare module "jriapp_ui/textbox" {
         addOnKeyPress(fn: (sender: TextBoxElView<TElement>, args: TKeyPressArgs) => void, nmspace?: string): void;
         offOnKeyPress(nmspace?: string): void;
         toString(): string;
-        color: string;
+        get color(): string;
+        set color(v: string);
     }
 }
 declare module "jriapp_ui/content/string" {
@@ -221,7 +232,7 @@ declare module "jriapp_ui/content/string" {
     import { BasicContent } from "jriapp_ui/content/basic";
     export class StringContent extends BasicContent {
         static _allowedKeys: number[];
-        private readonly allowedKeys;
+        private get allowedKeys();
         protected createView(): void;
         protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean;
         toString(): string;
@@ -235,7 +246,8 @@ declare module "jriapp_ui/textarea" {
     export class TextAreaElView extends TextBoxElView<HTMLTextAreaElement> {
         constructor(el: HTMLTextAreaElement, options: ITextAreaOptions);
         toString(): string;
-        wrap: string;
+        get wrap(): string;
+        set wrap(v: string);
     }
 }
 declare module "jriapp_ui/content/multyline" {
@@ -244,7 +256,7 @@ declare module "jriapp_ui/content/multyline" {
     import { BasicContent, IContentView } from "jriapp_ui/content/basic";
     export class MultyLineContent extends BasicContent {
         static _allowedKeys: number[];
-        private readonly allowedKeys;
+        private get allowedKeys();
         constructor(options: IConstructorContentOptions);
         protected createdEditingView(): IContentView;
         protected createdReadingView(): IContentView;
@@ -274,7 +286,7 @@ declare module "jriapp_ui/content/number" {
     import { BasicContent } from "jriapp_ui/content/basic";
     export class NumberContent extends BasicContent {
         static _allowedKeys: number[];
-        private readonly allowedKeys;
+        private get allowedKeys();
         protected getConverter(isEdit: boolean): IConverter;
         protected createView(): void;
         protected previewKeyPress(keyCode: number, value: string): boolean;
@@ -373,23 +385,32 @@ declare module "jriapp_ui/listbox" {
         protected setIsEnabled(el: HTMLSelectElement, v: boolean): void;
         protected getIsEnabled(el: HTMLSelectElement): boolean;
         protected setDataSource(v: ICollection<ICollectionItem>): void;
-        protected selectedIndex: number;
+        protected get selectedIndex(): number;
+        protected set selectedIndex(v: number);
         isSubscribed(flag: SubscribeFlags): boolean;
         handle_change(e: Event): boolean;
         addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
         offOnRefreshed(nmspace?: string): void;
         getText(val: any): string;
         toString(): string;
-        dataSource: ICollection<ICollectionItem>;
-        selectedValue: any;
-        selectedItem: ICollectionItem;
-        valuePath: string;
-        textPath: string;
-        readonly statePath: string;
-        isEnabled: boolean;
-        textProvider: IOptionTextProvider;
-        stateProvider: IOptionStateProvider;
-        readonly el: HTMLSelectElement;
+        get dataSource(): ICollection<ICollectionItem>;
+        set dataSource(v: ICollection<ICollectionItem>);
+        get selectedValue(): any;
+        set selectedValue(v: any);
+        get selectedItem(): ICollectionItem;
+        set selectedItem(v: ICollectionItem);
+        get valuePath(): string;
+        set valuePath(v: string);
+        get textPath(): string;
+        set textPath(v: string);
+        get statePath(): string;
+        get isEnabled(): boolean;
+        set isEnabled(v: boolean);
+        get textProvider(): IOptionTextProvider;
+        set textProvider(v: IOptionTextProvider);
+        get stateProvider(): IOptionStateProvider;
+        set stateProvider(v: IOptionStateProvider);
+        get el(): HTMLSelectElement;
     }
     export interface IListBoxViewOptions extends IListBoxOptions, IViewOptions {
     }
@@ -401,15 +422,23 @@ declare module "jriapp_ui/listbox" {
         addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
         offOnRefreshed(nmspace?: string): void;
         getText(val: any): string;
-        isEnabled: boolean;
-        dataSource: ICollection<ICollectionItem>;
-        selectedValue: any;
-        selectedItem: ICollectionItem;
-        valuePath: string;
-        textPath: string;
-        textProvider: IOptionTextProvider;
-        stateProvider: IOptionStateProvider;
-        readonly listBox: ListBox;
+        get isEnabled(): boolean;
+        set isEnabled(v: boolean);
+        get dataSource(): ICollection<ICollectionItem>;
+        set dataSource(v: ICollection<ICollectionItem>);
+        get selectedValue(): any;
+        set selectedValue(v: any);
+        get selectedItem(): ICollectionItem;
+        set selectedItem(v: ICollectionItem);
+        get valuePath(): string;
+        set valuePath(v: string);
+        get textPath(): string;
+        set textPath(v: string);
+        get textProvider(): IOptionTextProvider;
+        set textProvider(v: IOptionTextProvider);
+        get stateProvider(): IOptionStateProvider;
+        set stateProvider(v: IOptionStateProvider);
+        get listBox(): ListBox;
     }
 }
 declare module "jriapp_ui/content/lookup" {
@@ -453,7 +482,7 @@ declare module "jriapp_ui/content/lookup" {
         offOnObjectNeeded(nmspace?: string): void;
         getLookupText(val: any): string;
         toString(): string;
-        readonly uniqueID: string;
+        get uniqueID(): string;
     }
 }
 declare module "jriapp_ui/content/factory" {
@@ -566,15 +595,22 @@ declare module "jriapp_ui/dialog" {
         getOption(name: string): any;
         setOption(name: string, value: any): void;
         dispose(): void;
-        dataContext: any;
-        readonly result: TResult;
-        readonly template: ITemplate;
-        isSubmitOnOK: boolean;
-        width: any;
-        height: any;
-        title: string;
-        canRefresh: boolean;
-        canCancel: boolean;
+        get dataContext(): any;
+        set dataContext(v: any);
+        get result(): TResult;
+        get template(): ITemplate;
+        get isSubmitOnOK(): boolean;
+        set isSubmitOnOK(v: boolean);
+        get width(): any;
+        set width(v: any);
+        get height(): any;
+        set height(v: any);
+        get title(): string;
+        set title(v: string);
+        get canRefresh(): boolean;
+        set canRefresh(v: boolean);
+        get canCancel(): boolean;
+        set canCancel(v: boolean);
     }
     export class DialogVM extends ViewModel<IApplication> {
         private _factories;
@@ -615,10 +651,13 @@ declare module "jriapp_ui/dynacontent" {
         templateUnLoading(template: ITemplate): void;
         private _templateChanging;
         dispose(): void;
-        readonly template: ITemplate;
-        templateID: string;
-        dataContext: any;
-        animation: IDynaContentAnimation;
+        get template(): ITemplate;
+        get templateID(): string;
+        set templateID(v: string);
+        get dataContext(): any;
+        set dataContext(v: any);
+        get animation(): IDynaContentAnimation;
+        set animation(v: IDynaContentAnimation);
     }
 }
 declare module "jriapp_ui/content/int" {
@@ -727,7 +766,8 @@ declare module "jriapp_ui/utils/dblclick" {
         add(fnOnClick: () => any, fnOnDblClick?: () => any): void;
         dispose(): void;
         getIsDisposed(): boolean;
-        interval: number;
+        get interval(): number;
+        set interval(v: number);
     }
 }
 declare module "jriapp_ui/datagrid/columns/base" {
@@ -767,14 +807,15 @@ declare module "jriapp_ui/datagrid/columns/base" {
         updateWidth(): void;
         protected _onColumnClicked(): void;
         toString(): string;
-        readonly uniqueID: string;
-        readonly width: number;
-        readonly th: HTMLTableHeaderCellElement;
-        readonly col: HTMLDivElement;
-        readonly grid: DataGrid;
-        readonly options: IColumnInfo;
-        readonly title: string;
-        isSelected: boolean;
+        get uniqueID(): string;
+        get width(): number;
+        get th(): HTMLTableHeaderCellElement;
+        get col(): HTMLDivElement;
+        get grid(): DataGrid;
+        get options(): IColumnInfo;
+        get title(): string;
+        get isSelected(): boolean;
+        set isSelected(v: boolean);
     }
 }
 declare module "jriapp_ui/datagrid/columns/expander" {
@@ -814,10 +855,11 @@ declare module "jriapp_ui/datagrid/columns/data" {
         protected _getInitContentFn(): (content: IExternallyCachable) => void;
         updateContentOptions(): void;
         toString(): string;
-        readonly contentType: IContentConstructor;
-        readonly isSortable: boolean;
-        readonly sortMemberName: string;
-        sortOrder: SORT_ORDER;
+        get contentType(): IContentConstructor;
+        get isSortable(): boolean;
+        get sortMemberName(): string;
+        get sortOrder(): SORT_ORDER;
+        set sortOrder(v: SORT_ORDER);
     }
 }
 declare module "jriapp_ui/datagrid/cells/data" {
@@ -859,13 +901,13 @@ declare module "jriapp_ui/datagrid/cells/actions" {
         dispose(): void;
         private _setupButtons;
         private _cleanUp;
-        protected readonly editBtnsHTML: string[];
-        protected readonly viewBtnsHTML: string[];
+        protected get editBtnsHTML(): string[];
+        protected get viewBtnsHTML(): string[];
         protected _createButtons(isEditing: boolean): void;
         update(): void;
         toString(): string;
-        readonly isCanEdit: boolean;
-        readonly isCanDelete: boolean;
+        get isCanEdit(): boolean;
+        get isCanDelete(): boolean;
     }
 }
 declare module "jriapp_ui/datagrid/columns/rowselector" {
@@ -876,7 +918,8 @@ declare module "jriapp_ui/datagrid/columns/rowselector" {
         constructor(grid: DataGrid, options: ICellInfo);
         dispose(): void;
         toString(): string;
-        checked: boolean;
+        get checked(): boolean;
+        set checked(v: boolean);
     }
 }
 declare module "jriapp_ui/datagrid/cells/rowselector" {
@@ -886,7 +929,8 @@ declare module "jriapp_ui/datagrid/cells/rowselector" {
         private _chk;
         constructor(options: ICellOptions);
         dispose(): void;
-        checked: boolean;
+        get checked(): boolean;
+        set checked(v: boolean);
         toString(): string;
     }
 }
@@ -931,25 +975,29 @@ declare module "jriapp_ui/datagrid/rows/row" {
         updateUIState(): void;
         scrollIntoView(animate?: boolean, pos?: ROW_POSITION): void;
         toString(): string;
-        readonly rect: ClientRect;
-        readonly height: number;
-        readonly width: number;
-        readonly tr: HTMLTableRowElement;
-        readonly grid: DataGrid;
-        readonly item: ICollectionItem;
-        readonly cells: BaseCell<BaseColumn>[];
-        readonly columns: BaseColumn[];
-        readonly uniqueID: string;
-        readonly itemKey: string;
-        readonly isCurrent: boolean;
-        isSelected: boolean;
-        isExpanded: boolean;
-        readonly expanderCell: ExpanderCell;
-        readonly actionsCell: ActionsCell;
-        isDeleted: boolean;
-        isDetached: boolean;
-        readonly isEditing: boolean;
-        readonly isHasStateField: boolean;
+        get rect(): ClientRect;
+        get height(): number;
+        get width(): number;
+        get tr(): HTMLTableRowElement;
+        get grid(): DataGrid;
+        get item(): ICollectionItem;
+        get cells(): BaseCell<BaseColumn>[];
+        get columns(): BaseColumn[];
+        get uniqueID(): string;
+        get itemKey(): string;
+        get isCurrent(): boolean;
+        get isSelected(): boolean;
+        set isSelected(v: boolean);
+        get isExpanded(): boolean;
+        set isExpanded(v: boolean);
+        get expanderCell(): ExpanderCell;
+        get actionsCell(): ActionsCell;
+        get isDeleted(): boolean;
+        set isDeleted(v: boolean);
+        get isDetached(): boolean;
+        set isDetached(v: boolean);
+        get isEditing(): boolean;
+        get isHasStateField(): boolean;
     }
 }
 declare module "jriapp_ui/datagrid/cells/base" {
@@ -981,13 +1029,13 @@ declare module "jriapp_ui/datagrid/cells/base" {
         scrollIntoView(): void;
         dispose(): void;
         toString(): string;
-        readonly td: HTMLTableCellElement;
-        readonly row: Row;
-        readonly column: TColumn;
-        readonly grid: DataGrid;
-        readonly item: ICollectionItem;
-        readonly uniqueID: string;
-        readonly num: number;
+        get td(): HTMLTableCellElement;
+        get row(): Row;
+        get column(): TColumn;
+        get grid(): DataGrid;
+        get item(): ICollectionItem;
+        get uniqueID(): string;
+        get num(): number;
     }
 }
 declare module "jriapp_ui/datagrid/cells/details" {
@@ -1006,11 +1054,12 @@ declare module "jriapp_ui/datagrid/cells/details" {
         });
         dispose(): void;
         toString(): string;
-        readonly td: HTMLTableCellElement;
-        readonly row: DetailsRow;
-        readonly grid: DataGrid;
-        item: ICollectionItem;
-        readonly template: ITemplate;
+        get td(): HTMLTableCellElement;
+        get row(): DetailsRow;
+        get grid(): DataGrid;
+        get item(): ICollectionItem;
+        set item(v: ICollectionItem);
+        get template(): ITemplate;
     }
 }
 declare module "jriapp_ui/datagrid/rows/details" {
@@ -1038,16 +1087,18 @@ declare module "jriapp_ui/datagrid/rows/details" {
         private _show;
         private _hide;
         toString(): string;
-        readonly rect: ClientRect;
-        readonly height: number;
-        readonly width: number;
-        readonly tr: HTMLTableRowElement;
-        readonly grid: DataGrid;
-        item: ICollectionItem;
-        readonly cell: DetailsCell;
-        readonly uniqueID: string;
-        readonly itemKey: string;
-        parentRow: Row;
+        get rect(): ClientRect;
+        get height(): number;
+        get width(): number;
+        get tr(): HTMLTableRowElement;
+        get grid(): DataGrid;
+        get item(): ICollectionItem;
+        set item(v: ICollectionItem);
+        get cell(): DetailsCell;
+        get uniqueID(): string;
+        get itemKey(): string;
+        get parentRow(): Row;
+        set parentRow(v: Row);
     }
 }
 declare module "jriapp_ui/datagrid/cells/fillspace" {
@@ -1063,11 +1114,12 @@ declare module "jriapp_ui/datagrid/cells/fillspace" {
         });
         dispose(): void;
         toString(): string;
-        readonly td: HTMLTableCellElement;
-        readonly row: FillSpaceRow;
-        readonly grid: DataGrid;
-        readonly div: HTMLElement;
-        height: number;
+        get td(): HTMLTableCellElement;
+        get row(): FillSpaceRow;
+        get grid(): DataGrid;
+        get div(): HTMLElement;
+        get height(): number;
+        set height(v: number);
     }
 }
 declare module "jriapp_ui/datagrid/rows/fillspace" {
@@ -1086,10 +1138,11 @@ declare module "jriapp_ui/datagrid/rows/fillspace" {
         toString(): string;
         attach(): void;
         detach(): void;
-        readonly tr: HTMLTableRowElement;
-        readonly grid: DataGrid;
-        readonly cell: FillSpaceCell;
-        height: number;
+        get tr(): HTMLTableRowElement;
+        get grid(): DataGrid;
+        get cell(): FillSpaceCell;
+        get height(): number;
+        set height(v: number);
     }
 }
 declare module "jriapp_ui/datagrid/datagrid" {
@@ -1262,30 +1315,35 @@ declare module "jriapp_ui/datagrid/datagrid" {
             action: ROW_ACTION;
         }>, nmspace?: string, context?: any): void;
         offOnRowAction(nmspace?: string): void;
-        readonly selectable: ISelectable;
-        readonly table: HTMLTableElement;
-        readonly options: IDataGridOptions;
-        readonly _tBodyEl: HTMLTableSectionElement;
-        readonly _tHeadEl: HTMLTableSectionElement;
-        readonly _tFootEl: HTMLTableSectionElement;
-        readonly _tHeadRow: HTMLTableRowElement;
-        readonly _tHeadCells: HTMLTableHeaderCellElement[];
-        readonly uniqueID: string;
-        readonly name: string;
-        dataSource: ICollection<ICollectionItem>;
-        readonly rows: Row[];
-        readonly columns: BaseColumn[];
-        readonly rowSelectorCol: RowSelectorColumn;
-        currentItem: ICollectionItem;
-        currentRow: Row;
-        readonly editingRow: Row;
-        readonly isHasEditor: boolean;
-        readonly isCanEdit: boolean;
-        readonly isCanDelete: boolean;
-        readonly isCanAddNew: boolean;
-        isUseScrollInto: boolean;
-        syncSetDatasource: boolean;
-        readonly animation: IDataGridAnimation;
+        get selectable(): ISelectable;
+        get table(): HTMLTableElement;
+        get options(): IDataGridOptions;
+        get _tBodyEl(): HTMLTableSectionElement;
+        get _tHeadEl(): HTMLTableSectionElement;
+        get _tFootEl(): HTMLTableSectionElement;
+        get _tHeadRow(): HTMLTableRowElement;
+        get _tHeadCells(): HTMLTableHeaderCellElement[];
+        get uniqueID(): string;
+        get name(): string;
+        get dataSource(): ICollection<ICollectionItem>;
+        set dataSource(v: ICollection<ICollectionItem>);
+        get rows(): Row[];
+        get columns(): BaseColumn[];
+        get rowSelectorCol(): RowSelectorColumn;
+        get currentItem(): ICollectionItem;
+        set currentItem(item: ICollectionItem);
+        get currentRow(): Row;
+        set currentRow(row: Row);
+        get editingRow(): Row;
+        get isHasEditor(): boolean;
+        get isCanEdit(): boolean;
+        get isCanDelete(): boolean;
+        get isCanAddNew(): boolean;
+        get isUseScrollInto(): boolean;
+        set isUseScrollInto(v: boolean);
+        get syncSetDatasource(): boolean;
+        set syncSetDatasource(v: boolean);
+        get animation(): IDataGridAnimation;
     }
     export interface IDataGridViewOptions extends IDataGridOptions, IViewOptions {
     }
@@ -1298,11 +1356,14 @@ declare module "jriapp_ui/datagrid/datagrid" {
         dispose(): void;
         private _bindGridEvents;
         protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
-        dataSource: ICollection<ICollectionItem>;
-        readonly grid: DataGrid;
-        stateProvider: IRowStateProvider;
-        animation: IDataGridAnimation;
-        readonly selectable: ISelectable;
+        get dataSource(): ICollection<ICollectionItem>;
+        set dataSource(v: ICollection<ICollectionItem>);
+        get grid(): DataGrid;
+        get stateProvider(): IRowStateProvider;
+        set stateProvider(v: IRowStateProvider);
+        get animation(): IDataGridAnimation;
+        set animation(v: IDataGridAnimation);
+        get selectable(): ISelectable;
     }
 }
 declare module "jriapp_ui/pager" {
@@ -1357,22 +1418,35 @@ declare module "jriapp_ui/pager" {
         protected _buildTip(page: number): string;
         protected setDataSource(v: ICollection<ICollectionItem>): void;
         toString(): string;
-        readonly el: HTMLElement;
-        dataSource: ICollection<ICollectionItem>;
-        readonly pageCount: number;
-        rowCount: number;
-        rowsPerPage: number;
-        currentPage: number;
-        useSlider: boolean;
-        sliderSize: number;
-        hideOnSinglePage: boolean;
-        showTip: boolean;
-        showInfo: boolean;
-        showPreviousAndNext: boolean;
-        showNumbers: boolean;
-        isVisible: boolean;
-        readonly selectable: ISelectable;
-        parentControl: ISelectableProvider;
+        get el(): HTMLElement;
+        get dataSource(): ICollection<ICollectionItem>;
+        set dataSource(v: ICollection<ICollectionItem>);
+        get pageCount(): number;
+        get rowCount(): number;
+        set rowCount(v: number);
+        get rowsPerPage(): number;
+        set rowsPerPage(v: number);
+        get currentPage(): number;
+        set currentPage(v: number);
+        get useSlider(): boolean;
+        set useSlider(v: boolean);
+        get sliderSize(): number;
+        set sliderSize(v: number);
+        get hideOnSinglePage(): boolean;
+        set hideOnSinglePage(v: boolean);
+        get showTip(): boolean;
+        set showTip(v: boolean);
+        get showInfo(): boolean;
+        set showInfo(v: boolean);
+        get showPreviousAndNext(): boolean;
+        set showPreviousAndNext(v: boolean);
+        get showNumbers(): boolean;
+        set showNumbers(v: boolean);
+        get isVisible(): boolean;
+        set isVisible(v: boolean);
+        get selectable(): ISelectable;
+        get parentControl(): ISelectableProvider;
+        set parentControl(v: ISelectableProvider);
     }
     export interface IPagerViewOptions extends IPagerOptions, IViewOptions {
     }
@@ -1382,10 +1456,12 @@ declare module "jriapp_ui/pager" {
         dispose(): void;
         protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         toString(): string;
-        dataSource: ICollection<ICollectionItem>;
-        readonly pager: Pager;
-        readonly selectable: ISelectable;
-        parentControl: ISelectableProvider;
+        get dataSource(): ICollection<ICollectionItem>;
+        set dataSource(v: ICollection<ICollectionItem>);
+        get pager(): Pager;
+        get selectable(): ISelectable;
+        get parentControl(): ISelectableProvider;
+        set parentControl(v: ISelectableProvider);
     }
 }
 declare module "jriapp_ui/stackpanel" {
@@ -1441,13 +1517,14 @@ declare module "jriapp_ui/stackpanel" {
         scrollToCurrent(isUp?: boolean): void;
         focus(): void;
         toString(): string;
-        readonly selectable: ISelectable;
-        readonly el: HTMLElement;
-        readonly uniqueID: string;
-        readonly orientation: TOrientation;
-        readonly templateID: string;
-        dataSource: ICollection<ICollectionItem>;
-        readonly currentItem: ICollectionItem;
+        get selectable(): ISelectable;
+        get el(): HTMLElement;
+        get uniqueID(): string;
+        get orientation(): TOrientation;
+        get templateID(): string;
+        get dataSource(): ICollection<ICollectionItem>;
+        set dataSource(v: ICollection<ICollectionItem>);
+        get currentItem(): ICollectionItem;
     }
     export interface IStackPanelViewOptions extends IStackPanelOptions, IViewOptions {
     }
@@ -1460,10 +1537,12 @@ declare module "jriapp_ui/stackpanel" {
         constructor(el: HTMLElement, options: IStackPanelViewOptions);
         dispose(): void;
         toString(): string;
-        dataSource: ICollection<ICollectionItem>;
-        panelEvents: IPanelEvents;
-        readonly panel: StackPanel;
-        readonly selectable: ISelectable;
+        get dataSource(): ICollection<ICollectionItem>;
+        set dataSource(v: ICollection<ICollectionItem>);
+        get panelEvents(): IPanelEvents;
+        set panelEvents(v: IPanelEvents);
+        get panel(): StackPanel;
+        get selectable(): ISelectable;
     }
 }
 declare module "jriapp_ui/tabs" {
@@ -1492,8 +1571,10 @@ declare module "jriapp_ui/tabs" {
         protected _onTabsCreated(): void;
         dispose(): void;
         toString(): string;
-        tabsEvents: ITabsEvents;
-        tabIndex: number;
+        get tabsEvents(): ITabsEvents;
+        set tabsEvents(v: ITabsEvents);
+        get tabIndex(): number;
+        set tabIndex(v: number);
     }
 }
 declare module "jriapp_ui/template" {
@@ -1516,7 +1597,8 @@ declare module "jriapp_ui/template" {
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
         toString(): string;
-        command: IExecutor;
+        get command(): IExecutor;
+        set command(v: IExecutor);
     }
 }
 declare module "jriapp_ui/dataform" {
@@ -1555,10 +1637,12 @@ declare module "jriapp_ui/dataform" {
         protected _setErrors(errors: IValidationInfo[]): void;
         protected _onIsEditingChanged(): void;
         toString(): string;
-        readonly app: IApplication;
-        readonly el: HTMLElement;
-        dataContext: IBaseObject;
-        isEditing: boolean;
+        get app(): IApplication;
+        get el(): HTMLElement;
+        get dataContext(): IBaseObject;
+        set dataContext(v: IBaseObject);
+        get isEditing(): boolean;
+        set isEditing(v: boolean);
     }
     export interface IFormViewOptions extends IFormOptions, IViewOptions {
     }
@@ -1568,8 +1652,9 @@ declare module "jriapp_ui/dataform" {
         dispose(): void;
         protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         toString(): string;
-        dataContext: IBaseObject;
-        readonly form: DataForm;
+        get dataContext(): IBaseObject;
+        set dataContext(v: IBaseObject);
+        get form(): DataForm;
     }
 }
 declare module "jriapp_ui/datepicker" {
@@ -1606,11 +1691,14 @@ declare module "jriapp_ui/command" {
         protected invokeCommand(): void;
         viewMounted(): void;
         toString(): string;
-        command: ICommand;
-        commandParam: any;
-        isEnabled: boolean;
-        readonly preventDefault: boolean;
-        readonly stopPropagation: boolean;
+        get command(): ICommand;
+        set command(v: ICommand);
+        get commandParam(): any;
+        set commandParam(v: any);
+        get isEnabled(): boolean;
+        set isEnabled(v: boolean);
+        get preventDefault(): boolean;
+        get stopPropagation(): boolean;
     }
 }
 declare module "jriapp_ui/anchor" {
@@ -1631,28 +1719,38 @@ declare module "jriapp_ui/anchor" {
         protected _updateImage(src: string): void;
         protected _updateGlyph(glyph: string): void;
         toString(): string;
-        imageSrc: string;
-        glyph: string;
-        html: string;
-        text: string;
-        href: string;
+        get imageSrc(): string;
+        set imageSrc(v: string);
+        get glyph(): string;
+        set glyph(v: string);
+        get html(): string;
+        set html(v: string);
+        get text(): string;
+        set text(v: string);
+        get href(): string;
+        set href(v: string);
     }
 }
 declare module "jriapp_ui/span" {
     import { BaseElView } from "jriapp_ui/baseview";
     export class SpanElView extends BaseElView {
         toString(): string;
-        text: string;
-        value: string;
-        html: string;
+        get text(): string;
+        set text(v: string);
+        get value(): string;
+        set value(v: string);
+        get html(): string;
+        set html(v: string);
     }
 }
 declare module "jriapp_ui/block" {
     import { SpanElView } from "jriapp_ui/span";
     export class BlockElView extends SpanElView {
         toString(): string;
-        width: number;
-        height: number;
+        get width(): number;
+        set width(v: number);
+        get height(): number;
+        set height(v: number);
     }
 }
 declare module "jriapp_ui/busy" {
@@ -1671,8 +1769,10 @@ declare module "jriapp_ui/busy" {
         constructor(el: HTMLElement, options: IBusyViewOptions);
         dispose(): void;
         toString(): string;
-        isBusy: boolean;
-        delay: number;
+        get isBusy(): boolean;
+        set isBusy(v: boolean);
+        get delay(): number;
+        set delay(v: number);
     }
 }
 declare module "jriapp_ui/button" {
@@ -1683,9 +1783,12 @@ declare module "jriapp_ui/button" {
         handle_click(e: Event): boolean;
         onClick(): void;
         toString(): string;
-        value: string;
-        text: string;
-        html: string;
+        get value(): string;
+        set value(v: string);
+        get text(): string;
+        set text(v: string);
+        get html(): string;
+        set html(v: string);
     }
 }
 declare module "jriapp_ui/checkbox" {
@@ -1699,7 +1802,8 @@ declare module "jriapp_ui/checkbox" {
         protected _updateState(): void;
         protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         toString(): string;
-        checked: boolean;
+        get checked(): boolean;
+        set checked(v: boolean);
     }
 }
 declare module "jriapp_ui/checkbox3" {
@@ -1713,7 +1817,8 @@ declare module "jriapp_ui/checkbox3" {
         protected _updateState(): void;
         protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         toString(): string;
-        checked: boolean;
+        get checked(): boolean;
+        set checked(v: boolean);
     }
 }
 declare module "jriapp_ui/expander" {
@@ -1737,7 +1842,8 @@ declare module "jriapp_ui/expander" {
         protected _getCommandParam(): any;
         invokeCommand(): void;
         toString(): string;
-        isExpanded: boolean;
+        get isExpanded(): boolean;
+        set isExpanded(v: boolean);
     }
 }
 declare module "jriapp_ui/hidden" {
@@ -1750,15 +1856,17 @@ declare module "jriapp_ui/img" {
     import { BaseElView } from "jriapp_ui/baseview";
     export class ImgElView extends BaseElView<HTMLImageElement> {
         toString(): string;
-        src: string;
+        get src(): string;
+        set src(v: string);
     }
 }
 declare module "jriapp_ui/radio" {
     import { CheckBoxElView } from "jriapp_ui/checkbox";
     export class RadioElView extends CheckBoxElView {
         toString(): string;
-        value: string;
-        readonly name: string;
+        get value(): string;
+        set value(v: string);
+        get name(): string;
     }
 }
 declare module "jriapp_ui/content/all" {

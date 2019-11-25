@@ -708,35 +708,35 @@ declare module "jriapp_shared/errors" {
         private _message;
         constructor(message?: string);
         toString(): string;
-        readonly isDummy: boolean;
-        readonly message: string;
+        get isDummy(): boolean;
+        get message(): string;
     }
     export class DummyError extends BaseError {
         private _origError;
         constructor(originalError: any);
-        readonly isDummy: boolean;
-        readonly origError: any;
+        get isDummy(): boolean;
+        get origError(): any;
     }
     export class AbortError extends BaseError {
         private _reason;
         constructor(reason?: string);
-        readonly isDummy: boolean;
-        readonly reason: string;
+        get isDummy(): boolean;
+        get reason(): string;
     }
     export class AggregateError extends BaseError {
         private _errors;
         constructor(errors?: any[]);
-        readonly errors: any[];
-        readonly count: number;
-        readonly message: string;
+        get errors(): any[];
+        get count(): number;
+        get message(): string;
         toString(): string;
     }
     export class ValidationError extends BaseError implements IValidationError {
         private _validations;
         private _item;
         constructor(validations: IValidationInfo[], item: any);
-        readonly item: any;
-        readonly validations: IValidationInfo[];
+        get item(): any;
+        get validations(): IValidationInfo[];
     }
 }
 declare module "jriapp_shared/utils/error" {
@@ -811,7 +811,7 @@ declare module "jriapp_shared/object" {
         offOnDisposed(nmspace?: string): void;
         addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void;
         offOnError(nmspace?: string): void;
-        readonly owner: IBaseObject;
+        get owner(): IBaseObject;
     }
     export const dummyEvents: IObjectEvents;
     export class BaseObject implements IBaseObject {
@@ -825,8 +825,8 @@ declare module "jriapp_shared/object" {
         getIsDisposed(): boolean;
         getIsStateDirty(): boolean;
         dispose(): void;
-        readonly objEvents: IObjectEvents<this>;
-        readonly __objSig: object;
+        get objEvents(): IObjectEvents<this>;
+        get __objSig(): object;
     }
 }
 declare module "jriapp_shared/utils/arrhelper" {
@@ -907,7 +907,7 @@ declare module "jriapp_shared/utils/debounce" {
         dispose(): void;
         enque(fn: TFunc): void;
         cancel(): void;
-        readonly interval: number;
+        get interval(): number;
         getIsDisposed(): boolean;
     }
 }
@@ -959,12 +959,12 @@ declare module "jriapp_shared/utils/jsonbag" {
         beginEdit(): boolean;
         endEdit(): boolean;
         cancelEdit(): boolean;
-        readonly isEditing: boolean;
+        get isEditing(): boolean;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
-        readonly isPropertyBag: boolean;
-        readonly val: any;
-        readonly json: string;
+        get isPropertyBag(): boolean;
+        get val(): any;
+        get json(): string;
         toString(): string;
     }
 }
@@ -1081,8 +1081,8 @@ declare module "jriapp_shared/utils/waitqueue" {
         protected _checkQueue(prop: string, value: any): void;
         enQueue(item: IWaitQueueItem): void;
         toString(): string;
-        readonly uniqueID: string;
-        readonly owner: IBaseObject;
+        get uniqueID(): string;
+        get owner(): IBaseObject;
     }
 }
 declare module "jriapp_shared/collection/utils" {
@@ -1254,21 +1254,26 @@ declare module "jriapp_shared/collection/base" {
         addOnPageSizeChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
         addOnTotalCountChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
         addOnCurrentChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
-        readonly errors: Errors<TItem>;
-        readonly options: ICollectionOptions;
-        readonly items: TItem[];
-        currentItem: TItem;
-        readonly count: number;
-        totalCount: number;
-        pageSize: number;
-        pageIndex: number;
-        readonly pageCount: number;
-        readonly isPagingEnabled: boolean;
-        readonly isEditing: boolean;
-        readonly isLoading: boolean;
-        isUpdating: boolean;
-        readonly permissions: IPermissions;
-        readonly uniqueID: string;
+        get errors(): Errors<TItem>;
+        get options(): ICollectionOptions;
+        get items(): TItem[];
+        get currentItem(): TItem;
+        set currentItem(v: TItem);
+        get count(): number;
+        get totalCount(): number;
+        set totalCount(v: number);
+        get pageSize(): number;
+        set pageSize(v: number);
+        get pageIndex(): number;
+        set pageIndex(v: number);
+        get pageCount(): number;
+        get isPagingEnabled(): boolean;
+        get isEditing(): boolean;
+        get isLoading(): boolean;
+        get isUpdating(): boolean;
+        set isUpdating(v: boolean);
+        get permissions(): IPermissions;
+        get uniqueID(): string;
     }
 }
 declare module "jriapp_shared/collection/validation" {
@@ -1344,22 +1349,22 @@ declare module "jriapp_shared/collection/aspect" {
         setCustomVal(name: string, val: any, isOwnVal?: boolean): void;
         getCustomVal(name: string): any;
         toString(): string;
-        protected readonly hasTempVals: boolean;
-        readonly vals: TObj;
-        readonly item: TItem;
-        readonly key: string;
-        readonly coll: BaseCollection<TItem>;
-        readonly status: ITEM_STATUS;
-        readonly isUpdating: boolean;
-        readonly isEditing: boolean;
-        readonly isCanSubmit: boolean;
-        readonly isHasChanges: boolean;
-        readonly isNew: boolean;
-        readonly isDeleted: boolean;
-        readonly isEdited: boolean;
-        readonly isDetached: boolean;
-        readonly isRefreshing: boolean;
-        readonly isCancelling: boolean;
+        protected get hasTempVals(): boolean;
+        get vals(): TObj;
+        get item(): TItem;
+        get key(): string;
+        get coll(): BaseCollection<TItem>;
+        get status(): ITEM_STATUS;
+        get isUpdating(): boolean;
+        get isEditing(): boolean;
+        get isCanSubmit(): boolean;
+        get isHasChanges(): boolean;
+        get isNew(): boolean;
+        get isDeleted(): boolean;
+        get isEdited(): boolean;
+        get isDetached(): boolean;
+        get isRefreshing(): boolean;
+        get isCancelling(): boolean;
     }
 }
 declare module "jriapp_shared/collection/item" {
@@ -1370,8 +1375,8 @@ declare module "jriapp_shared/collection/item" {
         private __aspect;
         constructor(aspect: TAspect);
         dispose(): void;
-        readonly _aspect: TAspect;
-        readonly _key: string;
+        get _aspect(): TAspect;
+        get _key(): string;
         toString(): string;
     }
 }
@@ -1388,7 +1393,7 @@ declare module "jriapp_shared/collection/list" {
         _setProp(name: string, val: any): void;
         _getProp(name: string): any;
         toString(): string;
-        readonly list: BaseList<TItem, TObj>;
+        get list(): BaseList<TItem, TObj>;
     }
     export abstract class BaseList<TItem extends IListItem, TObj extends IIndexer<any>> extends BaseCollection<TItem> {
         private _fieldMap;
@@ -1432,9 +1437,10 @@ declare module "jriapp_shared/utils/anylist" {
         isHasProp(prop: string): boolean;
         getProp(name: string): any;
         setProp(name: string, val: any): void;
-        val: any;
-        readonly isPropertyBag: boolean;
-        readonly list: AnyList;
+        get val(): any;
+        set val(v: any);
+        get isPropertyBag(): boolean;
+        get list(): AnyList;
         toString(): string;
     }
     export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
@@ -1470,9 +1476,9 @@ declare module "jriapp_shared/utils/jsonarray" {
         protected _validateBag(bag: IAnyValItem): IValidationInfo[];
         protected _validateField(bag: IAnyValItem, fieldName: string): IValidationInfo;
         getArray(): any[];
-        readonly pathToArray: string;
-        readonly owner: JsonBag;
-        readonly list: AnyList;
+        get pathToArray(): string;
+        get owner(): JsonBag;
+        get list(): AnyList;
     }
 }
 declare module "jriapp_shared/utils/weakmap" {
@@ -1489,7 +1495,7 @@ declare module "jriapp_shared/collection/dictionary" {
         protected createItem(obj?: TObj): TItem;
         protected _onItemAdded(item: TItem): void;
         protected _onRemoved(item: TItem, pos: number): void;
-        readonly keyName: string;
+        get keyName(): string;
         toString(): string;
     }
 }
@@ -1501,8 +1507,8 @@ declare module "jriapp_shared/utils/lazy" {
         private _factory;
         constructor(factory: TValueFactory<T>);
         dispose(): void;
-        readonly Value: T;
-        readonly IsValueCreated: boolean;
+        get Value(): T;
+        get IsValueCreated(): boolean;
         getIsDisposed(): boolean;
     }
 }
