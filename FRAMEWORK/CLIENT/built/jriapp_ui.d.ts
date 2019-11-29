@@ -1795,9 +1795,14 @@ declare module "jriapp_ui/checkbox" {
     import { IValidationInfo } from "jriapp_shared";
     import { IViewOptions } from "jriapp/int";
     import { InputElView } from "jriapp_ui/input";
+    export interface ICheckBoxViewOptions extends IViewOptions {
+        name?: string;
+    }
     export class CheckBoxElView extends InputElView<HTMLInputElement> {
         private _checked;
-        constructor(chk: HTMLInputElement, options?: IViewOptions);
+        private _hidden;
+        constructor(chk: HTMLInputElement, options?: ICheckBoxViewOptions);
+        dispose(): void;
         handle_change(e: Event): boolean;
         protected _updateState(): void;
         protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
@@ -1810,9 +1815,14 @@ declare module "jriapp_ui/checkbox3" {
     import { IValidationInfo } from "jriapp_shared";
     import { IViewOptions } from "jriapp/int";
     import { InputElView } from "jriapp_ui/input";
+    export interface ICheckBoxViewOptions extends IViewOptions {
+        name?: string;
+    }
     export class CheckBoxThreeStateElView extends InputElView<HTMLInputElement> {
         private _checked;
-        constructor(chk: HTMLInputElement, options?: IViewOptions);
+        private _hidden;
+        constructor(chk: HTMLInputElement, options?: ICheckBoxViewOptions);
+        dispose(): void;
         handle_change(e: Event): boolean;
         protected _updateState(): void;
         protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
@@ -1910,5 +1920,5 @@ declare module "jriapp_ui" {
     export { DblClick } from "jriapp_ui/utils/dblclick";
     export { JQueryUtils, $ } from "jriapp_ui/utils/jquery";
     export * from "jriapp_ui/content/all";
-    export const VERSION = "3.0.2";
+    export const VERSION = "3.0.3";
 }

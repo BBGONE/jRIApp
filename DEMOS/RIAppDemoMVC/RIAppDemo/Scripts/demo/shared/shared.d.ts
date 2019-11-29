@@ -291,10 +291,8 @@ declare module "dropdownbox" {
         private _selected;
         private _selectedCount;
         private _btn;
-        private _name;
         private _hidden;
         constructor(el: HTMLInputElement, options: IDropDownBoxConstructorOptions);
-        viewMounted(): void;
         templateLoading(template: RIAPP.ITemplate): void;
         templateLoaded(template: RIAPP.ITemplate, error?: any): void;
         templateUnLoading(template: RIAPP.ITemplate): void;

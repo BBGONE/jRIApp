@@ -1310,7 +1310,6 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
             _this._valuePath = options.valuePath;
             _this._textPath = options.textPath;
             _this._dataSource = options.dataSource;
-            _this._name = options.name || null;
             _this._selected = {};
             _this._selectedCount = 0;
             _this._selectedClone = {};
@@ -1357,18 +1356,16 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
                 e.stopPropagation();
                 self._onClick();
             });
-            if (!!_this._name) {
+            if (!!options.name) {
                 var hidden = dom.document.createElement("input");
                 hidden.type = "hidden";
-                hidden.name = _this._name;
-                $el.after(hidden);
+                hidden.name = options.name;
+                dom.insertAfter(hidden, el);
                 _this._hidden = hidden;
             }
+            RIAPP.Utils.queue.enque(function () { return _this._updateSelection(); });
             return _this;
         }
-        DropDownBoxElView.prototype.viewMounted = function () {
-            this._updateSelection();
-        };
         DropDownBoxElView.prototype.templateLoading = function (template) {
         };
         DropDownBoxElView.prototype.templateLoaded = function (template, error) {
@@ -1554,7 +1551,8 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
             }
             $(this._btn).remove();
             if (!!this._hidden) {
-                $(this._hidden).remove();
+                dom.removeNode(this._hidden);
+                this._hidden = null;
             }
             this._selected = {};
             this._selectedCount = 0;

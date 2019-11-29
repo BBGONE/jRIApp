@@ -52,8 +52,7 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
     private _selected: RIAPP.IIndexer<{ val: any; text: string; }>;
     private _selectedCount: number;
     private _btn: HTMLButtonElement;
-    private _name: string | null;
-    private _hidden: HTMLInputElement | null;
+    private _hidden: HTMLInputElement | null | undefined;
 
     constructor(el: HTMLInputElement, options: IDropDownBoxConstructorOptions) {
         super(el, options);
@@ -67,7 +66,6 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
         this._valuePath = options.valuePath;
         this._textPath = options.textPath;
         this._dataSource = options.dataSource;
-        this._name = options.name || null;
 
         this._selected = {};
         this._selectedCount = 0;
@@ -120,16 +118,14 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
             self._onClick();
         });
 
-        if (!!this._name) {
+        if (!!options.name) {
             const hidden = dom.document.createElement("input");
             hidden.type = "hidden";
-            hidden.name = this._name;
-            $el.after(hidden);
+            hidden.name = options.name;
+            dom.insertAfter(hidden, el);
             this._hidden = hidden;
         }
-    }
-    viewMounted(): void {
-        this._updateSelection();
+        RIAPP.Utils.queue.enque(() => this._updateSelection());
     }
     templateLoading(template: RIAPP.ITemplate): void {
         //noop
@@ -330,7 +326,8 @@ export class DropDownBoxElView extends uiMOD.InputElView implements RIAPP.ITempl
         }
         $(this._btn).remove();
         if (!!this._hidden) {
-            $(this._hidden).remove();
+            dom.removeNode(this._hidden);
+            this._hidden = null;
         }
         this._selected = {};
         this._selectedCount = 0;
