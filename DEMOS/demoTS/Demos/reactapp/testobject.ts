@@ -10,7 +10,7 @@ const demoTabs: ITabContent[] = [{
     },
     content: {
         templateId: "tabContentTemplate1",
-        dataContext: { text: "content tab1", info: "this text is taken from info property", description: "<em>this is displayed in template</em>" }
+        dataContext: { text: "content tab1", info: "displayed in inside of template", description: "This is a new style <strong>templated</strong> React component incapsulated into an Element View" }
     }
 },
 {
@@ -24,7 +24,7 @@ const demoTabs: ITabContent[] = [{
                 text: "content tab2", otherData: {
                     subj: "Cloud Computing / Networking & Server",
                     title: "Pro PowerShell for Amazon Web Services, 2nd Edition"
-                }, description: "<em>this is displayed in template</em>" }
+                }, description: "you can also use objects derived from a BaseObject or a CollectionItem instead of plain objects: <em>in this case properties will be editable through databinding</em>" }
     }
 },
 {
@@ -37,7 +37,7 @@ const demoTabs: ITabContent[] = [{
         dataContext: {
             text: "content tab3", details: {
                 cover: "Paperback", pages: 616
-            }, description: "<em>this is displayed in template</em>"
+            }, description: "<em>and again - this is displayed in template</em>"
         }
     }
 }];
@@ -52,7 +52,7 @@ export class TestObject extends RIAPP.ViewModel<RIAPP.Application> {
 
     constructor(app: RIAPP.Application) {
         super(app);
-        this._testValue = "0";
+        this._testValue = "";
         this._page = 1;
         this._rows = demoRows;
         this._reverseCommand = new RIAPP.Command(() => {

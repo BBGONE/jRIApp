@@ -44,7 +44,7 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
             },
             content: {
                 templateId: "tabContentTemplate1",
-                dataContext: { text: "content tab1", info: "this text is taken from info property", description: "<em>this is displayed in template</em>" }
+                dataContext: { text: "content tab1", info: "displayed in inside of template", description: "This is a new style <strong>templated</strong> React component incapsulated into an Element View" }
             }
         },
         {
@@ -58,7 +58,7 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
                     text: "content tab2", otherData: {
                         subj: "Cloud Computing / Networking & Server",
                         title: "Pro PowerShell for Amazon Web Services, 2nd Edition"
-                    }, description: "<em>this is displayed in template</em>"
+                    }, description: "you can also use objects derived from a BaseObject or a CollectionItem instead of plain objects: <em>in this case properties will be editable through databinding</em>"
                 }
             }
         },
@@ -72,7 +72,7 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
                 dataContext: {
                     text: "content tab3", details: {
                         cover: "Paperback", pages: 616
-                    }, description: "<em>this is displayed in template</em>"
+                    }, description: "<em>and again - this is displayed in template</em>"
                 }
             }
         }];
@@ -80,7 +80,7 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
         __extends(TestObject, _super);
         function TestObject(app) {
             var _this = _super.call(this, app) || this;
-            _this._testValue = "0";
+            _this._testValue = "";
             _this._page = 1;
             _this._rows = demoRows;
             _this._reverseCommand = new RIAPP.Command(function () {
@@ -168,11 +168,16 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
 define("app", ["require", "exports", "jriapp", "testobject"], function (require, exports, RIAPP, testobject_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var tabs = ["Description", "Reviews"];
+    var tabs2 = ["tab1", "tab2", "tab3"];
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
             var _this = _super.call(this, options) || this;
             _this._testObj = null;
+            _this._interval = null;
+            _this._activeTabName = undefined;
+            _this._activeTabName2 = undefined;
             return _this;
         }
         DemoApplication.prototype.onStartUp = function () {
@@ -183,13 +188,49 @@ define("app", ["require", "exports", "jriapp", "testobject"], function (require,
                 args.isHandled = true;
                 alert(args.error.message);
             });
+            this._interval = setInterval(function () {
+                if (self.activeTabName === tabs[0])
+                    self.activeTabName = tabs[1];
+                else
+                    self.activeTabName = tabs[0];
+            }, 10000);
             _super.prototype.onStartUp.call(this);
         };
         DemoApplication.prototype.dispose = function () {
             if (this.getIsDisposed())
                 return;
+            if (!!this._interval) {
+                clearInterval(this._interval);
+                this._interval = null;
+            }
             this.setDisposing();
         };
+        Object.defineProperty(DemoApplication.prototype, "activeTabName", {
+            get: function () {
+                return this._activeTabName;
+            },
+            set: function (v) {
+                if (this._activeTabName !== v) {
+                    this._activeTabName = v;
+                    this.objEvents.raiseProp("activeTabName");
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DemoApplication.prototype, "activeTabName2", {
+            get: function () {
+                return this._activeTabName2;
+            },
+            set: function (v) {
+                if (this._activeTabName2 !== v) {
+                    this._activeTabName2 = v;
+                    this.objEvents.raiseProp("activeTabName2");
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(DemoApplication.prototype, "testObj", {
             get: function () {
                 return this._testObj;
@@ -311,7 +352,6 @@ define("views/simple", ["require", "exports", "react", "views/react", "actions/c
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var spacerStyle = {
-        display: 'inline-block',
         marginLeft: '15px',
         marginRight: '5px'
     };
@@ -328,7 +368,7 @@ define("views/simple", ["require", "exports", "react", "views/react", "actions/c
         }
     };
     var reducer = function (initialState) { return function (state, action) { return _reducer(initialState, state, action); }; };
-    var defaults = { value: "0", title: "" };
+    var defaults = { value: "", title: "" };
     var SimpleElView = (function (_super) {
         __extends(SimpleElView, _super);
         function SimpleElView(el, options) {
@@ -351,12 +391,13 @@ define("views/simple", ["require", "exports", "react", "views/react", "actions/c
         };
         SimpleElView.prototype.getMarkup = function () {
             var _this = this;
-            var model = this.state, styles = { spacer: spacerStyle, span: spanStyle };
-            return (React.createElement("fieldset", null,
-                React.createElement("legend", null, model.title ? model.title : 'This is a React component'),
-                React.createElement("input", { value: model.value, onChange: function (e) { _this.value = e.target.value; } }),
-                React.createElement("span", { style: styles.spacer }, "You entered: "),
-                React.createElement("span", { style: styles.span }, model.value)));
+            var _a = this.state, title = _a.title, value = _a.value;
+            return (React.createElement(React.Fragment, null,
+                React.createElement("label", { className: "d-block" }, title ? title : 'This is a React component'),
+                React.createElement("input", { className: "form-control form-control-sm d-inline-block", style: { width: '150px' }, value: value, onChange: function (e) { _this.value = e.target.value; } }),
+                React.createElement("div", { className: "d-inline-block", style: spacerStyle },
+                    React.createElement("span", { className: "mr-2" }, "You entered: "),
+                    React.createElement("span", { className: "text-success", style: spanStyle }, value))));
         };
         Object.defineProperty(SimpleElView.prototype, "value", {
             get: function () {
@@ -925,7 +966,141 @@ define("views/tabs", ["require", "exports", "react", "views/react", "actions/com
     }
     exports.initModule = initModule;
 });
-define("main", ["require", "exports", "jriapp", "app", "views/simple", "views/pager", "views/templated", "views/tabs"], function (require, exports, RIAPP, app_1, simple_1, pager_2, templated_1, tabs_2) {
+define("components/tabs-old2", ["require", "exports", "react", "react"], function (require, exports, React, react_5) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var TabsContext = react_5.createContext({ activeContent: null, activeName: null, setActiveContent: null });
+    var Tab = function (props) {
+        var propsRef = react_5.useRef(null);
+        var context = react_5.useContext(TabsContext);
+        var activeName = context.activeName;
+        var name = props.name, children = props.children, heading = props.heading;
+        react_5.useEffect(function () {
+            propsRef.current = props;
+            if (!context.activeContent && name === context.activeName) {
+                context.setActiveContent(name, children);
+            }
+        });
+        var handleTabClick = react_5.useCallback(function (e) {
+            var _a = propsRef.current, name = _a.name, children = _a.children;
+            context.setActiveContent(name, children);
+            if (!!context.handleTabClick) {
+                context.handleTabClick(name);
+            }
+        }, [context]);
+        return (React.createElement("div", { onClick: handleTabClick, className: name === activeName ? "demo-tab active" : "demo-tab" }, heading()));
+    };
+    var Tabs = (function (_super) {
+        __extends(Tabs, _super);
+        function Tabs(props) {
+            var _this = _super.call(this, props) || this;
+            _this._setActiveContent = function (activeName, content) {
+                _this.setState({ activeContent: content, activeName: activeName });
+            };
+            _this._handleTabClick = function (name) {
+                if (!!_this.props.onClick) {
+                    _this.props.onClick(name);
+                }
+            };
+            _this.state = {
+                activeName: null,
+                activeContent: null
+            };
+            return _this;
+        }
+        Tabs.getDerivedStateFromProps = function (props, state) {
+            if (props.activeName !== state.activeName) {
+                return { activeContent: null };
+            }
+            else {
+                return null;
+            }
+        };
+        Tabs.prototype.render = function () {
+            return (React.createElement(TabsContext.Provider, { value: {
+                    activeContent: this.state.activeContent,
+                    activeName: this.props.activeName,
+                    handleTabClick: this._handleTabClick,
+                    setActiveContent: this._setActiveContent
+                } },
+                React.createElement("div", { className: "demo-tabs" }, this.props.children),
+                React.createElement("div", { className: "demo-tabs-content" }, this.state && this.state.activeContent)));
+        };
+        Tabs.Tab = Tab;
+        return Tabs;
+    }(React.Component));
+    exports.default = Tabs;
+});
+define("views/tabs-old", ["require", "exports", "react", "views/react", "actions/common", "components/tabs-old2"], function (require, exports, React, react_6, common_6, tabs_old2_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var _reducer = function (initialState, state, action) {
+        var _a;
+        switch (action.type) {
+            case "CHANGE_PROP":
+                return __assign(__assign({}, state), (_a = {}, _a[action.name] = action.value, _a));
+            default:
+                return state || initialState;
+        }
+    };
+    var reducer = function (initialState) { return function (state, action) { return _reducer(initialState, state, action); }; };
+    var defaults = { activeTabName: "" };
+    var TabsElView = (function (_super) {
+        __extends(TabsElView, _super);
+        function TabsElView(el, options) {
+            var _this = this;
+            var initialState = react_6.mergeOptions(options, defaults);
+            _this = _super.call(this, el, options, reducer(initialState)) || this;
+            return _this;
+        }
+        TabsElView.prototype.storeChanged = function (current, previous) {
+            var shouldRerender = false;
+            if (current.activeTabName !== previous.activeTabName) {
+                this.objEvents.raiseProp("activeTabName");
+                shouldRerender = true;
+            }
+            return shouldRerender;
+        };
+        TabsElView.prototype.getMarkup = function () {
+            var _this = this;
+            return (React.createElement(tabs_old2_1.default, { onClick: function (name) { _this.activeTabName = name; }, activeName: this.activeTabName },
+                React.createElement(tabs_old2_1.default.Tab, { name: "Description", heading: function () { return "Description"; } },
+                    React.createElement("p", null,
+                        "This is a ",
+                        React.createElement("b", null, "traditional"),
+                        " React component without JRIApp templates."),
+                    React.createElement("p", null,
+                        "It is incapsulated into an ",
+                        React.createElement("b", null, "Element View"),
+                        " to expose properties for databinding.")),
+                React.createElement(tabs_old2_1.default.Tab, { name: "Reviews", heading: function () { return "Reviews"; } },
+                    React.createElement("p", null,
+                        "Look at its code - it's very complex in comparison with ",
+                        React.createElement("b", null, "the new templated"),
+                        " one and it has difficult to follow logic inside react component implementation"))));
+        };
+        Object.defineProperty(TabsElView.prototype, "activeTabName", {
+            get: function () {
+                return this.state.activeTabName;
+            },
+            set: function (v) {
+                this.dispatch(common_6.propertyChanged("activeTabName", v));
+            },
+            enumerable: true,
+            configurable: true
+        });
+        TabsElView.prototype.toString = function () {
+            return "TabsElView";
+        };
+        return TabsElView;
+    }(react_6.ReactElView));
+    exports.TabsElView = TabsElView;
+    function initModule(app) {
+        app.registerElView("tabs2view", TabsElView);
+    }
+    exports.initModule = initModule;
+});
+define("main", ["require", "exports", "jriapp", "app", "views/simple", "views/pager", "views/templated", "views/tabs", "views/tabs-old"], function (require, exports, RIAPP, app_1, simple_1, pager_2, templated_1, tabs_2, tabs_old_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
@@ -940,10 +1115,94 @@ define("main", ["require", "exports", "jriapp", "app", "views/simple", "views/pa
             "templatedview": templated_1.initModule,
             "pagerview": pager_2.initModule,
             "tabsview": tabs_2.initModule,
+            "tabs2view": tabs_old_1.initModule,
         });
         return bootstrap.startApp(function () {
             return new app_1.DemoApplication(options);
         });
     }
     exports.start = start;
+});
+define("components/tabs-old1", ["require", "exports", "react"], function (require, exports, React) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var TabsContext = React.createContext({ activeContent: null, activeName: null, setActiveContent: null });
+    var Tab = (function (_super) {
+        __extends(Tab, _super);
+        function Tab(props) {
+            return _super.call(this, props) || this;
+        }
+        Tab.prototype._updateTabsContent = function () {
+            if (!this.props.tabsContext) {
+                throw new Error("tabsContext is unavailable");
+            }
+            var context = this.props.tabsContext;
+            if (!context.activeContent && this.props.name === context.activeName) {
+                context.setActiveContent(this.props.name, this.props.children);
+            }
+        };
+        Tab.prototype.componentDidMount = function () {
+            this._updateTabsContent();
+        };
+        Tab.prototype.componentDidUpdate = function () {
+            this._updateTabsContent();
+        };
+        Tab.prototype.render = function () {
+            var _this = this;
+            var context = this.props.tabsContext;
+            var activeName = context.activeName;
+            var handleTabClick = function (e) {
+                context.setActiveContent(_this.props.name, _this.props.children);
+                if (!!context.handleTabClick) {
+                    context.handleTabClick(_this.props.name);
+                }
+            };
+            return (React.createElement("div", { onClick: handleTabClick, className: this.props.name === activeName ? "demo-tab active" : "demo-tab" }, this.props.heading()));
+        };
+        return Tab;
+    }(React.Component));
+    var withTabsContext = function (TabElement) {
+        var Res = function (props) { return (React.createElement(TabsContext.Consumer, null, function (context) { return React.createElement(TabElement, __assign({ tabsContext: context }, props)); })); };
+        return Res;
+    };
+    var Tabs = (function (_super) {
+        __extends(Tabs, _super);
+        function Tabs(props) {
+            var _this = _super.call(this, props) || this;
+            _this._setActiveContent = function (activeName, content) {
+                _this.setState({ activeContent: content, activeName: activeName });
+            };
+            _this._handleTabClick = function (name) {
+                if (!!_this.props.onClick) {
+                    _this.props.onClick(name);
+                }
+            };
+            _this.state = {
+                activeName: null,
+                activeContent: null
+            };
+            return _this;
+        }
+        Tabs.getDerivedStateFromProps = function (props, state) {
+            if (props.activeName !== state.activeName) {
+                return { activeContent: null };
+            }
+            else {
+                return null;
+            }
+        };
+        Tabs.prototype.render = function () {
+            return (React.createElement(TabsContext.Provider, { value: {
+                    activeContent: this.state.activeContent,
+                    activeName: this.props.activeName,
+                    handleTabClick: this._handleTabClick,
+                    setActiveContent: this._setActiveContent
+                } },
+                React.createElement("div", { className: "demo-tabs" }, this.props.children),
+                React.createElement("div", { className: "demo-tabs-content" }, this.state && this.state.activeContent)));
+        };
+        Tabs.Tab = withTabsContext(Tab);
+        return Tabs;
+    }(React.Component));
+    exports.default = Tabs;
 });

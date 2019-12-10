@@ -15,7 +15,6 @@ export interface ISimpleViewOptions extends RIAPP.IViewOptions
 }
 
 const spacerStyle = {
-    display: 'inline-block',
     marginLeft: '15px',
     marginRight: '5px'
 };
@@ -37,7 +36,7 @@ const _reducer = (initialState: IState, state: IState, action: Redux.Action) => 
     }
 };
 const reducer = (initialState: IState) => (state: IState, action: Redux.Action) => _reducer(initialState, state, action);
-const defaults = { value: "0", title: "" } as IState;
+const defaults = { value: "", title: "" } as IState;
 
 /**
   Demo element view which renders a Simple React component
@@ -65,16 +64,17 @@ export class SimpleElView extends ReactElView<IState> {
     }
     // override
     getMarkup(): JSX.Element {
-        const model: IState = this.state,
-            styles = { spacer: spacerStyle, span: spanStyle };
+        const { title, value } = this.state;
 
         return (
-            <fieldset>
-                <legend>{model.title ? model.title : 'This is a React component'}</legend>
-                <input value={model.value} onChange={(e) => { this.value = e.target.value; }} />
-                <span style={styles.spacer}>You entered: </span>
-                <span style={styles.span}>{model.value}</span>
-            </fieldset>
+            <React.Fragment>
+                <label className="d-block" >{title ? title : 'This is a React component'}</label>
+                <input className="form-control form-control-sm d-inline-block" style={{ width: '150px' }} value={value} onChange={(e) => { this.value = e.target.value; }} />
+                <div className="d-inline-block" style={spacerStyle}>
+                    <span className="mr-2">You entered: </span>
+                    <span className="text-success" style={spanStyle}>{value}</span>
+                </div>
+            </React.Fragment> 
         );
     }
     get value(): string {
