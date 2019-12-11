@@ -8,6 +8,19 @@
     "outFile": "../built/jriapp.js",
     "declaration": true,
     "sourceMap": false,
-    "noFallthroughCasesInSwitch": true
-  }
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true
+  },
+  "files": [
+    "jriapp.ts"
+  ],
+  "include": [
+    "../built/jriapp_shared.d.ts",
+    "global.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

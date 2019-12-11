@@ -1,13 +1,12 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils, BaseObject, IVoidPromise, IBaseObject, Debounce } from "jriapp_shared";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { Utils, IVoidPromise, Debounce } from "jriapp_shared";
 import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { createTemplate } from "jriapp/template";
 import { bootstrap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
-    sys = utils.sys, dom = DomUtils, win = dom.window;
+const utils = Utils, sys = utils.sys, dom = DomUtils;
 
 export interface IDynaContentAnimation {
     beforeShow(template: ITemplate, isFirstShow: boolean): void;
@@ -22,13 +21,6 @@ export interface IDynaContentOptions extends IViewOptions {
     animate?: string;
 }
 
-const PROP_NAME = {
-    template: "template",
-    templateID: "templateID",
-    dataContext: "dataContext",
-    animation: "animation"
-};
-
 export class DynaContentElView extends BaseElView implements ITemplateEvents {
     private _dataContext: any;
     private _prevTemplateID: string;
@@ -38,8 +30,8 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
     private _tDebounce: Debounce;
     private _dsDebounce: Debounce;
 
-    constructor(options: IDynaContentOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: IDynaContentOptions) {
+        super(el, options);
         this._dataContext = null;
         this._prevTemplateID = null;
         this._templateID = null;
@@ -49,8 +41,9 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         this._dsDebounce = new Debounce();
     }
     templateLoading(template: ITemplate): void {
-        if (this.getIsDestroyCalled())
+        if (this.getIsStateDirty()) {
             return;
+        }
         const isFirstShow = !this._prevTemplateID,
             canShow = !!this._animation && (this._animation.isAnimateFirstShow || (!this._animation.isAnimateFirstShow && !isFirstShow));
         if (canShow) {
@@ -58,8 +51,9 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         }
     }
     templateLoaded(template: ITemplate, error?: any): void {
-        if (this.getIsDestroyCalled())
+        if (this.getIsStateDirty()) {
             return;
+        }
         if (!dom.isContained(template.el, this.el)) {
             this.el.appendChild(template.el);
         }
@@ -71,73 +65,78 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
         }
     }
     templateUnLoading(template: ITemplate): void {
-        //noop
+        // noop
     }
     private _templateChanging(oldName: string, newName: string) {
         const self = this;
         try {
             if (!newName && !!self._template) {
-                if (!!self._animation && !!self._template.loadedElem) {
+                if (!!self._animation && self._template.isLoaded) {
                     self._animation.stop();
                     self._animation.beforeHide(self._template);
-                    self._animation.hide(self._template).always(() => {
-                        if (self.getIsDestroyCalled())
+                    self._animation.hide(self._template).finally(() => {
+                        if (self.getIsStateDirty()) {
                             return;
-                        self._template.destroy();
+                        }
+                        self._template.dispose();
                         self._template = null;
-                        self.raisePropertyChanged(PROP_NAME.template);
+                        self.objEvents.raiseProp("template");
 
                     });
-                }
-                else {
-                    self._template.destroy();
+                } else {
+                    self._template.dispose();
                     self._template = null;
-                    self.raisePropertyChanged(PROP_NAME.template);
+                    self.objEvents.raiseProp("template");
                 }
                 return;
             }
 
             if (!self._template) {
-                self._template = createTemplate(self._dataContext, self);
+                self._template = createTemplate({
+                    parentEl: null,
+                    dataContext: self._dataContext,
+                    templEvents: self
+                });
                 self._template.templateID = newName;
-                self.raisePropertyChanged(PROP_NAME.template);
+                self.objEvents.raiseProp("template");
                 return;
             }
-            if (!!self._animation && !!self._template.loadedElem) {
+            if (!!self._animation && self._template.isLoaded) {
                 self._animation.stop();
                 self._animation.beforeHide(self._template);
-                self._animation.hide(self._template).always(() => {
-                    if (self.getIsDestroyCalled())
+                self._animation.hide(self._template).finally(() => {
+                    if (self.getIsStateDirty()) {
                         return;
+                    }
                     self._template.templateID = newName;
                 });
-            }
-            else {
+            } else {
                 self._template.templateID = newName;
             }
         } catch (ex) {
             utils.err.reThrow(ex, self.handleError(ex, self));
         }
     }
-    destroy() {
-        if (this._isDestroyed)
-            return
-        this._isDestroyCalled = true;
-        this._tDebounce.destroy();
-        this._dsDebounce.destroy();
+    dispose() {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this._tDebounce.dispose();
+        this._dsDebounce.dispose();
         const a = this._animation;
         this._animation = null;
         const t = this._template;
         this._template = null;
 
         if (sys.isBaseObj(a)) {
-            (<IBaseObject><any>a).destroy();
+            a.dispose();
         }
         if (!!t) {
-            t.destroy();
+            t.dispose();
         }
         this._dataContext = null;
-        super.destroy();
+        super.dispose();
     }
     get template() { return this._template; }
     get templateID() {
@@ -151,7 +150,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
             this._tDebounce.enque(() => {
                 self._templateChanging(old, v);
             });
-            this.raisePropertyChanged(PROP_NAME.templateID);
+            this.objEvents.raiseProp("templateID");
         }
     }
     get dataContext() { return this._dataContext; }
@@ -164,14 +163,14 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
                     this._template.dataContext = ds;
                 }
             });
-            this.raisePropertyChanged(PROP_NAME.dataContext);
+            this.objEvents.raiseProp("dataContext");
         }
     }
     get animation() { return this._animation; }
     set animation(v) {
         if (this._animation !== v) {
             this._animation = v;
-            this.raisePropertyChanged(PROP_NAME.animation);
+            this.objEvents.raiseProp("animation");
         }
     }
 }

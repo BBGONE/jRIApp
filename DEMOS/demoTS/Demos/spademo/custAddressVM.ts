@@ -1,14 +1,10 @@
 ﻿import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 
-import * as COMMON from "common";
 import * as DEMODB from "./domainModel";
 import { DemoApplication } from "./app";
 import { CustomerVM } from "./customerVM";
 import { AddAddressVM } from "./addAddressVM";
-
-var utils = RIAPP.Utils, $ = RIAPP.$;
 
 export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
     private _customerVM: CustomerVM;
@@ -20,30 +16,30 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(customerVM: CustomerVM) {
         super(customerVM.app);
-        var self = this;
+        const self = this;
         this._customerVM = customerVM;
         this._addAddressVM = null;
         this._currentCustomer = self._customerVM.currentItem;
         this._addressesDb = this.dbSets.Address;
         this._custAdressDb = this.dbSets.CustomerAddress;
 
-        this._custAdressDb.addOnItemDeleting(function (sender, args) {
+        this._custAdressDb.addOnItemDeleting(function (_s, args) {
             if (!confirm('Are you sure that you want to unlink Address from this customer?'))
                 args.isCancel = true;
         }, self.uniqueID);
 
-        this._custAdressDb.addOnBeginEdit(function (sender, args) {
-            var item = args.item;
+        this._custAdressDb.addOnBeginEdit(function (_s, args) {
+            let item = args.item;
             //start editing Address entity, when CustomerAddress begins editing
             //p.s.- Address is navigation property
-            var address = item.Address;
+            let address = item.Address;
             if (!!address)
                 address._aspect.beginEdit();
         }, self.uniqueID);
 
-        this._custAdressDb.addOnEndEdit(function (sender, args) {
-            var item = args.item;
-            var address = item.Address;
+        this._custAdressDb.addOnEndEdit(function (_s, args) {
+            let item = args.item;
+            let address = item.Address;
             if (!args.isCanceled) {
                 if (!!address)
                     address._aspect.endEdit();
@@ -54,7 +50,7 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
             }
         }, self.uniqueID);
 
-        this._addressesDb.addOnItemDeleting(function (sender, args) {
+        this._addressesDb.addOnItemDeleting(function (_s, args) {
             if (!confirm('Are you sure that you want to delete the Customer\'s Address?'))
                 args.isCancel = true;
         }, self.uniqueID);
@@ -74,7 +70,7 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
                 fn_itemsProvider: function (ds) {
                     if (!self._currentCustomer)
                         return [];
-                    var custAdrs = self._currentCustomer.CustomerAddresses;
+                    let custAdrs = self._currentCustomer.CustomerAddresses;
                     return custAdrs.map(function (m) {
                         return m.Address;
                     }).filter(function (address) {
@@ -85,21 +81,21 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
         /*
         this._addressesView.addOnEndEdit((s, a) => {
             self.dbContext.submitChanges();
-        }, self.uniqueID, self, false);
+        }, self.uniqueID, false);
         */
         this._custAdressView.addOnViewRefreshed(function (s, a) {
             self._addressesView.refresh();
         }, self.uniqueID);
 
-        this._customerVM.addOnPropertyChange('currentItem', function (sender, args) {
+        this._customerVM.objEvents.onProp('currentItem', function (_s, args) {
             self._currentCustomer = self._customerVM.currentItem;
-            self.raisePropertyChanged('currentCustomer');
+            self.objEvents.raiseProp('currentCustomer');
         }, self.uniqueID);
 
     }
     //async load, returns promise
     _loadAddresses(addressIDs: number[], isClearTable: boolean) {
-        var query = this._addressesDb.createReadAddressByIdsQuery({ addressIDs: addressIDs });
+        let query = this._addressesDb.createReadAddressByIdsQuery({ addressIDs: addressIDs });
         //if true, we clear all previous data in the TDbSet
         query.isClearPrevData = isClearTable;
         //returns promise
@@ -107,14 +103,14 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
     }
     _addNewAddress() {
         //use the TDataView, not TDbSet
-        var adr = this.addressesView.addNew();
+        let adr = this.addressesView.addNew();
         return adr;
     }
     _addNewCustAddress(address: DEMODB.Address) {
-        var cust = this.currentCustomer;
+        let cust = this.currentCustomer;
         //console.log("ADDED: "+ address.CountryRegion);
         //to add item here, use the TDataView, not TDbSet
-        var ca = this.custAdressView.addNew();
+        let ca = this.custAdressView.addNew();
         ca.CustomerID = cust.CustomerID;
         //this is default, can edit later
         ca.AddressType = "Main Office";
@@ -125,38 +121,38 @@ export class CustomerAddressVM extends RIAPP.ViewModel<DemoApplication> {
         return ca;
     }
     load(customers: DEMODB.Customer[]) {
-        var self = this, custArr = customers || [];
+        let custArr = customers || [];
 
         //customerIDs for all loaded customers entities (for current page only, not which in cache if query.loadPageCount>1)
-        var custIDs = custArr.map(function (item) {
+        let custIDs = custArr.map(function (item) {
             return item.CustomerID;
         });
 
-        var query = this._custAdressDb.createReadAddressForCustomersQuery({ custIDs: custIDs });
+        let query = this._custAdressDb.createReadAddressForCustomersQuery({ custIDs: custIDs });
         query.load();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
 
         if (!!this._addressesDb) {
-            this._addressesDb.removeNSHandlers(this.uniqueID);
+            this._addressesDb.objEvents.offNS(this.uniqueID);
         }
         if (!!this._custAdressDb) {
-            this._custAdressDb.removeNSHandlers(this.uniqueID);
+            this._custAdressDb.objEvents.offNS(this.uniqueID);
         }
         if (!!this._customerVM) {
-            this._customerVM.removeNSHandlers(this.uniqueID);
+            this._customerVM.objEvents.offNS(this.uniqueID);
         }
         if (!!this._custAdressView) {
-            this._custAdressView.removeNSHandlers(this.uniqueID);
+            this._custAdressView.objEvents.offNS(this.uniqueID);
         }
         if (this._addAddressVM) {
-            this._addAddressVM.destroy();
+            this._addAddressVM.dispose();
             this._addAddressVM = null;
         }
-        super.destroy();
+        super.dispose();
     }
     private get _custAdressView() { return this._customerVM.custAdressView; }
 

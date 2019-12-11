@@ -1,98 +1,88 @@
-﻿@{
+﻿@using RIAPP.DataService.Mvc.Utils
+@{
     Layout = "~/Views/Shared/_LayoutDemo.cshtml";
 }
 @{
     ViewBag.Title = "Data Binding Demo";
 }
 
-<style type="text/css">
-    #demoHeader label { color: Blue; }
+@section CssImport
+{
+    <style type="text/css">
 
-    #demoContent {
-        height: 600px;
-        overflow: visible;
-        position: relative;
-        vertical-align: top;
-    }
+        #demoContent {
+            height: 600px;
+            overflow: visible;
+            position: relative;
+            vertical-align: top;
+        }
 
-    #demoContent > fieldset { border-radius: 5px; }
+        .leftOffset {
+            margin: 5px 5px 5px 0px;
+        }
 
-    #demoContent fieldset > legend {
-        color: Blue;
-        font-weight: bold;
-    }
+        .testBtn {
+            min-width: 120px;
+            min-height: 30px;
+        }
 
-    #demoContent .radioItem {
-        display: inline-block;
-        margin: 4px;
-        padding: 4px;
-    }
+        a.testBtn.testClass {
+            background-color: darkgray;
+            background-image: none;
+        }
 
-    .stackPanelItem { width: 170px; }
+        label {
+            color: blue;
+        }
+    </style>
+    <link href="@Url.Content("~/Scripts/jquery/external/MonthPicker.css",true)" rel="stylesheet" type="text/css" />
+}
 
-    .stackPanelItem fieldset { border-radius: 5px; }
+@section JSStaticImport
+{
+    <script src="@Url.Content("~/Scripts/jquery/external/MonthPicker.js", true)" type="text/javascript"></script>
+}
 
-    .stackPanelItem fieldset legend {
-        color: Blue;
-        font-weight: bold;
-    }
-
-    .leftOffset{
-        margin: 5px 5px 5px 0px;
-    }
-
-    .testBtn{
-        min-width:120px; 
-        min-height:30px;
-    }
-
-    a.testBtn.testClass {
-        background-color: darkgray;
-        background-image: none;
-    }
-
-    label {
-        color: blue;
-    }
-</style>
-
-<script type="text/javascript">
-    require(["jriapp", "bindingsDemo"],
-        function(RIAPP, DEMO) {
-            //create and start application here
-            RIAPP.bootstrap.startApp(function() {
+@section JSDynamicImport {
+    <script type="text/javascript">
+        require(["jriapp", "bindingsDemo"],
+            function (RIAPP, DEMO) {
+                //create and start application here
+                RIAPP.bootstrap.startApp(function () {
                     return new DEMO.DemoApplication(DEMO.appOptions);
                 },
-                function(app) {
-                    //just an example of how to create the data binding in code
-                    //store the reference to the Binding's instance - in case we need to destroy it when we want
-                    //BUT - even without storing the reference it can not be removed by garbage collector, because it subscribed to property changes
-                    //in the TestObject (and TestObject's instance hold references to the subscriber)
-                    //P.S.- we really don't need to use data binding here, because we can do the same logic inside the TestObject's code
-                    app.UC.createdBinding = app.bind({
-                        sourcePath: 'testProperty1',
-                        targetPath: 'testProperty2',
-                        source: app.testObject,
-                        mode: 'OneWay',
-                        target: app.testObject,
-                        converter: app.getConverter('uppercaseConverter'),
-                        converterParam: null
+                    function (app) {
+                        //just an example of how to create the data binding in code
+                        //store the reference to the Binding's instance - in case we need to destroy it when we want
+                        //BUT - even without storing the reference it can not be removed by garbage collector, because it subscribed to property changes
+                        //in the TestObject (and TestObject's instance hold references to the subscriber)
+                        //P.S.- we really don't need to use data binding here, because we can do the same logic inside the TestObject's code
+                        //but can be used for testing purposes
+                        app.UC.createdBinding = app.bind({
+                            sourcePath: 'testProperty1',
+                            targetPath: 'testProperty2',
+                            source: app.testObject,
+                            mode: 'OneWay',
+                            target: app.testObject,
+                            converter: app.getConverter('uppercaseConverter'),
+                            param: null
+                        });
+                    }).then(function () {
+                        $("#demoContent").animate({ opacity: 1 }, 1000);
                     });
-                }).then(function () {
-                    $("#demoContent").animate({ opacity: 1 }, 1000);
-                });
-        });
+            });
 
-    $(document).ready(function ($) {
-        var $examples = $('script[type="text/x-example"]');
-        $examples.each(function (index, el) {
-            var $script = $(this);
-            var $pre = $("<pre></pre>");
-            $pre.text($script.html());
-            $script.replaceWith($pre);
+        $(document).ready(function ($) {
+            var $examples = $('script[type="text/x-example"]');
+            $examples.each(function (index, el) {
+                var $script = $(this);
+                var $pre = $("<pre></pre>");
+                $pre.text($script.html());
+                $script.replaceWith($pre);
+            });
         });
-    });
-</script>
+    </script>
+}
 
 <h2 class="ex8">@ViewBag.Title</h2>
 
@@ -103,39 +93,48 @@
         <div class="leftOffset">
             <label>testProperty1 to the element view's value property with updateOnKeyUp option: </label>
             <!--without the updateOnKeyUp option, value is updated only when textbox loses the focus-->
-            <input type="text" data-bind="{this.value,to=testProperty1,mode=TwoWay,source=testObject}" data-view="options:{updateOnKeyUp=true}" style="width: 250px"/>
-            &nbsp;<span data-bind="{this.value,to=testProperty2,source=testObject}"></span>
+            <input type="text" data-bind="this.value,to=testProperty1,mode=TwoWay,source=testObject"
+                   data-view-options="updateOnKeyUp=true,tip='TwoWay databinding means that the data passes in both directions: from the source to the target and otherwise. The default is OneWay databinding (from source to target)'" style="width: 250px" />
+            &nbsp;<span data-bind="this.value,to=testProperty2,source=testObject"></span>
             <p>P.S. while editing the buttons below will get disabled when the text length < 4</p>
         </div>
         <div class="leftOffset">
             <label>testProperty3 bound using BackWay binding option and without updateOnKeyUp option: </label>
-            <input type="text" data-bind="{this.value,to=testProperty3,mode=BackWay,source=testObject}"  style="width: 250px" />
-            &nbsp;<span data-bind="{this.value,to=testProperty3,source=testObject}"></span>
+            <input type="text" data-bind="this.value,to=testProperty3,mode=BackWay,source=testObject"
+                   data-view-options="tip='BackWay databinding passes the data only from the target (the textbox here) to the source (testObject here). It does not listen for source changes.'"
+                   style="width: 250px" />
+            &nbsp;<span data-bind="this.value,to=testProperty3,source=testObject"></span>
         </div>
         <div class="leftOffset">
-            <label for="months">Months: </label><select size="1" style="width: 150px" 
-                                                    data-bind-1="{this.dataSource,to=months,source=testObject}"
-                                                    data-bind-2="{this.selectedValue,to=month,mode=TwoWay,source=testObject}" 
-                                                    data-view="options:{valuePath=key,textPath=val,emptyOptionText='Select month ...'}"></select>
-            &nbsp;<span data-bind="{this.value,to=month,source=testObject}"></span>
+            <label for="months">Months: </label><select size="1" style="width: 150px"
+                                                        data-bind-1="this.dataSource,to=months,source=testObject"
+                                                        data-bind-2="this.selectedValue,to=month,mode=TwoWay,source=testObject"
+                                                        data-view-options="valuePath=key,textPath=val,emptyOptionText='Select month ...'"></select>
+            &nbsp;<span data-bind="this.value,to=month,source=testObject"></span>&nbsp;&nbsp;
+            <input type="text" data-view="monthpicker" data-view-options="tip='the selected Month and Year is converted to the date type using a converter'"
+                   data-bind="this.value,to=yearmonth,mode=TwoWay,source=testObject,converter=yearmonthConverter,param='MM/YYYY'"
+                   style="width:150px;" placeholder="MM/YYYY" />
+            &nbsp;<span data-bind="this.value,to=yearmonth,source=testObject,converter=yearmonthConverter,param='MM/YYYY'"></span>
         </div>
         <div class="leftOffset">
-            <label>Formats: </label><select size="1" style="width: 220px" 
-                                            data-bind-1="{this.dataSource,to=formats,source=testObject}"
-                                            data-bind-2= "{this.selectedValue,to=format,mode=TwoWay,source=testObject}" 
-                                            data-bind-3= "{this.selectedItem,to=formatItem,mode=BackWay,source=testObject}" 
-                                            data-view="options:{valuePath=key,textPath=val,emptyOptionText='Select format ...'}"></select>
-            &nbsp;<span data-bind="{this.value,to=format,source=testObject}"></span>:&nbsp;<span data-bind="{this.value,to=formatItem.val,source=testObject}"></span>
+            <label>Formats: </label><select size="1" style="width: 220px"
+                                            data-bind-1="this.dataSource,to=formats,source=testObject"
+                                            data-bind-2="this.selectedValue,to=format,mode=TwoWay,source=testObject"
+                                            data-bind-3="this.selectedItem,to=formatItem,mode=BackWay,source=testObject"
+                                            data-view-options="valuePath=key,textPath=val,emptyOptionText='Select format ...'"></select>
+            &nbsp;<span data-bind="this.value,to=format,source=testObject"></span>:&nbsp;<span data-bind="this.value,to=formatItem.val,source=testObject"></span>
         </div>
-        <label class="leftOffset">boolProperty: <span style="color:black;" data-bind="{this.value,to=boolProperty,source=testObject}"></span>
+        <label class="leftOffset">
+            boolProperty: <span style="color:black;" data-bind="this.value,to=boolProperty,source=testObject"></span>
             <label style="display:block;" class="ria-checkbox">
-                <input type="checkbox" class="ria-checkbox" data-bind="{this.checked,to=boolProperty,mode=TwoWay,source=testObject}" />
+                <input type="checkbox" class="ria-checkbox" data-bind="this.checked,to=boolProperty,mode=TwoWay,source=testObject" />
                 <span></span>
             </label>
         </label>
-        <label class="leftOffset"> boolProperty ThreeState: <span style="color:black;" data-bind="{this.value,to=boolProperty,source=testObject}"></span>
+        <label class="leftOffset">
+            boolProperty ThreeState: <span style="color:black;" data-bind="this.value,to=boolProperty,source=testObject"></span>
             <label style="display:block;" class="ria-checkbox">
-                <input type="checkbox" class="ria-checkbox" data-bind="{this.checked,to=boolProperty,mode=TwoWay,source=testObject}" data-view="name=threeState" />
+                <input type="checkbox" class="ria-checkbox" data-bind="this.checked,to=boolProperty,mode=TwoWay,source=testObject" data-view="threeState" />
                 <span></span>
             </label>
         </label>
@@ -143,42 +142,72 @@
     <div>
         <h4 style="color:blue;margin-top:2em;">The button uses a default <b>AnchorElView</b>!</h4>
         <script type="text/x-example">
-            <a class="btn btn-info btn-small leftOffset" data-bind-1="{this.command,to=testCommand,source=testObject}"
-              data-bind-2="{this.toolTip,to=testToolTip,source=testObject}">Test command 1</a>
+            <a class="btn btn-info btn-small leftOffset" data-bind-1="this.command,to=testCommand,source=testObject"
+               data-bind-2="this.toolTip,to=testToolTip,source=testObject">Test command 1</a>
         </script>
-        <a class="btn btn-info btn-small leftOffset" data-bind-1="{this.command,to=testCommand,source=testObject}"
-           data-bind-2="{this.toolTip,to=testToolTip,source=testObject}">Test command 1</a>
+        <a class="btn btn-info btn-small leftOffset" data-bind-1="this.command,to=testCommand,source=testObject"
+           data-bind-2="this.toolTip,to=testToolTip,source=testObject">Test command 1</a>
     </div>
     <div>
         <h4 style="color:blue;margin-top:2em;">The button uses a Generic <b>BaseElView</b> which can be used with any HTML element!</h4>
         <script type="text/x-example">
             <a class="btn btn-info btn-small testBtn leftOffset"
-               data-bind-1="{this.events[click],to=testCommand,source=testObject}"
-               data-bind-2="{this.toolTip,to=testToolTip,source=testObject}"
-               data-bind-3="{this.props[text],to=testProperty1,source=testObject}"
-               data-bind-4="{this.classes[testClass],to=isEnabled,source=testObject,converter=notConverter}"
-               data-view="name=generic">Test command 2</a>
+               data-bind-1="this.events[click],to=testCommand,source=testObject"
+               data-bind-2="this.toolTip,to=testToolTip,source=testObject"
+               data-bind-3="this.props[text],to=testProperty1,source=testObject"
+               data-bind-4="this.classes[testClass],to=isEnabled,source=testObject,converter=notConverter"
+               data-view="generic">Test command 2</a>
         </script>
         <a class="btn btn-info btn-small testBtn leftOffset"
-           data-bind-1="{this.events[click],to=testCommand,source=testObject}"
-           data-bind-2="{this.toolTip,to=testToolTip,source=testObject}"
-           data-bind-3="{this.props[text],to=testProperty1,source=testObject}"
-           data-bind-4="{this.classes[testClass],to=isEnabled,source=testObject,converter=notConverter}"
-           data-view="name=generic">Test command 2</a>
+           data-bind-1="this.events[click],to=testCommand,source=testObject"
+           data-bind-2="this.toolTip,to=testToolTip,source=testObject"
+           data-bind-3="this.props[text],to=testProperty1,source=testObject"
+           data-bind-4="this.classes[testClass],to=isEnabled,source=testObject,converter=notConverter"
+           data-view="generic">Test command 2</a>
+    </div>
+    <div>
+        <h4 style="color:blue;margin-top:2em;">Using command parameter!</h4>
+        <script type="text/x-example">
+            <button class="btn btn-info btn-small" data-bind-1="this.command,to=paramCommand,source=testObject"
+                    data-bind-2="this.commandParam,source={color='Magenta',r=255,g=0,b=255}">
+                Color #1
+            </button>
+            <button class="btn btn-info btn-small" data-bind-1="this.command,to=paramCommand,source=testObject"
+                    data-bind-2="this.commandParam,source={color='Cornflower',r=100,g=149,b=237}">
+                Color #2
+            </button>
+            <button class="btn btn-info btn-small" data-bind-1="this.command,to=paramCommand,source=testObject"
+                    data-bind-2="this.commandParam,source={color='Forest Green',r=34,g=139,b=34}">
+                Color #3
+            </button>
+        </script>
+
+        <button class="btn btn-info btn-small" data-bind-1="this.command,to=paramCommand,source=testObject"
+                data-bind-2="this.commandParam,source={color='Magenta',r=255,g=0,b=255}">
+            Color #1
+        </button>
+        &nbsp;<button class="btn btn-info btn-small" data-bind-1="this.command,to=paramCommand,source=testObject"
+                      data-bind-2="this.commandParam,source={color='Cornflower',r=100,g=149,b=237}">
+            Color #2
+        </button>
+        &nbsp;<button class="btn btn-info btn-small" data-bind-1="this.command,to=paramCommand,source=testObject"
+                      data-bind-2="this.commandParam,source={color='Forest Green',r=34,g=139,b=34}">
+            Color #3
+        </button>
     </div>
     <div>
         <h4 style="color:blue;margin-top:2em; display: inline-block;">The source can be an inline object too!</h4>
         <script type="text/x-example">
-            <span data-bind="{this.value,to=val,source={val='The databound value have been taken from inline object'}}"></span>
+            <span data-bind="this.value,to=val,source={val='The databound value have been taken from inline object'}"></span>
         </script>
-        <div style="color:darkred;" data-bind="{this.value,to=val,source={val='The databound value have been taken from inline object'}}"></div>
+        <div style="color:darkred;" data-bind="this.value,to=val,source={val='The databound value have been taken from inline object'}"></div>
     </div>
     <div>
         <h4 style="color:blue;margin-top:2em; display: inline-block;">Binding the source to the <span style="color:darkred; font-weight:bold;">this</span></h4>
         <script type="text/x-example">
-            <div data-bind="{this.text,to=html,source=this,mode=OneTime}"><h3>HTML CONVERTED TO TEXT</h3></div>
+            <div data-bind="this.text,to=html,source=this,mode=OneTime"><h3>HTML CONVERTED TO TEXT</h3></div>
         </script>
-        <div data-bind="{this.text,to=html,source=this,mode=OneTime}"><h3>HTML CONVERTED TO TEXT</h3></div>
+        <div data-bind="this.text,to=html,source=this,mode=OneTime"><h3>HTML CONVERTED TO TEXT</h3></div>
     </div>
     <div style="height:100px; visibility: hidden;">
         it adds extra space to the bottom

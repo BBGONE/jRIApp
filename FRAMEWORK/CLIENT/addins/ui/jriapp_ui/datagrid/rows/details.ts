@@ -1,21 +1,14 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseObject, Debounce, Utils } from "jriapp_shared";
-import {
-    COLL_CHANGE_REASON, ITEM_STATUS, COLL_CHANGE_TYPE
-} from "jriapp_shared/collection/const";
-import {
-    ICollection, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollItemAddedArgs
-} from "jriapp_shared/collection/int";
-import { $ } from "jriapp/utils/jquery";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { BaseObject, Utils } from "jriapp_shared";
+import { ICollectionItem } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { DblClick } from "../../utils/dblclick";
-import { css, ROW_POSITION } from "../const";
+import { css, ROW_POSITION } from "../consts";
 import { Row } from "./row";
 import { DetailsCell } from "../cells/details";
-import { DataGrid } from "../datagrid"
+import { DataGrid } from "../datagrid";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, arrHelper = utils.arr,
-    dom = DomUtils, document = dom.document;
+const utils = Utils, coreUtils = utils.core, dom = DomUtils, doc = dom.document,
+    { getNewID } = coreUtils;
 
 export class DetailsRow extends BaseObject {
     private _grid: DataGrid;
@@ -23,121 +16,137 @@ export class DetailsRow extends BaseObject {
     private _item: ICollectionItem;
     private _cell: DetailsCell;
     private _parentRow: Row;
-    private _objId: string;
+    private _uniqueID: string;
     private _isFirstShow: boolean;
 
-    constructor(options: { grid: DataGrid; tr: HTMLTableRowElement; details_id: string; }) {
+    constructor(options: { grid: DataGrid; details_id: string; }) {
         super();
-        const self = this, tr = options.tr;
+        const self = this, tr = <HTMLTableRowElement>doc.createElement("tr");
         this._grid = options.grid;
-        this._tr =tr;
+        this._tr = tr;
         this._item = null;
         this._cell = null;
         this._parentRow = null;
         this._isFirstShow = true;
-        this._objId = coreUtils.getNewID("drow");
+        this._uniqueID = getNewID("drow");
         this._createCell(options.details_id);
         dom.addClass([tr], css.rowDetails);
         this._grid.addOnRowExpanded((sender, args) => {
-            if (!args.isExpanded && !!args.collapsedRow)
+            if (!args.isExpanded && !!args.collapsedRow) {
                 self._setParentRow(null);
-        }, this._objId);
+            }
+        }, this._uniqueID);
     }
-    private _createCell(details_id: string) {
-        const td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");
-        this._cell = new DetailsCell({ row: this, td: td, details_id: details_id });
-    }
-    protected _setParentRow(row: Row) {
-        const self = this;
-        this._item = null;
-        this._cell.item = null;
-        //don't use global.$(this._el).remove() here - or it will remove all jQuery plugins!
-        dom.removeNode(this.tr);
-        if (!row || row.getIsDestroyCalled()) {
-            this._parentRow = null;
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
         }
-        this._parentRow = row;
-        this._item = row.item;
-        this._cell.item = this._item;
-        if (this._isFirstShow)
-            this._initShow();
-        dom.insertAfter(this.tr, row.tr);
-        this._show(() => {
-            const parentRow = self._parentRow;
-            if (!parentRow || parentRow.getIsDestroyCalled())
-                return;
-            if (self.grid.options.isUseScrollIntoDetails)
-                parentRow.scrollIntoView(true, ROW_POSITION.Details);
-        });
-    }
-    private _initShow() {
-        let animation = this._grid.animation;
-        animation.beforeShow(this._cell.template.el);
-    }
-    private _show(onEnd: () => void) {
-        let animation = this._grid.animation;
-        this._isFirstShow = false;
-        animation.beforeShow(this._cell.template.el);
-        animation.show(onEnd);
-    }
-    private _hide(onEnd: () => void) {
-        let animation = this._grid.animation;
-        animation.beforeHide(this._cell.template.el);
-        animation.hide(onEnd);
-    }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        this._grid.removeNSHandlers(this._objId);
+        this.setDisposing();
+        this._grid.objEvents.offNS(this._uniqueID);
         if (!!this._cell) {
-            this._cell.destroy();
+            this._cell.dispose();
             this._cell = null;
         }
         dom.removeNode(this._tr);
         this._item = null;
         this._tr = null;
         this._grid = null;
-        super.destroy();
+        super.dispose();
     }
-    toString() {
+    private _createCell(detailsId: string): void {
+        this._cell = new DetailsCell({ row: this, details_id: detailsId });
+    }
+    protected _setParentRow(row: Row): void {
+        const self = this;
+        // important to check here!
+        if (self.getIsStateDirty()) {
+            return;
+        }
+        this._item = null;
+        this._cell.item = null;
+        dom.removeNode(this.tr);
+        if (!row || row.getIsStateDirty()) {
+            this._parentRow = null;
+            return;
+        }
+        this._parentRow = row;
+        this._item = row.item;
+        this._cell.item = this._item;
+        if (this._isFirstShow) {
+            this._initShow();
+        }
+        dom.insertAfter(this.tr, row.tr);
+        this._show(() => {
+            const parentRow = self._parentRow;
+            if (!parentRow || parentRow.getIsStateDirty()) {
+                return;
+            }
+            if (self.grid.options.isUseScrollIntoDetails) {
+                parentRow.scrollIntoView(true, ROW_POSITION.Details);
+            }
+        });
+    }
+    private _initShow(): void {
+        const animation = this._grid.animation;
+        animation.beforeShow(this._cell.template.el);
+    }
+    private _show(onEnd: () => void): void {
+        const animation = this._grid.animation;
+        this._isFirstShow = false;
+        animation.beforeShow(this._cell.template.el);
+        animation.show(onEnd);
+    }
+    private _hide(onEnd: () => void): void {
+        const animation = this._grid.animation;
+        animation.beforeHide(this._cell.template.el);
+        animation.hide(onEnd);
+    }
+    toString(): string {
         return "DetailsRow";
     }
-    get rect() {
+    get rect(): ClientRect {
         return this.tr.getBoundingClientRect();
     }
-    get height() {
+    get height(): number {
         return this.tr.offsetHeight;
     }
-    get width() {
+    get width(): number {
         return this.tr.offsetHeight;
     }
-    get tr() { return this._tr; }
-    get grid() { return this._grid; }
-    get item() { return this._item; }
-    set item(v) {
+    get tr(): HTMLTableRowElement {
+        return this._tr;
+    }
+    get grid(): DataGrid {
+        return this._grid;
+    }
+    get item(): ICollectionItem {
+        return this._item;
+    }
+    set item(v: ICollectionItem) {
         if (this._item !== v) {
             this._item = v;
         }
     }
-    get cell() { return this._cell; }
-    get uniqueID() { return this._objId; }
-    get itemKey() {
-        if (!this._item)
-            return null;
-        return this._item._key;
+    get cell(): DetailsCell {
+        return this._cell;
     }
-    get parentRow() { return this._parentRow; }
-    set parentRow(v) {
-        let self = this;
+    get uniqueID(): string {
+        return this._uniqueID;
+    }
+    get itemKey(): string {
+        return (!this._item) ? null : this._item._key;
+    }
+    get parentRow(): Row {
+        return this._parentRow;
+    }
+    set parentRow(v: Row) {
+        const self = this;
         if (v !== this._parentRow) {
             if (!!self._parentRow) {
                 self._hide(() => {
                     self._setParentRow(v);
                 });
-            }
-            else {
+            } else {
                 self._setParentRow(v);
             }
         }

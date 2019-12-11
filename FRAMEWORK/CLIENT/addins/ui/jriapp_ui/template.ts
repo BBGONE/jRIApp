@@ -1,20 +1,15 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
-import { DATA_ATTR } from "jriapp/const";
-import { ITemplate, ITemplateEvents, IElView, IViewOptions } from "jriapp/int";
+import { ITemplate, ITemplateEvents, IViewOptions, ITemplateElView } from "jriapp/int";
+import { IExecutor } from "jriapp/mvvm";
 import { ViewChecks } from "jriapp/utils/viewchecks";
 import { bootstrap } from "jriapp/bootstrap";
-import { CommandElView } from "./command";
+import { BaseElView } from "./baseview";
 
-const utils = Utils, viewChecks = ViewChecks, boot = bootstrap;
+const utils = Utils, viewChecks = ViewChecks, boot = bootstrap, ERROR = utils.err;
 
-viewChecks.isTemplateElView = (obj: any) => {
+viewChecks.isTemplateElView = (obj: any): obj is ITemplateElView =>  {
     return !!obj && obj instanceof TemplateElView;
-};
-
-const PROP_NAME = {
-    template: "template",
-    isEnabled: "isEnabled"
 };
 
 export interface ITemplateOptions {
@@ -22,58 +17,57 @@ export interface ITemplateOptions {
     templEvents?: ITemplateEvents;
 }
 
-export class TemplateElView extends CommandElView implements ITemplateEvents {
-    private _template: ITemplate;
-    private _isEnabled: boolean;
+// for strongly typed parameters
+export type TemplateCommandParam = { template: ITemplate; isLoaded: boolean; };
 
-    constructor(options: IViewOptions) {
-        super(options);
-        this._template = null;
-        this._isEnabled = true;
+export class TemplateElView extends BaseElView implements ITemplateEvents {
+    private _command: IExecutor;
+
+    constructor(el: HTMLElement, options: IViewOptions) {
+        super(el, options);
+        this._command = null;
+    }
+    private invokeCommand(args: any): void {
+        const cmd = this._command;
+        if (!!cmd) {
+            cmd.execute(args);
+        }
     }
     templateLoading(template: ITemplate): void {
-        //noop
+        // noop
     }
     templateLoaded(template: ITemplate, error?: any): void {
-        if (!!error)
+        if (!!error) {
             return;
-        let self = this;
-        try {
-            self._template = template;
-            let args = { template: template, isLoaded: true };
-            self.invokeCommand(args, false);
-            this.raisePropertyChanged(PROP_NAME.template);
         }
-        catch (ex) {
-            utils.err.reThrow(ex, this.handleError(ex, this));
+        const self = this;
+        try {
+            const args: TemplateCommandParam = { template: template, isLoaded: true };
+            self.invokeCommand(args);
+        } catch (ex) {
+            ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
     templateUnLoading(template: ITemplate): void {
-        let self = this;
+        const self = this;
         try {
-            let args = { template: template, isLoaded: false };
-            self.invokeCommand(args, false);
-        }
-        catch (ex) {
+            const args: TemplateCommandParam = { template: template, isLoaded: false };
+            self.invokeCommand(args);
+        } catch (ex) {
             this.handleError(ex, this);
-        }
-        finally {
-            self._template = null;
-        }
-        this.raisePropertyChanged(PROP_NAME.template);
+        } 
     }
-    toString() {
+    toString(): string {
         return "TemplateElView";
     }
-    get isEnabled() { return this._isEnabled; }
-    set isEnabled(v: boolean) {
-        if (this._isEnabled !== v) {
-            this._isEnabled = v;
-            this.raisePropertyChanged(PROP_NAME.isEnabled);
-        }
+    get command(): IExecutor {
+        return this._command;
     }
-    get template() {
-        return this._template;
+    set command(v: IExecutor) {
+        if (v !== this._command) {
+            this._command = v;
+            this.objEvents.raiseProp("command");
+        }
     }
 };
 

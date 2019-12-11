@@ -1,6 +1,5 @@
 ﻿import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 import * as DEMODB from "../demo/demoDB";
 import * as COMMON from "common";
 import { CustomerVM } from "./customerVM";
@@ -17,15 +16,17 @@ export class DemoApplication extends RIAPP.Application {
 
     constructor(options: IMainOptions) {
         super(options);
-        var self = this;
         this._dbContext = null;
         this._errorVM = null;
         this._customerVM = null;
     }
     onStartUp() {
-        var self = this, options: IMainOptions = self.options;
+        const self = this, options: IMainOptions = self.options;
         this._dbContext = new DEMODB.DbContext();
-        this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
+        this._dbContext.initialize({
+            serviceUrl: options.service_url,
+            permissions: options.permissionInfo
+        });
         function toText(str: any) {
             if (str === null)
                 return '';
@@ -37,15 +38,15 @@ export class DemoApplication extends RIAPP.Application {
             return toText(item.ComplexProp.LastName) + '  ' + toText(item.ComplexProp.MiddleName) + '  ' + toText(item.ComplexProp.FirstName);
         });
 
-        this.registerObject("dbContext", this._dbContext);
+        this.registerSvc("$dbContext", this._dbContext);
         this._errorVM = new COMMON.ErrorViewModel(this);
         this._customerVM = new CustomerVM(this);
         function handleError(sender: any, data: any) {
             self._handleError(sender, data);
         };
         //here we could process application's errors
-        this.addOnError(handleError);
-        this._dbContext.addOnError(handleError);
+        this.objEvents.addOnError(handleError);
+        this._dbContext.objEvents.addOnError(handleError);
 
         super.onStartUp();
     }
@@ -55,23 +56,33 @@ export class DemoApplication extends RIAPP.Application {
         this.errorVM.error = data.error;
         this.errorVM.showDialog();
     }
-    //really, the destroy method is redundant here because the application lives while the page lives
-    destroy() {
-        if (this._isDestroyed)
+    //really, the dispose method is redundant here because the application lives while the page lives
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        var self = this;
+        this.setDisposing();
+        const self = this;
         try {
-            self._errorVM.destroy();
-            self._customerVM.destroy();
-            self._dbContext.destroy();
+            self._errorVM.dispose();
+            self._customerVM.dispose();
+            self._dbContext.dispose();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
-    get options() { return <IMainOptions>this._options; }
-    get dbContext() { return this._dbContext; }
-    get errorVM() { return this._errorVM; }
-    get customerVM() { return this._customerVM; }
-    get TEXT() { return RIAPP.LocaleSTRS.TEXT; }
+    get options() {
+        return <IMainOptions>this._options;
+    }
+    get dbContext() {
+        return this._dbContext;
+    }
+    get errorVM() {
+        return this._errorVM;
+    }
+    get customerVM() {
+        return this._customerVM;
+    }
+    get TEXT() {
+        return RIAPP.LocaleSTRS.TEXT;
+    }
 }

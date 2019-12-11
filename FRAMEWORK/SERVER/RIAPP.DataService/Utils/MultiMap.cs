@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using RIAPP.DataService.Utils.Interfaces;
 
 namespace RIAPP.DataService.Utils
 {
@@ -42,7 +41,7 @@ namespace RIAPP.DataService.Utils
                     foreach (var val in list)
                         res.Add(val);
                 }
-                return res.Distinct();
+                return res.Distinct<V>();
             }
         }
 

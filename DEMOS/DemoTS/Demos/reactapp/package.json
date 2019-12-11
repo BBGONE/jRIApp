@@ -1,0 +1,19 @@
+{
+  "name": "reactapp",
+  "version": "1.0.0",
+  "description": "testing react components",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "maxim",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^12.12.14",
+    "@types/react": "^16.9.15",
+    "@types/react-dom": "^16.9.4",
+    "@types/react-redux": "^7.1.5",
+    "redux": "^4.0.4"
+  },
+   "devDependencies": {}
+}

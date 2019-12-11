@@ -1,223 +1,168 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    IPromise, LocaleERRS, BaseObject, WaitQueue, Utils
-} from "jriapp_shared";
-import {
-    IApplication, ITemplateGroupInfo, ITemplateGroupInfoEx, ITemplateLoaderInfo
-} from "../int";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { IPromise, LocaleERRS, BaseObject, WaitQueue, Utils } from "jriapp_shared";
+import { ITemplateGroupInfo, ITemplateLoaderInfo, IDataProvider, THTMLLoaderFunc, TLoaderFunc, TDocInfo } from "../int";
+import { STORE_KEY } from "../consts";
 
-const utils = Utils, checks = utils.check, coreUtils = utils.core,
-    strUtils = utils.str, defer = utils.defer, ERRS = LocaleERRS, DEBUG = utils.debug,
-    LOG = utils.log, http = utils.http;
 
-const PROP_NAME = {
-    isLoading: "isLoading"
-};
+const utils = Utils, { isFunc } = utils.check, { getValue, setValue } = utils.core,
+    { format } = utils.str, { createDeferred, reject } = utils.defer, ERRS = LocaleERRS, DEBUG = utils.debug,
+    LOG = utils.log;
+
+const enum LOADER_EVENTS {
+    loaded = "loaded"
+}
+
+export function getLoader(root: IDataProvider, name: string): ITemplateLoaderInfo {
+    const name2 = STORE_KEY.LOADER + name;
+    return getValue(root.getData(), name2);
+}
+
+export function registerLoader(root: IDataProvider, name: string, loader: TLoaderFunc): void {
+    if (!isFunc(loader)) {
+        throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "loader must be a Function"));
+    }
+    const name2 = STORE_KEY.LOADER + name;
+    const info: ITemplateLoaderInfo = { loader: loader, owner: root };
+    setValue(root.getData(), name2, info, true);
+}
+
+export function registerTemplateGroup(root: IDataProvider, name: string, obj: ITemplateGroupInfo): void {
+    const name2 = STORE_KEY.TGROUP + name;
+    setValue(root.getData(), name2, obj, true);
+}
+
+function getTemplateGroup(root: IDataProvider, name: string): ITemplateGroupInfo {
+    const name2 = STORE_KEY.TGROUP + name;
+    return getValue(root.getData(), name2);
+}
+
+function getGroupName(fullName: string): string {
+    const parts: string[] = fullName.split(".");
+    if (parts.length > 2) {
+        throw new Error(`Invalid template name: ${fullName}`);
+    }
+    return (parts.length === 1) ? "" : parts[0];
+}
+
+export interface ILoaderContext extends IDataProvider {
+    getTemplateLoaderInfo: (name: string) => ITemplateLoaderInfo;
+}
 
 export class TemplateLoader extends BaseObject {
-    private _templateLoaders: any;
-    private _templateGroups: any;
     private _promises: IPromise<string>[];
     private _waitQueue: WaitQueue;
 
     constructor() {
         super();
-        let self = this;
-        this._templateLoaders = {};
-        this._templateGroups = {};
+        const self = this;
         this._promises = [];
         this._waitQueue = new WaitQueue(self);
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
-        this._isDestroyCalled = true;
+        }
+        this.setDisposing();
         const self = this;
         self._promises = [];
-        self._templateLoaders = {};
-        self._templateGroups = {};
         if (!!self._waitQueue) {
-            self._waitQueue.destroy()
+            self._waitQueue.dispose();
             self._waitQueue = null;
         }
-        super.destroy();
+        super.dispose();
     }
-    protected _getEventNames() {
-        let base_events = super._getEventNames();
-        return ["loaded"].concat(base_events);
+    addOnLoaded(fn: (sender: TemplateLoader, args: { html: string; owner: IDataProvider }) => void, nmspace?: string): void {
+        this.objEvents.on(LOADER_EVENTS.loaded, fn, nmspace);
     }
-    addOnLoaded(fn: (sender: TemplateLoader, args: { html: string; app: IApplication; }) => void, nmspace?: string) {
-        this.addHandler("loaded", fn, nmspace);
-    }
-    removeOnLoaded(nmspace?: string) {
-        this.removeHandler("loaded", nmspace);
+    offOnLoaded(nmspace?: string): void {
+        this.objEvents.off(LOADER_EVENTS.loaded, nmspace);
     }
     public waitForNotLoading(callback: (...args: any[]) => any, callbackArgs: any): void {
         this._waitQueue.enQueue({
-            prop: PROP_NAME.isLoading,
+            prop: "isLoading",
             groupName: null,
-            predicate: function (val: any) {
-                return !val;
-            },
+            predicate: (val: any) => !val,
             action: callback,
             actionArgs: callbackArgs
         });
     }
-    private _onLoaded(html: string, app: IApplication) {
-        this.raiseEvent("loaded", { html: html, app: app });
+    private _onLoaded(html: string, owner: IDataProvider): void {
+        this.objEvents.raise(LOADER_EVENTS.loaded, { html: html, owner: owner });
     }
-    private _getTemplateGroup(name: string): ITemplateGroupInfoEx {
-        return coreUtils.getValue(this._templateGroups, name);
-    }
-    private _registerTemplateLoaderCore(name: string, loader: ITemplateLoaderInfo): void {
-        coreUtils.setValue(this._templateLoaders, name, loader, false);
-    }
-    private _getTemplateLoaderCore(name: string): ITemplateLoaderInfo {
-        return coreUtils.getValue(this._templateLoaders, name);
-    }
-    public loadTemplatesAsync(fn_loader: () => IPromise<string>, app: IApplication): IPromise<any> {
-        const self = this, promise = fn_loader(), old = self.isLoading;
+    public loadTemplatesAsync(owner: IDataProvider, loader: THTMLLoaderFunc): IPromise<void> {
+        const self = this, promise = loader(), old = self.isLoading;
         self._promises.push(promise);
-        if (self.isLoading !== old)
-            self.raisePropertyChanged(PROP_NAME.isLoading);
-        let res = promise.then((html: string) => {
-            self._onLoaded(html, app);
+        if (self.isLoading !== old) {
+            self.objEvents.raiseProp("isLoading");
+        }
+        const res: IPromise<void> = promise.then((html: string) => {
+            self._onLoaded(html, owner);
         });
 
-        res.always(() => {
+        res.finally(() => {
             utils.arr.remove(self._promises, promise);
-            if (!self.isLoading)
-                self.raisePropertyChanged(PROP_NAME.isLoading);
+            if (!self.isLoading) {
+                self.objEvents.raiseProp("isLoading");
+            }
         });
+
         return res;
     }
-    /*
-     fn_loader must load template and return promise which resolves with the loaded HTML string
-    */
-    public unRegisterTemplateLoader(name: string) {
-        coreUtils.removeValue(this._templateLoaders, name);
-    }
-    public unRegisterTemplateGroup(name: string) {
-        coreUtils.removeValue(this._templateGroups, name);
-    }
-    public registerTemplateLoader(name: string, loader: ITemplateLoaderInfo): void {
-        const self = this;
-        loader = coreUtils.extend({
-            fn_loader: null,
-            groupName: null
-        }, loader);
+    // returns a promise resolved with the template's html
+    public getTemplateLoader(context: ILoaderContext, name: string): TLoaderFunc {
+        const self = this, info: ITemplateLoaderInfo = context.getTemplateLoaderInfo(name);
 
-        if (!loader.groupName && !checks.isFunc(loader.fn_loader)) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "fn_loader is Function"));
-        }
-        let prevLoader = self._getTemplateLoaderCore(name);
-        if (!!prevLoader) {
-            //can overwrite previous loader with new one, only if the old did not have loader function and the new has it
-            if ((!prevLoader.fn_loader && !!prevLoader.groupName) && (!loader.groupName && !!loader.fn_loader)) {
-                return self._registerTemplateLoaderCore(name, loader);
-            }
-            throw new Error(strUtils.format(ERRS.ERR_TEMPLATE_ALREADY_REGISTERED, name));
-        }
-        return self._registerTemplateLoaderCore(name, loader);
-    }
-    //this function will return promise resolved with the template's html
-    public getTemplateLoader(name: string): () => IPromise<string> {
-        const self = this, loader = self._getTemplateLoaderCore(name);
-        if (!loader)
-            return null;
-        if (!loader.fn_loader && !!loader.groupName) {
-            let group = self._getTemplateGroup(loader.groupName);
-            if (!group) {
-                throw new Error(strUtils.format(ERRS.ERR_TEMPLATE_GROUP_NOTREGISTERED, loader.groupName));
-            }
-
-            //this function will return promise resolved with the template's html
-            return () => {
-                //it prevents double loading
-                if (!group.promise) {
-                   //start loading only if no another loading in progress
-                    group.promise = self.loadTemplatesAsync(group.fn_loader, group.app);
+        if (!!info) {
+            return info.loader;
+        } else {
+            const groupName = getGroupName(name);
+            if (!groupName) {
+                return null;
+            } else {
+                // load the group of templates
+                const group = getTemplateGroup(context, groupName);
+                if (!group) {
+                    throw new Error(format(ERRS.ERR_TEMPLATE_GROUP_NOTREGISTERED, groupName));
                 }
 
-                const deferred = defer.createDeferred<string>(true);
-
-                group.promise.then(() => {
-                    group.promise = null;
-                    group.names.forEach(function (name) {
-                        if (!!group.app) {
-                            name = group.app.appName + "." + name;
-                        }
-                        const loader = self._getTemplateLoaderCore(name);
-                        if (!loader || !loader.fn_loader) {
-                            const error = strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
-                            if (DEBUG.isDebugging())
-                                LOG.error(error);
-                            throw new Error(error);
-                        }
-                    });
-
-                    const loader = self._getTemplateLoaderCore(name);
-                    if (!loader || !loader.fn_loader) {
-                        const error = strUtils.format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name);
-                        if (DEBUG.isDebugging())
-                            LOG.error(error);
-                        throw new Error(error);
+                return () => {
+                    // it prevents double loading
+                    if (!group.promise) {
+                        // start loading only if no another loading in progress
+                        group.promise = self.loadTemplatesAsync(group.owner, group.loader);
                     }
 
-                    delete self._templateGroups[loader.groupName];
-                    const promise = loader.fn_loader();
-                    promise.then((html) => {
-                        deferred.resolve(html);
-                    }, (err) => {
+                    const deferred = createDeferred<TDocInfo>(true);
+
+                    group.promise.then(() => {
+                        const info: ITemplateLoaderInfo = context.getTemplateLoaderInfo(name);
+                        if (!info) {
+                            const error = format(ERRS.ERR_TEMPLATE_NOTREGISTERED, name), rejected = reject<TDocInfo>(error, true);
+                            // template failed to load, register function which rejects immediately
+                            registerLoader(group.owner, name, () => rejected);
+                            if (DEBUG.isDebugging()) {
+                                LOG.error(error);
+                            }
+                            throw new Error(error);
+                        }
+
+                        const loadPromise = info.loader();
+
+                        loadPromise.then((docInfo) => {
+                            deferred.resolve(docInfo);
+                        }, (err) => {
+                            deferred.reject(err);
+                        });
+                    }).catch((err) => {
                         deferred.reject(err);
                     });
-                }).catch((err) => {
-                    group.promise = null;
-                    deferred.reject(err);
-                });
 
-                return deferred.promise();
-            };
-        }
-        else
-            return loader.fn_loader;
-    }
-    public registerTemplateGroup(groupName: string, group: ITemplateGroupInfoEx): void {
-        const self = this, group2: ITemplateGroupInfoEx = coreUtils.extend({
-            fn_loader: <() => IPromise<string>>null,
-            url: <string>null,
-            names: <string[]>null,
-            promise: <IPromise<string>>null,
-            app: <IApplication>null
-        }, group);
-
-        if (!!group2.url && !group2.fn_loader) {
-            //make a function to load from this url
-            group2.fn_loader = () => {
-                return http.getAjax(group2.url);
-            };
-        }
-
-        coreUtils.setValue(self._templateGroups, groupName, group2, true);
-        group2.names.forEach((name) => {
-            if (!!group2.app) {
-                name = group2.app.appName + "." + name;
+                    return deferred.promise();
+                };
             }
-            //for each template in the group register dummy loader function which has only group name
-            //when template will be requested, this dummy loader will be replaced with the real one
-            self.registerTemplateLoader(name, {
-                groupName: groupName,
-                fn_loader: null //no loader function
-            });
-        });
+        }
     }
-    public loadTemplates(url: string) {
-        const self = this;
-        this.loadTemplatesAsync(function () {
-            return http.getAjax(url);
-        }, null);
-    }
-    get isLoading() {
+    get isLoading(): boolean {
         return this._promises.length > 0;
     }
 }

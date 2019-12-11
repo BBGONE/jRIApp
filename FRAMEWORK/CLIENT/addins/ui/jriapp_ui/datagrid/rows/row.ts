@@ -1,44 +1,37 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseObject, Debounce, Utils } from "jriapp_shared";
-import {
-    COLL_CHANGE_REASON, ITEM_STATUS, COLL_CHANGE_TYPE
-} from "jriapp_shared/collection/const";
-import {
-    ICollection, ICollectionItem, ICollChangedArgs, ICollItemArgs, ICollItemAddedArgs
-} from "jriapp_shared/collection/int";
-import { $ } from "jriapp/utils/jquery";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { BaseObject, Utils } from "jriapp_shared";
+import { ICollectionItem } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { DblClick } from "../../utils/dblclick";
-import { css, ROW_POSITION, PROP_NAME } from "../const";
+import { css, ROW_POSITION } from "../consts";
 import { BaseCell } from "../cells/base";
 import { ExpanderCell } from "../cells/expander";
 import { DataCell } from "../cells/data";
 import { ActionsCell } from "../cells/actions";
 import { RowSelectorCell } from "../cells/rowselector";
 
-import { BaseColumn, IColumnInfo } from "../columns/base";
+import { BaseColumn } from "../columns/base";
 import { ExpanderColumn } from "../columns/expander";
-import { DataColumn } from "../columns/data";
 import { ActionsColumn } from "../columns/actions";
 import { RowSelectorColumn } from "../columns/rowselector";
 
-import { DataGrid } from "../datagrid"
+import { DataGrid } from "../datagrid";
 
-const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys;
+const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
+    { getNewID } = utils.core;
 
-const fn_state = (row: Row) => {
+function fnState(row: Row): void {
     const path = row.grid.options.rowStateField,
         val = (!row.item || !path) ? null : sys.resolvePath(row.item, path),
         css = row.grid._getInternal().onRowStateChanged(row, val);
     row._setState(css);
-};
+}
 
 export class Row extends BaseObject {
     private _grid: DataGrid;
     private _tr: HTMLTableRowElement;
     private _item: ICollectionItem;
     private _cells: BaseCell<BaseColumn>[];
-    private _objId: string;
+    private _uniqueID: string;
     private _expanderCell: ExpanderCell;
     private _actionsCell: ActionsCell;
     private _rowSelectorCell: RowSelectorCell;
@@ -46,18 +39,17 @@ export class Row extends BaseObject {
     private _isSelected: boolean;
     private _isDetached: boolean;
     private _stateCss: string;
-    
+
     constructor(grid: DataGrid, options: {
-        tr: HTMLTableRowElement;
         item: ICollectionItem;
     }) {
         super();
-        const self = this, item = options.item, tr = options.tr;
+        const item = options.item;
         this._grid = grid;
-        this._tr = tr;
+        this._tr = null;
         this._item = item;
         this._cells = [];
-        this._objId = utils.core.getNewID("tr");
+        this._uniqueID = getNewID("tr");
         this._expanderCell = null;
         this._actionsCell = null;
         this._rowSelectorCell = null;
@@ -66,177 +58,210 @@ export class Row extends BaseObject {
         this._isDetached = false;
         this._stateCss = null;
         this._isDeleted = item._aspect.isDeleted;
-        if (this._isDeleted) {
-            dom.addClass([tr], css.rowDeleted);
-        }
-
-        this._createCells();
-        if (!!this._item) {
-            if (!!this.isHasStateField) {
-                this._item.addOnPropertyChange(this._grid.options.rowStateField, function (s, a) {
-                    fn_state(self);
-                }, this._objId);
-            }
-            fn_state(self);
-        }
+        this._loadDOM();
     }
-    private _createCells() {
-        const self = this, cols = self.columns, len = cols.length;
-        for (let i = 0; i < len; i += 1) {
-            self._cells.push(self._createCell(cols[i], i));
-        }
-    }
-    private _createCell(col: BaseColumn, num: number) {
-        let self = this, td: HTMLTableCellElement = <HTMLTableCellElement>doc.createElement("td"), cell: BaseCell<BaseColumn>;
-
-        if (col instanceof ExpanderColumn) {
-            this._expanderCell = new ExpanderCell({ row: self, td: td, column: col, num: num });
-            cell = this._expanderCell;
-        }
-        else if (col instanceof ActionsColumn) {
-            this._actionsCell = new ActionsCell({ row: self, td: td, column: col, num: num });
-            cell = this._actionsCell;
-        }
-        else if (col instanceof RowSelectorColumn) {
-            this._rowSelectorCell = new RowSelectorCell({ row: self, td: td, column: col, num: num });
-            cell = this._rowSelectorCell;
-        }
-        else {
-            cell = new DataCell({ row: self, td: td, column: col, num: num });
-        }
-        return cell;
-    }
-    _setState(css: string) {
-        if (this._stateCss !== css) {
-            let arr: string[] = [];
-            if (!!this._stateCss)
-                arr.push("-" + this._stateCss);
-            this._stateCss = css;
-            if (!!this._stateCss)
-                arr.push("+" + this._stateCss);
-            dom.setClasses([this.tr], arr);
-        }
-    }
-    _onBeginEdit() {
-        let self = this;
-        self._cells.forEach(function (cell) {
-            if (cell instanceof DataCell) {
-                (<DataCell>cell)._beginEdit();
-            }
-        });
-        if (!!this._actionsCell)
-            this._actionsCell.update();
-    }
-    _onEndEdit(isCanceled: boolean) {
-        let self = this;
-        self._cells.forEach(function (cell) {
-            if (cell instanceof DataCell) {
-                (<DataCell>cell)._endEdit(isCanceled);
-            }
-        });
-        if (!!this._actionsCell)
-            this._actionsCell.update();
-    }
-    beginEdit() {
-        return this._item._aspect.beginEdit();
-    }
-    endEdit() {
-        return this._item._aspect.endEdit();
-    }
-    cancelEdit() {
-        return this._item._aspect.cancelEdit();
-    }
-    destroy() {
-        if (this._isDestroyed)
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
-        this._isDestroyCalled = true;
+        }
+        this.setDisposing();
         const grid = this._grid;
         if (!!grid) {
             if (!this._isDetached) {
                 grid._getInternal().removeRow(this);
             }
-            dom.removeNode(this._tr);
-            const cells = this._cells, len = cells.length;
-            for (let i = 0; i < len; i += 1) {
-                cells[i].destroy();
-            }
-            this._cells = [];
         }
-        this._item.removeNSHandlers(this._objId);
+        this._unloadDOM();
         this._item = null;
-        this._expanderCell = null;
-        this._tr = null;
         this._grid = null;
-        super.destroy();
+        super.dispose();
     }
-    deleteRow() {
-        this._item._aspect.deleteItem();
+    private _createCells(): void {
+        const self = this, cols = self.columns, len = cols.length;
+        for (let i = 0; i < len; i += 1) {
+            self._cells.push(self._createCell(cols[i], i));
+        }
     }
-    updateErrorState() {
-        //TODO: add implementation to show explanation of error
+    private _createCell(col: BaseColumn, num: number): BaseCell<BaseColumn> {
+        const self = this;
+        let cell: BaseCell<BaseColumn>;
+
+        if (col instanceof ExpanderColumn) {
+            this._expanderCell = new ExpanderCell({ row: self, column: col, num: num });
+            cell = this._expanderCell;
+        } else if (col instanceof ActionsColumn) {
+            this._actionsCell = new ActionsCell({ row: self, column: col, num: num });
+            cell = this._actionsCell;
+        } else if (col instanceof RowSelectorColumn) {
+            this._rowSelectorCell = new RowSelectorCell({ row: self, column: col, num: num });
+            cell = this._rowSelectorCell;
+        } else {
+            cell = new DataCell({ row: self, column: col, num: num });
+        }
+        return cell;
+    }
+    protected _loadDOM(): void {
+        if (!!this._tr) {
+            return;
+        }
+        const self = this, tr = doc.createElement("tr");
+        this._tr = tr;
+        if (this._isDeleted) {
+            dom.addClass([tr], css.rowDeleted);
+        }
+        this._createCells();
+        if (!!this._item) {
+            if (!!this.isHasStateField) {
+                this._item.objEvents.onProp(this._grid.options.rowStateField, () => {
+                    fnState(self);
+                }, this._uniqueID);
+            }
+            fnState(self);
+        }
+    }
+    protected _unloadDOM(): void {
+        if (!this._tr) {
+            return;
+        }
+        this._item.objEvents.offNS(this._uniqueID);
+        dom.removeNode(this._tr);
+        const cells = this._cells, len = cells.length;
+        for (let i = 0; i < len; i += 1) {
+            cells[i].dispose();
+        }
+        this._cells = [];
+        this._expanderCell = null;
+        this._rowSelectorCell = null;
+        this._actionsCell = null;
+        this._tr = null;
+    }
+    _setState(css: string): void {
+        if (this._stateCss !== css) {
+            const arr: string[] = [];
+            if (!!this._stateCss) {
+                arr.push("-" + this._stateCss);
+            }
+            this._stateCss = css;
+            if (!!this._stateCss) {
+                arr.push("+" + this._stateCss);
+            }
+            dom.setClasses([this.tr], arr);
+        }
+    }
+    _onBeginEdit(): void {
+        this._cells.forEach((cell) => {
+            if (cell instanceof DataCell) {
+                (<DataCell>cell)._beginEdit();
+            }
+        });
+        if (!!this._actionsCell) {
+            this._actionsCell.update();
+        }
+    }
+    _onEndEdit(isCanceled: boolean): void {
+        this._cells.forEach((cell) => {
+            if (cell instanceof DataCell) {
+                (<DataCell>cell)._endEdit(isCanceled);
+            }
+        });
+        if (!!this._actionsCell) {
+            this._actionsCell.update();
+        }
+    }
+    beginEdit(): boolean {
+        return this._item._aspect.beginEdit();
+    }
+    endEdit(): boolean {
+        return this._item._aspect.endEdit();
+    }
+    cancelEdit(): boolean {
+        return this._item._aspect.cancelEdit();
+    }
+    deleteRow(): boolean {
+        return this._item._aspect.deleteItem();
+    }
+    updateErrorState(): void {
+        // TODO: add implementation to show explanation of error
         const hasErrors = this._item._aspect.getIsHasErrors();
         dom.setClass([this._tr], css.rowError, !hasErrors);
     }
-    updateUIState() {
-        fn_state(this);
+    updateUIState(): void {
+        fnState(this);
     }
-    scrollIntoView(animate?: boolean, pos?: ROW_POSITION) {
+    scrollIntoView(animate?: boolean, pos?: ROW_POSITION): void {
         this.grid.scrollToRow({ row: this, animate: animate, pos: pos });
     }
-    toString() {
+    toString(): string {
         return "Row";
     }
-    get rect() {
+    get rect(): ClientRect {
         return this.tr.getBoundingClientRect();
     }
-    get height() {
+    get height(): number {
         return this.tr.offsetHeight;
     }
-    get width() {
+    get width(): number {
         return this.tr.offsetWidth;
     }
-    get tr() { return this._tr; }
-    get grid() { return this._grid; }
-    get item() { return this._item; }
-    get cells() { return this._cells; }
-    get columns() { return this._grid.columns; }
-    get uniqueID() { return this._objId; }
-    get itemKey() {
-        if (!this._item)
-            return null;
-        return this._item._key;
+    get tr(): HTMLTableRowElement {
+        return this._tr;
     }
-    get isCurrent() {
+    get grid(): DataGrid {
+        return this._grid;
+    }
+    get item(): ICollectionItem {
+        return this._item;
+    }
+    get cells(): BaseCell<BaseColumn>[] {
+        return this._cells;
+    }
+    get columns(): BaseColumn[] {
+        return this._grid.columns;
+    }
+    get uniqueID(): string {
+        return this._uniqueID;
+    }
+    get itemKey(): string {
+        return (!this._item) ? null : this._item._key;
+    }
+    get isCurrent(): boolean {
         return this.grid.currentItem === this.item;
     }
-    get isSelected() { return this._isSelected; }
-    set isSelected(v) {
+    get isSelected(): boolean {
+        return this._isSelected;
+    }
+    set isSelected(v: boolean) {
         if (this._isSelected !== v) {
             this._isSelected = v;
             if (!!this._rowSelectorCell) {
                 this._rowSelectorCell.checked = this._isSelected;
             }
-            this.raisePropertyChanged(PROP_NAME.isSelected);
+            this.objEvents.raiseProp("isSelected");
             this.grid._getInternal().onRowSelectionChanged(this);
         }
     }
-    get isExpanded() { return this.grid._getInternal().isRowExpanded(this); }
-    set isExpanded(v) {
+    get isExpanded(): boolean {
+        return this.grid._getInternal().isRowExpanded(this);
+    }
+    set isExpanded(v: boolean) {
         if (v !== this.isExpanded) {
             if (!v && this.isExpanded) {
                 this.grid._getInternal().expandDetails(this, false);
-            }
-            else if (v) {
+            } else if (v) {
                 this.grid._getInternal().expandDetails(this, true);
             }
         }
     }
-    get expanderCell() { return this._expanderCell; }
-    get actionsCell() { return this._actionsCell; }
-    get isDeleted() {
+    get expanderCell(): ExpanderCell {
+        return this._expanderCell;
+    }
+    get actionsCell(): ActionsCell {
+        return this._actionsCell;
+    }
+    get isDeleted(): boolean {
         return this._isDeleted;
     }
-    set isDeleted(v) {
+    set isDeleted(v: boolean) {
         if (this._isDeleted !== v) {
             this._isDeleted = v;
             if (this._isDeleted) {
@@ -245,12 +270,16 @@ export class Row extends BaseObject {
             dom.setClass([this._tr], css.rowDeleted, !this._isDeleted);
         }
     }
-    get isDetached() {
+    get isDetached(): boolean {
         return this._isDetached;
     }
-    set isDetached(v) {
+    set isDetached(v: boolean) {
         this._isDetached = v;
     }
-    get isEditing() { return !!this._item && this._item._aspect.isEditing; }
-    get isHasStateField() { return !!this._grid.options.rowStateField; }
+    get isEditing(): boolean {
+        return !!this._item && this._item._aspect.isEditing;
+    }
+    get isHasStateField(): boolean {
+        return !!this._grid.options.rowStateField;
+    }
 }

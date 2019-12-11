@@ -23,7 +23,7 @@ namespace RIAppDemo.Controllers
 
         public ActionResult MasterDetailDemo()
         {
-            return View(new MasterDetailDemo());
+            return View();
         }
 
         public ActionResult CollectionsDemo()
@@ -52,6 +52,11 @@ namespace RIAppDemo.Controllers
         }
 
         public ActionResult SPADemo()
+        {
+            return View();
+        }
+
+        public ActionResult ReactDemo()
         {
             return View();
         }

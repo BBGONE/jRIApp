@@ -1,13 +1,11 @@
 ﻿import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
-import * as COMMON from "common";
 
-const utils = RIAPP.Utils, $ = RIAPP.$, DOM = RIAPP.DOM, doc = RIAPP.DOM.document, head = RIAPP.DOM.queryOne<Element>(doc, "head");
+const utils = RIAPP.Utils, DOM = RIAPP.DOM, doc = RIAPP.DOM.document, head = RIAPP.DOM.queryOne<Element>(doc, "head");
 let drag: HTMLElement = null;	//reference to the current grip that is being dragged
+const { forEach, Indexer } = utils.core;
 
 //common strings for packing
-let ID = "id";
 let PX = "px";
 let SIGNATURE = "JColResizer";
 let FLEX = "JCLRFlex";
@@ -58,8 +56,7 @@ interface IOptions {
     onResize: (e: Event) => void;	//callback function fired when the dragging process is over
 }
 
-let _gridsCount = 0;
-let _created_grids: RIAPP.IIndexer<ResizableGrid> = {};
+let _gridsCount = 0, _created_grids: RIAPP.IIndexer<ResizableGrid> = Indexer();
 
 function _gridCreated(grid: ResizableGrid) {
     _created_grids[grid.uniqueID] = grid;
@@ -85,12 +82,12 @@ DOM.append(head, RIAPP.DOM.fromHTML(cssRules));
 /**
 	 * Event handler used while dragging a grip. It checks if the next grip's position is valid and updates it. 
 */
-let onGripDrag = function (e: TouchEvent | MouseEvent) {
+let onGripDrag = function (e: TouchEvent | MouseEvent): boolean {
     if (!drag)
-        return;
+        return false;
     let gripData: IGripData = DOM.getData(drag, SIGNATURE), elview: ResizableGrid = gripData.elview;
-    if (elview.getIsDestroyCalled())
-        return;
+    if (elview.getIsStateDirty())
+        return false;
     let data: IResizeInfo = elview.getResizeIfo();
     let table = elview.grid.table;
     let touches = (<any>e).touches;   //touch or mouse event?
@@ -147,7 +144,7 @@ let onGripDrag = function (e: TouchEvent | MouseEvent) {
 /**
  * Event handler fired when the dragging is over, updating table layout
 */
-let onGripDragOver = function (e: TouchEvent | MouseEvent) {
+let onGripDragOver = function (e: TouchEvent | MouseEvent): void {
     DOM.events.offNS(doc, SIGNATURE);
     let dragCursor = RIAPP.DOM.queryOne(head, '#dragCursor');
     if (!!dragCursor) {
@@ -157,7 +154,7 @@ let onGripDragOver = function (e: TouchEvent | MouseEvent) {
         return;
     const gripData: IGripData = DOM.getData(drag, SIGNATURE);
     const elview: ResizableGrid = gripData.elview;
-    if (elview.getIsDestroyCalled())
+    if (elview.getIsStateDirty())
         return;
     const data: IResizeInfo = elview.getResizeIfo(), table = elview.grid.table;
     //remove the grip's dragging css-class
@@ -188,12 +185,12 @@ let onGripDragOver = function (e: TouchEvent | MouseEvent) {
  * Event handler fired when the grip's dragging is about to start. Its main goal is to set up events 
  * and store some values used while dragging.
  */
-let onGripMouseDown = function (e: TouchEvent | MouseEvent) {
+let onGripMouseDown = function (this: HTMLElement, e: TouchEvent | MouseEvent): boolean {
     const grip: HTMLElement = this;
     let gripData: IGripData = DOM.getData(grip, SIGNATURE), elview: ResizableGrid = gripData.elview;
-    if (elview.getIsDestroyCalled())
-        return;
-    let data: IResizeInfo = elview.getResizeIfo(), table = elview.grid.table;
+    if (elview.getIsStateDirty())
+        return false;
+    let data: IResizeInfo = elview.getResizeIfo();
     let touches = (<any>e).touches;   //touch or mouse event?
     gripData.ox = touches ? touches[0].pageX : (<MouseEvent>e).pageX;    //the initial position is kept
     gripData.l = grip.offsetLeft;
@@ -232,7 +229,7 @@ let onGripMouseDown = function (e: TouchEvent | MouseEvent) {
  * table layout according to the browser's size synchronizing related grips 
  */
 let onResize = function () {
-    RIAPP.Utils.core.forEachProp(_created_grids, (name, gridView) => {
+    forEach(_created_grids, (_, gridView) => {
         gridView.syncGrips();
     });
 };
@@ -241,8 +238,8 @@ export class ResizableGrid extends uiMOD.DataGridElView {
     private _ds: RIAPP.ICollection<RIAPP.ICollectionItem>;
     private _resizeInfo: IResizeInfo;
 
-    constructor(options: uiMOD.IDataGridViewOptions) {
-        super(options);
+    constructor(el: HTMLTableElement, options: uiMOD.IDataGridViewOptions) {
+        super(el, options);
         const self = this, grid = self.grid;
         _gridCreated(this);
         let defaults: IOptions = {
@@ -268,7 +265,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
         self.init(opts);
         self.bindDS(this._ds);
 
-        grid.addOnPropertyChange("dataSource", (s, a) => {
+        grid.objEvents.onProp("dataSource", (s, a) => {
             self.unBindDS(self._ds);
             self.bindDS(grid.dataSource);
             self._ds = grid.dataSource;
@@ -290,7 +287,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
     private unBindDS(ds: RIAPP.ICollection<RIAPP.ICollectionItem>) {
         if (!ds)
             return;
-        ds.removeNSHandlers(this.uniqueID);
+        ds.objEvents.offNS(this.uniqueID);
     }
     protected init(options: IOptions) {
         const table = this.grid.table, style = window.getComputedStyle(table, null);
@@ -333,10 +330,10 @@ export class ResizableGrid extends uiMOD.DataGridElView {
                 DOM.append(grip, inner);
             }
             DOM.append(grip, RIAPP.DOM.fromHTML('<div class="' + SIGNATURE + '"></div>'));
-            if (index == data.len - 1) {  //if the current grip is the last one 
-                DOM.addClass([grip], "JCLRLastGrip");    //add a different css class to stlye it in a different way if needed
+            if (index == data.len - 1) {  // if the current grip is the last one 
+                DOM.addClass([grip], "JCLRLastGrip");    // add a different css class to style it in a different way if needed
                 if (data.fixed)
-                    grip.innerHTML = "";   //if the table resizing mode is set to fixed, the last grip is removed since table width can not change
+                    grip.innerHTML = "";   // if the table resizing mode is set to fixed, the last grip is removed since table width can not change
             }
 
 
@@ -371,20 +368,26 @@ export class ResizableGrid extends uiMOD.DataGridElView {
        * Function that places each grip in the correct position according to the current table layout	 
     */
     syncGrips() {
-        if (this.getIsDestroyCalled())
+        if (this.getIsStateDirty())
             return;
         const data: IResizeInfo = this._resizeInfo;
-        data.gripContainer.style.width = (data.w + PX);	//the grip's container width is updated
+        data.gripContainer.style.width = (data.w + PX);	// the grip's container width is updated
         const table = this.grid.table;
         const header = this.grid._getInternal().getHeader();
         const viewport = this.grid._getInternal().getWrapper();
         const headerHeight = header.offsetHeight;
         const tableHeight = viewport.clientHeight;
+        const lastGripOffset = 5;
 
-        for (let i = 0; i < data.len; i++) {	//for each column
-            let colInfo = data.columns[i];
-            //height and position of the grip is updated according to the table layout
-            colInfo.grip.style.left = ((colInfo.column.offsetLeft - table.offsetLeft + colInfo.column.offsetWidth + data.cellspacing / 2) + PX);
+        for (let i = 0; i < data.len; i++) {	// for each column
+            let colInfo = data.columns[i], leftPos = (colInfo.column.offsetLeft - table.offsetLeft + colInfo.column.offsetWidth + data.cellspacing / 2);
+            if (i == data.len - 1) {
+                if ((leftPos + lastGripOffset) > data.w) {
+                    leftPos = data.w - lastGripOffset;
+                }
+            }
+            // height and position of the grip is updated according to the table layout
+            colInfo.grip.style.left = (leftPos + PX);
             colInfo.grip.style.height = ((data.options.headerOnly ? headerHeight : (headerHeight + tableHeight)) + PX);
         }
 
@@ -398,7 +401,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
 	* @param {bool} isOver - to identify when the function is being called from the onGripDragOver event	
     */
     syncCols(i: number, isOver: boolean) {
-        if (this.getIsDestroyCalled())
+        if (this.getIsStateDirty())
             return;
         const table = this.grid.table, data: IResizeInfo = this._resizeInfo, gripData: IGripData = DOM.getData(drag, SIGNATURE);
         const inc = gripData.x - gripData.l, c: IColumnInfo = data.columns[i];
@@ -427,7 +430,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
 	* of max-width).
     */
     applyBounds() {
-        if (this.getIsDestroyCalled())
+        if (this.getIsStateDirty())
             return;
         const table = this.grid.table;
         const data: IResizeInfo = this._resizeInfo;
@@ -456,10 +459,10 @@ export class ResizableGrid extends uiMOD.DataGridElView {
         const viewport = this.grid._getInternal().getWrapper();
         viewport.style.width = (table.offsetWidth + (viewport.offsetWidth - viewport.clientWidth)) + PX;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         _gridDestroyed(this);
         this.unBindDS(this._ds);
         this._ds = null;
@@ -468,7 +471,7 @@ export class ResizableGrid extends uiMOD.DataGridElView {
             data.gripContainer.remove();
         DOM.removeClass([table], SIGNATURE + " " + FLEX);
         this._resizeInfo = null;
-        super.destroy();
+        super.dispose();
     }
 
     getResizeIfo(): IResizeInfo {

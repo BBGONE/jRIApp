@@ -1,26 +1,25 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils } from "jriapp_shared";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { ITooltipService } from "jriapp/int";
-import { $ } from "jriapp/utils/jquery";
+import { $ } from "./jquery";
 import { DomUtils } from "jriapp/utils/dom";
 
 const window = DomUtils.window;
 
-export const css = {
-    toolTip: "qtip",
-    toolTipError: "qtip-red"
-};
-
-export function createToolTipSvc(): ITooltipService {
-    return new tooltipService();
+export const enum css {
+    toolTip = "qtip",
+    toolTipError = "qtip-red"
 }
 
-class tooltipService implements ITooltipService {
+export function createToolTipSvc(): ITooltipService {
+    return new TooltipService();
+}
+
+class TooltipService implements ITooltipService {
     constructor() {
     }
 
     addToolTip(el: Element, tip: string, isError?: boolean, pos?: string): void {
-        let $el = $(el), options: QTip2.QTipOptions = {
+        const $el = $(el), options: QTip2.QTipOptions = {
             content: {
                 text: tip
             },
@@ -46,11 +45,10 @@ class tooltipService implements ITooltipService {
         if (!!$el.data("qtip")) {
             if (!tip) {
                 $el.qtip("destroy", true);
-            }
-            else
+            } else {
                 $el.qtip("option", "content.text", tip);
-        }
-        else if (!!tip) {
+            }
+        } else if (!!tip) {
             $el.qtip(options);
         }
     }

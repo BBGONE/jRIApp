@@ -8,6 +8,27 @@
     "outFile": "../../built/shared/shared.js",
     "declaration": true,
     "sourceMap": false,
-    "noFallthroughCasesInSwitch": true
-  }
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true
+  },
+  "files": [
+    "common.ts",
+    "autocomplete.ts",
+    "header.ts",
+    "mixobj.ts",
+    "monthpicker.ts",
+    "ssevents.ts",
+    "uploader.ts",
+    "websocket.ts",
+    "dropdownbox.ts"
+  ],
+  "include": [
+    "../../jriapp/jriapp_shared.d.ts",
+    "../../jriapp/jriapp.d.ts",
+    "../../jriapp/jriapp_ui.d.ts",
+    "../../jriapp/jriapp_db.d.ts",
+    "../../thirdparty/*"
+  ]
 }

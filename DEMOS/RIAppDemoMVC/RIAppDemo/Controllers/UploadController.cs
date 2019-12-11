@@ -1,53 +1,22 @@
-﻿using System;
+﻿using RIAppDemo.BLL.Utils;
+using RIAppDemo.Models;
+using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.SessionState;
-using RIAppDemo.BLL.DataServices;
-using RIAppDemo.Models;
 
 namespace RIAppDemo.Controllers
 {
     [SessionState(SessionStateBehavior.Disabled)]
     public class UploadController : Controller
     {
-        /// <summary>
-        ///     Used in FileApi action
-        /// </summary>
-        /// <returns></returns>
-        private UploadedFile RetrieveFileFromRequest()
+        readonly IThumbnailService _thumbnailService;
+
+
+        public UploadController(IThumbnailService thumbnailService)
         {
-            string filename = null;
-            string fileType = null;
-            var fileSize = 0;
-            var id = -1;
-            Stream fileContents = null;
-
-            if (Request.Files.Count > 0)
-            {
-                //they're uploading the old way
-                var file = Request.Files[0];
-                fileSize = file.ContentLength;
-                fileContents = file.InputStream;
-                fileType = file.ContentType;
-                filename = file.FileName;
-            }
-            else if (Request.ContentLength > 0)
-            {
-                fileSize = Request.ContentLength;
-                fileContents = Request.InputStream;
-                filename = Request.Headers["X-File-Name"];
-                fileType = Request.Headers["X-File-Type"];
-                id = int.Parse(Request.Headers["X-Data-ID"]);
-            }
-
-            return new UploadedFile
-            {
-                FileName = filename,
-                ContentType = fileType,
-                FileSize = fileSize,
-                Contents = fileContents,
-                DataID = id
-            };
+            _thumbnailService = thumbnailService;
         }
 
         public ActionResult Index()
@@ -55,22 +24,24 @@ namespace RIAppDemo.Controllers
             return new EmptyResult();
         }
 
-        public ActionResult ThumbnailUpload()
+        public async Task<ActionResult> ThumbnailUpload()
         {
             try
             {
-                var file = RetrieveFileFromRequest();
-
-                if (file.FileName != null)
+                UploadedFile file = this.GetFileFromRequest();
+                if (file.DataContent != null)
                 {
-                    var filename = Path.GetFileName(file.FileName);
-                    if (filename != null)
+                    try
                     {
-                        var svc = ThumbnailServiceFactory.Create(User);
-                        using (svc)
+                        var filename = Path.GetFileName(file.FileName);
+                        if (filename != null)
                         {
-                            svc.SaveThumbnail(file.DataID, file.FileName, file.Contents);
+                            await _thumbnailService.SaveThumbnail2(file.DataID, file.FileName, file.DataContent);
                         }
+                    }
+                    finally
+                    {
+                        file.DataContent.CleanUp();
                     }
                 }
 

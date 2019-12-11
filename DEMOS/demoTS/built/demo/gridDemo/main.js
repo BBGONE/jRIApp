@@ -1,76 +1,87 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (require, exports, RIAPP, dbMOD) {
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], function (require, exports, RIAPP, dbMOD) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var TestEnum;
     (function (TestEnum) {
         TestEnum[TestEnum["None"] = 0] = "None";
         TestEnum[TestEnum["OK"] = 1] = "OK";
         TestEnum[TestEnum["Error"] = 2] = "Error";
         TestEnum[TestEnum["Loading"] = 3] = "Loading";
-    })(exports.TestEnum || (exports.TestEnum = {}));
-    var TestEnum = exports.TestEnum;
+    })(TestEnum = exports.TestEnum || (exports.TestEnum = {}));
+    var TestEnum2;
     (function (TestEnum2) {
         TestEnum2[TestEnum2["None"] = 0] = "None";
         TestEnum2[TestEnum2["One"] = 1] = "One";
         TestEnum2[TestEnum2["Two"] = 2] = "Two";
         TestEnum2[TestEnum2["Three"] = 3] = "Three";
-    })(exports.TestEnum2 || (exports.TestEnum2 = {}));
-    var TestEnum2 = exports.TestEnum2;
-    var TestModelListItem = (function (_super) {
-        __extends(TestModelListItem, _super);
-        function TestModelListItem() {
-            _super.apply(this, arguments);
+    })(TestEnum2 = exports.TestEnum2 || (exports.TestEnum2 = {}));
+    var _TestModelListItem = (function (_super) {
+        __extends(_TestModelListItem, _super);
+        function _TestModelListItem() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        Object.defineProperty(TestModelListItem.prototype, "Key", {
+        Object.defineProperty(_TestModelListItem.prototype, "Key", {
             get: function () { return this._aspect._getProp('Key'); },
             set: function (v) { this._aspect._setProp('Key', v); },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(TestModelListItem.prototype, "SomeProperty1", {
+        Object.defineProperty(_TestModelListItem.prototype, "SomeProperty1", {
             get: function () { return this._aspect._getProp('SomeProperty1'); },
             set: function (v) { this._aspect._setProp('SomeProperty1', v); },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(TestModelListItem.prototype, "SomeProperty2", {
+        Object.defineProperty(_TestModelListItem.prototype, "SomeProperty2", {
             get: function () { return this._aspect._getProp('SomeProperty2'); },
             set: function (v) { this._aspect._setProp('SomeProperty2', v); },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(TestModelListItem.prototype, "SomeProperty3", {
+        Object.defineProperty(_TestModelListItem.prototype, "SomeProperty3", {
             get: function () { return this._aspect._getProp('SomeProperty3'); },
             set: function (v) { this._aspect._setProp('SomeProperty3', v); },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(TestModelListItem.prototype, "MoreComplexProperty", {
+        Object.defineProperty(_TestModelListItem.prototype, "MoreComplexProperty", {
             get: function () { return this._aspect._getProp('MoreComplexProperty'); },
             set: function (v) { this._aspect._setProp('MoreComplexProperty', v); },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(TestModelListItem.prototype, "EnumProperty", {
+        Object.defineProperty(_TestModelListItem.prototype, "EnumProperty", {
             get: function () { return this._aspect._getProp('EnumProperty'); },
             set: function (v) { this._aspect._setProp('EnumProperty', v); },
             enumerable: true,
             configurable: true
         });
-        TestModelListItem.prototype.toString = function () {
-            return 'TestModelListItem';
+        _TestModelListItem.prototype.toString = function () {
+            return '_TestModelListItem';
         };
-        return TestModelListItem;
+        return _TestModelListItem;
     }(RIAPP.CollectionItem));
-    exports.TestModelListItem = TestModelListItem;
     var TestDictionary = (function (_super) {
         __extends(TestDictionary, _super);
         function TestDictionary() {
-            _super.call(this, TestModelListItem, 'Key', [{ name: 'Key', dtype: 1 }, { name: 'SomeProperty1', dtype: 1 }, { name: 'SomeProperty2', dtype: 10 }, { name: 'SomeProperty3', dtype: 0 }, { name: 'MoreComplexProperty', dtype: 0 }, { name: 'EnumProperty', dtype: 0 }]);
+            return _super.call(this, 'Key', [{ name: 'Key', dtype: 1 }, { name: 'SomeProperty1', dtype: 1 }, { name: 'SomeProperty2', dtype: 10 }, { name: 'SomeProperty3', dtype: 0 }, { name: 'MoreComplexProperty', dtype: 0 }, { name: 'EnumProperty', dtype: 0 }]) || this;
         }
+        TestDictionary.prototype.itemFactory = function (aspect) {
+            return new _TestModelListItem(aspect);
+        };
         TestDictionary.prototype.findItem = function (key) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
         };
@@ -83,42 +94,47 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
     var TestList = (function (_super) {
         __extends(TestList, _super);
         function TestList() {
-            _super.call(this, TestModelListItem, [{ name: 'Key', dtype: 1 }, { name: 'SomeProperty1', dtype: 1 }, { name: 'SomeProperty2', dtype: 10 }, { name: 'SomeProperty3', dtype: 0 }, { name: 'MoreComplexProperty', dtype: 0 }, { name: 'EnumProperty', dtype: 0 }]);
+            return _super.call(this, [{ name: 'Key', dtype: 1 }, { name: 'SomeProperty1', dtype: 1 }, { name: 'SomeProperty2', dtype: 10 }, { name: 'SomeProperty3', dtype: 0 }, { name: 'MoreComplexProperty', dtype: 0 }, { name: 'EnumProperty', dtype: 0 }]) || this;
         }
+        TestList.prototype.itemFactory = function (aspect) {
+            return new _TestModelListItem(aspect);
+        };
         TestList.prototype.toString = function () {
             return 'TestList';
         };
         return TestList;
     }(RIAPP.BaseList));
     exports.TestList = TestList;
-    var KeyValListItem = (function (_super) {
-        __extends(KeyValListItem, _super);
-        function KeyValListItem() {
-            _super.apply(this, arguments);
+    var _KeyValListItem = (function (_super) {
+        __extends(_KeyValListItem, _super);
+        function _KeyValListItem() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        Object.defineProperty(KeyValListItem.prototype, "key", {
+        Object.defineProperty(_KeyValListItem.prototype, "key", {
             get: function () { return this._aspect._getProp('key'); },
             set: function (v) { this._aspect._setProp('key', v); },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(KeyValListItem.prototype, "val", {
+        Object.defineProperty(_KeyValListItem.prototype, "val", {
             get: function () { return this._aspect._getProp('val'); },
             set: function (v) { this._aspect._setProp('val', v); },
             enumerable: true,
             configurable: true
         });
-        KeyValListItem.prototype.toString = function () {
-            return 'KeyValListItem';
+        _KeyValListItem.prototype.toString = function () {
+            return '_KeyValListItem';
         };
-        return KeyValListItem;
+        return _KeyValListItem;
     }(RIAPP.CollectionItem));
-    exports.KeyValListItem = KeyValListItem;
     var KeyValDictionary = (function (_super) {
         __extends(KeyValDictionary, _super);
         function KeyValDictionary() {
-            _super.call(this, KeyValListItem, 'key', [{ name: 'key', dtype: 3 }, { name: 'val', dtype: 1 }]);
+            return _super.call(this, 'key', [{ name: 'key', dtype: 3 }, { name: 'val', dtype: 1 }]) || this;
         }
+        KeyValDictionary.prototype.itemFactory = function (aspect) {
+            return new _KeyValListItem(aspect);
+        };
         KeyValDictionary.prototype.findItem = function (key) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
         };
@@ -128,34 +144,36 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return KeyValDictionary;
     }(RIAPP.BaseDictionary));
     exports.KeyValDictionary = KeyValDictionary;
-    var StrKeyValListItem = (function (_super) {
-        __extends(StrKeyValListItem, _super);
-        function StrKeyValListItem() {
-            _super.apply(this, arguments);
+    var _StrKeyValListItem = (function (_super) {
+        __extends(_StrKeyValListItem, _super);
+        function _StrKeyValListItem() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        Object.defineProperty(StrKeyValListItem.prototype, "key", {
+        Object.defineProperty(_StrKeyValListItem.prototype, "key", {
             get: function () { return this._aspect._getProp('key'); },
             set: function (v) { this._aspect._setProp('key', v); },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(StrKeyValListItem.prototype, "val", {
+        Object.defineProperty(_StrKeyValListItem.prototype, "val", {
             get: function () { return this._aspect._getProp('val'); },
             set: function (v) { this._aspect._setProp('val', v); },
             enumerable: true,
             configurable: true
         });
-        StrKeyValListItem.prototype.toString = function () {
-            return 'StrKeyValListItem';
+        _StrKeyValListItem.prototype.toString = function () {
+            return '_StrKeyValListItem';
         };
-        return StrKeyValListItem;
+        return _StrKeyValListItem;
     }(RIAPP.CollectionItem));
-    exports.StrKeyValListItem = StrKeyValListItem;
     var StrKeyValDictionary = (function (_super) {
         __extends(StrKeyValDictionary, _super);
         function StrKeyValDictionary() {
-            _super.call(this, StrKeyValListItem, 'key', [{ name: 'key', dtype: 1 }, { name: 'val', dtype: 1 }]);
+            return _super.call(this, 'key', [{ name: 'key', dtype: 1 }, { name: 'val', dtype: 1 }]) || this;
         }
+        StrKeyValDictionary.prototype.itemFactory = function (aspect) {
+            return new _StrKeyValListItem(aspect);
+        };
         StrKeyValDictionary.prototype.findItem = function (key) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
         };
@@ -165,40 +183,42 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return StrKeyValDictionary;
     }(RIAPP.BaseDictionary));
     exports.StrKeyValDictionary = StrKeyValDictionary;
-    var RadioValListItem = (function (_super) {
-        __extends(RadioValListItem, _super);
-        function RadioValListItem() {
-            _super.apply(this, arguments);
+    var _RadioValListItem = (function (_super) {
+        __extends(_RadioValListItem, _super);
+        function _RadioValListItem() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        Object.defineProperty(RadioValListItem.prototype, "key", {
+        Object.defineProperty(_RadioValListItem.prototype, "key", {
             get: function () { return this._aspect._getProp('key'); },
             set: function (v) { this._aspect._setProp('key', v); },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(RadioValListItem.prototype, "value", {
+        Object.defineProperty(_RadioValListItem.prototype, "value", {
             get: function () { return this._aspect._getProp('value'); },
             set: function (v) { this._aspect._setProp('value', v); },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(RadioValListItem.prototype, "comment", {
+        Object.defineProperty(_RadioValListItem.prototype, "comment", {
             get: function () { return this._aspect._getProp('comment'); },
             set: function (v) { this._aspect._setProp('comment', v); },
             enumerable: true,
             configurable: true
         });
-        RadioValListItem.prototype.toString = function () {
-            return 'RadioValListItem';
+        _RadioValListItem.prototype.toString = function () {
+            return '_RadioValListItem';
         };
-        return RadioValListItem;
+        return _RadioValListItem;
     }(RIAPP.CollectionItem));
-    exports.RadioValListItem = RadioValListItem;
     var RadioValDictionary = (function (_super) {
         __extends(RadioValDictionary, _super);
         function RadioValDictionary() {
-            _super.call(this, RadioValListItem, 'key', [{ name: 'key', dtype: 1 }, { name: 'value', dtype: 1 }, { name: 'comment', dtype: 1 }]);
+            return _super.call(this, 'key', [{ name: 'key', dtype: 1 }, { name: 'value', dtype: 1 }, { name: 'comment', dtype: 1 }]) || this;
         }
+        RadioValDictionary.prototype.itemFactory = function (aspect) {
+            return new _RadioValListItem(aspect);
+        };
         RadioValDictionary.prototype.findItem = function (key) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
         };
@@ -208,34 +228,36 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return RadioValDictionary;
     }(RIAPP.BaseDictionary));
     exports.RadioValDictionary = RadioValDictionary;
-    var HistoryItemListItem = (function (_super) {
-        __extends(HistoryItemListItem, _super);
-        function HistoryItemListItem() {
-            _super.apply(this, arguments);
+    var _HistoryItemListItem = (function (_super) {
+        __extends(_HistoryItemListItem, _super);
+        function _HistoryItemListItem() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        Object.defineProperty(HistoryItemListItem.prototype, "radioValue", {
+        Object.defineProperty(_HistoryItemListItem.prototype, "radioValue", {
             get: function () { return this._aspect._getProp('radioValue'); },
             set: function (v) { this._aspect._setProp('radioValue', v); },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(HistoryItemListItem.prototype, "time", {
+        Object.defineProperty(_HistoryItemListItem.prototype, "time", {
             get: function () { return this._aspect._getProp('time'); },
             set: function (v) { this._aspect._setProp('time', v); },
             enumerable: true,
             configurable: true
         });
-        HistoryItemListItem.prototype.toString = function () {
-            return 'HistoryItemListItem';
+        _HistoryItemListItem.prototype.toString = function () {
+            return '_HistoryItemListItem';
         };
-        return HistoryItemListItem;
+        return _HistoryItemListItem;
     }(RIAPP.CollectionItem));
-    exports.HistoryItemListItem = HistoryItemListItem;
     var HistoryList = (function (_super) {
         __extends(HistoryList, _super);
         function HistoryList() {
-            _super.call(this, HistoryItemListItem, [{ name: 'radioValue', dtype: 1 }, { name: 'time', dtype: 6 }]);
+            return _super.call(this, [{ name: 'radioValue', dtype: 1 }, { name: 'time', dtype: 6 }]) || this;
         }
+        HistoryList.prototype.itemFactory = function (aspect) {
+            return new _HistoryItemListItem(aspect);
+        };
         HistoryList.prototype.toString = function () {
             return 'HistoryList';
         };
@@ -245,7 +267,7 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
     var Customer_ComplexProp1 = (function (_super) {
         __extends(Customer_ComplexProp1, _super);
         function Customer_ComplexProp1(name, parent) {
-            _super.call(this, name, parent);
+            return _super.call(this, name, parent) || this;
         }
         Object.defineProperty(Customer_ComplexProp1.prototype, "EmailAddress", {
             get: function () { return this.getValue('ComplexProp.ComplexProp.EmailAddress'); },
@@ -268,8 +290,9 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
     var Customer_ComplexProp = (function (_super) {
         __extends(Customer_ComplexProp, _super);
         function Customer_ComplexProp(name, owner) {
-            _super.call(this, name, owner);
-            this._ComplexProp = null;
+            var _this = _super.call(this, name, owner) || this;
+            _this._ComplexProp = null;
+            return _this;
         }
         Object.defineProperty(Customer_ComplexProp.prototype, "FirstName", {
             get: function () { return this.getValue('ComplexProp.FirstName'); },
@@ -307,86 +330,88 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return Customer_ComplexProp;
     }(dbMOD.RootComplexProperty));
     exports.Customer_ComplexProp = Customer_ComplexProp;
+    var AddressEntity = (function (_super) {
+        __extends(AddressEntity, _super);
+        function AddressEntity(aspect) {
+            return _super.call(this, aspect) || this;
+        }
+        AddressEntity.prototype.toString = function () {
+            return 'AddressEntity';
+        };
+        Object.defineProperty(AddressEntity.prototype, "AddressID", {
+            get: function () { return this._aspect._getFieldVal('AddressID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "AddressLine1", {
+            get: function () { return this._aspect._getFieldVal('AddressLine1'); },
+            set: function (v) { this._aspect._setFieldVal('AddressLine1', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "AddressLine2", {
+            get: function () { return this._aspect._getFieldVal('AddressLine2'); },
+            set: function (v) { this._aspect._setFieldVal('AddressLine2', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "City", {
+            get: function () { return this._aspect._getFieldVal('City'); },
+            set: function (v) { this._aspect._setFieldVal('City', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "StateProvince", {
+            get: function () { return this._aspect._getFieldVal('StateProvince'); },
+            set: function (v) { this._aspect._setFieldVal('StateProvince', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "CountryRegion", {
+            get: function () { return this._aspect._getFieldVal('CountryRegion'); },
+            set: function (v) { this._aspect._setFieldVal('CountryRegion', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "PostalCode", {
+            get: function () { return this._aspect._getFieldVal('PostalCode'); },
+            set: function (v) { this._aspect._setFieldVal('PostalCode', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "ModifiedDate", {
+            get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressEntity.prototype, "CustomerAddresses", {
+            get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
+            enumerable: true,
+            configurable: true
+        });
+        return AddressEntity;
+    }(RIAPP.CollectionItem));
     var AddressDb = (function (_super) {
         __extends(AddressDb, _super);
         function AddressDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
-                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "Address" },
+                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 100, "dbSetName": "Address" },
                 childAssoc: ([]),
                 parentAssoc: ([{ "name": "CustAddrToAddress", "parentDbSetName": "Address", "childDbSetName": "CustomerAddress", "childToParentName": "Address", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "OrdersToBillAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address1", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "BillToAddressID" }] }, { "name": "OrdersToShipAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "ShipToAddressID" }] }])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "AddressID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "AddressLine1", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 60, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "AddressLine2", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 60, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "City", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 30, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "StateProvince", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CountryRegion", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "PostalCode", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 15, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CustomerAddresses", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._createEntityType();
+            _this = _super.call(this, opts) || this;
+            return _this;
         }
-        AddressDb.prototype._createEntityType = function () {
-            this._entityType = (function (_super) {
-                __extends(class_1, _super);
-                function class_1(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_1.prototype.toString = function () {
-                    return 'AddressEntity';
-                };
-                Object.defineProperty(class_1.prototype, "AddressID", {
-                    get: function () { return this._aspect._getFieldVal('AddressID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "AddressLine1", {
-                    get: function () { return this._aspect._getFieldVal('AddressLine1'); },
-                    set: function (v) { this._aspect._setFieldVal('AddressLine1', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "AddressLine2", {
-                    get: function () { return this._aspect._getFieldVal('AddressLine2'); },
-                    set: function (v) { this._aspect._setFieldVal('AddressLine2', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "City", {
-                    get: function () { return this._aspect._getFieldVal('City'); },
-                    set: function (v) { this._aspect._setFieldVal('City', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "StateProvince", {
-                    get: function () { return this._aspect._getFieldVal('StateProvince'); },
-                    set: function (v) { this._aspect._setFieldVal('StateProvince', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "CountryRegion", {
-                    get: function () { return this._aspect._getFieldVal('CountryRegion'); },
-                    set: function (v) { this._aspect._setFieldVal('CountryRegion', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "PostalCode", {
-                    get: function () { return this._aspect._getFieldVal('PostalCode'); },
-                    set: function (v) { this._aspect._setFieldVal('PostalCode', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "ModifiedDate", {
-                    get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_1.prototype, "CustomerAddresses", {
-                    get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_1;
-            }(RIAPP.CollectionItem));
+        AddressDb.prototype.itemFactory = function (aspect) {
+            return new AddressEntity(aspect);
         };
         AddressDb.prototype.findEntity = function (addressID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -405,60 +430,62 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return AddressDb;
     }(dbMOD.DbSet));
     exports.AddressDb = AddressDb;
+    var AddressInfoEntity = (function (_super) {
+        __extends(AddressInfoEntity, _super);
+        function AddressInfoEntity(aspect) {
+            return _super.call(this, aspect) || this;
+        }
+        AddressInfoEntity.prototype.toString = function () {
+            return 'AddressInfoEntity';
+        };
+        Object.defineProperty(AddressInfoEntity.prototype, "AddressID", {
+            get: function () { return this._aspect._getFieldVal('AddressID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressInfoEntity.prototype, "AddressLine1", {
+            get: function () { return this._aspect._getFieldVal('AddressLine1'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressInfoEntity.prototype, "City", {
+            get: function () { return this._aspect._getFieldVal('City'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressInfoEntity.prototype, "StateProvince", {
+            get: function () { return this._aspect._getFieldVal('StateProvince'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressInfoEntity.prototype, "CountryRegion", {
+            get: function () { return this._aspect._getFieldVal('CountryRegion'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AddressInfoEntity.prototype, "CustomerAddresses", {
+            get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
+            enumerable: true,
+            configurable: true
+        });
+        return AddressInfoEntity;
+    }(RIAPP.CollectionItem));
     var AddressInfoDb = (function (_super) {
         __extends(AddressInfoDb, _super);
         function AddressInfoDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
-                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "AddressInfo" },
+                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 100, "dbSetName": "AddressInfo" },
                 childAssoc: ([]),
                 parentAssoc: ([{ "name": "CustAddrToAddress2", "parentDbSetName": "AddressInfo", "childDbSetName": "CustomerAddress", "childToParentName": "AddressInfo", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "AddressID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "AddressLine1", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 200, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "City", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 30, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "StateProvince", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CountryRegion", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CustomerAddresses", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._createEntityType();
+            _this = _super.call(this, opts) || this;
+            return _this;
         }
-        AddressInfoDb.prototype._createEntityType = function () {
-            this._entityType = (function (_super) {
-                __extends(class_2, _super);
-                function class_2(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_2.prototype.toString = function () {
-                    return 'AddressInfoEntity';
-                };
-                Object.defineProperty(class_2.prototype, "AddressID", {
-                    get: function () { return this._aspect._getFieldVal('AddressID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_2.prototype, "AddressLine1", {
-                    get: function () { return this._aspect._getFieldVal('AddressLine1'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_2.prototype, "City", {
-                    get: function () { return this._aspect._getFieldVal('City'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_2.prototype, "StateProvince", {
-                    get: function () { return this._aspect._getFieldVal('StateProvince'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_2.prototype, "CountryRegion", {
-                    get: function () { return this._aspect._getFieldVal('CountryRegion'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_2.prototype, "CustomerAddresses", {
-                    get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_2;
-            }(RIAPP.CollectionItem));
+        AddressInfoDb.prototype.itemFactory = function (aspect) {
+            return new AddressInfoEntity(aspect);
         };
         AddressInfoDb.prototype.findEntity = function (addressID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -472,104 +499,107 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return AddressInfoDb;
     }(dbMOD.DbSet));
     exports.AddressInfoDb = AddressInfoDb;
+    var CustomerEntity = (function (_super) {
+        __extends(CustomerEntity, _super);
+        function CustomerEntity(aspect) {
+            var _this = _super.call(this, aspect) || this;
+            _this._ComplexProp = null;
+            return _this;
+        }
+        CustomerEntity.prototype.toString = function () {
+            return 'CustomerEntity';
+        };
+        Object.defineProperty(CustomerEntity.prototype, "CustomerID", {
+            get: function () { return this._aspect._getFieldVal('CustomerID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "NameStyle", {
+            get: function () { return this._aspect._getFieldVal('NameStyle'); },
+            set: function (v) { this._aspect._setFieldVal('NameStyle', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "Title", {
+            get: function () { return this._aspect._getFieldVal('Title'); },
+            set: function (v) { this._aspect._setFieldVal('Title', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "Suffix", {
+            get: function () { return this._aspect._getFieldVal('Suffix'); },
+            set: function (v) { this._aspect._setFieldVal('Suffix', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "CompanyName", {
+            get: function () { return this._aspect._getFieldVal('CompanyName'); },
+            set: function (v) { this._aspect._setFieldVal('CompanyName', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "SalesPerson", {
+            get: function () { return this._aspect._getFieldVal('SalesPerson'); },
+            set: function (v) { this._aspect._setFieldVal('SalesPerson', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "PasswordHash", {
+            get: function () { return this._aspect._getFieldVal('PasswordHash'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "PasswordSalt", {
+            get: function () { return this._aspect._getFieldVal('PasswordSalt'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "ModifiedDate", {
+            get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "ComplexProp", {
+            get: function () { if (!this._ComplexProp) {
+                this._ComplexProp = new Customer_ComplexProp('ComplexProp', this._aspect);
+            } return this._ComplexProp; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "AddressCount", {
+            get: function () { return this._aspect._getFieldVal('AddressCount'); },
+            set: function (v) { this._aspect._setFieldVal('AddressCount', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerEntity.prototype, "CustomerAddresses", {
+            get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
+            enumerable: true,
+            configurable: true
+        });
+        return CustomerEntity;
+    }(RIAPP.CollectionItem));
     var CustomerDb = (function (_super) {
         __extends(CustomerDb, _super);
         function CustomerDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
                 dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "Customer" },
                 childAssoc: ([]),
                 parentAssoc: ([{ "name": "CustAddrToCustomer", "parentDbSetName": "Customer", "childDbSetName": "CustomerAddress", "childToParentName": "Customer", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdersToCustomer", "parentDbSetName": "Customer", "childDbSetName": "SalesOrderHeader", "childToParentName": "Customer", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }])
             };
-            opts.dbSetInfo.fieldInfos = ([{ "fieldName": "CustomerID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "NameStyle", "isPrimaryKey": 0, "dataType": 2, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Title", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Suffix", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 10, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CompanyName", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 128, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesPerson", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 256, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "PasswordHash", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 128, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "PasswordSalt", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 10, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ComplexProp", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 5, "dependentOn": "", "nested": [{ "fieldName": "FirstName", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "MiddleName", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "LastName", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 2, "dependentOn": "ComplexProp.FirstName,ComplexProp.MiddleName,ComplexProp.LastName", "nested": null }, { "fieldName": "ComplexProp", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 5, "dependentOn": "", "nested": [{ "fieldName": "EmailAddress", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "^[_a-z0-9-]+(\\.[_a-z0-9-]+)*@[a-z0-9-]+(\\.[a-z0-9-]+)*(\\.[a-z]{2,4})$", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Phone", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 25, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }] }] }, { "fieldName": "AddressCount", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 6, "dependentOn": "", "nested": null }, { "fieldName": "CustomerAddresses", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._createEntityType();
+            opts.dbSetInfo.fieldInfos = ([{ "fieldName": "CustomerID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "NameStyle", "isPrimaryKey": 0, "dataType": 2, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Title", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Suffix", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 10, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CompanyName", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 128, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesPerson", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 256, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "PasswordHash", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 128, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "PasswordSalt", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 10, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 36, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ComplexProp", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 5, "dependentOn": "", "nested": [{ "fieldName": "FirstName", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "MiddleName", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "LastName", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 2, "dependentOn": "ComplexProp.FirstName,ComplexProp.MiddleName,ComplexProp.LastName", "nested": null }, { "fieldName": "ComplexProp", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 5, "dependentOn": "", "nested": [{ "fieldName": "EmailAddress", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "^[_a-z0-9-]+(\\.[_a-z0-9-]+)*@[a-z0-9-]+(\\.[a-z0-9-]+)*(\\.[a-z]{2,4})$", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Phone", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 25, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }] }] }, { "fieldName": "AddressCount", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 6, "dependentOn": "", "nested": null }, { "fieldName": "CustomerAddresses", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "", "nested": null }]);
+            _this = _super.call(this, opts) || this;
+            return _this;
         }
-        CustomerDb.prototype._createEntityType = function () {
-            this._entityType = (function (_super) {
-                __extends(class_3, _super);
-                function class_3(aspect) {
-                    _super.call(this, aspect);
-                    this._ComplexProp = null;
-                }
-                class_3.prototype.toString = function () {
-                    return 'CustomerEntity';
-                };
-                Object.defineProperty(class_3.prototype, "CustomerID", {
-                    get: function () { return this._aspect._getFieldVal('CustomerID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "NameStyle", {
-                    get: function () { return this._aspect._getFieldVal('NameStyle'); },
-                    set: function (v) { this._aspect._setFieldVal('NameStyle', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "Title", {
-                    get: function () { return this._aspect._getFieldVal('Title'); },
-                    set: function (v) { this._aspect._setFieldVal('Title', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "Suffix", {
-                    get: function () { return this._aspect._getFieldVal('Suffix'); },
-                    set: function (v) { this._aspect._setFieldVal('Suffix', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "CompanyName", {
-                    get: function () { return this._aspect._getFieldVal('CompanyName'); },
-                    set: function (v) { this._aspect._setFieldVal('CompanyName', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "SalesPerson", {
-                    get: function () { return this._aspect._getFieldVal('SalesPerson'); },
-                    set: function (v) { this._aspect._setFieldVal('SalesPerson', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "PasswordHash", {
-                    get: function () { return this._aspect._getFieldVal('PasswordHash'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "PasswordSalt", {
-                    get: function () { return this._aspect._getFieldVal('PasswordSalt'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "ModifiedDate", {
-                    get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "ComplexProp", {
-                    get: function () { if (!this._ComplexProp) {
-                        this._ComplexProp = new Customer_ComplexProp('ComplexProp', this._aspect);
-                    } return this._ComplexProp; },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "AddressCount", {
-                    get: function () { return this._aspect._getFieldVal('AddressCount'); },
-                    set: function (v) { this._aspect._setFieldVal('AddressCount', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_3.prototype, "CustomerAddresses", {
-                    get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_3;
-            }(RIAPP.CollectionItem));
+        CustomerDb.prototype.itemFactory = function (aspect) {
+            return new CustomerEntity(aspect);
         };
         CustomerDb.prototype.findEntity = function (customerID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -586,76 +616,78 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return CustomerDb;
     }(dbMOD.DbSet));
     exports.CustomerDb = CustomerDb;
+    var CustomerAddressEntity = (function (_super) {
+        __extends(CustomerAddressEntity, _super);
+        function CustomerAddressEntity(aspect) {
+            return _super.call(this, aspect) || this;
+        }
+        CustomerAddressEntity.prototype.toString = function () {
+            return 'CustomerAddressEntity';
+        };
+        Object.defineProperty(CustomerAddressEntity.prototype, "CustomerID", {
+            get: function () { return this._aspect._getFieldVal('CustomerID'); },
+            set: function (v) { this._aspect._setFieldVal('CustomerID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressEntity.prototype, "AddressID", {
+            get: function () { return this._aspect._getFieldVal('AddressID'); },
+            set: function (v) { this._aspect._setFieldVal('AddressID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressEntity.prototype, "AddressType", {
+            get: function () { return this._aspect._getFieldVal('AddressType'); },
+            set: function (v) { this._aspect._setFieldVal('AddressType', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressEntity.prototype, "ModifiedDate", {
+            get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressEntity.prototype, "Customer", {
+            get: function () { return this._aspect._getNavFieldVal('Customer'); },
+            set: function (v) { this._aspect._setNavFieldVal('Customer', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressEntity.prototype, "Address", {
+            get: function () { return this._aspect._getNavFieldVal('Address'); },
+            set: function (v) { this._aspect._setNavFieldVal('Address', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerAddressEntity.prototype, "AddressInfo", {
+            get: function () { return this._aspect._getNavFieldVal('AddressInfo'); },
+            set: function (v) { this._aspect._setNavFieldVal('AddressInfo', v); },
+            enumerable: true,
+            configurable: true
+        });
+        return CustomerAddressEntity;
+    }(RIAPP.CollectionItem));
     var CustomerAddressDb = (function (_super) {
         __extends(CustomerAddressDb, _super);
         function CustomerAddressDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
-                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "CustomerAddress" },
+                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 100, "dbSetName": "CustomerAddress" },
                 childAssoc: ([{ "name": "CustAddrToAddress", "parentDbSetName": "Address", "childDbSetName": "CustomerAddress", "childToParentName": "Address", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToAddress2", "parentDbSetName": "AddressInfo", "childDbSetName": "CustomerAddress", "childToParentName": "AddressInfo", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToCustomer", "parentDbSetName": "Customer", "childDbSetName": "CustomerAddress", "childToParentName": "Customer", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }]),
                 parentAssoc: ([])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "CustomerID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "AddressID", "isPrimaryKey": 2, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "AddressType", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Customer", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "CustomerID", "nested": null }, { "fieldName": "Address", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "AddressID", "nested": null }, { "fieldName": "AddressInfo", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "AddressID", "nested": null }]);
-            _super.call(this, opts);
-            this._createEntityType();
+            _this = _super.call(this, opts) || this;
+            return _this;
         }
-        CustomerAddressDb.prototype._createEntityType = function () {
-            this._entityType = (function (_super) {
-                __extends(class_4, _super);
-                function class_4(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_4.prototype.toString = function () {
-                    return 'CustomerAddressEntity';
-                };
-                Object.defineProperty(class_4.prototype, "CustomerID", {
-                    get: function () { return this._aspect._getFieldVal('CustomerID'); },
-                    set: function (v) { this._aspect._setFieldVal('CustomerID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_4.prototype, "AddressID", {
-                    get: function () { return this._aspect._getFieldVal('AddressID'); },
-                    set: function (v) { this._aspect._setFieldVal('AddressID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_4.prototype, "AddressType", {
-                    get: function () { return this._aspect._getFieldVal('AddressType'); },
-                    set: function (v) { this._aspect._setFieldVal('AddressType', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_4.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_4.prototype, "ModifiedDate", {
-                    get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_4.prototype, "Customer", {
-                    get: function () { return this._aspect._getNavFieldVal('Customer'); },
-                    set: function (v) { this._aspect._setNavFieldVal('Customer', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_4.prototype, "Address", {
-                    get: function () { return this._aspect._getNavFieldVal('Address'); },
-                    set: function (v) { this._aspect._setNavFieldVal('Address', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_4.prototype, "AddressInfo", {
-                    get: function () { return this._aspect._getNavFieldVal('AddressInfo'); },
-                    set: function (v) { this._aspect._setNavFieldVal('AddressInfo', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_4;
-            }(RIAPP.CollectionItem));
+        CustomerAddressDb.prototype.itemFactory = function (aspect) {
+            return new CustomerAddressEntity(aspect);
         };
         CustomerAddressDb.prototype.findEntity = function (customerID, addressID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -674,51 +706,53 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return CustomerAddressDb;
     }(dbMOD.DbSet));
     exports.CustomerAddressDb = CustomerAddressDb;
+    var CustomerJSONEntity = (function (_super) {
+        __extends(CustomerJSONEntity, _super);
+        function CustomerJSONEntity(aspect) {
+            return _super.call(this, aspect) || this;
+        }
+        CustomerJSONEntity.prototype.toString = function () {
+            return 'CustomerJSONEntity';
+        };
+        Object.defineProperty(CustomerJSONEntity.prototype, "CustomerID", {
+            get: function () { return this._aspect._getFieldVal('CustomerID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerJSONEntity.prototype, "Data", {
+            get: function () { return this._aspect._getFieldVal('Data'); },
+            set: function (v) { this._aspect._setFieldVal('Data', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerJSONEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerJSONEntity.prototype, "Customer", {
+            get: function () { return this._aspect._getCalcFieldVal('Customer'); },
+            enumerable: true,
+            configurable: true
+        });
+        return CustomerJSONEntity;
+    }(RIAPP.CollectionItem));
     var CustomerJSONDb = (function (_super) {
         __extends(CustomerJSONDb, _super);
         function CustomerJSONDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
-                dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "CustomerJSON" },
+                dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 100, "dbSetName": "CustomerJSON" },
                 childAssoc: ([]),
                 parentAssoc: ([])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "CustomerID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Data", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": false, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "Customer", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 2, "dependentOn": "Data", "nested": null }]);
-            _super.call(this, opts);
-            this._createEntityType();
+            _this = _super.call(this, opts) || this;
+            return _this;
         }
-        CustomerJSONDb.prototype._createEntityType = function () {
-            this._entityType = (function (_super) {
-                __extends(class_5, _super);
-                function class_5(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_5.prototype.toString = function () {
-                    return 'CustomerJSONEntity';
-                };
-                Object.defineProperty(class_5.prototype, "CustomerID", {
-                    get: function () { return this._aspect._getFieldVal('CustomerID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_5.prototype, "Data", {
-                    get: function () { return this._aspect._getFieldVal('Data'); },
-                    set: function (v) { this._aspect._setFieldVal('Data', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_5.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_5.prototype, "Customer", {
-                    get: function () { return this._aspect._getCalcFieldVal('Customer'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_5;
-            }(RIAPP.CollectionItem));
+        CustomerJSONDb.prototype.itemFactory = function (aspect) {
+            return new CustomerJSONEntity(aspect);
         };
         CustomerJSONDb.prototype.findEntity = function (customerID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -733,42 +767,44 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return CustomerJSONDb;
     }(dbMOD.DbSet));
     exports.CustomerJSONDb = CustomerJSONDb;
+    var LookUpProductEntity = (function (_super) {
+        __extends(LookUpProductEntity, _super);
+        function LookUpProductEntity(aspect) {
+            return _super.call(this, aspect) || this;
+        }
+        LookUpProductEntity.prototype.toString = function () {
+            return 'LookUpProductEntity';
+        };
+        Object.defineProperty(LookUpProductEntity.prototype, "ProductID", {
+            get: function () { return this._aspect._getFieldVal('ProductID'); },
+            set: function (v) { this._aspect._setFieldVal('ProductID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(LookUpProductEntity.prototype, "Name", {
+            get: function () { return this._aspect._getFieldVal('Name'); },
+            set: function (v) { this._aspect._setFieldVal('Name', v); },
+            enumerable: true,
+            configurable: true
+        });
+        return LookUpProductEntity;
+    }(RIAPP.CollectionItem));
     var LookUpProductDb = (function (_super) {
         __extends(LookUpProductDb, _super);
         function LookUpProductDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
-                dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "LookUpProduct" },
+                dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 100, "dbSetName": "LookUpProduct" },
                 childAssoc: ([]),
                 parentAssoc: ([])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "ProductID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._createEntityType();
+            _this = _super.call(this, opts) || this;
+            return _this;
         }
-        LookUpProductDb.prototype._createEntityType = function () {
-            this._entityType = (function (_super) {
-                __extends(class_6, _super);
-                function class_6(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_6.prototype.toString = function () {
-                    return 'LookUpProductEntity';
-                };
-                Object.defineProperty(class_6.prototype, "ProductID", {
-                    get: function () { return this._aspect._getFieldVal('ProductID'); },
-                    set: function (v) { this._aspect._setFieldVal('ProductID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_6.prototype, "Name", {
-                    get: function () { return this._aspect._getFieldVal('Name'); },
-                    set: function (v) { this._aspect._setFieldVal('Name', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_6;
-            }(RIAPP.CollectionItem));
+        LookUpProductDb.prototype.itemFactory = function (aspect) {
+            return new LookUpProductEntity(aspect);
         };
         LookUpProductDb.prototype.findEntity = function (productID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -782,9 +818,123 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return LookUpProductDb;
     }(dbMOD.DbSet));
     exports.LookUpProductDb = LookUpProductDb;
+    var ProductEntity = (function (_super) {
+        __extends(ProductEntity, _super);
+        function ProductEntity(aspect) {
+            return _super.call(this, aspect) || this;
+        }
+        ProductEntity.prototype.toString = function () {
+            return 'ProductEntity';
+        };
+        Object.defineProperty(ProductEntity.prototype, "ProductID", {
+            get: function () { return this._aspect._getFieldVal('ProductID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "Name", {
+            get: function () { return this._aspect._getFieldVal('Name'); },
+            set: function (v) { this._aspect._setFieldVal('Name', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "ProductNumber", {
+            get: function () { return this._aspect._getFieldVal('ProductNumber'); },
+            set: function (v) { this._aspect._setFieldVal('ProductNumber', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "Color", {
+            get: function () { return this._aspect._getFieldVal('Color'); },
+            set: function (v) { this._aspect._setFieldVal('Color', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "StandardCost", {
+            get: function () { return this._aspect._getFieldVal('StandardCost'); },
+            set: function (v) { this._aspect._setFieldVal('StandardCost', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "ListPrice", {
+            get: function () { return this._aspect._getFieldVal('ListPrice'); },
+            set: function (v) { this._aspect._setFieldVal('ListPrice', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "Size", {
+            get: function () { return this._aspect._getFieldVal('Size'); },
+            set: function (v) { this._aspect._setFieldVal('Size', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "Weight", {
+            get: function () { return this._aspect._getFieldVal('Weight'); },
+            set: function (v) { this._aspect._setFieldVal('Weight', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "ProductCategoryID", {
+            get: function () { return this._aspect._getFieldVal('ProductCategoryID'); },
+            set: function (v) { this._aspect._setFieldVal('ProductCategoryID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "ProductModelID", {
+            get: function () { return this._aspect._getFieldVal('ProductModelID'); },
+            set: function (v) { this._aspect._setFieldVal('ProductModelID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "SellStartDate", {
+            get: function () { return this._aspect._getFieldVal('SellStartDate'); },
+            set: function (v) { this._aspect._setFieldVal('SellStartDate', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "SellEndDate", {
+            get: function () { return this._aspect._getFieldVal('SellEndDate'); },
+            set: function (v) { this._aspect._setFieldVal('SellEndDate', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "DiscontinuedDate", {
+            get: function () { return this._aspect._getFieldVal('DiscontinuedDate'); },
+            set: function (v) { this._aspect._setFieldVal('DiscontinuedDate', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "ModifiedDate", {
+            get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "IsActive", {
+            get: function () { return this._aspect._getCalcFieldVal('IsActive'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "ThumbnailPhotoFileName", {
+            get: function () { return this._aspect._getFieldVal('ThumbnailPhotoFileName'); },
+            set: function (v) { this._aspect._setFieldVal('ThumbnailPhotoFileName', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductEntity.prototype, "SalesOrderDetails", {
+            get: function () { return this._aspect._getNavFieldVal('SalesOrderDetails'); },
+            enumerable: true,
+            configurable: true
+        });
+        return ProductEntity;
+    }(RIAPP.CollectionItem));
     var ProductDb = (function (_super) {
         __extends(ProductDb, _super);
         function ProductDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
                 dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "Product" },
@@ -792,123 +942,11 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
                 parentAssoc: ([{ "name": "OrdDetailsToProduct", "parentDbSetName": "Product", "childDbSetName": "SalesOrderDetail", "childToParentName": "Product", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 0, "fieldRels": [{ "parentField": "ProductID", "childField": "ProductID" }] }])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "ProductID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ProductNumber", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 25, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Color", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 15, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "StandardCost", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ListPrice", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "100,5000", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Size", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 5, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Weight", "isPrimaryKey": 0, "dataType": 4, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 5, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ProductCategoryID", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ProductModelID", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SellStartDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "2000-01-01,2015-01-01", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SellEndDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "DiscontinuedDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "IsActive", "isPrimaryKey": 0, "dataType": 2, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 2, "dependentOn": "SellEndDate", "nested": null }, { "fieldName": "ThumbnailPhotoFileName", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 256, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderDetails", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._createEntityType();
+            _this = _super.call(this, opts) || this;
+            return _this;
         }
-        ProductDb.prototype._createEntityType = function () {
-            this._entityType = (function (_super) {
-                __extends(class_7, _super);
-                function class_7(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_7.prototype.toString = function () {
-                    return 'ProductEntity';
-                };
-                Object.defineProperty(class_7.prototype, "ProductID", {
-                    get: function () { return this._aspect._getFieldVal('ProductID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "Name", {
-                    get: function () { return this._aspect._getFieldVal('Name'); },
-                    set: function (v) { this._aspect._setFieldVal('Name', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "ProductNumber", {
-                    get: function () { return this._aspect._getFieldVal('ProductNumber'); },
-                    set: function (v) { this._aspect._setFieldVal('ProductNumber', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "Color", {
-                    get: function () { return this._aspect._getFieldVal('Color'); },
-                    set: function (v) { this._aspect._setFieldVal('Color', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "StandardCost", {
-                    get: function () { return this._aspect._getFieldVal('StandardCost'); },
-                    set: function (v) { this._aspect._setFieldVal('StandardCost', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "ListPrice", {
-                    get: function () { return this._aspect._getFieldVal('ListPrice'); },
-                    set: function (v) { this._aspect._setFieldVal('ListPrice', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "Size", {
-                    get: function () { return this._aspect._getFieldVal('Size'); },
-                    set: function (v) { this._aspect._setFieldVal('Size', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "Weight", {
-                    get: function () { return this._aspect._getFieldVal('Weight'); },
-                    set: function (v) { this._aspect._setFieldVal('Weight', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "ProductCategoryID", {
-                    get: function () { return this._aspect._getFieldVal('ProductCategoryID'); },
-                    set: function (v) { this._aspect._setFieldVal('ProductCategoryID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "ProductModelID", {
-                    get: function () { return this._aspect._getFieldVal('ProductModelID'); },
-                    set: function (v) { this._aspect._setFieldVal('ProductModelID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "SellStartDate", {
-                    get: function () { return this._aspect._getFieldVal('SellStartDate'); },
-                    set: function (v) { this._aspect._setFieldVal('SellStartDate', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "SellEndDate", {
-                    get: function () { return this._aspect._getFieldVal('SellEndDate'); },
-                    set: function (v) { this._aspect._setFieldVal('SellEndDate', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "DiscontinuedDate", {
-                    get: function () { return this._aspect._getFieldVal('DiscontinuedDate'); },
-                    set: function (v) { this._aspect._setFieldVal('DiscontinuedDate', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "ModifiedDate", {
-                    get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "IsActive", {
-                    get: function () { return this._aspect._getCalcFieldVal('IsActive'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "ThumbnailPhotoFileName", {
-                    get: function () { return this._aspect._getFieldVal('ThumbnailPhotoFileName'); },
-                    set: function (v) { this._aspect._setFieldVal('ThumbnailPhotoFileName', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_7.prototype, "SalesOrderDetails", {
-                    get: function () { return this._aspect._getNavFieldVal('SalesOrderDetails'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_7;
-            }(RIAPP.CollectionItem));
+        ProductDb.prototype.itemFactory = function (aspect) {
+            return new ProductEntity(aspect);
         };
         ProductDb.prototype.findEntity = function (productID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -930,59 +968,61 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return ProductDb;
     }(dbMOD.DbSet));
     exports.ProductDb = ProductDb;
+    var ProductCategoryEntity = (function (_super) {
+        __extends(ProductCategoryEntity, _super);
+        function ProductCategoryEntity(aspect) {
+            return _super.call(this, aspect) || this;
+        }
+        ProductCategoryEntity.prototype.toString = function () {
+            return 'ProductCategoryEntity';
+        };
+        Object.defineProperty(ProductCategoryEntity.prototype, "ProductCategoryID", {
+            get: function () { return this._aspect._getFieldVal('ProductCategoryID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductCategoryEntity.prototype, "ParentProductCategoryID", {
+            get: function () { return this._aspect._getFieldVal('ParentProductCategoryID'); },
+            set: function (v) { this._aspect._setFieldVal('ParentProductCategoryID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductCategoryEntity.prototype, "Name", {
+            get: function () { return this._aspect._getFieldVal('Name'); },
+            set: function (v) { this._aspect._setFieldVal('Name', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductCategoryEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            set: function (v) { this._aspect._setFieldVal('rowguid', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductCategoryEntity.prototype, "ModifiedDate", {
+            get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
+            set: function (v) { this._aspect._setFieldVal('ModifiedDate', v); },
+            enumerable: true,
+            configurable: true
+        });
+        return ProductCategoryEntity;
+    }(RIAPP.CollectionItem));
     var ProductCategoryDb = (function (_super) {
         __extends(ProductCategoryDb, _super);
         function ProductCategoryDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
-                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "ProductCategory" },
+                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 100, "dbSetName": "ProductCategory" },
                 childAssoc: ([]),
                 parentAssoc: ([])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "ProductCategoryID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ParentProductCategoryID", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 4, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._createEntityType();
+            _this = _super.call(this, opts) || this;
+            return _this;
         }
-        ProductCategoryDb.prototype._createEntityType = function () {
-            this._entityType = (function (_super) {
-                __extends(class_8, _super);
-                function class_8(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_8.prototype.toString = function () {
-                    return 'ProductCategoryEntity';
-                };
-                Object.defineProperty(class_8.prototype, "ProductCategoryID", {
-                    get: function () { return this._aspect._getFieldVal('ProductCategoryID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_8.prototype, "ParentProductCategoryID", {
-                    get: function () { return this._aspect._getFieldVal('ParentProductCategoryID'); },
-                    set: function (v) { this._aspect._setFieldVal('ParentProductCategoryID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_8.prototype, "Name", {
-                    get: function () { return this._aspect._getFieldVal('Name'); },
-                    set: function (v) { this._aspect._setFieldVal('Name', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_8.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    set: function (v) { this._aspect._setFieldVal('rowguid', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_8.prototype, "ModifiedDate", {
-                    get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-                    set: function (v) { this._aspect._setFieldVal('ModifiedDate', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_8;
-            }(RIAPP.CollectionItem));
+        ProductCategoryDb.prototype.itemFactory = function (aspect) {
+            return new ProductCategoryEntity(aspect);
         };
         ProductCategoryDb.prototype.findEntity = function (productCategoryID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -996,41 +1036,43 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return ProductCategoryDb;
     }(dbMOD.DbSet));
     exports.ProductCategoryDb = ProductCategoryDb;
+    var ProductModelEntity = (function (_super) {
+        __extends(ProductModelEntity, _super);
+        function ProductModelEntity(aspect) {
+            return _super.call(this, aspect) || this;
+        }
+        ProductModelEntity.prototype.toString = function () {
+            return 'ProductModelEntity';
+        };
+        Object.defineProperty(ProductModelEntity.prototype, "ProductModelID", {
+            get: function () { return this._aspect._getFieldVal('ProductModelID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductModelEntity.prototype, "Name", {
+            get: function () { return this._aspect._getFieldVal('Name'); },
+            set: function (v) { this._aspect._setFieldVal('Name', v); },
+            enumerable: true,
+            configurable: true
+        });
+        return ProductModelEntity;
+    }(RIAPP.CollectionItem));
     var ProductModelDb = (function (_super) {
         __extends(ProductModelDb, _super);
         function ProductModelDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
-                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "ProductModel" },
+                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 100, "dbSetName": "ProductModel" },
                 childAssoc: ([]),
                 parentAssoc: ([])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "ProductModelID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Name", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._createEntityType();
+            _this = _super.call(this, opts) || this;
+            return _this;
         }
-        ProductModelDb.prototype._createEntityType = function () {
-            this._entityType = (function (_super) {
-                __extends(class_9, _super);
-                function class_9(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_9.prototype.toString = function () {
-                    return 'ProductModelEntity';
-                };
-                Object.defineProperty(class_9.prototype, "ProductModelID", {
-                    get: function () { return this._aspect._getFieldVal('ProductModelID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_9.prototype, "Name", {
-                    get: function () { return this._aspect._getFieldVal('Name'); },
-                    set: function (v) { this._aspect._setFieldVal('Name', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_9;
-            }(RIAPP.CollectionItem));
+        ProductModelDb.prototype.itemFactory = function (aspect) {
+            return new ProductModelEntity(aspect);
         };
         ProductModelDb.prototype.findEntity = function (productModelID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -1044,36 +1086,38 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return ProductModelDb;
     }(dbMOD.DbSet));
     exports.ProductModelDb = ProductModelDb;
+    var SalesInfoEntity = (function (_super) {
+        __extends(SalesInfoEntity, _super);
+        function SalesInfoEntity(aspect) {
+            return _super.call(this, aspect) || this;
+        }
+        SalesInfoEntity.prototype.toString = function () {
+            return 'SalesInfoEntity';
+        };
+        Object.defineProperty(SalesInfoEntity.prototype, "SalesPerson", {
+            get: function () { return this._aspect._getFieldVal('SalesPerson'); },
+            set: function (v) { this._aspect._setFieldVal('SalesPerson', v); },
+            enumerable: true,
+            configurable: true
+        });
+        return SalesInfoEntity;
+    }(RIAPP.CollectionItem));
     var SalesInfoDb = (function (_super) {
         __extends(SalesInfoDb, _super);
         function SalesInfoDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
-                dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 25, "dbSetName": "SalesInfo" },
+                dbSetInfo: { "fieldInfos": [], "enablePaging": true, "pageSize": 100, "dbSetName": "SalesInfo" },
                 childAssoc: ([]),
                 parentAssoc: ([])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "SalesPerson", "isPrimaryKey": 1, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }]);
-            _super.call(this, opts);
-            this._createEntityType();
+            _this = _super.call(this, opts) || this;
+            return _this;
         }
-        SalesInfoDb.prototype._createEntityType = function () {
-            this._entityType = (function (_super) {
-                __extends(class_10, _super);
-                function class_10(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_10.prototype.toString = function () {
-                    return 'SalesInfoEntity';
-                };
-                Object.defineProperty(class_10.prototype, "SalesPerson", {
-                    get: function () { return this._aspect._getFieldVal('SalesPerson'); },
-                    set: function (v) { this._aspect._setFieldVal('SalesPerson', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_10;
-            }(RIAPP.CollectionItem));
+        SalesInfoDb.prototype.itemFactory = function (aspect) {
+            return new SalesInfoEntity(aspect);
         };
         SalesInfoDb.prototype.findEntity = function (salesPerson) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -1087,90 +1131,92 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return SalesInfoDb;
     }(dbMOD.DbSet));
     exports.SalesInfoDb = SalesInfoDb;
+    var SalesOrderDetailEntity = (function (_super) {
+        __extends(SalesOrderDetailEntity, _super);
+        function SalesOrderDetailEntity(aspect) {
+            return _super.call(this, aspect) || this;
+        }
+        SalesOrderDetailEntity.prototype.toString = function () {
+            return 'SalesOrderDetailEntity';
+        };
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "SalesOrderID", {
+            get: function () { return this._aspect._getFieldVal('SalesOrderID'); },
+            set: function (v) { this._aspect._setFieldVal('SalesOrderID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "SalesOrderDetailID", {
+            get: function () { return this._aspect._getFieldVal('SalesOrderDetailID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "OrderQty", {
+            get: function () { return this._aspect._getFieldVal('OrderQty'); },
+            set: function (v) { this._aspect._setFieldVal('OrderQty', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "ProductID", {
+            get: function () { return this._aspect._getFieldVal('ProductID'); },
+            set: function (v) { this._aspect._setFieldVal('ProductID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "UnitPrice", {
+            get: function () { return this._aspect._getFieldVal('UnitPrice'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "UnitPriceDiscount", {
+            get: function () { return this._aspect._getFieldVal('UnitPriceDiscount'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "LineTotal", {
+            get: function () { return this._aspect._getFieldVal('LineTotal'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "ModifiedDate", {
+            get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "SalesOrderHeader", {
+            get: function () { return this._aspect._getNavFieldVal('SalesOrderHeader'); },
+            set: function (v) { this._aspect._setNavFieldVal('SalesOrderHeader', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderDetailEntity.prototype, "Product", {
+            get: function () { return this._aspect._getNavFieldVal('Product'); },
+            set: function (v) { this._aspect._setNavFieldVal('Product', v); },
+            enumerable: true,
+            configurable: true
+        });
+        return SalesOrderDetailEntity;
+    }(RIAPP.CollectionItem));
     var SalesOrderDetailDb = (function (_super) {
         __extends(SalesOrderDetailDb, _super);
         function SalesOrderDetailDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
-                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "SalesOrderDetail" },
+                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 100, "dbSetName": "SalesOrderDetail" },
                 childAssoc: ([{ "name": "OrdDetailsToOrder", "parentDbSetName": "SalesOrderHeader", "childDbSetName": "SalesOrderDetail", "childToParentName": "SalesOrderHeader", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 1, "fieldRels": [{ "parentField": "SalesOrderID", "childField": "SalesOrderID" }] }, { "name": "OrdDetailsToProduct", "parentDbSetName": "Product", "childDbSetName": "SalesOrderDetail", "childToParentName": "Product", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 0, "fieldRels": [{ "parentField": "ProductID", "childField": "ProductID" }] }]),
                 parentAssoc: ([])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "SalesOrderID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderDetailID", "isPrimaryKey": 2, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "OrderQty", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 2, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ProductID", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "UnitPrice", "isPrimaryKey": 0, "dataType": 4, "isNullable": true, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "UnitPriceDiscount", "isPrimaryKey": 0, "dataType": 4, "isNullable": true, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "LineTotal", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 17, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderHeader", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "SalesOrderID", "nested": null }, { "fieldName": "Product", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "ProductID", "nested": null }]);
-            _super.call(this, opts);
-            this._createEntityType();
+            _this = _super.call(this, opts) || this;
+            return _this;
         }
-        SalesOrderDetailDb.prototype._createEntityType = function () {
-            this._entityType = (function (_super) {
-                __extends(class_11, _super);
-                function class_11(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_11.prototype.toString = function () {
-                    return 'SalesOrderDetailEntity';
-                };
-                Object.defineProperty(class_11.prototype, "SalesOrderID", {
-                    get: function () { return this._aspect._getFieldVal('SalesOrderID'); },
-                    set: function (v) { this._aspect._setFieldVal('SalesOrderID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "SalesOrderDetailID", {
-                    get: function () { return this._aspect._getFieldVal('SalesOrderDetailID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "OrderQty", {
-                    get: function () { return this._aspect._getFieldVal('OrderQty'); },
-                    set: function (v) { this._aspect._setFieldVal('OrderQty', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "ProductID", {
-                    get: function () { return this._aspect._getFieldVal('ProductID'); },
-                    set: function (v) { this._aspect._setFieldVal('ProductID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "UnitPrice", {
-                    get: function () { return this._aspect._getFieldVal('UnitPrice'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "UnitPriceDiscount", {
-                    get: function () { return this._aspect._getFieldVal('UnitPriceDiscount'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "LineTotal", {
-                    get: function () { return this._aspect._getFieldVal('LineTotal'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "ModifiedDate", {
-                    get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "SalesOrderHeader", {
-                    get: function () { return this._aspect._getNavFieldVal('SalesOrderHeader'); },
-                    set: function (v) { this._aspect._setNavFieldVal('SalesOrderHeader', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_11.prototype, "Product", {
-                    get: function () { return this._aspect._getNavFieldVal('Product'); },
-                    set: function (v) { this._aspect._setNavFieldVal('Product', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_11;
-            }(RIAPP.CollectionItem));
+        SalesOrderDetailDb.prototype.itemFactory = function (aspect) {
+            return new SalesOrderDetailEntity(aspect);
         };
         SalesOrderDetailDb.prototype.findEntity = function (salesOrderID, salesOrderDetailID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -1184,174 +1230,176 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
         return SalesOrderDetailDb;
     }(dbMOD.DbSet));
     exports.SalesOrderDetailDb = SalesOrderDetailDb;
+    var SalesOrderHeaderEntity = (function (_super) {
+        __extends(SalesOrderHeaderEntity, _super);
+        function SalesOrderHeaderEntity(aspect) {
+            return _super.call(this, aspect) || this;
+        }
+        SalesOrderHeaderEntity.prototype.toString = function () {
+            return 'SalesOrderHeaderEntity';
+        };
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "SalesOrderID", {
+            get: function () { return this._aspect._getFieldVal('SalesOrderID'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "RevisionNumber", {
+            get: function () { return this._aspect._getFieldVal('RevisionNumber'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "OrderDate", {
+            get: function () { return this._aspect._getFieldVal('OrderDate'); },
+            set: function (v) { this._aspect._setFieldVal('OrderDate', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "DueDate", {
+            get: function () { return this._aspect._getFieldVal('DueDate'); },
+            set: function (v) { this._aspect._setFieldVal('DueDate', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "ShipDate", {
+            get: function () { return this._aspect._getFieldVal('ShipDate'); },
+            set: function (v) { this._aspect._setFieldVal('ShipDate', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "Status", {
+            get: function () { return this._aspect._getFieldVal('Status'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "OnlineOrderFlag", {
+            get: function () { return this._aspect._getFieldVal('OnlineOrderFlag'); },
+            set: function (v) { this._aspect._setFieldVal('OnlineOrderFlag', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "SalesOrderNumber", {
+            get: function () { return this._aspect._getFieldVal('SalesOrderNumber'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "PurchaseOrderNumber", {
+            get: function () { return this._aspect._getFieldVal('PurchaseOrderNumber'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "AccountNumber", {
+            get: function () { return this._aspect._getFieldVal('AccountNumber'); },
+            set: function (v) { this._aspect._setFieldVal('AccountNumber', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "CustomerID", {
+            get: function () { return this._aspect._getFieldVal('CustomerID'); },
+            set: function (v) { this._aspect._setFieldVal('CustomerID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "ShipToAddressID", {
+            get: function () { return this._aspect._getFieldVal('ShipToAddressID'); },
+            set: function (v) { this._aspect._setFieldVal('ShipToAddressID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "BillToAddressID", {
+            get: function () { return this._aspect._getFieldVal('BillToAddressID'); },
+            set: function (v) { this._aspect._setFieldVal('BillToAddressID', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "ShipMethod", {
+            get: function () { return this._aspect._getFieldVal('ShipMethod'); },
+            set: function (v) { this._aspect._setFieldVal('ShipMethod', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "CreditCardApprovalCode", {
+            get: function () { return this._aspect._getFieldVal('CreditCardApprovalCode'); },
+            set: function (v) { this._aspect._setFieldVal('CreditCardApprovalCode', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "SubTotal", {
+            get: function () { return this._aspect._getFieldVal('SubTotal'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "TaxAmt", {
+            get: function () { return this._aspect._getFieldVal('TaxAmt'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "Freight", {
+            get: function () { return this._aspect._getFieldVal('Freight'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "TotalDue", {
+            get: function () { return this._aspect._getFieldVal('TotalDue'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "Comment", {
+            get: function () { return this._aspect._getFieldVal('Comment'); },
+            set: function (v) { this._aspect._setFieldVal('Comment', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "rowguid", {
+            get: function () { return this._aspect._getFieldVal('rowguid'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "ModifiedDate", {
+            get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "SalesOrderDetails", {
+            get: function () { return this._aspect._getNavFieldVal('SalesOrderDetails'); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "Customer", {
+            get: function () { return this._aspect._getNavFieldVal('Customer'); },
+            set: function (v) { this._aspect._setNavFieldVal('Customer', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "Address", {
+            get: function () { return this._aspect._getNavFieldVal('Address'); },
+            set: function (v) { this._aspect._setNavFieldVal('Address', v); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SalesOrderHeaderEntity.prototype, "Address1", {
+            get: function () { return this._aspect._getNavFieldVal('Address1'); },
+            set: function (v) { this._aspect._setNavFieldVal('Address1', v); },
+            enumerable: true,
+            configurable: true
+        });
+        return SalesOrderHeaderEntity;
+    }(RIAPP.CollectionItem));
     var SalesOrderHeaderDb = (function (_super) {
         __extends(SalesOrderHeaderDb, _super);
         function SalesOrderHeaderDb(dbContext) {
+            var _this = this;
             var opts = {
                 dbContext: dbContext,
-                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 25, "dbSetName": "SalesOrderHeader" },
+                dbSetInfo: { "fieldInfos": [], "enablePaging": false, "pageSize": 100, "dbSetName": "SalesOrderHeader" },
                 childAssoc: ([{ "name": "OrdersToBillAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address1", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "BillToAddressID" }] }, { "name": "OrdersToCustomer", "parentDbSetName": "Customer", "childDbSetName": "SalesOrderHeader", "childToParentName": "Customer", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdersToShipAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "ShipToAddressID" }] }]),
                 parentAssoc: ([{ "name": "OrdDetailsToOrder", "parentDbSetName": "SalesOrderHeader", "childDbSetName": "SalesOrderDetail", "childToParentName": "SalesOrderHeader", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 1, "fieldRels": [{ "parentField": "SalesOrderID", "childField": "SalesOrderID" }] }])
             };
             opts.dbSetInfo.fieldInfos = ([{ "fieldName": "SalesOrderID", "isPrimaryKey": 1, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "RevisionNumber", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "OrderDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "DueDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ShipDate", "isPrimaryKey": 0, "dataType": 7, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Status", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "OnlineOrderFlag", "isPrimaryKey": 0, "dataType": 2, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderNumber", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 25, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "PurchaseOrderNumber", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 25, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "AccountNumber", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 15, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CustomerID", "isPrimaryKey": 0, "dataType": 3, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ShipToAddressID", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "BillToAddressID", "isPrimaryKey": 0, "dataType": 3, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 4, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ShipMethod", "isPrimaryKey": 0, "dataType": 1, "isNullable": false, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 50, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "CreditCardApprovalCode", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 15, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SubTotal", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "TaxAmt", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Freight", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "TotalDue", "isPrimaryKey": 0, "dataType": 4, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "Comment", "isPrimaryKey": 0, "dataType": 1, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": 0, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "rowguid", "isPrimaryKey": 0, "dataType": 9, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 16, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "ModifiedDate", "isPrimaryKey": 0, "dataType": 6, "isNullable": false, "isReadOnly": true, "isAutoGenerated": true, "isNeedOriginal": true, "maxLength": 8, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 0, "dependentOn": "", "nested": null }, { "fieldName": "SalesOrderDetails", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "", "nested": null }, { "fieldName": "Customer", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "CustomerID", "nested": null }, { "fieldName": "Address", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "ShipToAddressID", "nested": null }, { "fieldName": "Address1", "isPrimaryKey": 0, "dataType": 0, "isNullable": true, "isReadOnly": false, "isAutoGenerated": false, "isNeedOriginal": true, "maxLength": -1, "dateConversion": 0, "allowClientDefault": false, "range": "", "regex": "", "fieldType": 3, "dependentOn": "BillToAddressID", "nested": null }]);
-            _super.call(this, opts);
-            this._createEntityType();
+            _this = _super.call(this, opts) || this;
+            return _this;
         }
-        SalesOrderHeaderDb.prototype._createEntityType = function () {
-            this._entityType = (function (_super) {
-                __extends(class_12, _super);
-                function class_12(aspect) {
-                    _super.call(this, aspect);
-                }
-                class_12.prototype.toString = function () {
-                    return 'SalesOrderHeaderEntity';
-                };
-                Object.defineProperty(class_12.prototype, "SalesOrderID", {
-                    get: function () { return this._aspect._getFieldVal('SalesOrderID'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "RevisionNumber", {
-                    get: function () { return this._aspect._getFieldVal('RevisionNumber'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "OrderDate", {
-                    get: function () { return this._aspect._getFieldVal('OrderDate'); },
-                    set: function (v) { this._aspect._setFieldVal('OrderDate', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "DueDate", {
-                    get: function () { return this._aspect._getFieldVal('DueDate'); },
-                    set: function (v) { this._aspect._setFieldVal('DueDate', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "ShipDate", {
-                    get: function () { return this._aspect._getFieldVal('ShipDate'); },
-                    set: function (v) { this._aspect._setFieldVal('ShipDate', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "Status", {
-                    get: function () { return this._aspect._getFieldVal('Status'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "OnlineOrderFlag", {
-                    get: function () { return this._aspect._getFieldVal('OnlineOrderFlag'); },
-                    set: function (v) { this._aspect._setFieldVal('OnlineOrderFlag', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "SalesOrderNumber", {
-                    get: function () { return this._aspect._getFieldVal('SalesOrderNumber'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "PurchaseOrderNumber", {
-                    get: function () { return this._aspect._getFieldVal('PurchaseOrderNumber'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "AccountNumber", {
-                    get: function () { return this._aspect._getFieldVal('AccountNumber'); },
-                    set: function (v) { this._aspect._setFieldVal('AccountNumber', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "CustomerID", {
-                    get: function () { return this._aspect._getFieldVal('CustomerID'); },
-                    set: function (v) { this._aspect._setFieldVal('CustomerID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "ShipToAddressID", {
-                    get: function () { return this._aspect._getFieldVal('ShipToAddressID'); },
-                    set: function (v) { this._aspect._setFieldVal('ShipToAddressID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "BillToAddressID", {
-                    get: function () { return this._aspect._getFieldVal('BillToAddressID'); },
-                    set: function (v) { this._aspect._setFieldVal('BillToAddressID', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "ShipMethod", {
-                    get: function () { return this._aspect._getFieldVal('ShipMethod'); },
-                    set: function (v) { this._aspect._setFieldVal('ShipMethod', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "CreditCardApprovalCode", {
-                    get: function () { return this._aspect._getFieldVal('CreditCardApprovalCode'); },
-                    set: function (v) { this._aspect._setFieldVal('CreditCardApprovalCode', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "SubTotal", {
-                    get: function () { return this._aspect._getFieldVal('SubTotal'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "TaxAmt", {
-                    get: function () { return this._aspect._getFieldVal('TaxAmt'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "Freight", {
-                    get: function () { return this._aspect._getFieldVal('Freight'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "TotalDue", {
-                    get: function () { return this._aspect._getFieldVal('TotalDue'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "Comment", {
-                    get: function () { return this._aspect._getFieldVal('Comment'); },
-                    set: function (v) { this._aspect._setFieldVal('Comment', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "rowguid", {
-                    get: function () { return this._aspect._getFieldVal('rowguid'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "ModifiedDate", {
-                    get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "SalesOrderDetails", {
-                    get: function () { return this._aspect._getNavFieldVal('SalesOrderDetails'); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "Customer", {
-                    get: function () { return this._aspect._getNavFieldVal('Customer'); },
-                    set: function (v) { this._aspect._setNavFieldVal('Customer', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "Address", {
-                    get: function () { return this._aspect._getNavFieldVal('Address'); },
-                    set: function (v) { this._aspect._setNavFieldVal('Address', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                Object.defineProperty(class_12.prototype, "Address1", {
-                    get: function () { return this._aspect._getNavFieldVal('Address1'); },
-                    set: function (v) { this._aspect._setNavFieldVal('Address1', v); },
-                    enumerable: true,
-                    configurable: true
-                });
-                return class_12;
-            }(RIAPP.CollectionItem));
+        SalesOrderHeaderDb.prototype.itemFactory = function (aspect) {
+            return new SalesOrderHeaderEntity(aspect);
         };
         SalesOrderHeaderDb.prototype.findEntity = function (salesOrderID) {
             return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
@@ -1368,19 +1416,20 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
     var DbSets = (function (_super) {
         __extends(DbSets, _super);
         function DbSets(dbContext) {
-            _super.call(this, dbContext);
-            this._createDbSet("Address", AddressDb);
-            this._createDbSet("AddressInfo", AddressInfoDb);
-            this._createDbSet("Customer", CustomerDb);
-            this._createDbSet("CustomerAddress", CustomerAddressDb);
-            this._createDbSet("CustomerJSON", CustomerJSONDb);
-            this._createDbSet("LookUpProduct", LookUpProductDb);
-            this._createDbSet("Product", ProductDb);
-            this._createDbSet("ProductCategory", ProductCategoryDb);
-            this._createDbSet("ProductModel", ProductModelDb);
-            this._createDbSet("SalesInfo", SalesInfoDb);
-            this._createDbSet("SalesOrderDetail", SalesOrderDetailDb);
-            this._createDbSet("SalesOrderHeader", SalesOrderHeaderDb);
+            var _this = _super.call(this, dbContext) || this;
+            _this._createDbSet("Address", AddressDb);
+            _this._createDbSet("AddressInfo", AddressInfoDb);
+            _this._createDbSet("Customer", CustomerDb);
+            _this._createDbSet("CustomerAddress", CustomerAddressDb);
+            _this._createDbSet("CustomerJSON", CustomerJSONDb);
+            _this._createDbSet("LookUpProduct", LookUpProductDb);
+            _this._createDbSet("Product", ProductDb);
+            _this._createDbSet("ProductCategory", ProductCategoryDb);
+            _this._createDbSet("ProductModel", ProductModelDb);
+            _this._createDbSet("SalesInfo", SalesInfoDb);
+            _this._createDbSet("SalesOrderDetail", SalesOrderDetailDb);
+            _this._createDbSet("SalesOrderHeader", SalesOrderHeaderDb);
+            return _this;
         }
         Object.defineProperty(DbSets.prototype, "Address", {
             get: function () { return this.getDbSet("Address"); },
@@ -1448,55 +1497,41 @@ define("demo/demoDB", ["require", "exports", "jriapp", "jriapp_db"], function (r
     var DbContext = (function (_super) {
         __extends(DbContext, _super);
         function DbContext() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        DbContext.prototype._initDbSets = function () {
-            _super.prototype._initDbSets.call(this);
-            this._dbSets = new DbSets(this);
-            var associations = [{ "name": "CustAddrToAddress", "parentDbSetName": "Address", "childDbSetName": "CustomerAddress", "childToParentName": "Address", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToAddress2", "parentDbSetName": "AddressInfo", "childDbSetName": "CustomerAddress", "childToParentName": "AddressInfo", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToCustomer", "parentDbSetName": "Customer", "childDbSetName": "CustomerAddress", "childToParentName": "Customer", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdDetailsToOrder", "parentDbSetName": "SalesOrderHeader", "childDbSetName": "SalesOrderDetail", "childToParentName": "SalesOrderHeader", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 1, "fieldRels": [{ "parentField": "SalesOrderID", "childField": "SalesOrderID" }] }, { "name": "OrdDetailsToProduct", "parentDbSetName": "Product", "childDbSetName": "SalesOrderDetail", "childToParentName": "Product", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 0, "fieldRels": [{ "parentField": "ProductID", "childField": "ProductID" }] }, { "name": "OrdersToBillAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address1", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "BillToAddressID" }] }, { "name": "OrdersToCustomer", "parentDbSetName": "Customer", "childDbSetName": "SalesOrderHeader", "childToParentName": "Customer", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdersToShipAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "ShipToAddressID" }] }];
-            this._initAssociations(associations);
-            var methods = [{ "methodName": "ReadAddress", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressByIds", "parameters": [{ "name": "addressIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressForCustomers", "parameters": [{ "name": "custIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressInfo", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomer", "parameters": [{ "name": "includeNav", "dataType": 2, "isArray": false, "isNullable": true, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomerAddress", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomerJSON", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProduct", "parameters": [{ "name": "param1", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "param2", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductByIds", "parameters": [{ "name": "productIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductCategory", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductLookUp", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductModel", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesInfo", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesOrderDetail", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesOrderHeader", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "TestComplexInvoke", "parameters": [{ "name": "info", "dataType": 0, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "keys", "dataType": 0, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": false, "isQuery": false }, { "methodName": "TestInvoke", "parameters": [{ "name": "param1", "dataType": 10, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "param2", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": false }];
-            this._initMethods(methods);
+        DbContext.prototype._createDbSets = function () {
+            return new DbSets(this);
         };
-        Object.defineProperty(DbContext.prototype, "associations", {
-            get: function () { return this._assoc; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DbContext.prototype, "dbSets", {
-            get: function () { return this._dbSets; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DbContext.prototype, "serviceMethods", {
-            get: function () { return this._svcMethods; },
-            enumerable: true,
-            configurable: true
-        });
+        DbContext.prototype._createAssociations = function () {
+            return [{ "name": "CustAddrToAddress", "parentDbSetName": "Address", "childDbSetName": "CustomerAddress", "childToParentName": "Address", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToAddress2", "parentDbSetName": "AddressInfo", "childDbSetName": "CustomerAddress", "childToParentName": "AddressInfo", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "AddressID" }] }, { "name": "CustAddrToCustomer", "parentDbSetName": "Customer", "childDbSetName": "CustomerAddress", "childToParentName": "Customer", "parentToChildrenName": "CustomerAddresses", "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdDetailsToOrder", "parentDbSetName": "SalesOrderHeader", "childDbSetName": "SalesOrderDetail", "childToParentName": "SalesOrderHeader", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 1, "fieldRels": [{ "parentField": "SalesOrderID", "childField": "SalesOrderID" }] }, { "name": "OrdDetailsToProduct", "parentDbSetName": "Product", "childDbSetName": "SalesOrderDetail", "childToParentName": "Product", "parentToChildrenName": "SalesOrderDetails", "onDeleteAction": 0, "fieldRels": [{ "parentField": "ProductID", "childField": "ProductID" }] }, { "name": "OrdersToBillAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address1", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "BillToAddressID" }] }, { "name": "OrdersToCustomer", "parentDbSetName": "Customer", "childDbSetName": "SalesOrderHeader", "childToParentName": "Customer", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "CustomerID", "childField": "CustomerID" }] }, { "name": "OrdersToShipAddr", "parentDbSetName": "Address", "childDbSetName": "SalesOrderHeader", "childToParentName": "Address", "parentToChildrenName": null, "onDeleteAction": 0, "fieldRels": [{ "parentField": "AddressID", "childField": "ShipToAddressID" }] }];
+        };
+        DbContext.prototype._createMethods = function () {
+            return [{ "methodName": "ReadAddress", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressByIds", "parameters": [{ "name": "addressIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressForCustomers", "parameters": [{ "name": "custIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadAddressInfo", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomer", "parameters": [{ "name": "includeNav", "dataType": 2, "isArray": false, "isNullable": true, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomerAddress", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadCustomerJSON", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProduct", "parameters": [{ "name": "param1", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "param2", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductByIds", "parameters": [{ "name": "productIDs", "dataType": 3, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 0 }], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductCategory", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductLookUp", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadProductModel", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesInfo", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesOrderDetail", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "ReadSalesOrderHeader", "parameters": [], "methodResult": true, "isQuery": true }, { "methodName": "GetClassifiers", "parameters": [], "methodResult": true, "isQuery": false }, { "methodName": "TestComplexInvoke", "parameters": [{ "name": "info", "dataType": 0, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "keys", "dataType": 0, "isArray": true, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": false, "isQuery": false }, { "methodName": "TestInvoke", "parameters": [{ "name": "param1", "dataType": 10, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 0 }, { "name": "param2", "dataType": 1, "isArray": false, "isNullable": false, "dateConversion": 0, "ordinal": 1 }], "methodResult": true, "isQuery": false }];
+        };
         return DbContext;
     }(dbMOD.DbContext));
     exports.DbContext = DbContext;
 });
 define("gridDemo/commands", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var TestInvokeCommand = (function (_super) {
         __extends(TestInvokeCommand, _super);
         function TestInvokeCommand() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        TestInvokeCommand.prototype.Action = function (sender, param) {
-            var self = this.thisObj;
-            self.invokeResult = null;
-            var promise = self.dbContext.serviceMethods.TestInvoke({ param1: [10, 11, 12, 13, 14], param2: param.Name });
+        TestInvokeCommand.prototype.action = function (param) {
+            var viewModel = this.owner;
+            viewModel.invokeResult = null;
+            var promise = viewModel.dbContext.serviceMethods.TestInvoke({ param1: [10, 11, 12, 13, 14], param2: param.Name });
             promise.then(function (res) {
-                self.invokeResult = res;
-                self.showDialog();
-            }, function () {
+                viewModel.invokeResult = res;
+                viewModel.showDialog();
             });
         };
-        TestInvokeCommand.prototype.getIsCanExecute = function (sender, param) {
-            var self = this.thisObj;
-            return self.currentItem !== null;
+        TestInvokeCommand.prototype.isCanExecute = function (param) {
+            var viewModel = this.owner;
+            return viewModel.currentItem !== null;
         };
         return TestInvokeCommand;
     }(RIAPP.BaseCommand));
@@ -1504,12 +1539,12 @@ define("gridDemo/commands", ["require", "exports", "jriapp"], function (require,
     var ResetCommand = (function (_super) {
         __extends(ResetCommand, _super);
         function ResetCommand() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        ResetCommand.prototype.Action = function (sender, param) {
-            this.thisObj.reset();
+        ResetCommand.prototype.action = function (param) {
+            this.owner.reset();
         };
-        ResetCommand.prototype.getIsCanExecute = function (sender, param) {
+        ResetCommand.prototype.isCanExecute = function (param) {
             return true;
         };
         return ResetCommand;
@@ -1518,36 +1553,42 @@ define("gridDemo/commands", ["require", "exports", "jriapp"], function (require,
 });
 define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/demoDB", "gridDemo/commands"], function (require, exports, RIAPP, dbMOD, DEMODB, commands_1) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils;
     var ProductsFilter = (function (_super) {
         __extends(ProductsFilter, _super);
         function ProductsFilter(app) {
-            _super.call(this);
-            var self = this;
-            this._app = app;
-            this._prodNumber = null;
-            this._name = null;
-            this._parentCategoryID = null;
-            this._childCategoryID = null;
-            this._selectedCategory = null;
-            this._selectedModel = null;
-            this._modelID = null;
-            this._saleStart1 = null;
-            this._saleStart2 = null;
-            this._parentCategories = new dbMOD.DataView({
-                dataSource: this.ProductCategories,
+            var _this = _super.call(this) || this;
+            var self = _this;
+            _this._app = app;
+            _this._prodNumber = null;
+            _this._name = null;
+            _this._parentCategoryID = null;
+            _this._childCategoryID = null;
+            _this._selectedCategory = null;
+            _this._selectedModel = null;
+            _this._modelID = null;
+            _this._saleStart1 = null;
+            _this._saleStart2 = null;
+            _this._parentCategories = new dbMOD.DataView({
+                dataSource: _this.ProductCategories,
                 fn_sort: function (a, b) { return a.ProductCategoryID - b.ProductCategoryID; },
                 fn_filter: function (item) { return item.ParentProductCategoryID == null; }
             });
-            this._childCategories = new dbMOD.DataView({
-                dataSource: this.ProductCategories,
+            _this._childCategories = new dbMOD.DataView({
+                dataSource: _this.ProductCategories,
                 fn_sort: function (a, b) { return a.ProductCategoryID - b.ProductCategoryID; },
                 fn_filter: function (item) { return item.ParentProductCategoryID !== null && item.ParentProductCategoryID == self.parentCategoryID; }
             });
-            this._sizes = new DEMODB.KeyValDictionary();
-            this._sizes.fillItems([{ key: 0, val: 'EMPTY' }, { key: 1, val: 'NOT EMPTY' }, { key: 2, val: 'SMALL SIZE' }, { key: 3, val: 'BIG SIZE' }], true);
-            this._size = null;
-            this._resetCommand = new commands_1.ResetCommand(self);
+            _this._sizes = new DEMODB.KeyValDictionary();
+            _this._sizes.fillItems([{ key: 0, val: 'EMPTY' }, { key: 1, val: 'NOT EMPTY' }, { key: 2, val: 'SMALL SIZE' }, { key: 3, val: 'BIG SIZE' }], true);
+            _this._size = null;
+            _this._resetCommand = new commands_1.ResetCommand(self);
+            _this._prodCatDic = new DEMODB.KeyValDictionary();
+            _this._prodModDic = new DEMODB.KeyValDictionary();
+            _this._prodDescDic = new DEMODB.KeyValDictionary();
+            _this._loaded = false;
+            return _this;
         }
         ProductsFilter.prototype._loadCategories = function () {
             var query = this.ProductCategories.createReadProductCategoryQuery();
@@ -1559,9 +1600,24 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             query.orderBy('Name');
             return query.load();
         };
+        ProductsFilter.prototype._loadClassifiers = function () {
+            return this.dbContext.serviceMethods.GetClassifiers();
+        };
         ProductsFilter.prototype.load = function () {
-            var promise1 = this._loadCategories(), promise2 = this._loadProductModels();
-            return utils.defer.whenAll([promise1, promise2]);
+            var _this = this;
+            var promise1 = this._loadClassifiers().then(function (res) {
+                _this._prodCatDic.fillItems(res.prodCategory, true);
+                _this._prodModDic.fillItems(res.prodModel, true);
+                _this._prodDescDic.fillItems(res.prodDescription, true);
+            }), promise2 = this._loadCategories(), promise3 = this._loadProductModels();
+            return utils.defer.whenAll([promise1, promise2, promise3]).then(function () {
+                _this._loaded = true;
+                _this.objEvents.raise('loaded', {});
+                _this.reset();
+            }, function (err) { _this._app.handleError(err, _this); });
+        };
+        ProductsFilter.prototype.addOnLoaded = function (fn, nmspace) {
+            this.objEvents.on('loaded', fn, nmspace);
         };
         ProductsFilter.prototype.reset = function () {
             this.parentCategoryID = null;
@@ -1575,12 +1631,34 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             this.saleStart2 = null;
             this.size = null;
         };
+        Object.defineProperty(ProductsFilter.prototype, "loaded", {
+            get: function () {
+                return this._loaded;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductsFilter.prototype, "prodCatDic", {
+            get: function () { return this._prodCatDic; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductsFilter.prototype, "prodModDic", {
+            get: function () { return this._prodModDic; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ProductsFilter.prototype, "prodDescDic", {
+            get: function () { return this._prodDescDic; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ProductsFilter.prototype, "prodNumber", {
             get: function () { return this._prodNumber; },
             set: function (v) {
                 if (this._prodNumber != v) {
                     this._prodNumber = v;
-                    this.raisePropertyChanged('prodNumber');
+                    this.objEvents.raiseProp('prodNumber');
                 }
             },
             enumerable: true,
@@ -1591,7 +1669,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._name != v) {
                     this._name = v;
-                    this.raisePropertyChanged('name');
+                    this.objEvents.raiseProp('name');
                 }
             },
             enumerable: true,
@@ -1602,7 +1680,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._parentCategoryID != v) {
                     this._parentCategoryID = v;
-                    this.raisePropertyChanged('parentCategoryID');
+                    this.objEvents.raiseProp('parentCategoryID');
                     this._childCategories.refresh();
                 }
             },
@@ -1614,7 +1692,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._childCategoryID != v) {
                     this._childCategoryID = v;
-                    this.raisePropertyChanged('childCategoryID');
+                    this.objEvents.raiseProp('childCategoryID');
                 }
             },
             enumerable: true,
@@ -1625,7 +1703,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._modelID != v) {
                     this._modelID = v;
-                    this.raisePropertyChanged('modelID');
+                    this.objEvents.raiseProp('modelID');
                 }
             },
             enumerable: true,
@@ -1636,7 +1714,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._saleStart1 != v) {
                     this._saleStart1 = v;
-                    this.raisePropertyChanged('saleStart1');
+                    this.objEvents.raiseProp('saleStart1');
                 }
             },
             enumerable: true,
@@ -1647,7 +1725,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._saleStart2 != v) {
                     this._saleStart2 = v;
-                    this.raisePropertyChanged('saleStart2');
+                    this.objEvents.raiseProp('saleStart2');
                 }
             },
             enumerable: true,
@@ -1693,7 +1771,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._selectedCategory != v) {
                     this._selectedCategory = v;
-                    this.raisePropertyChanged('selectedCategory');
+                    this.objEvents.raiseProp('selectedCategory');
                 }
             },
             enumerable: true,
@@ -1704,7 +1782,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._selectedModel != v) {
                     this._selectedModel = v;
-                    this.raisePropertyChanged('selectedModel');
+                    this.objEvents.raiseProp('selectedModel');
                 }
             },
             enumerable: true,
@@ -1720,7 +1798,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
             set: function (v) {
                 if (this._size != v) {
                     this._size = v;
-                    this.raisePropertyChanged('size');
+                    this.objEvents.raiseProp('size');
                 }
             },
             enumerable: true,
@@ -1747,6 +1825,7 @@ define("gridDemo/filters", ["require", "exports", "jriapp", "jriapp_db", "demo/d
 });
 define("gridDemo/states", ["require", "exports"], function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var RowStateProvider = (function () {
         function RowStateProvider() {
         }
@@ -1783,87 +1862,102 @@ define("gridDemo/states", ["require", "exports"], function (require, exports) {
 });
 define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "common", "gridDemo/filters", "gridDemo/commands", "gridDemo/states"], function (require, exports, RIAPP, dbMOD, uiMOD, COMMON, filters_1, commands_2, states_1) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils;
     var ProductViewModel = (function (_super) {
         __extends(ProductViewModel, _super);
         function ProductViewModel(app) {
-            var _this = this;
-            _super.call(this, app);
-            var self = this;
-            this._filter = new filters_1.ProductsFilter(app);
-            this._dbSet = this.dbSets.Product;
-            this._dataGrid = null;
-            this._propWatcher = new RIAPP.PropWatcher();
-            this._selected = {};
-            this._selectedCount = 0;
-            this._invokeResult = null;
-            this._rowStateProvider = new states_1.RowStateProvider();
-            this._optionTextProvider = new states_1.OptionTextProvider();
-            this._optionStateProvider = new states_1.OptionStateProvider();
+            var _this = _super.call(this, app) || this;
+            var self = _this;
+            _this._filter = new filters_1.ProductsFilter(app);
+            _this._dbSet = _this.dbSets.Product;
+            _this._dataGrid = null;
+            _this._propWatcher = new RIAPP.PropWatcher();
+            _this._selected = {};
+            _this._selectedCount = 0;
+            _this._invokeResult = null;
+            _this._rowStateProvider = new states_1.RowStateProvider();
+            _this._optionTextProvider = new states_1.OptionTextProvider();
+            _this._optionStateProvider = new states_1.OptionStateProvider();
             var sodAssoc = self.dbContext.associations.getOrdDetailsToProduct();
-            this._vwSalesOrderDet = new dbMOD.ChildDataView({
+            _this._vwSalesOrderDet = new dbMOD.ChildDataView({
                 association: sodAssoc,
                 fn_sort: function (a, b) { return a.SalesOrderDetailID - b.SalesOrderDetailID; }
             });
-            this._dbSet.addOnPropertyChange('currentItem', function (sender, data) {
+            _this._dbSet.objEvents.onProp('currentItem', function (_s, data) {
                 self._onCurrentChanged();
             }, self.uniqueID);
-            this._dbSet.addOnItemDeleting(function (sender, args) {
+            _this._dbSet.addOnItemDeleting(function (_s, args) {
                 if (!confirm('Are you sure that you want to delete ' + args.item.Name + ' ?'))
                     args.isCancel = true;
             }, self.uniqueID);
-            this._dbSet.addOnCleared(function (sender, args) {
+            _this._dbSet.addOnCleared(function (_s, args) {
                 _this.dbContext.dbSets.SalesOrderDetail.clear();
             }, self.uniqueID);
-            this._dbSet.addOnEndEdit(function (sender, args) {
+            _this._dbSet.addOnEndEdit(function (_s, args) {
                 if (!args.isCanceled) {
                     self._testInvokeCommand.raiseCanExecuteChanged();
                 }
             }, self.uniqueID);
-            this._dbSet.addOnFill(function (sender, args) {
+            _this._dbSet.addOnFill(function (_s, args) {
                 if (args.reason === 2)
                     setTimeout(function () {
                         self._updateSelection();
                     }, 0);
             }, self.uniqueID);
-            this._dbSet.isSubmitOnDelete = true;
-            this._dbSet.addOnValidate(function (sender, args) {
+            _this._dbSet.isSubmitOnDelete = true;
+            var validations = [{
+                    fieldName: null, fn: function (item, errors) {
+                        if (!!item.SellEndDate) {
+                            if (item.SellEndDate < item.SellStartDate) {
+                                errors.push('End Date must be after Start Date');
+                            }
+                        }
+                    }
+                },
+                {
+                    fieldName: "Weight", fn: function (item, errors) {
+                        if (item.Weight > 20000) {
+                            errors.push('Weight must be less than 20000');
+                        }
+                    }
+                }];
+            _this._dbSet.addOnValidateField(function (_s, args) {
                 var item = args.item;
-                if (!args.fieldName) {
-                    if (!!item.SellEndDate) {
-                        if (item.SellEndDate < item.SellStartDate) {
-                            args.errors.push('End Date must be after Start Date');
-                        }
-                    }
-                }
-                else {
-                    if (args.fieldName == "Weight") {
-                        if (args.item.Weight > 20000) {
-                            args.errors.push('Weight must be less than 20000');
-                        }
-                    }
-                }
+                validations.filter(function (val) {
+                    return args.fieldName === val.fieldName;
+                }).forEach(function (val) {
+                    val.fn(item, args.errors);
+                });
             }, self.uniqueID);
-            this._addNewCommand = new RIAPP.TCommand(function (sender, param) {
-                var item = self._dbSet.addNew();
+            _this._dbSet.addOnValidateItem(function (_s, args) {
+                var item = args.item;
+                validations.filter(function (val) {
+                    return !val.fieldName;
+                }).forEach(function (val) {
+                    var errors = [];
+                    val.fn(item, errors);
+                    if (errors.length > 0) {
+                        args.result.push({ fieldName: null, errors: errors });
+                    }
+                });
+            }, self.uniqueID);
+            _this._addNewCommand = new RIAPP.Command(function () {
+                self._dbSet.addNew();
             });
-            this._loadCommand = new RIAPP.TCommand(function (sender, data, viewModel) {
-                viewModel.load();
-            }, self, null);
-            this._testInvokeCommand = new commands_2.TestInvokeCommand(this);
-            this._columnCommand = new RIAPP.TCommand(function (sender, cmdParam, viewModel) {
-                var dataName = "";
-                if (sender instanceof uiMOD.BaseElView) {
-                    dataName = sender.dataName;
-                }
-                alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", dataName, (!cmdParam ? "Not selected" : cmdParam.ProductID)));
-            }, self, function (sender, param, thisobj) {
+            _this._loadCommand = new RIAPP.Command(function () {
+                self.load();
+            });
+            _this._testInvokeCommand = new commands_2.TestInvokeCommand(_this);
+            _this._columnCommand = new RIAPP.Command(function (product) {
+                alert(utils.str.format("You clicked on \"{0}\", current ProductID is: {1}", "Product Column", (!product ? "Not selected" : product.ProductID)));
+            }, function () {
                 return !!self.currentItem;
             });
-            this._propWatcher.addWatch(self, ['currentItem'], function (property) {
+            _this._propWatcher.addWatch(self, ['currentItem'], function (property) {
                 self._testInvokeCommand.raiseCanExecuteChanged();
             });
-            this._dialogVM = new uiMOD.DialogVM(app);
+            _this._dialogVM = new uiMOD.DialogVM(app);
             var dialogOptions = {
                 templateID: 'invokeResultTemplate',
                 width: 600,
@@ -1874,7 +1968,8 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                     self.invokeResult = null;
                 }
             };
-            this._dialogVM.createDialog('testDialog', dialogOptions);
+            _this._dialogVM.createDialog('testDialog', dialogOptions);
+            return _this;
         }
         ProductViewModel.prototype._addGrid = function (grid) {
             var self = this;
@@ -1900,7 +1995,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
         ProductViewModel.prototype._removeGrid = function () {
             if (!this._dataGrid)
                 return;
-            this._dataGrid.removeNSHandlers(this.uniqueID);
+            this._dataGrid.objEvents.offNS(this.uniqueID);
             this._dataGrid = null;
         };
         ProductViewModel.prototype.addTabs = function (tabs) {
@@ -1927,7 +2022,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
             alert("You double clicked " + cell.uniqueID);
         };
         ProductViewModel.prototype._onCurrentChanged = function () {
-            this.raisePropertyChanged('currentItem');
+            this.objEvents.raiseProp('currentItem');
             this._columnCommand.raiseCanExecuteChanged();
         };
         ProductViewModel.prototype._updateSelection = function () {
@@ -1970,8 +2065,8 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
             if (!utils.check.isNt(this._filter.childCategoryID)) {
                 query.where('ProductCategoryID', 0, [this._filter.childCategoryID]);
             }
-            if (!utils.check.isNt(this._filter.modelID)) {
-                query.where('ProductModelID', 0, [this._filter.modelID]);
+            if (utils.check.isArray(this._filter.modelID) && this._filter.modelID.length > 0) {
+                query.where('ProductModelID', 0, this._filter.modelID.map(function (v) { return v == -1 ? null : v; }));
             }
             if (!utils.check.isNt(this._filter.saleStart1) && !utils.check.isNt(this._filter.saleStart2)) {
                 query.where('SellStartDate', 1, [this._filter.saleStart1, this._filter.saleStart2]);
@@ -2002,19 +2097,19 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
         ProductViewModel.prototype.showDialog = function (name) {
             this._dialogVM.showDialog(name || 'testDialog', this);
         };
-        ProductViewModel.prototype.destroy = function () {
-            if (this._isDestroyed)
+        ProductViewModel.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
-            this._propWatcher.destroy();
+            this.setDisposing();
+            this._propWatcher.dispose();
             this._propWatcher = null;
             if (!!this._dbSet) {
-                this._dbSet.removeNSHandlers(this.uniqueID);
+                this._dbSet.objEvents.offNS(this.uniqueID);
             }
             if (!!this._dataGrid) {
-                this._dataGrid.removeNSHandlers(this.uniqueID);
+                this._dataGrid.objEvents.offNS(this.uniqueID);
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(ProductViewModel.prototype, "dbSet", {
             get: function () { return this._dbSet; },
@@ -2067,7 +2162,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                 var old = this._selectedCount;
                 if (old !== v) {
                     this._selectedCount = v;
-                    this.raisePropertyChanged('selectedCount');
+                    this.objEvents.raiseProp('selectedCount');
                 }
             },
             enumerable: true,
@@ -2084,7 +2179,7 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
                 var old = this._invokeResult;
                 if (old !== v) {
                     this._invokeResult = v;
-                    this.raisePropertyChanged('invokeResult');
+                    this.objEvents.raiseProp('invokeResult');
                 }
             },
             enumerable: true,
@@ -2126,83 +2221,167 @@ define("gridDemo/productVM", ["require", "exports", "jriapp", "jriapp_db", "jria
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ProductViewModel.prototype, "dialogOptions", {
+            get: function () {
+                var dialogOptions;
+                dialogOptions = {
+                    templateID: 'productEditTemplate',
+                    width: 550,
+                    height: 650,
+                    title: 'Edit Product',
+                    submitOnOK: true,
+                    fn_OnShow: function (dialog) {
+                        console.log("edit dialog is shown");
+                    },
+                    fn_OnClose: function (dialog) {
+                        console.log("edit dialog is closed");
+                    },
+                    fn_OnOK: function (dialog) {
+                        console.log("edit dialog: OK clicked");
+                        return 0;
+                    }
+                };
+                return dialogOptions;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return ProductViewModel;
     }(RIAPP.ViewModel));
     exports.ProductViewModel = ProductViewModel;
 });
-define("gridDemo/baseUpload", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
+define("gridDemo/baseUpload", ["require", "exports", "jriapp", "jriapp_ui", "uploader", "uploader"], function (require, exports, RIAPP, uiMOD, uploader_1, uploader_2) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Uploader = uploader_2.Uploader;
+    var utils = RIAPP.Utils, $ = uiMOD.$;
+    function fn_getTemplateElement(template, name) {
+        var t = template, els = t.findElByDataName(name);
+        if (els.length < 1) {
+            return null;
+        }
+        return els[0];
+    }
     var BaseUploadVM = (function (_super) {
         __extends(BaseUploadVM, _super);
-        function BaseUploadVM(url) {
-            _super.call(this);
-            var self = this;
-            this._uploadUrl = url;
-            this._formEl = null;
-            this._fileEl = null;
-            this._progressBar = null;
-            this._percentageCalc = null;
-            this._progressDiv = null;
-            this._fileInfo = null;
-            this._id = null;
-            this._fileUploaded = false;
-            this._initOk = this._initXhr();
-            this._uploadCommand = new RIAPP.Command(function (sender, param) {
+        function BaseUploadVM(app, url) {
+            var _this = _super.call(this, app) || this;
+            var self = _this;
+            _this._uploadUrl = url;
+            _this._formEl = null;
+            _this._fileEl = null;
+            _this._progressBar = null;
+            _this._percentageCalc = null;
+            _this._progressDiv = null;
+            _this._fileInfo = null;
+            _this._id = null;
+            _this._fileUploaded = false;
+            _this._uploadCommand = new RIAPP.Command(function () {
                 try {
                     self.uploadFiles(self._fileEl.files);
                 }
                 catch (ex) {
-                    self.handleError(ex, this);
+                    self.handleError(ex, _this);
                 }
-            }, self, function (sender, param) {
+            }, function () {
                 return self._canUpload();
             });
+            return _this;
         }
-        BaseUploadVM.prototype._initXhr = function () {
-            this.xhr = new XMLHttpRequest();
-            if (!this.xhr.upload) {
-                this.xhr = null;
-                this.handleError('Browser dose not support HTML5 files upload interface', this);
-                return false;
-            }
-            var self = this, xhr = this.xhr, upload = xhr.upload;
-            upload.onloadstart = function (e) {
-                self._progressBar.prop("max", 100);
-                self._progressBar.prop("value", 0);
-                self._percentageCalc.html("0%");
-                self._progressDiv.show();
-            };
-            upload.onprogress = function (e) {
-                var progressBar = $("#progressBar");
-                var percentageDiv = $("#percentageCalc");
-                if (!!e.lengthComputable) {
-                    self._progressBar.prop("max", e.total);
-                    self._progressBar.prop("value", e.loaded);
-                    self._percentageCalc.html(Math.round(e.loaded / e.total * 100) + "%");
-                }
-            };
-            upload.onload = function (e) {
-                self.fileInfo = 'the File is uploaded';
-                self._progressDiv.hide();
-                self._onFileUploaded();
-            };
-            upload.onerror = function (e) {
-                self.fileInfo = null;
-                self._progressDiv.hide();
-                self.handleError(new Error('File uploading error'), self);
-            };
-            xhr.onreadystatechange = function (e) {
-                if (xhr.readyState === 4) {
-                    if (xhr.status >= 400) {
-                        self.handleError(new Error(utils.str.format("File upload error: {0}", xhr.statusText)), self);
-                    }
-                }
-            };
-            return true;
+        BaseUploadVM.prototype._initUI = function () {
+            var self = this;
+            self.formEl.reset();
+            self.fileInfo = null;
+            self.fileName = null;
+            self._fileUploaded = false;
+        };
+        BaseUploadVM.prototype._onProgress = function (val) {
+            var self = this;
+            self._progressBar.prop("max", 100);
+            self._progressBar.prop("value", Math.floor(val * 100));
+            self._percentageCalc.html(Math.floor(val * 100) + "%");
+        };
+        BaseUploadVM.prototype._onLoadStart = function () {
+            var self = this;
+            self._progressBar.prop("max", 100);
+            self._progressBar.prop("value", 0);
+            self._percentageCalc.html("0%");
+            self._progressDiv.show();
+        };
+        BaseUploadVM.prototype._onLoadComplete = function () {
+            var self = this;
+            self.fileInfo = 'File uploaded';
+            self._progressDiv.hide();
+            self._onFileUploaded();
+        };
+        BaseUploadVM.prototype._onLoadError = function () {
+            var self = this;
+            self.fileInfo = 'Upload Error!';
+            self._progressDiv.hide();
+            self.handleError(new Error(utils.str.format("File upload error: {0}", 'Upload Error')), self);
         };
         BaseUploadVM.prototype._onFileUploaded = function () {
             this._fileUploaded = true;
+        };
+        BaseUploadVM.prototype._addHeaders = function (xhr, file) {
+            xhr.setRequestHeader("X-Data-ID", this.id);
+            return null;
+        };
+        BaseUploadVM.prototype._onIDChanged = function () {
+            this._uploadCommand.raiseCanExecuteChanged();
+        };
+        BaseUploadVM.prototype._canUpload = function () {
+            return !!this._fileInfo;
+        };
+        BaseUploadVM.prototype._getDataID = function () {
+            return this.id;
+        };
+        BaseUploadVM.prototype._prepareTemplate = function (template, isLoaded) {
+            var self = this;
+            try {
+                var t = template, templEl = t.el;
+                if (isLoaded) {
+                    self._onTemplateCreated(template);
+                }
+                else {
+                    var fileEl = $(fn_getTemplateElement(template, 'files-to-upload'));
+                    fileEl.off('change');
+                    $('*[data-name="btn-input"]', templEl).off('click');
+                }
+            }
+            catch (ex) {
+                self.handleError(ex, this);
+            }
+        };
+        BaseUploadVM.prototype._onTemplateCreated = function (template) {
+            var self = this;
+            self._fileEl = fn_getTemplateElement(template, 'files-to-upload');
+            self._formEl = fn_getTemplateElement(template, 'uploadForm');
+            self._progressBar = $(fn_getTemplateElement(template, 'progressBar'));
+            self._percentageCalc = $(fn_getTemplateElement(template, 'percentageCalc'));
+            self._progressDiv = $(fn_getTemplateElement(template, 'progressDiv'));
+            self._progressDiv.hide();
+            $(self._fileEl).on('change', function (e) {
+                var fileEl = this;
+                e.stopPropagation();
+                var fileList = fileEl.files;
+                self.fileInfo = null;
+                var txt = '';
+                for (var i = 0, l = fileList.length; i < l; i++) {
+                    txt += utils.str.format('<p>{0} ({1} KB)</p>', fileList[i].name, utils.str.formatNumber(fileList[i].size / 1024, 2, '.', ','));
+                }
+                self.fileInfo = txt;
+                self.fileName = fileList.length > 0 ? fileList[0].name : null;
+            });
+            var templEl = template.el, $fileEl = $(self._fileEl);
+            $fileEl.change(function (e) {
+                $('input[data-name="files-input"]', templEl).val($(this).val());
+            });
+            $('*[data-name="btn-input"]', templEl).click(function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $fileEl.click();
+            });
         };
         BaseUploadVM.prototype.uploadFiles = function (fileList) {
             if (!!fileList) {
@@ -2212,33 +2391,55 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp"], function (requir
             }
         };
         BaseUploadVM.prototype.uploadFile = function (file) {
-            if (!this._initOk)
-                return;
-            var xhr = this.xhr;
-            xhr.open("post", this._uploadUrl, true);
-            xhr.setRequestHeader("Content-Type", "multipart/form-data");
-            xhr.setRequestHeader("X-File-Name", file.name);
-            xhr.setRequestHeader("X-File-Size", file.size.toString());
-            xhr.setRequestHeader("X-File-Type", file.type);
-            xhr.setRequestHeader("X-Data-ID", this._getDataID());
-            xhr.send(file);
+            var self = this, uploader = new uploader_1.Uploader(this._uploadUrl, file);
+            self._onLoadStart();
+            uploader.addOnProgress(function (s, val) {
+                self._onProgress(val);
+            });
+            uploader.addOnAddHeaders(function (s, args) {
+                args.promise = self._addHeaders(args.xhr, file);
+            });
+            uploader.uploadFile().then(function (fileName) {
+                uploader.dispose();
+                self._onLoadComplete();
+            }).catch(function (err) {
+                uploader.dispose();
+                self._onLoadError();
+            });
         };
-        BaseUploadVM.prototype._onIDChanged = function () {
-            this._uploadCommand.raiseCanExecuteChanged();
-        };
-        BaseUploadVM.prototype._canUpload = function () {
-            return this._initOk && !!this._fileInfo && !utils.check.isNt(this.id);
-        };
-        BaseUploadVM.prototype._getDataID = function () {
-            return this.id;
-        };
+        Object.defineProperty(BaseUploadVM.prototype, "uploadUrl", {
+            get: function () { return this._uploadUrl; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseUploadVM.prototype, "fileUploaded", {
+            get: function () { return this._fileUploaded; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseUploadVM.prototype, "formEl", {
+            get: function () { return this._formEl; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(BaseUploadVM.prototype, "fileInfo", {
             get: function () { return this._fileInfo; },
             set: function (v) {
                 if (this._fileInfo !== v) {
                     this._fileInfo = v;
-                    this.raisePropertyChanged('fileInfo');
+                    this.objEvents.raiseProp('fileInfo');
                     this._uploadCommand.raiseCanExecuteChanged();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseUploadVM.prototype, "fileName", {
+            get: function () { return this._fileName; },
+            set: function (v) {
+                if (this._fileName !== v) {
+                    this._fileName = v;
+                    this.objEvents.raiseProp('fileName');
                 }
             },
             enumerable: true,
@@ -2255,148 +2456,95 @@ define("gridDemo/baseUpload", ["require", "exports", "jriapp"], function (requir
                 var old = this._id;
                 if (old !== v) {
                     this._id = v;
-                    this.raisePropertyChanged('id');
+                    this.objEvents.raiseProp('id');
                     this._onIDChanged();
                 }
             },
             enumerable: true,
             configurable: true
         });
+        BaseUploadVM.prototype.beginEdit = function () {
+            return true;
+        };
+        BaseUploadVM.prototype.endEdit = function () {
+            return true;
+        };
+        BaseUploadVM.prototype.cancelEdit = function () {
+            return true;
+        };
+        Object.defineProperty(BaseUploadVM.prototype, "isEditing", {
+            get: function () { return true; },
+            enumerable: true,
+            configurable: true
+        });
         return BaseUploadVM;
-    }(RIAPP.BaseObject));
+    }(RIAPP.ViewModel));
     exports.BaseUploadVM = BaseUploadVM;
 });
 define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDemo/baseUpload"], function (require, exports, RIAPP, uiMOD, baseUpload_1) {
     "use strict";
-    var utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
-    var fn_getTemplateElement = function (template, name) {
-        var t = template;
-        var els = t.findElByDataName(name);
-        if (els.length < 1)
-            return null;
-        return els[0];
-    };
+    Object.defineProperty(exports, "__esModule", { value: true });
     var UploadThumbnailVM = (function (_super) {
         __extends(UploadThumbnailVM, _super);
         function UploadThumbnailVM(app, url) {
-            _super.call(this, url);
-            var self = this;
-            this._product = null;
-            this._dialogVM = new uiMOD.DialogVM(app);
+            var _this = _super.call(this, app, url) || this;
+            var self = _this;
+            _this._product = null;
+            _this._dialogVM = new uiMOD.DialogVM(app);
             var dialogOptions = {
                 templateID: 'uploadTemplate',
                 width: 450,
                 height: 250,
-                title: 'Upload product thumbnail',
+                title: 'Upload Product Thumbnail',
                 fn_OnTemplateCreated: function (template) {
-                    var dialog = this;
-                    self._fileEl = fn_getTemplateElement(template, 'files-to-upload');
-                    self._formEl = fn_getTemplateElement(template, 'uploadForm');
-                    self._progressBar = $(fn_getTemplateElement(template, 'progressBar'));
-                    self._percentageCalc = $(fn_getTemplateElement(template, 'percentageCalc'));
-                    self._progressDiv = $(fn_getTemplateElement(template, 'progressDiv'));
-                    self._progressDiv.hide();
-                    $(self._fileEl).on('change', function (e) {
-                        var fileEl = this;
-                        e.stopPropagation();
-                        var fileList = fileEl.files, txt = '';
-                        self.fileInfo = null;
-                        for (var i = 0, l = fileList.length; i < l; i++) {
-                            txt += utils.str.format('<p>{0} ({1} KB)</p>', fileList[i].name, utils.str.formatNumber(fileList[i].size / 1024, 2, '.', ','));
-                        }
-                        self.fileInfo = txt;
-                    });
-                    var templEl = template.el, $fileEl = $(self._fileEl);
-                    $fileEl.change(function (e) {
-                        $('input[data-name="files-input"]', templEl).val($(this).val());
-                    });
-                    $('*[data-name="btn-input"]', templEl).click(function (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        $fileEl.click();
-                    });
+                    self._prepareTemplate(template, true);
                 },
                 fn_OnShow: function (dialog) {
-                    self._formEl.reset();
-                    self.fileInfo = null;
-                    self._fileUploaded = false;
+                    self._initUI();
                 },
                 fn_OnClose: function (dialog) {
                     if (dialog.result == 'ok' && self._onDialogClose()) {
-                        self.raiseEvent('files_uploaded', { id: self.id, product: self._product });
+                        self.objEvents.raise('files_uploaded', { id: self.id, product: self._product });
                     }
                 }
             };
-            this._dialogVM.createDialog('uploadDialog', dialogOptions);
-            this._dialogCommand = new RIAPP.Command(function (sender, param) {
+            _this._dialogVM.createDialog('uploadDialog', dialogOptions);
+            _this._dialogCommand = new RIAPP.Command(function (product) {
                 try {
-                    self._product = param;
+                    self._product = product;
                     self.id = self._product.ProductID.toString();
                     self._dialogVM.showDialog('uploadDialog', self);
                 }
                 catch (ex) {
-                    self.handleError(ex, this);
+                    self.handleError(ex, self);
                 }
-            }, self, function (sender, param) {
-                return true;
             });
-            this._templateCommand = new RIAPP.TemplateCommand(function (sender, param) {
-                try {
-                    var template = param.template, fileEl = $('input[data-name="files-to-upload"]', template.el);
-                    if (fileEl.length == 0)
-                        return;
-                    if (param.isLoaded) {
-                        fileEl.change(function (e) {
-                            $('input[data-name="files-input"]', template.el).val($(this).val());
-                        });
-                        $('*[data-name="btn-input"]', template.el).click(function (e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            fileEl.click();
-                        });
-                    }
-                    else {
-                        fileEl.off('change');
-                        $('*[data-name="btn-input"]', template.el).off('click');
-                    }
-                }
-                catch (ex) {
-                    self.handleError(ex, this);
-                }
-            }, self, function (sender, param) {
-                return true;
-            });
+            return _this;
         }
-        UploadThumbnailVM.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
-            return ['files_uploaded'].concat(base_events);
+        UploadThumbnailVM.prototype._onDialogClose = function () {
+            return this.fileUploaded;
+        };
+        UploadThumbnailVM.prototype.endEdit = function () {
+            return this._onDialogClose();
         };
         UploadThumbnailVM.prototype.addOnFilesUploaded = function (fn, nmspace) {
-            this.addHandler('files_uploaded', fn, nmspace);
+            this.objEvents.on('files_uploaded', fn, nmspace);
         };
-        UploadThumbnailVM.prototype.removeOnFilesUploaded = function (nmspace) {
-            this.removeHandler('files_uploaded', nmspace);
-        };
-        UploadThumbnailVM.prototype._onDialogClose = function () {
-            return this._fileUploaded;
+        UploadThumbnailVM.prototype.offOnFilesUploaded = function (nmspace) {
+            this.objEvents.off('files_uploaded', nmspace);
         };
         Object.defineProperty(UploadThumbnailVM.prototype, "dialogCommand", {
             get: function () { return this._dialogCommand; },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(UploadThumbnailVM.prototype, "templateCommand", {
-            get: function () { return this._templateCommand; },
-            enumerable: true,
-            configurable: true
-        });
-        UploadThumbnailVM.prototype.destroy = function () {
-            if (this._isDestroyed)
+        UploadThumbnailVM.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
-            this._dialogVM.destroy();
+            this.setDisposing();
+            this._dialogVM.dispose();
             this._dialogVM = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         return UploadThumbnailVM;
     }(baseUpload_1.BaseUploadVM));
@@ -2404,30 +2552,27 @@ define("gridDemo/uploads", ["require", "exports", "jriapp", "jriapp_ui", "gridDe
 });
 define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common", "header", "ssevents", "websocket", "gridDemo/productVM", "gridDemo/uploads"], function (require, exports, RIAPP, DEMODB, COMMON, HEADER, SSEVENTS, WEBSOCK, productVM_1, uploads_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
-            _super.call(this, options);
-            var self = this;
-            this._dbContext = null;
-            this._errorVM = null;
-            this._headerVM = null;
-            this._productVM = null;
-            this._uploadVM = null;
-            this._sseVM = null;
-            this._websockVM = null;
+            var _this = _super.call(this, options) || this;
+            _this._dbContext = null;
+            _this._errorVM = null;
+            _this._headerVM = null;
+            _this._productVM = null;
+            _this._uploadVM = null;
+            _this._sseVM = null;
+            _this._websockVM = null;
+            return _this;
         }
         DemoApplication.prototype.onStartUp = function () {
             var self = this, options = self.options;
             this._dbContext = new DEMODB.DbContext();
+            this._dbContext.addOnDbSetCreating(function (s, a) {
+                console.log("DbSet: %s is creating", a.name);
+            });
             this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
-            function toText(str) {
-                if (str === null)
-                    return '';
-                else
-                    return str;
-            }
-            ;
             this._dbContext.dbSets.Product.defineIsActiveField(function (item) {
                 return !item.SellEndDate;
             });
@@ -2439,17 +2584,17 @@ define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common",
                 self._handleError(sender, data);
             }
             ;
-            this.addOnError(handleError);
-            this._dbContext.addOnError(handleError);
+            this.objEvents.addOnError(handleError);
+            this._dbContext.objEvents.addOnError(handleError);
             if (!!options.sse_url && SSEVENTS.SSEventsVM.isSupported()) {
                 this._sseVM = new SSEVENTS.SSEventsVM(options.sse_url, options.sse_clientID);
-                this._sseVM.addOnMessage(function (s, a) { self._sseMessage = a.data.message; self.raisePropertyChanged('sseMessage'); });
-                this._sseVM.addOnError(handleError);
+                this._sseVM.addOnMessage(function (s, a) { self._sseMessage = a.data.message; self.objEvents.raiseProp('sseMessage'); });
+                this._sseVM.objEvents.addOnError(handleError);
             }
             if (WEBSOCK.WebSocketsVM.isSupported()) {
                 this._websockVM = new WEBSOCK.WebSocketsVM(WEBSOCK.WebSocketsVM.createUrl(81, 'PollingService', false));
                 this._websockVM.addOnMessage(this._onWebsockMsg, this.uniqueID, this);
-                this._websockVM.addOnError(handleError);
+                this._websockVM.objEvents.addOnError(handleError);
             }
             this._uploadVM.addOnFilesUploaded(function (s, a) {
                 a.product._aspect.refresh();
@@ -2464,24 +2609,24 @@ define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common",
         };
         DemoApplication.prototype._onWebsockMsg = function (sender, args) {
             this._sseMessage = args.data.message;
-            this.raisePropertyChanged('sseMessage');
+            this.objEvents.raiseProp('sseMessage');
         };
-        DemoApplication.prototype.destroy = function () {
-            if (this._isDestroyed)
+        DemoApplication.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             try {
-                self._errorVM.destroy();
-                self._headerVM.destroy();
-                self._productVM.destroy();
-                self._uploadVM.destroy();
-                self._dbContext.destroy();
+                self._errorVM.dispose();
+                self._headerVM.dispose();
+                self._productVM.dispose();
+                self._uploadVM.dispose();
+                self._dbContext.dispose();
                 if (!!self._sseVM)
-                    self._sseVM.destroy();
+                    self._sseVM.dispose();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         Object.defineProperty(DemoApplication.prototype, "options", {
@@ -2535,14 +2680,14 @@ define("gridDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common",
 });
 define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";
-    var utils = RIAPP.Utils, $ = RIAPP.$, DOM = RIAPP.DOM, doc = RIAPP.DOM.document, head = RIAPP.DOM.queryOne(doc, "head");
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var utils = RIAPP.Utils, DOM = RIAPP.DOM, doc = RIAPP.DOM.document, head = RIAPP.DOM.queryOne(doc, "head");
     var drag = null;
-    var ID = "id";
+    var _a = utils.core, forEach = _a.forEach, Indexer = _a.Indexer;
     var PX = "px";
     var SIGNATURE = "JColResizer";
     var FLEX = "JCLRFlex";
-    var _gridsCount = 0;
-    var _created_grids = {};
+    var _gridsCount = 0, _created_grids = Indexer();
     function _gridCreated(grid) {
         _created_grids[grid.uniqueID] = grid;
         _gridsCount += 1;
@@ -2561,10 +2706,10 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
     DOM.append(head, RIAPP.DOM.fromHTML(cssRules));
     var onGripDrag = function (e) {
         if (!drag)
-            return;
+            return false;
         var gripData = DOM.getData(drag, SIGNATURE), elview = gripData.elview;
-        if (elview.getIsDestroyCalled())
-            return;
+        if (elview.getIsStateDirty())
+            return false;
         var data = elview.getResizeIfo();
         var table = elview.grid.table;
         var touches = e.touches;
@@ -2623,7 +2768,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             return;
         var gripData = DOM.getData(drag, SIGNATURE);
         var elview = gripData.elview;
-        if (elview.getIsDestroyCalled())
+        if (elview.getIsStateDirty())
             return;
         var data = elview.getResizeIfo(), table = elview.grid.table;
         DOM.removeClass([drag], data.options.draggingClass);
@@ -2652,9 +2797,9 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
     var onGripMouseDown = function (e) {
         var grip = this;
         var gripData = DOM.getData(grip, SIGNATURE), elview = gripData.elview;
-        if (elview.getIsDestroyCalled())
-            return;
-        var data = elview.getResizeIfo(), table = elview.grid.table;
+        if (elview.getIsStateDirty())
+            return false;
+        var data = elview.getResizeIfo();
         var touches = e.touches;
         gripData.ox = touches ? touches[0].pageX : e.pageX;
         gripData.l = grip.offsetLeft;
@@ -2681,16 +2826,16 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         return false;
     };
     var onResize = function () {
-        RIAPP.Utils.core.forEachProp(_created_grids, function (name, gridView) {
+        forEach(_created_grids, function (_, gridView) {
             gridView.syncGrips();
         });
     };
     var ResizableGrid = (function (_super) {
         __extends(ResizableGrid, _super);
-        function ResizableGrid(options) {
-            _super.call(this, options);
-            var self = this, grid = self.grid;
-            _gridCreated(this);
+        function ResizableGrid(el, options) {
+            var _this = _super.call(this, el, options) || this;
+            var self = _this, grid = self.grid;
+            _gridCreated(_this);
             var defaults = {
                 resizeMode: 'overflow',
                 draggingClass: 'JCLRgripDrag',
@@ -2705,17 +2850,18 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
                 onDrag: null,
                 onResize: null
             };
-            this._resizeInfo = null;
-            this._ds = grid.dataSource;
+            _this._resizeInfo = null;
+            _this._ds = grid.dataSource;
             var opts = utils.core.extend(defaults, options);
             self.init(opts);
-            self.bindDS(this._ds);
-            grid.addOnPropertyChange("dataSource", function (s, a) {
+            self.bindDS(_this._ds);
+            grid.objEvents.onProp("dataSource", function (s, a) {
                 self.unBindDS(self._ds);
                 self.bindDS(grid.dataSource);
                 self._ds = grid.dataSource;
-            }, this.uniqueID);
+            }, _this.uniqueID);
             self.syncGrips();
+            return _this;
         }
         ResizableGrid.prototype.bindDS = function (ds) {
             if (!ds)
@@ -2731,7 +2877,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
         ResizableGrid.prototype.unBindDS = function (ds) {
             if (!ds)
                 return;
-            ds.removeNSHandlers(this.uniqueID);
+            ds.objEvents.offNS(this.uniqueID);
         };
         ResizableGrid.prototype.init = function (options) {
             var table = this.grid.table, style = window.getComputedStyle(table, null);
@@ -2797,7 +2943,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             this.syncGrips();
         };
         ResizableGrid.prototype.syncGrips = function () {
-            if (this.getIsDestroyCalled())
+            if (this.getIsStateDirty())
                 return;
             var data = this._resizeInfo;
             data.gripContainer.style.width = (data.w + PX);
@@ -2806,15 +2952,21 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             var viewport = this.grid._getInternal().getWrapper();
             var headerHeight = header.offsetHeight;
             var tableHeight = viewport.clientHeight;
+            var lastGripOffset = 5;
             for (var i = 0; i < data.len; i++) {
-                var colInfo = data.columns[i];
-                colInfo.grip.style.left = ((colInfo.column.offsetLeft - table.offsetLeft + colInfo.column.offsetWidth + data.cellspacing / 2) + PX);
+                var colInfo = data.columns[i], leftPos = (colInfo.column.offsetLeft - table.offsetLeft + colInfo.column.offsetWidth + data.cellspacing / 2);
+                if (i == data.len - 1) {
+                    if ((leftPos + lastGripOffset) > data.w) {
+                        leftPos = data.w - lastGripOffset;
+                    }
+                }
+                colInfo.grip.style.left = (leftPos + PX);
                 colInfo.grip.style.height = ((data.options.headerOnly ? headerHeight : (headerHeight + tableHeight)) + PX);
             }
             this.grid.updateColumnsSize();
         };
         ResizableGrid.prototype.syncCols = function (i, isOver) {
-            if (this.getIsDestroyCalled())
+            if (this.getIsStateDirty())
                 return;
             var table = this.grid.table, data = this._resizeInfo, gripData = DOM.getData(drag, SIGNATURE);
             var inc = gripData.x - gripData.l, c = data.columns[i];
@@ -2836,7 +2988,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             }
         };
         ResizableGrid.prototype.applyBounds = function () {
-            if (this.getIsDestroyCalled())
+            if (this.getIsStateDirty())
                 return;
             var table = this.grid.table;
             var data = this._resizeInfo;
@@ -2857,10 +3009,10 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
             var viewport = this.grid._getInternal().getWrapper();
             viewport.style.width = (table.offsetWidth + (viewport.offsetWidth - viewport.clientWidth)) + PX;
         };
-        ResizableGrid.prototype.destroy = function () {
-            if (this._isDestroyed)
+        ResizableGrid.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             _gridDestroyed(this);
             this.unBindDS(this._ds);
             this._ds = null;
@@ -2869,7 +3021,7 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
                 data.gripContainer.remove();
             DOM.removeClass([table], SIGNATURE + " " + FLEX);
             this._resizeInfo = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         ResizableGrid.prototype.getResizeIfo = function () {
             return this._resizeInfo;
@@ -2882,14 +3034,15 @@ define("gridDemo/resizableGrid", ["require", "exports", "jriapp", "jriapp_ui"], 
     }
     exports.initModule = initModule;
 });
-define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app", "gridDemo/resizableGrid"], function (require, exports, RIAPP, COMMON, app_1, ResizableGrid) {
+define("gridDemo/main", ["require", "exports", "jriapp", "common", "dropdownbox", "gridDemo/app", "gridDemo/resizableGrid"], function (require, exports, RIAPP, COMMON, DROPDBOX, app_1, ResizableGrid) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
     var styles = ["lsize", 'msize', 'ssize', 'nsize'];
     var SizeConverter = (function (_super) {
         __extends(SizeConverter, _super);
         function SizeConverter() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         SizeConverter.prototype.convertToSource = function (val, param, dataContext) {
             return undefined;
@@ -2917,7 +3070,7 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
         return SizeConverter;
     }(RIAPP.BaseConverter));
     exports.SizeConverter = SizeConverter;
-    bootstrap.addOnError(function (sender, args) {
+    bootstrap.objEvents.addOnError(function (_s, args) {
         debugger;
         alert(args.error.message);
         args.isHandled = true;
@@ -2925,6 +3078,7 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
     function start(options) {
         options.modulesInits = {
             "COMMON": COMMON.initModule,
+            "DROPDBOX": DROPDBOX.initModule,
             "ResizableGrid": ResizableGrid.initModule
         };
         bootstrap.init(function (bootstrap) {
@@ -2934,18 +3088,22 @@ define("gridDemo/main", ["require", "exports", "jriapp", "common", "gridDemo/app
             ButtonsCSS.OK = 'icon icon-ok';
             ButtonsCSS.Cancel = 'icon icon-remove';
         });
+        var convertArg = function (p2) { return RIAPP.Utils.check.isPlainObject(p2) ? JSON.stringify(p2, null, 2) : p2; };
         return bootstrap.startApp(function () {
             return new app_1.DemoApplication(options);
         }, function (app) {
             app.registerConverter('sizeConverter', new SizeConverter());
+            app.registerSvc("testsvc", function (p1, p2, p3) {
+                console.log("exec testsvc factory(%s, %s, %s)", convertArg(p1), convertArg(p2), convertArg(p3));
+                return "testsvc implementation";
+            });
             app.loadTemplates(options.templates_url);
-            app.registerTemplateLoader('productEditTemplate', coreUtils.memoize(function () {
-                return utils.http.getAjax(options.productEditTemplate_url);
-            }));
+            app.registerTemplateLoader('productEditTemplate', function () { return utils.http.getAjax(options.productEditTemplate_url); });
         }).then(function (app) {
             if (!!options.modelData && !!options.categoryData) {
                 app.productVM.filter.modelData = options.modelData;
                 app.productVM.filter.categoryData = options.categoryData;
+                return null;
             }
             else {
                 return app.productVM.filter.load().then(function () {

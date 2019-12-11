@@ -1,16 +1,15 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { CoreUtils } from "./coreutils";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IWeakMap, WeakMapConstructor } from "../int";
 
-const core = CoreUtils, undefined: any = void 0;
-let counter = (new Date().getTime()) % 1e9; 
+const _undefined: any = void 0;
+let counter = (new Date().getTime()) % 1e9;
 
 export function createWeakMap(): IWeakMap {
     const win: any = window;
     if (!win.WeakMap) {
         win.WeakMap = WeakMap;
     }
-   
+
     return new (<WeakMapConstructor>win.WeakMap)();
 }
 
@@ -18,30 +17,35 @@ class WeakMap implements IWeakMap {
     private _name: string;
 
     constructor() {
-        this._name = '_wm_' + (Math.random() * 1e9 >>> 0) + (counter++ + '__'); 
+        this._name = "_wm_" + (Math.random() * 1e9 >>> 0) + (counter++ + "__");
     }
     set(key: any, value: any): IWeakMap {
         const entry: any[] = key[this._name];
-        if (!!entry && entry[0] === key)
+        if (!!entry && entry[0] === key) {
             entry[1] = value;
-        else
+        } else {
             Object.defineProperty(key, this._name, { value: [key, value], writable: true });
-        return this; 
+        }
+        return this;
     }
     get(key: any): any {
         const entry: any[] = key[this._name];
-        return (!entry ? undefined : (entry[0] === key ? entry[1] : undefined)); 
+        return (!entry ? _undefined : (entry[0] === key ? entry[1] : _undefined));
     }
     delete(key: any): boolean {
         const entry: any[] = key[this._name];
-        if (!entry) return false;
+        if (!entry) {
+             return false;
+        }
         const hasValue = (entry[0] === key);
-        entry[0] = entry[1] = undefined;
-        return hasValue; 
+        entry[0] = entry[1] = _undefined;
+        return hasValue;
     }
     has(key: any): boolean {
         const entry: any[] = key[this._name];
-        if (!entry) return false;
-        return (entry[0] === key); 
+        if (!entry) {
+            return false;
+        }
+        return (entry[0] === key);
     }
 }

@@ -7,7 +7,7 @@ import * as DEMODB from "../demo/demoDB";
 import { DemoApplication } from "./app";
 import { OrderVM } from "./orderVM";
 
-var utils = RIAPP.Utils, $ = RIAPP.$;
+const utils = RIAPP.Utils, $ = uiMOD.$;
 
 export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     private _dataGrid: uiMOD.DataGrid;
@@ -22,24 +22,24 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication) {
         super(app);
-        var self = this;
+        const self = this;
         this._dataGrid = null;
         this._dbSet = this.dbSets.Customer;
-        this._dbSet.isSubmitOnDelete = true;
+        // this._dbSet.isSubmitOnDelete = true;
         this._propWatcher = new RIAPP.PropWatcher();
 
-        this._dbSet.addOnItemDeleting(function (sender, args) {
+        this._dbSet.addOnItemDeleting(function (_s, args) {
             if (!confirm('Are you sure that you want to delete customer ?'))
                 args.isCancel = true;
         }, self.uniqueID);
 
-        this._dbSet.addOnPageIndexChanged(function (sender, args) {
-            self.raiseEvent('page_changed', {});
+        this._dbSet.addOnPageIndexChanged(function (_s, args) {
+            self.objEvents.raise('page_changed', {});
         }, self.uniqueID);
 
         //example of using custom validation on client (in addition to a built-in validation)
-        this._dbSet.addOnValidate(function (sender, args) {
-            var item = args.item;
+        this._dbSet.addOnValidateField(function (_s, args) {
+            let item = args.item;
             //check complex property value
             if (args.fieldName == "ComplexProp.ComplexProp.Phone") {
                 if (utils.str.startsWith(args.item.ComplexProp.ComplexProp.Phone, '888')) {
@@ -55,43 +55,40 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         });
 
         //adds new customer - uses dialog to enter the data
-        this._addNewCommand = new RIAPP.Command(function (sender, param) {
+        this._addNewCommand = new RIAPP.Command(function () {
             //showing of the dialog is handled by the datagrid
             self._dbSet.addNew();
-        }, self, function (sender, param) {
-            //the command is always enabled
-            return true;
         });
 
         //saves changes (submitts them to the service)
-        this._saveCommand = new RIAPP.Command(function (sender, param) {
+        this._saveCommand = new RIAPP.Command(function () {
             self.dbContext.submitChanges();
-        }, self, function (s, p) {
+        }, function () {
             //the command is enabled when there are pending changes
             return self.dbContext.isHasChanges;
         });
 
 
-        this._undoCommand = new RIAPP.Command(function (sender, param) {
+        this._undoCommand = new RIAPP.Command(function () {
             self.dbContext.rejectChanges();
-        }, self, function (s, p) {
+        }, function () {
             //the command is enabled when there are pending changes
             return self.dbContext.isHasChanges;
         });
 
         //load data from the server
-        this._loadCommand = new RIAPP.Command(function (sender, args) {
+        this._loadCommand = new RIAPP.Command(function () {
             self.load();
-        }, self, null);
+        });
 
         //the property watcher helps us handling properties changes
         //more convenient than using addOnPropertyChange
-        this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (prop) {
+        this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (_prop) {
             self._saveCommand.raiseCanExecuteChanged();
             self._undoCommand.raiseCanExecuteChanged();
         });
 
-        this._propWatcher.addPropWatch(this._dbSet, 'currentItem', function (prop) {
+        this._propWatcher.addPropWatch(this._dbSet, 'currentItem', function (_prop) {
             self._onCurrentChanged();
         });
 
@@ -100,7 +97,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
             self.dbSets.Address.clear();
         }, self.uniqueID);
 
-        var custAssoc = self.dbContext.associations.getCustAddrToCustomer();
+        let custAssoc = self.dbContext.associations.getCustAddrToCustomer();
 
         //the view to filter CustomerAddresses related to the current customer only
         this._custAdressView = new dbMOD.ChildDataView<DEMODB.CustomerAddress>(
@@ -112,7 +109,7 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         this._ordersVM = new OrderVM(this);
     }
     protected _addGrid(grid: uiMOD.DataGrid): void {
-        var self = this;
+        const self = this;
         if (!!this._dataGrid)
             this._removeGrid();
         this._dataGrid = grid;
@@ -129,60 +126,58 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     protected _removeGrid(): void {
         if (!this._dataGrid)
             return;
-        this._dataGrid.removeNSHandlers(this.uniqueID);
+        this._dataGrid.objEvents.offNS(this.uniqueID);
         this._dataGrid = null;
     }
     protected onRowExpanded(row: uiMOD.DataGridRow): void {
-        this.raiseEvent('row_expanded', { customer: row.item, isExpanded: true });
+        this.objEvents.raise('row_expanded', { customer: row.item, isExpanded: true });
     }
     protected onRowCollapsed(row: uiMOD.DataGridRow): void {
-        this.raiseEvent('row_expanded', { customer: row.item, isExpanded: false });
+        this.objEvents.raise('row_expanded', { customer: row.item, isExpanded: false });
     }
     protected onCellDblClicked(cell: uiMOD.DataGridCell): void {
         alert("You double clicked " + cell.uniqueID);
     }
-
-    protected _getEventNames() {
-        var base_events = super._getEventNames();
-        return ['row_expanded', 'page_changed'].concat(base_events);
-    }
     protected _onCurrentChanged() {
         this._custAdressView.parentItem = this._dbSet.currentItem;
-        this.raisePropertyChanged('currentItem');
+        this.objEvents.raiseProp('currentItem');
     }
     //returns promise
     load() {
-        var self = this, query = this._dbSet.createReadCustomerQuery({ includeNav: true });
+        const self = this, query = this._dbSet.createReadCustomerQuery({ includeNav: true });
         query.pageSize = 50;
         query.orderBy('ComplexProp.LastName').thenBy('ComplexProp.MiddleName').thenBy('ComplexProp.FirstName');
         let res = query.load();
+        
+        //for testing of fillItems method
         /*
-        //for testing 
         res.then((data) => {
             setTimeout(() => {
-                self.dbSet.fillItems(data.fetchedItems);
+                self.dbSet.fillItems(self.dbSet.items.map((item, index, arr) => {
+                    return item._aspect.obj;
+                }));
             }, 2000);
         });
         */
         return res;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        this._propWatcher.destroy();
+        this.setDisposing();
+        this._propWatcher.dispose();
         this._propWatcher = null;
 
         if (!!this._dbSet) {
-            this._dbSet.removeNSHandlers(this.uniqueID);
+            this._dbSet.objEvents.offNS(this.uniqueID);
         }
         if (!!this._dataGrid) {
-            this._dataGrid.removeNSHandlers(this.uniqueID);
+            this._dataGrid.objEvents.offNS(this.uniqueID);
         }
 
-        this._ordersVM.destroy()
+        this._ordersVM.dispose()
         this._ordersVM = null;
-        super.destroy();
+        super.dispose();
     }
     get dbContext() { return this.app.dbContext; }
     get dbSets() { return this.dbContext.dbSets; }

@@ -1,24 +1,41 @@
-﻿/// <reference path="../../built/shared/shared.d.ts" />
-import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
+﻿import * as RIAPP from "jriapp";
 import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
+import * as MONTHPICKER from "monthpicker";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, dates = utils.dates;
 
 export class UppercaseConverter extends RIAPP.BaseConverter {
     convertToSource(val: any, param: any, dataContext: any): any {
-        if (utils.check.isString(val))
+        if (utils.check.isString(val)) {
             return val.toLowerCase();
-        else
+        } else {
             return val;
+        }
     }
     convertToTarget(val: any, param: any, dataContext: any): any {
-        if (utils.check.isString(val))
+        if (utils.check.isString(val)) {
             return val.toUpperCase();
-        else
+        } else {
             return val;
+        }
+    }
+}
+
+export class YearMonthConverter extends RIAPP.BaseConverter {
+    convertToSource(val: any, param: string, dataContext: any): any {
+        if (utils.check.isString(val)) {
+            return dates.strToDate('01/' + val, 'DD/' + param);
+        } else {
+            return null;
+        }
+    }
+    convertToTarget(val: any, param: string, dataContext: any): any {
+        if (utils.check.isDate(val)) {
+            return dates.dateToStr(val, param);
+        } else {
+            return "";
+        }
     }
 }
 
@@ -31,33 +48,46 @@ export class NotConverter extends RIAPP.BaseConverter {
     }
 }
 
+function RGBToHex(r: number, g: number, b: number): string {
+    var bin = r << 16 | g << 8 | b;
+    return (function (h) {
+        return new Array(7 - h.length).join("0") + h
+    })(bin.toString(16).toUpperCase());
+}
+
 export class TestObject extends RIAPP.BaseObject {
     private _testProperty1: string;
     private _testProperty2: string;
     private _testProperty3: string;
     private _testCommand: RIAPP.ICommand;
+    private _paramCommand: RIAPP.ICommand;
     private _month: number;
     private _months: DEMODB.KeyValDictionary;
     private _format: string;
     private _formatItem: DEMODB.StrKeyValListItem;
     private _formats: DEMODB.StrKeyValDictionary;
     private _boolProperty: boolean;
+    private _yearmonth: Date;
 
     constructor(initPropValue: string) {
         super();
-        var self = this;
+        const self = this;
         this._testProperty1 = initPropValue;
         this._testProperty2 = null;
         this._testProperty3 = null;
         this._boolProperty = null;
+        this._yearmonth = null;
 
-        this._testCommand = new RIAPP.Command(function (sender, args) {
+        this._testCommand = new RIAPP.Command(() => {
             self._onTestCommandExecuted();
-        }, self,
-            function (sender, args) {
+        }, () => {
                 //if this function return false, then the command is disabled
                 return self.isEnabled;
-            });
+        });
+
+        this._paramCommand = new RIAPP.Command<{ color: string; r: number; g: number; b: number; }>((param) => {
+            alert(`${param.color}: #${RGBToHex(param.r, param.g, param.b)}`);
+        });
 
         this._month = new Date().getMonth() + 1;
         this._months = new DEMODB.KeyValDictionary();
@@ -85,8 +115,8 @@ export class TestObject extends RIAPP.BaseObject {
     set testProperty1(v: string) {
         if (this._testProperty1 != v) {
             this._testProperty1 = v;
-            this.raisePropertyChanged('testProperty1');
-            this.raisePropertyChanged('isEnabled');
+            this.objEvents.raiseProp('testProperty1');
+            this.objEvents.raiseProp('isEnabled');
 
             //let the command to evaluate its availability
             this._testCommand.raiseCanExecuteChanged();
@@ -96,24 +126,25 @@ export class TestObject extends RIAPP.BaseObject {
     set testProperty2(v: string) {
         if (this._testProperty2 != v) {
             this._testProperty2 = v;
-            this.raisePropertyChanged('testProperty2');
+            this.objEvents.raiseProp('testProperty2');
         }
     }
     get testProperty3(): string { return this._testProperty3; }
     set testProperty3(v: string) {
         if (this._testProperty3 != v) {
             this._testProperty3 = v;
-            this.raisePropertyChanged('testProperty3');
+            this.objEvents.raiseProp('testProperty3');
         }
     }
     get boolProperty(): boolean { return this._boolProperty; }
     set boolProperty(v: boolean) {
         if (this._boolProperty != v) {
             this._boolProperty = v;
-            this.raisePropertyChanged('boolProperty');
+            this.objEvents.raiseProp('boolProperty');
         }
     }
     get testCommand(): RIAPP.ICommand { return this._testCommand; }
+    get paramCommand(): RIAPP.ICommand { return this._paramCommand; }
     get testToolTip(): string {
         return "Click the button to execute the command.<br/>" +
             "P.S. <b>command is active when the testProperty1 length > 3</b>";
@@ -122,14 +153,14 @@ export class TestObject extends RIAPP.BaseObject {
     set format(v) {
         if (this._format !== v) {
             this._format = v;
-            this.raisePropertyChanged('format');
+            this.objEvents.raiseProp('format');
         }
     }
     get formatItem(): DEMODB.StrKeyValListItem { return this._formatItem; }
     set formatItem(v) {
         if (this._formatItem !== v) {
             this._formatItem = v;
-            this.raisePropertyChanged('formatItem');
+            this.objEvents.raiseProp('formatItem');
         }
     }
     get isEnabled(): boolean {
@@ -140,10 +171,17 @@ export class TestObject extends RIAPP.BaseObject {
     set month(v) {
         if (v !== this._month) {
             this._month = v;
-            this.raisePropertyChanged('month');
+            this.objEvents.raiseProp('month');
         }
     }
     get months() { return this._months; }
+    get yearmonth() { return this._yearmonth; }
+    set yearmonth(v) {
+        if (v !== this._yearmonth) {
+            this._yearmonth = v;
+            this.objEvents.raiseProp('yearmonth');
+        }
+    }
 }
 
 export class DemoApplication extends RIAPP.Application {
@@ -156,11 +194,11 @@ export class DemoApplication extends RIAPP.Application {
         this._testObject = null;
     }
     onStartUp() {
-        var self = this;
+        const self = this;
         this._errorVM = new COMMON.ErrorViewModel(this);
         this._testObject = new TestObject('some initial text');
         //here we could process application's errors
-        this.addOnError(function (sender, data) {
+        this.objEvents.addOnError(function (_s, data) {
             debugger;
             data.isHandled = true;
             self.errorVM.error = data.error;
@@ -169,18 +207,18 @@ export class DemoApplication extends RIAPP.Application {
 
         super.onStartUp();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        var self = this;
+        this.setDisposing();
+        const self = this;
         try {
-            self._errorVM.destroy();
-            self._testObject.destroy();
+            self._errorVM.dispose();
+            self._testObject.dispose();
             if (!!self.UC.createdBinding)
-                self.UC.createdBinding.destroy();
+                self.UC.createdBinding.dispose();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get errorVM() { return this._errorVM; }
@@ -189,21 +227,23 @@ export class DemoApplication extends RIAPP.Application {
 }
 
 //bootstrap error handler - the last resort (typically display message to the user)
-bootstrap.addOnError(function (sender, args) {
+bootstrap.objEvents.addOnError(function (_s, args) {
     debugger;
     alert(args.error.message);
 });
 
 function initModule(app: RIAPP.Application) {
-    console.log("INIT Module");
+    console.log("INIT bindingsDemo Module");
     app.registerConverter('uppercaseConverter', new UppercaseConverter());
     app.registerConverter('notConverter', new NotConverter());
+    app.registerConverter('yearmonthConverter', new YearMonthConverter());
 };
 
 
-export var appOptions: RIAPP.IAppOptions = {
+export const appOptions: RIAPP.IAppOptions = {
     modulesInits: {
         "COMMON": COMMON.initModule,
+        "MONTHPICK": MONTHPICKER.initModule,
         "BINDDEMO": initModule
     }
 };

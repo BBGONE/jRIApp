@@ -8,5 +8,11 @@ namespace RIAppDemo.Controllers
     [SessionState(SessionStateBehavior.Disabled)]
     public class FolderBrowserServiceController : DataServiceController<FolderBrowserService>
     {
+
+        public FolderBrowserServiceController(FolderBrowserService domainService): 
+            base(domainService)
+        {
+
+        }
     }
 }

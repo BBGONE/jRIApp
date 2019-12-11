@@ -1,13 +1,16 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseObject, LocaleERRS as ERRS, Utils, Lazy, IIndexer } from "jriapp_shared";
-import { PROP_NAME } from "./const";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { BaseObject, LocaleERRS as ERRS, Utils, Lazy, IIndexer, TEventHandler, IBaseObject } from "jriapp_shared";
 import { IEntityItem } from "./int";
 import { DbContext } from "./dbcontext";
-import { DbSet, IDbSetConstructor } from "./dbset";
+import { IDbSetConstructor, TDbSet } from "./dbset";
 
-const utils = Utils, strUtils = utils.str;
+const utils = Utils, { Indexer } = utils.core, { format } = utils.str;
 
-export type TDbSet = DbSet<IEntityItem, DbContext>;
+const enum DBSETS_EVENTS {
+    DBSET_CREATING = "dbset_creating"
+}
+
+export type TDbSetCreatingArgs = { name: string; dbSetType: IDbSetConstructor<IEntityItem, any>; };
 
 export class DbSets extends BaseObject {
     private _dbContext: DbContext;
@@ -18,47 +21,64 @@ export class DbSets extends BaseObject {
         super();
         this._dbContext = dbContext;
         this._arrDbSets = [];
-        this._dbSets = {};
+        this._dbSets = Indexer();
     }
-    protected _dbSetCreated(dbSet: TDbSet) {
-        const self = this;
-        this._arrDbSets.push(dbSet);
-        dbSet.addOnPropertyChange(PROP_NAME.isHasChanges, function (sender, args) {
-            self._dbContext._getInternal().onDbSetHasChangesChanged(sender);
-        });
-    }
-    protected _createDbSet(name: string, dbSetType: IDbSetConstructor<IEntityItem>) {
-        const self = this, dbContext = this._dbContext;
-        if (!!self._dbSets[name])
-            throw new Error(utils.str.format("DbSet: {0} is already created", name));
-        self._dbSets[name] = new Lazy<DbSet<IEntityItem,DbContext>>(() => {
-            const res = new dbSetType(dbContext);
-            self._dbSetCreated(res);
-            return res;
-        });
-    }
-    get dbSetNames() {
-        return Object.keys(this._dbSets);
-    }
-    get arrDbSets() {
-        return this._arrDbSets;
-    }
-    getDbSet(name: string): TDbSet {
-        const res = this._dbSets[name];
-        if (!res)
-            throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, name));
-        return res.Value;
-    }
-    destroy() {
-        if (this._isDestroyed)
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
-        this._isDestroyCalled = true;
-        this._arrDbSets.forEach(function (dbSet) {
-            dbSet.destroy();
+        }
+        this.setDisposing();
+        this._arrDbSets.forEach((dbSet) => {
+            dbSet.dispose();
         });
         this._arrDbSets = [];
         this._dbSets = null;
         this._dbContext = null;
-        super.destroy();
+        super.dispose();
+    }
+    protected _dbSetCreated(dbSet: TDbSet): void {
+        this._arrDbSets.push(dbSet);
+        dbSet.objEvents.onProp("isHasChanges", (sender, args) => {
+            this._dbContext._getInternal().onDbSetHasChangesChanged(sender);
+        });
+    }
+    protected _createDbSet(name: string, dbSetType: IDbSetConstructor<IEntityItem, any>): void {
+        const self = this, dbContext = this._dbContext;
+        if (!!self._dbSets[name]) {
+            throw new Error(utils.str.format("DbSet: {0} is already created", name));
+        }
+        self._dbSets[name] = new Lazy<TDbSet>(() => {
+            const args: TDbSetCreatingArgs = { name: name, dbSetType: dbSetType };
+            self.objEvents.raise(DBSETS_EVENTS.DBSET_CREATING, args);
+            const res = new args.dbSetType(dbContext);
+            self._dbSetCreated(res);
+            return res;
+        });
+    }
+    addOnDbSetCreating(fn: TEventHandler<this, TDbSetCreatingArgs>, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.on(DBSETS_EVENTS.DBSET_CREATING, fn, nmspace, context);
+    }
+    offOnDbSetCreating(nmspace?: string): void {
+        this.objEvents.off(DBSETS_EVENTS.DBSET_CREATING, nmspace);
+    }
+    get dbSetNames(): string[] {
+        return Object.keys(this._dbSets);
+    }
+    get arrDbSets(): TDbSet[] {
+        return this._arrDbSets;
+    }
+    findDbSet(name: string): TDbSet {
+        const res = this._dbSets[name];
+        if (!res) {
+            return null;
+        }
+        return res.Value;
+    }
+    getDbSet(name: string): TDbSet {
+        const dbSet = this.findDbSet(name);
+        if (!dbSet) {
+            throw new Error(format(ERRS.ERR_DBSET_NAME_INVALID, name));
+        }
+        return dbSet;
     }
 }

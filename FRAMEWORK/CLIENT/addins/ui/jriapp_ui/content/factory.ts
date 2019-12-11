@@ -1,9 +1,8 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DATA_TYPE } from "jriapp_shared/collection/const";
 import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import {
-    IContentFactory, IContentFactoryList, IContentOptions,
-    IContentConstructor, IConstructorContentOptions, TFactoryGetter, IContent
+    IContentFactory, IContentOptions, IContentConstructor
 } from "jriapp/int";
 import { BasicContent } from "./basic";
 import { TemplateContent } from "./template";
@@ -13,11 +12,11 @@ import { BoolContent } from "./bool";
 import { NumberContent } from "./number";
 import { DateContent } from "./date";
 import { DateTimeContent } from "./datetime";
-import { LookupContent } from "./listbox";
+import { LookupContent } from "./lookup";
 
 import { bootstrap } from "jriapp/bootstrap";
 
-const utils = Utils, strUtils = utils.str;
+const utils = Utils, { format } = utils.str;
 let factoryInstance: IContentFactory;
 
 class ContentFactory implements IContentFactory {
@@ -28,11 +27,11 @@ class ContentFactory implements IContentFactory {
     }
 
     getContentType(options: IContentOptions): IContentConstructor {
-        if (!!options.templateInfo) {
+        if (!!options.template) {
             return TemplateContent;
         }
-        if (!options.bindingInfo) {
-            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "options", "bindingInfo"));
+        if (!options.fieldName) {
+            throw new Error(format(ERRS.ERR_PARAM_INVALID, "options", "fieldName"));
         }
 
         if (options.name === "lookup") {
@@ -47,10 +46,7 @@ class ContentFactory implements IContentFactory {
                 res = BasicContent;
                 break;
             case DATA_TYPE.String:
-                if (options.name === "multyline")
-                    res = MultyLineContent;
-                else
-                    res = StringContent;
+                res = (options.name === "multyline") ? MultyLineContent : StringContent;
                 break;
             case DATA_TYPE.Bool:
                 res = BoolContent;
@@ -67,41 +63,39 @@ class ContentFactory implements IContentFactory {
                 res = DateTimeContent;
                 break;
             case DATA_TYPE.Date:
-                if (options.name === "datepicker")
-                    res = DateContent;
-                else
-                    res = DateTimeContent;
+                res = (options.name === "datepicker") ? DateContent : DateTimeContent;
                 break;
             case DATA_TYPE.Guid:
             case DATA_TYPE.Binary:
                 res = BasicContent;
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_FIELD_DATATYPE, fieldInfo.dataType));
+                throw new Error(format(ERRS.ERR_FIELD_DATATYPE, fieldInfo.dataType));
         }
 
         if (!res) {
-            if (!this._nextFactory)
+            if (!this._nextFactory) {
                 throw new Error(ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
-            else
+            } else {
                 return this._nextFactory.getContentType(options);
-        }
-        else {
+            }
+        } else {
             return res;
         }
     }
     isExternallyCachable(contentType: IContentConstructor): boolean {
-        if (LookupContent === contentType)
+        if (LookupContent === contentType) {
             return true;
-        if (!this._nextFactory)
+        }
+        if (!this._nextFactory) {
             return false;
+        }
         return this._nextFactory.isExternallyCachable(contentType);
     }
 }
 
 export function initContentFactory() {
-    if (!factoryInstance)
-    {
+    if (!factoryInstance) {
         factoryInstance = new ContentFactory();
         bootstrap.contentFactory.addFactory((nextFactory?: IContentFactory) => {
             return factoryInstance;

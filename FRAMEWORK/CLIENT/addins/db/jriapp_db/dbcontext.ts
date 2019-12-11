@@ -1,67 +1,63 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { DATA_TYPE, COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
 import {
-    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER, COLL_CHANGE_REASON
-} from "jriapp_shared/collection/const";
+    IIndexer, IVoidPromise, IBaseObject, TEventHandler, TErrorHandler, LocaleERRS as ERRS,
+    BaseObject, Utils, WaitQueue, Lazy, IStatefulPromise, IAbortablePromise, PromiseState } from "jriapp_shared";
+import { ValueUtils } from "jriapp_shared/collection/utils";
 import {
-    IIndexer, IVoidPromise, AbortError, IBaseObject, TEventHandler, LocaleERRS as ERRS,
-    BaseObject, Utils, WaitQueue, Lazy, IPromiseState, IStatefulPromise, IAbortablePromise,
-    PromiseState, IDeferred
-} from "jriapp_shared";
-import { valueUtils } from "jriapp_shared/collection/utils";
-import {
-    IEntityItem, IRefreshRowInfo, IQueryResult, IQueryInfo, IAssociationInfo, IAssocConstructorOptions,
-    IPermissionsInfo, IPermissions, IInvokeRequest, IInvokeResponse, IQueryRequest, IQueryResponse, ITrackAssoc,
-    IChangeSet, IRowInfo, IQueryParamInfo, IRowData, ISubset
+    IEntityItem, IRefreshRequest, IRefreshResponse, IQueryResult, IQueryInfo, IAssociationInfo, IAssocConstructorOptions,
+    IPermissionsInfo, IInvokeRequest, IInvokeResponse, IQueryRequest, IQueryResponse, ITrackAssoc,
+    IChangeRequest, IChangeResponse, IRowInfo, IQueryParamInfo, ISubset
 } from "./int";
-import { PROP_NAME, DATA_OPER, REFRESH_MODE } from "./const";
-import { DbSet } from "./dbset";
-import { DbSets } from "./dbsets";
+import { DATA_OPER, REFRESH_MODE } from "./const";
+import { TDbSet } from "./dbset";
+import { DbSets, TDbSetCreatingArgs } from "./dbsets";
 import { Association } from "./association";
-import { DataQuery, TDataQuery } from "./dataquery";
+import { TDataQuery } from "./dataquery";
 import {
     AccessDeniedError, ConcurrencyError, SvcValidationError,
     DataOperationError, SubmitError
 } from "./error";
 
-const utils = Utils, http = utils.http, checks = utils.check, strUtils = utils.str,
-    coreUtils = utils.core, ERROR = utils.err, valUtils = valueUtils, _async = utils.defer;
+const utils = Utils, http = utils.http, { isArray, isNt, isFunc, isString } = utils.check,
+    { format, endsWith } = utils.str, { getTimeZoneOffset, merge, Indexer } = utils.core, ERROR = utils.err,
+    { stringifyValue } = ValueUtils, { delay, createDeferred } = utils.defer;
 
-const DATA_SVC_METH = {
-    Invoke: "invoke",
-    Query: "query",
-    Permissions: "permissions",
-    Submit: "save",
-    Refresh: "refresh"
-};
+const enum DATA_SVC_METH {
+    Invoke = "invoke",
+    Query = "query",
+    Permissions = "permissions",
+    Submit = "save",
+    Refresh = "refresh"
+}
 
-function __checkError(svcError: { name: string; message?: string; }, oper: DATA_OPER) {
-    if (!svcError)
+function fn_checkError(svcError: { name: string; message?: string; }, oper: DATA_OPER) {
+    if (!svcError || ERROR.checkIsDummy(svcError)) {
         return;
-    if (ERROR.checkIsDummy(svcError))
-        return;
+    }
     switch (svcError.name) {
         case "AccessDeniedException":
             throw new AccessDeniedError(ERRS.ERR_ACCESS_DENIED, oper);
         case "ConcurrencyException":
             throw new ConcurrencyError(ERRS.ERR_CONCURRENCY, oper);
         case "ValidationException":
-            throw new SvcValidationError(strUtils.format(ERRS.ERR_SVC_VALIDATION,
+            throw new SvcValidationError(format(ERRS.ERR_SVC_VALIDATION,
                 svcError.message), oper);
         case "DomainServiceException":
-            throw new DataOperationError(strUtils.format(ERRS.ERR_SVC_ERROR,
+            throw new DataOperationError(format(ERRS.ERR_SVC_ERROR,
                 svcError.message), oper);
         default:
-            throw new DataOperationError(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR,
+            throw new DataOperationError(format(ERRS.ERR_UNEXPECTED_SVC_ERROR,
                 svcError.message), oper);
     }
 }
 
 export interface IInternalDbxtMethods {
-    onItemRefreshed(res: IRefreshRowInfo, item: IEntityItem): void;
+    onItemRefreshed(res: IRefreshResponse, item: IEntityItem): void;
     refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem>;
     getQueryInfo(name: string): IQueryInfo;
-    onDbSetHasChangesChanged(eSet: DbSet<IEntityItem, DbContext>): void;
-    load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
+    onDbSetHasChangesChanged(eSet: TDbSet): void;
+    load(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>>;
 }
 
 interface IRequestPromise {
@@ -70,21 +66,26 @@ interface IRequestPromise {
     name: string;
 }
 
-const DBCTX_EVENTS = {
-    submit_err: "submit_error"
-};
+const enum DBCTX_EVENTS {
+    SUBMITTING = "submitting",
+    SUBMITTED = "submitted",
+    SUBMIT_ERROR = "submit_error",
+    DBSET_CREATING = "dbset_creating"
+}
 
-export class DbContext extends BaseObject {
+export type TSubmitErrArgs = { error: any, isHandled: boolean, context: IIndexer<any> };
+export type TSubmittingArgs = { isCancelled: boolean, context: IIndexer<any> };
+export type TSubmittedArgs = { context: IIndexer<any> };
+
+export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any, TAssoc = any> extends BaseObject {
     private _requestHeaders: IIndexer<string>;
     private _requests: IRequestPromise[];
-    protected _initState: IStatefulPromise<any>;
-    protected _dbSets: DbSets;
-    //_svcMethods: { [methodName: string]: (args: { [paramName: string]: any; }) => IStatefulPromise<any>; };
-    protected _svcMethods: any;
-    //_assoc: IIndexer<() => Association>;
-    protected _assoc: any;
+    private _initState: IStatefulPromise<any>;
+    private _dbSets: TDbSets;
+    private _svcMethods: TMethods;
+    private _assoc: TAssoc;
     private _arrAssoc: Association[];
-    private _queryInf: { [queryName: string]: IQueryInfo; };
+    private _queryInfo: { [queryName: string]: IQueryInfo; };
     private _serviceUrl: string;
     private _isSubmiting: boolean;
     private _isHasChanges: boolean;
@@ -97,22 +98,22 @@ export class DbContext extends BaseObject {
         super();
         const self = this;
         this._initState = null;
-        this._requestHeaders = {};
+        this._requestHeaders = Indexer();
         this._requests = [];
         this._dbSets = null;
-        this._svcMethods = {};
-        this._assoc = {};
+        this._svcMethods = <TMethods>{};
+        this._assoc = <TAssoc>{};
         this._arrAssoc = [];
-        this._queryInf = {};
+        this._queryInfo = Indexer();
         this._serviceUrl = null;
         this._isSubmiting = false;
         this._isHasChanges = false;
         this._pendingSubmit = null;
-        //at first init it with client side timezone
-        this._serverTimezone = coreUtils.get_timeZoneOffset();
+        // at first init it with client side timezone
+        this._serverTimezone = getTimeZoneOffset();
         this._waitQueue = new WaitQueue(this);
         this._internal = {
-            onItemRefreshed: (res: IRefreshRowInfo, item: IEntityItem) => {
+            onItemRefreshed: (res: IRefreshResponse, item: IEntityItem) => {
                 self._onItemRefreshed(res, item);
             },
             refreshItem: (item: IEntityItem) => {
@@ -121,275 +122,269 @@ export class DbContext extends BaseObject {
             getQueryInfo: (name: string) => {
                 return self._getQueryInfo(name);
             },
-            onDbSetHasChangesChanged: (eSet: DbSet<IEntityItem, DbContext>) => {
+            onDbSetHasChangesChanged: (eSet: TDbSet) => {
                 self._onDbSetHasChangesChanged(eSet);
             },
-            load: (query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON) => {
+            load: (query: TDataQuery, reason: COLL_CHANGE_REASON) => {
                 return self._load(query, reason);
             }
         };
-        this.addOnPropertyChange(PROP_NAME.isSubmiting, (s, a) => { self.raisePropertyChanged(PROP_NAME.isBusy); });
+        this.objEvents.onProp("isSubmiting", () => {
+            self.objEvents.raiseProp("isBusy");
+        });
     }
-    protected _getEventNames() {
-        let base_events = super._getEventNames();
-        return [DBCTX_EVENTS.submit_err].concat(base_events);
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this.abortRequests();
+        this._waitQueue.dispose();
+        this._waitQueue = null;
+        this._arrAssoc.forEach((assoc) => {
+            assoc.dispose();
+        });
+        this._arrAssoc = [];
+        this._assoc = <TAssoc>{};
+        this._dbSets.dispose();
+        this._dbSets = null;
+        this._svcMethods = <TMethods>{};
+        this._queryInfo = Indexer();
+        this._serviceUrl = null;
+        this._initState = null;
+        this._isSubmiting = false;
+        this._isHasChanges = false;
+        super.dispose();
     }
-    protected _initDbSets() {
-        if (this.isInitialized)
+    protected abstract _createDbSets(): TDbSets;
+    protected abstract _createAssociations(): IAssociationInfo[];
+    protected abstract _createMethods(): IQueryInfo[];
+    protected _checkDisposed(): void {
+        if (this.getIsStateDirty()) {
+            ERROR.abort("dbContext is disposed");
+        }
+    }
+    protected _initDbSets(): void {
+        if (this.isInitialized) {
             throw new Error(ERRS.ERR_DOMAIN_CONTEXT_INITIALIZED);
+        }
+        this._dbSets = this._createDbSets();
+        this._dbSets.addOnDbSetCreating((s, args) => {
+            this.objEvents.raise(DBCTX_EVENTS.DBSET_CREATING, args);
+        });
+        const associations = this._createAssociations();
+        this._initAssociations(associations);
+        const methods = this._createMethods();
+        this._initMethods(methods);
     }
-    protected _initAssociations(associations: IAssociationInfo[]) {
-        let self = this;
-        associations.forEach(function (assoc) {
+    protected _initAssociations(associations: IAssociationInfo[]): void {
+        const self = this;
+        associations.forEach((assoc) => {
             self._initAssociation(assoc);
         });
     }
-    protected _initMethods(methods: IQueryInfo[]) {
-        let self = this;
-        methods.forEach(function (info) {
-            if (info.isQuery)
-                self._queryInf[info.methodName] = info;
-            else {
-                //service method info
+    protected _initMethods(methods: IQueryInfo[]): void {
+        const self = this;
+        methods.forEach((info) => {
+            if (info.isQuery) {
+                self._queryInfo[info.methodName] = info;
+            } else {
+                // service method info
                 self._initMethod(info);
             }
         });
     }
-    protected _updatePermissions(info: IPermissionsInfo) {
-        let self = this;
+    protected _updatePermissions(info: IPermissionsInfo): void {
         this._serverTimezone = info.serverTimezone;
-        info.permissions.forEach(function (perms) {
-            self.getDbSet(perms.dbSetName)._getInternal().updatePermissions(perms);
+        info.permissions.forEach((perms) => {
+            const dbSet = this.findDbSet(perms.dbSetName);
+            if (!!dbSet) {
+                dbSet._getInternal().updatePermissions(perms);
+            }
         });
     }
-    protected _initAssociation(assoc: IAssociationInfo) {
+    protected _initAssociation(assoc: IAssociationInfo): void {
         const self = this, options: IAssocConstructorOptions = {
             dbContext: self,
             parentName: assoc.parentDbSetName,
             childName: assoc.childDbSetName,
             onDeleteAction: assoc.onDeleteAction,
-            parentKeyFields: assoc.fieldRels.map(function (f) {
-                return f.parentField;
-            }),
-            childKeyFields: assoc.fieldRels.map(function (f) {
-                return f.childField;
-            }),
+            parentKeyFields: assoc.fieldRels.map((f) => f.parentField),
+            childKeyFields: assoc.fieldRels.map((f) => f.childField),
             parentToChildrenName: assoc.parentToChildrenName,
             childToParentName: assoc.childToParentName,
             name: assoc.name
-        }, name = "get" + assoc.name;
+        }, name = `get${assoc.name}`;
+
         const lazy = new Lazy<Association>(() => {
             const res = new Association(options);
             self._arrAssoc.push(res);
             return res;
         });
-        this._assoc[name] = () => lazy.Value;
+
+        (<any>this._assoc)[name] = () => lazy.Value;
     }
-    protected _initMethod(methodInfo: IQueryInfo) {
+    protected _initMethod(methodInfo: IQueryInfo): void {
         const self = this;
-        //function expects method parameters
-        this._svcMethods[methodInfo.methodName] = function (args: { [paramName: string]: any; }) {
-            const deferred = _async.createDeferred<any>(), callback = function (res: { result: any; error: any; }) {
-                if (!res.error) {
-                    deferred.resolve(res.result);
+        // function expects method parameters
+        (<any>this._svcMethods)[methodInfo.methodName] = (args: { [paramName: string]: any; }) => {
+            return self._invokeMethod(methodInfo, args).then((res) => {
+                self._checkDisposed();
+                if (!res) {
+                    throw new Error(format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
                 }
-                else {
-                    deferred.reject();
-                }
-            };
-
-            try {
-                const data = self._getMethodParams(methodInfo, args);
-                self._invokeMethod(methodInfo, data, callback);
-            } catch (ex) {
-                if (!ERROR.checkIsDummy(ex)) {
-                    self.handleError(ex, self);
-                    callback({ result: null, error: ex });
-                }
-            }
-
-            return deferred.promise();
+                fn_checkError(res.error, DATA_OPER.Invoke);
+                return res.result;
+            }).catch((err) => {
+                self._onDataOperError(err, DATA_OPER.Invoke);
+                ERROR.throwDummy(err);
+            });
         };
     }
-    protected _addRequestPromise(req: IAbortablePromise<any>, operType: DATA_OPER, name?: string) {
-        let self = this, item: IRequestPromise = { req: req, operType: operType, name: name },
-            cnt = self._requests.length, _isBusy = cnt > 0;
+    protected _addRequestPromise(req: IAbortablePromise<any>, operType: DATA_OPER, name?: string): void {
+        const self = this, item: IRequestPromise = { req: req, operType: operType, name: name },
+            cnt = self._requests.length, oldBusy = this.isBusy;
 
         self._requests.push(item);
-        req.always(() => {
+        req.finally(() => {
+            if (self.getIsStateDirty()) {
+                return;
+            }
+            const oldBusy = self.isBusy;
             utils.arr.remove(self._requests, item);
-            self.raisePropertyChanged(PROP_NAME.requestCount);
-            if (self._requests.length === 0)
-                self.raisePropertyChanged(PROP_NAME.isBusy);
+            self.objEvents.raiseProp("requestCount");
+            if (oldBusy !== self.isBusy) {
+                self.objEvents.raiseProp("isBusy");
+            }
         });
-        if (cnt !== self._requests.length)
-            self.raisePropertyChanged(PROP_NAME.requestCount);
-        if (_isBusy !== (self._requests.length > 0))
-            self.raisePropertyChanged(PROP_NAME.isBusy);
+        if (cnt !== self._requests.length) {
+            self.objEvents.raiseProp("requestCount");
+        }
+        if (oldBusy !== self.isBusy) {
+            self.objEvents.raiseProp("isBusy");
+        }
     }
-    protected _tryAbortRequest(operType: DATA_OPER, name: string) {
-        let reqs = this._requests.filter((req) => { return req.operType === operType && req.name === name; });
+    protected _tryAbortRequest(operType: DATA_OPER, name: string): void {
+        const reqs = this._requests.filter((req) => { return req.operType === operType && req.name === name; });
         reqs.forEach((r) => { r.req.abort(); });
     }
     protected _getMethodParams(methodInfo: IQueryInfo, args: { [paramName: string]: any; }): IInvokeRequest {
-        let self = this, methodName: string = methodInfo.methodName,
-            data: IInvokeRequest = { methodName: methodName, paramInfo: { parameters: [] } };
-        let i: number, parameterInfos = methodInfo.parameters, len = parameterInfos.length, pinfo: IQueryParamInfo, val: any, value: any;
-        if (!args)
-            args = {};
-        for (i = 0; i < len; i += 1) {
-            pinfo = parameterInfos[i];
-            val = args[pinfo.name];
-            if (!pinfo.isNullable && !pinfo.isArray && !(pinfo.dataType === DATA_TYPE.String || pinfo.dataType === DATA_TYPE.Binary) && checks.isNt(val)) {
-                throw new Error(strUtils.format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
+        const self = this, methodName: string = methodInfo.methodName,
+            data: IInvokeRequest = { methodName: methodName, paramInfo: { parameters: [] } },
+            paramInfos = methodInfo.parameters, len = paramInfos.length;
+        if (!args) {
+            args = Indexer();
+        }
+        for (let i = 0; i < len; i += 1) {
+            const pinfo: IQueryParamInfo = paramInfos[i];
+            let val = args[pinfo.name];
+            if (!pinfo.isNullable && !pinfo.isArray && !(pinfo.dataType === DATA_TYPE.String || pinfo.dataType === DATA_TYPE.Binary) && isNt(val)) {
+                throw new Error(format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
             }
-            if (checks.isFunc(val)) {
-                throw new Error(strUtils.format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
+            if (isFunc(val)) {
+                throw new Error(format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
             }
-            if (pinfo.isArray && !checks.isNt(val) && !checks.isArray(val)) {
+            if (pinfo.isArray && !isNt(val) && !isArray(val)) {
                 val = [val];
             }
-            value = null;
-            //byte arrays are optimized for serialization
-            if (pinfo.dataType === DATA_TYPE.Binary && checks.isArray(val)) {
+            let value: string = null;
+            // byte arrays are optimized for serialization
+            if (pinfo.dataType === DATA_TYPE.Binary && isArray(val)) {
                 value = JSON.stringify(val);
-            }
-            else if (checks.isArray(val)) {
-                let arr = new Array(val.length);
+            } else if (isArray(val)) {
+                const arr: string[] = [];
                 for (let k = 0; k < val.length; k += 1) {
-                    //first convert all values to string
-                    arr[k] = valUtils.stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
+                    // first convert all values to string
+                    arr.push(stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone));
                 }
                 value = JSON.stringify(arr);
+            } else {
+                value = stringifyValue(val, pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
             }
-            else
-                value = valUtils.stringifyValue(val, pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
 
             data.paramInfo.parameters.push({ name: pinfo.name, value: value });
         }
 
         return data;
     }
-    protected _invokeMethod(methodInfo: IQueryInfo, data: IInvokeRequest, callback: (res: { result: any; error: any; }) => void) {
-        let self = this, operType = DATA_OPER.Invoke, postData: string, invokeUrl: string;
-        let fn_onComplete = function (res: IInvokeResponse) {
-            if (self.getIsDestroyCalled())
-                return;
-            try {
-                if (!res)
-                    throw new Error(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "operation result is empty"));
-                __checkError(res.error, operType);
-                callback({ result: res.result, error: null });
-            } catch (ex) {
-                if (ERROR.checkIsDummy(ex)) {
-                    return;
-                }
-                self._onDataOperError(ex, operType);
-                callback({ result: null, error: ex });
-            }
-        };
+    protected _invokeMethod(methodInfo: IQueryInfo, args: { [paramName: string]: any; }): IStatefulPromise<IInvokeResponse> {
+        const self = this;
+        return delay<string>(() => {
+            self._checkDisposed();
+            const data = self._getMethodParams(methodInfo, args);
+            return JSON.stringify(data);
+        }).then((postData) => {
+            self._checkDisposed();
+            const invokeUrl = this._getUrl(DATA_SVC_METH.Invoke),
+                reqPromise = http.postAjax(invokeUrl, postData, self.requestHeaders);
+            self._addRequestPromise(reqPromise, DATA_OPER.Invoke);
 
-        try {
-            postData = JSON.stringify(data);
-            invokeUrl = this._getUrl(DATA_SVC_METH.Invoke);
-            let req_promise = http.postAjax(invokeUrl, postData, self.requestHeaders);
-            self._addRequestPromise(req_promise, operType);
-
-            req_promise.then(function (res: string) {
-                return _async.parseJSON(res);
-            }).then(function (res: IInvokeResponse) { //success
-                fn_onComplete(res);
-            }, function (err) { //error
-                fn_onComplete({ result: null, error: err });
-            });
-        }
-        catch (ex) {
-            if (ERROR.checkIsDummy(ex)) {
-                ERROR.throwDummy(ex);
-            }
-            this._onDataOperError(ex, operType);
-            callback({ result: null, error: ex });
-            ERROR.throwDummy(ex);
-        }
-    }
-    protected _loadFromCache(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
-        let self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
-        setTimeout(() => {
-            if (self.getIsDestroyCalled()) {
-                defer.reject(new AbortError());
-                return;
-            }
-            let operType = DATA_OPER.Query, dbSet = query.dbSet, queryRes: IQueryResult<IEntityItem>;
-            try {
-                queryRes = dbSet._getInternal().fillFromCache({ reason: reason, query: query });
-                defer.resolve(queryRes);
-            } catch (ex) {
-                defer.reject(ex);
-            }
-        }, 0);
-        return defer.promise();
-    }
-    protected _loadSubsets(res: IQueryResponse, isClearAll: boolean) {
-        let self = this, isHasSubsets = checks.isArray(res.subsets) && res.subsets.length > 0;
-        if (!isHasSubsets)
-            return;
-        res.subsets.forEach(function (subset) {
-            let dbSet = self.getDbSet(subset.dbSetName);
-            dbSet.fillData(subset, !isClearAll);
+            return reqPromise;
+        }).then((res: string) => {
+            return <IInvokeResponse>JSON.parse(res);
         });
     }
-    protected _onLoaded(res: IQueryResponse, query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
-        let self = this, defer = _async.createDeferred<IQueryResult<IEntityItem>>();
-        setTimeout(() => {
-            if (self.getIsDestroyCalled()) {
-                defer.reject(new AbortError());
-                return;
-            }
-
-            let operType = DATA_OPER.Query, dbSetName: string, dbSet: DbSet<IEntityItem, DbContext>,
-                loadRes: IQueryResult<IEntityItem>;
-            try {
-                if (checks.isNt(res))
-                    throw new Error(strUtils.format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
-                dbSetName = res.dbSetName;
-                dbSet = self.getDbSet(dbSetName);
-                if (checks.isNt(dbSet))
-                    throw new Error(strUtils.format(ERRS.ERR_DBSET_NAME_INVALID, dbSetName));
-                __checkError(res.error, operType);
-                let isClearAll = (!!query && query.isClearPrevData);
-
-                loadRes = dbSet._getInternal().fillFromService(
-                    {
-                        res: res,
-                        reason: reason,
-                        query: query,
-                        onFillEnd: () => { self._loadSubsets(res, isClearAll); }
-                    });
-                defer.resolve(loadRes);
-            } catch (ex) {
-                defer.reject(ex);
-            }
-        }, 0);
-
-        return defer.promise();
+    protected _loadFromCache(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
+        const self = this;
+        return delay<IQueryResult<IEntityItem>>(() => {
+            self._checkDisposed();
+            const dbSet = query.dbSet;
+            return dbSet._getInternal().fillFromCache({ reason: reason, query: query });
+        });
     }
-    protected _dataSaved(res: IChangeSet) {
-        let self = this, submitted: IEntityItem[] = [], notvalid: IEntityItem[] = [];
+    protected _loadSubsets(subsets: ISubset[], refreshOnly: boolean = false, isClearAll: boolean = false): void {
+        const self = this, isHasSubsets = isArray(subsets) && subsets.length > 0;
+        if (!isHasSubsets) {
+            return;
+        }
+        subsets.forEach((subset) => {
+            const dbSet = self.getDbSet(subset.dbSetName);
+            if (!refreshOnly) {
+                dbSet.fillData(subset, !isClearAll);
+            } else {
+                dbSet.refreshData(subset);
+            }
+        });
+    }
+    protected _onLoaded(response: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
+        const self = this;
+        return delay<IQueryResult<IEntityItem>>(() => {
+            self._checkDisposed();
+            if (isNt(response)) {
+                throw new Error(format(ERRS.ERR_UNEXPECTED_SVC_ERROR, "null result"));
+            }
+            const dbSetName = response.dbSetName, dbSet = self.getDbSet(dbSetName);
+            if (isNt(dbSet)) {
+                throw new Error(format(ERRS.ERR_DBSET_NAME_INVALID, dbSetName));
+            }
+            fn_checkError(response.error, DATA_OPER.Query);
+            const isClearAll = (!!query && query.isClearPrevData);
+            return dbSet._getInternal().fillFromService(
+                {
+                    res: response,
+                    reason: reason,
+                    query: query,
+                    onFillEnd: () => { self._loadSubsets(response.subsets, false, isClearAll); }
+                });
+        });
+    }
+    protected _dataSaved(response: IChangeResponse, context: IIndexer<any>): void {
+        const self = this;
         try {
             try {
-                __checkError(res.error, DATA_OPER.Submit);
-            }
-            catch (ex) {
-                res.dbSets.forEach(function (jsDB) {
-                    let eSet = self._dbSets.getDbSet(jsDB.dbSetName);
-                    jsDB.rows.forEach(function (row) {
-                        let item = eSet.getItemByKey(row.clientKey);
+                fn_checkError(response.error, DATA_OPER.Submit);
+            } catch (ex) {
+                const submitted: IEntityItem[] = [], notvalid: IEntityItem[] = [];
+                response.dbSets.forEach((jsDB) => {
+                    const dbSet = self._dbSets.getDbSet(jsDB.dbSetName);
+                    jsDB.rows.forEach((row) => {
+                        const item = dbSet.getItemByKey(row.clientKey);
                         if (!item) {
-                            throw new Error(strUtils.format(ERRS.ERR_KEY_IS_NOTFOUND, row.clientKey));
+                            throw new Error(format(ERRS.ERR_KEY_IS_NOTFOUND, row.clientKey));
                         }
                         submitted.push(item);
                         if (!!row.invalid) {
-                            eSet._getInternal().setItemInvalid(row);
+                            dbSet._getInternal().setItemInvalid(row);
                             notvalid.push(item);
                         }
                     });
@@ -397,74 +392,80 @@ export class DbContext extends BaseObject {
                 throw new SubmitError(ex, submitted, notvalid);
             }
 
-            res.dbSets.forEach(function (jsDB) {
+            response.dbSets.forEach((jsDB) => {
                 self._dbSets.getDbSet(jsDB.dbSetName)._getInternal().commitChanges(jsDB.rows);
             });
-        }
-        catch (ex) {
-            if (ERROR.checkIsDummy(ex)) {
-                ERROR.throwDummy(ex);
-            }
-            this._onSubmitError(ex);
+        } catch (ex) {
+            self._onSubmitError(ex, context);
             ERROR.throwDummy(ex);
         }
     }
-    protected _getChanges(): IChangeSet {
-        let changeSet: IChangeSet = { dbSets: [], error: null, trackAssocs: [] };
-        this._dbSets.arrDbSets.forEach(function (eSet) {
-            eSet.endEdit();
-            let changes: IRowInfo[] = eSet._getInternal().getChanges();
-            if (changes.length === 0)
+    protected _getChanges(): IChangeRequest {
+        const request: IChangeRequest = { dbSets: [], trackAssocs: [] };
+        this._dbSets.arrDbSets.forEach((dbSet) => {
+            dbSet.endEdit();
+            const changes: IRowInfo[] = dbSet._getInternal().getChanges();
+            if (changes.length === 0) {
                 return;
-            //it needs to apply updates in parent-child relationship order on the server
-            //and provides child to parent map of the keys for the new entities
-            let trackAssoc: ITrackAssoc[] = eSet._getInternal().getTrackAssocInfo();
-            let jsDB = { dbSetName: eSet.dbSetName, rows: changes };
-            changeSet.dbSets.push(jsDB);
-            changeSet.trackAssocs = changeSet.trackAssocs.concat(trackAssoc);
+            }
+            // it is needed to apply updates in parent-child relationship order on the server
+            // and provides child to parent map of the keys for the new entities
+            const trackAssoc: ITrackAssoc[] = dbSet._getInternal().getTrackAssocInfo(),
+                jsDB = { dbSetName: dbSet.dbSetName, rows: changes };
+            request.dbSets.push(jsDB);
+            request.trackAssocs = request.trackAssocs.concat(trackAssoc);
         });
-        return changeSet;
+        return request;
     }
     protected _getUrl(action: string): string {
         let loadUrl = this.serviceUrl;
-        if (!strUtils.endsWith(loadUrl, "/"))
+        if (!endsWith(loadUrl, "/")) {
             loadUrl = loadUrl + "/";
+        }
         loadUrl = loadUrl + [action, ""].join("/");
         return loadUrl;
     }
     protected _onDataOperError(ex: any, oper: DATA_OPER): boolean {
-        if (ERROR.checkIsDummy(ex))
+        if (ERROR.checkIsDummy(ex)) {
             return true;
-        let er: any;
-        if (ex instanceof DataOperationError)
-            er = ex;
-        else
-            er = new DataOperationError(ex, oper);
-        return this.handleError(er, this);
+        }
+        const err: DataOperationError = (ex instanceof DataOperationError) ? ex : new DataOperationError(ex, oper);
+        return this.handleError(err, this);
     }
-    protected _onSubmitError(error: any) {
-        let args = { error: error, isHandled: false };
-        this.raiseEvent(DBCTX_EVENTS.submit_err, args);
+    protected _onSubmitError(error: any, context: IIndexer<any>): void {
+        if (ERROR.checkIsDummy(error)) {
+            return;
+        }
+        const args: TSubmitErrArgs = { error: error, isHandled: false, context: context };
+        this.objEvents.raise(DBCTX_EVENTS.SUBMIT_ERROR, args);
         if (!args.isHandled) {
-            this.rejectChanges();
+            // this.rejectChanges();
             this._onDataOperError(error, DATA_OPER.Submit);
         }
     }
-    protected waitForNotBusy(callback: () => void) {
+    protected _onSubmitting(context: IIndexer<any>): boolean {
+        const submittingArgs: TSubmittingArgs = { isCancelled: false, context: context };
+        this.objEvents.raise(DBCTX_EVENTS.SUBMITTING, submittingArgs);
+        return !submittingArgs.isCancelled;
+    }
+    protected _onSubmitted(context: IIndexer<any>): void {
+        this.objEvents.raise(DBCTX_EVENTS.SUBMITTED, { context: context } as TSubmittedArgs);
+    }
+    protected waitForNotBusy(callback: () => void): void {
         this._waitQueue.enQueue({
-            prop: PROP_NAME.isBusy,
+            prop: "isBusy",
             groupName: null,
-            predicate: function (val: any) {
+            predicate: (val: any) => {
                 return !val;
             },
             action: callback,
             actionArgs: []
         });
     }
-    protected waitForNotSubmiting(callback: () => void) {
+    protected waitForNotSubmiting(callback: () => void): void {
         this._waitQueue.enQueue({
-            prop: PROP_NAME.isSubmiting,
-            predicate: function (val: any) {
+            prop: "isSubmiting",
+            predicate: (val: any) => {
                 return !val;
             },
             action: callback,
@@ -474,189 +475,175 @@ export class DbContext extends BaseObject {
         });
     }
     protected _loadInternal(context: {
-        query: DataQuery<IEntityItem>;
+        query: TDataQuery;
         reason: COLL_CHANGE_REASON;
         loadPageCount: number;
         pageIndex: number;
         isPagingEnabled: boolean;
         dbSetName: string;
-        dbSet: DbSet<IEntityItem, DbContext>;
+        dbSet: TDbSet;
         fn_onStart: () => void;
         fn_onEnd: () => void;
         fn_onOK: (res: IQueryResult<IEntityItem>) => void;
         fn_onErr: (ex: any) => void;
-    }) {
-        const self = this, oldQuery = context.dbSet.query,
-            loadPageCount = context.loadPageCount,
-            isPagingEnabled = context.isPagingEnabled;
-
-        let range: { start: number; end: number; cnt: number; }, pageCount = 1,
-            pageIndex = context.pageIndex;
-
+    }): void {
+        const self = this;
         context.fn_onStart();
-        //restore pageIndex
-        context.query.pageIndex = pageIndex;
-        context.dbSet._getInternal().beforeLoad(context.query, oldQuery);
-        //sync pageIndex
-        pageIndex = context.query.pageIndex;
 
-        if (loadPageCount > 1 && isPagingEnabled) {
-            if (context.query._getInternal().isPageCached(pageIndex)) {
-                let loadPromise = self._loadFromCache(context.query, context.reason);
-                loadPromise.then((loadRes) => {
-                    if (self.getIsDestroyCalled())
-                        return;
-                    context.fn_onOK(loadRes);
-                }, (err) => {
-                    if (self.getIsDestroyCalled())
-                        return;
-                    context.fn_onErr(err);
-                });
-                return;
+        delay<IQueryResult<IEntityItem>>(() => {
+            self._checkDisposed();
+
+            const oldQuery = context.dbSet.query,
+                loadPageCount = context.loadPageCount,
+                isPagingEnabled = context.isPagingEnabled;
+
+            let range: { start: number; end: number; cnt: number; }, pageCount = 1,
+                pageIndex = context.pageIndex;
+            // restore pageIndex if it was changed while loading
+            context.query.pageIndex = pageIndex;
+            context.dbSet._getInternal().beforeLoad(context.query, oldQuery);
+            // sync pageIndex
+            pageIndex = context.query.pageIndex;
+
+            if (loadPageCount > 1 && isPagingEnabled) {
+                if (context.query._getInternal().isPageCached(pageIndex)) {
+                    return self._loadFromCache(context.query, context.reason);
+                } else {
+                    range = context.query._getInternal().getCache().getNextRange(pageIndex);
+                    pageIndex = range.start;
+                    pageCount = range.cnt;
+                }
             }
-            else {
-                range = context.query._getInternal().getCache().getNextRange(pageIndex);
-                pageIndex = range.start;
-                pageCount = range.cnt;
-            }
-        }
 
-        const requestInfo: IQueryRequest = {
-            dbSetName: context.dbSetName,
-            pageIndex: context.query.isPagingEnabled ? pageIndex : -1,
-            pageSize: context.query.pageSize,
-            pageCount: pageCount,
-            isIncludeTotalCount: context.query.isIncludeTotalCount,
-            filterInfo: context.query.filterInfo,
-            sortInfo: context.query.sortInfo,
-            paramInfo: self._getMethodParams(context.query._getInternal().getQueryInfo(), context.query.params).paramInfo,
-            queryName: context.query.queryName
-        };
+            const requestInfo: IQueryRequest = {
+                dbSetName: context.dbSetName,
+                pageIndex: context.query.isPagingEnabled ? pageIndex : -1,
+                pageSize: context.query.pageSize,
+                pageCount: pageCount,
+                isIncludeTotalCount: context.query.isIncludeTotalCount,
+                filterInfo: context.query.filterInfo,
+                sortInfo: context.query.sortInfo,
+                paramInfo: self._getMethodParams(context.query._getInternal().getQueryInfo(), context.query.params).paramInfo,
+                queryName: context.query.queryName
+            };
 
-        let req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
-        self._addRequestPromise(req_promise, DATA_OPER.Query, requestInfo.dbSetName);
-        req_promise.then(function (res: string) {
-            return _async.parseJSON(res);
-        }).then(function (response: IQueryResponse) {
-            return self._onLoaded(response, context.query, context.reason);
+            const reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Query), JSON.stringify(requestInfo), self.requestHeaders);
+            self._addRequestPromise(reqPromise, DATA_OPER.Query, requestInfo.dbSetName);
+
+            return reqPromise.then((res: string) => {
+                return <IQueryResponse>JSON.parse(res);
+            }).then((response: IQueryResponse) => {
+                self._checkDisposed();
+                return self._onLoaded(response, context.query, context.reason);
+            });
         }).then((loadRes) => {
-            if (self.getIsDestroyCalled())
-                return;
+            self._checkDisposed();
             context.fn_onOK(loadRes);
-        }, (err) => {
-            if (self.getIsDestroyCalled())
-                return;
+        }).catch((err) => {
             context.fn_onErr(err);
         });
     }
-    protected _onItemRefreshed(res: IRefreshRowInfo, item: IEntityItem): void {
-        const operType = DATA_OPER.Refresh;
+    protected _onItemRefreshed(res: IRefreshResponse, item: IEntityItem): void {
         try {
-            __checkError(res.error, operType);
+            fn_checkError(res.error, DATA_OPER.Refresh);
             if (!res.rowInfo) {
                 item._aspect.dbSet.removeItem(item);
-                item.destroy();
+                item.dispose();
                 throw new Error(ERRS.ERR_ITEM_DELETED_BY_ANOTHER_USER);
-            }
-            else
+            } else {
                 item._aspect._refreshValues(res.rowInfo, REFRESH_MODE.MergeIntoCurrent);
-        }
-        catch (ex) {
-            if (ERROR.checkIsDummy(ex)) {
-                ERROR.throwDummy(ex);
             }
-            this._onDataOperError(ex, operType);
+        } catch (ex) {
+            this._onDataOperError(ex, DATA_OPER.Refresh);
             ERROR.throwDummy(ex);
         }
     }
     protected _loadRefresh(args: {
         item: IEntityItem;
-        dbSet: DbSet<IEntityItem, DbContext>;
+        dbSet: TDbSet;
         fn_onStart: () => void;
         fn_onEnd: () => void;
         fn_onErr: (ex: any) => void;
-        fn_onOK: (res: IRefreshRowInfo) => void;
+        fn_onOK: (res: IRefreshResponse) => void;
     }) {
-        let self = this;
-        const operType = DATA_OPER.Refresh;
+        const self = this;
         args.fn_onStart();
-        try {
-            let request: IRefreshRowInfo = {
+
+        delay<string>(() => {
+            self._checkDisposed();
+            const request: IRefreshRequest = {
                 dbSetName: args.item._aspect.dbSetName,
-                rowInfo: args.item._aspect._getRowInfo(),
-                error: null
+                rowInfo: args.item._aspect._getRowInfo()
             };
 
             args.item._aspect._checkCanRefresh();
-            let url = self._getUrl(DATA_SVC_METH.Refresh),
-                req_promise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
+            const url = self._getUrl(DATA_SVC_METH.Refresh),
+                reqPromise = http.postAjax(url, JSON.stringify(request), self.requestHeaders);
 
-            self._addRequestPromise(req_promise, operType);
-
-            req_promise.then((res: string) => {
-                return _async.parseJSON(res);
-            }).then((res: IRefreshRowInfo) => { //success
-                if (self.getIsDestroyCalled())
-                    return;
-                args.fn_onOK(res);
-            }, (err) => { //error
-                if (self.getIsDestroyCalled())
-                    return;
-                args.fn_onErr(err);
-            });
-        }
-        catch (ex) {
-            args.fn_onErr(ex);
-        }
+            self._addRequestPromise(reqPromise, DATA_OPER.Refresh);
+            return reqPromise;
+        }).then((res: string) => {
+            return <IRefreshResponse>JSON.parse(res);
+        }).then((res: IRefreshResponse) => {
+            self._checkDisposed();
+            args.fn_onOK(res);
+        }).catch((err) => {
+            args.fn_onErr(err);
+        });
     }
     protected _refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem> {
-        const self = this, deferred = _async.createDeferred<IEntityItem>();
+        const self = this, deferred = createDeferred<IEntityItem>();
         const context = {
             item: item,
             dbSet: item._aspect.dbSet,
-            fn_onStart: function () {
-                context.item._aspect.isRefreshing = true;
-                context.dbSet._setIsLoading(true);
+            fn_onStart: () => {
+                context.item._aspect._setIsRefreshing(true);
+                context.dbSet._getInternal().setIsLoading(true);
             },
-            fn_onEnd: function () {
-                context.dbSet._setIsLoading(false);
-                context.item._aspect.isRefreshing = false;
+            fn_onEnd: () => {
+                context.dbSet._getInternal().setIsLoading(false);
+                context.item._aspect._setIsRefreshing(false);
             },
-            fn_onErr: function (ex: any) {
+            fn_onErr: (ex: any) => {
                 try {
                     context.fn_onEnd();
                     self._onDataOperError(ex, DATA_OPER.Refresh);
-                }
-                finally {
+                } finally {
                     deferred.reject();
                 }
             },
-            fn_onOK: function (res: IRefreshRowInfo) {
+            fn_onOK: (res: IRefreshResponse) => {
                 try {
                     self._onItemRefreshed(res, item);
                     context.fn_onEnd();
-                }
-                finally {
+                } finally {
                     deferred.resolve(item);
                 }
             }
         };
 
-        context.dbSet.waitForNotBusy(() => self._loadRefresh(context), item._key);
+        context.dbSet.waitForNotBusy(() => {
+            try {
+                self._checkDisposed();
+                self._loadRefresh(context);
+            } catch (err) {
+                context.fn_onErr(err);
+            }
+        }, item._key);
         return deferred.promise();
     }
     protected _getQueryInfo(name: string): IQueryInfo {
-        return this._queryInf[name];
+        return this._queryInfo[name];
     }
-    protected _onDbSetHasChangesChanged(eSet: DbSet<IEntityItem, DbContext>): void {
-        let old = this._isHasChanges, test: DbSet<IEntityItem, DbContext>;
+    protected _onDbSetHasChangesChanged(dbSet: TDbSet): void {
+        const old = this._isHasChanges;
         this._isHasChanges = false;
-        if (eSet.isHasChanges) {
+        if (dbSet.isHasChanges) {
             this._isHasChanges = true;
-        }
-        else {
-            for (let i = 0, len = this._dbSets.arrDbSets.length; i < len; i += 1) {
-                test = this._dbSets.arrDbSets[i];
+        } else {
+            const len = this._dbSets.arrDbSets.length;
+            for (let i = 0; i < len; i += 1) {
+                const test = this._dbSets.arrDbSets[i];
                 if (test.isHasChanges) {
                     this._isHasChanges = true;
                     break;
@@ -664,15 +651,16 @@ export class DbContext extends BaseObject {
             }
         }
         if (this._isHasChanges !== old) {
-            this.raisePropertyChanged(PROP_NAME.isHasChanges);
+            this.objEvents.raiseProp("isHasChanges");
         }
     }
-    protected _load(query: DataQuery<IEntityItem>, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
+    protected _load(query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         if (!query) {
             throw new Error(ERRS.ERR_DB_LOAD_NO_QUERY);
         }
 
-        const self = this, deferred = _async.createDeferred<IQueryResult<IEntityItem>>();
+        const self = this, deferred = createDeferred<IQueryResult<IEntityItem>>();
+        let prevQuery: any = null;
 
         const context = {
             query: query,
@@ -682,39 +670,45 @@ export class DbContext extends BaseObject {
             isPagingEnabled: query.isPagingEnabled,
             dbSetName: query.dbSetName,
             dbSet: self.getDbSet(query.dbSetName),
-            fn_onStart: function () {
-                context.dbSet._setIsLoading(true);
+            fn_onStart: () => {
+                context.dbSet._getInternal().setIsLoading(true);
+                if (context.query.isForAppend) {
+                    prevQuery = context.dbSet.query;
+                }
             },
-            fn_onEnd: function () {
-                context.dbSet._setIsLoading(false);
+            fn_onEnd: () => {
+                if (context.query.isForAppend) {
+                    context.dbSet._getInternal().setQuery(prevQuery);
+                    context.query.dispose();
+                }
+                context.dbSet._getInternal().setIsLoading(false);
             },
-            fn_onOK: function (res: IQueryResult<IEntityItem>) {
+            fn_onOK: (res: IQueryResult<IEntityItem>) => {
                 try {
                     context.fn_onEnd();
-                }
-                finally {
+                } finally {
                     deferred.resolve(res);
                 }
             },
-            fn_onErr: function (ex: any) {
+            fn_onErr: (ex: any) => {
                 try {
                     context.fn_onEnd();
                     self._onDataOperError(ex, DATA_OPER.Query);
-                }
-                finally {
+                } finally {
                     deferred.reject();
                 }
             }
         };
 
-        if (query.isClearPrevData)
+        if (query.isClearPrevData) {
             self._tryAbortRequest(DATA_OPER.Query, context.dbSetName);
+        }
 
         context.dbSet.waitForNotBusy(() => {
             try {
+                self._checkDisposed();
                 self._loadInternal(context);
-            }
-            catch (err) {
+            } catch (err) {
                 context.fn_onErr(err);
             }
         }, query.isClearPrevData ? context.dbSetName : null);
@@ -726,32 +720,39 @@ export class DbContext extends BaseObject {
         fn_onEnd: () => void;
         fn_onErr: (ex: any) => void;
         fn_onOk: () => void;
-    }): void {
-        let self = this, changeSet: IChangeSet;
+    }, context: IIndexer<any>): void {
+        const self = this, noChanges = "NO_CHANGES";
+       
         args.fn_onStart();
-        changeSet = self._getChanges();
 
-        if (changeSet.dbSets.length === 0) {
-            args.fn_onOk();
-            return;
-        }
-
-        let req_promise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changeSet), self.requestHeaders);
-        self._addRequestPromise(req_promise, DATA_OPER.Submit);
-        req_promise.then((res: string) => {
-            return _async.parseJSON(res);
-        }).then(function (res: IChangeSet) {
-            if (self.getIsDestroyCalled())
-                return;
-            self._dataSaved(res);
+        delay<IChangeRequest>(() => {
+            self._checkDisposed();
+            const res = self._getChanges();
+            if (res.dbSets.length === 0) {
+                ERROR.abort(noChanges);
+            }
+            return res;
+        }).then((changes) => {
+            const reqPromise = http.postAjax(self._getUrl(DATA_SVC_METH.Submit), JSON.stringify(changes), self.requestHeaders);
+            self._addRequestPromise(reqPromise, DATA_OPER.Submit);
+            return reqPromise;
+        }).then((res: string) => {
+            return <IChangeResponse>JSON.parse(res);
+        }).then((res: IChangeResponse) => {
+            self._checkDisposed();
+            self._dataSaved(res, context);
+            if (!!res.subsets) {
+                self._loadSubsets(res.subsets, true);
+            }
         }).then(() => {
-            if (self.getIsDestroyCalled())
-                return;
+            self._checkDisposed();
             args.fn_onOk();
-        }, (er) => {
-            if (self.getIsDestroyCalled())
-                return;
-            args.fn_onErr(er);
+        }).catch((er) => {
+            if (!self.getIsStateDirty() && ERROR.checkIsAbort(er) && er.reason === noChanges) {
+                args.fn_onOk();
+            } else {
+                args.fn_onErr(er);
+            }
         });
     }
     _getInternal(): IInternalDbxtMethods {
@@ -764,183 +765,205 @@ export class DbContext extends BaseObject {
         if (!!this._initState) {
             return this._initState;
         }
-        const self = this, operType = DATA_OPER.Init, deferred = _async.createDeferred<any>();
-
-        this._initState = deferred.promise();
-        this._initState.then(() => {
-            if (self.getIsDestroyCalled())
-                return;
-            self.raisePropertyChanged(PROP_NAME.isInitialized);
-        }, (err) => {
-            if (self.getIsDestroyCalled())
-                return;
-            self._onDataOperError(err, operType);
-        });
-
-        let opts = coreUtils.merge(options, {
+        const self = this, opts = merge(options, {
             serviceUrl: <string>null,
             permissions: <IPermissionsInfo>null
-        }), loadUrl: string;
+        });
+        if (!isString(opts.serviceUrl)) {
+            throw new Error(format(ERRS.ERR_PARAM_INVALID, "serviceUrl", opts.serviceUrl));
+        }
+        this._serviceUrl = opts.serviceUrl;
+        this._initDbSets();
 
-        try {
-            if (!checks.isString(opts.serviceUrl)) {
-                throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "serviceUrl", opts.serviceUrl));
-            }
-            this._serviceUrl = opts.serviceUrl;
-            this._initDbSets();
-
+        this._initState = delay<IPermissionsInfo>(() => {
             if (!!opts.permissions) {
-                self._updatePermissions(opts.permissions);
-                deferred.resolve();
-                return this._initState;
+                return opts.permissions;
+            } else {
+                // initialize by obtaining metadata from the data service by ajax call
+                const loadUrl = this._getUrl(DATA_SVC_METH.Permissions);
+                const ajaxPromise = http.getAjax(loadUrl, self.requestHeaders);
+                this._addRequestPromise(ajaxPromise, DATA_OPER.Init);
+                return ajaxPromise.then((permissions: string) => {
+                    return <IPermissionsInfo>JSON.parse(permissions);
+                });
             }
-
-            //initialize by obtaining metadata from the data service by ajax call
-            loadUrl = this._getUrl(DATA_SVC_METH.Permissions);
-        }
-        catch (ex) {
-            return deferred.reject(ex);
-        }
-
-        let ajax_promise = http.getAjax(loadUrl, self.requestHeaders);
-        let res_promise = ajax_promise.then((permissions: string) => {
-            if (self.getIsDestroyCalled())
-                return;
-            self._updatePermissions(JSON.parse(permissions));
+        }).then((res: IPermissionsInfo) => {
+            self._checkDisposed();
+            self._updatePermissions(res);
+            self.objEvents.raiseProp("isInitialized");
+        }).catch((err) => {
+            self._onDataOperError(err, DATA_OPER.Init);
+            ERROR.throwDummy(err);
         });
 
-        deferred.resolve(res_promise);
-        this._addRequestPromise(ajax_promise, operType);
         return this._initState;
     }
-    addOnSubmitError(fn: TEventHandler<DbContext, { error: any; isHandled: boolean; }>, nmspace?: string, context?: IBaseObject): void {
-        this._addHandler(DBCTX_EVENTS.submit_err, fn, nmspace, context);
+    addOnDisposed(handler: TEventHandler<DbContext, any>, nmspace?: string, context?: object): void {
+        this.objEvents.addOnDisposed(handler, nmspace, context);
     }
-    removeOnSubmitError(nmspace?: string): void {
-        this._removeHandler(DBCTX_EVENTS.submit_err, nmspace);
+    offOnDisposed(nmspace?: string): void {
+        this.objEvents.offOnDisposed(nmspace);
     }
-    getDbSet(name: string) {
+    addOnError(handler: TErrorHandler<DbContext>, nmspace?: string, context?: object): void {
+        this.objEvents.addOnError(handler, nmspace, context);
+    }
+    offOnError(nmspace?: string): void {
+        this.objEvents.offOnError(nmspace);
+    }
+    addOnSubmitting(fn: TEventHandler<DbContext, TSubmittingArgs>, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.on(DBCTX_EVENTS.SUBMITTING, fn, nmspace, context);
+    }
+    offOnSubmitting(nmspace?: string): void {
+        this.objEvents.off(DBCTX_EVENTS.SUBMITTING, nmspace);
+    }
+    addOnSubmitted(fn: TEventHandler<DbContext, TSubmittedArgs>, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.on(DBCTX_EVENTS.SUBMITTED, fn, nmspace, context);
+    }
+    offOnSubmitted(nmspace?: string): void {
+        this.objEvents.off(DBCTX_EVENTS.SUBMITTED, nmspace);
+    }
+    addOnSubmitError(fn: TEventHandler<DbContext, TSubmitErrArgs>, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.on(DBCTX_EVENTS.SUBMIT_ERROR, fn, nmspace, context);
+    }
+    offOnSubmitError(nmspace?: string): void {
+        this.objEvents.off(DBCTX_EVENTS.SUBMIT_ERROR, nmspace);
+    }
+    addOnDbSetCreating(fn: TEventHandler<this, TDbSetCreatingArgs>, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.on(DBCTX_EVENTS.DBSET_CREATING, fn, nmspace, context);
+    }
+    offOnDbSetCreating(nmspace?: string): void {
+        this.objEvents.off(DBCTX_EVENTS.DBSET_CREATING, nmspace);
+    }
+    getDbSet(name: string): TDbSet {
         return this._dbSets.getDbSet(name);
     }
+    findDbSet(name: string): TDbSet {
+        return this._dbSets.findDbSet(name);
+    }
     getAssociation(name: string): Association {
-        const name2 = "get" + name, fn = this._assoc[name2];
-        if (!fn)
-            throw new Error(strUtils.format(ERRS.ERR_ASSOC_NAME_INVALID, name));
+        const name2 = `get${name}`, fn: () => Association = (<any>this._assoc)[name2];
+        if (!fn) {
+            throw new Error(format(ERRS.ERR_ASSOC_NAME_INVALID, name));
+        }
         return fn();
     }
     submitChanges(): IVoidPromise {
         const self = this;
-
-        //don't submit when another submit is already in the queue
+        // don't submit when another submit is already in the queue
         if (!!this._pendingSubmit) {
             return this._pendingSubmit.promise;
         }
 
-        const deferred = _async.createDeferred<void>(), submitState = { promise: deferred.promise() };
+        const deferred = createDeferred<void>(), submitState = { promise: deferred.promise() };
         this._pendingSubmit = submitState;
-
-        const context = {
-            fn_onStart: function () {
+        const context = Indexer(), args = {
+            fn_onStart: () => {
                 if (!self._isSubmiting) {
                     self._isSubmiting = true;
-                    self.raisePropertyChanged(PROP_NAME.isSubmiting);
+                    self.objEvents.raiseProp("isSubmiting");
                 }
-                //allow to post new submit
+                // allow to post new submit
                 self._pendingSubmit = null;
             },
-            fn_onEnd: function () {
+            fn_onEnd: () => {
                 if (self._isSubmiting) {
                     self._isSubmiting = false;
-                    self.raisePropertyChanged(PROP_NAME.isSubmiting);
+                    self.objEvents.raiseProp("isSubmiting");
                 }
             },
-            fn_onErr: function (ex: any) {
+            fn_onErr: (ex: any) => {
                 try {
-                    context.fn_onEnd();
-                    self._onSubmitError(ex);
-                }
-                finally {
+                    args.fn_onEnd();
+                    self._onSubmitError(ex, context);
+                } finally {
                     deferred.reject();
                 }
             },
-            fn_onOk: function () {
+            fn_onOk: () => {
                 try {
-                    context.fn_onEnd();
-                }
-                finally {
+                    args.fn_onEnd();
+                } finally {
                     deferred.resolve();
+                    self._onSubmitted(context);
                 }
             }
         };
 
-
-        self.waitForNotBusy(() => {
-            try {
-                self._submitChanges(context);
-            }
-            catch (err) {
-                context.fn_onErr(err);
-            }
+        utils.queue.enque(() => {
+            self.waitForNotBusy(() => {
+                try {
+                    self._checkDisposed();
+                    if (self._onSubmitting(context)) {
+                        self._submitChanges(args, context);
+                    }
+                } catch (err) {
+                    args.fn_onErr(err);
+                }
+            });
         });
 
         return submitState.promise;
     }
-    load(query: DataQuery<IEntityItem>): IStatefulPromise<IQueryResult<IEntityItem>> {
+    load(query: TDataQuery): IStatefulPromise<IQueryResult<IEntityItem>> {
         return this._load(query, COLL_CHANGE_REASON.None);
     }
     acceptChanges(): void {
-        this._dbSets.arrDbSets.forEach(function (eSet) {
-            eSet.acceptChanges();
+        this._dbSets.arrDbSets.forEach((dbSet) => {
+            dbSet.acceptChanges();
         });
     }
     rejectChanges(): void {
-        this._dbSets.arrDbSets.forEach(function (eSet) {
-            eSet.rejectChanges();
+        this._dbSets.arrDbSets.forEach((dbSet) => {
+            dbSet.rejectChanges();
         });
     }
     abortRequests(reason?: string, operType?: DATA_OPER): void {
-        if (checks.isNt(operType))
+        if (isNt(operType)) {
             operType = DATA_OPER.None;
-        let arr = this._requests.filter((a) => {
+        }
+        const arr: IRequestPromise[] = this._requests.filter((a) => {
             return operType === DATA_OPER.None ? true : (a.operType === operType);
         });
 
         for (let i = 0; i < arr.length; i += 1) {
-            let item = arr[i];
-            item.req.abort(reason);
+            const promise = arr[i];
+            promise.req.abort(reason);
         }
     }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        this.abortRequests();
-        this._waitQueue.destroy();
-        this._waitQueue = null;
-        this._arrAssoc.forEach(function (assoc) {
-            assoc.destroy();
-        });
-        this._arrAssoc = [];
-        this._assoc = {};
-        this._dbSets.destroy();
-        this._dbSets = null;
-        this._svcMethods = {};
-        this._queryInf = {};
-        this._serviceUrl = null;
-        this._initState = null;
-        this._isSubmiting = false;
-        this._isHasChanges = false;
-        super.destroy();
+    get associations(): TAssoc {
+        return this._assoc;
     }
-    get serviceUrl() { return this._serviceUrl; }
-    get isInitialized() { return !!this._initState && this._initState.state() === PromiseState.Resolved; }
-    get isBusy() { return (this.requestCount > 0) || this.isSubmiting; }
-    get isSubmiting() { return this._isSubmiting; }
-    get serverTimezone() { return this._serverTimezone; }
-    get dbSets() { return this._dbSets; }
-    get serviceMethods() { return this._svcMethods; }
-    get isHasChanges() { return this._isHasChanges; }
-    get requestCount() { return this._requests.length; }
-    get requestHeaders() { return this._requestHeaders; }
-    set requestHeaders(v) { this._requestHeaders = v; }
+    get serviceMethods(): TMethods {
+        return this._svcMethods;
+    }
+    get dbSets(): TDbSets {
+        return this._dbSets;
+    }
+    get serviceUrl(): string {
+        return this._serviceUrl;
+    }
+    get isInitialized(): boolean {
+        return !!this._initState && this._initState.state() === PromiseState.Resolved;
+    }
+    get isBusy(): boolean {
+        return (this.requestCount > 0) || this.isSubmiting;
+    }
+    get isSubmiting(): boolean {
+        return this._isSubmiting;
+    }
+    get serverTimezone(): number {
+        return this._serverTimezone;
+    }
+    get isHasChanges(): boolean {
+        return this._isHasChanges;
+    }
+    get requestCount(): number {
+        return this._requests.length;
+    }
+    get requestHeaders(): IIndexer<string> {
+        return this._requestHeaders;
+    }
+    set requestHeaders(v: IIndexer<string>) {
+        this._requestHeaders = v;
+    }
 }

@@ -1,81 +1,74 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Data.Entity;
-using System.Data.SqlClient;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Transactions;
-using RIAppDemo.BLL.DataServices.Config;
+﻿using RIAPP.DataService.Annotations;
+using RIAPP.DataService.Core;
+using RIAPP.DataService.Core.Exceptions;
+using RIAPP.DataService.Core.Metadata;
+using RIAPP.DataService.Core.Query;
+using RIAPP.DataService.Core.Security;
+using RIAPP.DataService.Core.Types;
+using RIAPP.DataService.EF2;
 using RIAppDemo.BLL.Models;
 using RIAppDemo.BLL.Utils;
 using RIAppDemo.DAL.EF;
-using RIAPP.DataService.DomainService.Attributes;
-using RIAPP.DataService.DomainService.Config;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService.Security;
-using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.EF6_CF;
-using RIAPP.DataService.Utils.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using ResourceHelper = RIAppDemo.BLL.Utils.ResourceHelper;
-using SortOrder = RIAPP.DataService.DomainService.Types.SortOrder;
-using RIAPP.DataService.Utils.CodeGen;
+using SortOrder = RIAPP.DataService.Core.Types.SortOrder;
 
 namespace RIAppDemo.BLL.DataServices
 {
     [Authorize]
-    public class RIAppDemoServiceEF : EFDomainService<ADWDbContext>, IThumbnailService
+    public class RIAppDemoServiceEF : EFDomainService<ADWDbContext>
     {
         internal const string USERS_ROLE = "Users";
         internal const string ADMINS_ROLE = "Admins";
-        private DbConnection _connection;
 
-        //store last diffgram here
-        private string _diffGramm;
-
-        public RIAppDemoServiceEF(IServiceArgs args)
-            : base(args)
+        public RIAppDemoServiceEF(IServiceContainer serviceContainer, ADWDbContext db)
+            : base(serviceContainer, db)
         {
+            
         }
 
-        protected override ADWDbContext CreateDataContext()
-        {
-            if (_connection == null)
-                _connection = DBConnectionFactory.GetRIAppDemoConnection();
-            var db = new ADWDbContext(_connection);
-            return db;
-        }
-
-        protected override Metadata GetMetadata(bool isDraft)
+        protected override DesignTimeMetadata GetDesignTimeMetadata(bool isDraft)
         {
             if (isDraft)
+                return base.GetDesignTimeMetadata(true);
+            else
             {
-                //returns raw (uncorrected) programmatically generated metadata from LinqToSQL classes
-                return base.GetMetadata(true);
+                return DesignTimeMetadata.FromXML(ResourceHelper.GetResourceString("RIAppDemo.BLL.Metadata.MainDemo2.xml"));
             }
-            //first the uncorrected metadata was saved into xml file and then edited 
-            return Metadata.FromXML(ResourceHelper.GetResourceString("RIAppDemo.BLL.Metadata.MainDemo2.xml"));
         }
 
-        protected override void Bootstrap(ServiceConfig config)
+        /// <summary>
+        ///     here can be tracked changes to the entities
+        ///     for example: product entity changes is tracked and can be seen here
+        /// </summary>
+        /// <param name="dbSetName"></param>
+        /// <param name="changeType"></param>
+        /// <param name="diffgram"></param>
+        protected override void OnTrackChange(string dbSetName, ChangeType changeType, string diffgram)
         {
-            base.Bootstrap(config);
-            ValidatorConfig.RegisterValidators(config.ValidatorsContainer);
-            DataManagerConfig.RegisterDataManagers(config.DataManagerContainer);
+            //you can set a breakpoint here and to examine diffgram
+            var user = this.User.Identity.Name;
         }
 
-        protected override void ConfigureCodeGen()
+        /// <summary>
+        ///  Error logging could be implemented here
+        /// </summary>
+        /// <param name="ex"></param>
+        protected override void OnError(Exception ex)
         {
-            base.ConfigureCodeGen();
-            this.AddOrReplaceCodeGen("ts", () => new TypeScriptProvider(this, new[] { typeof(TestModel), typeof(KeyVal),
-                typeof(StrKeyVal), typeof(RadioVal), typeof(HistoryItem), typeof(TestEnum2)
-            }));
-            //it allows getting information via GetCSharp, GetXAML, GetTypeScript
-            //it should be set to false in release version 
-            //allow it only at development time
-            this.IsCodeGenEnabled = true;
+            var msg = "";
+            if (ex != null)
+                msg = ex.GetFullMessage();
+        }
+
+        protected override void Dispose(bool isDisposing)
+        {
+            base.Dispose(isDisposing);
         }
 
         #region ProductModel
@@ -102,8 +95,8 @@ namespace RIAppDemo.BLL.DataServices
         public QueryResult<object> ReadProductCategory()
         {
             int? totalCount = null;
-            //we return anonymous type from query instead of real entities
-            //the framework does not care about the real type of the returned entities as long as they contain all the fields
+            // we return anonymous type from query instead of real entities
+            // the framework does not care about the real type of the returned entities as long as they contain all the fields
             var res = this.PerformQuery(DB.ProductCategories.AsNoTracking(), ref totalCount).Select(p =>
             new
             {
@@ -162,6 +155,8 @@ namespace RIAppDemo.BLL.DataServices
         [Invoke]
         public Task<string> TestInvoke(byte[] param1, string param2)
         {
+            var userIPaddress = "Not Available";
+
             return Task.Run(() =>
             {
                 var sb = new StringBuilder();
@@ -179,52 +174,38 @@ namespace RIAppDemo.BLL.DataServices
                     throw new Exception("Error generated randomly for testing purposes. Don't worry! Try again.");
                 */
 
-                return
-                    string.Format("TestInvoke method invoked with<br/><br/><b>param1:</b> {0}<br/> <b>param2:</b> {1}",
-                        sb, param2);
+                return string.Format("TestInvoke method invoked with<br/><br/><b>param1:</b> {0}<br/> <b>param2:</b> {1} User IP: {2}",
+                        sb, param2, userIPaddress);
             });
         }
 
         [Invoke]
         public void TestComplexInvoke(AddressInfo info, KeyVal[] keys)
         {
+            var ipAddressService = this.ServiceContainer.GetService<IHostAddrService>();
+            string userIPaddress = ipAddressService.GetIPAddress();
             //p.s. do something with info and keys
-        }
-
-        /// <summary>
-        ///     here can be tracked changes to the entities
-        ///     for example: product entity changes is tracked and can be seen here
-        /// </summary>
-        /// <param name="dbSetName"></param>
-        /// <param name="changeType"></param>
-        /// <param name="diffgram"></param>
-        protected override void OnTrackChange(string dbSetName, ChangeType changeType, string diffgram)
-        {
-            //you can set a breakpoint here and to examine diffgram
-            _diffGramm = diffgram;
         }
         
         /// <summary>
-        ///     Error logging could be implemented here
+        /// Can be used to load all classifiers in bulk (in one roundtrip)
         /// </summary>
-        /// <param name="ex"></param>
-        protected override void OnError(Exception ex)
+        /// <returns></returns>
+        [Invoke]
+        public async Task<DEMOCLS> GetClassifiers()
         {
-            var msg = "";
-            if (ex != null)
-                msg = ex.GetFullMessage();
-        }
-
-        protected override void Dispose(bool isDisposing)
-        {
-            if (_connection != null)
+            DEMOCLS res = new DEMOCLS
             {
-                _connection.Close();
-                _connection = null;
-            }
+                prodCategory = await this.DB.ProductCategories.OrderBy(l => l.Name).Select(d => new KeyVal { key = d.ProductCategoryID, val = d.Name }).ToListAsync(),
+                prodDescription = await this.DB.ProductDescriptions.OrderBy(l => l.Description).Select(d => new KeyVal { key = d.ProductDescriptionID, val = d.Description }).ToListAsync(),
+                prodModel = await this.DB.ProductModels.OrderBy(l => l.Name).Select(d => new KeyVal { key = d.ProductModelID, val = d.Name }).ToListAsync()
+            };
 
-            base.Dispose(isDisposing);
+            (res.prodModel as List<KeyVal>).Insert(0, new KeyVal() { key = -1, val = "Not Set (Empty)" });
+
+            return res;
         }
+
 
         #region CustomerJSON
         /// <summary>
@@ -261,7 +242,7 @@ namespace RIAppDemo.BLL.DataServices
             var res = custList.Select(c => new CustomerJSON() {
                 CustomerID = c.CustomerID,
                 rowguid = c.rowguid,
-                Data = this.serializer.Serialize(new
+                Data = this.Serializer.Serialize(new
                 {
                     Title = c.Title,
                     CompanyName = c.CompanyName,
@@ -314,21 +295,13 @@ namespace RIAppDemo.BLL.DataServices
         #region Customer
 
         [Query]
-        public QueryResult<Customer> ReadCustomer(bool? includeNav)
+        public async Task<QueryResult<Customer>> ReadCustomer(bool? includeNav)
         {
-            var includeHierarchy = new string[0];
-            if (includeNav == true)
-            {
-                //we can conditionally include entity hierarchy into results
-                //making the path navigations decisions on the server enhances security
-                //we can not trust clients to define navigation's expansions because it can influence the server performance
-                //and is not good from the security considerations
-                includeHierarchy = new[] {"CustomerAddresses.Address"};
-            }
-            var customers = DB.Customers.AsNoTracking() as IQueryable<Customer>;
+            var customers = DB.Customers as IQueryable<Customer>;
             var queryInfo = this.GetCurrentQueryInfo();
-            //AddressCount does not exists in Database (we calculate it), so it is needed to sort it manually
+            // AddressCount does not exists in Database (we calculate it), so it is needed to sort it manually
             var addressCountSortItem = queryInfo.sortInfo.sortItems.FirstOrDefault(sortItem => sortItem.fieldName == "AddressCount");
+
             if (addressCountSortItem != null)
             {
                 queryInfo.sortInfo.sortItems.Remove(addressCountSortItem);
@@ -338,27 +311,43 @@ namespace RIAppDemo.BLL.DataServices
                     customers = customers.OrderByDescending(c => c.CustomerAddresses.Count());
             }
 
-            //perform query
-            int? totalCount = null;
-            List<Customer> res = null;
+            // perform query
+            var customersResult = this.PerformQuery(customers, (countQuery) => countQuery.CountAsync());
+            int? totalCount = await customersResult.CountAsync();
+            List<Customer> customersList = await customersResult.Data.ToListAsync();
 
-            if (includeNav == true)
-                res =   this.PerformQuery(customers, ref totalCount)
-                        .Include(c => c.CustomerAddresses.Select(y => y.Address))
-                        .ToList();
-            else
-                res = this.PerformQuery(customers, ref totalCount).ToList();
+            var queryRes = new QueryResult<Customer>(customersList, totalCount);
 
-
-            //if we have preloaded customer addresses then update server side calculated field: AddressCount 
-            //(which i had introduced for testing purposes)
             if (includeNav == true)
             {
-                res.ForEach(customer => { customer.AddressCount = customer.CustomerAddresses.Count(); });
+                int[] customerIDs = customersList.Select(c => c.CustomerID).ToArray();
+                var customerAddress = await DB.CustomerAddresses.Where(ca => customerIDs.Contains(ca.CustomerID)).ToListAsync();
+                int[] addressIDs = customerAddress.Select(ca => ca.AddressID).ToArray();
+
+                var subResult1 = new SubResult
+                {
+                    dbSetName = this.GetSetInfosByEntityType(typeof(CustomerAddress)).Single().dbSetName,
+                    Result = customerAddress
+                };
+
+                var subResult2 = new SubResult
+                {
+                    dbSetName = this.GetSetInfosByEntityType(typeof(Address)).Single().dbSetName,
+                    Result = await DB.Addresses.AsNoTracking().Where(adr => addressIDs.Contains(adr.AddressID)).ToListAsync()
+                };
+
+                // since we have preloaded customer addresses then update server side calculated field: AddressCount 
+                // (which i have introduced for testing purposes as a server calculated field)
+                customersList.ForEach(customer => {
+                    customer.AddressCount = customer.CustomerAddresses.Count();
+                });
+
+                // return two subresults with the query results
+                queryRes.subResults.Add(subResult1);
+                queryRes.subResults.Add(subResult2);
             }
 
-            //return result
-            return new QueryResult<Customer>(res, totalCount, includeHierarchy);
+            return queryRes;
         }
 
         [Authorize(Roles = new[] {ADMINS_ROLE})]
@@ -391,9 +380,10 @@ namespace RIAppDemo.BLL.DataServices
         }
 
         [Refresh]
-        public Customer RefreshCustomer(RefreshInfo refreshInfo)
+        public async Task<Customer> RefreshCustomer(RefreshInfoRequest refreshInfo)
         {
-            return this.GetRefreshedEntity(DB.Customers, refreshInfo);
+            var query = this.GetRefreshedEntityQuery(DB.Customers, refreshInfo);
+            return await query.SingleAsync();
         }
 
         #endregion
@@ -467,6 +457,7 @@ namespace RIAppDemo.BLL.DataServices
             salesorderheader.SalesOrderNumber = DateTime.Now.Ticks.ToString();
             salesorderheader.ModifiedDate = DateTime.Now;
             salesorderheader.rowguid = Guid.NewGuid();
+            salesorderheader.RevisionNumber = 1;
             DB.SalesOrderHeaders.Add(salesorderheader);
         }
 
@@ -523,108 +514,6 @@ namespace RIAppDemo.BLL.DataServices
         {
             DB.SalesOrderDetails.Attach(salesorderdetail);
             DB.SalesOrderDetails.Remove(salesorderdetail);
-        }
-
-        #endregion
-
-        #region Helper Methods
-
-        public string GetThumbnail(int id, Stream strm)
-        {
-            var fileName =
-                DB.Products.Where(a => a.ProductID == id).Select(a => a.ThumbnailPhotoFileName).FirstOrDefault();
-            if (string.IsNullOrEmpty(fileName))
-                return "";
-            var top = new TransactionOptions();
-            top.Timeout = TimeSpan.FromSeconds(60);
-            top.IsolationLevel = IsolationLevel.Serializable;
-
-            using (var scope = new TransactionScope(TransactionScopeOption.Required, top))
-            using (var conn = DBConnectionFactory.GetRIAppDemoConnection())
-            {
-                var bytes = new byte[64*1024];
-
-                var fldname = "ThumbNailPhoto";
-                var bstrm = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", fldname,
-                    string.Format("WHERE [ProductID]={0}", id));
-                bstrm.Open();
-                var cnt = bstrm.Read(bytes, 0, bytes.Length);
-                while (cnt > 0)
-                {
-                    strm.Write(bytes, 0, cnt);
-                    cnt = bstrm.Read(bytes, 0, bytes.Length);
-                }
-                bstrm.Close();
-                scope.Complete();
-            }
-            return fileName;
-        }
-
-        public void SaveThumbnail(int id, string fileName, Stream strm)
-        {
-            var product = DB.Products.Where(a => a.ProductID == id).FirstOrDefault();
-            if (product == null)
-                throw new Exception("Product is not found");
-
-            var topts = new TransactionOptions();
-            topts.Timeout = TimeSpan.FromSeconds(60);
-            topts.IsolationLevel = IsolationLevel.Serializable;
-            using (var trxScope = new TransactionScope(TransactionScopeOption.Required, topts))
-            using (var conn = DBConnectionFactory.GetRIAppDemoConnection())
-            {
-                var br = new BinaryReader(strm);
-                var bytes = br.ReadBytes(64*1024);
-                var fldname = "ThumbNailPhoto";
-                var bstrm = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", fldname,
-                    string.Format("WHERE [ProductID]={0}", id));
-                bstrm.InitColumn();
-                bstrm.Open();
-                while (bytes != null && bytes.Length > 0)
-                {
-                    bstrm.Write(bytes, 0, bytes.Length);
-                    bytes = br.ReadBytes(64*1024);
-                    ;
-                }
-                bstrm.Close();
-                br.Close();
-                trxScope.Complete();
-            }
-
-            product.ThumbnailPhotoFileName = fileName;
-            DB.SaveChanges();
-        }
-
-        public void SaveThumbnail2(int id, string fileName, Func<Stream, Task> copy)
-        {
-            var product = DB.Products.Where(a => a.ProductID == id).FirstOrDefault();
-            if (product == null)
-                throw new Exception("Product is not found");
-
-            var topts = new TransactionOptions();
-            topts.Timeout = TimeSpan.FromSeconds(60);
-            topts.IsolationLevel = IsolationLevel.Serializable;
-            using (var trxScope = new TransactionScope(TransactionScopeOption.Required, topts))
-            using (var conn = DBConnectionFactory.GetRIAppDemoConnection())
-            {
-                var fldname = "ThumbNailPhoto";
-                var bstrm = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", fldname,
-                    string.Format("WHERE [ProductID]={0}", id));
-                bstrm.InitColumn();
-                bstrm.Open();
-                try
-                {
-                    if (!copy(bstrm).Wait(10000))
-                        throw new Exception("Write stream timeout");
-                }
-                finally
-                {
-                    bstrm.Close();
-                }
-                trxScope.Complete();
-            }
-
-            product.ThumbnailPhotoFileName = fileName;
-            DB.SaveChanges();
         }
 
         #endregion

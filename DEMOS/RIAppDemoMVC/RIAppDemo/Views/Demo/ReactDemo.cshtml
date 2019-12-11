@@ -1,0 +1,277 @@
+﻿@using RIAPP.DataService.Mvc.Utils
+@{
+    Layout = "~/Views/Shared/_LayoutReact.cshtml";
+}
+@{
+    ViewBag.Title = "React Demo - using react components";
+}
+
+@section CssImport
+{
+    <style type="text/css">
+        .col-form-label {
+            padding-top: calc(.375rem + 1px);
+        }
+
+        #demoContent {
+            height: 600px;
+            overflow: visible;
+            position: relative;
+            vertical-align: top;
+        }
+
+        label {
+            color: blue;
+        }
+
+        div[data-view="templatedview"] + div[data-view="templatedview"] {
+            margin-top: 10px;
+        }
+
+        .demo-row {
+            margin: 0;
+            border: 1px solid black;
+            padding: 3px 5px 5px 8px;
+        }
+
+            .demo-row + .demo-row {
+                margin-left: 8px;
+            }
+
+            .demo-row.selected {
+                color: blue;
+                font-weight: bold;
+            }
+
+        div[data-view="pagerview"] {
+            margin-bottom: 15px;
+        }
+
+        .pagination {
+            display: inline-block;
+            padding-left: 0;
+            margin: 20px 0;
+            margin-top: 0;
+            border-radius: 4px;
+        }
+
+            .pagination > li {
+                display: inline;
+            }
+
+            .pagination > .active > a, .pagination > .active > span, .pagination > .active > a:hover, .pagination > .active > span:hover, .pagination > .active > a:focus, .pagination > .active > span:focus {
+                z-index: 2;
+                color: #fff;
+                cursor: default;
+                background-color: #337ab7;
+                border-color: #337ab7;
+            }
+
+            .pagination > li > a, .pagination > li > span {
+                position: relative;
+                float: left;
+                padding: 6px 12px;
+                margin-left: -1px;
+                line-height: 1.42857143;
+                color: #337ab7;
+                text-decoration: none;
+                background-color: #fff;
+                border: 1px solid #ddd;
+                border-top-color: rgb(221, 221, 221);
+                border-right-color: rgb(221, 221, 221);
+                border-bottom-color: rgb(221, 221, 221);
+                border-left-color: rgb(221, 221, 221);
+            }
+
+        .demo-tabs {
+            margin: 0;
+            width: 500px;
+            display: flex;
+        }
+
+        .demo-tab {
+            flex: 1;
+            flex-basis: 150px;
+            display: inline-block;
+            margin: 0;
+            border: 1px solid #808080;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            height: 40px;
+            width: 150px;
+            padding: 5px;
+            text-align: center;
+        }
+
+            .demo-tab.active {
+                font-weight: bold;
+            }
+
+        .demo-tabs-content {
+            margin: 0;
+            padding: 5px;
+            border: 1px solid #808080;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            min-height: 80px;
+            width: 500px
+        }
+    </style>
+}
+
+@section JSStaticImport {
+}
+
+@section JSDynamicImport {
+    <script src="@Url.Content("~/Scripts/demo/reactapp/reactdemo.js", true)" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        require(["main", "jriapp", "jriapp_ui"],
+            function (DEMO, RIAPP, UI) {
+                var mainOptions = {
+                    modulesInits: {}
+                };
+
+                DEMO.start(mainOptions).then(function () {
+                    $("#demoContent").animate({ opacity: 1 }, 1000);
+                    $("#loading").fadeOut(1000);
+                }, function (err) {
+                    $("#loading").fadeOut(1000);
+                });
+
+
+            });
+    </script>
+}
+
+<h2 class="ex8">@ViewBag.Title</h2>
+
+
+<div id="demoContent" style="opacity:0;">
+
+    <div data-view="simpleview" data-bind-1="this.value,to=testValue,mode=TwoWay,source=testObj"
+         data-bind-2="this.title,to=val,source={val='This is a React component demo'}">
+    </div>
+    <fieldset>
+        <legend>This is an ordinary databound text input</legend>
+        <input type="text" data-bind="this.value,to=testValue,mode=TwoWay,source=testObj"
+               data-view-options="updateOnKeyUp=true"
+               style="width: 250px" />
+    </fieldset>
+    <p style="text-indent:2em;font-family:'Courier New';margin:10px 0;">
+        The both above text inputs are databound to  the test object's (<i>viewmodel's</i>) testValue property in a twoway mode.
+        So if one component changes the value then the other component displays the current (<i>changed</i>) value. But the first component is created using <mark>the React</mark>
+        and the second one is an ordinary input text field.
+        It shows that an incapsulated react components can be handled indistinguishably from any other frameworks controls (<i>element views</i>).<br />
+        The react libraries just add 98kb (<em>not much</em>) to the scripts on the page.
+    </p>
+
+    <h4 style="margin-top:40px;margin-bottom:10px;">You can also use JRIApp Templates inside of React components and use <mark>DataBinding</mark> in them</h4>
+
+    <div data-view="templatedview" data-bind-1="this.rows,to=rows,source=testObj" data-bind-2="this.selectedRow,to=selectedRow,mode=TwoWay,source=testObj"
+         data-view-options="templateId=testTemplate,keyName=num">
+    </div>
+    <div data-view="templatedview" data-bind-1="this.rows,to=rows,source=testObj" data-bind-2="this.selectedRow,to=selectedRow,mode=TwoWay,source=testObj"
+         data-view-options="templateId=testTemplate,keyName=num">
+    </div>
+    <button class="btn btn-small btn-info" style="width:10em; margin:8px 0;"
+            data-bind-1="this.command,to=reverseCommand,source=testObj">
+        Reverse
+    </button>
+
+    <h4 style="margin-top:40px;margin-bottom:10px;">This is a react tabs demo (uses <mark>templates</mark> for heading and contents)</h4>
+
+    <div data-view="tabsview"
+         data-view-options="activeTabName=tab2,tabs=bind(tabs,testObj)">
+    </div>
+
+    <h4 style="margin-top:40px;margin-bottom:10px;">This is a react pager demo (three pagers)</h4>
+    <p style="text-indent:2em;font-family:'Courier New';margin-bottom:10px;">
+        Below is a Pager implemented in the react and incapsulated in the framework's element view. The properties are exposed and can be databound as in ordinary
+        controls (<em>just to show - one property is databound and displayed below the pager</em>).
+        It shows that the react components are easily incapsulated and used on the page alongside the ordinary controls.
+    </p>
+
+    <div data-view="pagerview"
+         data-bind-1="this.current,to=page,mode=TwoWay,source=testObj"
+         data-view-options="total=25,current=5,visiblePages=10">
+    </div>
+    <div data-view="pagerview"
+         data-bind-1="this.current,to=page,mode=TwoWay,source=testObj"
+         data-view-options="total=25,current=5,visiblePages=13">
+    </div>
+    <div data-view="pagerview"
+         data-bind-1="this.current,to=page,mode=TwoWay,source=testObj"
+         data-view-options="total=25,current=5,visiblePages=15">
+    </div>
+    <strong>Current Page Index:</strong>&nbsp;<span data-bind-1="this.value,to=page,source=testObj"></span>
+</div>
+
+<script id="testTemplate" type="text/x-template">
+    <div style="color:black; margin-bottom:4px;">This is a template:</div>
+    <span data-bind="this.value,to=num"></span>)
+    <span style="margin-left:0.375em;" data-bind="this.value,to=someVal"></span>
+</script>
+
+<script id="tabHeadingTemplate" type="text/x-template">
+    <span style="vertical-align:middle;" data-bind="this.value,to=text"></span>
+</script>
+
+<script id="tabContentTemplate1" type="text/x-template">
+    <div style="text-align:center; margin-bottom:1em;" data-bind="this.html,to=description"></div>
+    <table style="margin-left:5px; table-layout:fixed; border-collapse:collapse;">
+        <tr>
+            <td style="color:blue; width:4em;">Text:</td>
+            <td><span data-bind="this.value,to=text"></span></td>
+        </tr>
+        <tr>
+            <td style="color:blue; width:4em;">Info:</td>
+            <td><span data-bind="this.value,to=info"></span></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div data-view="simpleview" data-bind-1="this.value,to=testValue,mode=TwoWay,source=testObj"
+                     data-bind-2="this.title,to=val,source={val='This is a React component demo'}">
+                </div>
+            </td>
+        </tr>
+    </table>
+</script>
+
+<script id="tabContentTemplate2" type="text/x-template">
+    <div style="text-align:center; margin-bottom:1em;" data-bind="this.html,to=description"></div>
+    <table style="margin-left:5px;">
+        <tr>
+            <td style="color:blue;">Text:</td>
+            <td><span data-bind="this.value,to=text"></span></td>
+        </tr>
+        <tr>
+            <td style="color:blue;">Subject:</td>
+            <td><span data-bind="this.value,to=otherData.subj"></span></td>
+        </tr>
+        <tr>
+            <td style="color:blue;">Title:</td>
+            <td><span data-bind="this.value,to=otherData.title"></span></td>
+        </tr>
+    </table>
+</script>
+
+<script id="tabContentTemplate3" type="text/x-template">
+    <div style="text-align:center; margin-bottom:1em;" data-bind="this.html,to=description"></div>
+    <table style="margin-left:5px;">
+        <tr>
+            <td style="color:blue;">Text:</td>
+            <td><span data-bind="this.value,to=text"></span></td>
+        </tr>
+        <tr>
+            <td style="color:blue;">Cover:</td>
+            <td><span data-bind="this.value,to=details.cover"></span></td>
+        </tr>
+        <tr>
+            <td style="color:blue;">Pages:</td>
+            <td><span data-bind="this.value,to=details.pages"></span></td>
+        </tr>
+    </table>
+</script>
+
+@Html.Partial("_WaitLoad")

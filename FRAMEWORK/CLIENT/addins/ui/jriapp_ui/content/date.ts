@@ -1,46 +1,27 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    IBaseObject, LocaleERRS as ERRS, Utils
-} from "jriapp_shared";
-import {
-    IApplication, IConstructorContentOptions, IBindingInfo, IBindingOptions, IElView
-} from "jriapp/int";
-import { DomUtils } from "jriapp/utils/dom";
-import { css } from "./int";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
+import { IConstructorContentOptions, IConverter } from "jriapp/int";
 import { BasicContent } from "./basic";
 
-const utils = Utils, strUtils = utils.str, doc = DomUtils.document;
+const utils = Utils, { format } = utils.str;
 
 const NAME = "datepicker";
 
 export class DateContent extends BasicContent {
     constructor(options: IConstructorContentOptions) {
         if (options.contentOptions.name !== NAME) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, strUtils.format("contentOptions.name === '{0}'", NAME)));
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, `contentOptions.name === '${NAME}'`));
         }
         super(options);
     }
-    protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string) {
-        let options = super.getBindingOption(bindingInfo, tgt, dctx, targetPath);
-        options.converter = this.app.getConverter("dateConverter");
-        return options;
+    // override
+    protected getConverter(isEdit: boolean): IConverter {
+        return this.app.getConverter("dateConverter");
     }
-    protected createTargetElement(): IElView {
-        let el: HTMLElement, info: { name: string; options: any; } = { name: null, options: null };
-        if (this.isEditing && this.getIsCanBeEdited()) {
-            el = doc.createElement("input");
-            el.setAttribute("type", "text");
-            info.options = this._options.options;
-            info.name = NAME;
-        }
-        else {
-            el = doc.createElement("span");
-        }
-        this.updateCss();
-        this._el = el;
-        return this.getElementView(this._el, info);
+    protected getViewName(isEdit: boolean): string {
+        return isEdit ? NAME : null;
     }
-    toString() {
+    toString(): string {
         return "DateContent";
     }
 }

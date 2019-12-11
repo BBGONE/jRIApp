@@ -1,14 +1,14 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-import { DATA_ATTR } from "jriapp/const";
+import { DATA_ATTR } from "jriapp/consts";
 
-import { css, PROP_NAME } from "../const";
+import { css } from "../consts";
 import { BaseColumn, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 import { RowSelectorCell } from "../cells/rowselector";
 
-const utils = Utils, dom = DomUtils, doc = dom.document, checks = utils.check;
+const utils = Utils, dom = DomUtils, doc = dom.document, { _undefined } = utils.check;
 
 export class RowSelectorColumn extends BaseColumn {
     private _chk: HTMLInputElement;
@@ -27,51 +27,52 @@ export class RowSelectorColumn extends BaseColumn {
         label.appendChild(doc.createElement("span"));
         this.col.appendChild(label);
         this._chk = chk;
-        dom.events.on(chk, "change", function (e) {
+        dom.events.on(chk, "change", (e) => {
             e.stopPropagation();
-            self.raisePropertyChanged(PROP_NAME.checked);
-            self.grid.selectRows(this.checked);
+            self.objEvents.raiseProp("checked");
+            self.grid.selectRows(chk.checked);
         }, this.uniqueID);
 
-        //delegated click event from the cell's checkbox
-        dom.events.on(this.grid.table, "click", function (e) {
-            e.stopPropagation();
-            const chk = <HTMLInputElement>this, cell = <RowSelectorCell>dom.getData(chk, "cell");
-            if (!!cell && !cell.getIsDestroyCalled()) {
+        // delegated click event from the cell's checkbox
+        dom.events.on(this.grid.table, "click", (e) => {
+            const chk = <HTMLInputElement>e.target,
+                cell = <RowSelectorCell>dom.getData(chk, "cell");
+            if (!!cell && !cell.getIsStateDirty()) {
                 cell.row.isSelected = cell.checked;
-            } 
+            }
         }, {
                 nmspace: this.uniqueID,
-                //using delegation
-                matchElement: (el) => {
+                // using delegation
+                matchElement: (el: Element) => {
                     const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
                         tag = el.tagName.toLowerCase();
                     return self.uniqueID === attr && tag === "input";
                 }
             });
     }
-    toString() {
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        dom.events.offNS(this._chk, this.uniqueID);
+        dom.events.offNS(this.grid.table, this.uniqueID);
+        super.dispose();
+    }
+    toString(): string {
         return "RowSelectorColumn";
     }
-    get checked() {
+    get checked(): boolean {
         if (!!this._chk) {
             return this._chk.checked;
         }
-        return checks.undefined;
+        return _undefined;
     }
-    set checked(v) {
+    set checked(v: boolean) {
         const bv = !!v, chk = this._chk;
         if (bv !== chk.checked) {
             chk.checked = bv;
-            this.raisePropertyChanged(PROP_NAME.checked);
+            this.objEvents.raiseProp("checked");
         }
-    }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        dom.events.offNS(this._chk, this.uniqueID);
-        dom.events.offNS(this.grid.table, this.uniqueID);
-        super.destroy();
     }
 }

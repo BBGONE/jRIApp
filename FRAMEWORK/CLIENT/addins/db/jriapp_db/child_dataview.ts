@@ -1,105 +1,102 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    BaseObject, Utils, Debounce, LocaleERRS as ERRS
-} from "jriapp_shared";
-import {
-    COLL_CHANGE_REASON
-} from "jriapp_shared/collection/const";
-import {
-    ICollection
-} from "jriapp_shared/collection/int";
-import { PROP_NAME } from "./const";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { Utils } from "jriapp_shared";
+import { COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
+import { ICollection } from "jriapp_shared/collection/int";
 import { IEntityItem } from "./int";
 import { Association } from "./association";
 import { DataView, IDataViewOptions } from "./dataview";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core;
+const utils = Utils, coreUtils = utils.core;
 
 export interface IChildDataViewOptions<TItem extends IEntityItem> {
     association: Association;
     fn_filter?: (item: TItem) => boolean;
     fn_sort?: (item1: TItem, item2: TItem) => number;
     parentItem?: IEntityItem;
+    explicitRefresh?: boolean;
 }
 
-export class ChildDataView<TItem extends IEntityItem> extends DataView<TItem> {
+export class ChildDataView<TItem extends IEntityItem = IEntityItem> extends DataView<TItem> {
     private _setParent: (parent: IEntityItem) => void;
     private _getParent: () => IEntityItem;
     private _association: Association;
-    protected _parentDebounce: Debounce;
 
     constructor(options: IChildDataViewOptions<TItem>) {
-        let parentItem: IEntityItem = !options.parentItem ? null : options.parentItem,
-            assoc = options.association,
-            opts = <IDataViewOptions<TItem>>coreUtils.extend({}, options),
+        let parentItem: IEntityItem = !options.parentItem ? null : options.parentItem;
+        const assoc = options.association,
+            opts = <IDataViewOptions<TItem>>coreUtils.extend({
+                dataSource: <ICollection<TItem>>null,
+                fn_itemsProvider: <(ds: ICollection<TItem>) => TItem[]>null,
+                fn_filter: <(item: TItem) => boolean>null
+            }, options),
             oldFilter = opts.fn_filter;
 
         opts.dataSource = <ICollection<TItem>><any>assoc.childDS;
-        opts.fn_itemsProvider = function (ds) {
+        opts.fn_itemsProvider = () => {
             if (!parentItem) {
                 return [];
             }
             return <TItem[]>assoc.getChildItems(parentItem);
         };
-        opts.fn_filter = function (item) {
+        opts.fn_filter = (item) => {
             const isPC = assoc.isParentChild(parentItem, item);
             return isPC && (!oldFilter ? true : oldFilter(item));
         };
+        opts.refreshTimeout = 350;
         super(opts);
         const self = this;
-
-        this._getParent = function () {
-            if (self.getIsDestroyCalled())
+        
+        this._getParent = () => {
+            if (self.getIsStateDirty()) {
                 return null;
+            }
             return parentItem;
         };
-        this._setParent = function (v: IEntityItem) {
+        this._setParent = (v: IEntityItem) => {
+            if (self.getIsStateDirty()) {
+                return;
+            }
             if (parentItem !== v) {
                 parentItem = v;
-                self.raisePropertyChanged(PROP_NAME.parentItem);
-            }
-            if (self.getIsDestroyCalled())
-                return;
-            if (self.items.length > 0) {
-                self.clear();
-                self._onViewRefreshed({});
-            }
 
-            self._parentDebounce.enque(() => {
-                self._refresh(COLL_CHANGE_REASON.None);
-            });
+                if (self.items.length > 0) {
+                    self.clear();
+                    self._onViewRefreshed({});
+                }
+
+                self._refresh(COLL_CHANGE_REASON.Refresh);
+                self.objEvents.raiseProp("parentItem");
+            }
         };
-        this._parentDebounce = new Debounce(350);
         this._association = assoc;
-        if (!!parentItem) {
+        if (!!parentItem && !options.explicitRefresh) {
             const queue = utils.defer.getTaskQueue();
             queue.enque(() => {
-                self._refresh(COLL_CHANGE_REASON.None);
+                self._refreshSync(COLL_CHANGE_REASON.None);
             });
         }
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
-        this._isDestroyCalled = true;
+        }
+        this.setDisposing();
         this._setParent(null);
-        this._parentDebounce.destroy();
-        this._parentDebounce = null;
         this._association = null;
-        super.destroy();
+        super.dispose();
     }
-    toString() {
-        if (!!this._association)
-            return "ChildDataView for " + this._association.toString();
-        return "ChildDataView";
+    toString(): string {
+        return !this._association ? "ChildDataView" : ("ChildDataView for " + this._association.toString());
     }
-    get parentItem() {
+    get parentItem(): IEntityItem {
         return this._getParent();
     }
     set parentItem(v: IEntityItem) {
         this._setParent(v);
     }
-    get association() { return this._association; }
+    get association(): Association {
+        return this._association;
+    }
 }
 
-export type TChildDataView = ChildDataView<IEntityItem>;
+export type TChildDataView = ChildDataView;

@@ -1,6 +1,9 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IIndexer } from "../int";
+import { CoreUtils } from "./coreutils";
 
+const { toArray, Indexer } = CoreUtils;
+ 
 export interface IArrayLikeList<T> {
     length: number;
     [index: number]: T;
@@ -10,8 +13,7 @@ export class ArrayHelper {
     public static clone<T>(arr: T[]): T[] {
         if (arr.length === 1) {
             return [arr[0]];
-        }
-        else {
+        } else {
             return Array.apply(null, arr);
         }
     }
@@ -19,27 +21,38 @@ export class ArrayHelper {
     public static fromList<T extends U, U>(list: IArrayLikeList<U>): T[];
     public static fromList<T>(list: IArrayLikeList<any>): T[];
     public static fromList<T>(list: IArrayLikeList<T>): T[];
-
     public static fromList(list: IArrayLikeList<any>): any[] {
+        if (!list)
+            return [];
         return [].slice.call(list);
     }
-
     public static merge<T>(arrays: Array<Array<T>>): Array<T> {
+        if (!arrays)
+            return [];
         return [].concat.apply([], arrays);
     }
 
     public static distinct(arr: string[]): string[];
     public static distinct(arr: number[]): number[];
     public static distinct(arr: any[]): any[] {
-        let o = <IIndexer<any>>{}, i: number, l = arr.length, r: any[] = [];
-        for (i = 0; i < l; i += 1)
-            o["" + arr[i]] = arr[i];
-        let k = Object.keys(o);
-        for (i = 0, l = k.length; i < l; i += 1)
-            r.push(o[k[i]]);
-        return r;
+        if (!arr)
+            return [];
+        const map = Indexer(), len = arr.length;
+        for (let i = 0; i < len; i += 1) {
+            map["" + arr[i]] = arr[i];
+        }
+        return toArray(map);
     }
-
+    public static toMap<T extends object>(arr: T[], key: (obj: T) => string): IIndexer<T> {
+        const map = Indexer();
+        if (!arr)
+            return map;
+        const len = arr.length;
+        for (let i = 0; i < len; i += 1) {
+            map[key(arr[i])] = arr[i];
+        }
+        return map;
+    }
     public static remove(array: any[], obj: any): number {
         const i = array.indexOf(obj);
         if (i > -1) {

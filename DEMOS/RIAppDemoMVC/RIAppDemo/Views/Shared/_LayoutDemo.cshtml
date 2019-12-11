@@ -20,45 +20,6 @@
     <link href="@Url.Asset("/Scripts/qtip/jquery.qtip.min.css", false)" rel="stylesheet" type="text/css"/>
 
     @RenderSection("CssImport", false)
-    <script src="@Url.Asset("/Scripts/jquery/jquery-3.1.1.min.js", false)" type="text/javascript"></script>
-    <script src="@Url.Asset("/Scripts/bootstrap/js/bootstrap.min.js", false)" type="text/javascript"></script>
-    <script src="@Url.Asset("/Scripts/jquery/ui/jquery-ui.min.js", false)" type="text/javascript"></script>
-    <script src="@Url.Asset("/Scripts/moment/moment.min.js", false)" type="text/javascript"></script>
-    <script src="@Url.Asset("/Scripts/qtip/jquery.qtip.min.js", false)" type="text/javascript"></script>
-
-    @RenderSection("JSImport", false)
-
-    <script src="@Url.Asset("/Scripts/require.min.js", false)" type="text/javascript"></script>
-    @Scripts.Render("~/bundles/jriapp")
-    @Scripts.Render("~/bundles/shared")
-   
-     @*
-    <script src="@Url.Asset("/Scripts/jriapp/jriapp_shared.js", true)" type="text/javascript"></script>
-    <script src="@Url.Asset("/Scripts/jriapp/jriapp.js", true)" type="text/javascript"></script>
-    <script src="@Url.Asset("/Scripts/jriapp/jriapp_ui.js", true)" type="text/javascript"></script>
-    <script src="@Url.Content("~/Scripts/demo/shared/shared.js", true)" type="text/javascript"></script>
-    *@
-
-    <script type="text/javascript">
-        var jriapp_config = {
-            frameworkPath: '@Url.Asset("/Scripts/jriapp/", true)',
-            debugLevel: 0
-        };
-
-        var config = {
-            baseUrl: "@Url.Asset("/Scripts/demo/", true)",
-            @*
-            bundles: {
-                "@Url.Asset("/Scripts/jriapp/jriapp_db.js", true)": ["jriapp_db"],
-                "@Url.Asset("/Scripts/jriapp/jriapp_langs.js", true)": ["jriapp_ru"]
-            },
-            *@
-            //taken from web config (i removed it here because Url.Asset uses the bust too, so no need for the two busts)
-            @*@urlArgs: "bust=@Url.Bust()",*@
-            waitSeconds: 10
-        };
-        requirejs.config(config);
-    </script>
 </head>
 <body>
     <div>
@@ -75,7 +36,35 @@
         </footer>
     </div>
 
-    <script id="errorTemplate" type="text/html" data-role="template">
+    <script src="@Url.Asset("/Scripts/jquery/jquery-3.1.1.min.js", false)" type="text/javascript"></script>
+    <script src="@Url.Asset("/Scripts/bootstrap/js/bootstrap.min.js", false)" type="text/javascript"></script>
+    <script src="@Url.Asset("/Scripts/jquery/ui/jquery-ui.min.js", false)" type="text/javascript"></script>
+    <script src="@Url.Asset("/Scripts/moment/moment.min.js", false)" type="text/javascript"></script>
+    <script src="@Url.Asset("/Scripts/qtip/jquery.qtip.min.js", false)" type="text/javascript"></script>
+
+    @RenderSection("JSStaticImport", false)
+
+    <script src="@Url.Asset("/Scripts/require.min.js", false)" type="text/javascript"></script>
+    @Scripts.Render("~/bundles/jriapp")
+    @Scripts.Render("~/bundles/shared")
+
+    <script type="text/javascript">
+        var jriapp_config = {
+            cssPath:  '@Url.Asset("/Scripts/demo/", true)',
+            frameworkPath: '@Url.Asset("/Scripts/jriapp/", true)',
+            debugLevel: 0
+        };
+
+        var config = {
+            baseUrl: "@Url.Asset("/Scripts/demo/", true)",
+            waitSeconds: 10
+        };
+        requirejs.config(config);
+    </script>
+
+    @RenderSection("JSDynamicImport", false)
+
+    <script id="errorTemplate" type="text/x-template">
         @*error dialog template*@
         <div style="background-color: white; height: 100%; width: 100%;">
             <div style="color: red; margin-bottom: 1em;" data-bind="{this.value,to=message}"></div>

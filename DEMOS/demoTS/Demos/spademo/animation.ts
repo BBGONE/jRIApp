@@ -2,20 +2,18 @@
 import * as uiMOD from "jriapp_ui";
 
 //local variables for optimization
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+let utils = RIAPP.Utils;
 
 export class FadeAnimation extends RIAPP.BaseObject implements uiMOD.IDynaContentAnimation {
     private _$animatedEl: JQuery;
     private _effect: string;
     private _duration: number;
-    private _isAnimateFirstShow: boolean;
 
     constructor(isAnimateFirstShow: boolean, duration?: number) {
         super();
         this._$animatedEl = null;
         this._effect = 'fade';
         this._duration = !!duration ? duration : 1000;
-        this._isAnimateFirstShow = !!isAnimateFirstShow;
     }
     beforeShow(template: RIAPP.ITemplate, isFirstShow: boolean):void {
     }
@@ -23,7 +21,7 @@ export class FadeAnimation extends RIAPP.BaseObject implements uiMOD.IDynaConten
         this.stop();
         this._$animatedEl = $(template.el.parentElement);
         this._$animatedEl.hide();
-        var deffered = utils.defer.createDeferred<void>();
+        let deffered = utils.defer.createDeferred<void>();
         (<any>this._$animatedEl).show(this._effect, this._duration, () => {
             deffered.resolve();
         });
@@ -34,7 +32,7 @@ export class FadeAnimation extends RIAPP.BaseObject implements uiMOD.IDynaConten
         this._$animatedEl = $(template.el.parentElement);
     }
     hide(template: RIAPP.ITemplate): RIAPP.IVoidPromise {
-        var deffered = utils.defer.createDeferred<void>();
+        let deffered = utils.defer.createDeferred<void>();
         (<any>this._$animatedEl).hide(this._effect, this._duration, () => {
             deffered.resolve();
         });
@@ -47,16 +45,16 @@ export class FadeAnimation extends RIAPP.BaseObject implements uiMOD.IDynaConten
     get isAnimateFirstShow() {
         return true;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         try {
             this.stop();
             this._$animatedEl = null;
         }
         finally {
-            super.destroy();
+            super.dispose();
         }
     }
 }
@@ -65,21 +63,19 @@ export class SlideAnimation extends RIAPP.BaseObject implements uiMOD.IDynaConte
     private _$animatedEl: JQuery;
     private _effect: string;
     private _duration: number;
-    private _isAnimateFirstShow: boolean;
 
     constructor(isAnimateFirstShow: boolean, duration?: number) {
         super();
         this._$animatedEl = null;
         this._effect = 'slide';
         this._duration = !!duration ? duration : 1000;
-        this._isAnimateFirstShow = !!isAnimateFirstShow;
     }
     beforeShow(template: RIAPP.ITemplate, isFirstShow: boolean): void {
     }
     show(template: RIAPP.ITemplate, isFirstShow: boolean): RIAPP.IVoidPromise {
         this.stop();
         this._$animatedEl = $(template.el.parentElement);
-        var deffered = utils.defer.createDeferred<void>();
+        let deffered = utils.defer.createDeferred<void>();
         (<any>this._$animatedEl).show(this._effect, this._duration, () => {
             deffered.resolve();
         });
@@ -90,7 +86,7 @@ export class SlideAnimation extends RIAPP.BaseObject implements uiMOD.IDynaConte
         this._$animatedEl = $(template.el.parentElement);
     }
     hide(template: RIAPP.ITemplate): RIAPP.IVoidPromise {
-        var deffered = utils.defer.createDeferred<void>();
+        let deffered = utils.defer.createDeferred<void>();
         (<any>this._$animatedEl).hide(this._effect, this._duration, () => {
             deffered.resolve();
         });
@@ -103,16 +99,16 @@ export class SlideAnimation extends RIAPP.BaseObject implements uiMOD.IDynaConte
     get isAnimateFirstShow() {
         return true;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         try {
             this.stop();
             this._$animatedEl = null;
         }
         finally {
-            super.destroy();
+            super.dispose();
         }
     }
 }

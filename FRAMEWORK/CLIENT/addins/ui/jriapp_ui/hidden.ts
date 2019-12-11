@@ -1,9 +1,9 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { bootstrap } from "jriapp/bootstrap";
 import { InputElView } from "./input";
 
-export class HiddenElView extends InputElView {
-    toString() {
+export class HiddenElView extends InputElView<HTMLInputElement> {
+    toString(): string {
         return "HiddenElView";
     }
 }

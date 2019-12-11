@@ -1,72 +1,84 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IViewOptions } from "jriapp/int";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DomUtils } from "jriapp/utils/dom";
-import { bootstrap } from "jriapp/bootstrap";
-import { css, PROP_NAME, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./baseview";
-import { ICommand } from "jriapp/mvvm";
-import { CommandElView } from "./command";
+import { SubscribeFlags } from "jriapp/consts";
+import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
+import { CommandElView, ICommandViewOptions } from "./command";
 
-const boot = bootstrap, dom = DomUtils;
+const boot = bootstrap, dom = DomUtils, subscribeMap = subscribeWeakMap;
 
-export class ButtonElView extends CommandElView {
+export class ButtonElView extends CommandElView<HTMLButtonElement | HTMLInputElement> {
     private _isButton: boolean;
 
-    constructor(options: IViewOptions) {
-        super(options);
+    constructor(el: HTMLButtonElement | HTMLInputElement, options: ICommandViewOptions) {
+        super(el, options);
         const self = this;
         this._isButton = this.el.tagName.toLowerCase() === "button";
-        dom.events.on(this.el, "click", function (e) {
-            self._onClick(e);
-        }, this.uniqueID);
+        if (this.isDelegationOn) {
+            subscribeMap.set(el, this);
+            this._setIsSubcribed(SubscribeFlags.click);
+        } else {
+            dom.events.on(el, "click", (e) => {
+                self.handle_click(e);
+            }, this.uniqueID);
+        }
     }
-    protected _onClick(e: Event) {
-        if (this.stopPropagation)
+    handle_click(e: Event): boolean {
+        if (this.stopPropagation) {
             e.stopPropagation();
-        if (this.preventDefault)
+        }
+        if (this.preventDefault) {
             e.preventDefault();
-        this.invokeCommand(null, true);
+        }
+        this.onClick();
+
+        return this.stopPropagation;
     }
-    toString() {
+    onClick(): void {
+        this.invokeCommand();
+    }
+    toString(): string {
         return "ButtonElView";
     }
     get value(): string {
         return this._isButton ? (<HTMLButtonElement>this.el).textContent : (<HTMLInputElement>this.el).value;
     }
-    set value(v) {
+    set value(v: string) {
         const x = this.value;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            if (this._isButton)
+            if (this._isButton) {
                 (<HTMLButtonElement>this.el).textContent = v;
-            else
+            } else {
                 (<HTMLInputElement>this.el).value = v;
+            }
 
-            this.raisePropertyChanged(PROP_NAME.value);
+            this.objEvents.raiseProp("value");
         }
     }
-    get text() {
+    get text(): string {
         return this.el.textContent;
     }
-    set text(v) {
-        let x = this.el.textContent;
+    set text(v: string) {
+        const x = this.el.textContent;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             this.el.textContent = v;
-            this.raisePropertyChanged(PROP_NAME.text);
+            this.objEvents.raiseProp("text");
         }
     }
-    get html() {
+    get html(): string {
         return this._isButton ? (<HTMLButtonElement>this.el).innerHTML : (<HTMLInputElement>this.el).value;
     }
-    set html(v) {
+    set html(v: string) {
         const x = this.html;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            if (this._isButton)
+            if (this._isButton) {
                 (<HTMLButtonElement>this.el).innerHTML = v;
-            else
+            } else {
                 (<HTMLInputElement>this.el).value = v;
-            this.raisePropertyChanged(PROP_NAME.html);
+            }
+            this.objEvents.raiseProp("html");
         }
     }
 }

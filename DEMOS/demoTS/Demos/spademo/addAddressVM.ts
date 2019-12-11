@@ -8,7 +8,7 @@ import { DemoApplication } from "./app";
 import { CustomerAddressVM } from "./custAddressVM";
 import { AddressRoute } from "./routes";
 
-var utils = RIAPP.Utils, $ = RIAPP.$;
+let utils = RIAPP.Utils;
 
 export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RIAPP.ISubmittable {
     private _customerAddressVM: CustomerAddressVM;
@@ -29,7 +29,7 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
 
     constructor(customerAddressVM: CustomerAddressVM) {
         super(customerAddressVM.app);
-        var self = this;
+        const self = this;
         this._customerAddressVM = customerAddressVM;
         this._addressInfosDb = this.dbContext.dbSets.AddressInfo;
         this._currentCustomer = self._customerAddressVM.currentCustomer;
@@ -41,8 +41,8 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         this._uiAddressRoute = new AddressRoute();
 
         this._dialogVM = new uiMOD.DialogVM(self.app);
-        var dialogOptions: uiMOD.IDialogConstructorOptions = {
-            templateID: 'addAddressTemplate',
+        let dialogOptions: uiMOD.IDialogConstructorOptions = {
+            templateID: 'custAdrGroup.addAddressTemplate',
             width: 950,
             height: 600,
             title: 'add new customer address',
@@ -66,11 +66,11 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
                 if (!self._newAddress._aspect.endEdit())
                     return uiMOD.DIALOG_ACTION.StayOpen;
 
-                var custAdress = self._customerAddressVM._addNewCustAddress(self._newAddress);
+                let custAdress = self._customerAddressVM._addNewCustAddress(self._newAddress);
                 custAdress._aspect.endEdit();
                 self._newAddress = null;
                 self.uiAddressRoute.goToLinkAdr();
-                self.raisePropertyChanged('newAddress');
+                self.objEvents.raiseProp('newAddress');
                 return uiMOD.DIALOG_ACTION.StayOpen;
             },
             fn_OnCancel: function (dialog) {
@@ -101,65 +101,63 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         this._addressInfosView.isPagingEnabled = true;
         this._addressInfosView.pageSize = 50;
 
-        this._addressInfosView.addOnPropertyChange('currentItem', function (sender, args) {
-            self.raisePropertyChanged('currentAddressInfo');
+        this._addressInfosView.objEvents.onProp('currentItem', function (_s, args) {
+            self.objEvents.raiseProp('currentAddressInfo');
             self._linkCommand.raiseCanExecuteChanged();
         }, self.uniqueID);
 
-        this._customerAddressVM.addOnPropertyChange('currentCustomer', function (sender, args) {
+        this._customerAddressVM.objEvents.onProp('currentCustomer', function (_s, args) {
             self._currentCustomer = self._customerAddressVM.currentCustomer;
-            self.raisePropertyChanged('customer');
+            self.objEvents.raiseProp('customer');
             self._addNewCommand.raiseCanExecuteChanged();
         }, self.uniqueID);
 
         //this data is displayed on the left panel - addresses currently linked to the customer
-        this.custAdressView.addOnPropertyChange('currentItem', function (sender, args) {
+        this.custAdressView.objEvents.onProp('currentItem', function (_s, args) {
             self._unLinkCommand.raiseCanExecuteChanged();
         }, self.uniqueID);
 
-        //add new or existing address
-        this._addNewCommand = new RIAPP.Command(function (sender: any, param: { width?: number; height?: number; }) {
+        // add new or existing address
+        this._addNewCommand = new RIAPP.Command <{ width?: number; height?: number; }>(function (param) {
             try {
-                //can override default width and height
-                //we pass the width and height in the command parameter(it is not needed - only for example)
-                let opts = utils.core.merge(param, { width: 950, height: 600 });
-                let dialog = self._dialogVM.showDialog('addressDialog', self);
+                // can override default width and height
+                // we pass the width and height in the command parameter(it is not needed - only for example)
+                const opts = utils.core.merge(param, { width: 950, height: 600 });
+                const dialog = self._dialogVM.showDialog('addressDialog', self);
                 dialog.width = opts.width;
                 dialog.height = opts.height;
             } catch (ex) {
-                self.handleError(ex, this);
+                self.handleError(ex, self);
             }
-        }, self,
-            function (sender, param) {
+        }, function () {
                 //enable this command when customer is not null
                 return !!self.customer;
             });
 
         //load searched address data from the server
-        this._execSearchCommand = new RIAPP.Command(function (sender, args) {
+        this._execSearchCommand = new RIAPP.Command(function () {
             self.loadAddressInfos();
-        }, self, null);
+        });
 
         //adds new address to the customer
-        this._addNewAddressCommand = new RIAPP.Command(function (sender, args) {
+        this._addNewAddressCommand = new RIAPP.Command(function () {
             self._addNewAddress();
-        }, self, null);
+        });
 
         //adds existed address to the customer
-        this._linkCommand = new RIAPP.Command(function (sender, args) {
+        this._linkCommand = new RIAPP.Command(function () {
             self._linkAddress();
-        }, self, function (s, a) {
+        }, function () {
             return !!self._addressInfosView.currentItem;
         });
 
-        this._unLinkCommand = new RIAPP.Command(function (sender, args) {
+        this._unLinkCommand = new RIAPP.Command(function () {
             self._unLinkAddress();
-        }, self, function (s, a) {
+        }, function () {
             return !!self.custAdressView.currentItem;
         });
     }
     protected _addGrid(grid: uiMOD.DataGrid): void {
-        var self = this;
         if (!!this._dataGrid)
             this._removeGrid();
         this._dataGrid = grid;
@@ -167,30 +165,30 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
     protected _removeGrid(): void {
         if (!this._dataGrid)
             return;
-        this._dataGrid.removeNSHandlers(this.uniqueID);
+        this._dataGrid.objEvents.offNS(this.uniqueID);
         this._dataGrid = null;
     }
     protected _cancelAddNewAddress() {
-        var self = this;
+        const self = this;
         self._newAddress._aspect.cancelEdit();
         self._newAddress._aspect.rejectChanges();
         self._newAddress = null;
         self.uiAddressRoute.goToLinkAdr();
-        self.raisePropertyChanged('newAddress');
+        self.objEvents.raiseProp('newAddress');
     }
     protected _addNewAddress() {
         this._newAddress = this._customerAddressVM._addNewAddress();
         this.uiAddressRoute.goToNewAdr();
-        this.raisePropertyChanged('newAddress');
+        this.objEvents.raiseProp('newAddress');
     }
     protected _linkAddress() {
-        var self = this, adrInfo = this.currentAddressInfo, adrView = self.custAdressView, adrID: number;
+        const self = this, adrInfo = this.currentAddressInfo, adrView = self.custAdressView;
         if (!adrInfo) {
             alert('_linkAddress error: adrInfoEntity is null');
             return;
         }
-        adrID = adrInfo.AddressID;
-        var existedAddr: boolean = adrView.items.some(function (item) {
+        let adrID = adrInfo.AddressID;
+        let existedAddr: boolean = adrView.items.some(function (item) {
             return item.AddressID === adrID;
         });
 
@@ -200,9 +198,9 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         }
 
         //don't clear, append to the existing
-        var promise = this._customerAddressVM._loadAddresses([adrID], false);
+        let promise = this._customerAddressVM._loadAddresses([adrID], false);
         promise.then(function (res) {
-            var address = self._customerAddressVM.addressesDb.findEntity(adrID);
+            let address = self._customerAddressVM.addressesDb.findEntity(adrID);
             if (!!address) {
                 self._customerAddressVM._addNewCustAddress(address);
                 //remove address from right panel
@@ -211,11 +209,11 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
         });
     }
     protected _unLinkAddress() {
-        var item = this.custAdressView.currentItem;
+        let item = this.custAdressView.currentItem;
         if (!item) {
             return;
         }
-        var id = item.AddressID;
+        let id = item.AddressID;
         //delete it from the left panel
         if (item._aspect.deleteItem())
             //and then add the address to the right panel (really adds an addressInfo, not the address entity)
@@ -225,16 +223,16 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
     protected _addAddressRP(addressID: number) {
         //if address already on client, just make it be displayed in the view
         if (this._checkAddressInRP(addressID)) {
-            var deferred = utils.defer.createDeferred<dbMOD.IQueryResult<DEMODB.AddressInfo>>();
+            let deferred = utils.defer.createDeferred<dbMOD.IQueryResult<DEMODB.AddressInfo>>();
             deferred.reject();
             return deferred.promise();
         }
         //if we are here, we need to load the address from the server
-        var self = this, query = this._addressInfosDb.createReadAddressInfoQuery();
+        const self = this, query = this._addressInfosDb.createReadAddressInfoQuery();
         //dont clear, append to the existing
         query.isClearPrevData = false;
         query.where('AddressID', RIAPP.FILTER_TYPE.Equals, [addressID]);
-        var promise = query.load();
+        let promise = query.load();
         promise.then(function () {
             self._checkAddressInRP(addressID);
         });
@@ -243,10 +241,10 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
     //make sure if the addressInfo already on the client, adds it to the view
     protected _checkAddressInRP(addressID: number) {
         //try to find it in the TDbSet
-        var item = this._addressInfosDb.findEntity(addressID);
+        let item = this._addressInfosDb.findEntity(addressID);
         if (!!item) {
             //if found, try append to the view
-            var appended = this._addressInfosView.appendItems([item]);
+            this._addressInfosView.appendItems([item]);
             this._addressInfosView.currentItem = item;
             if (!!this._dataGrid)
                 this._dataGrid.scrollToCurrent(uiMOD.ROW_POSITION.Up);
@@ -255,14 +253,14 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
     }
     //remove the address from the right panel (it is done by removing the item from the view)
     protected _removeAddressRP(addressID: number) {
-        var item = this._addressInfosView.findByPK(addressID);
+        let item = this._addressInfosView.findByPK(addressID);
         if (!!item) {
             this._addressInfosView.removeItem(item);
         }
     }
     //returns a promise
     loadAddressInfos() {
-        var query = this._addressInfosDb.createReadAddressInfoQuery();
+        let query = this._addressInfosDb.createReadAddressInfoQuery();
         query.isClearPrevData = true;
         COMMON.addTextQuery(query, 'AddressLine1', '%' + this.searchString + '%');
         query.orderBy('AddressLine1');
@@ -270,25 +268,25 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
     }
     submitChanges(): RIAPP.IPromise<any> { return this.dbContext.submitChanges(); }
     rejectChanges() { }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._addressInfosDb) {
-            this._addressInfosDb.removeNSHandlers(this.uniqueID);
+            this._addressInfosDb.objEvents.offNS(this.uniqueID);
             this._addressInfosDb.clear();
             this._addressInfosDb = null;
         }
         if (!!this._addressInfosView) {
-            this._addressInfosView.destroy();
+            this._addressInfosView.dispose();
             this._addressInfosView = null;
         }
-        this.custAdressView.removeNSHandlers(this.uniqueID);
+        this.custAdressView.objEvents.offNS(this.uniqueID);
         if (!!this._customerAddressVM) {
-            this._customerAddressVM.removeNSHandlers(this.uniqueID);
+            this._customerAddressVM.objEvents.offNS(this.uniqueID);
             this._customerAddressVM = null;
         }
-        super.destroy();
+        super.dispose();
     }
     get dbContext() { return this.app.dbContext; }
     get dbSets() { return this.dbContext.dbSets; }
@@ -302,7 +300,7 @@ export class AddAddressVM extends RIAPP.ViewModel<DemoApplication> implements RI
     set searchString(v) {
         if (this._searchString !== v) {
             this._searchString = v;
-            this.raisePropertyChanged('searchString');
+            this.objEvents.raiseProp('searchString');
         }
     }
     get addNewCommand() { return this._addNewCommand; }

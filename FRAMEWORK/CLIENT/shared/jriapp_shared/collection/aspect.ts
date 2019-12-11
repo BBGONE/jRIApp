@@ -1,74 +1,133 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { FIELD_TYPE, DATA_TYPE, ITEM_STATUS } from "./const";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { FIELD_TYPE, ITEM_STATUS, VALS_VERSION } from "./const";
 import { IFieldInfo } from "./int";
 import { IVoidPromise } from "../utils/ideferred";
-import {
-    IIndexer, IValidationInfo, TEventHandler, IErrorNotification, IBaseObject
-} from "../int";
+import { IIndexer, IValidationInfo, TEventHandler, IErrorNotification } from "../int";
 import { BaseObject } from "../object";
-import { ERRS } from "../lang";
 import { Utils } from "../utils/utils";
-
-import { ICollectionItem, IItemAspect, ICancellableArgs, PROP_NAME, ITEM_EVENTS } from "./int";
+import { ICollectionItem, IItemAspect, ICancellableArgs, ITEM_EVENTS } from "./int";
 import { BaseCollection } from "./base";
-import { fn_traverseFields } from "./utils";
-import { ValidationError, Validations } from "./validation";
+import { CollUtils } from "./utils";
+import { ValidationError } from "../errors";
+import { Validations } from "./validation";
 
-const utils = Utils, coreUtils = utils.core, strUtils = utils.str, checks = utils.check,
-    sys = utils.sys, ERROR = utils.err;
+const utils = Utils, { forEach, getValue, setValue, Indexer } = utils.core, { isNt } = utils.check,
+    sys = utils.sys, ERROR = utils.err, { cloneVals, walkFields } = CollUtils;
 
-interface ICustomVal
-{
+const enum AspectFlags {
+    IsAttached = 0,
+    IsEdited = 1,
+    IsRefreshing = 2,
+    IsCancelling = 3
+}
+
+interface ICustomVal {
     val: any;
     isOwnIt: boolean;
 }
 
+function disposeVal(entry: ICustomVal, nmspace: string): void {
+    if (!entry) {
+        return;
+    }
+    const val = entry.val;
 
-export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implements IItemAspect<TItem> {
+    if (sys.isEditable(val) && val.isEditing) {
+        val.cancelEdit();
+    }
+
+    const errNotification = sys.getErrorNotification(val);
+    if (!!errNotification) {
+        errNotification.offOnErrorsChanged(nmspace);
+    }
+
+    if (entry.isOwnIt && sys.isBaseObj(val)) {
+        val.dispose();
+    }
+}
+
+function checkDetached<TItem extends ICollectionItem, TObj>(aspect: IItemAspect<TItem, TObj>): void {
+    if (aspect.isDetached) {
+        throw new Error("Invalid operation. The item is detached");
+    }
+}
+
+export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem, TObj extends IIndexer<any> = IIndexer<any>> extends BaseObject implements IItemAspect<TItem, TObj> {
     private _key: string;
     private _item: TItem;
-    private _collection: BaseCollection<TItem>;
-    protected _status: ITEM_STATUS;
-    protected _saveVals: IIndexer<any>;
-    protected _vals: IIndexer<any>;
-    protected _notEdited: boolean;
-    private _isCached: boolean;
-    private _isDetached: boolean;
+    private _coll: BaseCollection<TItem>;
+    private _flags: number;
     private _valueBag: IIndexer<ICustomVal>;
-    _setIsDetached(v: boolean) {
-        this._isDetached = v;
-    }
-    _setIsCached(v: boolean) {
-        this._isCached = v;
-    }
-    constructor(collection: BaseCollection<TItem>) {
+    private _status: ITEM_STATUS;
+    private _tempVals: TObj;
+    private _vals: TObj;
+
+    constructor(collection: BaseCollection<TItem>, vals: any, key: string, isNew: boolean) {
         super();
-        this._key = null;
+        this._coll = collection;
+        this._vals = vals;
+        this._key = key;
+        this._status = isNew ? ITEM_STATUS.Added : ITEM_STATUS.None;
+        this._tempVals = null;
+        this._flags = 0;
+        this._valueBag = null;
         this._item = null;
-        this._collection = collection;
+    }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        const coll = this._coll, item = this._item;
+        if (!!item) {
+            this.cancelEdit();
+
+            if (!this.isDetached) {
+                coll.removeItem(item);
+            }
+        }
+        const bag = this._valueBag;
+        this._valueBag = null;
+        if (!!bag) {
+            forEach(bag, (name, val) => {
+                disposeVal(val, coll.uniqueID);
+            });
+        }
+        this._flags = 0;
         this._status = ITEM_STATUS.None;
-        this._saveVals = null;
-        this._vals = {};
-        this._notEdited = true;
-        this._isCached = false;
-        this._isDetached = false;
+        super.dispose();
     }
-    protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return [ITEM_EVENTS.errors_changed].concat(base_events);
+    protected _onErrorsChanged(): void {
+        this.objEvents.raise(ITEM_EVENTS.errors_changed, {});
     }
-    protected _onErrorsChanged(args: any) {
-        this.raiseEvent(ITEM_EVENTS.errors_changed, args);
+    private _getFlag(flag: AspectFlags): boolean {
+        return !!(this._flags & (1 << flag));
+    }
+    private _setFlag(v: boolean, flag: AspectFlags) {
+        if (v) {
+            this._flags |= (1 << flag);
+        } else {
+            this._flags &= ~(1 << flag);
+        }
+    }
+    protected _setIsEdited(v: boolean) {
+        this._setFlag(v, AspectFlags.IsEdited);
+    }
+    protected _setIsCancelling(v: boolean) {
+        this._setFlag(v, AspectFlags.IsCancelling);
+    }
+    protected _cloneVals(): TObj {
+        return cloneVals(this.coll.getFieldInfos(), this._vals);
     }
     protected _beginEdit(): boolean {
-        if (this.isDetached)
-            throw new Error("Invalid operation. The item is detached");
-        const coll = this.collection;
+        checkDetached(this);
+        const coll = this.coll;
         let isHandled: boolean = false;
         if (coll.isEditing) {
             const item = coll._getInternal().getEditingItem();
-            if (item._aspect === this)
+            if (item._aspect === this) {
                 return false;
+            }
             try {
                 item._aspect.endEdit();
                 if (item._aspect.getIsHasErrors()) {
@@ -81,307 +140,331 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
                 ERROR.reThrow(ex, isHandled);
             }
         }
-        this._saveVals = coreUtils.clone(this._vals);
-        this.collection.currentItem = this.item;
+        this._storeVals(VALS_VERSION.Temporary);
+        this.coll.currentItem = this.item;
         return true;
     }
     protected _endEdit(): boolean {
-        if (this.isDetached)
-            throw new Error("Invalid operation. The item is detached");
-        if (!this.isEditing)
-            return false;
-        const coll = this.collection, self = this, internal = coll._getInternal();
-        if (this.getIsHasErrors()) {
+        if (!this.isEditing) {
             return false;
         }
-        //revalidate all
-        internal.removeAllErrors(this.item);
-        const validation_errors = this._validateAll();
-        if (validation_errors.length > 0) {
-            internal.addErrors(self.item, validation_errors);
+        checkDetached(this);
+        const coll = this.coll, self = this, errors = coll.errors;
+        // revalidate all
+        errors.removeAllErrors(this.item);
+        const validations: IValidationInfo[] = this._validateFields();
+        if (validations.length > 0) {
+            errors.addErrors(self.item, validations);
         }
         if (this.getIsHasErrors()) {
             return false;
         }
-        this._saveVals = null;
+        this._tempVals = null;
         return true;
     }
     protected _cancelEdit(): boolean {
-        if (this.isDetached)
-            throw new Error("Invalid operation. The item is detached");
-        if (!this.isEditing)
+        if (!this.isEditing) {
             return false;
-        const coll = this.collection, self = this, item = self.item, changes = this._saveVals;
-        this._vals = this._saveVals;
-        this._saveVals = null;
-        coll._getInternal().removeAllErrors(item);
-        //refresh User interface when values restored
-        coll.getFieldNames().forEach(function (name) {
-            if (changes[name] !== self._vals[name]) {
-                item.raisePropertyChanged(name);
+        }
+        checkDetached(this);
+        const coll = this.coll, self = this, item = self.item, changed: string[] = [];
+        coll.errors.removeAllErrors(item);
+        coll.getFieldNames().forEach((name) => {
+            if (self._getValue(name, VALS_VERSION.Temporary) !== self._getValue(name, VALS_VERSION.Current)) {
+                changed.push(name);
             }
         });
+        this._restoreVals(VALS_VERSION.Temporary);
+        // refresh User interface when values restored
+        changed.forEach((name) => {
+            sys.raiseProp(this.item, name);
+        });
+
         return true;
-    }
-    protected _validate(): IValidationInfo {
-        return this.collection._getInternal().validateItem(this.item);
     }
     protected _skipValidate(fieldInfo: IFieldInfo, val: any) {
         return false;
     }
-    protected _validateField(fieldName: string): IValidationInfo {
-        const fieldInfo = this.getFieldInfo(fieldName);
-        let res: IValidationInfo = null
-        try {
-            const value = coreUtils.getValue(this._vals, fieldName);
-            if (this._skipValidate(fieldInfo, value))
-                return res;
-
-            if (this.isNew) {
-                if (value === null && !fieldInfo.isNullable && !fieldInfo.isReadOnly && !fieldInfo.isAutoGenerated)
-                    throw new Error(ERRS.ERR_FIELD_ISNOT_NULLABLE);
-            }
-            else if (value === null && !fieldInfo.isNullable && !fieldInfo.isReadOnly) {
-                throw new Error(ERRS.ERR_FIELD_ISNOT_NULLABLE);
-            }
-        } catch (ex) {
-            res = { fieldName: fieldName, errors: [ex.message] };
-        }
-
-        const tmpValInfo = this.collection._getInternal().validateItemField(this.item, fieldName);
-
-        if (!!res && !!tmpValInfo) {
-            res = { fieldName: res.fieldName, errors: res.errors.concat(tmpValInfo.errors) };
-        }
-        else if (!!tmpValInfo) {
-            res = tmpValInfo;
-        }
-
-        return res;
+    protected _validateItem(): IValidationInfo[] {
+        return this.coll.errors.validateItem(this.item);
     }
-    protected _validateAll(): IValidationInfo[] {
-        const self = this, fieldInfos = this.collection.getFieldInfos(), errs: IValidationInfo[] = [];
-        fn_traverseFields(fieldInfos, (fld, fullName) => {
+    protected _validateField(fieldName: string): IValidationInfo {
+        const fieldInfo = this.getFieldInfo(fieldName), errors = this.coll.errors;
+        const value = getValue(this._vals, fieldName);
+        if (this._skipValidate(fieldInfo, value)) {
+            return null;
+        }
+        const standardErrors: string[] = Validations.checkField(fieldInfo, value, this.isNew);
+        const customValidation: IValidationInfo = errors.validateItemField(this.item, fieldName);
+
+        const result = { fieldName: fieldName, errors: <string[]>[] };
+        if (standardErrors.length > 0) {
+            result.errors = standardErrors;
+        }
+        if (!!customValidation && customValidation.errors.length > 0) {
+            result.errors = result.errors.concat(customValidation.errors);
+        }
+
+        return (result.errors.length > 0) ? result : null;
+    }
+    protected _validateFields(): IValidationInfo[] {
+        const self = this, fieldInfos = this.coll.getFieldInfos(),
+            res: IValidationInfo[] = [];
+        // revalidate all fields one by one
+        walkFields(fieldInfos, (fld, fullName) => {
             if (fld.fieldType !== FIELD_TYPE.Object) {
-                const res = self._validateField(fullName);
-                if (!!res) {
-                    errs.push(res);
+                const fieldValidation: IValidationInfo = self._validateField(fullName);
+                if (!!fieldValidation && fieldValidation.errors.length > 0) {
+                    res.push(fieldValidation);
                 }
             }
         });
 
-        const res = self._validate();
-        if (!!res) {
-            errs.push(res);
-        }
-        return errs;
+        // raise validation event for the whole item validation
+        const itemVals: IValidationInfo[] = self._validateItem();
+        return Validations.distinct(res.concat(itemVals));
     }
-    protected _checkVal(fieldInfo: IFieldInfo, val: any): any {
-        let res = val;
-        if (this._skipValidate(fieldInfo, val))
-            return res;
-        if (fieldInfo.isReadOnly && !(fieldInfo.allowClientDefault && this.isNew))
-            throw new Error(ERRS.ERR_FIELD_READONLY);
-        if ((val === null || (checks.isString(val) && !val)) && !fieldInfo.isNullable)
-            throw new Error(ERRS.ERR_FIELD_ISNOT_NULLABLE);
-
-        if (val === null)
-            return val;
-
-        switch (fieldInfo.dataType) {
-            case DATA_TYPE.None:
-                break;
-            case DATA_TYPE.Guid:
-            case DATA_TYPE.String:
-                if (!checks.isString(val)) {
-                    throw new Error(strUtils.format(ERRS.ERR_FIELD_WRONG_TYPE, val, "String"));
+    protected _setStatus(v: ITEM_STATUS): void {
+        this._status = v;
+    }
+    protected _getValue(name: string, ver: VALS_VERSION): any {
+        switch (ver) {
+            case VALS_VERSION.Current:
+                return getValue(this._vals, name);
+            case VALS_VERSION.Temporary:
+                if (!this._tempVals) {
+                    throw new Error("Invalid Operation, no Stored Version: " + ver);
                 }
-                if (fieldInfo.maxLength > 0 && val.length > fieldInfo.maxLength)
-                    throw new Error(strUtils.format(ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
-                if (fieldInfo.isNullable && val === "")
-                    res = null;
-                if (!!fieldInfo.regex) {
-                    const reg = new RegExp(fieldInfo.regex, "i");
-                    if (!reg.test(val)) {
-                        throw new Error(strUtils.format(ERRS.ERR_FIELD_REGEX, val));
-                    }
+                return getValue(this._tempVals, name);
+            default:
+                throw new Error("Invalid Operation, Unknown Version: " + ver);
+        }
+    }
+    protected _setValue(name: string, val: any, ver: VALS_VERSION): void {
+        switch (ver) {
+            case VALS_VERSION.Current:
+                setValue(this._vals, name, val, false);
+                break;
+            case VALS_VERSION.Temporary:
+                if (!this._tempVals) {
+                    throw new Error("Invalid Operation, no Stored Version: " + ver);
                 }
-                break;
-            case DATA_TYPE.Binary:
-                if (!checks.isArray(val)) {
-                    throw new Error(strUtils.format(ERRS.ERR_FIELD_WRONG_TYPE, val, "Array"));
-                }
-                if (fieldInfo.maxLength > 0 && val.length > fieldInfo.maxLength)
-                    throw new Error(strUtils.format(ERRS.ERR_FIELD_MAXLEN, fieldInfo.maxLength));
-                break;
-            case DATA_TYPE.Bool:
-                if (!checks.isBoolean(val))
-                    throw new Error(strUtils.format(ERRS.ERR_FIELD_WRONG_TYPE, val, "Boolean"));
-                break;
-            case DATA_TYPE.Integer:
-            case DATA_TYPE.Decimal:
-            case DATA_TYPE.Float:
-                if (!checks.isNumber(val))
-                    throw new Error(strUtils.format(ERRS.ERR_FIELD_WRONG_TYPE, val, "Number"));
-                if (!!fieldInfo.range) {
-                    Validations.checkNumRange(Number(val), fieldInfo.range);
-                }
-                break;
-            case DATA_TYPE.DateTime:
-            case DATA_TYPE.Date:
-                if (!checks.isDate(val))
-                    throw new Error(strUtils.format(ERRS.ERR_FIELD_WRONG_TYPE, val, "Date"));
-                if (!!fieldInfo.range) {
-                    Validations.checkDateRange(val, fieldInfo.range);
-                }
-                break;
-            case DATA_TYPE.Time:
-                if (!checks.isDate(val))
-                    throw new Error(strUtils.format(ERRS.ERR_FIELD_WRONG_TYPE, val, "Time"));
+                setValue(this._tempVals, name, val, false);
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "dataType", fieldInfo.dataType));
+                throw new Error("Invalid Operation, Unknown Version: " + ver);
         }
-        return res;
     }
-    protected _resetIsNew() {
-        //can reset isNew on all items in the collection
-        //the list descendant does it
+    protected _setVals(vals: TObj): void {
+        this._vals = vals;
     }
-    protected _fakeDestroy() {
-        this.raiseEvent(ITEM_EVENTS.destroyed, {});
-        this.removeNSHandlers();
+    protected _storeVals(toVer: VALS_VERSION): void {
+        switch (toVer) {
+            case VALS_VERSION.Temporary:
+                this._tempVals = this._cloneVals();
+                break;
+            default:
+                throw new Error("Invalid Operation, Unknown Version: " + toVer);
+        }
     }
-    public handleError(error: any, source: any): boolean {
-        if (!this._collection)
-            return super.handleError(error, source);
-        else
-            return this._collection.handleError(error, source);
+    protected _restoreVals(fromVer: VALS_VERSION): void {
+        switch (fromVer) {
+            case VALS_VERSION.Temporary:
+                if (!this._tempVals) {
+                    throw new Error("Invalid Operation, no Stored Version: " + fromVer);
+                }
+                this._setVals(this._tempVals);
+                this._tempVals = null;
+                break;
+            default:
+                throw new Error("Invalid Operation, Unknown Version: " + fromVer);
+        }
     }
-    _onAttaching(): void {
+    _resetStatus(): void {
+        this._status = ITEM_STATUS.None;
     }
-    _onAttach(): void {
+    _setKey(v: string): void {
+        this._key = v;
     }
-    raiseErrorsChanged(args: any): void {
-        this._onErrorsChanged(args);
+    _setIsAttached(v: boolean): void {
+        this._setFlag(v, AspectFlags.IsAttached);
     }
-    getFieldInfo(fieldName: string) {
-        return this.collection.getFieldInfo(fieldName);
+    _setIsRefreshing(v: boolean): void {
+        if (this.isRefreshing !== v) {
+            this._setFlag(v, AspectFlags.IsRefreshing);
+            this.objEvents.raiseProp("isRefreshing");
+        }
     }
-    getFieldNames() {
-        return this.collection.getFieldNames();
+    handleError(error: any, source: any): boolean {
+        return this.coll.handleError(error, source);
+    }
+    raiseErrorsChanged(): void {
+        this._onErrorsChanged();
+    }
+    getFieldInfo(fieldName: string): IFieldInfo {
+        return this.coll.getFieldInfo(fieldName);
+    }
+    getFieldNames(): string[] {
+        return this.coll.getFieldNames();
     }
     getErrorString(): string {
-        const itemErrors = this.collection._getInternal().getErrors(this.item);
-        if (!itemErrors)
+        const itemErrors = this.coll.errors.getErrors(this.item);
+        if (!itemErrors) {
             return "";
-        let res: string[] = [];
-        coreUtils.forEachProp(itemErrors, function (name) {
-            res.push(strUtils.format("{0}: {1}", name, itemErrors[name]));
+        }
+        const res: string[] = [];
+        forEach(itemErrors, (name, errs) => {
+            for (let i = 0; i < errs.length; i += 1) {
+                res.push(`${name}: ${errs[i]}`);
+            }
         });
         return res.join("|");
     }
     submitChanges(): IVoidPromise {
-        return utils.defer.reject<void>();
+        return utils.defer.reject<void>("not implemented");
     }
     rejectChanges(): void {
+        // noop
     }
     beginEdit(): boolean {
-        if (this.isEditing)
+        checkDetached(this);
+        if (this.isEditing) {
             return false;
-        const coll = this.collection, internal = coll._getInternal(), item = this.item;
+        }
+        const coll = this.coll, internal = coll._getInternal(), item = this.item;
         internal.onBeforeEditing(item, true, false);
-        if (!this._beginEdit())
+        if (!this._beginEdit()) {
             return false;
+        }
         internal.onEditing(item, true, false);
         if (!!this._valueBag && this.isEditing) {
-            coreUtils.forEachProp(this._valueBag, (name, obj) => {
-                if (!!obj && sys.isEditable(obj.val))
+            forEach(this._valueBag, (name, obj) => {
+                if (!!obj && sys.isEditable(obj.val)) {
                     obj.val.beginEdit();
+                }
             });
         }
         return true;
     }
     endEdit(): boolean {
-        if (!this.isEditing)
+        if (!this.isEditing) {
             return false;
-        const coll = this.collection, internal = coll._getInternal(), item = this.item;
+        }
+        checkDetached(this);
+        const coll = this.coll, internal = coll._getInternal(), item = this.item;
         internal.onBeforeEditing(item, false, false);
+        let customEndEdit = true;
         if (!!this._valueBag) {
-            coreUtils.forEachProp(this._valueBag, (name, obj) => {
-                if (!!obj && sys.isEditable(obj.val))
-                    obj.val.endEdit();
+            forEach(this._valueBag, (name, obj) => {
+                if (!!obj && sys.isEditable(obj.val)) {
+                    if (!obj.val.endEdit()) {
+                        customEndEdit = false;
+                    }
+                }
             });
         }
-        if (!this._endEdit())
+        if (!customEndEdit || !this._endEdit()) {
             return false;
+        }
         internal.onEditing(item, false, false);
-        this._notEdited = false;
+        this._setIsEdited(true);
         return true;
     }
     cancelEdit(): boolean {
-        //console.log("cancel " + this._item.toString());
-        if (!this.isEditing)
+        if (!this.isEditing) {
             return false;
-        const coll = this.collection, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
-        internal.onBeforeEditing(item, false, true);
-        if (!!this._valueBag) {
-            coreUtils.forEachProp(this._valueBag, (name, obj) => {
-                if (!!obj && sys.isEditable(obj.val))
-                    obj.val.cancelEdit();
-            });
         }
-        if (!this._cancelEdit())
-            return false;
-        internal.onEditing(item, false, true);
-        if (isNew && this._notEdited && !this.getIsDestroyCalled()) {
-            this.destroy();
+        checkDetached(this);
+        this._setIsCancelling(true);
+        try {
+            const coll = this.coll, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
+            internal.onBeforeEditing(item, false, true);
+            if (!!this._valueBag) {
+                forEach(this._valueBag, (name, obj) => {
+                    if (!!obj && sys.isEditable(obj.val)) {
+                        obj.val.cancelEdit();
+                    }
+                });
+            }
+            if (!this._cancelEdit()) {
+                return false;
+            }
+            internal.onEditing(item, false, true);
+            if (isNew && !this.isEdited && !this.getIsStateDirty()) {
+                this.dispose();
+            }
+        } finally {
+            this._setIsCancelling(false);
         }
         return true;
     }
     deleteItem(): boolean {
-        let coll = this.collection;
-        if (!this.key)
+        const coll = this.coll;
+        if (this.isDetached) {
             return false;
-        let args: ICancellableArgs<TItem> = { item: this.item, isCancel: false };
+        }
+        const args: ICancellableArgs<TItem> = { item: this.item, isCancel: false };
         coll._getInternal().onItemDeleting(args);
         if (args.isCancel) {
             return false;
         }
-        this.destroy();
+        this.dispose();
         return true;
     }
-    getIsHasErrors() {
-        const itemErrors = this.collection._getInternal().getErrors(this.item);
-        return !!itemErrors;
+    getIsHasErrors(): boolean {
+        let res = !!this.coll.errors.getErrors(this.item);
+        if (!res && !!this._valueBag) {
+            forEach(this._valueBag, (name, obj) => {
+                if (!!obj) {
+                    const errNotification = sys.getErrorNotification(obj.val);
+                    if (!!errNotification && errNotification.getIsHasErrors()) {
+                        res = true;
+                    }
+                }
+            });
+        }
+        return res;
     }
-    addOnErrorsChanged(fn: TEventHandler<ItemAspect<TItem>, any>, nmspace?: string, context?: any) {
-        this._addHandler(ITEM_EVENTS.errors_changed, fn, nmspace, context);
+    addOnErrorsChanged(fn: TEventHandler<ItemAspect<TItem, TObj>, any>, nmspace?: string, context?: any): void {
+        this.objEvents.on(ITEM_EVENTS.errors_changed, fn, nmspace, context);
     }
-    removeOnErrorsChanged(nmspace?: string) {
-        this._removeHandler(ITEM_EVENTS.errors_changed, nmspace);
+    offOnErrorsChanged(nmspace?: string): void {
+        this.objEvents.off(ITEM_EVENTS.errors_changed, nmspace);
     }
     getFieldErrors(fieldName: string): IValidationInfo[] {
-        let itemErrors = this.collection._getInternal().getErrors(this.item);
-        if (!itemErrors)
-            return [];
+        const res: IValidationInfo[] = [], itemErrors = this.coll.errors.getErrors(this.item);
+        if (!itemErrors) {
+            return res;
+        }
         let name = fieldName;
-        if (!fieldName)
+        if (!fieldName) {
             fieldName = "*";
-        if (!itemErrors[fieldName])
-            return [];
-        if (fieldName === "*")
+        }
+        if (!itemErrors[fieldName]) {
+            return res;
+        }
+        if (fieldName === "*") {
             name = null;
-        return [
-            { fieldName: name, errors: itemErrors[fieldName] }
-        ];
+        }
+        res.push({ fieldName: name, errors: itemErrors[fieldName] });
+        return res;
     }
     getAllErrors(): IValidationInfo[] {
-        let itemErrors = this.collection._getInternal().getErrors(this.item);
-        if (!itemErrors)
-            return [];
         let res: IValidationInfo[] = [];
-        coreUtils.forEachProp(itemErrors, function (name) {
+        if (!!this._valueBag) {
+            forEach(this._valueBag, (name, obj) => {
+                const errNotification = sys.getErrorNotification(obj.val);
+                if (!!errNotification) {
+                    res = res.concat(errNotification.getAllErrors());
+                }
+            });
+        }
+
+        const itemErrors = this.coll.errors.getErrors(this.item);
+        if (!itemErrors) {
+            return res;
+        }
+        forEach(itemErrors, (name) => {
             let fieldName: string = null;
             if (name !== "*") {
                 fieldName = name;
@@ -393,123 +476,101 @@ export class ItemAspect<TItem extends ICollectionItem> extends BaseObject implem
     getIErrorNotification(): IErrorNotification {
         return this;
     }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        const self = this;
-        this._isDestroyCalled = true;
-        const coll = this._collection, item = this._item;
-        if (!!item) {
-            this.cancelEdit();
-            if (this._isCached) {
-                try {
-                    this._fakeDestroy();
-                }
-                finally {
-                    this._isDestroyCalled = false;
-                }
-                return;
-            }
-
-
-            if (!item._aspect.isDetached) {
-                coll.removeItem(item);
-            }
-        }
-        this._key = null;
-        this._saveVals = null;
-        this._vals = {};
-        this._isCached = false;
-        this._isDetached = true;
-        this._collection = null;
-        if (!!this._valueBag) {
-            utils.core.forEachProp(this._valueBag, (name) => {
-                self._delCustomVal(self._valueBag[name]);
-            });
-
-            this._valueBag = null;
-        }
-        super.destroy(); 
-    }
-    private _delCustomVal(old: ICustomVal) {
-        if (!!old) {
-            if (sys.isEditable(old.val) && old.val.isEditing)
-                old.val.cancelEdit();
-
-            if (old.isOwnIt && sys.isBaseObj(old.val))
-                old.val.destroy();
-        }
-    }
-    toString() {
-        return "ItemAspect";
-    }
-    get item(): TItem {
-        return this._item;
-    }
-    set item(v: TItem) {
-        this._item = v;
-    }
-    get isCanSubmit(): boolean { return false; }
-    get status(): ITEM_STATUS { return this._status; }
-    get isNew(): boolean {
-        return false;
-    }
-    get isDeleted(): boolean { return false; }
-    get key(): string { return this._key; }
-    set key(v: string) {
-        if (v !== null)
-            v = "" + v;
-        this._key = v;
-    }
-    get collection(): BaseCollection<TItem> { return this._collection; }
-    get isUpdating(): boolean {
-        let coll = this.collection;
-        if (!coll)
-            return false;
-        return coll.isUpdating;
-    }
-    get isEditing(): boolean {
-        const coll = this._collection, editingItem = !coll ? <TItem>null : coll._getInternal().getEditingItem();
-        return !!editingItem && editingItem._aspect === this;
-    }
-    get isHasChanges(): boolean { return this._status !== ITEM_STATUS.None; }
-    get isCached(): boolean { return this._isCached; }
-    get isDetached(): boolean { return this._isDetached; }
     // can be used to store any user object
     setCustomVal(name: string, val: any, isOwnVal: boolean = true): void {
-        if (this.getIsDestroyCalled())
-            return;
-
+        checkDetached(this);
         if (!this._valueBag) {
-            if (checks.isNt(val))
+            if (isNt(val)) {
                 return;
-            this._valueBag = {};
+            }
+            this._valueBag = Indexer();
         }
 
-        let old = this._valueBag[name];
+        const oldEntry = this._valueBag[name],  coll = this.coll;
 
-        if (!!old && old.val !== val) {
-            this._delCustomVal(old);
+        if (!!oldEntry && oldEntry.val !== val) {
+            disposeVal(oldEntry, coll.uniqueID);
         }
 
-        if (checks.isNt(val))
-        {
+        if (isNt(val)) {
             delete this._valueBag[name];
-        }
-        else {
-            this._valueBag[name] = { val: val, isOwnIt: !!isOwnVal };
-            if (this.isEditing && sys.isEditable(val))
+        } else {
+            const newEntry: ICustomVal = { val: val, isOwnIt: !!isOwnVal };
+            this._valueBag[name] = newEntry;
+            const errNotification = sys.getErrorNotification(val);
+            if (!!errNotification) {
+                errNotification.addOnErrorsChanged(() => {
+                    this.raiseErrorsChanged();
+                }, coll.uniqueID);
+            }
+
+            if (this.isEditing && sys.isEditable(val)) {
                 val.beginEdit();
+            }
         }
     }
     getCustomVal(name: string): any {
-        if (this.getIsDestroyCalled() || !this._valueBag)
-            return null;
-      
-        let obj = this._valueBag[name];
-        if (!obj) {
+        if (!this._valueBag) {
             return null;
         }
-        return obj.val;
+        const obj = this._valueBag[name];
+        return (!obj) ? null: obj.val;
+    }
+    toString(): string {
+        return "ItemAspect";
+    }
+    protected get hasTempVals(): boolean {
+        return !!this._tempVals;
+    }
+    // cloned values of this item
+    get vals(): TObj {
+        return this._cloneVals();
+    }
+    get item(): TItem {
+        if (!this._item) {
+            this._item = this.coll.itemFactory(this);
+        }
+        return this._item;
+    }
+    get key(): string {
+        return this._key;
+    }
+    get coll(): BaseCollection<TItem> {
+        return this._coll;
+    }
+    get status(): ITEM_STATUS {
+        return this._status;
+    }
+    get isUpdating(): boolean {
+        return this.coll.isUpdating;
+    }
+    get isEditing(): boolean {
+        const editingItem = this.coll._getInternal().getEditingItem();
+        return !!editingItem && editingItem._aspect === this;
+    }
+    get isCanSubmit(): boolean {
+        return false;
+    }
+    get isHasChanges(): boolean {
+        return this._status !== ITEM_STATUS.None;
+    }
+    get isNew(): boolean {
+        return this._status === ITEM_STATUS.Added;
+    }
+    get isDeleted(): boolean {
+        return this._status === ITEM_STATUS.Deleted;
+    }
+    get isEdited(): boolean {
+        return this._getFlag(AspectFlags.IsEdited);
+    }
+    get isDetached(): boolean {
+        // opposite of attached!
+        return !this._getFlag(AspectFlags.IsAttached);
+    }
+    get isRefreshing(): boolean {
+        return this._getFlag(AspectFlags.IsRefreshing);
+    }
+    get isCancelling(): boolean {
+        return this._getFlag(AspectFlags.IsCancelling);
     }
 }

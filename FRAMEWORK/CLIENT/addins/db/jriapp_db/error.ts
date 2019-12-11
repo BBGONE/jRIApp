@@ -1,9 +1,9 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { BaseError, Utils } from "jriapp_shared";
 import { IEntityItem } from "./int";
 import { DATA_OPER } from "./const";
 
-const strUtils = Utils.str;
+const { format } = Utils.str;
 
 export class DataOperationError extends BaseError {
     private _operationName: DATA_OPER;
@@ -11,20 +11,23 @@ export class DataOperationError extends BaseError {
 
     constructor(originalError: any, operationName: DATA_OPER) {
         let message: string;
-        if (originalError instanceof Error)
+        if (originalError instanceof Error) {
             message = (<Error>originalError).message;
-        else if (originalError instanceof BaseError)
+        } else if (originalError instanceof BaseError) {
             message = (<BaseError>originalError).message;
+        }
 
-        if (!message)
+        if (!message) {
             message = "" + originalError;
+        }
         super(message);
         this._origError = originalError;
         this._operationName = operationName;
-   }
-    get operationName() { return this._operationName; }
-
-    get origError() {
+    }
+    get operationName(): DATA_OPER {
+        return this._operationName;
+    }
+    get origError(): any {
         return this._origError;
    }
 }
@@ -42,9 +45,9 @@ export class SubmitError extends DataOperationError {
         this._allSubmitted = allSubmitted || [];
         this._notValidated = notValidated || [];
         if (this._notValidated.length > 0) {
-            let res = [message + ":"];
+            const res = [message + ":"];
             this._notValidated.forEach(function (item) {
-                res.push(strUtils.format("item key:{0} errors:{1}", item._key, item._aspect.getErrorString()));
+                res.push(format("item key:{0} errors:{1}", item._key, item._aspect.getErrorString()));
            });
             message = res.join("\r\n");
        }

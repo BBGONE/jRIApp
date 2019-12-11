@@ -1,6 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IViewOptions } from "jriapp/int";
-import { $ } from "jriapp/utils/jquery";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { bootstrap } from "jriapp/bootstrap";
 import { AnchorElView, IAncorOptions } from "./anchor";
 
@@ -10,57 +8,62 @@ export interface IExpanderOptions extends IAncorOptions {
     isExpanded?: boolean;
 }
 
-export const PROP_NAME = {
-    isExpanded: "isExpanded"
-};
+export const enum PROP_NAME {
+    isExpanded = "isExpanded"
+}
 
 const COLLAPSE_IMG = "collapse.jpg", EXPAND_IMG = "expand.jpg";
-//const COLLAPSE_IMG = "icon icon-arrow-up", EXPAND_IMG = "icon  icon-arrow-down";
+// const COLLAPSE_IMG = "icon icon-arrow-up", EXPAND_IMG = "icon  icon-arrow-down";
 
 export class ExpanderElView extends AnchorElView {
     private _expandedsrc: string;
     private _collapsedsrc: string;
     private _isExpanded: boolean;
 
-    constructor(options: IExpanderOptions) {
-        let expandedsrc = options.expandedsrc || bootstrap.getImagePath(COLLAPSE_IMG);
-        let collapsedsrc = options.collapsedsrc || bootstrap.getImagePath(EXPAND_IMG);
-        let isExpanded = !!options.isExpanded;
+    constructor(el: HTMLAnchorElement, options: IExpanderOptions) {
+        const expandedsrc = options.expandedsrc || bootstrap.getImagePath(COLLAPSE_IMG);
+        const collapsedsrc = options.collapsedsrc || bootstrap.getImagePath(EXPAND_IMG);
+        const isExpanded = !!options.isExpanded;
         options.imageSrc = null;
-        super(options);
+        super(el, options);
         this._expandedsrc = expandedsrc;
         this._collapsedsrc = collapsedsrc;
         this.isExpanded = isExpanded;
     }
     protected refresh(): void {
-        if (this.getIsDestroyCalled())
+        if (this.getIsStateDirty()) {
             return;
+        }
         this.imageSrc = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
-        //this.glyph = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
+        // this.glyph = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
     }
-    protected _onCommandChanged() {
+    protected _onCommandChanged(): void {
         super._onCommandChanged();
         this.invokeCommand();
     }
-    protected _onClick(e: any) {
-        if (this.preventDefault)
-            e.preventDefault();
+    protected onClick(): void {
         this.isExpanded = !this.isExpanded;
     }
-    //override
-    invokeCommand() {
-        this.refresh();
-        super.invokeCommand(null, true);
+    // override
+    protected _getCommandParam(): any {
+        return { isExpanded: this.isExpanded };
     }
-    toString() {
+    // override
+    invokeCommand(): void {
+        this.refresh();
+        super.invokeCommand();
+    }
+    toString(): string {
         return "ExpanderElView";
     }
-    get isExpanded() { return this._isExpanded; }
-    set isExpanded(v) {
+    get isExpanded(): boolean {
+        return this._isExpanded;
+    }
+    set isExpanded(v: boolean) {
         if (this._isExpanded !== v) {
             this._isExpanded = v;
             this.invokeCommand();
-            this.raisePropertyChanged(PROP_NAME.isExpanded);
+            this.objEvents.raiseProp("isExpanded");
         }
     }
 }

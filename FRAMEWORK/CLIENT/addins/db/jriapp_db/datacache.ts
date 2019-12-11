@@ -1,213 +1,191 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    BaseObject, LocaleERRS as ERRS, Utils
-} from "jriapp_shared";
-import { PROP_NAME } from "./const";
-import { DataQuery } from "./dataquery";
-import { IEntityItem } from "./int";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { BaseObject, Utils, IIndexer } from "jriapp_shared";
+import { TDataQuery } from "./dataquery";
+import { IEntityItem, ICachedPage, IKV } from "./int";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str;
-export interface ICachedPage { items: IEntityItem[]; pageIndex: number; }
+const utils = Utils, { isNt } = utils.check, { forEach, Indexer } = utils.core;
+
 
 export class DataCache extends BaseObject {
-    private _query: DataQuery<IEntityItem>;
-    private _cache: ICachedPage[];
+    private _query: TDataQuery;
+    private _pages: IIndexer<ICachedPage>;
+    private _itemsByKey: { [key: string]: IKV; };
     private _totalCount: number;
-    private _itemsByKey: { [key: string]: IEntityItem; };
 
-    constructor(query: DataQuery<IEntityItem>) {
+    constructor(query: TDataQuery) {
         super();
         this._query = query;
-        this._cache = [];
+        this._pages = Indexer();
+        this._itemsByKey = Indexer();
         this._totalCount = 0;
-        this._itemsByKey = {};
-   }
-    getCachedPage(pageIndex: number): ICachedPage {
-        let res: ICachedPage[] = this._cache.filter(function (page: ICachedPage) {
-            return page.pageIndex === pageIndex;
-       });
-        if (res.length === 0)
-            return null;
-        if (res.length !== 1)
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "res.length === 1"));
-        return res[0];
-   }
-    //reset items key index
-    reindexCache() {
-        let self = this, page: ICachedPage;
-        this._itemsByKey = {};
-        for (let i = 0; i < this._cache.length; i += 1) {
-            page = this._cache[i];
-            page.items.forEach(function (item) {
-                if (!item.getIsDestroyCalled())
-                    self._itemsByKey[item._key] = item;
-           });
-       }
-   }
-    getPrevCachedPageIndex(currentPageIndex: number) {
-        let pageIndex = -1, cachePageIndex: number;
-        for (let i = 0; i < this._cache.length; i += 1) {
-            cachePageIndex = this._cache[i].pageIndex;
-            if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex)
+    }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this.clear();
+        super.dispose();
+    }
+    private _getPrevPageIndex(currentPageIndex: number) {
+        let pageIndex = -1;
+        forEach(this._pages, (_, page) => {
+            const cachePageIndex = page.pageIndex;
+            if (cachePageIndex > pageIndex && cachePageIndex < currentPageIndex) {
                 pageIndex = cachePageIndex;
-       }
+            }
+        });
         return pageIndex;
-   }
-    getNextRange(pageIndex: number) {
-        let half = Math.floor(((this.loadPageCount - 1) / 2));
+    }
+    getNextRange(pageIndex: number): { start: number; end: number; cnt: number; } {
+        const half = Math.floor(((this.loadPageCount - 1) / 2));
         let above = (pageIndex + half) + ((this.loadPageCount - 1) % 2);
-        let below = (pageIndex - half), prev = this.getPrevCachedPageIndex(pageIndex);
+        let below = (pageIndex - half);
+        const prev = this._getPrevPageIndex(pageIndex);
         if (below < 0) {
             above += (0 - below);
             below = 0;
-       }
+        }
         if (below <= prev) {
             above += (prev - below + 1);
             below += (prev - below + 1);
-       }
+        }
         if (this._pageCount > this.loadPageCount && above > (this._pageCount - 1)) {
             below -= (above - (this._pageCount - 1));
 
             if (below < 0) {
                 below = 0;
-           }
+            }
 
             above = this._pageCount - 1;
-       }
-        //once again check for previous cached range
+        }
+        // once again check for previous cached range
         if (below <= prev) {
             above += (prev - below + 1);
             below += (prev - below + 1);
-       }
+        }
 
         let cnt = above - below + 1;
         if (cnt < this.loadPageCount) {
             above += this.loadPageCount - cnt;
             cnt = above - below + 1;
-       }
-        let start = below;
-        let end = above;
+        }
+        const start = below;
+        const end = above;
         return { start: start, end: end, cnt: cnt };
-   }
-    fillCache(start: number, items: IEntityItem[]) {
-        let item: IEntityItem, keyMap = this._itemsByKey;
-        let i: number, j: number, k: number, len = items.length, pageIndex: number, page: ICachedPage, pageSize = this.pageSize;
-        for (i = 0; i < this.loadPageCount; i += 1) {
-            pageIndex = start + i;
-            page = this.getCachedPage(pageIndex);
-            if (!page) {
-                page = { items: [], pageIndex: pageIndex };
-                this._cache.push(page);
-           }
-            for (j = 0; j < pageSize; j += 1) {
-                k = (i * pageSize) + j;
+    }
+    clear(): void {
+        this._pages = Indexer();
+        this._itemsByKey = Indexer();
+    }
+    getPage(pageIndex: number): ICachedPage {
+        return this._pages[pageIndex];
+    }
+    getPageItems(pageIndex: number): IEntityItem[] {
+        const page = this.getPage(pageIndex);
+        if (!page) {
+            return [];
+        }
+        const dbSet = this._query.dbSet, keyMap = this._itemsByKey;
+        const res = page.keys.map((key) => {
+            const kv = keyMap[key];
+            return (!kv) ? <IEntityItem>null : dbSet.createEntityFromObj(kv.val, kv.key);
+        }).filter((item) => { return !!item; });
+        return res;
+    }
+    setPageItems(pageIndex: number, items: IEntityItem[]): void {
+        this.deletePage(pageIndex);
+        if (items.length === 0) {
+            return;
+        }
+        const kvs = items.map((item) => { return { key: item._key, val: item._aspect.vals }; });
+        // create new page
+        const page: ICachedPage = { keys: kvs.map((kv) => kv.key), pageIndex: pageIndex };
+        this._pages[pageIndex] = page;
+        const keyMap = this._itemsByKey, len = kvs.length;
+        for (let j = 0; j < len; j += 1) {
+            const kv = kvs[j];
+            keyMap[kv.key] = kv;
+        }
+    }
+    fill(startIndex: number, items: IEntityItem[]): void {
+        const len = items.length, pageSize = this.pageSize;
+        for (let i = 0; i < this.loadPageCount; i += 1) {
+            const pageItems: IEntityItem[] = [], pgstart = (i * pageSize);
+            if (pgstart >= len) {
+                break;
+            }
+            for (let j = 0; j < pageSize; j += 1) {
+                const k = pgstart + j;
                 if (k < len) {
-                    item = items[k];
-                    if (!!keyMap[item._key]) {
-                        continue;
-                   }
-                    page.items.push(item);
-                    keyMap[item._key] = item;
-                    item._aspect._setIsCached(true);
-               }
-                else {
-                    return;
-               }
-           }
-       }
-   }
-    clear() {
-        let i: number, j: number, items: IEntityItem[], item: IEntityItem, dbSet = this._query.dbSet;
-        for (i = 0; i < this._cache.length; i += 1) {
-            items = this._cache[i].items;
-            for (j = 0; j < items.length; j += 1) {
-                item = items[j];
-                if (!!item) {
-                    item._aspect._setIsCached(false);
-                    if (!!item._key && !dbSet.getItemByKey(item._key))
-                        item.destroy();
-               }
-           }
-       }
-        this._cache = [];
-        this._itemsByKey = {};
-   }
-    clearCacheForPage(pageIndex: number) {
-        let page: ICachedPage = this.getCachedPage(pageIndex), dbSet = this._query.dbSet;
-        if (!page)
+                    pageItems.push(items[k]);
+                } else {
+                    break;
+                }
+            }
+            this.setPageItems(startIndex + i, pageItems);
+        }
+    }
+    deletePage(pageIndex: number): void {
+        const page: ICachedPage = this.getPage(pageIndex);
+        if (!page) {
             return;
-        let j: number, items: IEntityItem[], item: IEntityItem, index = this._cache.indexOf(page);
-        items = page.items;
-        for (j = 0; j < items.length; j += 1) {
-            item = items[j];
-            if (!!item) {
-                item._aspect._setIsCached(false);
-                if (!!item._key) {
-                    delete this._itemsByKey[item._key];
-                    if (!dbSet.getItemByKey(item._key))
-                        item.destroy();
-               }
-           }
-       }
-        this._cache.splice(index, 1);
-   }
-    hasPage(pageIndex: number) {
-        for (let i = 0; i < this._cache.length; i += 1) {
-            if (this._cache[i].pageIndex === pageIndex)
-                return true;
-       }
-        return false;
-   }
-    getItemByKey(key: string) {
-        return this._itemsByKey[key];
-   }
-    getPageByItem(item: IEntityItem) {
-        item = this._itemsByKey[item._key];
-        if (!item)
-            return -1;
-        for (let i = 0; i < this._cache.length; i += 1) {
-            if (this._cache[i].items.indexOf(item) > -1) {
-                return this._cache[i].pageIndex;
-           }
-       }
-        return -1;
-   }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        this.clear();
-        super.destroy();
-   }
-    toString() {
+        }
+        const keys = page.keys;
+        for (let j = 0; j < keys.length; j += 1) {
+            delete this._itemsByKey[keys[j]];
+        }
+        delete this._pages[pageIndex];
+    }
+    hasPage(pageIndex: number): boolean {
+        return !!this.getPage(pageIndex);
+    }
+    getItemByKey(key: string): IEntityItem {
+        const kv = this._itemsByKey[key];
+        if (!kv) {
+            return null;
+        }
+        return this._query.dbSet.createEntityFromObj(kv.val, kv.key);
+    }
+    toString(): string {
         return "DataCache";
-   }
-    get _pageCount() {
-        let rowCount = this.totalCount, rowPerPage = this.pageSize, result: number;
+    }
+    get _pageCount(): number {
+        const rowCount = this.totalCount, rowPerPage = this.pageSize;
+        let result: number = 0;
 
         if ((rowCount === 0) || (rowPerPage === 0)) {
-            return 0;
-       }
+            return result;
+        }
 
         if ((rowCount % rowPerPage) === 0) {
             result = (rowCount / rowPerPage);
-       }
-        else {
+        } else {
             result = (rowCount / rowPerPage);
             result = Math.floor(result) + 1;
-       }
+        }
         return result;
-   }
-    get pageSize() { return this._query.pageSize; }
-    get loadPageCount() { return this._query.loadPageCount; }
-    get totalCount() { return this._totalCount; }
+    }
+    get pageSize(): number {
+        return this._query.pageSize;
+    }
+    get loadPageCount(): number {
+        return this._query.loadPageCount;
+    }
+    get totalCount(): number {
+        return this._totalCount;
+    }
     set totalCount(v: number) {
-        if (checks.isNt(v))
+        if (isNt(v)) {
             v = 0;
+        }
         if (v !== this._totalCount) {
             this._totalCount = v;
-            this.raisePropertyChanged(PROP_NAME.totalCount);
-       }
-   }
-    get cacheSize() { return this._cache.length; }
+            this.objEvents.raiseProp("totalCount");
+        }
+    }
+    get cacheSize(): number {
+        const indexes = Object.keys(this._pages);
+        return indexes.length;
+    }
 }

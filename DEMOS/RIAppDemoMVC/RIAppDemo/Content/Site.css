@@ -141,20 +141,8 @@ table th {
 
 .expandable-content { display: none; }
 
-#demoHeader {
-    background-color: #ECF2F6;
-    border: 1px solid darkgray;
-    border-radius: 4px;
-    display: none;
-    margin-bottom: 5px;
-    min-height: 5px;
-    padding: 5px;
-    position: relative;
-    width: 99%;
-}
-
 #title {
-    width: 99%;
+    width: 100%;
     border: 1px solid lightblue;
     padding: 0px;
     margin: 0px;
@@ -174,7 +162,7 @@ table th {
     display: none;
     padding: 0px;
     min-height: 5px;
-    width: 99%;
+    width: 100%;
     background-color: #ECF2F6;
     border: 1px solid darkgray;
     border-radius: 4px;
@@ -254,6 +242,15 @@ table th {
   box-shadow: 0 0 0 3px rgba(255,255,125,.5);
 }
 
+.ria-table-header .ria-col-ex, td.ria-data-cell {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+}
+
+
 /* CUSTOM CHECKBOX STYLE */
 label.ria-row-selector, 
 label.ria-checkbox {
@@ -291,138 +288,7 @@ label.ria-checkbox > input[type="checkbox"] + span {
 label.ria-row-selector > input[type="checkbox"] + span {
   margin: 4px 4px 4px -3px;
 }
-/* checkbox aspect */
-label.ria-row-selector > input[type="checkbox"]:not(:checked) + span:before,
-label.ria-row-selector > input[type="checkbox"]:checked + span:before,
-label.ria-checkbox > input[type="checkbox"]:not(:checked) + span:before,
-label.ria-checkbox > input[type="checkbox"]:checked + span:before {
-  content: '';
-  position: absolute;
-  left: -5px; 
-  top: -10px;
-  width: 18px; 
-  height: 18px;
-  border: 1px solid #aaa;
-  background: #f8f8f8;
-  border-radius: 3px;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,.3)
-}
 
-/* checked mark aspect */
-label.ria-row-selector > input[type="checkbox"]:checked + span:after,
-label.ria-checkbox > input[type="checkbox"]:checked + span:after {
-  content: '\2713';
-  position: absolute;
-  opacity: 1;
-  transform: scale(1);
-  left: -3px;
-  top: -7px; 
-  color: black;
-  text-shadow: 1px 0 0 black;
-  transition: all .2s;
-}
-
-/* NULL value checkbox (for three state) */
-label.ria-row-selector > input[type="checkbox"].ria-checked-null:not(:checked) + span:after,
-label.ria-checkbox > input[type="checkbox"].ria-checked-null:not(:checked) + span:after {
-  content: '?';
-  position: absolute;
-  opacity: 1;
-  transform: scale(1);
-  color: rgba(0,0,0,0.2);
-  left: -2px;
-  top: -8px;
-}
-
-/* checked mark aspect changes */
-label.ria-row-selector > input[type="checkbox"]:not(:checked) + span:after,
-label.ria-checkbox > input[type="checkbox"]:not(:checked) + span:after {
-  content:'';
-  opacity: 0;
-  transform: scale(0);
-}
-
-label.ria-row-selector > input[type="checkbox"]:checked + span:after,
-label.ria-checkbox > input[type="checkbox"]:checked + span:after {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* disabled checkbox */
-label.ria-row-selector > input[type="checkbox"]:disabled:not(:checked) + span,
-label.ria-row-selector > input[type="checkbox"]:disabled:checked + span,
-label.ria-checkbox > input[type="checkbox"]:disabled:not(:checked) + span,
-label.ria-checkbox > input[type="checkbox"]:disabled:checked + span {
-  cursor: not-allowed;
-  pointer-events: all !important;
-}
-
-label.ria-row-selector > input[type="checkbox"]:disabled:not(:checked) + span:before,
-label.ria-row-selector > input[type="checkbox"]:disabled:checked + span:before,
-label.ria-checkbox > input[type="checkbox"]:disabled:not(:checked) + span:before,
-label.ria-checkbox > input[type="checkbox"]:disabled:checked + span:before {
-  box-shadow: none;
-  border-color: #bbb;
-  background-color: #ddd;
-}
-label.ria-row-selector > input[type="checkbox"]:disabled:checked + span:after,
-label.ria-checkbox > input[type="checkbox"]:disabled:checked + span:after {
-  color: #999;
-}
-label.ria-row-selector > input[type="checkbox"]:disabled + span,
-label.ria-checkbox > input[type="checkbox"]:disabled + span {
-  color: #aaa;
-}
-
-/* accessibility */
-label.ria-row-selector > input[type="checkbox"]:checked:focus + span:before,
-label.ria-row-selector > input[type="checkbox"]:not(:checked):focus + span:before,
-label.ria-checkbox > input[type="checkbox"]:checked:focus + span:before,
-label.ria-checkbox > input[type="checkbox"]:not(:checked):focus + span:before {
-  border: 1px dotted blue;
-}
-
-/* hover style just for information */
-label.ria-row-selector > span:hover:before,
-label.ria-checkbox > span:hover:before {
-  border: 1px solid #4778d9!important;
-}/* CUSTOM CHECKBOX STYLE */
-label.ria-row-selector, 
-label.ria-checkbox {
-    display: inline-block;
-    vertical-align: middle;
-    padding:0;
-}
- 
-/* hide original checkbox */
-label.ria-row-selector > input[type="checkbox"]:not(:checked),
-label.ria-row-selector > input[type="checkbox"]:checked,
-label.ria-checkbox > input[type="checkbox"]:not(:checked),
-label.ria-checkbox > input[type="checkbox"]:checked {
-  position: absolute;
-  left: -9999px;
-}
-
-label.ria-row-selector > input[type="checkbox"] + span,
-label.ria-checkbox > input[type="checkbox"] + span {
-  position: relative !important;
-  font-size: 17px !important;
-  font-weight: bold !important;
-  padding:0;
-  margin-left: 0px;
-  line-height: 14px;
-  cursor: pointer;
-  vertical-align: middle;
-  display: inline-block;
-}
-
-label.ria-checkbox > input[type="checkbox"] + span {
-   margin: 5px 14px 4px 5px;
-}
-
-label.ria-row-selector > input[type="checkbox"] + span {
-  margin: 4px 4px 4px -3px;
-}
 /* checkbox aspect */
 label.ria-row-selector > input[type="checkbox"]:not(:checked) + span:before,
 label.ria-row-selector > input[type="checkbox"]:checked + span:before,

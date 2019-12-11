@@ -1,21 +1,18 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    BaseObject, Utils, IIndexer, IPromise, IDeferred
-} from "jriapp_shared";
-import {
-    IViewType, IApplication, IModuleLoader
-} from "../int";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { Utils, IIndexer, IPromise, IDeferred } from "jriapp_shared";
+import { IModuleLoader, Config as config } from "../int";
 import { createCssLoader as createCSSLoader } from "./sloader";
 
-const utils = Utils, coreUtils = utils.core, strUtils = utils.str, defer = utils.defer,
-    arr = utils.arr, resolvedPromise = defer.resolve<void>(void 0, true),
-    CSSPrefix = "css!";
+const utils = Utils, { forEach, Indexer } = utils.core, { startsWith } = utils.str,
+    { reject: _reject, resolve: _resolve, whenAll: _whenAll, createDeferred } = utils.defer,
+    arrHelper = utils.arr, CSSPrefix = "css!";
 
 let _moduleLoader: IModuleLoader = null;
 
 export function create(): IModuleLoader {
-    if (!_moduleLoader)
+    if (!_moduleLoader) {
         _moduleLoader = new ModuleLoader();
+    }
     return _moduleLoader;
 }
 
@@ -31,29 +28,28 @@ interface IModuleLoad {
 }
 
 function whenAll(loads: IModuleLoad[]): IPromise<any> {
-    if (!loads || loads.length === 0)
-        return resolvedPromise;
-    if (loads.length === 1)
+    if (!loads || loads.length === 0) {
+        return _resolve<void>(void 0, true);
+    }
+    if (loads.length === 1) {
         return loads[0].defered.promise();
+    }
 
-    let cnt = loads.length, resolved = 0, err: any = null;
+    const cnt = loads.length;
+    let resolved = 0, err: any = null;
     for (let i = 0; i < cnt; i += 1) {
         if (loads[i].state === LOAD_STATE.LOADED) {
             ++resolved;
-            if (!!loads[i].err)
+            if (!!loads[i].err) {
                 err = loads[i].err;
+            }
         }
     }
 
     if (resolved === cnt) {
-        if (!err)
-            return resolvedPromise;
-        else {
-            return defer.createDeferred<void>().reject(err);
-        }
-    }
-    else {
-        return defer.whenAll(loads.map((load) => {
+        return !err ? _resolve<void>(void 0, true) : _reject(err);
+    } else {
+        return _whenAll(loads.map((load) => {
             return load.defered.promise();
         }));
     }
@@ -64,55 +60,48 @@ class ModuleLoader implements IModuleLoader {
     private _cssLoads: IIndexer<IModuleLoad>;
 
     constructor() {
-        this._loads = {};
-        this._cssLoads = {};
+        this._loads = Indexer();
+        this._cssLoads = Indexer();
     }
-
     load(names: string[]): IPromise<void> {
         const self = this;
 
-        //load CSS too if they are in the array
-        let cssNames = names.filter((val) => { return self.isCSS(val); }), cssLoads = self.loadCSS(cssNames),
+        // load CSS too if they are in the array
+        const cssNames = names.filter((val) => { return self.isCSS(val); }), cssLoads = self.loadCSS(cssNames),
             modNames = names.filter((val) => { return !self.isCSS(val); }), forLoad = modNames.filter((val) => {
                 return !self._loads[val];
             });
 
         if (forLoad.length > 0) {
             forLoad.forEach((name) => {
-                self._loads[name] = {
+                const load = {
                     name: name,
                     err: null,
                     state: LOAD_STATE.LOADING,
-                    defered: defer.createDeferred<any>(true)
-                };
-            });
-
-            require(forLoad, () => {
-                forLoad.forEach((name) => {
-                    const load = self._loads[name];
+                    defered: createDeferred<any>(true)
+                } as IModuleLoad;
+                self._loads[name] = load;
+                // dynamic import thanks to typescript
+                import(name).then(() => {
                     load.state = LOAD_STATE.LOADED;
                     load.defered.resolve();
-                });
-            }, (err) => {
-                forLoad.forEach((name) => {
-                    const load = self._loads[name];
+                }, (err: any) => {
                     load.state = LOAD_STATE.LOADED;
                     load.err = err;
-                    load.defered.reject(utils.str.format("Error loading modules: {0}", err));
+                    load.defered.reject(`Error loading modules: ${"" + err}`);
                 });
             });
         }
 
-        const loads = arr.merge<IModuleLoad>([modNames.map((name) => {
+        const loads = arrHelper.merge<IModuleLoad>([modNames.map((name) => {
             return self._loads[name];
         }), cssLoads]);
 
         return whenAll(loads);
     }
-    whenAllLoaded(): IPromise<void>
-    {
-        let loads: IModuleLoad[] = [];
-        coreUtils.forEachProp(this._loads, (name, val) => {
+    whenAllLoaded(): IPromise<void> {
+        const loads: IModuleLoad[] = [];
+        forEach(this._loads, (_, val) => {
             loads.push(val);
         });
         return whenAll(loads);
@@ -124,7 +113,7 @@ class ModuleLoader implements IModuleLoader {
         }), urls = forLoad.map((val) => {
             return self.getUrl(val);
         });
-       
+
         if (forLoad.length > 0) {
             const cssLoader = createCSSLoader();
 
@@ -133,19 +122,19 @@ class ModuleLoader implements IModuleLoader {
                     name: name,
                     err: null,
                     state: LOAD_STATE.LOADING,
-                    defered: defer.createDeferred<any>(true)
+                    defered: createDeferred<any>(true)
                 };
             });
 
             cssLoader.loadStyles(urls).then(() => {
                 forLoad.forEach((name) => {
-                    let load = self._cssLoads[name];
+                    const load = self._cssLoads[name];
                     load.state = LOAD_STATE.LOADED;
                     load.defered.resolve();
                 });
             }, (err) => {
                 forLoad.forEach((name) => {
-                    let load = self._cssLoads[name];
+                    const load = self._cssLoads[name];
                     load.state = LOAD_STATE.LOADED;
                     load.err = err;
                     load.defered.reject(err);
@@ -159,13 +148,17 @@ class ModuleLoader implements IModuleLoader {
         return loads;
     }
     private isCSS(name: string): boolean {
-        return !!name && strUtils.startsWith(name, CSSPrefix);
+        return !!name && startsWith(name, CSSPrefix);
     }
-    private getUrl(name: string): string
-    {
+    private getUrl(name: string): string {
         if (this.isCSS(name)) {
             name = name.substr(CSSPrefix.length);
         }
-        return require.toUrl(name);
+
+        let url = config.cssPath || "";
+        // append slash (if not present)
+        url = url.replace(/\/?$/, '/');
+        // convert the name to url
+        return `${url}${name}`;
     }
 }

@@ -1,153 +1,159 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { FIELD_TYPE, DATA_TYPE, ITEM_STATUS, VALS_VERSION } from "jriapp_shared/collection/const";
 import {
-    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER, ITEM_STATUS
-} from "jriapp_shared/collection/const";
-import {
-    IIndexer, IValidationInfo, IVoidPromise, IPromise, LocaleERRS as ERRS, Utils
+    IBaseObject, IVoidPromise, IIndexer, IStatefulPromise, LocaleERRS as ERRS, Utils, IValidationError
 } from "jriapp_shared";
-import { valueUtils, fn_traverseFields } from "jriapp_shared/collection/utils";
-import { ValidationError } from "jriapp_shared/collection/validation";
+import { ValidationError } from "jriapp_shared/errors";
 import { ICancellableArgs, IFieldInfo } from "jriapp_shared/collection/int";
+import { ValueUtils } from "jriapp_shared/collection/utils";
 import { ItemAspect } from "jriapp_shared/collection/aspect";
-import { FLAGS, REFRESH_MODE, PROP_NAME } from "./const";
+import { FLAGS, REFRESH_MODE } from "./const";
 import { DbContext } from "./dbcontext";
-import { IEntityItem, IEntityConstructor, IRowData, IFieldName, IValueChange, IRowInfo } from "./int";
+import { IEntityItem, IValueChange, IRowInfo } from "./int";
 import { DbSet } from "./dbset";
 import { SubmitError } from "./error";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
-    valUtils = valueUtils, sys = utils.sys;
+const utils = Utils, { _undefined } = utils.check, { format } = utils.str, { getValue, setValue, uuid } = utils.core,
+    { compareVals, parseValue } = ValueUtils, sys = utils.sys;
 
-const ENTITYASPECT_EVENTS = {
-    destroyed: "destroyed"
-};
-
-//don't submit these types of fields to the server
+// don't submit these types of fields to the server
 function fn_isNotSubmittable(fieldInfo: IFieldInfo) {
-    return (fieldInfo.fieldType === FIELD_TYPE.ClientOnly || fieldInfo.fieldType === FIELD_TYPE.Navigation || fieldInfo.fieldType === FIELD_TYPE.Calculated || fieldInfo.fieldType === FIELD_TYPE.ServerCalculated);
+    switch (fieldInfo.fieldType) {
+        case FIELD_TYPE.ClientOnly:
+        case FIELD_TYPE.Navigation:
+        case FIELD_TYPE.Calculated:
+            return true;
+        default:
+            return false;
+    }
 }
 
-function fn_traverseChanges(val: IValueChange, fn: (name: string, val: IValueChange) => void): void {
-    function _fn_traverseChanges(name: string, val: IValueChange, fn: (name: string, val: IValueChange) => void) {
-        if (!!val.nested && val.nested.length > 0) {
-            let prop: IValueChange, i: number, len = val.nested.length;
-            for (i = 0; i < len; i += 1) {
-                prop = val.nested[i];
-                if (!!prop.nested && prop.nested.length > 0) {
-                    _fn_traverseChanges(name + "." + prop.fieldName, prop, fn);
-                }
-                else {
-                    fn(name + "." + prop.fieldName, prop);
-                }
+function _fn_walkChanges(name: string, val: IValueChange, fn: (name: string, val: IValueChange) => void) {
+    if (!!val.nested && val.nested.length > 0) {
+        const len = val.nested.length;
+        for (let i = 0; i < len; i += 1) {
+            const prop: IValueChange = val.nested[i];
+            if (!!prop.nested && prop.nested.length > 0) {
+                _fn_walkChanges(name + "." + prop.fieldName, prop, fn);
+            } else {
+                fn(name + "." + prop.fieldName, prop);
             }
         }
-        else {
-            fn(name, val);
-        }
+    } else {
+        fn(name, val);
     }
-    _fn_traverseChanges(val.fieldName, val, fn);
 }
 
-export interface IEntityAspectConstructor<TItem extends IEntityItem, TDbContext extends DbContext> {
-    new (dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]): EntityAspect<TItem, TDbContext>;
+function fn_walkChanges(val: IValueChange, fn: (name: string, val: IValueChange) => void): void {
+    _fn_walkChanges(val.fieldName, val, fn);
 }
 
-export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContext> extends ItemAspect<TItem> {
+export class EntityAspect<TItem extends IEntityItem = IEntityItem, TObj extends IIndexer<any> = IIndexer<any>, TDbContext extends DbContext = DbContext> extends ItemAspect<TItem, TObj> {
     private _srvKey: string;
-    private _isRefreshing: boolean;
-    private _origVals: IIndexer<any>;
+    private _origVals: TObj;
     private _savedStatus: ITEM_STATUS;
+    private _disposables: Array<IBaseObject>;
 
-    constructor(dbSet: DbSet<TItem, TDbContext>, row: IRowData, names: IFieldName[]) {
-        super(dbSet);
-        let self = this;
-        this._srvKey = null;
-        this._isRefreshing = false;
+    constructor(dbSet: DbSet<TItem, TObj, TDbContext>, vals: TObj, key: string, isNew: boolean) {
+        super(dbSet, vals, key, isNew);
+        this._srvKey = !isNew ? key : null;
         this._origVals = null;
+        this._disposables = null;
         this._savedStatus = null;
-        let fieldInfos = this.dbSet.getFieldInfos();
-        fn_traverseFields<void>(fieldInfos, (fld, fullName) => {
-            if (fld.fieldType === FIELD_TYPE.Object)
-                coreUtils.setValue(self._vals, fullName, {}, false);
-            else
-                coreUtils.setValue(self._vals, fullName, null, false);
-        });
-
-        this._initRowInfo(row, names);
     }
-    protected _initRowInfo(row: IRowData, names: IFieldName[]) {
-        if (!row)
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
-        this._srvKey = row.k;
-        this.key = row.k;
-
-        this._processValues("", row.v, names);
-    }
-    protected _processValues(path: string, values: any[], names: IFieldName[]) {
-        let self = this, stz = self.serverTimezone;
-        values.forEach(function (value, index) {
-            let name: IFieldName = names[index], fieldName = path + name.n, fld = self.dbSet.getFieldInfo(fieldName), val: any;
-            if (!fld)
-                throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
-
-            if (fld.fieldType === FIELD_TYPE.Object) {
-                //for object fields the value should be an array of values - recursive processing
-                self._processValues(fieldName + ".", <any[]>value, name.p);
+        }
+        this.setDisposing();
+        try {
+            if (!this.isDetached) {
+                this.cancelEdit();
+                this.rejectChanges();
             }
-            else {
-                //for other fields the value is a string, which is parsed to a typed value
-                val = valUtils.parseValue(value, fld.dataType, fld.dateConversion, stz);
-                coreUtils.setValue(self._vals, fieldName, val, false);
+            const objs = this._disposables;
+            this._disposables = null;
+            // destroy objects which we own: such as complex properties
+            if (!!objs && objs.length > 0) {
+                const k = objs.length - 1;
+                for (let i = k; i >= 0; --i) {
+                    objs[i].dispose();
+                }
             }
-        });
+        } finally {
+            super.dispose();
+        }
     }
-    protected _onFieldChanged(fieldName: string, fieldInfo: IFieldInfo) {
-        let self = this;
-        if (this._isDestroyCalled)
-            return;
-        self.item.raisePropertyChanged(fieldName);
-        if (!!fieldInfo.dependents && fieldInfo.dependents.length > 0) {
-            fieldInfo.dependents.forEach(function (d) {
-                self.item.raisePropertyChanged(d);
+    // override
+    protected _getValue(name: string, ver: VALS_VERSION): any {
+        switch (ver) {
+            case VALS_VERSION.Original:
+                if (!this._origVals) {
+                    throw new Error("Invalid Operation, no Stored Version: " + ver);
+                }
+                return getValue(this._origVals, name);
+            default:
+                return super._getValue(name, ver);
+        }
+    }
+    // override
+    protected _setValue(name: string, val: any, ver: VALS_VERSION): void {
+        switch (ver) {
+            case VALS_VERSION.Original:
+                if (!this._origVals) {
+                    throw new Error("Invalid Operation, no Stored Version: " + ver);
+                }
+                setValue(this._origVals, name, val, false);
+                break;
+            default:
+                super._setValue(name, val, ver);
+                break;
+        }
+    }
+    // override
+    protected _storeVals(toVer: VALS_VERSION): void {
+        switch (toVer) {
+            case VALS_VERSION.Original:
+                this._origVals = this._cloneVals();
+                break;
+            default:
+                super._storeVals(toVer);
+                break;
+        }
+    }
+    // override
+    protected _restoreVals(fromVer: VALS_VERSION): void {
+        switch (fromVer) {
+            case VALS_VERSION.Original:
+                if (!this._origVals) {
+                    throw new Error("Invalid Operation, no Stored Version: " + fromVer);
+                }
+                this._setVals(this._origVals);
+                this._origVals = null;
+                break;
+            default:
+                super._restoreVals(fromVer);
+                break;
+        }
+    }
+    protected _onFieldChanged(fieldName: string, fieldInfo?: IFieldInfo): void {
+        sys.raiseProp(this.item, fieldName);
+        const info = fieldInfo || this.coll.getFieldInfo(fieldName);
+        if (!!info.dependents && info.dependents.length > 0) {
+            info.dependents.forEach((d) => {
+                sys.raiseProp(this.item, d);
             });
         }
     }
     protected _getValueChange(fullName: string, fieldInfo: IFieldInfo, changedOnly: boolean): IValueChange {
-        let self = this, dbSet = self.dbSet, res: IValueChange, i: number, len: number, tmp: IValueChange;
-        if (fn_isNotSubmittable(fieldInfo))
-            return <IValueChange>null;
+        const self = this, dbSet = self.dbSet;
+        let res: IValueChange = null;
 
-        if (fieldInfo.fieldType === FIELD_TYPE.Object) {
-            res = { fieldName: fieldInfo.fieldName, val: null, orig: null, flags: FLAGS.None, nested: [] };
-            len = fieldInfo.nested.length;
-            for (i = 0; i < len; i += 1) {
-                tmp = self._getValueChange(fullName + "." + fieldInfo.nested[i].fieldName, fieldInfo.nested[i], changedOnly);
-                if (!!tmp) {
-                    res.nested.push(tmp);
-                }
-            }
+        if (fn_isNotSubmittable(fieldInfo)) {
+            return res;
         }
-        else {
-            let newVal = dbSet._getInternal().getStrValue(coreUtils.getValue(self._vals, fullName), fieldInfo),
-                oldV = self._origVals === null ? newVal : dbSet._getInternal().getStrValue(coreUtils.getValue(self._origVals, fullName), fieldInfo),
-                isChanged = (oldV !== newVal);
-            if (isChanged)
-                res = {
-                    fieldName: fieldInfo.fieldName,
-                    val: newVal,
-                    orig: oldV,
-                    flags: (FLAGS.Changed | FLAGS.Setted),
-                    nested: null
-                };
-            else if (fieldInfo.isPrimaryKey > 0 || fieldInfo.fieldType === FIELD_TYPE.RowTimeStamp || fieldInfo.isNeedOriginal)
-                res = {
-                    fieldName: fieldInfo.fieldName,
-                    val: newVal,
-                    orig: oldV,
-                    flags: FLAGS.Setted,
-                    nested: null
-                };
-            else
+        switch (fieldInfo.fieldType) {
+            case FIELD_TYPE.ServerCalculated:
                 res = {
                     fieldName: fieldInfo.fieldName,
                     val: null,
@@ -155,297 +161,357 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
                     flags: FLAGS.None,
                     nested: null
                 };
+                break;
+            case FIELD_TYPE.Object:
+                res = { fieldName: fieldInfo.fieldName, val: null, orig: null, flags: FLAGS.None, nested: [] };
+                const len = fieldInfo.nested.length;
+                for (let i = 0; i < len; i += 1) {
+                    const tmp = self._getValueChange(fullName + "." + fieldInfo.nested[i].fieldName, fieldInfo.nested[i], changedOnly);
+                    if (!!tmp) {
+                        res.nested.push(tmp);
+                    }
+                }
+                break;
+            default:
+                const newVal = dbSet._getInternal().getStrValue(self._getValue(fullName, VALS_VERSION.Current), fieldInfo),
+                    oldV = !self.hasOrigVals ? newVal : dbSet._getInternal().getStrValue(self._getValue(fullName, VALS_VERSION.Original), fieldInfo),
+                    isChanged = (oldV !== newVal);
+                if (isChanged) {
+                    res = {
+                        fieldName: fieldInfo.fieldName,
+                        val: newVal,
+                        orig: oldV,
+                        flags: (FLAGS.Changed | FLAGS.Setted),
+                        nested: null
+                    };
+                } else if (fieldInfo.isPrimaryKey > 0 || fieldInfo.fieldType === FIELD_TYPE.RowTimeStamp || fieldInfo.isNeedOriginal) {
+                    res = {
+                        fieldName: fieldInfo.fieldName,
+                        val: newVal,
+                        orig: oldV,
+                        flags: FLAGS.Setted,
+                        nested: null
+                    };
+                } else {
+                    res = {
+                        fieldName: fieldInfo.fieldName,
+                        val: null,
+                        orig: null,
+                        flags: FLAGS.None,
+                        nested: null
+                    };
+                }
+                break;
         }
 
         if (changedOnly) {
             if (fieldInfo.fieldType === FIELD_TYPE.Object) {
-                if (res.nested.length > 0)
-                    return res;
-                else
-                    return null;
-            }
-            else if ((res.flags & FLAGS.Changed) === FLAGS.Changed)
+                return (res.nested.length > 0) ? res : null;
+            } else if ((res.flags & FLAGS.Changed) === FLAGS.Changed) {
                 return res;
-            else
+            } else {
                 return null;
-        }
-        else {
+            }
+        } else {
             return res;
         }
     }
     protected _getValueChanges(changedOnly: boolean): IValueChange[] {
         const self = this, flds = this.dbSet.getFieldInfos();
-        const res = flds.map((fld) => {
+        const res = flds.map((fld: IFieldInfo) => {
             return self._getValueChange(fld.fieldName, fld, changedOnly);
         });
 
-        //remove nulls
-        const res2 = res.filter((vc) => {
+        // remove nulls
+        const res2 = res.filter((vc: IValueChange) => {
             return !!vc;
         });
         return res2;
     }
-    protected _fldChanging(fieldName: string, fieldInfo: IFieldInfo, oldV: any, newV: any) {
+    protected _fldChanging(fieldName: string, fieldInfo: IFieldInfo, oldV: any, newV: any): boolean {
         if (!this._origVals) {
-            this._origVals = coreUtils.clone(this._vals);
+            this._storeVals(VALS_VERSION.Original);
         }
         return true;
     }
-    protected _skipValidate(fieldInfo: IFieldInfo, val: any) {
-        let childToParentNames = this.dbSet._getInternal().getChildToParentNames(fieldInfo.fieldName), res = false;
+    protected _skipValidate(fieldInfo: IFieldInfo, val: any): boolean {
+        const childToParentNames = this.dbSet._getInternal().getChildToParentNames(fieldInfo.fieldName);
+        let res = false;
         if (!!childToParentNames && val === null) {
-            for (let i = 0, len = childToParentNames.length; i < len; i += 1) {
+            const len = childToParentNames.length;
+            for (let i = 0; i < len; i += 1) {
                 res = !!this._getFieldVal(childToParentNames[i]);
-                if (res)
+                if (res) {
                     break;
+                }
             }
         }
         return res;
     }
-    protected _beginEdit() {
-        if (!super._beginEdit())
+    protected _beginEdit(): boolean {
+        if (!super._beginEdit()) {
             return false;
+        }
         this._savedStatus = this.status;
         return true;
     }
-    protected _endEdit() {
-        if (!super._endEdit())
+    protected _endEdit(): boolean {
+        if (!super._endEdit()) {
             return false;
+        }
         this._savedStatus = null;
         return true;
     }
-    protected _cancelEdit() {
-        if (!this.isEditing)
+    protected _cancelEdit(): boolean {
+        if (!this.isEditing) {
             return false;
-        const self = this, changes = this._getValueChanges(true), isNew = this.isNew, dbSet = this.dbSet;
-        this._vals = this._saveVals;
-        this._saveVals = null;
-        this.setStatus(this._savedStatus);
+        }
+        const self = this, changes: IValueChange[] = this._getValueChanges(true), dbSet = this.dbSet;
+        this._restoreVals(VALS_VERSION.Temporary);
+        dbSet.errors.removeAllErrors(this.item);
+        this._setStatus(this._savedStatus);
         this._savedStatus = null;
-        dbSet._getInternal().removeAllErrors(this.item);
-        changes.forEach(function (v) {
-            let fld = self.dbSet.getFieldInfo(v.fieldName);
-            if (!fld)
-                throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
+        changes.forEach((v) => {
+            const fld = dbSet.getFieldInfo(v.fieldName);
+            if (!fld) {
+                throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
+            }
             self._onFieldChanged(v.fieldName, fld);
         });
         return true;
     }
-    protected getDbSet() {
-        return this.dbSet;
-    }
-    protected setStatus(v: ITEM_STATUS) {
-        if (this._status !== v) {
-            const oldStatus = this._status;
-            this._status = v;
-            if (v !== ITEM_STATUS.None)
-                this.dbSet._getInternal().addToChanged(this.item);
-            else
-                this.dbSet._getInternal().removeFromChanged(this.key);
-            this.dbSet._getInternal().onItemStatusChanged(this.item, oldStatus);
+    // override
+    protected _setStatus(v: ITEM_STATUS): void {
+        const old = this.status;
+        if (old !== v) {
+            const internal = this.dbSet._getInternal();
+            super._setStatus(v);
+            if (v !== ITEM_STATUS.None) {
+                internal.addToChanged(this.item);
+            } else {
+                internal.removeFromChanged(this.key);
+            }
+            internal.onItemStatusChanged(this.item, old);
         }
     }
-    protected getSrvKey(): string { return this._srvKey; }
-    _updateKeys(srvKey: string) {
-        this._srvKey = srvKey;
-        this.key = srvKey;
+    _addDisposable(obj: IBaseObject): void {
+        if (!this._disposables) {
+            this._disposables = [];
+        }
+        this._disposables.push(obj);
     }
-    _checkCanRefresh() {
+    _updateKeys(key: string): void {
+        this._setSrvKey(key);
+        this._setKey(key);
+    }
+    _checkCanRefresh(): void {
         if (this.key === null || this.status === ITEM_STATUS.Added) {
             throw new Error(ERRS.ERR_OPER_REFRESH_INVALID);
         }
     }
-    _refreshValue(val: any, fullName: string, refreshMode: REFRESH_MODE) {
-        let self = this, fld = self.dbSet.getFieldInfo(fullName);
-        if (!fld)
-            throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
-        let stz = self.serverTimezone, newVal: any, oldVal: any, oldValOrig: any, dataType = fld.dataType, dcnv = fld.dateConversion;
-        newVal = valUtils.parseValue(val, dataType, dcnv, stz);
-        oldVal = coreUtils.getValue(self._vals, fullName);
+    _refreshValue(val: any, fullName: string, refreshMode: REFRESH_MODE): void {
+        const self = this, fld = self.dbSet.getFieldInfo(fullName);
+        if (!fld) {
+            throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fullName));
+        }
+        const stz = self.serverTimezone, dataType = fld.dataType, dcnv = fld.dateConversion;
+        let newVal = parseValue(val, dataType, dcnv, stz), oldVal = self._getValue(fullName, VALS_VERSION.Current);
         switch (refreshMode) {
             case REFRESH_MODE.CommitChanges:
                 {
-                    if (!valUtils.compareVals(newVal, oldVal, dataType)) {
-                        coreUtils.setValue(self._vals, fullName, newVal, false);
+                    if (!compareVals(newVal, oldVal, dataType)) {
+                        self._setValue(fullName, newVal, VALS_VERSION.Current);
                         self._onFieldChanged(fullName, fld);
                     }
                 }
                 break;
             case REFRESH_MODE.RefreshCurrent:
                 {
-                    if (!!self._origVals) {
-                        coreUtils.setValue(self._origVals, fullName, newVal, false);
+                    if (self.hasOrigVals) {
+                        self._setValue(fullName, newVal, VALS_VERSION.Original);
                     }
-                    if (!!self._saveVals) {
-                        coreUtils.setValue(self._saveVals, fullName, newVal, false);
+                    if (self.hasTempVals) {
+                        self._setValue(fullName, newVal, VALS_VERSION.Temporary);
                     }
-                    if (!valUtils.compareVals(newVal, oldVal, dataType)) {
-                        coreUtils.setValue(self._vals, fullName, newVal, false);
+                    if (!compareVals(newVal, oldVal, dataType)) {
+                        self._setValue(fullName, newVal, VALS_VERSION.Current);
                         self._onFieldChanged(fullName, fld);
                     }
                 }
                 break;
             case REFRESH_MODE.MergeIntoCurrent:
                 {
-                    if (!!self._origVals) {
-                        oldValOrig = coreUtils.getValue(self._origVals, fullName);
-                        coreUtils.setValue(self._origVals, fullName, newVal, false);
+                    let origOldVal: any = _undefined;
+                    if (self.hasOrigVals) {
+                        origOldVal = self._getValue(fullName, VALS_VERSION.Original);
+                        self._setValue(fullName, newVal, VALS_VERSION.Original);
                     }
-                    if (oldValOrig === checks.undefined || valUtils.compareVals(oldValOrig, oldVal, dataType)) {
-                        //unmodified
-                        if (!valUtils.compareVals(newVal, oldVal, dataType)) {
-                            coreUtils.setValue(self._vals, fullName, newVal, false);
+                    if (origOldVal === _undefined || compareVals(origOldVal, oldVal, dataType)) {
+                        // unmodified
+                        if (!compareVals(newVal, oldVal, dataType)) {
+                            self._setValue(fullName, newVal, VALS_VERSION.Current);
                             self._onFieldChanged(fullName, fld);
                         }
                     }
                 }
                 break;
             default:
-                throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "refreshMode", refreshMode));
+                throw new Error(format(ERRS.ERR_PARAM_INVALID, "refreshMode", refreshMode));
         }
     }
-    _refreshValues(rowInfo: IRowInfo, refreshMode: REFRESH_MODE) {
-        let self = this, oldStatus = this.status;
-        if (!this._isDestroyed) {
+    _refreshValues(rowInfo: IRowInfo, refreshMode: REFRESH_MODE): void {
+        const self = this, oldStatus = this.status;
+        if (!this.getIsDisposed()) {
             if (!refreshMode) {
                 refreshMode = REFRESH_MODE.RefreshCurrent;
             }
-            rowInfo.values.forEach(function (val) {
-                fn_traverseChanges(val, (fullName, vc) => {
-                    if (!((vc.flags & FLAGS.Refreshed) === FLAGS.Refreshed))
-                        return;
-                    self._refreshValue(vc.val, fullName, refreshMode);
+            rowInfo.values.forEach((val) => {
+                fn_walkChanges(val, (fullName, vc) => {
+                    if ((vc.flags & FLAGS.Refreshed)) {
+                        self._refreshValue(vc.val, fullName, refreshMode);
+                    }
                 });
             });
 
             if (oldStatus === ITEM_STATUS.Updated) {
-                let changes = this._getValueChanges(true);
+                const changes = this._getValueChanges(true);
                 if (changes.length === 0) {
                     this._origVals = null;
-                    this.setStatus(ITEM_STATUS.None);
+                    this._setStatus(ITEM_STATUS.None);
                 }
             }
         }
     }
-    _getRowInfo() {
-        let res: IRowInfo = {
+    _getRowInfo(): IRowInfo {
+        const res: IRowInfo = {
             values: this._getValueChanges(false),
             changeType: this.status,
-            serverKey: this.getSrvKey(),
+            serverKey: this.srvKey,
             clientKey: this.key,
             error: null
         };
         return res;
     }
-    _getCalcFieldVal(fieldName: string) {
+    _getCalcFieldVal(fieldName: string): any {
         return this.dbSet._getInternal().getCalcFieldVal(fieldName, this.item);
     }
-    _getNavFieldVal(fieldName: string) {
+    _getNavFieldVal(fieldName: string): any {
         return this.dbSet._getInternal().getNavFieldVal(fieldName, this.item);
     }
-    _setNavFieldVal(fieldName: string, value: any) {
-        let dbSet = this.dbSet
-        dbSet._getInternal().setNavFieldVal(fieldName, this.item, value)
+    _setNavFieldVal(fieldName: string, value: any): void {
+        this.dbSet._getInternal().setNavFieldVal(fieldName, this.item, value);
     }
-    _clearFieldVal(fieldName: string) {
-        coreUtils.setValue(this._vals, fieldName, null, false);
+    _clearFieldVal(fieldName: string): void {
+        this._setValue(fieldName, null, VALS_VERSION.Current);
     }
-    _getFieldVal(fieldName: string) {
-        if (this._isDestroyCalled)
-            return null;
-        return coreUtils.getValue(this._vals, fieldName);
+    _getFieldVal(fieldName: string): any {
+        return this._getValue(fieldName, VALS_VERSION.Current);
     }
     _setFieldVal(fieldName: string, val: any): boolean {
-        let validation_error: IValidationInfo, error: any, dbSetName = this.dbSetName, dbSet = this.dbSet,
-            oldV = this._getFieldVal(fieldName), newV = val, fieldInfo = this.getFieldInfo(fieldName), res = false;
-        if (!fieldInfo)
-            throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, dbSetName, fieldName));
-        if (!this.isEditing && !this.isUpdating)
+        if (this.isCancelling) {
+            return false;
+        }
+        const dbSetName = this.dbSetName, dbSet = this.dbSet,
+            oldV = this._getFieldVal(fieldName), fieldInfo = this.getFieldInfo(fieldName);
+        let newV = val, res = false;
+        if (!fieldInfo) {
+            throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, dbSetName, fieldName));
+        }
+        if (!(this.isEditing || this.isUpdating)) {
             this.beginEdit();
+        }
+
         try {
-            newV = this._checkVal(fieldInfo, newV);
+            if (fieldInfo.dataType === DATA_TYPE.String && fieldInfo.isNullable && !newV) {
+                newV = null;
+            }
             if (oldV !== newV) {
+                if (fieldInfo.isReadOnly && !(this.isNew && fieldInfo.allowClientDefault)) {
+                    throw new Error(ERRS.ERR_FIELD_READONLY);
+                }
+
                 if (this._fldChanging(fieldName, fieldInfo, oldV, newV)) {
-                    coreUtils.setValue(this._vals, fieldName, newV, false);
+                    this._setValue(fieldName, newV, VALS_VERSION.Current);
                     if (!(fieldInfo.fieldType === FIELD_TYPE.ClientOnly || fieldInfo.fieldType === FIELD_TYPE.ServerCalculated)) {
                         switch (this.status) {
                             case ITEM_STATUS.None:
-                                this.setStatus(ITEM_STATUS.Updated);
+                                this._setStatus(ITEM_STATUS.Updated);
                                 break;
                         }
                     }
                     this._onFieldChanged(fieldName, fieldInfo);
                     res = true;
                 }
-            }
-            dbSet._getInternal().removeError(this.item, fieldName);
-            validation_error = this._validateField(fieldName);
-            if (!!validation_error) {
-                throw new ValidationError([validation_error], this);
+                dbSet.errors.removeError(this.item, fieldName);
+                const validationInfo = this._validateField(fieldName);
+                if (!!validationInfo) {
+                    throw new ValidationError([validationInfo], this);
+                }
             }
         } catch (ex) {
+            let error: IValidationError;
             if (sys.isValidationError(ex)) {
                 error = ex;
-            }
-            else {
+            } else {
                 error = new ValidationError([
                     { fieldName: fieldName, errors: [ex.message] }
                 ], this);
             }
-            dbSet._getInternal().addError(this.item, fieldName, error.errors[0].errors);
+            dbSet.errors.addError(this.item, fieldName, error.validations[0].errors);
             throw error;
         }
         return res;
     }
+    _setSrvKey(v: string): void {
+        this._srvKey = v;
+    }
     _acceptChanges(rowInfo?: IRowInfo): void {
-        if (this.getIsDestroyed())
+        if (this.getIsDisposed()) {
             return;
-        const oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal();
+        }
+        const oldStatus = this.status, dbSet = this.dbSet, internal = dbSet._getInternal(),
+            errors = dbSet.errors;
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(this.item, true, false, oldStatus);
+
             if (oldStatus === ITEM_STATUS.Deleted) {
-                if (!this.getIsDestroyCalled())
-                    this.destroy();
-                return;
+                internal.removeFromChanged(this.key);
+                errors.removeAllErrors(this.item);
+                if (!this.getIsStateDirty()) {
+                    this.dispose();
+                }
+            } else {
+                this._origVals = null;
+                if (this.hasTempVals) {
+                    // refresh saved temporary values
+                    this._storeVals(VALS_VERSION.Temporary);
+                }
+                this._setStatus(ITEM_STATUS.None);
+                errors.removeAllErrors(this.item);
+                if (!!rowInfo) {
+                    this._refreshValues(rowInfo, REFRESH_MODE.CommitChanges);
+                }
+                internal.onCommitChanges(this.item, false, false, oldStatus);
             }
-            this._origVals = null;
-            if (!!this._saveVals)
-                this._saveVals = coreUtils.clone(this._vals);
-            this.setStatus(ITEM_STATUS.None);
-            internal.removeAllErrors(this.item);
-            if (!!rowInfo) {
-                this._refreshValues(rowInfo, REFRESH_MODE.CommitChanges);
-            }
-            internal.onCommitChanges(this.item, false, false, oldStatus);
         }
-    }
-    _onAttaching(): void {
-        super._onAttaching();
-        this._status = ITEM_STATUS.Added;
-    }
-    _onAttach(): void {
-        super._onAttach();
-        if (this.key === null)
-            throw new Error(ERRS.ERR_ITEM_IS_DETACHED);
-        this.dbSet._getInternal().addToChanged(this.item);
     }
     deleteItem(): boolean {
         return this.deleteOnSubmit();
     }
     deleteOnSubmit(): boolean {
-        if (this.getIsDestroyCalled())
+        if (this.getIsStateDirty()) {
             return false;
+        }
         const oldStatus = this.status, dbSet = this.dbSet;
-        let args: ICancellableArgs<TItem> = { item: this.item, isCancel: false };
+        const args: ICancellableArgs<TItem> = { item: this.item, isCancel: false };
         dbSet._getInternal().onItemDeleting(args);
         if (args.isCancel) {
             return false;
         }
         if (oldStatus === ITEM_STATUS.Added) {
             dbSet.removeItem(this.item);
-        }
-        else {
-            this.setStatus(ITEM_STATUS.Deleted);
+        } else {
+            this._setStatus(ITEM_STATUS.Deleted);
         }
         return true;
     }
@@ -453,83 +519,81 @@ export class EntityAspect<TItem extends IEntityItem, TDbContext extends DbContex
         this._acceptChanges(null);
     }
     rejectChanges(): void {
-        if (this.getIsDestroyed())
+        if (this.getIsDisposed()) {
             return;
-        const self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal();
+        }
+        const self = this, oldStatus = self.status, dbSet = self.dbSet, internal = dbSet._getInternal(), errors = dbSet.errors;
         if (oldStatus !== ITEM_STATUS.None) {
             internal.onCommitChanges(self.item, true, true, oldStatus);
-            if (oldStatus === ITEM_STATUS.Added) {
-                if (!this.getIsDestroyCalled())
-                    this.destroy();
-                return;
-            }
 
-            const changes = self._getValueChanges(true);
-            if (!!self._origVals) {
-                self._vals = coreUtils.clone(self._origVals);
-                self._origVals = null;
-                if (!!self._saveVals) {
-                    self._saveVals = coreUtils.clone(self._vals);
+            if (oldStatus === ITEM_STATUS.Added) {
+                internal.removeFromChanged(this.key);
+                errors.removeAllErrors(this.item);
+                if (!this.getIsStateDirty()) {
+                    this.dispose();
                 }
-            }
-            self.setStatus(ITEM_STATUS.None);
-            internal.removeAllErrors(this.item);
-            changes.forEach(function (v) {
-                fn_traverseChanges(v, (fullName, vc) => {
-                    self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));
+            } else {
+                const changes = self._getValueChanges(true);
+                if (self.hasOrigVals) {
+                    self._restoreVals(VALS_VERSION.Original);
+                    if (self.hasTempVals) {
+                        // refresh saved temporary values
+                        self._storeVals(VALS_VERSION.Temporary);
+                    }
+                }
+                self._setStatus(ITEM_STATUS.None);
+                errors.removeAllErrors(this.item);
+                changes.forEach((v) => {
+                    fn_walkChanges(v, (fullName) => {
+                        self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));
+                    });
                 });
-            });
-            internal.onCommitChanges(this.item, false, true, oldStatus);
+                internal.onCommitChanges(this.item, false, true, oldStatus);
+            }
         }
     }
     submitChanges(): IVoidPromise {
-        function removeHandler() {
-            dbxt.removeOnSubmitError(uniqueID);
-        }
-        let dbxt = this.dbSet.dbContext, uniqueID = coreUtils.uuid();
-        dbxt.addOnSubmitError(function (sender, args) {
+        const removeHandler = () => {
+            dbxt.offOnSubmitError(uniqueID);
+        };
+        const dbxt = this.dbSet.dbContext, uniqueID = uuid();
+        dbxt.addOnSubmitError((sender, args) => {
             if (args.error instanceof SubmitError) {
-                let submitErr: SubmitError = args.error;
+                const submitErr: SubmitError = args.error;
                 if (submitErr.notValidated.length > 0) {
-                    //don't reject changes,so the user can see errors in the edit dialog
+                    // don't reject changes,so the user can see errors in the edit dialog
                     args.isHandled = true;
                 }
             }
         }, uniqueID);
 
-        let promise = dbxt.submitChanges();
+        const promise = dbxt.submitChanges();
         promise.then(removeHandler, removeHandler);
         return promise;
     }
-    refresh(): IPromise<TItem> {
-        let dbxt = this.dbSet.dbContext;
-        return dbxt._getInternal().refreshItem(this.item);
+    refresh(): IStatefulPromise<TItem> {
+        const dbxt = this.dbSet.dbContext;
+        return <IStatefulPromise<TItem>>dbxt._getInternal().refreshItem(this.item);
     }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        this.cancelEdit();
-        if (!this.isCached) {
-            this.rejectChanges();
-        }
-        super.destroy();
-    }
-    toString() {
+    toString(): string {
         return this.dbSetName + "EntityAspect";
     }
-    get entityType() { return this.dbSet.entityType; }
-    get isCanSubmit(): boolean { return true; }
-    get isNew(): boolean { return this._status === ITEM_STATUS.Added; }
-    get isDeleted(): boolean { return this._status === ITEM_STATUS.Deleted; }
-    get dbSetName() { return this.dbSet.dbSetName; }
-    get serverTimezone() { return this.dbSet.dbContext.serverTimezone; }
-    get dbSet() { return <DbSet<TItem, TDbContext>>this.collection; }
-    get isRefreshing(): boolean { return this._isRefreshing; }
-    set isRefreshing(v: boolean) {
-        if (this._isRefreshing !== v) {
-            this._isRefreshing = v;
-            this.raisePropertyChanged(PROP_NAME.isRefreshing);
-        }
+    protected get hasOrigVals(): boolean {
+        return !!this._origVals;
+    }
+    get srvKey(): string {
+        return this._srvKey;
+    }
+    get isCanSubmit(): boolean {
+        return true;
+    }
+    get dbSetName(): string {
+        return this.dbSet.dbSetName;
+    }
+    get serverTimezone(): number {
+        return this.dbSet.dbContext.serverTimezone;
+    }
+    get dbSet(): DbSet<TItem, TObj, TDbContext> {
+        return <any>this.coll;
     }
 }

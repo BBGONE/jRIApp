@@ -1,16 +1,24 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 define(["require", "exports", "jriapp", "./demoDB", "common"], function (require, exports, RIAPP, DEMODB, COMMON) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var bootstrap = RIAPP.bootstrap;
     var CustomerBag = (function (_super) {
         __extends(CustomerBag, _super);
         function CustomerBag(item) {
-            var _this = this;
-            _super.call(this, item.Data, function (data) {
+            var _this = _super.call(this, item.Data, function (data) {
                 var dbSet = item._aspect.dbSet, saveIsEditing = item._aspect.isEditing;
                 if (item.Data !== data) {
                     if (!saveIsEditing) {
@@ -23,30 +31,120 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                         dbSet.isUpdating = false;
                     }
                 }
-            });
-            this._addresses = null;
-            item.addOnPropertyChange("Data", function (s, a) {
+            }) || this;
+            _this._addresses = null;
+            item.objEvents.onProp("Data", function (s, a) {
                 _this.resetJson(item.Data);
             }, null, null, 1);
+            _this.initCustomerValidations();
+            return _this;
         }
-        CustomerBag.prototype.destroy = function () {
-            if (this._isDestroyed)
+        CustomerBag.prototype.initCustomerValidations = function () {
+            var validations = [{
+                    fieldName: null, fn: function (bag, errors) {
+                        if (!bag.getProp("[Level1.Level2.Phone]") && !bag.getProp("[Level1.Level2.EmailAddress]")) {
+                            errors.push('at least Phone or Email address must be filled');
+                        }
+                    }
+                },
+                {
+                    fieldName: "[Title]", fn: function (bag, errors) {
+                        if (!bag.getProp("[Title]")) {
+                            errors.push('Title must be filled');
+                        }
+                    }
+                },
+                {
+                    fieldName: "[Level1.FirstName]", fn: function (bag, errors) {
+                        if (!bag.getProp("[Level1.FirstName]")) {
+                            errors.push('First name must be filled');
+                        }
+                    }
+                },
+                {
+                    fieldName: "[Level1.LastName]", fn: function (bag, errors) {
+                        if (!bag.getProp("[Level1.LastName]")) {
+                            errors.push('Last name must be filled');
+                        }
+                    }
+                }];
+            this.addOnValidateBag(function (s, args) {
+                var bag = args.bag;
+                validations.forEach(function (val) {
+                    var errors = [];
+                    val.fn(bag, errors);
+                    if (errors.length > 0)
+                        args.result.push({ fieldName: val.fieldName, errors: errors });
+                });
+            });
+            this.addOnValidateField(function (s, args) {
+                var bag = args.bag;
+                validations.filter(function (val) {
+                    return args.fieldName === val.fieldName;
+                }).forEach(function (val) {
+                    val.fn(bag, args.errors);
+                });
+            });
+        };
+        CustomerBag.prototype.initAddressValidations = function (addresses) {
+            var validations = [{
+                    fieldName: "[City]", fn: function (bag, errors) {
+                        if (!bag.getProp("[City]")) {
+                            errors.push('City must be filled');
+                        }
+                    }
+                },
+                {
+                    fieldName: "[Line1]", fn: function (bag, errors) {
+                        if (!bag.getProp("[Line1]")) {
+                            errors.push('Line1 name must be filled');
+                        }
+                    }
+                }];
+            addresses.addOnValidateBag(function (s, args) {
+                var bag = args.bag;
+                validations.forEach(function (val) {
+                    var errors = [];
+                    val.fn(bag, errors);
+                    if (errors.length > 0)
+                        args.result.push({ fieldName: val.fieldName, errors: errors });
+                });
+            });
+            addresses.addOnValidateField(function (s, args) {
+                var bag = args.bag;
+                validations.filter(function (val) {
+                    return args.fieldName === val.fieldName;
+                }).forEach(function (val) {
+                    val.fn(bag, args.errors);
+                });
+            });
+        };
+        CustomerBag.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._addresses) {
-                this._addresses.destroy();
+                this._addresses.dispose();
             }
             this._addresses = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(CustomerBag.prototype, "Addresses", {
             get: function () {
-                if (this._isDestroyCalled)
+                if (this.getIsStateDirty())
                     return void 0;
                 if (!this._addresses) {
                     this._addresses = new RIAPP.JsonArray(this, "Addresses");
+                    this.initAddressValidations(this._addresses);
                 }
                 return this._addresses.list;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CustomerBag.prototype, "dateFormat", {
+            get: function () {
+                return "DD.MM.YYYY HH:mm:ss";
             },
             enumerable: true,
             configurable: true
@@ -57,45 +155,46 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
     var CustomerViewModel = (function (_super) {
         __extends(CustomerViewModel, _super);
         function CustomerViewModel(app) {
-            _super.call(this, app);
-            var self = this;
-            this._dbSet = this.dbSets.CustomerJSON;
-            this._propWatcher = new RIAPP.PropWatcher();
-            this._dbSet.addOnPropertyChange('currentItem', function (sender, data) {
+            var _this = _super.call(this, app) || this;
+            var self = _this;
+            _this._dbSet = _this.dbSets.CustomerJSON;
+            _this._propWatcher = new RIAPP.PropWatcher();
+            _this._dbSet.objEvents.onProp('currentItem', function (_s, data) {
                 self._onCurrentChanged();
             }, self.uniqueID);
-            this._dbSet.addOnItemDeleting(function (sender, args) {
+            _this._dbSet.addOnItemDeleting(function (_s, args) {
                 if (!confirm('Are you sure that you want to delete ' + args.item.CustomerID + ' ?'))
                     args.isCancel = true;
             }, self.uniqueID);
-            this._dbSet.isSubmitOnDelete = true;
-            this._addNewCommand = new RIAPP.TCommand(function (sender, param) {
+            _this._dbSet.isSubmitOnDelete = true;
+            _this._addNewCommand = new RIAPP.Command(function () {
                 var item = self._dbSet.addNew();
+                item.Data = JSON.stringify({});
             });
-            this._addNewAddrCommand = new RIAPP.TCommand(function (sender, param) {
+            _this._addNewAddrCommand = new RIAPP.Command(function () {
                 var curCustomer = self.currentItem.Customer;
-                var item = curCustomer.Addresses.addNew();
-            }, self, function (s, p) {
+                curCustomer.Addresses.addNew();
+            }, function () {
                 return !!self.currentItem;
             });
-            this._saveCommand = new RIAPP.Command(function (sender, param) {
+            _this._saveCommand = new RIAPP.Command(function () {
                 self.dbContext.submitChanges();
-            }, self, function (s, p) {
+            }, function () {
                 return self.dbContext.isHasChanges;
             });
-            this._undoCommand = new RIAPP.Command(function (sender, param) {
-                self.dbContext.rejectChanges();
-            }, self, function (s, p) {
-                return self.dbContext.isHasChanges;
+            _this._undoCommand = new RIAPP.Command(function () {
+                _this.dbContext.rejectChanges();
+            }, function () {
+                return _this.dbContext.isHasChanges;
             });
-            this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (prop) {
+            _this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (prop) {
                 self._saveCommand.raiseCanExecuteChanged();
                 self._undoCommand.raiseCanExecuteChanged();
             });
-            this._loadCommand = new RIAPP.TCommand(function (sender, data, viewModel) {
-                viewModel.load();
-            }, self, null);
-            this._dbSet.defineCustomerField(function (item) {
+            _this._loadCommand = new RIAPP.Command(function () {
+                _this.load();
+            });
+            _this._dbSet.defineCustomerField(function (item) {
                 var bag = item._aspect.getCustomVal("jsonBag");
                 if (!bag) {
                     bag = new CustomerBag(item);
@@ -103,10 +202,11 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                 }
                 return bag;
             });
+            return _this;
         }
         CustomerViewModel.prototype._onCurrentChanged = function () {
             this._addNewAddrCommand.raiseCanExecuteChanged();
-            this.raisePropertyChanged('currentItem');
+            this.objEvents.raiseProp('currentItem');
         };
         CustomerViewModel.prototype.load = function () {
             var query = this.dbSet.createReadCustomerJSONQuery();
@@ -114,14 +214,14 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             query.orderBy('CustomerID');
             return query.load();
         };
-        CustomerViewModel.prototype.destroy = function () {
-            if (this._isDestroyed)
+        CustomerViewModel.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             if (!!this._dbSet) {
-                this._dbSet.removeNSHandlers(this.uniqueID);
+                this._dbSet.objEvents.offNS(this.uniqueID);
             }
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(CustomerViewModel.prototype, "dbSet", {
             get: function () { return this._dbSet; },
@@ -174,11 +274,11 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
-            _super.call(this, options);
-            var self = this;
-            this._dbContext = null;
-            this._errorVM = null;
-            this._customerVM = null;
+            var _this = _super.call(this, options) || this;
+            _this._dbContext = null;
+            _this._errorVM = null;
+            _this._customerVM = null;
+            return _this;
         }
         DemoApplication.prototype.onStartUp = function () {
             var self = this, options = self.options;
@@ -190,8 +290,8 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                 self._handleError(sender, data);
             }
             ;
-            this.addOnError(handleError);
-            this._dbContext.addOnError(handleError);
+            this.objEvents.addOnError(handleError);
+            this._dbContext.objEvents.addOnError(handleError);
             _super.prototype.onStartUp.call(this);
         };
         DemoApplication.prototype._handleError = function (sender, data) {
@@ -200,18 +300,18 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             this.errorVM.error = data.error;
             this.errorVM.showDialog();
         };
-        DemoApplication.prototype.destroy = function () {
-            if (this._isDestroyed)
+        DemoApplication.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             try {
-                self._errorVM.destroy();
-                self._customerVM.destroy();
-                self._dbContext.destroy();
+                self._errorVM.dispose();
+                self._customerVM.dispose();
+                self._dbContext.dispose();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         Object.defineProperty(DemoApplication.prototype, "options", {
@@ -234,10 +334,17 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(DemoApplication.prototype, "dateFormat", {
+            get: function () {
+                return "MM.DD.YYYY HH:mm:ss";
+            },
+            enumerable: true,
+            configurable: true
+        });
         return DemoApplication;
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
-    bootstrap.addOnError(function (sender, args) {
+    bootstrap.objEvents.addOnError(function (_s, args) {
         debugger;
         alert(args.error.message);
         args.isHandled = true;

@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IIndexer } from "./int";
 import { CoreUtils } from "./utils/coreutils";
 
@@ -8,8 +8,9 @@ export function assign<T extends U, U extends IIndexer<any>>(target: T, source: 
     return coreUtils.assignStrings(target, source);
 }
 
-export interface IErrors extends IIndexer<string> {
+export interface _IErrors extends IIndexer<string> {
     ERR_OBJ_ALREADY_REGISTERED: string;
+    ERR_OPTIONS_ALREADY_REGISTERED: string;
     ERR_APP_NEED_JQUERY: string;
     ERR_ASSERTION_FAILED: string;
     ERR_BINDING_CONTENT_NOT_FOUND: string;
@@ -33,7 +34,9 @@ export interface IErrors extends IIndexer<string> {
     ERR_TEMPLATE_NOTREGISTERED: string;
     ERR_TEMPLATE_GROUP_NOTREGISTERED: string;
     ERR_TEMPLATE_HAS_NO_ID: string;
+    ERR_OPTIONS_HAS_NO_ID: string;
     ERR_CONVERTER_NOTREGISTERED: string;
+    ERR_OPTIONS_NOTREGISTERED: string;
     ERR_JQUERY_DATEPICKER_NOTFOUND: string;
     ERR_PARAM_INVALID: string;
     ERR_PARAM_INVALID_TYPE: string;
@@ -89,7 +92,9 @@ export interface IErrors extends IIndexer<string> {
     ERR_DATAVIEW_FILTER_INVALID: string;
 }
 
-export interface IPagerText extends IIndexer<string> {
+export type IErrors = Partial<_IErrors>;
+
+export interface _IPagerText extends IIndexer<string> {
     firstText: string;
     lastText: string;
     previousText: string;
@@ -102,13 +107,16 @@ export interface IPagerText extends IIndexer<string> {
     showingTip: string;
     showTip: string;
 }
+export type IPagerText = Partial<_IPagerText>;
 
-export interface IValidateText extends IIndexer<string> {
+export interface _IValidateText extends IIndexer<string> {
     errorInfo: string;
     errorField: string;
 }
+export type IValidateText = Partial<_IValidateText>;
 
-export interface IText extends IIndexer<string> {
+
+export interface _IText extends IIndexer<string> {
     txtEdit: string;
     txtAddNew: string;
     txtDelete: string;
@@ -121,6 +129,7 @@ export interface IText extends IIndexer<string> {
     txtClose: string;
     txtField: string;
 }
+export type IText = Partial<_IText>;
 
 export interface ILocaleText extends IIndexer<any> {
     PAGER: IPagerText;
@@ -128,21 +137,21 @@ export interface ILocaleText extends IIndexer<any> {
     TEXT: IText;
 }
 
-
-let _ERRS: IErrors = {
-    ERR_OBJ_ALREADY_REGISTERED: "an Object with the name: {0} is already registered and can not be overwritten",
-    ERR_APP_NEED_JQUERY: "The project is dependent on JQuery",
+const _ERRS: _IErrors = {
+    ERR_OBJ_ALREADY_REGISTERED: "Object with the name: {0} is already registered and can not be overwritten",
+    ERR_OPTIONS_ALREADY_REGISTERED: "Options with the name: {0} are already registered and can not be overwritten",
+    ERR_APP_NEED_JQUERY: "The project is dependent on JQuery and can not function properly without it",
     ERR_ASSERTION_FAILED: 'The Assertion "{0}" failed',
     ERR_BINDING_CONTENT_NOT_FOUND: "BindingContent is not found",
     ERR_DBSET_READONLY: "TDbSet: {0} is readOnly and can not be edited",
     ERR_DBSET_INVALID_FIELDNAME: "TDbSet: {0} has no field with the name: {1}",
     ERR_FIELD_READONLY: "Field is readOnly and can not be edited",
-    ERR_FIELD_ISNOT_NULLABLE: "Field is not nullable and can not be set to null",
-    ERR_FIELD_WRONG_TYPE: "Value {0} has wrong datatype. It should have {1} datatype.",
-    ERR_FIELD_MAXLEN: "Value exceeds field maxlength: {0}",
+    ERR_FIELD_ISNOT_NULLABLE: "Field must not be empty",
+    ERR_FIELD_WRONG_TYPE: "Value {0} has a wrong datatype. It must have {1} datatype.",
+    ERR_FIELD_MAXLEN: "Value exceeds maximum field length: {0}",
     ERR_FIELD_DATATYPE: "Unknown field data type: {0}",
-    ERR_FIELD_REGEX: "Value {0} can not be accepted as the right value for this field",
-    ERR_FIELD_RANGE: "Value {0} is outside the allowed range {1} for this field",
+    ERR_FIELD_REGEX: "Value {0} is not validated for correctness",
+    ERR_FIELD_RANGE: "Value {0} is outside the allowed range {1}",
     ERR_EVENT_INVALID: "Invalid event name: {0}",
     ERR_EVENT_INVALID_FUNC: "Invalid event function value",
     ERR_MODULE_NOT_REGISTERED: "Module: {0} is not registered",
@@ -154,16 +163,18 @@ let _ERRS: IErrors = {
     ERR_TEMPLATE_NOTREGISTERED: "TEMPLATE with the name: {0} is not registered",
     ERR_TEMPLATE_GROUP_NOTREGISTERED: "TEMPLATE's group: {0} is not registered",
     ERR_TEMPLATE_HAS_NO_ID: "TEMPLATE inside SCRIPT tag must have an ID attribute",
+    ERR_OPTIONS_HAS_NO_ID: "OPTIONS inside SCRIPT tag must have an ID attribute",
     ERR_CONVERTER_NOTREGISTERED: "Converter: {0} is not registered",
-    ERR_JQUERY_DATEPICKER_NOTFOUND: "Application is dependent on JQuery.UI.datepicker. Please include it in the scripts.",
+    ERR_OPTIONS_NOTREGISTERED: "Options: {0} is not registered",
+    ERR_JQUERY_DATEPICKER_NOTFOUND: "Application is dependent on JQuery.UI.datepicker",
     ERR_PARAM_INVALID: "Parameter: {0} has invalid value: {1}",
     ERR_PARAM_INVALID_TYPE: "Parameter: {0} has invalid type. It must be {1}",
     ERR_KEY_IS_EMPTY: "Key value must not be empty",
-    ERR_KEY_IS_NOTFOUND: "Can not find item with the key: {0}",
-    ERR_ITEM_IS_ATTACHED: "Operation invalid, reason: Item already has been attached",
-    ERR_ITEM_IS_DETACHED: "Operation invalid, reason: Item is detached",
-    ERR_ITEM_IS_NOTFOUND: "Operation invalid, reason: Item is not found",
-    ERR_ITEM_NAME_COLLISION: 'The "{0}" TDbSet\'s field name: "{1}" is invalid, because a property with that name already exists on the entity type.',
+    ERR_KEY_IS_NOTFOUND: "Can not find an item with the key: {0}",
+    ERR_ITEM_IS_ATTACHED: "Operation invalid. The reason: Item already has been attached",
+    ERR_ITEM_IS_DETACHED: "Operation invalid. The reason: Item is detached",
+    ERR_ITEM_IS_NOTFOUND: "Operation invalid. The reason: Item is not found",
+    ERR_ITEM_NAME_COLLISION: 'The "{0}" TDbSet\'s field name: "{1}" is invalid, because a property with that name already exists on the entity',
     ERR_DICTKEY_IS_NOTFOUND: "Dictionary keyName: {0} does not exist in item's properties",
     ERR_DICTKEY_IS_EMPTY: "Dictionary key property: {0} must be not empty",
     ERR_CONV_INVALID_DATE: "Cannot parse string value: {0} to a valid Date",
@@ -197,10 +208,10 @@ let _ERRS: IErrors = {
     ERR_LISTBOX_DATASRC_INVALID: "ListBox datasource must be a descendant of Collection type",
     ERR_DATAFRM_DCTX_INVALID: "DataForm's dataContext must be a descendant of BaseObject type",
     ERR_DCTX_HAS_NO_FIELDINFO: "DataContext has no getFieldInfo method",
-    ERR_TEMPLATE_ID_INVALID: "Element can not be found by TemplateID: {0}",
-    ERR_ITEM_DELETED_BY_ANOTHER_USER: "The record was deleted by another user",
-    ERR_ACCESS_DENIED: "The access is denied. Please, ask administrator to assign user rights to your account.",
-    ERR_CONCURRENCY: "The record has been modified by another user. Please, refresh record before editing.",
+    ERR_TEMPLATE_ID_INVALID: "Element can not be found by its TemplateID: {0}",
+    ERR_ITEM_DELETED_BY_ANOTHER_USER: "The record have been deleted by another user",
+    ERR_ACCESS_DENIED: "The access is denied. Please, ask administrator to assign user rights to your account",
+    ERR_CONCURRENCY: "The record has been modified by another user. Please, refresh record before editing",
     ERR_VALIDATION: "Data validation error",
     ERR_SVC_VALIDATION: "Data validation error: {0}",
     ERR_SVC_ERROR: "Service error: {0}",
@@ -208,14 +219,14 @@ let _ERRS: IErrors = {
     ERR_ASSOC_NAME_INVALID: "Invalid association name: {0}",
     ERR_DATAVIEW_DATASRC_INVALID: "TDataView datasource must not be null and should be descendant of Collection type",
     ERR_DATAVIEW_FILTER_INVALID: "TDataView fn_filter option must be valid function which accepts entity and returns boolean value"
-}
+};
 
-let PAGER: IPagerText = {
+const PAGER: _IPagerText = {
     firstText: "<<",
     lastText: ">>",
     previousText: "<",
     nextText: ">",
-    pageInfo: "Page {0} of {1}",
+    pageInfo: "Rows from <span class='ria-pager-info-num'>{0}</span> to <span class='ria-pager-info-num'>{1}</span> of <span class='ria-pager-info-num'>{2}</span>",
     firstPageTip: "to first page",
     prevPageTip: "back to page {0}",
     nextPageTip: "next to page {0}",
@@ -224,12 +235,12 @@ let PAGER: IPagerText = {
     showTip: "show result {0} to {1} of {2}"
 };
 
-let VALIDATE: IValidateText = {
+const VALIDATE: _IValidateText = {
     errorInfo: "Validation errors:",
     errorField: "field:"
 };
 
-let TEXT: IText = {
+const TEXT: _IText = {
     txtEdit: "Edit",
     txtAddNew: "Add new",
     txtDelete: "Delete",
@@ -243,7 +254,11 @@ let TEXT: IText = {
     txtField: "Field"
 };
 
-let _STRS: ILocaleText = { PAGER: PAGER, VALIDATE: VALIDATE, TEXT: TEXT };
+const _STRS: ILocaleText = {
+    PAGER: PAGER,
+    VALIDATE: VALIDATE,
+    TEXT: TEXT
+};
 
 export let ERRS: IErrors = _ERRS;
 export let STRS: ILocaleText = _STRS;

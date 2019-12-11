@@ -1,8 +1,7 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils } from "jriapp_shared";
-import { DATA_ATTR } from "jriapp/const";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { DATA_ATTR } from "jriapp/consts";
 import { DomUtils } from "jriapp/utils/dom";
-import { css, ROW_ACTION } from "../const";
+import { css, ROW_ACTION } from "../consts";
 import { IColumnInfo, BaseColumn, ICellInfo } from "./base";
 import { ActionsCell } from "../cells/actions";
 import { DataGrid } from "../datagrid";
@@ -15,11 +14,10 @@ export interface IActionsColumnInfo extends IColumnInfo {
 export class ActionsColumn extends BaseColumn {
     constructor(grid: DataGrid, options: ICellInfo) {
         super(grid, options);
-        const self = this, opts: IActionsColumnInfo = this.options;
+        const self = this;
         dom.addClass([this.col], css.rowActions);
-        dom.events.on(this.grid.table, "click", function (e) {
-            e.stopPropagation();
-            const btn: HTMLElement = this, name = btn.getAttribute(DATA_ATTR.DATA_NAME),
+        dom.events.on(this.grid.table, "click", (e) => {
+            const btn = <Element>e.target, name = btn.getAttribute(DATA_ATTR.DATA_NAME),
                 cell = <ActionsCell>dom.getData(btn, "cell");
             self.grid.currentRow = cell.row;
             switch (name) {
@@ -38,8 +36,8 @@ export class ActionsColumn extends BaseColumn {
             }
         }, {
                 nmspace: this.uniqueID,
-                //using delegation
-                matchElement: (el) => {
+                // using delegation
+                matchElement: (el: Element) => {
                     const attr = el.getAttribute(DATA_ATTR.DATA_EVENT_SCOPE),
                         tag = el.tagName.toLowerCase();
                     return self.uniqueID === attr && tag === "span";
@@ -63,39 +61,44 @@ export class ActionsColumn extends BaseColumn {
             }
         }, this.uniqueID);
     }
-    protected _onOk(cell: ActionsCell) {
-        if (!cell.row)
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
+        }
+        this.setDisposing();
+        dom.events.offNS(this.grid.table, this.uniqueID);
+        this.grid.objEvents.offNS(this.uniqueID);
+        super.dispose();
+    }
+    protected _onOk(cell: ActionsCell): void {
+        if (!cell.row) {
+            return;
+        }
         cell.row.endEdit();
         cell.update();
     }
-    protected _onCancel(cell: ActionsCell) {
-        if (!cell.row)
+    protected _onCancel(cell: ActionsCell): void {
+        if (!cell.row) {
             return;
+        }
         cell.row.cancelEdit();
         cell.update();
     }
-    protected _onDelete(cell: ActionsCell) {
-        if (!cell.row)
+    protected _onDelete(cell: ActionsCell): void {
+        if (!cell.row) {
             return;
+        }
         cell.row.deleteRow();
     }
-    protected _onEdit(cell: ActionsCell) {
-        if (!cell.row)
+    protected _onEdit(cell: ActionsCell): void {
+        if (!cell.row) {
             return;
+        }
         cell.row.beginEdit();
         cell.update();
         this.grid.showEditDialog();
     }
-    toString() {
+    toString(): string {
         return "ActionsColumn";
-    }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        dom.events.offNS(this.grid.table, this.uniqueID);
-        this.grid.removeNSHandlers(this.uniqueID);
-        super.destroy();
     }
 }

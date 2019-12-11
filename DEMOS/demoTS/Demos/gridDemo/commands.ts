@@ -1,40 +1,35 @@
 ﻿import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 
 import * as DEMODB from "../demo/demoDB";
 import { ProductViewModel } from "./productVM";
 import { ProductsFilter } from "./filters";
 
 //an example how to define a strongly typed command
-export class TestInvokeCommand extends RIAPP.BaseCommand<DEMODB.Product, ProductViewModel>
+export class TestInvokeCommand extends RIAPP.BaseCommand<ProductViewModel, DEMODB.Product>
 {
-    protected Action(sender: RIAPP.IBaseObject, param: DEMODB.Product) {
-        var self = this.thisObj;
-        self.invokeResult = null;
-        var promise = self.dbContext.serviceMethods.TestInvoke({ param1: [10, 11, 12, 13, 14], param2: param.Name });
-        promise.then(function (res) {
-            self.invokeResult = res;
-            self.showDialog();
-        }, function () {
-            //do something on fail if you need
-            //but the error message display is automatically shown
+    protected action(param: DEMODB.Product) {
+        const viewModel = this.owner;
+        viewModel.invokeResult = null;
+        const promise = viewModel.dbContext.serviceMethods.TestInvoke({ param1: [10, 11, 12, 13, 14], param2: param.Name });
+        promise.then((res) => {
+            viewModel.invokeResult = res;
+            viewModel.showDialog();
         });
     }
-    protected getIsCanExecute(sender: RIAPP.IBaseObject, param: DEMODB.Product): boolean {
-        var self = this.thisObj;
-        //just for the test: this command can be executed only when this condition is true!
-        return self.currentItem !== null;
+    protected isCanExecute(param: DEMODB.Product): boolean {
+        const viewModel = this.owner;
+        // just for the test: this command can be executed only when this condition is true!
+        return viewModel.currentItem !== null;
     }
 }
 
-//an example how to define a strongly typed command
-export class ResetCommand extends RIAPP.BaseCommand<any, ProductsFilter>
+// an example how to define a strongly typed command
+export class ResetCommand extends RIAPP.BaseCommand<ProductsFilter>
 {
-    protected Action(sender: RIAPP.IBaseObject, param: any) {
-        this.thisObj.reset();
+    protected action(param: any) {
+        this.owner.reset();
     }
-    protected getIsCanExecute(sender: RIAPP.IBaseObject, param: any): boolean {
+    protected isCanExecute(param: any): boolean {
         return true;
     }
 }

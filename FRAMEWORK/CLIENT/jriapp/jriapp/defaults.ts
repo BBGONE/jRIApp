@@ -1,23 +1,9 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    BaseObject, Utils
-} from "jriapp_shared";
-import {
-    ISvcStore, IDatepicker, ButtonCss
-} from "./int";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { BaseObject, Utils } from "jriapp_shared";
+import { ButtonCss } from "./int";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str;
-
-const PROP_NAME = {
-    dateFormat: "dateFormat",
-    timeFormat: "timeFormat",
-    dateTimeFormat: "dateTimeFormat",
-    datepicker: "datepicker",
-    imagesPath: "imagesPath",
-    decimalPoint: "decimalPoint",
-    thousandSep: "thousandSep",
-    decPrecision: "decPrecision"
-};
+const utils = Utils, { endsWith } = utils.str;
+export type TButtonCss = typeof ButtonCss;
 
 export class Defaults extends BaseObject {
     private _imagesPath: string;
@@ -27,11 +13,9 @@ export class Defaults extends BaseObject {
     private _decimalPoint: string;
     private _thousandSep: string;
     private _decPrecision: number;
-    private _svcStore: ISvcStore;
 
-    constructor(typeStore: ISvcStore) {
+    constructor() {
         super();
-        this._svcStore = typeStore;
         this._dateFormat = "DD.MM.YYYY";
         this._dateTimeFormat = "DD.MM.YYYY HH:mm:ss";
         this._timeFormat = "HH:mm:ss";
@@ -39,72 +23,85 @@ export class Defaults extends BaseObject {
         this._decimalPoint = ",";
         this._thousandSep = " ";
         this._decPrecision = 2;
-   }
-    toString() {
+    }
+    toString(): string {
         return "Defaults";
    }
-    //uses moment.js format
-    get dateFormat() { return this._dateFormat; }
+    // uses moment.js format
+    get dateFormat(): string {
+        return this._dateFormat;
+    }
     set dateFormat(v) {
         if (this._dateFormat !== v) {
             this._dateFormat = v;
-            this.raisePropertyChanged(PROP_NAME.dateFormat);
+            this.objEvents.raiseProp("dateFormat");
        }
    }
-    //uses moment.js format
-    get timeFormat() { return this._timeFormat; }
+    // uses moment.js format
+    get timeFormat(): string {
+        return this._timeFormat;
+    }
     set timeFormat(v) {
         if (this._timeFormat !== v) {
             this._timeFormat = v;
-            this.raisePropertyChanged(PROP_NAME.timeFormat);
+            this.objEvents.raiseProp("timeFormat");
        }
-   }
-    get dateTimeFormat() { return this._dateTimeFormat; }
+    }
+    get dateTimeFormat(): string {
+        return this._dateTimeFormat;
+    }
     set dateTimeFormat(v) {
         if (this._dateTimeFormat !== v) {
             this._dateTimeFormat = v;
-            this.raisePropertyChanged(PROP_NAME.dateTimeFormat);
+            this.objEvents.raiseProp("dateTimeFormat");
        }
    }
-    get datepicker() { return <IDatepicker>this._svcStore.getSvc("IDatepicker"); }
-    //path to where application images are stored
-    get imagesPath() { return this._imagesPath; }
+    // path to where application images are stored
+    get imagesPath(): string {
+        return this._imagesPath;
+    }
     set imagesPath(v) {
-        if (!v)
+        if (!v) {
             v = "";
+        }
         if (this._imagesPath !== v) {
-            if (!strUtils.endsWith(v, "/")) {
+            if (!endsWith(v, "/")) {
                 this._imagesPath = v + "/";
-           }
-            else
+           } else {
                 this._imagesPath = v;
-            this.raisePropertyChanged(PROP_NAME.imagesPath);
+           }
+           this.objEvents.raiseProp("imagesPath");
        }
-   }
-    get decimalPoint() { return this._decimalPoint; }
+    }
+    get decimalPoint(): string {
+        return this._decimalPoint;
+    }
     set decimalPoint(v) {
         if (this._decimalPoint !== v) {
             this._decimalPoint = v;
-            this.raisePropertyChanged(PROP_NAME.decimalPoint);
+            this.objEvents.raiseProp("decimalPoint");
        }
-   }
-    get thousandSep() { return this._thousandSep; }
+    }
+    get thousandSep(): string {
+        return this._thousandSep;
+    }
     set thousandSep(v) {
         if (this._thousandSep !== v) {
             this._thousandSep = v;
-            this.raisePropertyChanged(PROP_NAME.thousandSep);
+            this.objEvents.raiseProp("thousandSep");
        }
    }
-    //money decimal presision: defaults to 2
-    get decPrecision() { return this._decPrecision; }
+    // money decimal presision: defaults to 2
+    get decPrecision(): number {
+        return this._decPrecision;
+    }
     set decPrecision(v) {
         if (this._decPrecision !== v) {
             this._decPrecision = v;
-            this.raisePropertyChanged(PROP_NAME.decPrecision);
+            this.objEvents.raiseProp("decPrecision");
        }
-   }
-
-    get ButtonsCSS() {
+    }
+    get ButtonsCSS(): TButtonCss {
         return ButtonCss;
    }
 }

@@ -1,112 +1,106 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    Utils, BaseObject, IPropertyBag, IValidationInfo, IIndexer, LocaleERRS as ERRS, LocaleSTRS as STRS
-} from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { Utils, BaseObject, IPropertyBag, IValidationInfo, IValidatable } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import { ViewChecks } from "jriapp/utils/viewchecks";
-import { TOOLTIP_SVC, DATA_ATTR } from "jriapp/const";
-import { ITooltipService, IElView, IElViewStore,IApplication, IViewOptions } from "jriapp/int";
-import { bootstrap } from "jriapp/bootstrap";
-import { TAction, TCommand, ICommand, Command, TPredicate } from "jriapp/mvvm";
+import { SERVICES, DATA_ATTR, SubscribeFlags } from "jriapp/consts";
+import { IElView, IElViewStore, IApplication, IViewOptions, ISubscriber, ITooltipService } from "jriapp/int";
+import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
+import { ICommand } from "jriapp/mvvm";
 import { EventBag, EVENT_CHANGE_TYPE, IEventChangedArgs } from "./utils/eventbag";
 import { PropertyBag } from "./utils/propbag";
 import { CSSBag } from "./utils/cssbag";
-import { createToolTipSvc } from "./utils/tooltip";
+import { IViewErrorsService } from "jriapp/int";
 
 export { IEventChangedArgs, EVENT_CHANGE_TYPE };
 
-const utils = Utils, coreUtils = utils.core, dom = DomUtils, checks = utils.check,
-    boot = bootstrap, viewChecks = ViewChecks;
+const utils = Utils, { getNewID } = utils.core, dom = DomUtils, { _undefined } = utils.check,
+    boot = bootstrap, viewChecks = ViewChecks, subscribeMap = subscribeWeakMap;
 
-viewChecks.isElView = function (obj: any): boolean {
+viewChecks.isElView = (obj: any): obj is IElView => {
     return !!obj && obj instanceof BaseElView;
 };
 
-boot.registerSvc(TOOLTIP_SVC, createToolTipSvc());
-
-export function fn_addToolTip(el: Element, tip: string, isError?: boolean, pos?: string) {
-    let svc = boot.getSvc<ITooltipService>(TOOLTIP_SVC);
+export function addToolTip(el: Element, tip: string, isError?: boolean, pos?: string) {
+    const svc = boot.getSvc<ITooltipService>(SERVICES.TOOLTIP_SVC);
     svc.addToolTip(el, tip, isError, pos);
 }
 
-export const css = {
-    fieldError: "ria-field-error",
-    commandLink: "ria-command-link",
-    checkedNull: "ria-checked-null",
-    disabled: "disabled",
-    opacity: "opacity",
-    color: "color",
-    fontSize: "font-size"
-};
+function getErrorsService(): IViewErrorsService {
+    return boot.getSvc(SERVICES.UIERRORS_SVC);
+}
 
-export const PROP_NAME = {
-    isVisible: "isVisible",
-    validationErrors: "validationErrors",
-    toolTip: "toolTip",
-    css: "css",
-    isEnabled: "isEnabled",
-    value: "value",
-    command: "command",
-    disabled: "disabled",
-    commandParam: "commandParam",
-    isBusy: "isBusy",
-    delay: "delay",
-    checked: "checked",
-    color: "color",
-    wrap: "wrap",
-    text: "text",
-    html: "html",
-    preventDefault: "preventDefault",
-    imageSrc: "imageSrc",
-    glyph: "glyph",
-    href: "href",
-    fontSize: "fontSize",
-    borderColor: "borderColor",
-    borderStyle: "borderStyle",
-    width: "width",
-    height: "height",
-    src: "src",
-    click: "click"
-};
+interface IElViewState extends IViewOptions {
+    _eventBag: EventBag;
+    _propBag: IPropertyBag;
+    _classBag: IPropertyBag;
+    // saves old display before making display: none
+    _display: string;
+    _errors: IValidationInfo[];
+}
 
-export class BaseElView extends BaseObject implements IElView {
-    private _objId: string;
-    private _el: HTMLElement;
-    protected _errors: IValidationInfo[];
-    protected _toolTip: string;
-    private _eventStore: EventBag;
-    private _props: IPropertyBag;
-    private _classes: IPropertyBag;
-    //saves old display before making display: none
-    private _display: string;
-    private _css: string;
+export class BaseElView<TElement extends HTMLElement = HTMLElement> extends BaseObject implements IElView, ISubscriber, IValidatable {
+    private _uniqueID: string;
+    private _el: TElement;
+    private _subscribeFlags: number;
+    private _viewState: IElViewState;
 
-    constructor(options: IViewOptions) {
+    constructor(el: TElement, options?: IViewOptions) {
         super();
-        const el = options.el;
         this._el = el;
-        this._toolTip = options.tip;
+        options = options || {};
+        const state: IElViewState = {
+            tip: !options.tip ? null : options.tip,
+            css: !options.css ? null : options.css,
+            errorsService: !options.errorsService ? null : options.errorsService,
+            _eventBag: null,
+            _propBag: null,
+            _classBag: null,
+            _display: null,
+            _errors: null
+        };
+        this._uniqueID = getNewID("elv");
+        this._viewState = state;
+        this._subscribeFlags = !options.nodelegate ? 1 : 0;
 
-        //lazily initialized
-        this._eventStore = null;
-        this._props = null;
-        this._classes = null;
-        this._display = null;
-        this._css = options.css;
-
-        this._objId = coreUtils.getNewID("elv");
-        this._errors = null;
-        if (!!this._css) {
-            dom.addClass([el], this._css);
+        if (!!state.css) {
+            dom.addClass([el], state.css);
         }
         this._applyToolTip();
         this._getStore().setElView(el, this);
     }
-    private _getStore(): IElViewStore {
-        return boot.getApp().viewFactory.store;
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        try {
+            dom.events.offNS(this.el, this.uniqueID);
+            this.validationErrors = null;
+            addToolTip(this.el, null);
+
+            if (this._subscribeFlags !== 0) {
+                subscribeMap.delete(this.el);
+                this._subscribeFlags = 0;
+            }
+            if (!!this._viewState._eventBag) {
+                this._viewState._eventBag.dispose();
+            }
+            if (!!this._viewState._propBag) {
+                this._viewState._propBag.dispose();
+            }
+            if (!!this._viewState._classBag) {
+                this._viewState._classBag.dispose();
+            }
+            this._viewState = <any>{};
+        } finally {
+            this._getStore().setElView(this.el, null);
+            super.dispose();
+        }
     }
-    protected _onEventChanged(args: IEventChangedArgs) {
+    private _getStore(): IElViewStore {
+        return this.app.viewFactory.store;
+    }
+    protected _onEventChanged(args: IEventChangedArgs): void {
         switch (args.changeType) {
             case EVENT_CHANGE_TYPE.Added:
                 this._onEventAdded(args.name, args.newVal);
@@ -116,172 +110,145 @@ export class BaseElView extends BaseObject implements IElView {
                 break;
         }
     }
-    protected _onEventAdded(name: string, newVal: ICommand) {
+    protected _onEventAdded(name: string, newVal: ICommand): void {
         const self = this;
-        if (this.getIsDestroyCalled())
+        if (this.getIsStateDirty()) {
             return;
-        dom.events.on(this.el, name, function (e) {
-            e.stopPropagation();
-            if (!!self._eventStore)
-                self._eventStore.trigger(name, e);
+        }
+        dom.events.on(this.el, name, (e) => {
+            if (!!self._viewState._eventBag) {
+                self._viewState._eventBag.trigger(name, e);
+            }
         }, this.uniqueID);
     }
-    protected _onEventDeleted(name: string, oldVal: ICommand) {
+    protected _onEventDeleted(name: string, oldVal: ICommand): void {
         dom.events.off(this.el, name, this.uniqueID);
     }
-    protected _applyToolTip() {
-        if (!!this._toolTip) {
-            this._setToolTip(this.el, this._toolTip);
+    protected _applyToolTip(): void {
+        if (!!this.toolTip) {
+            addToolTip(this.el, this.toolTip);
         }
     }
-    protected _getErrorTipInfo(errors: IValidationInfo[]) {
-        const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<br/>"];
-        errors.forEach(function (info) {
-            let res = "";
-            info.errors.forEach(function (str) {
-                res = res + " " + str;
-            });
-            tip.push(res);
-            res = "";
-        });
-        return tip.join("");
+    protected _setIsSubcribed(flag: SubscribeFlags): void {
+        this._subscribeFlags |= (1 << flag);
     }
-    protected _setFieldError(isError: boolean) {
-        dom.setClass([this.el], css.fieldError, !isError);
+    protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void {
+        this._viewState._errors = errors;
+        const errSvc = !this._viewState.errorsService ? getErrorsService() : this._viewState.errorsService;
+        errSvc.setErrors(el, errors, this.toolTip);
     }
-    protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]) {
-        if (!el) {
-            return;
-        }
-       if (!!errors && errors.length > 0) {
-            fn_addToolTip(el, this._getErrorTipInfo(errors), true);
-            this._setFieldError(true);
-        }
-        else {
-            this._setToolTip(el, this.toolTip);
-            this._setFieldError(false);
-        }
+    isSubscribed(flag: SubscribeFlags): boolean {
+        return !!(this._subscribeFlags & (1 << flag));
     }
-    protected _setToolTip(el: Element, tip: string, isError?: boolean) {
-        fn_addToolTip(el, tip, isError);
-    }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        this._getStore().setElView(this.el, null);
-        dom.events.offNS(this.el, this.uniqueID);
-        this.validationErrors = null;
-        this.toolTip = null;
-        if (!!this._eventStore) {
-            this._eventStore.destroy();
-            this._eventStore = null;
-        }
-        if (!!this._props) {
-            this._props.destroy();
-            this._props = checks.undefined;
-        }
-        if (!!this._classes) {
-            this._classes.destroy();
-            this._classes = checks.undefined;
-        }
-        this._display = null;
-        this._css = null;
-        super.destroy();
-    }
-    toString() {
+    toString(): string {
         return "BaseElView";
     }
-    get el(): HTMLElement {
+    get el(): TElement {
         return this._el;
     }
-    get uniqueID(): string { return this._objId; }
-    get isVisible() {
+    get uniqueID(): string {
+        return this._uniqueID;
+    }
+    get isVisible(): boolean {
         const v = this.el.style.display;
         return !(v === "none");
     }
-    set isVisible(v) {
+    set isVisible(v: boolean) {
         v = !!v;
         if (v !== this.isVisible) {
             if (!v) {
-                this._display = this.el.style.display;
-                //if saved display is none, then don't store it
-                if (this._display === "none")
-                    this._display = null;
+                this._viewState._display = this.el.style.display;
+                // if saved display is none, then don't store it
+                if (this._viewState._display === "none") {
+                    this._viewState._display = null;
+                }
                 this.el.style.display = "none";
+            } else {
+                this.el.style.display = (!this._viewState._display ? "" : this._viewState._display);
             }
-            else {
-                this.el.style.display = (!this._display ? "" : this._display);
-            }
-            this.raisePropertyChanged(PROP_NAME.isVisible);
+            this.objEvents.raiseProp("isVisible");
         }
     }
-    get validationErrors(): IValidationInfo[] { return this._errors; }
+    get validationErrors(): IValidationInfo[] {
+        return this._viewState._errors;
+    }
     set validationErrors(v: IValidationInfo[]) {
-        if (v !== this._errors) {
-            this._errors = v;
-            this.raisePropertyChanged(PROP_NAME.validationErrors);
-            this._updateErrorUI(this.el, this._errors);
+        if (!this.getIsDisposed() && this._viewState._errors !== v) {
+            this._setErrors(this.el, v);
+            this.objEvents.raiseProp("validationErrors");
         }
     }
-    get dataName(): string { return this._el.getAttribute(DATA_ATTR.DATA_NAME); }
-    get toolTip(): string { return this._toolTip; }
+    get dataName(): string {
+        return this._el.getAttribute(DATA_ATTR.DATA_NAME);
+    }
+    get toolTip(): string {
+        return this._viewState.tip;
+    }
     set toolTip(v: string) {
-        if (this._toolTip !== v) {
-            this._toolTip = v;
-            this._setToolTip(this.el, v);
-            this.raisePropertyChanged(PROP_NAME.toolTip);
+        if (this.toolTip !== v) {
+            this._viewState.tip = v;
+            addToolTip(this.el, v);
+            this.objEvents.raiseProp("toolTip");
         }
     }
-    //stores commands for data binding to the HtmlElement's events
+    // stores commands for data binding to the HtmlElement's events
     get events(): IPropertyBag {
-        if (!this._eventStore) {
-            if (this.getIsDestroyCalled())
-                return null;
-
-            this._eventStore = new EventBag((s, a) => {
+        if (!this._viewState._eventBag) {
+            if (this.getIsStateDirty()) {
+                return _undefined;
+            }
+            this._viewState._eventBag = new EventBag((s, a) => {
                 this._onEventChanged(a);
             });
         }
-        return this._eventStore;
+        return this._viewState._eventBag;
     }
-    //exposes All HTML Element properties for data binding directly to them
+    // exposes All HTML Element properties for data binding directly to them
     get props(): IPropertyBag {
-        if (!this._props) {
-            if (this.getIsDestroyCalled())
-                return checks.undefined;
-            this._props = new PropertyBag(this.el);
+        if (!this._viewState._propBag) {
+            if (this.getIsStateDirty()) {
+                return _undefined;
+            }
+            this._viewState._propBag = new PropertyBag(this.el);
         }
-        return this._props;
+        return this._viewState._propBag;
     }
-    //exposes All CSS Classes for data binding directly to them
+    // exposes All CSS Classes for data binding directly to them
     get classes(): IPropertyBag {
-        if (!this._classes) {
-            if (this.getIsDestroyCalled())
-                return checks.undefined;
-            this._classes = new CSSBag(this.el);
+        if (!this._viewState._classBag) {
+            if (this.getIsStateDirty()) {
+                return _undefined;
+            }
+            this._viewState._classBag = new CSSBag(this.el);
         }
-        return this._classes;
+        return this._viewState._classBag;
     }
-    get css() { return this._css; }
+    get isDelegationOn(): boolean {
+        return !!(this._subscribeFlags & (1 << SubscribeFlags.delegationOn));
+    }
+    get css(): string {
+        return this._viewState.css;
+    }
     set css(v: string) {
-        let arr: string[] = [];
-        if (this._css !== v) {
-            if (!!this._css)
-                arr.push("-" + this._css);
-            this._css = v;
-            if (!!this._css)
-                arr.push("+" + this._css);
+        const arr: string[] = [];
+        if (this.css !== v) {
+            if (!!this.css) {
+                arr.push("-" + this.css);
+            }
+            this._viewState.css = v;
+            if (!!this.css) {
+                arr.push("+" + this.css);
+            }
 
             dom.setClasses([this._el], arr);
-            this.raisePropertyChanged(PROP_NAME.css);
+            this.objEvents.raiseProp("css");
         }
     }
     get app(): IApplication {
-        return boot.getApp();
+        return boot.app;
     }
 }
 
-//it is registered by two names
+// it is registered by two names
 boot.registerElView("generic", BaseElView);
 boot.registerElView("baseview", BaseElView);

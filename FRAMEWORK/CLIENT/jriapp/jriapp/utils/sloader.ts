@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     IIndexer, Utils, IStatefulPromise, PromiseState
 } from "jriapp_shared";
@@ -7,40 +7,38 @@ import { DomUtils } from "./dom";
 import { IStylesLoader } from "../int";
 import { PathHelper } from "./path";
 
-const _async = AsyncUtils, utils = Utils, dom = DomUtils, arrHelper = utils.arr,
-    resolvedPromise = _async.resolve<void>(void 0, true),
-    doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
+const { resolve: _resolve, whenAll: _whenAll, createDeferred } = AsyncUtils, utils = Utils,
+    dom = DomUtils, arrHelper = utils.arr, doc = dom.document, head = doc.head || doc.getElementsByTagName("head")[0];
 let _stylesLoader: IStylesLoader = null;
 export const frameworkCss = "jriapp.css";
 
 export function createCssLoader(): IStylesLoader {
-    if (!_stylesLoader)
+    if (!_stylesLoader) {
         _stylesLoader = new StylesLoader();
+    }
     return _stylesLoader;
 }
 
 function whenAll(promises: IStatefulPromise<any>[]): IStatefulPromise<any> {
-    if (!promises)
-        return resolvedPromise;
-    if (promises.length === 1)
+    if (!promises) {
+        return _resolve<void>(void 0, true);
+    }
+    if (promises.length === 1) {
         return promises[0];
-    let resolved = 0, cnt = promises.length;
+    }
+    let resolved = 0;
+    const cnt = promises.length;
     for (let i = 0; i < cnt; i += 1) {
         if (promises[i].state() === PromiseState.Resolved) {
             ++resolved;
         }
     }
 
-    if (resolved === cnt) {
-        return resolvedPromise;
-    }
-    else {
-        return _async.whenAll(promises);
-    }
+    return (resolved === cnt) ? _resolve<void>(void 0, true) : _whenAll(promises);
 }
 
 function createLink(url: string) {
-    var link = doc.createElement("link");
+    const link = doc.createElement("link");
 
     link.rel = "stylesheet";
     link.type = "text/css";
@@ -59,18 +57,18 @@ export interface IUrlParts {
     search: string;
 }
 
-//load css styles on demand
+// load css styles on demand
 class StylesLoader implements IStylesLoader {
     private _loadedCSS: IIndexer<IStatefulPromise<string>>;
-    
+
     constructor() {
         this._loadedCSS = <IIndexer<IStatefulPromise<string>>>{};
     }
     private isStyleSheetLoaded(url: string): boolean {
-        let testUrl = PathHelper.getUrlParts(url);
-        let arr = arrHelper.fromList(doc.styleSheets);
+        const testUrl = PathHelper.getUrlParts(url);
+        const arr = arrHelper.fromList(doc.styleSheets);
         for (let i = 0; i < arr.length; i += 1) {
-            let cssUrl = PathHelper.getUrlParts(arr[i].href);
+            const cssUrl = PathHelper.getUrlParts(arr[i].href);
             if (cssUrl.hostname === testUrl.hostname && cssUrl.pathname === testUrl.pathname) {
                 return true;
             }
@@ -78,13 +76,13 @@ class StylesLoader implements IStylesLoader {
 
         return false;
     }
-    private loadByLink(url: string, fn_onload: (err: any) => void) {
-        let link = createLink(url);
+    private loadByLink(url: string, fnOnload: (err: any) => void): void {
+        const link = createLink(url);
         link.onload = function () {
-            fn_onload(null);
+            fnOnload(null);
         };
         link.onerror = function () {
-            fn_onload("Error loading: " + url);
+            fnOnload("Error loading: " + url);
         };
         head.appendChild(link);
     }
@@ -98,12 +96,12 @@ class StylesLoader implements IStylesLoader {
         url = PathHelper.appendBust(url);
         const cssUrl = PathHelper.getNormalizedUrl(url);
 
-        //test if we already are loading this css file
+        // test if we already are loading this css file
         let cssPromise = this._loadedCSS[cssUrl];
         if (!!cssPromise) {
             return cssPromise;
         }
-        const deferred = _async.createDeferred<string>(true);
+        const deferred = createDeferred<string>(true);
         cssPromise = deferred.promise();
 
         if (this.isStyleSheetLoaded(url)) {
@@ -113,17 +111,18 @@ class StylesLoader implements IStylesLoader {
         }
 
         this.load(url, (err: any) => {
-            if (!!err)
+            if (!!err) {
                 deferred.reject(err);
-            else
+            } else {
                 deferred.resolve(url);
+            }
         });
 
         this._loadedCSS[cssUrl] = cssPromise;
         return cssPromise;
     }
     loadStyles(urls: string[]): IStatefulPromise<any> {
-        let promises = <IStatefulPromise<string>[]>[];
+        const promises = <IStatefulPromise<string>[]>[];
 
         for (let i = 0; i < urls.length; i += 1) {
             promises.push(this.loadStyle(urls[i]));
@@ -132,11 +131,11 @@ class StylesLoader implements IStylesLoader {
     }
     loadOwnStyle(cssName?: string): IStatefulPromise<string> {
         cssName = cssName || frameworkCss;
-        let cssUrl = PathHelper.getFrameworkCssPath() + StylesLoader.ensureCssExt(cssName);
+        const cssUrl = PathHelper.getFrameworkCssPath() + StylesLoader.ensureCssExt(cssName);
         return this.loadStyle(cssUrl);
     }
     whenAllLoaded(): IStatefulPromise<any> {
-        let obj = this._loadedCSS, names = Object.keys(obj), promises = <IStatefulPromise<any>[]>[];
+        const obj = this._loadedCSS, names = Object.keys(obj), promises = <IStatefulPromise<any>[]>[];
         for (let i = 0; i < names.length; i += 1) {
             promises.push(obj[names[i]]);
         }

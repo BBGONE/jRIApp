@@ -1,23 +1,47 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "common"], function (require, exports, RIAPP, dbMOD, FOLDERBROWSER_SVC, COMMON) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT", $ = RIAPP.$;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, infoType = "BASE_ROOT";
+    var RootDataView = (function (_super) {
+        __extends(RootDataView, _super);
+        function RootDataView() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return RootDataView;
+    }(dbMOD.DataView));
+    var ChildDataView = (function (_super) {
+        __extends(ChildDataView, _super);
+        function ChildDataView() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return ChildDataView;
+    }(dbMOD.ChildDataView));
     var ExProps = (function (_super) {
         __extends(ExProps, _super);
         function ExProps(item, dbContext) {
-            _super.call(this);
-            var self = this;
-            this._item = item;
-            this._dbContext = dbContext;
-            this._childView = null;
-            if (item.HasSubDirs)
-                this._childView = this.createChildView();
-            this._dbSet = item._aspect.dbSet;
-            self._toggleCommand = new RIAPP.Command(function (s, a) {
+            var _this = _super.call(this) || this;
+            var self = _this;
+            _this._item = item;
+            _this._dbContext = dbContext;
+            _this._childView = null;
+            if (item.HasSubDirs) {
+                _this._childView = _this.createChildView();
+            }
+            _this._dbSet = item._aspect.dbSet;
+            self._toggleCommand = new RIAPP.Command(function () {
                 if (!self.childView)
                     return;
                 if (self.childView.count <= 0) {
@@ -30,48 +54,47 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
                     self._dbSet.acceptChanges();
                     self.refreshCss();
                 }
-            }, self, function (s, a) {
+            }, function () {
                 return !!self.childView;
             });
-            self._clickCommand = new RIAPP.Command(function (s, a) {
-                if (!!this._clickTimeOut) {
-                    clearTimeout(this._clickTimeOut);
-                    this._clickTimeOut = null;
-                    self.raiseEvent('dblclicked', { item: self._item });
+            self._clickCommand = new RIAPP.Command(function () {
+                if (!!self._clickTimeOut) {
+                    clearTimeout(self._clickTimeOut);
+                    self._clickTimeOut = null;
+                    self.objEvents.raise('dblclicked', { item: self._item });
                 }
                 else {
-                    this._clickTimeOut = setTimeout(function () {
+                    self._clickTimeOut = setTimeout(function () {
                         self._clickTimeOut = null;
-                        self.raiseEvent('clicked', { item: self._item });
+                        self.objEvents.raise('clicked', { item: self._item });
                     }, 350);
                 }
-            }, self, null);
+            });
+            return _this;
         }
-        ExProps.prototype._getEventNames = function () {
-            var base_events = _super.prototype._getEventNames.call(this);
-            return ['clicked', 'dblclicked'].concat(base_events);
-        };
         ExProps.prototype.addOnClicked = function (fn, nmspace) {
-            this.addHandler('clicked', fn, nmspace);
+            this.objEvents.on('clicked', fn, nmspace);
         };
-        ExProps.prototype.removeOnClicked = function (nmspace) {
-            this.removeHandler('clicked', nmspace);
+        ExProps.prototype.offOnClicked = function (nmspace) {
+            this.objEvents.off('clicked', nmspace);
         };
         ExProps.prototype.addOnDblClicked = function (fn, nmspace) {
-            this.addHandler('dblclicked', fn, nmspace);
+            this.objEvents.on('dblclicked', fn, nmspace);
         };
-        ExProps.prototype.removeOnDblClicked = function (nmspace) {
-            this.removeHandler('dblclicked', nmspace);
+        ExProps.prototype.offOnDblClicked = function (nmspace) {
+            this.objEvents.off('dblclicked', nmspace);
         };
         ExProps.prototype.createChildView = function () {
             var self = this;
-            var dvw = new dbMOD.ChildDataView({
+            var dvw = new ChildDataView({
                 association: self._dbContext.associations.getChildToParent(),
-                parentItem: self._item
+                parentItem: self._item,
+                explicitRefresh: true
             });
             dvw.addOnFill(function (s, a) {
                 self.refreshCss();
             });
+            dvw.syncRefresh();
             return dvw;
         };
         ExProps.prototype.loadChildren = function () {
@@ -80,25 +103,25 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             var promise = query.load();
             return promise;
         };
-        ExProps.prototype.destroy = function () {
-            if (this._isDestroyed)
+        ExProps.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             clearTimeout(self._clickTimeOut);
             if (!!this._childView) {
                 this._childView.parentItem = null;
-                this._childView.destroy();
+                this._childView.dispose();
                 this._childView = null;
             }
             this._dbSet = null;
             this._dbContext = null;
             this._item = null;
-            _super.prototype.destroy.call(this);
+            _super.prototype.dispose.call(this);
         };
         ExProps.prototype.refreshCss = function () {
-            this.raisePropertyChanged('css1');
-            this.raisePropertyChanged('css2');
+            this.objEvents.raiseProp('css1');
+            this.objEvents.raiseProp('css2');
         };
         Object.defineProperty(ExProps.prototype, "item", {
             get: function () { return this._item; },
@@ -149,18 +172,14 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
     var FolderBrowser = (function (_super) {
         __extends(FolderBrowser, _super);
         function FolderBrowser(app, options) {
-            _super.call(this, app);
-            var self = this;
+            var _this = _super.call(this, app) || this;
+            var self = _this;
             self._dbSet = self.dbContext.dbSets.FileSystemObject;
-            self._collapseCommand = new RIAPP.Command(function (s, a) {
+            self._collapseCommand = new RIAPP.Command(function () {
                 self.collapse();
-            }, self, function (s, a) {
-                return true;
             });
-            self._reloadCommand = new RIAPP.Command(function (s, a) {
+            self._reloadCommand = new RIAPP.Command(function () {
                 self.loadAll();
-            }, self, function (s, a) {
-                return true;
             });
             self.dbContext.dbSets.FileSystemObject.definefullPathField(function (item) {
                 return self.getFullPath(item);
@@ -175,7 +194,8 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
                 }
                 return res;
             });
-            this._rootView = this.createDataView();
+            _this._rootView = _this.createDataView();
+            return _this;
         }
         FolderBrowser.prototype._onItemClicked = function (item) {
             alert("clicked item: " + item.fullPath);
@@ -184,7 +204,8 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             alert("double clicked item: " + item.fullPath);
         };
         FolderBrowser.prototype._getFullPath = function (item, path) {
-            var self = this, part;
+            var self = this;
+            var part;
             if (utils.check.isNt(path))
                 path = '';
             if (!path)
@@ -204,7 +225,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
         };
         FolderBrowser.prototype.createDataView = function () {
             var self = this;
-            var res = new dbMOD.DataView({
+            var res = new RootDataView({
                 dataSource: self._dbSet,
                 fn_filter: function (item) {
                     return item.Level == 0;
@@ -242,12 +263,11 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             var promise = query.load();
             return promise;
         };
-        FolderBrowser.prototype.destroy = function () {
-            if (this._isDestroyed)
+        FolderBrowser.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
-            var self = this;
-            _super.prototype.destroy.call(this);
+            this.setDisposing();
+            _super.prototype.dispose.call(this);
         };
         Object.defineProperty(FolderBrowser.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
@@ -280,10 +300,10 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
-            _super.call(this, options);
-            var self = this;
-            this._errorVM = null;
-            this._fbrowserVM = null;
+            var _this = _super.call(this, options) || this;
+            _this._errorVM = null;
+            _this._fbrowserVM = null;
+            return _this;
         }
         DemoApplication.prototype.onStartUp = function () {
             var self = this, options = self.options;
@@ -294,7 +314,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             });
             this._errorVM = new COMMON.ErrorViewModel(this);
             this._fbrowserVM = new FolderBrowser(this, { service_url: options.service_url, permissionInfo: options.permissionInfo });
-            this.addOnError(function (sender, data) {
+            this.objEvents.addOnError(function (_s, data) {
                 debugger;
                 data.isHandled = true;
                 self.errorVM.error = data.error;
@@ -302,17 +322,17 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
             });
             _super.prototype.onStartUp.call(this);
         };
-        DemoApplication.prototype.destroy = function () {
-            if (this._isDestroyed)
+        DemoApplication.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             try {
-                self._errorVM.destroy();
-                self._fbrowserVM.destroy();
+                self._errorVM.dispose();
+                self._fbrowserVM.dispose();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         Object.defineProperty(DemoApplication.prototype, "options", {
@@ -343,7 +363,7 @@ define(["require", "exports", "jriapp", "jriapp_db", "./folderBrowserSvc", "comm
         return DemoApplication;
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
-    RIAPP.bootstrap.addOnError(function (sender, args) {
+    RIAPP.bootstrap.objEvents.addOnError(function (_s, args) {
         debugger;
         alert(args.error.message);
     });

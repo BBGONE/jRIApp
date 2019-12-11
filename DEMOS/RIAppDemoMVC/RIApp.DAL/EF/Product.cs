@@ -14,7 +14,7 @@ namespace RIAppDemo.DAL.EF
         {
             SalesOrderDetails = new HashSet<SalesOrderDetail>();
         }
-
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ProductID { get; set; }
 
         [Required]
@@ -48,8 +48,6 @@ namespace RIAppDemo.DAL.EF
         public DateTime? SellEndDate { get; set; }
 
         public DateTime? DiscontinuedDate { get; set; }
-
-        public byte[] ThumbNailPhoto { get; set; }
 
         [StringLength(50)]
         public string ThumbnailPhotoFileName { get; set; }

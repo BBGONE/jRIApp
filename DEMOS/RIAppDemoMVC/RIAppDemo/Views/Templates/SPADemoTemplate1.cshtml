@@ -4,58 +4,71 @@
     Layout = null;
 }
 
-<script id="SPAcustTemplate" type="text/html" data-role="template">
+@*just for testing using GET in the options*@
+<script id="custGroup.customerEditorOptions" type="text/x-options">
+    templateID:custGroup.customerEditTemplate,width:500,height:550,title:'Customer editing'
+</script>
+
+<script id="custGroup.SPAcustTemplate" type="text/x-template">
 @*first page view of customers*@
 <div>
     <div style="height: 85%; vertical-align: top;">
         <table data-name="gridCustomers"
-               data-bind-1="{this.dataSource,to=dbSet,source=customerVM}"
-               data-bind-2="{this.myGridEvents,to=gridEvents,source=customerVM}"
-               data-view="name=my_grid,options={wrapCss:customerTableWrap,isHandleAddNew:true,editor:{templateID:customerEditTemplate,width:500,height:550,title:'Customer editing'},details:{templateID:customerDetailsTemplate}}">
+               data-bind-1="this.dataSource,to=dbSet,source=customerVM"
+               data-bind-2="this.myGridEvents,to=gridEvents,source=customerVM"
+               data-view="my_grid"
+               data-view-options="wrapCss:customerTableWrap,isHandleAddNew:true,editor:get(custGroup.customerEditorOptions),details:{templateID:custGroup.customerDetailsTemplate}">
             <thead>
                 <tr>
                     <th data-column="width:35px,type:row_expander"></th>
                     <th data-column="width:40px,type:row_actions"></th>
-                    <th data-column="width:30px,title:***" data-content="template={displayID=goToInfoColTemplate}"></th>
+                    <th data-column="width:30px,title:***" data-content="template={readID=custGroup.goToInfoColTemplate}"></th>
                     <th data-column="width:40px,sortable:true,title:Title" data-content="fieldName:Title,readOnly:true"></th>
                     <th data-column="width:150px,sortable:true,title:Customer Name,sortMemberName=ComplexProp.LastName;ComplexProp.MiddleName;ComplexProp.FirstName" data-content="fieldName:ComplexProp.Name,readOnly:true"></th>
                     <th data-column="width:50%,sortable:true,title:CompanyName" data-content="fieldName:CompanyName,readOnly:true"></th>
                     <th data-column="width:150px,sortable:true,title:SalesPerson" data-content="fieldName:SalesPerson,readOnly:true"></th>
+                    <th data-column="width:100px,sortable:true,title:AddressCount" data-content="fieldName:AddressCount,readOnly:true"></th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
-    <div style="border: none; height: 15%; margin-top: 40px; text-align: left; width: 100%;">
+    <div style="border: none; margin-top: 20px; text-align: left; width: 100%;">
         <!--pager-->
-        <div style="float: left;" data-bind="{this.dataSource,to=dbSet,source=customerVM}" data-view="name=pager,options={sliderSize:20}"></div>
-        <div style="float: left; padding-left: 10px; padding-top: 10px;"><span>Total:</span>&nbsp;<span data-bind="{this.value,to=dbSet.totalCount,source=customerVM}"></span></div>
+        <div style="float: left;" data-bind="this.dataSource,to=dbSet,source=customerVM" 
+             data-view="pager" 
+             data-view-options="sliderSize:11"></div>
+        <div style="float: left; padding-left: 10px; padding-top: 11px; padding-bottom:11px;">
+            <span>Total rows:</span>&nbsp;<span data-bind="this.value,to=dbSet.totalCount,source=customerVM"></span>
+        </div>
 
         <div style="float: right;">
-            <button class="btn btn-info btn-small" data-bind="{this.command,to=switchViewCommand}{this.commandParam,to=uiMainRoute.custDetTemplName}"><i class="icon-user"></i>&nbsp;Customer's details</button>
-            <button class="btn btn-info btn-small" data-bind="{this.command,to=addNewCommand}"><i class="icon-plus"></i>&nbsp;New Customer</button>
-            <button class="btn btn-info btn-small" data-bind="{this.command,to=saveCommand}"><i class="icon-ok-circle"></i>&nbsp;Save changes</button>
-            <button class="btn btn-info btn-small" data-bind="{this.command,to=undoCommand}"><i class="icon-remove"></i>&nbsp;Undo changes</button>
+            <button class="btn btn-info btn-small" 
+                    data-bind-1="this.command,to=switchViewCommand"
+                    data-bind-2="this.commandParam,to=uiMainRoute.custDetTemplName"><i class="icon-user"></i>&nbsp;Customer's details</button>
+            <button class="btn btn-info btn-small" data-bind="this.command,to=addNewCommand"><i class="icon-plus"></i>&nbsp;New Customer</button>
+            <button class="btn btn-info btn-small" data-bind="this.command,to=saveCommand"><i class="icon-ok-circle"></i>&nbsp;Save changes</button>
+            <button class="btn btn-info btn-small" data-bind="this.command,to=undoCommand"><i class="icon-remove"></i>&nbsp;Undo changes</button>
         </div>
     </div>
 </div>
 </script>
 
-<script id="goToInfoColTemplate" type="text/html" data-role="template">
-    <a style="display: inline-block; padding: 2px;" data-bind-1="{this.command,to=switchViewCommand,source=customerVM}"
-       data-bind-2="{this.commandParam,to=uiMainRoute.custDetTemplName,source=customerVM}" data-view="options={tip:'Go to details'}">
+<script id="custGroup.goToInfoColTemplate" type="text/x-template">
+    <a style="display: inline-block; padding: 2px;" data-bind-1="this.command,to=switchViewCommand,source=customerVM"
+       data-bind-2="this.commandParam,to=uiMainRoute.custDetTemplName,source=customerVM" data-view-options="tip:'Go to details'">
         <i class="icon-user"></i>
     </a>
 </script>
 
-<script id="SPAcustDetailTemplate" type="text/html" data-role="template">
-    <!--for switching views between customerInfo and customerAddr-->
-    <div id="infoDynaContent" data-bind-1="{this.templateID,to=uiCustDetRoute.viewName}"  data-bind-2="{this.dataContext}"
-         data-bind-3="{this.animation,to=uiCustDetRoute.animation}" data-view="name=dynacontent"></div>
+<script id="custGroup.SPAcustDetailTemplate" type="text/x-template">
+    <!--for switching views between custInfoGroup.customerInfo and custAdrGroup.customerAddr-->
+    <div id="infoDynaContent" data-bind-1="this.templateID,to=uiCustDetRoute.viewName"  data-bind-2="this.dataContext"
+         data-bind-3="this.animation,to=uiCustDetRoute.animation" data-view="dynacontent"></div>
 </script>
 
-<script id="customerEditTemplate" type="text/html" data-role="template">
-    <div style="width: 100%;" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+<script id="custGroup.customerEditTemplate" type="text/x-template">
+    <div style="width: 100%;" data-bind="this.dataContext,mode=OneWay" data-view="dataform">
         <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
             <colgroup>
                 <col style="border: none; text-align: left; width: 125px;" />
@@ -67,7 +80,7 @@
                         ID:
                     </td>
                     <td>
-                        <span data-content="fieldName:CustomerID,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                        <span data-content="fieldName:CustomerID,css:{readCss:'custInfo',editCss:'custEdit'}"></span>
                     </td>
                 </tr>
                 <tr>
@@ -75,7 +88,7 @@
                         Title:
                     </td>
                     <td>
-                        <span data-content="fieldName:Title,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                        <span data-content="fieldName:Title,css:{readCss:'custInfo',editCss:'custEdit'}"></span>
                     </td>
                 </tr>
                 <tr>
@@ -83,7 +96,7 @@
                         FirstName:
                     </td>
                     <td>
-                        <span data-content="fieldName:ComplexProp.FirstName,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                        <span data-content="fieldName:ComplexProp.FirstName,css:{readCss:'custInfo',editCss:'custEdit'}"></span>
                     </td>
                 </tr>
                 <tr>
@@ -91,7 +104,7 @@
                         MiddleName:
                     </td>
                     <td>
-                        <span data-content="fieldName:ComplexProp.MiddleName,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                        <span data-content="fieldName:ComplexProp.MiddleName,css:{readCss:'custInfo',editCss:'custEdit'}"></span>
                     </td>
                 </tr>
                 <tr>
@@ -99,7 +112,7 @@
                         LastName:
                     </td>
                     <td>
-                        <span data-content="fieldName:ComplexProp.LastName,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                        <span data-content="fieldName:ComplexProp.LastName,css:{readCss:'custInfo',editCss:'custEdit'}"></span>
                     </td>
                 </tr>
                 <tr>
@@ -107,7 +120,7 @@
                         Suffix:
                     </td>
                     <td>
-                        <span data-content="fieldName:Suffix,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                        <span data-content="fieldName:Suffix,css:{readCss:'custInfo',editCss:'custEdit'}"></span>
                     </td>
                 </tr>
                 <tr>
@@ -115,7 +128,7 @@
                         CompanyName:
                     </td>
                     <td>
-                        <span data-content="fieldName:CompanyName,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                        <span data-content="fieldName:CompanyName,css:{readCss:'custInfo',editCss:'custEdit'}"></span>
                     </td>
                 </tr>
                 <tr>
@@ -123,7 +136,7 @@
                         SalesPerson:
                     </td>
                     <td>
-                        <span data-content="fieldName:SalesPerson,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                        <span data-content="fieldName:SalesPerson,css:{readCss:'custInfo',editCss:'custEdit'}"></span>
                     </td>
                 </tr>
                 <tr>
@@ -131,7 +144,7 @@
                         Email:
                     </td>
                     <td>
-                        <span data-content="fieldName=ComplexProp.ComplexProp.EmailAddress,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                        <span data-content="fieldName=ComplexProp.ComplexProp.EmailAddress,css:{readCss:'custInfo',editCss:'custEdit'}"></span>
                     </td>
                 </tr>
                 <tr>
@@ -139,7 +152,7 @@
                         Phone:
                     </td>
                     <td>
-                        <span data-content="fieldName:ComplexProp.ComplexProp.Phone,css:{displayCss:'custInfo',editCss:'custEdit'}"></span>
+                        <span data-content="fieldName:ComplexProp.ComplexProp.Phone,css:{readCss:'custInfo',editCss:'custEdit'}"></span>
                     </td>
                 </tr>
             </tbody>
@@ -147,13 +160,14 @@
     </div>
 </script>
 
-<script id="customerDetailsTemplate" type="text/html" data-role="template">
+<script id="custGroup.customerDetailsTemplate" type="text/x-template">
     @*Grid details template for customer's orders*@
-    <div data-name="tabs" style="min-height: 400px; margin: 5px; padding: 5px; width: 95%;" data-view="name='tabs',options:{hide:{effect:clip,duration:500},show:{effect:clip,duration:500}}">
+    <div data-name="tabs" style="min-height: 400px; margin: 5px; padding: 5px; width: 95%;" data-view="tabs"
+         data-view-options="hide:{effect:clip,duration:500},show:{effect:clip,duration:500}">
         <div id="detailsTabs">
             <ul>
                 <li>
-                    <a href="#custDetails">Details on&nbsp;<span data-bind="{this.value,to=ComplexProp.Name}"></span></a>
+                    <a href="#custDetails">Details on&nbsp;<span data-bind="this.value,to=ComplexProp.Name"></span></a>
                 </li>
                 <li>
                     <a href="#custOrders">Customer's Orders</a>
@@ -166,7 +180,7 @@
                             ID:
                         </label>
                         <div class="controls">
-                            <input type="text" class="value" data-bind="{this.value,to=CustomerID}" readonly="readonly" />
+                            <input type="text" class="value" data-bind="this.value,to=CustomerID" readonly="readonly" />
                         </div>
                     </div>
                     <div class="control-group">
@@ -174,7 +188,7 @@
                             Title:
                         </label>
                         <div class="controls">
-                            <input type="text" class="value" data-bind="{this.value,to=Title}" readonly="readonly" />
+                            <input type="text" class="value" data-bind="this.value,to=Title" readonly="readonly" />
                         </div>
                     </div>
                     <div class="control-group">
@@ -182,7 +196,7 @@
                             Suffix:
                         </label>
                         <div class="controls">
-                            <input type="text" class="value" data-bind="{this.value,to=Suffix}" readonly="readonly" />
+                            <input type="text" class="value" data-bind="this.value,to=Suffix" readonly="readonly" />
                         </div>
                     </div>
                     <div class="control-group">
@@ -190,7 +204,7 @@
                             CompanyName:
                         </label>
                         <div class="controls">
-                            <input type="text" class="value" data-bind="{this.value,to=CompanyName}" readonly="readonly" />
+                            <input type="text" class="value" data-bind="this.value,to=CompanyName" readonly="readonly" />
                         </div>
                     </div>
                     <div class="control-group">
@@ -198,7 +212,7 @@
                             EmailAddress:
                         </label>
                         <div class="controls">
-                            <input type="text" class="value" data-bind="{this.value,to=ComplexProp.ComplexProp.EmailAddress}" readonly="readonly" />
+                            <input type="text" class="value" data-bind="this.value,to=ComplexProp.ComplexProp.EmailAddress" readonly="readonly" />
                         </div>
                     </div>
                     <div class="control-group">
@@ -206,7 +220,7 @@
                             Phone:
                         </label>
                         <div class="controls">
-                            <input type="text" class="value" data-bind="{this.value,to=ComplexProp.ComplexProp.Phone}" readonly="readonly" />
+                            <input type="text" class="value" data-bind="this.value,to=ComplexProp.ComplexProp.Phone" readonly="readonly" />
                         </div>
                     </div>
                 </form>
@@ -217,9 +231,10 @@
                 It is here just to show you the capabilties you have with the framework to manage
                 master-details.
                 <table style="font-size: 9pt; margin-bottom: 3px;" data-name="tblOrders"
-                       data-bind-1="{this.dataSource,to=dbSet,source=customerVM.ordersVM}"
-                       data-bind-2="{this.myGridEvents,to=gridEvents,source=customerVM.ordersVM}"
-                       data-view="name=my_grid,options={isUseScrollIntoDetails:false,isHandleAddNew:true,editor:{templateID:orderEditTemplate,width:650,height:550,title:'Order editing'},details:{templateID:orderDetailsTemplate}}">
+                       data-bind-1="this.dataSource,to=dbSet,source=customerVM.ordersVM"
+                       data-bind-2="this.myGridEvents,to=gridEvents,source=customerVM.ordersVM"
+                       data-view="my_grid"
+                       data-view-options="isUseScrollIntoDetails:false,isHandleAddNew:true,editor:{templateID:custGroup.orderEditTemplate,width:650,height:550,title:'Order editing'},details:{templateID:custGroup.orderDetailsTemplate}">
                     <thead>
                         <tr>
                             <th data-column="width:20px,type:row_expander"></th>
@@ -237,7 +252,7 @@
                 </table>
                 <button class="btn btn-info btn-small"
                         data-bind="@Model.BindAddNewOrder"
-                        data-view="@Model.OptionsAddNewOrder">
+                        data-view-options="@Model.OptionsAddNewOrder">
                     <i class="icon-plus"></i>&nbsp;New Order
                 </button>
             </div>
@@ -245,8 +260,8 @@
     </div>
 </script>
 
-<script id="orderEditTemplate" type="text/html" data-role="template">
-    <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+<script id="custGroup.orderEditTemplate" type="text/x-template">
+    <div style="width: 100%" data-bind="this.dataContext,mode=OneWay" data-view="dataform">
         <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
             <colgroup>
                 <col style="border: none; text-align: left; width: 225px;" />
@@ -386,8 +401,8 @@
     </div>
 </script>
 
-<script id="orderDetEditTemplate" type="text/html" data-role="template">
-    <div style="width: 100%" data-bind="{this.dataContext,mode=OneWay}" data-view="name=dataform">
+<script id="custGroup.orderDetEditTemplate" type="text/x-template">
+    <div style="width: 100%" data-bind="this.dataContext,mode=OneWay" data-view="dataform">
         <table style="background-color: transparent; border: none; table-layout: fixed; width: 95%;">
             <colgroup>
                 <col style="border: none; text-align: left; width: 225px;" />
@@ -415,7 +430,7 @@
                         Product:
                     </td>
                     <td>
-                        <span data-content="template={displayID=productTemplate1,editID=productTemplate2}"></span>
+                        <span data-content="template={readID=custGroup.productTemplate1,editID=custGroup.productTemplate2}"></span>
                     </td>
                 </tr>
                 <tr>
@@ -447,10 +462,11 @@
     </div>
 </script>
 
-<script id="orderDetailsTemplate" type="text/html" data-role="template">
+<script id="custGroup.orderDetailsTemplate" type="text/x-template">
     @*Grid details template for order Details*@
     <div style="margin: 0px; width: 100%;">
-        <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-bind="this.tabsEvents,to=tabsEvents,source=customerVM.ordersVM" data-view="name='tabs',options:{hide:{effect:clip,duration:500},show:{effect:clip,duration:500}}">
+        <div data-name="tabs" style="margin: 5px; padding: 5px; width: 95%;" data-bind="this.tabsEvents,to=tabsEvents,source=customerVM.ordersVM" 
+             data-view="tabs" data-view-options="hide:{effect:clip,duration:500},show:{effect:clip,duration:500}">
             <div id="odeTabs">
                 <ul>
                     <li>
@@ -464,7 +480,7 @@
                     </li>
                 </ul>
                 <div id="sta">
-                    <form action="#" style="padding: 15px; width: 100%;" data-bind="{this.dataContext,to=Address}"  data-view="name=dataform">
+                    <form action="#" style="padding: 15px; width: 100%;" data-bind="this.dataContext,to=Address"  data-view="dataform">
                         <dl class="dl-horizontal">
                             <dt>
                                 <span class="addressLabel">AddressLine1:</span>
@@ -507,8 +523,8 @@
                     </form>
                 </div>
                 <div id="bta">
-                    <form action="#" style="padding: 15px; width: 100%;" data-bind="{this.dataContext,to=Address1}"
-                          data-view="name=dataform">
+                    <form action="#" style="padding: 15px; width: 100%;" data-bind="this.dataContext,to=Address1"
+                          data-view="dataform">
                         <dl class="dl-horizontal">
                             <dt>
                                 <span class="addressLabel">AddressLine1:</span>
@@ -552,8 +568,8 @@
                 </div>
                 <div id="ode">
                     <table style="font-size: 9pt;" data-name="tblOrderDetails"
-                           data-bind="{this.dataSource,to=dbSet,source=customerVM.ordersVM.orderDetailsVM}"
-                           data-view="options={wrapCss:orderDetailTableWrap,isHandleAddNew:true,editor:{templateID:orderDetEditTemplate,width:650,height:550,title:'Order Detail editing'}}">
+                           data-bind="this.dataSource,to=dbSet,source=customerVM.ordersVM.orderDetailsVM"
+                           data-view-options="wrapCss:orderDetailTableWrap,isHandleAddNew:true,editor:{templateID:custGroup.orderDetEditTemplate,width:650,height:550,title:'Order Detail editing'}">
                         <thead>
                             <tr>
                                 <th data-column="width:50px,type:row_actions"></th>
@@ -573,26 +589,36 @@
     </div>
 </script>
 
-<script id="productTemplate1" type="text/html" data-role="template">
-    <span data-bind="{this.value,to=Product.Name}"></span>
+<script id="custGroup.productTemplate1" type="text/x-template">
+    <span data-bind="this.value,to=Product.Name"></span>
 </script>
 
-<script id="productTemplate2" type="text/html" data-role="template">
+<script id="custGroup.productAutocompleteOptions" type="text/x-options">
+    dbContext:inject($dbContext),
+    fieldName:Name,
+    dbSetName:LookUpProduct,
+    queryName:ReadProductLookUp,
+    templateId:custGroup.prodAutocompleteTemplate,
+    width:300px
+</script>
+
+<script id="custGroup.productTemplate2" type="text/x-template">
     <span>
         autocomplete here-->
-        <input type="text" style="margin-left: 0px; width: 300px;" data-bind="{this.dataContext}"
-               data-view="name=productAutocomplete,options={dbContext:dbContext,fieldName:Name,dbSetName:LookUpProduct,queryName:ReadProductLookUp,templateId:prodAutocompleteTemplate,width:300px}" />&nbsp;
+        <input type="text" style="margin-left: 0px; width: 300px;" data-bind="this.dataContext"
+               data-view="productAutocomplete"
+               data-view-options="get(custGroup.productAutocompleteOptions)" />&nbsp;
         <b>*</b>
     </span>
 </script>
 
-<script id="prodAutocompleteTemplate" type="text/html" data-role="template">
+<script id="custGroup.prodAutocompleteTemplate" type="text/x-template">
     @*an example of autocomplete implementation*@
     <div style="height: 98%; margin: 0px; padding: 2px; position: relative;">
         <div style="margin-left: 1px; position: relative; vertical-align: top;"
-             data-bind="{this.isBusy,to=isLoading}" data-view="name=busy">
-            <table data-name="lookupGrid" data-bind="{this.dataSource,to=gridDataSource}"
-                   data-view="options={wrapCss:autocompleteTableWrap,headerCss:autocompleteTableHeader}">
+             data-bind="this.isBusy,to=isLoading" data-view="busy">
+            <table data-name="lookupGrid"
+                   data-view-options="wrapCss:autocompleteTableWrap,headerCss:autocompleteTableHeader">
                 <thead>
                     <tr>
                         <th data-column="width:100%,sortable:true,title:Name" data-content="fieldName:Name"></th>
@@ -603,18 +629,20 @@
         </div>
         <div style="text-align: left;position: relative;">
             <!--pager-->
-            <div style="float: left;" data-bind="{this.dataSource,to=gridDataSource}" data-view="name=pager,options={sliderSize:4,hideOnSinglePage=true}">
+            <div style="float: left;" data-bind="this.dataSource,to=gridDataSource" 
+                 data-view="pager" 
+                 data-view-options="sliderSize:5,hideOnSinglePage=true">
             </div>
             <div style="float: left; padding: 5px;">
-                <span>Total:</span>&nbsp;<span data-bind="{this.value,to=gridDataSource.totalCount}"></span>
+                <span>Total rows:</span>&nbsp;<span data-bind="this.value,to=gridDataSource.totalCount"></span>
             </div>
         </div>
         <br style="clear: both;" />
         <div style="margin-left: auto;margin-right:auto;left: 0;right: 0;bottom:5px;text-align:center;position:absolute;">
-            <a class="btn btn-info btn-small" style="width: 70px;" data-name="btnOk" data-bind="{this.text,to=txtOk,source=TEXT}">
+            <a class="btn btn-info btn-small" style="width: 70px;" data-name="btnOk" data-bind="this.text,to=txtOk,source=TEXT">
                 <i class="icon-ok"></i>
             </a><span class="space"></span>
-            <a class="btn btn-info btn-small" style="width: 70px;" data-name="btnCancel" data-bind="{this.text,to=txtCancel,source=TEXT}">
+            <a class="btn btn-info btn-small" style="width: 70px;" data-name="btnCancel" data-bind="this.text,to=txtCancel,source=TEXT">
                 <i class="icon-remove"></i>
             </a>
         </div>

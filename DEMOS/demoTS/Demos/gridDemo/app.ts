@@ -1,6 +1,5 @@
 ﻿import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 
 import * as DEMODB from "../demo/demoDB";
 import * as COMMON from "common";
@@ -36,7 +35,6 @@ export class DemoApplication extends RIAPP.Application {
 
     constructor(options: IMainOptions) {
         super(options);
-        var self = this;
         this._dbContext = null;
         this._errorVM = null;
         this._headerVM = null;
@@ -46,16 +44,12 @@ export class DemoApplication extends RIAPP.Application {
         this._websockVM = null;
     }
     onStartUp() {
-        var self = this, options: IMainOptions = self.options;
+        const self = this, options: IMainOptions = self.options;
         this._dbContext = new DEMODB.DbContext();
+        this._dbContext.addOnDbSetCreating((s, a) => {
+            console.log("DbSet: %s is creating", a.name);
+        });
         this._dbContext.initialize({ serviceUrl: options.service_url, permissions: options.permissionInfo });
-        function toText(str: any) {
-            if (str === null)
-                return '';
-            else
-                return str;
-        };
-
         this._dbContext.dbSets.Product.defineIsActiveField(function (item) {
             return !item.SellEndDate;
         });
@@ -67,21 +61,21 @@ export class DemoApplication extends RIAPP.Application {
             self._handleError(sender, data);
         };
         //here we could process application's errors
-        this.addOnError(handleError);
-        this._dbContext.addOnError(handleError);
+        this.objEvents.addOnError(handleError);
+        this._dbContext.objEvents.addOnError(handleError);
         //instead of server side events i added websocket
 
         if (!!options.sse_url && SSEVENTS.SSEventsVM.isSupported()) {
             this._sseVM = new SSEVENTS.SSEventsVM(options.sse_url, options.sse_clientID);
-            this._sseVM.addOnMessage((s, a) => { self._sseMessage = a.data.message; self.raisePropertyChanged('sseMessage'); });
-            this._sseVM.addOnError(handleError);
+            this._sseVM.addOnMessage((s, a) => { self._sseMessage = a.data.message; self.objEvents.raiseProp('sseMessage'); });
+            this._sseVM.objEvents.addOnError(handleError);
         }
 
 
         if (WEBSOCK.WebSocketsVM.isSupported()) {
             this._websockVM = new WEBSOCK.WebSocketsVM(WEBSOCK.WebSocketsVM.createUrl(81, 'PollingService', false));
             this._websockVM.addOnMessage(this._onWebsockMsg, this.uniqueID, this);
-            this._websockVM.addOnError(handleError);
+            this._websockVM.objEvents.addOnError(handleError);
         }
 
         //adding event handler for our custom event
@@ -99,24 +93,24 @@ export class DemoApplication extends RIAPP.Application {
         this.errorVM.showDialog();
     }
     private _onWebsockMsg(sender: WEBSOCK.WebSocketsVM, args: { message: string; data: any; }) {
-        this._sseMessage = args.data.message; this.raisePropertyChanged('sseMessage');
+        this._sseMessage = args.data.message; this.objEvents.raiseProp('sseMessage');
     }
-    //really, the destroy method is redundant here because the application lives while the page lives
-    destroy() {
-        if (this._isDestroyed)
+    //really, the dispose method is redundant here because the application lives while the page lives
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        var self = this;
+        this.setDisposing();
+        const self = this;
         try {
-            self._errorVM.destroy();
-            self._headerVM.destroy();
-            self._productVM.destroy();
-            self._uploadVM.destroy();
-            self._dbContext.destroy();
+            self._errorVM.dispose();
+            self._headerVM.dispose();
+            self._productVM.dispose();
+            self._uploadVM.dispose();
+            self._dbContext.dispose();
             if (!!self._sseVM)
-                self._sseVM.destroy();
+                self._sseVM.dispose();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get options() { return <IMainOptions>this._options; }

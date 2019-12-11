@@ -142,10 +142,10 @@
     <value>Query result's chunk is not found in cache</value>
   </data>
   <data name="ERR_CODEGEN_DISABLED" xml:space="preserve">
-    <value>Code generation is disabled</value>
+    <value>Code Generation is disabled for this service</value>
   </data>
   <data name="ERR_CODEGEN_NOT_IMPLEMENTED" xml:space="preserve">
-    <value>Code generation for lang: {0} is not implemented</value>
+    <value>Code Generation for lang: {0} is not implemented</value>
   </data>
   <data name="ERR_DBSET_HAS_NO_PK" xml:space="preserve">
     <value>DbSet {0} has no primary key fields</value>
@@ -181,7 +181,13 @@
     <value>Can not return included child entities for multypage requests</value>
   </data>
   <data name="ERR_NO_SERIALIZER" xml:space="preserve">
-    <value>The dataservice class expects a serializer instance</value>
+    <value>The dataservice options expect a serializer instance</value>
+  </data>
+  <data name="ERR_NO_SERVICES" xml:space="preserve">
+    <value>The dataservice constructor expect a valid services instance</value>
+  </data>
+  <data name="ERR_NO_USER" xml:space="preserve">
+    <value>The dataservice options expect a use principal instance</value>
   </data>
   <data name="ERR_PPROPERTY_ISNULL" xml:space="preserve">
     <value>Object: {0} property {1} is NULL</value>

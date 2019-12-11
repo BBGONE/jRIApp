@@ -1,26 +1,27 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { Utils } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
-import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
-import { css, PROP_NAME } from "./baseview";
 import { CheckBoxElView } from "./checkbox";
 
-const checks = Utils.check;
+const { isNt } = Utils.check;
 
 export class RadioElView extends CheckBoxElView {
-    toString() {
+    toString(): string {
         return "RadioElView";
     }
-    get value(): string { return (<HTMLInputElement>this.el).value; }
-    set value(v) {
-        const strv = checks.isNt(v)? "" : ("" + v);
+    get value(): string {
+        return this.el.value;
+    }
+    set value(v: string) {
+        const strv = isNt(v) ? "" : ("" + v);
         if (strv !== this.value) {
-            (<HTMLInputElement>this.el).value = strv;
-            this.raisePropertyChanged(PROP_NAME.value);
+            this.el.value = strv;
+            this.objEvents.raiseProp("value");
         }
     }
-    get name(): string { return (<HTMLInputElement>this.el).name; }
+    get name(): string {
+        return this.el.name;
+    }
 }
 
 bootstrap.registerElView("input:radio", RadioElView);

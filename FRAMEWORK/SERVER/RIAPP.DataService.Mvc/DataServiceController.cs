@@ -1,57 +1,53 @@
-﻿using System;
+﻿using RIAPP.DataService.Core;
+using RIAPP.DataService.Core.CodeGen;
+using RIAPP.DataService.Core.Types;
+using RIAPP.DataService.Mvc.Utils;
+using RIAPP.DataService.Utils;
+using System;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.SessionState;
-using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.Mvc.Utils;
-using RIAPP.DataService.Utils.Interfaces;
 
 namespace RIAPP.DataService.Mvc
 {
     [NoCache]
     [SessionState(SessionStateBehavior.Disabled)]
-    public abstract class DataServiceController<T> : Controller
-        where T : BaseDomainService
+    public abstract class DataServiceController<TService> : Controller
+        where TService : BaseDomainService
     {
-        /// <summary>
-        ///     I use plain text here so that it was easier to configure compression in IIS
-        ///     if i used 'application/json' here i would  need to make changes in IIS application.config
-        ///     to  allow compression, but plain text result only needs to enable Dynamic content compression in IIS
-        /// </summary>
-        private static string ResultContentType = MediaTypeNames.Text.Plain;
+        private TService _DomainService;
 
-        private Lazy<IDomainService> _DomainService;
-
-        public DataServiceController()
+        public DataServiceController(TService domainService)
         {
-            Serializer = new Serializer();
-            _DomainService = new Lazy<IDomainService>(() => CreateDomainService(), true);
+            _DomainService = domainService;
         }
 
         protected IDomainService DomainService
         {
-            get { return _DomainService.Value; }
+            get { return _DomainService; }
         }
 
-        public ISerializer Serializer { get; private set; }
+        public ISerializer Serializer
+        {
+            get
+            {
+                return _DomainService.Serializer;
+            }
+        }
 
         [ActionName("typescript")]
         [HttpGet]
         public ActionResult GetTypeScript()
         {
-            var comment =
-                string.Format(
-                    "\tGenerated from: {0} on {1:yyyy-MM-dd} at {1:HH:mm}\r\n\tDon't make manual changes here, because they will be lost when this db interface will be regenerated!",
-                    ControllerContext.HttpContext.Request.RawUrl, DateTime.Now);
-            var info = DomainService.ServiceCodeGen(new CodeGenArgs("ts") { comment = comment });
+            string url = ControllerContext.HttpContext.Request.RawUrl;
+            DateTime now = DateTime.Now;
+            var comment = $"\tGenerated from: {url} on {now:yyyy-MM-dd} at {now:HH:mm}\r\n\tDon't make manual changes here, they will be lost when this interface will be regenerated!";
+            var content = DomainService.ServiceCodeGen(new CodeGenArgs("ts") { comment = comment });
             var res = new ContentResult();
-            res.ContentEncoding = Encoding.UTF8;
             res.ContentType = MediaTypeNames.Text.Plain;
-            res.Content = info;
+            res.Content = content;
             return res;
         }
 
@@ -59,11 +55,11 @@ namespace RIAPP.DataService.Mvc
         [HttpGet]
         public ActionResult GetXAML(bool isDraft = true)
         {
-            var info = DomainService.ServiceCodeGen(new CodeGenArgs("xaml") { isDraft = isDraft });
+            var content = DomainService.ServiceCodeGen(new CodeGenArgs("xaml") { isDraft = isDraft });
             var res = new ContentResult();
             res.ContentEncoding = Encoding.UTF8;
             res.ContentType = MediaTypeNames.Text.Plain;
-            res.Content = info;
+            res.Content = content;
             return res;
         }
 
@@ -71,25 +67,18 @@ namespace RIAPP.DataService.Mvc
         [HttpGet]
         public ActionResult GetCSharp()
         {
-            var info = DomainService.ServiceCodeGen(new CodeGenArgs("csharp"));
+            var content = DomainService.ServiceCodeGen(new CodeGenArgs("csharp"));
             var res = new ContentResult();
             res.ContentEncoding = Encoding.UTF8;
             res.ContentType = MediaTypeNames.Text.Plain;
-            res.Content = info;
+            res.Content = content;
             return res;
-        }
-
-        protected virtual IDomainService CreateDomainService()
-        {
-            var args = new ServiceArgs(Serializer, User);
-            var service = (IDomainService) Activator.CreateInstance(typeof(T), args);
-            return service;
         }
 
         [ChildActionOnly]
         public string PermissionsInfo()
         {
-            var info = DomainService.ServiceGetPermissions();
+            var info = DomainService.ServiceGetPermissions().Result;
             return Serializer.Serialize(info);
         }
 
@@ -117,9 +106,9 @@ namespace RIAPP.DataService.Mvc
 
         [ActionName("permissions")]
         [HttpGet]
-        public ActionResult GetPermissions()
+        public async Task<ActionResult> GetPermissions()
         {
-            var res = DomainService.ServiceGetPermissions();
+            var res = await DomainService.ServiceGetPermissions();
             return new ChunkedResult<Permissions>(res, Serializer);
         }
 
@@ -127,48 +116,38 @@ namespace RIAPP.DataService.Mvc
         [HttpPost]
         public async Task<ActionResult> PerformQuery([SericeParamsBinder] QueryRequest request)
         {
-            var res = await DomainService.ServiceGetData(request).ConfigureAwait(false);
-            return new ChunkedResult<QueryResponse>(res, Serializer);
+            var response = await DomainService.ServiceGetData(request);
+            return new ChunkedResult<QueryResponse>(response, Serializer);
         }
 
         [ActionName("save")]
         [HttpPost]
-        public async Task<ActionResult> Save([SericeParamsBinder] ChangeSet changeSet)
+        public async Task<ActionResult> Save([SericeParamsBinder] ChangeSetRequest changeSet)
         {
-            var res = await DomainService.ServiceApplyChangeSet(changeSet).ConfigureAwait(false);
-            return new ChunkedResult<ChangeSet>(res, Serializer);
+            var response = await DomainService.ServiceApplyChangeSet(changeSet);
+            return new ChunkedResult<ChangeSetResponse>(response, Serializer);
         }
 
         [ActionName("refresh")]
         [HttpPost]
-        public async Task<ActionResult> Refresh([SericeParamsBinder] RefreshInfo refreshInfo)
+        public async Task<ActionResult> Refresh([SericeParamsBinder] RefreshInfoRequest refreshInfo)
         {
-            var res = await DomainService.ServiceRefreshRow(refreshInfo).ConfigureAwait(false);
-            return new ChunkedResult<RefreshInfo>(res, Serializer);
+            var response = await DomainService.ServiceRefreshRow(refreshInfo);
+            return new ChunkedResult<RefreshInfoResponse>(response, Serializer);
         }
 
         [ActionName("invoke")]
         [HttpPost]
         public async Task<ActionResult> Invoke([SericeParamsBinder] InvokeRequest invokeInfo)
         {
-            var res = await DomainService.ServiceInvokeMethod(invokeInfo).ConfigureAwait(false);
-            return new ChunkedResult<InvokeResponse>(res, Serializer);
+            var response = await DomainService.ServiceInvokeMethod(invokeInfo);
+            return new ChunkedResult<InvokeResponse>(response, Serializer);
         }
 
-        protected T GetDomainService()
+        protected TService GetDomainService()
         {
-            return (T) DomainService;
+            return _DomainService;
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && _DomainService.IsValueCreated)
-            {
-                _DomainService.Value.Dispose();
-            }
-            _DomainService = null;
-            Serializer = null;
-            base.Dispose(disposing);
-        }
     }
 }

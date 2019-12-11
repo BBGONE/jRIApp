@@ -6,131 +6,148 @@
     ViewBag.Title = "DataGrid Demo ";
 }
 
-<style type="text/css">
-    .productTableWrap {
-        height: calc(100% - 40px);
-        width: 100%;
-    }
-
-    .productTableContainer {
-        overflow: auto !important;
-    }
-
-    .productTableHeader {
-    }
-
-    .orderDetailTableWrap {
-        max-height: 180px;
-        width: 100%;
-    }
-
-    table.ria-data-table td.number-display {
-        color: blue;
-        font-weight: bold;
-    }
-
-    table.ria-data-table td.number-edit input[type="text"] {
-        color: black;
-    }
-
-    .name-display {
-        color: blue;
-        font-weight: bold;
-    }
-
-    .name-edit input[type="text"] {
-        color: black;
-    }
-
-    .name-edit textarea {
-        color: black;
-    }
-
-    .listbox-edit select {
-        width: 75%;
-    }
-
-    .ria-data-table td.weightCell {
-        text-align: right;
-    }
-
-    .ria-data-table td.dateCell {
-        text-align: right;
-    }
-
-    .ria-data-table td.activeCell {
-        text-align: center;
-    }
-
-    .weightCol {
-        font-weight: bolder;
-    }
-
-    .rowInactive > td.ria-data-cell {
-        color: gray;
-        text-decoration: line-through;
-    }
-
-    table.ria-data-table tr:nth-child(even) {
-        background-color: #ECF2F6;
-    }
-
-    .ui-datepicker select.ui-datepicker-month,
-    .ui-datepicker select.ui-datepicker-year {
-        min-height: 28px;
-    }
-
-    .ui-datepicker select.ui-datepicker-month {
-        margin-right: 3px;
-        width: 80px;
-    }
-
-    .gray-bgc {
-        background-color: #ECF2F6;
-    }
-
-    .white-bgc {
-        background-color: #FFFFFF;
-    }
-
-    .leftOffset {
-        margin-left: 5px;
-    }
-
-
-    div.someClass {
-        color: gray;
-    }
-
-    div.bold span {
-        font-weight: bold;
-        font-size: larger;
-    }
-
-    div.bold {
-        color: black;
-    }
-
-        div.bold.lsize {
-            color: red;
+@section CssImport {
+    <style type="text/css">
+        .btn-dropdown {
+            margin: 2px 2px 5px 2px;
         }
 
-        div.bold.msize {
-            color: green;
+        .dropdownTableWrap {
+            height: 260px;
+            margin: 0px;
+            padding: 0px;
+            width: 100%;
         }
 
-        div.bold.ssize {
+        .productTableWrap {
+            height: calc(100% - 40px);
+            width: 100%;
+        }
+
+        .productTableContainer {
+            overflow: auto !important;
+        }
+
+        .productTableHeader {
+        }
+
+        .orderDetailTableWrap {
+            max-height: 180px;
+            width: 100%;
+        }
+
+        table.ria-data-table td.number-display {
             color: blue;
+            font-weight: bold;
         }
 
-        div.bold.nsize {
-            color: darkgoldenrod;
+        table.ria-data-table td.number-edit input[type="text"] {
+            color: black;
         }
-</style>
 
-<script src="@Url.Content("~/Scripts/demo/gridDemo/main.js", true)" type="text/javascript"></script>
+        .name-display {
+            color: blue;
+            font-weight: bold;
+        }
 
-<script type="text/javascript">
+        .name-edit input[type="text"] {
+            color: black;
+        }
+
+        .name-edit textarea {
+            color: black;
+        }
+
+        .listbox-edit select {
+            width: 75%;
+        }
+
+        .ria-data-table td.weightCell {
+            text-align: right;
+        }
+
+        .ria-data-table td.dateCell {
+            text-align: right;
+        }
+
+        .ria-data-table td.activeCell {
+            text-align: center;
+        }
+
+        .weightCol {
+            font-weight: bolder;
+        }
+
+        .rowInactive > td.ria-data-cell {
+            color: gray;
+            text-decoration: line-through;
+        }
+
+        table.ria-data-table tr:nth-child(even) {
+            background-color: #ECF2F6;
+        }
+
+        .ui-datepicker select.ui-datepicker-month,
+        .ui-datepicker select.ui-datepicker-year {
+            min-height: 28px;
+        }
+
+        .ui-datepicker select.ui-datepicker-month {
+            margin-right: 3px;
+            width: 80px;
+        }
+
+        .gray-bgc {
+            background-color: #ECF2F6;
+        }
+
+        .white-bgc {
+            background-color: #FFFFFF;
+        }
+
+        .leftOffset {
+            margin-left: 5px;
+        }
+
+
+        div.someClass {
+            color: gray;
+        }
+
+        div.bold span {
+            font-weight: bold;
+            font-size: larger;
+        }
+
+        div.bold {
+            color: black;
+        }
+
+            div.bold.lsize {
+                color: red;
+            }
+
+            div.bold.msize {
+                color: green;
+            }
+
+            div.bold.ssize {
+                color: blue;
+            }
+
+            div.bold.nsize {
+                color: darkgoldenrod;
+            }
+    </style>
+}
+
+@section JSStaticImport {
+}
+
+@section JSDynamicImport {
+    <script src="@Url.Content("~/Scripts/demo/gridDemo/main.js", true)" type="text/javascript"></script>
+
+    <script type="text/javascript">
     require(["gridDemo/main", "jriapp_ui", "jriapp_ru"],
         function (DEMO, UI, LANG) {
             $("#loading").fadeIn();
@@ -142,179 +159,253 @@
                 templates_url: null,
                 productEditTemplate_url: null,
                 modelData: null,
-                categoryData: null,
-                sse_url: null,
-                sse_clientID: null
+                categoryData: null
             };
 
             (function(ops) {
-                //download template is using ASP.NET MVC - it first goes through the Razor engine to create links
-                ops.templates_url = '@Url.Action("Download", "Templates", new {name = "DataGridDemo"})';
-
             @*
             ops.modelData = @Html.Action("ProductModelData", "RIAppDemoService");
             ops.categoryData = @Html.Action("ProductCategoryData", "RIAppDemoService");
             *@
-
-                //these links are using WEB API instead of ASP.NET MVC (as an example that all is possible)
-                ops.service_url = '@Url.Action("", "RIAppDemoEFWebApi", new {httproute = "ApiByAction"})';
-                ops.upload_thumb_url = '@Url.Action("UploadThumbnail", "File", new {httproute = "ApiByAction"})';
-                ops.productEditTemplate_url = '@Url.Action("DownloadTemplate", "File", new {httproute = "ApiByName", name = "productEditTemplate"})';
-
-                //TESTING Server Side Events - it uses Web API
-                @{
-                    var client_id = Guid.NewGuid().ToString();
-                }
-                ops.sse_clientID = '@client_id';
-                ops.sse_url = '@Url.Action("Get", "SSEWebApi", new {httproute = "ApiById"})';
-
+                ops.service_url = '@Url.RouteUrl("Default", new {controller = "RIAppDemoServiceEF", action = ""})';
+                ops.permissionInfo = @Html.Action("PermissionsInfo", "RIAppDemoServiceEF");
+                ops.upload_thumb_url = '@Url.Action("ThumbnailUpload", "Upload")';
+                ops.templates_url = '@Url.Action("Download", "Templates", new {name = "DataGridDemo"})';
+                ops.productEditTemplate_url = '@Url.Action("Download", "Templates", new { name = "productEditTemplate"})';
             })(mainOptions);
 
             DEMO.start(mainOptions).then(function () {
-                $("#demoContent").animate({ opacity: 1 }, 1000);
+                $("#page-content").animate({ opacity: 1 }, 1000);
                 $("#loading").fadeOut(1000);
             }, function (err) {
                 $("#loading").fadeOut(1000);
             });
         });
-</script>
+    </script>
+}
 
 <h2 class="ex8" style="display: inline-block;">@ViewBag.Title</h2>
 
-<header id="title">
-    <a id="expander" data-bind="{this.command,to=expanderCommand,mode=OneWay,source=headerVM}" data-view="name=expander"></a>
-    <span style="margin-left: 5px;">Filter</span>
-    <span style="margin-left: 5px;" data-bind="{this.html,to=sseMessage,mode=OneWay,source=app}"></span>
-</header>
+<div id="page-content" style="opacity:0;" data-bind="this.isBusy,to=dbContext.isBusy" data-view="busy">
+    <header id="title">
+        <a id="expander" data-bind="this.command,to=expanderCommand,mode=OneWay,source=headerVM" data-view="expander"></a>
+        <span style="margin-left: 5px;">Filter</span>
+        <span style="margin-left: 5px;" data-bind="this.html,to=sseMessage,mode=OneWay,source=app"></span>
+    </header>
 
-<form id="demoHeader" data-bind="{this.dataContext,source=productVM}" data-view="name=dataform">
-    <table>
-        <tr>
-            <td>
-                <label for="prodNum">Product Number:</label>
-                <input type="text" id="prodNum" placeholder="Product number" data-bind-value="{this.value,to=filter.prodNumber,mode=TwoWay}" data-bind-tooltip="{this.toolTip,to=filter.searchTextToolTip}"/>
-            </td>
-            <td>
-                <label for="prodName">Name:</label>
-                <input type="text" id="prodName" placeholder="Name" data-bind-1="{this.value,to=filter.name,mode=TwoWay}" data-bind-2="{this.toolTip,to=filter.searchTextToolTip}"/>
-            </td>
-            <td>
-                <label for="prodMCat">Main Category:</label>
-                <select id="prodMCat" size="1" class="span3"
-                        data-bind-1="{this.dataSource,to=filter.ParentCategories}"
-                        data-bind-2="{this.selectedValue,to=filter.parentCategoryID,mode=TwoWay}"
-                        data-bind-3="{this.textProvider,to=optionTextProvider}"
-                        data-bind-4="{this.stateProvider,to=optionStateProvider}"
-                        data-view="options:{valuePath=ProductCategoryID,textPath=Name}">
-                </select>
-            </td>
-            <td>
-                <label for="prodSCat">Sub Category:</label>
-                <select id="prodSCat" size="1" class="span2"
-                        data-bind-1="{this.dataSource,to=filter.ChildCategories}"
-                        data-bind-2="{this.selectedValue,to=filter.childCategoryID,mode=TwoWay}"
-                        data-bind-3="{this.selectedItem,to=filter.selectedCategory,mode=TwoWay}"
-                        data-bind-4="{this.toolTip,to=filter.selectedCategory.Name}"
-                        data-bind-5="{this.textProvider,to=optionTextProvider}"
-                        data-bind-6="{this.stateProvider,to=optionStateProvider}"
-                        data-view="options:{valuePath=ProductCategoryID,textPath=Name}">
-                </select>
-            </td>
-            <td>
-                <label for="prodMod">Model:</label>
-                <select id="prodMod" size="1" class="span3"
-                        data-bind-1="{this.dataSource,to=filter.ProductModels}"
-                        data-bind-2="{this.selectedValue,to=filter.modelID,mode=TwoWay}"
-                        data-bind-3="{this.toolTip,to=filter.selectedModel.Name}"
-                        data-bind-4="{this.selectedItem,to=filter.selectedModel,mode=TwoWay}"
-                        data-bind-5="{this.textProvider,to=optionTextProvider}"
-                        data-bind-6="{this.stateProvider,to=optionStateProvider}"
-                        data-view="options:{valuePath=ProductModelID,textPath=Name}">
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <label for="sizes">Size:</label>
-                <select id="sizes" size="1" class="span2"
-                        data-bind-1="{this.dataSource,to=filter.sizes}"
-                        data-bind-2="{this.selectedValue,to=filter.size,mode=TwoWay}"
-                        data-view="options:{tip:'Choose the right size',valuePath=key,textPath=val}">
-                </select>
-            </td>
-            <td colspan="4">
-                <div style="display: inline-block;">
-                    <label for="saleStart1">Sales Start Date Begin:</label>
-                    <input type="text" id="saleStart1" placeholder="Enter Date" data-bind="{this.value,to=filter.saleStart1,mode=TwoWay,converter=dateConverter}" data-view="name:datepicker,options={datepicker:{ showOn:button,yearRange:'-15:c',changeMonth: true,changeYear: true }}"/>
-                </div>
-                <div style="display: inline-block; margin-left: 5px;">
-                    <label for="saleStart2">Sales Start Date End:</label>
-                    <input type="text" id="saleStart2" placeholder="Enter Date" data-bind="{this.value,to=filter.saleStart2,mode=TwoWay,converter=dateConverter}" data-view="name:datepicker,options={datepicker:{ showOn:button,yearRange:'-15:c',changeMonth: true,changeYear: true }}"/>
-                </div>
-            </td>
-        </tr>
-    </table>
-    <!--this nested dataform is only to test how the dataform nesting is working!!! it is not needed here, really.-->
-    <div data-bind="{this.dataContext}" data-view="name=dataform">
-        <a id="btn_filter" class="btn btn-info btn-small" data-bind="{this.command,to=loadCommand}"><i class="icon-search"></i>&nbsp;Filter</a>
-        <a id="btn_reset" class="btn btn-info btn-small" data-bind="{this.command,to=filter.resetCommand}"><i class="icon-retweet"></i>&nbsp;Reset</a>
-        <a class="btn btn-info btn-small" data-bind="{this.command,to=openWsCommand,source=websockVM}" data-view="options={tip:'Do not forget to start the demo websocket service!'}">Connect Websocket</a>
-        <a class="btn btn-info btn-small" data-bind="{this.command,to=closeWsCommand,source=websockVM}">Close Websocket</a>
-        <a class="btn btn-info btn-small" data-bind="{this.command,to=openESCommand,source=sseVM}">Connect SSEvents</a>
-        <a class="btn btn-info btn-small" data-bind="{this.command,to=closeESCommand,source=sseVM}">Close SSEvents</a>
-    </div>
-</form>
-
-<div id="demoContent" style="opacity:0;" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="name=busy">
-    <div style="height: 85%; vertical-align: top;">
-        <table data-name="gridProducts" data-bind1="{this.dataSource,to=dbSet,source=productVM}"
-               data-bind2="{this.grid,to=grid,mode=BackWay,source=productVM}"
-               data-bind3="{this.stateProvider,to=rowStateProvider,source=productVM}"
-               data-view="name=resizable_grid,options={resizeMode:overflow,wrapCss:productTableWrap,containerCss:productTableContainer,headerCss:productTableHeader,rowStateField:IsActive,isHandleAddNew:true,isCanEdit:true,editor:{templateID:productEditTemplate,width:550,height:650,submitOnOK:true,title:'Product editing'},details:{templateID:productDetailsTemplate}}">
-            <thead>
+    <form id="demoHeader" data-bind="this.dataContext,source=productVM" data-view="dataform">
+        <table>
             <tr>
-                <th data-column="width:35px,type:row_expander,tip='Row expander'"></th>
-                <th data-column="width:50px,type:row_actions,tip='Row actions'"></th>
-                <th data-column="width:40px,type:row_selector,tip='Column selector'"></th>
-                <th data-column="width:100px,sortable:false,templateID:productNumberTemplate,tip='Product number column implemented using template!!!'" data-content="fieldName:ProductNumber,css:{displayCss:'number-display',editCss:'number-edit'}"></th>
-                <th data-column="width:25%,sortable:true,title:Name,tip='Product name'" data-content="fieldName:Name"></th>
-                <th data-column="width:90px,title:'Weight',sortable:true,rowCellCss:weightCell,colCellCss:weightCol,tip='Example of a tooltip in the datagrid column's header'" data-content="fieldName:Weight"></th>
-                <th data-column="width:15%,title=CategoryID,sortable:true,sortMemberName=ProductCategoryID" data-content="fieldName=ProductCategoryID,name:lookup,options:{dataSource=dbContext.dbSets.ProductCategory,valuePath=ProductCategoryID,textPath=Name}"></th>
-                <th data-column="width:100px,sortable:true,rowCellCss:dateCell,title='SellStartDate',tip='Start of the sales'" data-content="fieldName=SellStartDate"></th>
-                <th data-column="width:100px,sortable:true,rowCellCss:dateCell,title='SellEndDate',tip='End of the sales'" data-content="fieldName=SellEndDate"></th>
-                <th data-column="width:90px,sortable:true,rowCellCss:activeCell,title='IsActive',sortMemberName=SellEndDate" data-content="fieldName=IsActive"></th>
-                <th data-column="width:10%,title=Size,sortable:true,sortMemberName=Size" data-content="template={displayID=sizeDisplayTemplate}"></th>
+                <td>
+                    <label for="prodNum">Product Number:</label>
+                    <input type="text" id="prodNum" placeholder="Product number"
+                           data-bind-1="this.value,to=filter.prodNumber,mode=TwoWay"
+                           data-bind-2="this.toolTip,to=filter.searchTextToolTip" />
+                </td>
+                <td>
+                    <div data-bind="this.dataContext,to=filter" data-view="dataform">
+                        @*using here a nested dataform just for testing how the dataContext is propagated from above*@
+                        <label for="prodName">Name:</label>
+                        <input type="text" id="prodName" placeholder="Name"
+                               data-bind-1="this.value,to=name,mode=TwoWay"
+                               data-bind-2="this.toolTip,to=searchTextToolTip" />
+                    </div>
+                </td>
+                <td>
+                    <label for="prodMCat">Main Category:</label>
+                    <select id="prodMCat" size="1" class="span3" data-bind="get(prodMCatDataBind)"
+                            @*
+    Providing the datasource through the options - not using databinding
+    bind(ParentCategories,productVM.filter) takes two arguments - the first is the path, the second is the source
+    the second parameter is optional. Their semantics is the same as in the usual databinding.
+    We could write it without the source argument, like that -
+    data-view-options="valuePath=ProductCategoryID,textPath=Name,dataSource=bind(filter.ParentCategories)"></select>
+    *@
+                            data-view-options="valuePath=ProductCategoryID,textPath=Name,dataSource=bind(ParentCategories,productVM.filter)"></select>
+                </td>
+                <td>
+                    <label for="prodSCat">Sub Category:</label>
+                    <select id="prodSCat" size="1" class="span2"
+                            data-bind-1="this.dataSource,to=filter.ChildCategories"
+                            data-bind-2="this.selectedValue,to=filter.childCategoryID,mode=TwoWay"
+                            data-bind-3="this.selectedItem,to=filter.selectedCategory,mode=TwoWay"
+                            data-bind-4="this.toolTip,to=filter.selectedCategory.Name"
+                            data-bind-5="this.textProvider,to=optionTextProvider"
+                            data-bind-6="this.stateProvider,to=optionStateProvider"
+                            data-view-options="valuePath=ProductCategoryID,textPath=Name">
+                    </select>
+                </td>
+                <td>
+                    <label for="prodMod">Model:</label>
+                    <div style="width:100%; white-space:nowrap;">
+                        <input id="prodMod" type="text" style="width:200px; background-color: InfoBackground; cursor: pointer;" readonly="readonly" data-view="dropdownbox"
+                               data-bind-1="this.selected,to=filter.modelID,mode=TwoWay"
+                               data-bind-2="this.toolTip,to=info,source=this"
+                               data-view-options="valuePath=key,textPath=val,dataSource=bind(filter.prodModDic),templateId=prodModTemplate,width:'270px',height:'350px'" />
+                    </div>
+                    @*
+                        <select id="prodMod" size="1" class="span3"
+                                data-bind-1="this.dataSource,to=filter.ProductModels"
+                                data-bind-2="this.selectedValue,to=filter.modelID,mode=TwoWay"
+                                data-bind-3="this.toolTip,to=filter.selectedModel.Name"
+                                data-bind-4="this.selectedItem,to=filter.selectedModel,mode=TwoWay"
+                                data-bind-5="this.textProvider,to=optionTextProvider"
+                                data-bind-6="this.stateProvider,to=optionStateProvider"
+                                data-view-options="valuePath=ProductModelID,textPath=Name">
+                        </select>
+                    *@
+                </td>
             </tr>
-            </thead>
-            <tbody></tbody>
+            <tr>
+                <td>
+                    <label for="sizes">Size:</label>
+                    <select id="sizes" size="1" class="span2"
+                            data-bind-1="this.dataSource,to=filter.sizes"
+                            data-bind-2="this.selectedValue,to=filter.size,mode=TwoWay"
+                            data-view-options="tip:'Choose the right size',valuePath=key,textPath=val">
+                    </select>
+                </td>
+                <td colspan="4">
+                    <div style="display: inline-block;">
+                        <label for="saleStart1">Sales Start Date Begin:</label>
+                        <input type="text" id="saleStart1" placeholder="Enter Date"
+                               data-bind="this.value,to=filter.saleStart1,mode=TwoWay,converter=dateConverter"
+                               data-view="datepicker"
+                               data-view-options="get(salesDateOptions)" />
+                    </div>
+                    <div style="display: inline-block; margin-left: 5px;">
+                        <label for="saleStart2">Sales Start Date End:</label>
+                        <input type="text" id="saleStart2" placeholder="Enter Date"
+                               data-bind="this.value,to=filter.saleStart2,mode=TwoWay,converter=dateConverter"
+                               data-view="datepicker"
+                               data-view-options="get(salesDateOptions)" />
+                    </div>
+                </td>
+            </tr>
         </table>
-    </div>
-    <div style="border: none; height: 15%; margin-top: 40px; text-align: left; width: 100%;">
-        <!--pager-->
-        <div style="float: left;" data-bind="{this.dataSource,to=dbSet,source=productVM}" data-view="name=pager,options={sliderSize:20,hideOnSinglePage=false}"></div>
-        <div style="float: left; padding-left: 10px; padding-top: 10px;"><span>Total:</span>&nbsp;<span data-bind="{this.value,to=totalCount,source=productVM.dbSet}"></span>,&nbsp;&nbsp;<span>Selected:</span>&nbsp;<span data-bind="{this.value,to=selectedCount,source=productVM}"></span></div>
+        <!--this nested dataform is only to test how the dataform nesting is working!!! it is not needed here, really.-->
+        <div data-bind="this.dataContext" data-view="dataform">
+            <a id="btn_filter" class="btn btn-info btn-small" data-bind="this.command,to=loadCommand"><i class="icon-search"></i>&nbsp;Filter</a>
+            <a id="btn_reset" class="btn btn-info btn-small" data-bind="this.command,to=filter.resetCommand"><i class="icon-retweet"></i>&nbsp;Reset</a>
+            <a class="btn btn-info btn-small" data-bind="this.command,to=openWsCommand,source=websockVM" data-view-options="tip:'Do not forget to start the demo websocket service!'">Connect Websocket</a>
+            <a class="btn btn-info btn-small" data-bind="this.command,to=closeWsCommand,source=websockVM">Close Websocket</a>
+        </div>
+    </form>
 
-        <button class="btn btn-info btn-small" style="float: right;" data-bind="{this.command,to=addNewCommand,mode=OneWay,source=productVM}"><i class="icon-plus"></i>&nbsp;New Product</button>
+    <div id="demoContent">
+        <div style="height: 85%; vertical-align: top;">
+            <table data-name="gridProducts" data-bind1="this.dataSource,to=dbSet,source=productVM"
+                   data-bind2="this.grid,to=grid,mode=BackWay,source=productVM"
+                   data-bind3="this.stateProvider,to=rowStateProvider,source=productVM"
+                   data-view="resizable_grid"
+                   data-view-options="get(gridProductsOptions)">
+                <thead>
+                    <tr>
+                        <th data-column="width:35px,type:row_expander,tip='Row expander'"></th>
+                        <th data-column="width:50px,type:row_actions,tip='Row actions'"></th>
+                        <th data-column="width:40px,type:row_selector,tip='Column selector'"></th>
+                        <th data-column="width:100px,sortable:false,templateID:productNumberTemplate,tip='Product number column implemented using template!!!'" data-content="fieldName:ProductNumber,css:{readCss:'number-display',editCss:'number-edit'}"></th>
+                        <th data-column="width:25%,sortable:true,title:Name,tip='Product name'" data-content="fieldName:Name"></th>
+                        <th data-column="width:90px,title:'Weight',sortable:true,rowCellCss:weightCell,colCellCss:weightCol,tip='Example of a tooltip in the datagrid column''s header'" data-content="fieldName:Weight"></th>
+                        <th data-column="width:15%,title=CategoryID,sortable:true,sortMemberName=ProductCategoryID" data-content="fieldName=ProductCategoryID,name:lookup,options:{dataSource=dbContext.dbSets.ProductCategory,valuePath=ProductCategoryID,textPath=Name}"></th>
+                        <th data-column="width:100px,sortable:true,rowCellCss:dateCell,title='SellStartDate',tip='Start of the sales'" data-content="fieldName=SellStartDate"></th>
+                        <th data-column="width:100px,sortable:true,rowCellCss:dateCell,title='SellEndDate',tip='End of the sales'" data-content="fieldName=SellEndDate"></th>
+                        <th data-column="width:90px,sortable:true,rowCellCss:activeCell,title='IsActive',sortMemberName=SellEndDate" data-content="fieldName=IsActive"></th>
+                        <th data-column="width:10%,title=Size,sortable:true,sortMemberName=Size" data-content="template={readID=sizeDisplayTemplate}"></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div style="border: none; height: 15%; margin-top: 20px; text-align: left; width: 100%;">
+            <!--pager-->
+            <div style="float: left;"
+                 data-bind-1="this.dataSource,to=dbSet,source=productVM"
+                 @*when the pager is selected than the datagrid gets keydown and keyup events*@
+                 data-bind-2="this.parentControl,to=grid,source=productVM"
+                 data-view="pager"
+                 data-view-options="sliderSize:5,showTip:false,showInfo:true"></div>
+            <button class="btn btn-info btn-small" style="float: right;" data-bind="this.command,to=addNewCommand,mode=OneWay,source=productVM"><i class="icon-plus"></i>&nbsp;New Product</button>
+        </div>
     </div>
 </div>
+
+
+<script id="prodMCatDataBind" type="text/x-options">
+    {this.selectedValue,to=filter.parentCategoryID,mode=TwoWay}
+    {this.textProvider,to=optionTextProvider}
+    {this.stateProvider,to=optionStateProvider}
+</script>
+
+<script id="salesDateOptions" type="text/x-options">
+    datepicker: { showOn:button,
+    yearRange:'-15:c',
+    changeMonth: true,
+    changeYear:true,
+    yearRange:'1998:2005',
+    minDate:date(1998-06-01,YYYY-MM-DD),
+    maxDate:date(20050707),
+    test: inject('testsvc', 'param1''s value, test', {x: 123, dt: date(endofmonth,YYYY-MM-DD) }, 100)
+    }
+</script>
+
+<script id="gridProductsOptions" type="text/x-options">
+    resizeMode:overflow,
+    wrapCss:productTableWrap,
+    containerCss:productTableContainer,
+    headerCss:productTableHeader,
+    rowStateField:IsActive,
+    isHandleAddNew:true,
+    isCanEdit:true,
+    editor:bind(dialogOptions,productVM),
+    details:{templateID:productDetailsTemplate}
+</script>
 
 <!--
     template for the size grid's cell - it is picked automatically by the engine
     it also shows how to bind to elementview's "classes" property
 -->
-<script id="sizeDisplayTemplate" type="text/html" data-role="template">
+<script id="sizeDisplayTemplate" type="text/x-template">
     <!--I added someClass to show that it is not deleted while classes are manipulated through the databinding-->
-    <div class="someClass" data-bind-1="{this.classes[*],to=Size,converter=sizeConverter}" data-bind-2="{this.classes[bold],to=IsActive}">
-        Size: <span class="leftOffset" data-bind="{this.value,to=Size}"></span>
+    <div class="someClass" data-bind-1="this.classes[*],to=Size,converter=sizeConverter" data-bind-2="this.classes[bold],to=IsActive">
+        Size: <span class="leftOffset" data-bind="this.value,to=Size"></span>
     </div>
 </script>
 
 <!--a template inside data grid's column-->
-<script id="productNumberTemplate" type="text/html" data-role="template">
+<script id="productNumberTemplate" type="text/x-template">
     <div style="margin-top: 2px; border: 1px solid blue; border-radius: 3px 4px; width:95%; height:90%;">
         <div style="position: relative; top: 50%; transform: translateY(-50%);">
-            <a style="color: white;" data-name="Product Number Column" data-bind1="{this.command,to=columnCommand,source=productVM}" data-bind2="{this.commandParam,to=currentItem,source=productVM}" data-view="options:{stopPropagation=true}">Product #</a>
+            <a style="color: white;" data-name="Product Number Column" data-bind1="this.command,to=columnCommand,source=productVM"
+               data-bind2="this.commandParam,to=currentItem,source=productVM"
+               data-view-options="stopPropagation=true">Product #</a>
         </div>
     </div>
 </script>
+
+<script id="prodModTemplate" type="text/x-template">
+    <div style="height: 98%; margin: 0px; padding: 2px; position: relative;">
+        <div style="margin-left: 1px; position: relative; vertical-align: top;">
+            <table data-name="lookupGrid" data-view-options="wrapCss:dropdownTableWrap,isCanEdit:false,isCanDelete:false">
+                <thead>
+                    <tr>
+                        <th data-column="width:30px,type:row_selector" />
+                        <th data-column="width:95%,title:'Model'" data-content="fieldName:val,readOnly:true" />
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <br style="clear: both;" />
+        <div style="margin-left: auto;margin-right:auto;left: 0;right: 0;bottom:5px;text-align:center;position:absolute;">
+            <a class="btn btn-info btn-small" style="width: 95px;" data-name="btnOk">
+                <i class="icon-ok"></i> Ok
+            </a><span style="width: 20px;"></span>
+            <a class="btn btn-info btn-small" style="width: 95px;" data-name="btnCancel">
+                <i class="icon-remove"></i> Cancel
+            </a>
+        </div>
+    </div>
+</script>
+
 @Html.Partial("_WaitLoad")

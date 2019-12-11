@@ -1,6 +1,4 @@
 ﻿import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 import * as DEMODB from "./domainModel";
 import * as COMMON from "common";
 
@@ -8,7 +6,7 @@ import { CustomerVM } from "./customerVM";
 import { OrderVM } from "./orderVM";
 
 export interface IMyGridEvents<TItem extends RIAPP.ICollectionItem> extends COMMON.IGridEvents<TItem> {
-    destroy(): void;
+    dispose(): void;
     focusGrid(): void;
 }
 
@@ -43,12 +41,12 @@ export class CustomerGridEvents extends RIAPP.BaseObject implements IMyGridEvent
         if (!!this._doFocus)
             this._doFocus();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this._doFocus = null;
-        super.destroy();
+        super.dispose();
     }
 }
 
@@ -83,11 +81,11 @@ export class OrderGridEvents extends RIAPP.BaseObject implements IMyGridEvents<D
         if (!!this._doFocus)
             this._doFocus();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         this._doFocus = null;
-        super.destroy();
+        super.dispose();
     }
 }

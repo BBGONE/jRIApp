@@ -1,59 +1,33 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     Utils, IBaseObject, IEditable, IErrorNotification,
-    IValidationInfo, IVoidPromise, BaseObject, LocaleERRS as ERRS,
-    LocaleSTRS as STRS, Debounce
+    IValidationInfo, IVoidPromise, BaseObject, LocaleERRS as ERRS
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
-import { $ } from "jriapp/utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
-import { DATA_ATTR, ELVIEW_NM } from "jriapp/const";
+import { DATA_ATTR, ELVIEW_NM, BindScope, SERVICES } from "jriapp/consts";
 import { ViewChecks } from "jriapp/utils/viewchecks";
-import {
-    IApplication, IContent, IElView, ILifeTimeScope, IViewOptions
-} from "jriapp/int";
-import {
-    Parser
-} from "jriapp/utils/parser";
+import { IContent, IElView, ILifeTimeScope, IViewOptions, IApplication } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
-import { BaseElView, fn_addToolTip } from "./baseview";
+import { cssStyles, IFormErrorsService } from "./int";
+import { BaseElView } from "./baseview";
+
 import { Binding } from "jriapp/binding";
 import { parseContentAttr } from "./content/int";
 
-const utils = Utils, dom = DomUtils, doc = dom.document,
-    checks = utils.check, coreUtils = utils.core, strUtils = utils.str,
-    sys = utils.sys, parser = Parser, boot = bootstrap, viewChecks = ViewChecks;
+const utils = Utils, dom = DomUtils, { isFunc } = utils.check, { getNewID } = utils.core,
+    { format } = utils.str, sys = utils.sys, boot = bootstrap, viewChecks = ViewChecks,
+    { reject: _reject } = utils.defer;
 
-export const css = {
-    dataform: "ria-dataform",
-    error: "ria-form-error"
-};
-
-viewChecks.setIsInsideTemplate = function (elView: BaseElView) {
-    if (!!elView && elView instanceof DataFormElView) {
-        (<DataFormElView>elView).form.isInsideTemplate = true;
-    }
-};
-
-viewChecks.isDataForm = function (el: HTMLElement): boolean {
+viewChecks.isDataForm = (el: Element) => {
     if (!el) {
         return false;
     }
-
-    if (el.hasAttribute(DATA_ATTR.DATA_FORM)) {
-        return true;
-    }
-    else {
-        const attr = el.getAttribute(DATA_ATTR.DATA_VIEW);
-        if (!attr) {
-            return false;
-        }
-        const opts = parser.parseOptions(attr);
-        return (opts.length > 0 && opts[0].name === ELVIEW_NM.DataForm);
-    }
+    const attr = el.getAttribute(DATA_ATTR.DATA_VIEW);
+    return (!attr) ? false : (attr === ELVIEW_NM.DataForm);
 };
 
-viewChecks.isInsideDataForm = function (el: HTMLElement): boolean {
+viewChecks.isInsideDataForm = (el: Element) => {
     if (!el) {
         return false;
     }
@@ -62,37 +36,36 @@ viewChecks.isInsideDataForm = function (el: HTMLElement): boolean {
     if (!!parent) {
         if (!viewChecks.isDataForm(parent)) {
             return viewChecks.isInsideDataForm(parent);
-        }
-        else {
+        } else {
             return true;
         }
     }
-    
+
     return false;
 };
 
-//check if the element inside of any dataform in the forms array
-viewChecks.isInNestedForm = function (root: any, forms: HTMLElement[], el: HTMLElement): boolean {
-    let i: number, oNode: HTMLElement, len = forms.length;
+// check if the element inside of any dataform in the forms array
+viewChecks.isInNestedForm = (root: any, forms: Element[], el: Element) => {
+    const len = forms.length;
     if (len === 0) {
         return false;
     }
-    oNode = el.parentElement;
+    let oNode = el.parentElement;
 
     while (!!oNode) {
-        for (i = 0; i < len; i += 1) {
+        for (let i = 0; i < len; i += 1) {
             if (oNode === forms[i]) {
-                //we found the form to be among the parents
+                // we found the form to be among the parents
                 return true;
             }
         }
 
         if (!!root && oNode === root) {
-            //reached up to the root
+            // reached up to the root
             return false;
         }
 
-        //try parent element
+        // try parent element
         oNode = oNode.parentElement;
     }
 
@@ -103,49 +76,53 @@ viewChecks.isInNestedForm = function (root: any, forms: HTMLElement[], el: HTMLE
        in case of dataforms nesting, element's parent dataform can be nested dataform
        this function returns element dataform
 */
-viewChecks.getParentDataForm = function (rootForm: HTMLElement, el: HTMLElement): HTMLElement {
-    if (!el)
+viewChecks.getParentDataForm = (rootForm: HTMLElement, el: HTMLElement) => {
+    if (!el) {
         return null;
-    let parent = el.parentElement, attr: string, opts: any[];
+    }
+    const parent = el.parentElement;
     if (!!parent) {
-        if (parent === rootForm)
+        if (parent === rootForm) {
             return rootForm;
+        }
         if (viewChecks.isDataForm(parent)) {
             return parent;
-        }
-        else
+        } else {
             return viewChecks.getParentDataForm(rootForm, parent);
+        }
     }
 
     return null;
 };
 
 function getFieldInfo(obj: any, fieldName: string): IFieldInfo {
-    if (!obj)
+    if (!obj) {
         return null;
-    if (!!obj._aspect && checks.isFunc(obj._aspect.getFieldInfo)) {
+    }
+    if (!!obj._aspect && isFunc(obj._aspect.getFieldInfo)) {
         return obj._aspect.getFieldInfo(fieldName);
-    }
-    else if (checks.isFunc(obj.getFieldInfo)) {
+    } else if (isFunc(obj.getFieldInfo)) {
         return obj.getFieldInfo(fieldName);
-    }
-    else
+    } else {
         return null;
+    }
 }
 
-const PROP_NAME = {
-    dataContext: "dataContext",
-    isEditing: "isEditing",
-    validationErrors: "validationErrors",
-    form: "form"
-};
+function getErrorsService(): IFormErrorsService {
+    return boot.getSvc(SERVICES.UIERRORS_SVC);
+}
+
+export interface IFormOptions {
+    formErrorsService?: IFormErrorsService;
+}
 
 export class DataForm extends BaseObject {
-    private static _DATA_FORM_SELECTOR = ["*[", DATA_ATTR.DATA_FORM, "]"].join("");
+    private static _DATA_FORM_SELECTOR = ["*[", DATA_ATTR.DATA_VIEW, "='", ELVIEW_NM.DataForm, "']"].join("");
     private static _DATA_CONTENT_SELECTOR = ["*[", DATA_ATTR.DATA_CONTENT, "]:not([", DATA_ATTR.DATA_COLUMN, "])"].join("");
     private _el: HTMLElement;
-    private _objId: string;
+    private _uniqueID: string;
     private _dataContext: IBaseObject;
+    private _errorsService: IFormErrorsService;
     private _isEditing: boolean;
     private _content: IContent[];
     private _lfTime: ILifeTimeScope;
@@ -153,17 +130,16 @@ export class DataForm extends BaseObject {
     private _editable: IEditable;
     private _errNotification: IErrorNotification;
     private _parentDataForm: IElView;
-    private _errors: IValidationInfo[];
-    private _isInsideTemplate: boolean;
     private _contentPromise: IVoidPromise;
- 
-    constructor(options: IViewOptions) {
+
+    constructor(el: HTMLElement, options: IFormOptions) {
         super();
         const self = this;
-        this._el = options.el;
-        this._objId = coreUtils.getNewID("frm");
+        this._el = el;
+        this._uniqueID = getNewID("frm");
         this._dataContext = null;
-        dom.addClass([this._el], css.dataform);
+        this._errorsService = !options.formErrorsService ? getErrorsService() : options.formErrorsService;
+        dom.addClass([el], cssStyles.dataform);
         this._isEditing = false;
         this._content = [];
         this._lfTime = null;
@@ -171,62 +147,67 @@ export class DataForm extends BaseObject {
         this._editable = null;
         this._errNotification = null;
         this._parentDataForm = null;
-        this._errors = null;
         this._contentPromise = null;
-       
-        const parent = viewChecks.getParentDataForm(null, this._el);
-        //if this form is nested inside another dataform
-        //subscribe for parent's destroy event
+
+        const parent = viewChecks.getParentDataForm(null, el);
+        // if this form is nested inside another dataform
+        // subscribe for parent's dispose event
         if (!!parent) {
-            self._parentDataForm = this.app.viewFactory.getOrCreateElView(parent);
-            self._parentDataForm.addOnDestroyed(function (sender, args) {
-                //destroy itself if parent form is destroyed
-                if (!self._isDestroyCalled)
-                    self.destroy();
-            }, self._objId);
+            self._parentDataForm = this.app.viewFactory.getElView(parent);
+            self._parentDataForm.objEvents.addOnDisposed(() => {
+                // dispose itself if parent form is destroyed
+                if (!self.getIsStateDirty()) {
+                    self.dispose();
+                }
+            }, self._uniqueID);
         }
+    }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this._setErrors(null);
+        this._clearContent();
+        dom.removeClass([this.el], cssStyles.dataform);
+        this._unbindDS();
+        const parentDataForm = this._parentDataForm;
+        this._parentDataForm = null;
+        if (!!parentDataForm && !parentDataForm.getIsStateDirty()) {
+            parentDataForm.objEvents.offNS(this._uniqueID);
+        }
+        this._dataContext = null;
+        this._errorsService = null;
+        this._contentCreated = false;
+        this._contentPromise = null;
+        this._el = null;
+        super.dispose();
     }
     private _getBindings(): Binding[] {
-        if (!this._lfTime)
-            return [];
-        let arr: any[] = this._lfTime.getObjs(), res: Binding[] = [];
-        for (let i = 0, len = arr.length; i < len; i += 1) {
-            if (sys.isBinding(arr[i]))
-                res.push(arr[i]);
-        }
-        return res;
-    }
-    private _getElViews(): BaseElView[] {
-        if (!this._lfTime)
-            return [];
-        let arr: any[] = this._lfTime.getObjs(), res: BaseElView[] = [];
-        for (let i = 0, len = arr.length; i < len; i += 1) {
-            if (viewChecks.isElView(arr[i]))
-                res.push(arr[i]);
-        }
-        return res;
+        return !this._lfTime ? [] : this._lfTime.findAll<Binding>(sys.isBinding);
     }
     private _createContent(): IVoidPromise {
         const dctx: any = this._dataContext, self = this;
         if (!dctx) {
-            return;
+            return _reject<void>("DataForm's DataContext is not set");
         }
         const contentElements = utils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_CONTENT_SELECTOR)),
             isEditing = this.isEditing;
 
-        //select all dataforms inside the scope
+        // select all dataforms inside the scope
         const forms = utils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_FORM_SELECTOR));
 
-        contentElements.forEach(function (el) {
-            //check if the element inside a nested dataform
-            if (viewChecks.isInNestedForm(self._el, forms, el))
+        contentElements.forEach((el) => {
+            // check if the element inside a nested dataform
+            if (viewChecks.isInNestedForm(self._el, forms, el)) {
                 return;
+            }
             const attr = el.getAttribute(DATA_ATTR.DATA_CONTENT),
                 op = parseContentAttr(attr);
             if (!!op.fieldName && !op.fieldInfo) {
                 op.fieldInfo = getFieldInfo(dctx, op.fieldName);
                 if (!op.fieldInfo) {
-                    throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
+                    throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
                 }
             }
 
@@ -235,149 +216,148 @@ export class DataForm extends BaseObject {
             self._content.push(content);
             content.render();
         });
+        const promise = self.app._getInternal().bindElements({
+            scope: this._el,
+            bind: BindScope.DataForm,
+            dataContext: dctx
+        });
 
-        const promise = self.app._getInternal().bindElements(this._el, dctx, true, this.isInsideTemplate);
-        return promise.then((lftm) => {
-            if (self.getIsDestroyCalled()) {
-                lftm.destroy();
+        return promise.then((lftm: ILifeTimeScope) => {
+            if (self.getIsStateDirty()) {
+                lftm.dispose();
                 return;
             }
             self._lfTime = lftm;
             const bindings = self._getBindings();
             bindings.forEach((binding) => {
-                if (!binding.isSourceFixed)
+                if (!binding.isSourceFixed) {
                     binding.source = dctx;
+                }
             });
             self._contentCreated = true;
         });
     }
-    private _updateCreatedContent() {
-        let dctx: any = this._dataContext, self = this;
+    private _updateCreatedContent(): void {
+        const dctx: any = this._dataContext, self = this;
         try {
-            this._content.forEach(function (content) {
+            this._content.forEach((content) => {
                 content.dataContext = dctx;
                 content.isEditing = self.isEditing;
             });
 
-            let bindings = this._getBindings();
-            bindings.forEach(function (binding) {
-                if (!binding.isSourceFixed)
+            const bindings = this._getBindings();
+            bindings.forEach((binding) => {
+                if (!binding.isSourceFixed) {
                     binding.source = dctx;
+                }
             });
-        }
-        catch (ex) {
+        } catch (ex) {
             utils.err.reThrow(ex, this.handleError(ex, this));
         }
     }
-    private _updateContent() {
+    private _updateContent(): void {
         const self = this;
         try {
             if (self._contentCreated) {
                 self._updateCreatedContent();
-            }
-            else {
+            } else {
                 if (!!self._contentPromise) {
                     self._contentPromise.then(() => {
-                        if (self.getIsDestroyCalled())
+                        if (self.getIsStateDirty()) {
                             return;
+                        }
                         self._updateCreatedContent();
                     }, (err) => {
-                        if (self.getIsDestroyCalled())
+                        if (self.getIsStateDirty()) {
                             return;
+                        }
                         self.handleError(err, self);
                     });
-                }
-                else {
+                } else {
                     self._contentPromise = self._createContent();
                 }
             }
-        }
-        catch (ex) {
+        } catch (ex) {
             utils.err.reThrow(ex, self.handleError(ex, self));
         }
     }
-    private _onDSErrorsChanged(sender?: any, args?: any) {
-        if (!!this._errNotification)
-            this.validationErrors = this._errNotification.getAllErrors();
+    private _onDSErrorsChanged(): void {
+        if (!!this._errNotification) {
+            const errors = this._errNotification.getAllErrors();
+            this._setErrors(errors);
+        }
     }
-    _onIsEditingChanged(sender: any, args: any) {
-        this.isEditing = this._editable.isEditing;
-    }
-    private _bindDS() {
+    private _bindDS(): void {
         const dataContext = this._dataContext, self = this;
-        if (!dataContext)
+        if (!dataContext) {
             return;
+        }
 
         if (!!dataContext) {
             this._editable = sys.getEditable(dataContext);
             this._errNotification = sys.getErrorNotification(dataContext);
         }
 
-        dataContext.addOnDestroyed(function (s, a) {
+        dataContext.objEvents.addOnDisposed(() => {
             self.dataContext = null;
-        }, self._objId);
+        }, self._uniqueID);
 
         if (!!this._editable) {
-            (<IBaseObject><any>this._editable).addOnPropertyChange(PROP_NAME.isEditing, self._onIsEditingChanged, self._objId, self);
+            this._editable.objEvents.onProp("isEditing", self._onIsEditingChanged, self._uniqueID, self);
         }
 
         if (!!this._errNotification) {
-            this._errNotification.addOnErrorsChanged(self._onDSErrorsChanged, self._objId, self);
+            this._errNotification.addOnErrorsChanged(self._onDSErrorsChanged, self._uniqueID, self);
         }
     }
-    private _unbindDS() {
+    private _unbindDS(): void {
         const dataContext = this._dataContext;
-        this.validationErrors = null;
-        if (!!dataContext && !dataContext.getIsDestroyCalled()) {
-            dataContext.removeNSHandlers(this._objId);
+        this._setErrors(null);
+        if (!!dataContext && !dataContext.getIsStateDirty()) {
+            dataContext.objEvents.offNS(this._uniqueID);
             if (!!this._editable) {
-                (<IBaseObject><any>this._editable).removeNSHandlers(this._objId);
+                this._editable.objEvents.offNS(this._uniqueID);
             }
             if (!!this._errNotification) {
-                this._errNotification.removeOnErrorsChanged(this._objId);
+                this._errNotification.offOnErrorsChanged(this._uniqueID);
             }
         }
         this._editable = null;
         this._errNotification = null;
     }
-    private _clearContent() {
-        this._content.forEach(function (content) {
-            content.destroy();
+    private _clearContent(): void {
+        this._content.forEach((content) => {
+            content.dispose();
         });
         this._content = [];
         if (!!this._lfTime) {
-            this._lfTime.destroy();
+            this._lfTime.dispose();
             this._lfTime = null;
         }
         this._contentCreated = false;
     }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        this._clearContent();
-        dom.removeClass([this.el], css.dataform);
-        this._el = null;
-        this._unbindDS();
-        const parentDataForm = this._parentDataForm;
-        this._parentDataForm = null;
-        if (!!parentDataForm && !parentDataForm.getIsDestroyCalled()) {
-            parentDataForm.removeNSHandlers(this._objId);
-        }
-        this._dataContext = null;
-        this._contentCreated = false;
-        this._contentPromise = null;
-        super.destroy();
+    protected _setErrors(errors: IValidationInfo[]): void {
+        this._errorsService.setFormErrors(this.el, errors);
     }
-    toString() {
+    protected _onIsEditingChanged(): void {
+        this.isEditing = this._editable.isEditing;
+    }
+    toString(): string {
         return "DataForm";
     }
-    get app() { return boot.getApp(); }
-    get el() { return this._el; }
-    get dataContext() { return this._dataContext; }
-    set dataContext(v) {
-        if (v === this._dataContext)
+    get app(): IApplication {
+        return boot.app;
+    }
+    get el(): HTMLElement {
+        return this._el;
+    }
+    get dataContext(): IBaseObject {
+        return this._dataContext;
+    }
+    set dataContext(v: IBaseObject) {
+        if (v === this._dataContext) {
             return;
+        }
 
         if (!!v && !sys.isBaseObj(v)) {
             throw new Error(ERRS.ERR_DATAFRM_DCTX_INVALID);
@@ -397,22 +377,27 @@ export class DataForm extends BaseObject {
             }
         }
 
-        this.raisePropertyChanged(PROP_NAME.dataContext);
+        this.objEvents.raiseProp("dataContext");
     }
-    get isEditing() { return this._isEditing; }
-    set isEditing(v) {
-        let dataContext: any = this._dataContext;
-        if (!dataContext)
+    get isEditing(): boolean {
+        return this._isEditing;
+    }
+    set isEditing(v: boolean) {
+        const dataContext = this._dataContext;
+        if (!dataContext) {
             return;
-        let isEditing = this._isEditing, editable: IEditable;
+        }
+        const isEditing = this._isEditing;
+        let editable: IEditable;
 
-        if (!!this._editable)
+        if (!!this._editable) {
             editable = this._editable;
+        }
 
         if (!editable && v !== isEditing) {
             this._isEditing = v;
             this._updateContent();
-            this.raisePropertyChanged(PROP_NAME.isEditing);
+            this.objEvents.raiseProp("isEditing");
             return;
         }
 
@@ -421,12 +406,10 @@ export class DataForm extends BaseObject {
             try {
                 if (v) {
                     editable.beginEdit();
-                }
-                else {
+                } else {
                     editable.endEdit();
                 }
-            }
-            catch (ex) {
+            } catch (ex) {
                 utils.err.reThrow(ex, this.handleError(ex, dataContext));
             }
         }
@@ -434,107 +417,53 @@ export class DataForm extends BaseObject {
         if (!!editable && editable.isEditing !== isEditing) {
             this._isEditing = editable.isEditing;
             this._updateContent();
-            this.raisePropertyChanged(PROP_NAME.isEditing);
+            this.objEvents.raiseProp("isEditing");
         }
     }
-    get validationErrors() { return this._errors; }
-    set validationErrors(v) {
-        if (v !== this._errors) {
-            this._errors = v;
-            this.raisePropertyChanged(PROP_NAME.validationErrors);
-        }
-    }
-    get isInsideTemplate() { return this._isInsideTemplate; }
-    set isInsideTemplate(v) {
-        this._isInsideTemplate = v;
-    }
+}
+
+export interface IFormViewOptions extends IFormOptions, IViewOptions {
 }
 
 export class DataFormElView extends BaseElView {
     private _form: DataForm;
-    private _errorGliph: HTMLElement;
 
-    constructor(options: IViewOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: IFormViewOptions) {
+        super(el, options);
         const self = this;
-        this._form = new DataForm(options);
-        this._errorGliph = null;
-        this._form.addOnPropertyChange("*", function (form, args) {
-            switch (args.property) {
-                case PROP_NAME.validationErrors:
-                    self.validationErrors = form.validationErrors;
-                    break;
-                case PROP_NAME.dataContext:
-                    self.raisePropertyChanged(args.property);
-                    break;
-            }
+        this._form = new DataForm(el, options);
+        this._form.objEvents.onProp("dataContext", (form, args) => {
+            self.objEvents.raiseProp("dataContext");
         }, this.uniqueID);
     }
-    protected _getErrorTipInfo(errors: IValidationInfo[]) {
-        const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<ul>"];
-        errors.forEach(function (info) {
-            let fieldName = info.fieldName, res = "";
-            if (!!fieldName) {
-                res = STRS.VALIDATE.errorField + " " + fieldName
-            }
-            info.errors.forEach(function (str) {
-                if (!!res)
-                    res = res + " -> " + str;
-                else
-                    res = str;
-            });
-            tip.push("<li>" + res + "</li>");
-            res = "";
-        });
-        tip.push("</ul>");
-        return tip.join("");
-    }
-    protected _updateErrorUI(el: HTMLElement, errors: IValidationInfo[]) {
-        if (!el) {
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
         }
-        if (!!errors && errors.length > 0) {
-            if (!this._errorGliph) {
-                this._errorGliph = dom.fromHTML(`<div data-name="error_info" class="${css.error}" />`)[0];
-                dom.prepend(el, this._errorGliph);
-            }
-            fn_addToolTip(this._errorGliph, this._getErrorTipInfo(errors), true);
-            this._setFieldError(true);
+        this.setDisposing();
+        if (!this._form.getIsStateDirty()) {
+            this._form.dispose();
         }
-        else {
-            if (!!this._errorGliph) {
-                fn_addToolTip(this._errorGliph, null);
-                dom.removeNode(this._errorGliph);
-                this._errorGliph = null;
-            }
-            this._setFieldError(false);
-        }
+        super.dispose();
     }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        if (!!this._errorGliph) {
-            dom.removeNode(this._errorGliph);
-            this._errorGliph = null;
-        }
-        if (!this._form.getIsDestroyCalled()) {
-            this._form.destroy();
-        }
-        super.destroy();
+    // override
+    protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void {
+        // noop
     }
-    toString() {
+    toString(): string {
         return "DataFormElView";
     }
-    get dataContext() {
+    get dataContext(): IBaseObject {
         return this._form.dataContext;
     }
-    set dataContext(v) {
+    set dataContext(v: IBaseObject) {
         if (this.dataContext !== v) {
             this._form.dataContext = v;
         }
     }
-    get form() { return this._form; }
+    get form(): DataForm {
+        return this._form;
+    }
 }
 
 boot.registerElView(ELVIEW_NM.DataForm, DataFormElView);

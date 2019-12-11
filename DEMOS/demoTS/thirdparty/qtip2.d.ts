@@ -273,7 +273,7 @@ declare namespace QTip2 {
 
 		blur(event?: Event): Api;
 
-		destroy(immediate?: boolean): Api;
+		dispose(immediate?: boolean): Api;
 	}
 }
 
@@ -403,7 +403,7 @@ interface JQuery {
 
 	qtip(methodName: 'blur', event?: Event): JQuery;
 
-	qtip(methodName: 'destroy', immediate?: boolean): JQuery;
+	qtip(methodName: 'dispose', immediate?: boolean): JQuery;
 
 	qtip(methodName: string, p1?: any, p2?: any, p3?: any): any;
 }

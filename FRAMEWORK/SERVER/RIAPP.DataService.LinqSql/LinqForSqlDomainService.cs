@@ -1,61 +1,52 @@
-﻿using System;
+﻿using RIAPP.DataService.Core;
+using RIAPP.DataService.Core.Metadata;
+using RIAPP.DataService.Core.Types;
+using System;
 using System.Linq;
 using System.Reflection;
-using System.Transactions;
 using System.Threading.Tasks;
-using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.LinqSql.Utils;
+using System.Transactions;
 
 namespace RIAPP.DataService.LinqSql
 {
-    public abstract class LinqForSqlDomainService<TDB> : BaseDomainService
+    public abstract class BaseLinqForSqlDomainService : BaseDomainService
+    {
+        public BaseLinqForSqlDomainService(IServiceContainer serviceContainer)
+            : base(serviceContainer)
+        {
+            
+        }
+    }
+
+    public abstract class LinqForSqlDomainService<TDB> : BaseLinqForSqlDomainService
         where TDB : System.Data.Linq.DataContext
     {
         private TDB _db;
         private bool _ownsDb = false;
 
-        public LinqForSqlDomainService(TDB db, IServiceArgs args)
-            :base(args)
+        public LinqForSqlDomainService(IServiceContainer serviceContainer, TDB db = default(TDB))
+            : base(serviceContainer)
         {
             this._db = db;
         }
 
-        public LinqForSqlDomainService(IServiceArgs args)
-            : this(null,args)
-        {
-           
-        }
-
         #region Overridable Methods
-        protected override void ConfigureCodeGen()
-        {
-            base.ConfigureCodeGen();
-            this.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
-        }
-
-        protected override IServiceContainer CreateServiceContainer()
-        {
-            return (new LinqServiceContainerFactory()).CreateServiceContainer(this.GetType(), this.serializer, this.User);
-        }
-
         protected virtual TDB CreateDataContext() {
             return Activator.CreateInstance<TDB>();
         }
 
-        protected override Metadata GetMetadata(bool isDraft)
+        protected override DesignTimeMetadata GetDesignTimeMetadata(bool isDraft)
         {
-            Metadata metadata = new Metadata();
+            var metadata = new DesignTimeMetadata();
             PropertyInfo[] dbsetPropList = this.DB.GetType().GetProperties().Where(p => p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(System.Data.Linq.Table<>)).ToArray();
             Array.ForEach(dbsetPropList, (propInfo) =>
             {
                 Type entityType = propInfo.PropertyType.GetGenericArguments().First();
                 DbSetInfo dbSetInfo = new DbSetInfo()
                 {
-                    dbSetName = entityType.Name,
-                    EntityType = entityType
+                    dbSetName = entityType.Name
                 };
+                dbSetInfo.SetEntityType(entityType);
                 metadata.DbSets.Add(dbSetInfo);
                 PropertyInfo[] fieldPropList = entityType.GetProperties().Where(p => p.IsDefined(typeof(System.Data.Linq.Mapping.ColumnAttribute), false)).ToArray();
                 short pkNum = 0;
@@ -142,7 +133,7 @@ namespace RIAPP.DataService.LinqSql
                 
                 transScope.Complete();
             }
-            return this.AfterExecuteChangeSet();
+            return Task.CompletedTask;
         }
         #endregion
 
@@ -170,6 +161,8 @@ namespace RIAPP.DataService.LinqSql
                 this._db = null;
                 this._ownsDb = false;
             }
+
+            base.Dispose(isDisposing);
         }
     }
 }

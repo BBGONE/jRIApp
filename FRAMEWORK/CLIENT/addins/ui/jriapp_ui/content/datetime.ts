@@ -1,32 +1,28 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DATA_TYPE } from "jriapp_shared/collection/const";
-import { IBaseObject } from "jriapp_shared";
-import { IApplication, IBindingInfo, IBindingOptions }  from "jriapp/int";
+import { IConverter } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
 
-import { css } from "./int";
 import { BasicContent } from "./basic";
 
 export class DateTimeContent extends BasicContent {
-    protected getBindingOption(bindingInfo: IBindingInfo, tgt: IBaseObject, dctx: any, targetPath: string) {
-        let options = super.getBindingOption(bindingInfo, tgt, dctx, targetPath);
-        options.converter = this.app.getConverter("dateTimeConverter");
+    // override
+    protected getParam(isEdit: boolean): any {
         const finf = this.getFieldInfo(), defaults = bootstrap.defaults;
         switch (finf.dataType) {
             case DATA_TYPE.DateTime:
-                options.converterParam = defaults.dateTimeFormat;
-                break;
+                return defaults.dateTimeFormat;
             case DATA_TYPE.Date:
-                options.converterParam = defaults.dateFormat;
-                break;
+                return defaults.dateFormat;
             case DATA_TYPE.Time:
-                options.converterParam = defaults.timeFormat;
-                break;
+                return defaults.timeFormat;
             default:
-                options.converterParam = null;
-                break;
+                return null;
         }
-        return options;
+    }
+    // override
+    protected getConverter(isEdit: boolean): IConverter {
+        return this.app.getConverter("dateTimeConverter");
     }
     toString() {
         return "DateTimeContent";

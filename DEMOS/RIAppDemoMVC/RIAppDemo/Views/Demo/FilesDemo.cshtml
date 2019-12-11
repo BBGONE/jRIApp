@@ -8,54 +8,64 @@
 
 @section CssImport
 {
-    <link href="@Url.Content("~/Scripts/dynatree/skin/ui.dynatree.css", true)" rel="stylesheet" type="text/css"/>
+    <link href="@Url.Content("~/Scripts/dynatree/skin/ui.dynatree.css", true)" rel="stylesheet" type="text/css" />
+
+    <style type="text/css">
+
+        #demoHeader label {
+            color: Blue;
+        }
+
+        #demoContent {
+            height: 80px;
+            overflow: visible;
+            position: relative;
+            vertical-align: top;
+        }
+
+        #tree {
+            height: 600px;
+            overflow: visible;
+            padding: 5px;
+        }
+
+        #demoContent > fieldset {
+            border-radius: 5px;
+        }
+
+        #demoContent fieldset > legend {
+            color: Blue;
+            font-weight: bold;
+        }
+
+        #demoContent .radioItem {
+            display: inline-block;
+            margin: 4px;
+            padding: 4px;
+        }
+
+        .stackPanelItem {
+            width: 170px;
+        }
+
+            .stackPanelItem fieldset {
+                border-radius: 5px;
+            }
+
+                .stackPanelItem fieldset legend {
+                    color: Blue;
+                    font-weight: bold;
+                }
+    </style>
 }
 
-@section JSImport
+@section JSStaticImport
 {
     <script src="@Url.Content("~/Scripts/dynatree/jquery.dynatree.min.js", true)" type="text/javascript"></script>
 }
 
-<style type="text/css">
-    #demoHeader label { color: Blue; }
-
-    #demoContent {
-        height: 80px;
-        overflow: visible;
-        position: relative;
-        vertical-align: top;
-    }
-
-    #tree {
-        height: 600px;
-        overflow: visible;
-        padding: 5px;
-    }
-
-    #demoContent > fieldset { border-radius: 5px; }
-
-    #demoContent fieldset > legend {
-        color: Blue;
-        font-weight: bold;
-    }
-
-    #demoContent .radioItem {
-        display: inline-block;
-        margin: 4px;
-        padding: 4px;
-    }
-
-    .stackPanelItem { width: 170px; }
-
-    .stackPanelItem fieldset { border-radius: 5px; }
-
-    .stackPanelItem fieldset legend {
-        color: Blue;
-        font-weight: bold;
-    }
-</style>
-
-<script type="text/javascript">
+@section JSDynamicImport {
+    <script type="text/javascript">
     require(["filesDemo"],
         function(DEMO) {
             var mainOptions = {
@@ -70,19 +80,20 @@
 
             DEMO.start(mainOptions);
         });
-</script>
+    </script>
+}
 
 <h2 class="ex8">@ViewBag.Title</h2>
 
 <div id="demoContent">
-    <a class="btn btn-info btn-small" style="margin: 5px 5px 5px 0px;" data-bind="{this.command,to=dialogCommand,mode=OneWay,source=fbrowserVM1}">Open folder browser</a>
-    <a class="btn btn-info btn-small" style="margin: 5px 5px 5px 0px;" data-bind="{this.command,to=dialogCommand,mode=OneWay,source=fbrowserVM2}">Open file browser</a>
+    <a class="btn btn-info btn-small" style="margin: 5px 5px 5px 0px;" data-bind="this.command,to=dialogCommand,mode=OneWay,source=fbrowserVM1">Open folder browser</a>
+    <a class="btn btn-info btn-small" style="margin: 5px 5px 5px 0px;" data-bind="this.command,to=dialogCommand,mode=OneWay,source=fbrowserVM2">Open file browser</a>
 </div>
-<span style="font-weight: bold;">Selected path: </span><span style="color: blue;" data-bind="{this.value,to=selectedPath}"></span>
+<span style="font-weight: bold;">Selected path: </span><span style="color: blue;" data-bind="this.value,to=selectedPath"></span>
 
-<script id="treeTemplate" type="text/html" data-role="template">
+<script id="treeTemplate" type="text/x-template">
     <div style="height: 100%; margin: 4px; width: 95%;">
         <div data-name="tree" style="height: 95%;"></div>
-        <span style="bottom: 5px; color: Blue; font-size: 10px; font-weight: bold; left: 15px; position: absolute;" data-bind="{this.text,to=selectedItem.fullPath,mode=OneWay}"></span>
+        <span style="bottom: 5px; color: Blue; font-size: 10px; font-weight: bold; left: 15px; position: absolute;" data-bind="this.text,to=selectedItem.fullPath,mode=OneWay"></span>
     </div>
 </script>

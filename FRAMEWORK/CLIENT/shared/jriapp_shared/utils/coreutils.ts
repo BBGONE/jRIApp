@@ -1,61 +1,136 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IIndexer } from "../int";
-import { ArrayHelper } from "./arrhelper";
 import { StringUtils } from "./strutils";
 import { Checks } from "./checks";
 
-const checks = Checks, strUtils = StringUtils, arrHelper = ArrayHelper;
-const UUID_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
-const NEWID_MAP: IIndexer<number> = {};
+const { isHasProp, _undefined, isBoolean, isArray, isPlainObject, isNt, isString } = Checks,
+    { format: formatStr, fastTrim: trim } = StringUtils, { getOwnPropertyNames, getOwnPropertyDescriptor, keys: objectKeys } = Object;
+const UUID_CHARS: string[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
+const NEWID_MAP: IIndexer<number> = Indexer();
 
-//basic utils
+function Indexer<T = any>(): IIndexer<T>
+{
+    return Object.create(null);
+}
+
+function clone(obj: any, target?: any): any {
+    if (!obj) {
+        return obj;
+    }
+
+    let res: any;
+
+    if (isArray(obj)) {
+        res = [];
+        const len = obj.length;
+        for (let i = 0; i < len; i += 1) {
+            res.push(clone(obj[i], null));
+        }
+    } else if (isPlainObject(obj)) {
+        // clone only plain objects
+        res = target || {};
+        const keys = getOwnPropertyNames(obj), len = keys.length;
+        for (let i = 0; i < len; i += 1) {
+            const p = keys[i];
+            res[p] = clone(obj[p], null);
+        }
+    } else {
+        res = obj;
+    }
+
+    return res;
+}
+
+function extend<T, U>(target: T, ...source: U[]): T & U {
+    if (isNt(target)) {
+        throw new TypeError("extend: Cannot convert first argument to object");
+    }
+
+    const to = Object(target);
+    for (let i = 0; i < source.length; i++) {
+        const nextSource = source[i] as IIndexer<any>;
+        if (nextSource === _undefined || nextSource === null) {
+            continue;
+        }
+
+        const keys = objectKeys(Object(nextSource)), len = keys.length;
+        for (let nextIndex = 0; nextIndex < len; nextIndex++) {
+            const nextKey = keys[nextIndex], desc = getOwnPropertyDescriptor(nextSource, nextKey);
+            if (desc !== _undefined && desc.enumerable) {
+                to[nextKey] = nextSource[nextKey];
+            }
+        }
+    }
+    return to;
+}
+
+function assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: U): T {
+    if (isNt(target)) {
+        target = <any>{};
+    }
+    if (!isPlainObject(source)) {
+        return target;
+    }
+   
+    const keys = <(keyof U)[]>objectKeys(source), len = keys.length;
+  
+    for (let i = 0; i < len; i += 1) {
+        const p = keys[i], tval = target[p], sval = source[p];
+        if (isPlainObject(sval)) {
+            target[p] = <any>assignStrings(tval, sval);
+        } else if (isString(sval)) {
+            target[p] = <any>sval;
+        }
+    }
+
+    return target;
+}
+
+const ERR_OBJ_ALREADY_REGISTERED = "an Object with the name: {0} is already registered and can not be overwritten";
+
+// basic utils
 export class CoreUtils {
-    private static ERR_OBJ_ALREADY_REGISTERED = "an Object with the name: {0} is already registered and can not be overwritten";
-
     static getNewID(prefix: string = "*"): string {
         const id = NEWID_MAP[prefix] || 0;
         NEWID_MAP[prefix] = id + 1;
         return (prefix === "*") ? id.toString(36) : (prefix + "_" + id.toString(36));
     }
-
-    static get_timeZoneOffset = (function () {
+    static readonly getTimeZoneOffset = (() => {
         const dt = new Date(), tz = dt.getTimezoneOffset();
-        return function () {
-            return tz;
-        }
+        return () => tz;
     })();
-    static hasProp = checks.isHasProp;
-    static setValue(root: any, namePath: string, val: any, checkOverwrite: boolean = false, separator = "."): void {
-        const parts = namePath.split(separator), len = parts.length;
+    static readonly hasProp = isHasProp;
+    static setValue(root: any, namePath: string, val: any, checkOverwrite: boolean = false): void {
+        const parts: string[] = namePath.split("."), len = parts.length;
         let parent = root;
         for (let i = 0; i < len - 1; i += 1) {
             // create a property if it doesn't exist
             if (!parent[parts[i]]) {
-                parent[parts[i]] = {};
+                parent[parts[i]] = Indexer();
             }
             parent = parent[parts[i]];
         }
-        //the last part is the name itself
+        // the last part is the name itself
         const n = parts[len - 1];
-        if (!!checkOverwrite && (parent[n] !== checks.undefined)) {
-            throw new Error(strUtils.format(CoreUtils.ERR_OBJ_ALREADY_REGISTERED, namePath));
+        if (!!checkOverwrite && (parent[n] !== _undefined)) {
+            throw new Error(formatStr(ERR_OBJ_ALREADY_REGISTERED, namePath));
         }
         parent[n] = val;
     }
-    static getValue(root: any, namePath: string, separator = "."): any {
-        const parts = namePath.split(separator);
+    static getValue(root: any, namePath: string): any {
+        const parts = namePath.split(".");
         let res: any, parent = root;
         for (let i = 0; i < parts.length; i += 1) {
             res = parent[parts[i]];
-            if (res === checks.undefined) {
+            if (res === _undefined) {
                 return null;
             }
             parent = res;
         }
         return res;
     }
-    static removeValue(root: any, namePath: string, separator = "."): any {
-        const parts = namePath.split(separator);
+    static removeValue(root: any, namePath: string): any {
+        const parts = namePath.split(".");
         let parent = root;
         for (let i = 0; i < parts.length - 1; i += 1) {
             if (!parent[parts[i]]) {
@@ -63,35 +138,23 @@ export class CoreUtils {
             }
             parent = parent[parts[i]];
         }
-        //the last part is the object name itself
+        // the last part is the object name itself
         const n = parts[parts.length - 1], val = parent[n];
-        if (val !== Checks.undefined) {
+        if (val !== _undefined) {
             delete parent[n];
         }
 
-        //returns deleted value
+        // returns deleted value
         return val;
     }
-    //the object that directly has this property (last object in chain obj1.obj2.lastObj)
-    static resolveOwner(obj: any, path: string, separator = "."): any {
-        const parts = path.split(separator), len = parts.length;
-        if (len === 1)
-            return obj;
-        let res = obj;
-        for (let i = 0; i < len - 1; i += 1) {
-            res = res[parts[i]];
-            if (res === checks.undefined || res === null)
-                return res;
-        }
-        return res;
-    }
     static uuid(len?: number, radix?: number): string {
-        let i: number, chars = UUID_CHARS, uuid: string[] = [], rnd = Math.random;
+        let i: number;
+        const chars = UUID_CHARS, uuid: string[] = [], rnd = Math.random;
         radix = radix || chars.length;
 
         if (!!len) {
             // Compact form
-            for (i = 0; i < len; i += 1) uuid[i] = chars[0 | rnd() * radix];
+            for (i = 0; i < len; i += 1) { uuid[i] = chars[0 | rnd() * radix]; }
         } else {
             // rfc4122, version 4 form
             let r: number;
@@ -113,112 +176,80 @@ export class CoreUtils {
         return uuid.join("");
     }
     static parseBool(a: any): boolean {
-        if (checks.isBoolean(a))
+        if (isBoolean(a)) {
             return a;
-        const v = strUtils.trim(a).toLowerCase();
-        if (v === "false") return false;
-        if (v === "true")
+        }
+        const v = trim(a).toLowerCase();
+        if (v === "false") {
+            return false;
+        } else if (v === "true") {
             return true;
-        else
-            throw new Error(strUtils.format("parseBool, argument: {0} is not a valid boolean string", a));
+        } else {
+            throw new Error(formatStr("parseBool, argument: {0} is not a valid boolean string", a));
+        }
     }
     static round(num: number, decimals: number): number {
         return parseFloat(num.toFixed(decimals));
     }
-    static clone(obj: any, target?: any): any {
-        let res: any;
-        if (!obj) {
-            return obj;
-        }
-
-        if (checks.isArray(obj)) {
-            res = [];
-            for (let i = 0, len = obj.length; i < len; i += 1) {
-                res.push(CoreUtils.clone(obj[i], null));
-            }
-        }
-        else if (checks.isSimpleObject(obj)) {
-            //clone only simple objects
-            res = target || {};
-            const keys = Object.getOwnPropertyNames(obj);
-            for (let i = 0, len = keys.length; i < len; i += 1) {
-                let p = keys[i];
-                res[p] = CoreUtils.clone(obj[p], null);
-            }
-        }
-        else {
-            return obj;
-        }
-
-        return res;
-    }
-    static merge<S, T>(source: S, target?: T): S | T {
+    static readonly clone: (obj: any, target?: any) => any = clone;
+    static merge<S, T>(source: S, target?: T): S & T {
         if (!target) {
             target = <any>{};
         }
-        if (!source)
-            return target;
-        return CoreUtils.extend(target, source);
-    }
-    static extend<T, U>(target: T, ...source: U[]): T | U {
-        if (checks.isNt(target)) {
-            throw new TypeError('extend: Cannot convert first argument to object');
+        if (!source) {
+            return <any>target;
         }
-
-        var to = Object(target);
-        for (var i = 0; i < source.length; i++) {
-            let nextSource: IIndexer<any> = source[i];
-            if (nextSource === undefined || nextSource === null) {
-                continue;
-            }
-
-            let keys = Object.keys(Object(nextSource));
-            for (let nextIndex = 0, len = keys.length; nextIndex < len; nextIndex++) {
-                let nextKey = keys[nextIndex], desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
-                if (desc !== undefined && desc.enumerable) {
-                    to[nextKey] = nextSource[nextKey];
-                }
-            }
-        }
-        return to;
+        return extend(target, source);
     }
-    //caches the result of function invocation
-    static memoize<T>(callback: () => T): () => T {
-        let value: T;
-        return function () {
-            if (!!callback) {
-                value = callback();
-                callback = checks.undefined;
+    static readonly extend: <T, U>(target: T, ...source: U[]) => T & U = extend;
+    static memoize<R>(fn: () => R): () => R;
+    static memoize<T1, R>(fn: (A1: T1) => R): (A1: T1) => R;
+    static memoize<T1, T2, R>(fn: (A1: T1, A2: T2) => R): (A1: T1, A2: T2) => R;
+    static memoize<T1, T2, T3, R>(fn: (A1: T1, A2: T2, A3: T3) => R): (A1: T1, A2: T2, A3: T3) => R;
+    static memoize<T>(fn: (...args: any[]) => T): (...args: any[]) => T {
+        let memo = Indexer();
+        return (...args: any[]) => {
+            let key = "__dummy";
+            if (!!args && args.length > 0) {
+                key = args.join(':');
+            } 
+
+            if (key in memo) {
+                return memo[key];
+            } else {
+                memo[key] = fn(...args);
+                return memo[key];
             }
-            return value;
         };
     }
-    static forEachProp<T>(obj: IIndexer<T>, fn: (name: string, val?: T) => void) {
-        if (!obj)
+    static readonly Indexer: <T = any>() => IIndexer<T> = Indexer;
+    static forEach<T>(map: IIndexer<T>, fn: (name: string, val: T) => void): void {
+        if (!map) {
             return;
-        const names = Object.keys(obj);
-        for (let i = 0, len = names.length; i < len; i += 1) {
-            fn(names[i], obj[names[i]]);
+        }
+        for (let key in map) {
+            fn(key, map[key]);
         }
     }
-    static assignStrings<T extends U, U extends IIndexer<any>>(target: T, source: U): T {
-        if (checks.isNt(target))
-            target = <any>{};
-        if (!checks.isSimpleObject(source))
-            return target;
-
-        const keys = Object.keys(source);
-
-        for (let i = 0, len = keys.length; i < len; i += 1) {
-            let p = keys[i], tval = target[p], sval = source[p];
-            if (checks.isSimpleObject(sval)) {
-                target[p] = CoreUtils.assignStrings(tval, sval);
-            }
-            else if (checks.isString(sval)) {
-                target[p] = sval;
-            }
+    static toArray<T>(map: IIndexer<T>): T[] {
+        const r: T[] = [];
+        if (!map) {
+            return r;
         }
-
-        return target;
+        for (let key in map) {
+            r.push(map[key]);
+        }
+        return r;
+    }
+    static readonly assignStrings: <T extends U, U extends IIndexer<any>>(target: T, source: U) => T = assignStrings;
+    static pipe<T, R>(fn1: (...args: T[]) => R, ...fns: Array<(a: R) => R>): (...args: T[]) => R
+    {
+        const piped = fns.reduce((prevFn, nextFn) => (value: R) => nextFn(prevFn(value)),
+            value => value
+        );
+        return (...args: T[]) => piped(fn1(...args));
+    }
+    static compose<R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>): (a: R) => R {
+        return fns.reduce((prevFn, nextFn) => value => prevFn(nextFn(value)), fn1);
     }
 }

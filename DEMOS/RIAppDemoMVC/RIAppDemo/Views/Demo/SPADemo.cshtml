@@ -7,101 +7,117 @@
     ViewBag.Title = "Single Page Application (SPA) Demo";
 }
 
-<style type="text/css">
-    .space {
-        display: inline-block;
-        width: 10px;
-    }
-
-    #demoHeader label { color: Blue; }
-
-    #demoContent {
-        height: 490px;
-        margin: 5px 0px;
-        overflow: visible;
-    }
-
-    .customerTableWrap {
-        height: 550px;
-        width: 100%;
-    }
-
-    .orderDetailTableWrap {
-        max-height: 180px;
-        width: 100%;
-    }
-
-    .custInfo { color: Blue; }
-
-    .custEdit { }
-
-    .listbox-edit select { width: 75%; }
-
-    .qtyEdit > input[type="text"] {
-        min-width: 20px;
-        width: 45px;
-    }
-
-    form.customerInfo {
-        padding: 15px;
-        width: 100%;
-    }
-
- 
-    div.ria-dataform .addressLine {
-        margin-bottom: 2px;
-        margin-top: 2px;
-    }
-
-    div.ria-dataform .addressLabel {
-        color: Blue;
-        display: inline-block;
-        width: 9em;
-    }
-
-    div.ria-dataform .address { }
-
-    .autocompleteTableWrap {
-        margin: 0px;
-        max-height: 220px;
-        padding: 0px;
-        width: 100%;
-    }
-
-    .autocompleteSalePTableWrap {
-        height: 130px;
-        width: 100%;
-    }
-
-    .autocompleteTableHeader { display: none; }
-
-    table.ria-data-table tr:nth-child(even) { background-color: #ECF2F6; }
-
-    .addressTableWrap {
-        height: 100px;
-        width: 100%;
-    }
-
-    .addressTableHeader { }
-
-    .findAddrTableWrap {
-        height: 95%;
-        width: 100%;
-    }
-</style>
-
 @section CssImport
 {
+    <style type="text/css">
+
+        .space {
+            display: inline-block;
+            width: 10px;
+        }
+
+        #demoHeader label {
+            color: Blue;
+        }
+
+        #demoContent {
+            height: 490px;
+            margin: 5px 0px;
+            overflow: visible;
+        }
+
+        .customerTableWrap {
+            height: 550px;
+            width: 100%;
+        }
+
+        .orderDetailTableWrap {
+            max-height: 180px;
+            width: 100%;
+        }
+
+        .custInfo {
+            color: Blue;
+        }
+
+        .custEdit {
+        }
+
+        .listbox-edit select {
+            width: 75%;
+        }
+
+        .qtyEdit > input[type="text"] {
+            min-width: 20px;
+            width: 45px;
+        }
+
+        form.customerInfo {
+            padding: 15px;
+            width: 100%;
+        }
+
+
+        div.ria-dataform .addressLine {
+            margin-bottom: 2px;
+            margin-top: 2px;
+        }
+
+        div.ria-dataform .addressLabel {
+            color: Blue;
+            display: inline-block;
+            width: 9em;
+        }
+
+        div.ria-dataform .address {
+        }
+
+        .autocompleteTableWrap {
+            margin: 0px;
+            max-height: 220px;
+            padding: 0px;
+            width: 100%;
+        }
+
+        .autocompleteSalePTableWrap {
+            height: 200px;
+            width: 100%;
+        }
+
+        .autocompleteTableHeader {
+            display: none;
+        }
+
+        table.ria-data-table tr:nth-child(even) {
+            background-color: #ECF2F6;
+        }
+
+        .addressTableWrap {
+            height: 100px;
+            width: 100%;
+        }
+
+        .addressTableHeader {
+        }
+
+        .findAddrTableWrap {
+            height: 95%;
+            width: 100%;
+        }
+    </style>
+
     <link href="@Url.Content("~/Scripts/toastr/toastr.min.css", true)" rel="stylesheet" type="text/css" />
 }
-@section JSImport
+
+@section JSStaticImport
 {
     <script src="@Url.Content("~/Scripts/toastr/toastr.min.js", true)" type="text/javascript"></script>
 }
 
-<script src="@Url.Content("~/Scripts/demo/spaDemo/main.js", true)" type="text/javascript"></script>
+@section JSDynamicImport {
+    <script src="@Url.Content("~/Scripts/demo/spaDemo/main.js", true)" type="text/javascript"></script>
 
-<script type="text/javascript">
+    <script type="text/javascript">
     require(["main", "jriapp_ui", "jriapp_ru"],
         function(DEMO, UI, LANG) {
             $("#loading").fadeIn();
@@ -120,13 +136,14 @@
                 $("#loading").fadeOut(1000);
             });
         });
-</script>
+    </script>
+}
 
 <h2 class="ex8">@ViewBag.Title</h2>
 <span>it uses <span style="color: blue;">dynacontent</span> to switch views (templates)</span>
-<div id="demoContent" style="opacity:0;" data-bind="{this.isBusy,to=dbContext.isBusy}" data-view="name=busy">
-    <div id="demoDynaContent" data-bind-1="{this.templateID,to=viewName,source=customerVM.uiMainRoute}"
-         data-bind-2="{this.dataContext,source=customerVM}"
-         data-bind-3="{this.animation,to=animation,source=customerVM.uiMainRoute}" data-view="name=dynacontent"></div>
+<div id="demoContent" style="opacity:0;" data-bind="this.isBusy,to=dbContext.isBusy" data-view="busy">
+    <div id="demoDynaContent" data-bind-1="this.templateID,to=viewName,source=customerVM.uiMainRoute"
+         data-bind-2="this.dataContext,source=customerVM"
+         data-bind-3="this.animation,to=animation,source=customerVM.uiMainRoute" data-view="dynacontent"></div>
 </div>
 @Html.Partial("_WaitLoad")

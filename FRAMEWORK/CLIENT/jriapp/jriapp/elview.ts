@@ -1,17 +1,16 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    BaseObject, Utils, IIndexer, IErrorHandler, LocaleERRS, createWeakMap, IWeakMap
+    BaseObject, Utils, IIndexer, LocaleERRS, createWeakMap, IWeakMap
 } from "jriapp_shared";
-import { DATA_ATTR, STORE_KEY } from "./const";
+import { DATA_ATTR } from "./consts";
 import {
-    IElViewStore, IElView, IViewType, IApplication, IExports, IViewOptions,
+    IElViewStore, IElView, IViewType, IDataProvider, IViewOptions, IElViewInfo,
     IElViewFactory, IElViewRegister
 } from "./int";
-import { bootstrap } from "./bootstrap";
-import { LifeTimeScope } from "./utils/lifetime";
+import { getObject, registerObject } from "./bootstrap";
 import { Parser } from "./utils/parser";
 
-const utils = Utils, parser = Parser, ERROR = utils.err, ERRS = LocaleERRS;
+const utils = Utils, { Indexer } = utils.core, { format } = utils.str, parser = Parser, ERRS = LocaleERRS;
 
 export function createElViewFactory(register: IElViewRegister): IElViewFactory {
     return new ElViewFactory(register);
@@ -21,32 +20,32 @@ export function createElViewRegister(next?: IElViewRegister): IElViewRegister {
     return new ElViewRegister(next);
 }
 
-class ElViewRegister implements IElViewRegister, IExports {
+class ElViewRegister implements IElViewRegister, IDataProvider {
     private _exports: IIndexer<any>;
     private _next: IElViewRegister;
 
     constructor(next?: IElViewRegister) {
-        this._exports = {};
+        this._exports = Indexer();
         this._next = next;
     }
-    registerElView(name: string, vw_type: IViewType): void {
-        if (!bootstrap._getInternal().getObject(this, name)) {
-            bootstrap._getInternal().registerObject(this, name, vw_type);
-        }
-        else
+    dispose(): void {
+        this._exports = Indexer();
+    }
+    registerElView(name: string, vwType: IViewType): void {
+        if (!getObject(this, name)) {
+            registerObject(this, name, vwType);
+        } else {
             throw new Error(utils.str.format(ERRS.ERR_OBJ_ALREADY_REGISTERED, name));
+        }
     }
     getElViewType(name: string): IViewType {
-        let res = bootstrap._getInternal().getObject(this, name);
+        let res = getObject(this, name);
         if (!res && !!this._next) {
             res = this._next.getElViewType(name);
         }
         return res;
     }
-    destroy(): void {
-        this._exports = {};
-    }
-    getExports(): IIndexer<any> {
+    getData(): IIndexer<any> {
         return this._exports;
     }
 }
@@ -57,19 +56,17 @@ class ElViewStore implements IElViewStore {
     constructor() {
         this._weakmap = createWeakMap();
     }
-
-    public destroy(): void {
+    dispose(): void {
     }
-    //get element view associated with HTML element(if any)
+    // get element view associated with HTML element(if any)
     getElView(el: HTMLElement): IElView {
         return this._weakmap.get(el);
     }
-    //store association of HTML element with its element View
+    // store association of HTML element with its element View
     setElView(el: HTMLElement, view?: IElView): void {
         if (!view) {
             this._weakmap.delete(el);
-        }
-        else {
+        } else {
             this._weakmap.set(el, view);
         }
     }
@@ -84,26 +81,25 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
         this._store = new ElViewStore();
         this._register = createElViewRegister(register);
     }
-    public destroy(): void {
-        if (!this._store)
+    dispose(): void {
+        if (!this._store) {
             return;
-        this._store.destroy();
-        this._register.destroy();
+        }
+        this._store.dispose();
+        this._register.dispose();
         this._store = null;
         this._register = null;
-        super.destroy();
+        super.dispose();
     }
-    createElView(view_info: {
-        name: string;
-        options: IViewOptions;
-    }): IElView {
-        let viewType: IViewType, elView: IElView, options = view_info.options;
-        let el = options.el;
+    createElView(viewInfo: IElViewInfo): IElView {
+        let viewType: IViewType, elView: IElView;
+        const { el, options, name } = viewInfo;
 
-        if (!!view_info.name) {
-            viewType = this._register.getElViewType(view_info.name);
-            if (!viewType)
-                throw new Error(utils.str.format(ERRS.ERR_ELVIEW_NOT_REGISTERED, view_info.name));
+        if (!!name) {
+            viewType = this._register.getElViewType(name);
+            if (!viewType) {
+                throw new Error(format(ERRS.ERR_ELVIEW_NOT_REGISTERED, name));
+            }
         }
         if (!viewType) {
             let nodeNm = el.nodeName.toLowerCase(), attrType: string;
@@ -120,50 +116,45 @@ class ElViewFactory extends BaseObject implements IElViewFactory {
                     break;
             }
 
-            if (!viewType)
-                throw new Error(utils.str.format(ERRS.ERR_ELVIEW_NOT_CREATED, nodeNm));
+            if (!viewType) {
+                throw new Error(format(ERRS.ERR_ELVIEW_NOT_CREATED, nodeNm));
+            }
         }
 
         try {
-            elView = new viewType(options);
-        }
-        catch (e) {
-            //ensure clean up
+            elView = new viewType(el, options || {});
+        } catch (e) {
+            // ensure clean up
             this._store.setElView(el, null);
             throw e;
         }
         return elView;
     }
-    //checks if the element already has created and attached an ElView, if no then it creates and attaches ElView for the element
-    getOrCreateElView(el: HTMLElement): IElView {
-        const elView = this.store.getElView(el);
-        //check if element view is already created for this element
-        if (!!elView)
-            return elView;
-        const info = this.getElementViewInfo(el);
-        return this.createElView(info);
+    getElView(el: HTMLElement): IElView {
+        return this.store.getElView(el);
     }
-    getElementViewInfo(el: HTMLElement): { name: string; options: IViewOptions; } {
-        let view_name: string = null, vw_options: IViewOptions = null, attr: string, data_view_op_arr: any[],
-            data_view_op: any;
+    getElementViewInfo(el: HTMLElement, dataContext: any = null): IElViewInfo {
+        let viewName: string = null;
         if (el.hasAttribute(DATA_ATTR.DATA_VIEW)) {
-            attr = el.getAttribute(DATA_ATTR.DATA_VIEW);
-            data_view_op_arr = parser.parseOptions(attr);
-            if (!!data_view_op_arr && data_view_op_arr.length > 0) {
-                data_view_op = data_view_op_arr[0];
-                if (!!data_view_op.name && data_view_op.name !== "default") {
-                    view_name = data_view_op.name;
-                }
-                vw_options = data_view_op.options;
+            const attr = el.getAttribute(DATA_ATTR.DATA_VIEW);
+            if (!!attr && attr !== "default") {
+                viewName = attr;
             }
         }
-        const options: IViewOptions = utils.core.merge({ el: el }, vw_options);
-        return { name: view_name, options: options };
+        let options: IViewOptions;
+        if (el.hasAttribute(DATA_ATTR.DATA_VIEW_OPTIONS)) {
+            const attr = el.getAttribute(DATA_ATTR.DATA_VIEW_OPTIONS);
+            options = <IViewOptions>parser.parseViewOptions(attr, dataContext);
+        } else {
+            options = Indexer();
+        }
+       
+        return { el: el, name: viewName, options: options };
     }
-    get store() {
+    get store(): IElViewStore {
         return this._store;
     }
-    get register() {
+    get register(): IElViewRegister {
         return this._register;
     }
 }

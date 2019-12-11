@@ -1,20 +1,20 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BINDING_MODE, BindTo } from "./const";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { BINDING_MODE, BindTo, SubscribeFlags, BindScope } from "./consts";
 import {
-    DEBUG_LEVEL, IBaseObject, IDisposable, IIndexer, IPromise,
-    IVoidPromise, IValidationInfo, IErrorHandler, TEventHandler, IConfig
+    IBaseObject, IDisposable, IIndexer, IPromise, IErrorHandler, IConfig, TEventHandler, IValidationInfo
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 
-//config global variable can be used using this interface
+// config global variable can be used using this interface
 export interface IJRIAppConfig extends IConfig {
+    cssPath?: string; // "/Content/styles/"
     frameworkPath?: string; // "/Scripts/jriapp/"
     frameworkJS?: string; // "jriapp.js"
     bust?: string; // "bust=xyz"
 }
 
-//get config variable
-export const Config: IJRIAppConfig = (<any>window).jriapp_config || {};
+// get config variable
+export const Config: IJRIAppConfig = jriapp_config || {};
 
 export class ButtonCss {
     static Edit: string = "jriapp-actions jriapp-edit";
@@ -27,35 +27,34 @@ export interface ILifeTimeScope extends IBaseObject {
     addObj(b: IBaseObject): void;
     removeObj(b: IBaseObject): void;
     getObjs(): IBaseObject[];
+    findAll<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj[];
+    findFirst<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj;
+}
+
+export interface ISubscriber {
+    isSubscribed(flag: SubscribeFlags): boolean;
 }
 
 export interface IDatepicker {
     datepickerRegion: string;
     dateFormat: string;
-    attachTo($el: any, options?: any): void;
-    detachFrom($el: any): void;
+    attachTo(el: HTMLElement, options?: any, onSelect?: (dateText?: string) => void): void;
+    detachFrom(el: HTMLElement): void;
     parseDate(str: string): Date;
     formatDate(date: Date): string;
 }
 
-export interface IConverter {
-    convertToSource(val: any, param: any, dataContext: any): any;
-    convertToTarget(val: any, param: any, dataContext: any): any;
-}
-
 export interface ISelectable {
-    getContainerEl(): HTMLElement;
-    getUniqueID(): string;
     onKeyDown(key: number, event: Event): void;
     onKeyUp(key: number, event: Event): void;
 }
 
 export interface ISelectableProvider {
-    getISelectable(): ISelectable;
+    readonly selectable: ISelectable;
 }
 
-export interface IExports {
-    getExports(): IIndexer<any>;
+export interface IDataProvider {
+    getData(): IIndexer<any>;
 }
 
 export interface ISvcStore {
@@ -63,20 +62,23 @@ export interface ISvcStore {
     getSvc(name: string): any;
 }
 
-export interface ITemplateGroupInfo {
-    fn_loader?: () => IPromise<string>;
-    url?: string;
-    names: string[];
-}
+export type TDocInfo = { doc: DocumentFragment; required: string[] | null };
 
-export interface ITemplateGroupInfoEx extends ITemplateGroupInfo {
-    promise?: IPromise<string>;
-    app?: IApplication;
-}
+export type THTMLLoaderFunc = () => IPromise<string>;
+export type TLoaderFunc = () => IPromise<TDocInfo>;
+
 
 export interface ITemplateLoaderInfo {
-    fn_loader: () => IPromise<string>;
-    groupName?: string;
+    loader: TLoaderFunc;
+    owner: IDataProvider;
+}
+
+export interface ITemplateGroupInfo {
+    name: string;
+    url: string;
+    loader: THTMLLoaderFunc;
+    promise: IPromise<void>;
+    owner: IDataProvider;
 }
 
 export interface IUnResolvedBindingArgs {
@@ -86,19 +88,11 @@ export interface IUnResolvedBindingArgs {
     propName: string;
 }
 
-
-export interface IBindableElement {
-    el: HTMLElement;
-    dataView: string;
-    dataForm: string;
-    expressions: string[];
-}
-
-//--Template interfaces
+// --Template interfaces
 export interface ITemplate extends IBaseObject {
     findElByDataName(name: string): HTMLElement[];
     findElViewsByDataName(name: string): IElView[];
-    loadedElem: HTMLElement;
+    isLoaded: boolean;
     dataContext: any;
     templateID: string;
     el: HTMLElement;
@@ -111,76 +105,64 @@ export interface ITemplateEvents {
     templateUnLoading(template: ITemplate): void;
 }
 
-//--ElView interfaces
+export interface IViewErrorsService {
+    setErrors(el: HTMLElement, errors: IValidationInfo[], toolTip?: string): void;
+}
+
+// --ElView interfaces
 export interface IViewOptions {
     css?: string;
     tip?: string;
-    el: HTMLElement;
+    //use event delegation or not
+    nodelegate?: boolean;
+    errorsService?: IViewErrorsService;
 }
 
 export interface IElViewStore {
     getElView(el: HTMLElement): IElView;
     setElView(el: HTMLElement, view?: IElView): void;
-    destroy(): void;
+    dispose(): void;
 }
 
 export interface IElViewRegister {
-    registerElView(name: string, vw_type: IViewType): void;
+    registerElView(name: string, vwType: IViewType): void;
     getElViewType(name: string): IViewType;
-    destroy(): void;
+    dispose(): void;
+}
+
+export interface IElViewInfo {
+    readonly el: HTMLElement;
+    readonly name: string;
+    readonly options: IViewOptions;
 }
 
 export interface IElViewFactory {
-    createElView(view_info: { name: string; options: IViewOptions; }): IElView;
-    getOrCreateElView(el: HTMLElement): IElView;
-    getElementViewInfo(el: HTMLElement): { name: string; options: IViewOptions; };
+    getElementViewInfo(el: HTMLElement, dataContext: any): IElViewInfo;
+    createElView(viewInfo: IElViewInfo): IElView;
+    getElView(el: HTMLElement): IElView;
     store: IElViewStore;
     register: IElViewRegister;
-    destroy(): void;
+    dispose(): void;
 }
 
 
 export interface IViewType {
-    new (options: IViewOptions): IElView;
+    new (el: HTMLElement, options: IViewOptions): IElView;
 }
 
 export interface IElView extends IBaseObject {
-    el: HTMLElement;
-    app: IApplication;
-    validationErrors: IValidationInfo[];
+    readonly el: HTMLElement;
+    readonly app: IApplication;
+    readonly uniqueID: string;
+    viewMounted?: () => void;
 }
 
-export interface IDataBindingService extends IDisposable {
-    bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope>;
-    bindElements(scope: Document | HTMLElement, defaultDataContext: any, isDataFormBind: boolean, isInsideTemplate: boolean): IPromise<ILifeTimeScope>;
-    setUpBindings(): IVoidPromise;
-    bind(opts: IBindingOptions): IBinding;
+export interface ITemplateElView extends IElView, ITemplateEvents {
 }
 
-//--Binding interfaces
-export interface IBindingOptions {
-    mode?: BINDING_MODE;
-    converterParam?: any;
-    converter?: IConverter;
-    targetPath: string;
-    sourcePath?: string;
-    target?: IBaseObject;
-    source?: any;
-    isSourceFixed?: boolean;
-}
-
-export type TBindingMode = "OneTime" | "OneWay" | "TwoWay" | "BackWay";
-
-//the result of parsing a data binding expression -typically all properties are strings here
-export interface IBindingInfo {
-    mode?: TBindingMode;
-    converterParam?: any;
-    converter?: any;
-    targetPath: string;
-    sourcePath?: string;
-    to?: string;
-    target?: any;
-    source?: any;
+export interface IConverter {
+    convertToSource(val: any, param: any, dataContext: any): any;
+    convertToTarget(val: any, param: any, dataContext: any): any;
 }
 
 export interface IBinding extends IBaseObject {
@@ -190,17 +172,67 @@ export interface IBinding extends IBaseObject {
     sourcePath: string[];
     sourceValue: any;
     targetValue: any;
-    mode: BINDING_MODE;
-    converter: IConverter;
-    converterParam: any;
-    isSourceFixed: boolean;
+    readonly isSourceFixed: boolean;
+    readonly mode: BINDING_MODE;
+    readonly converter: IConverter;
+    readonly param: any;
     isDisabled: boolean;
+    updateTarget(): void;
+    updateSource(): void;
 }
 
-//--Content interfaces
+export interface IBindArgs  {
+    readonly scope: Document | HTMLElement;
+    readonly bind: BindScope;
+    readonly dataContext: any;
+}
+
+export interface IDataBindingService extends IDisposable {
+    bindTemplate(templateEl: HTMLElement, dataContext: any, required: string[] | null): IPromise<ILifeTimeScope>;
+    bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
+    setUpBindings(): IPromise<void>;
+    bind(opts: TBindingOptions): IBinding;
+}
+
+// --Binding interfaces
+export type TBindingOptions = {
+    targetPath: string;
+    sourcePath?: string;
+    target?: IBaseObject;
+    source?: any;
+    isSourceFixed?: boolean;
+    mode?: BINDING_MODE;
+    converter?: IConverter;
+    param?: any;
+    isBind?: boolean;
+};
+
+export type TBindingMode = "OneTime" | "OneWay" | "TwoWay" | "BackWay";
+
+// the result of parsing a data binding expression - typically all properties are strings here
+export type TBindingInfo = {
+    targetPath: string;
+    sourcePath?: string;
+    to?: string;
+    target?: any;
+    source?: any;
+    mode?: TBindingMode;
+    converter?: any;
+    param?: any;
+    isBind?: boolean;
+};
+
+// --Content interfaces
 export interface IExternallyCachable {
-    addOnObjectCreated(fn: (sender: any, args: { objectKey: string; object: IBaseObject; isCachedExternally: boolean; }) => void, nmspace?: string): void;
-    addOnObjectNeeded(fn: (sender: any, args: { objectKey: string; object: IBaseObject; }) => void, nmspace?: string): void;
+    addOnObjectCreated(fn: (sender: any, args: {
+        objectKey: string;
+        result: IBaseObject;
+        isCachedExternally: boolean;
+    }) => void, nmspace?: string): void;
+    addOnObjectNeeded(fn: (sender: any, args: {
+        objectKey: string;
+        result: IBaseObject;
+    }) => void, nmspace?: string): void;
 }
 
 export interface IContent extends IBaseObject {
@@ -213,22 +245,26 @@ export interface IContentConstructor {
     new (options: IConstructorContentOptions): IContent;
 }
 
-//it can have two template ids - one for display and one for editing
+// it can have two template ids - one for display and one for editing
 export interface ITemplateInfo {
-    displayID?: string;
+    readID?: string;
     editID?: string;
 }
 
 export interface IContentOptions {
-    name?: string;
-    readOnly?: boolean;
-    initContentFn?: (content: IExternallyCachable) => void;
-    fieldInfo?: IFieldInfo;
-    bindingInfo?: IBindingInfo;
-    displayInfo?: { displayCss?: string; editCss?: string; };
-    templateInfo?: ITemplateInfo;
-    fieldName?: string;
-    options?: any;
+    name: string;
+    readOnly: boolean;
+    initContentFn: (content: IExternallyCachable) => void;
+    fieldInfo: IFieldInfo;
+    css: {
+        readCss?: string; // applied to the parent (wrapper) of the element
+        editCss?: string; // applied to the parent (wrapper) of the element
+        elReadCss?: string; // applied directly to the element
+        elEditCss?: string; // applied directly to the element
+    };
+    template: ITemplateInfo;
+    fieldName: string;
+    options: any;
 }
 
 export interface IConstructorContentOptions {
@@ -265,36 +301,31 @@ export interface IModuleLoader {
     whenAllLoaded(): IPromise<void>;
 }
 
-//--Application interfaces
-export interface IInternalAppMethods {
-    bindTemplateElements(templateEl: HTMLElement): IPromise<ILifeTimeScope>;
-    bindElements(scope: Document | HTMLElement, dctx: any, isDataFormBind: boolean, isInsideTemplate: boolean): IPromise<ILifeTimeScope>;
+// --Application interfaces
+export interface IInternalAppMethods extends IDataProvider {
+    bindTemplate(templateEl: HTMLElement, dataContext: any, required: string[] | null): IPromise<ILifeTimeScope>;
+    bindElements(args: IBindArgs): IPromise<ILifeTimeScope>;
+    getTemplateLoaderInfo(name: string): ITemplateLoaderInfo;
 }
 
-export interface IApplication extends IErrorHandler, IExports, IBaseObject {
+export interface IApplication extends IErrorHandler, IDataProvider, IBaseObject {
     _getInternal(): IInternalAppMethods;
     addOnStartUp(fn: TEventHandler<IApplication, any>, nmspace?: string, context?: IBaseObject): void;
-    removeOnStartUp(nmspace?: string): void;
-    registerElView(name: string, vw_type: IViewType): void;
+    offOnStartUp(nmspace?: string): void;
+    registerElView(name: string, vwType: IViewType): void;
     registerConverter(name: string, obj: IConverter): void;
     getConverter(name: string): IConverter;
     registerSvc(name: string, obj: any): void;
-    getSvc<T>(name: string): T;
-    getSvc(name: string): any;
+    getSvc<T = any>(name: string, ...args: any[]): T;
     registerObject(name: string, obj: any): void;
-    getObject<T>(name: string): T;
-    getObject(name: string): any;
-    loadTemplates(url: string): IPromise<any>;
-    loadTemplatesAsync(fn_loader: () => IPromise<string>): IPromise<any>;
-    registerTemplateLoader(name: string, fn_loader: () => IPromise<string>): void;
-    getTemplateLoader(name: string): () => IPromise<string>;
-    registerTemplateGroup(name: string, group: {
-        fn_loader?: () => IPromise<string>;
-        url?: string;
-        names: string[];
-   }): void;
-    bind(opts: IBindingOptions): IBinding;
-    startUp<TApp extends IApplication>(onStartUp?: (app: TApp) => any): IPromise<TApp>;
+    getObject<T = any>(name: string): T;
+    loadTemplates(url: string): IPromise<void>;
+    registerTemplateLoader(name: string, loader: THTMLLoaderFunc): void;
+    getTemplateLoader(name: string): TLoaderFunc;
+    registerTemplateGroup(name: string, url: string): void;
+    getOptions(name: string): string;
+    bind(opts: TBindingOptions): IBinding;
+    startUp(onStartUp?: (app: IApplication) => any): IPromise<IApplication>;
     readonly uniqueID: string;
     readonly appName: string;
     readonly appRoot: Document | HTMLElement;

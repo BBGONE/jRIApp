@@ -1,60 +1,67 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
-import { KEYS } from "jriapp/const";
-import {
-    IApplication, IElView, IConstructorContentOptions
-} from "jriapp/int";
+import { KEYS } from "jriapp/consts";
+import { IConstructorContentOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { TextAreaElView } from "../textarea";
 
-import { css } from "./int";
-import { BasicContent } from "./basic";
+import { BasicContent, IContentView, getView, getBindingOption } from "./basic";
 
-const utils = Utils, NAME = "multyline", strUtils = utils.str, dom = DomUtils, document = dom.document;
+const utils = Utils, NAME = "multyline", { format } = utils.str, dom = DomUtils, doc = dom.document;
 
 export class MultyLineContent extends BasicContent {
-    static __allowedKeys: number[] = null;
-    private get _allowedKeys() {
-        if (!MultyLineContent.__allowedKeys) {
-            MultyLineContent.__allowedKeys = [0, KEYS.backspace, KEYS.del, KEYS.left, KEYS.right, KEYS.end, KEYS.home, KEYS.tab, KEYS.esc, KEYS.enter];
+    static _allowedKeys: number[] = null;
+
+    private get allowedKeys() {
+        if (!MultyLineContent._allowedKeys) {
+            MultyLineContent._allowedKeys = [0, KEYS.backspace, KEYS.del, KEYS.left, KEYS.right, KEYS.end, KEYS.home, KEYS.tab, KEYS.esc, KEYS.enter];
         }
-        return MultyLineContent.__allowedKeys;
+        return MultyLineContent._allowedKeys;
     }
     constructor(options: IConstructorContentOptions) {
         if (options.contentOptions.name !== NAME) {
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, strUtils.format("contentOptions.name === '{0}'", NAME)));
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, `contentOptions.name === '${NAME}'`));
         }
         super(options);
     }
-    protected createTargetElement(): IElView {
-        let el: HTMLElement, info: { name: string; options: any; } = { name: null, options: null };
-        if (this.isEditing && this.getIsCanBeEdited()) {
-            el = document.createElement("textarea");
-            info.options = this._options.options;
-            info.name = null;
+    // override
+    protected createdEditingView(): IContentView {
+        const name = this.getViewName(true), el = doc.createElement("textarea"), options = this.options.options;
+        const view = getView(el, name, options);
+        if (!!view) {
+            this.lfScope.addObj(view);
         }
-        else {
-            el = document.createElement("div");
+        const bindOption = getBindingOption(true, this.options.fieldName, view, this.dataContext, "value", this.getConverter(true), this.getParam(true));
+        this.lfScope.addObj(this.app.bind(bindOption));
+        return view;
+    }
+    // override
+    protected createdReadingView(): IContentView {
+        const name = this.getViewName(false), el = doc.createElement("div");
+        const view = getView(el, name, {});
+        if (!!view) {
+            this.lfScope.addObj(view);
         }
-        this.updateCss();
-        this._el = el;
-        return this.getElementView(this._el, info);
+        const bindOption = getBindingOption(false, this.options.fieldName, view, this.dataContext, "value", this.getConverter(false), this.getParam(false));
+        this.lfScope.addObj(this.app.bind(bindOption));
+        return view;
     }
-    protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string) {
-        if (this._allowedKeys.indexOf(keyCode) > -1)
-            return true;
-        return !(fieldInfo.maxLength > 0 && value.length >= fieldInfo.maxLength);
-    }
-    render() {
-        super.render();
+    // override
+    protected createView(): void {
+        super.createView();
         const self = this, fieldInfo = self.getFieldInfo();
-
-        if (self._target instanceof TextAreaElView) {
-            (<TextAreaElView>self._target).addOnKeyPress(function (sender, args) {
+        if (self.view instanceof TextAreaElView) {
+            (<TextAreaElView>self.view).addOnKeyPress(function (sender, args) {
                 args.isCancel = !self.previewKeyPress(fieldInfo, args.keyCode, args.value);
             });
         }
+    }
+    protected previewKeyPress(fieldInfo: IFieldInfo, keyCode: number, value: string): boolean {
+        if (this.allowedKeys.indexOf(keyCode) > -1) {
+            return true;
+        }
+        return !(fieldInfo.maxLength > 0 && value.length >= fieldInfo.maxLength);
     }
     toString() {
         return "MultyLineContent";

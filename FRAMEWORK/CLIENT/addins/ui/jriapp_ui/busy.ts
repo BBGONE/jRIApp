@@ -1,19 +1,18 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    Utils
-} from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
-import { LOADER_GIF } from "jriapp/const";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { Utils } from "jriapp_shared";
+import { $ } from "./utils/jquery";
+import { LOADER_GIF } from "jriapp/consts";
 import { IViewOptions } from "jriapp/int";
 import { bootstrap } from "jriapp/bootstrap";
+import { DomUtils } from "jriapp/utils/dom";
 
 
-import { BaseElView, PROP_NAME } from "./baseview";
+import { BaseElView } from "./baseview";
 
-const checks = Utils.check, boot = bootstrap;
+const { isNt } = Utils.check, boot = bootstrap, dom = DomUtils;
 
 export interface IBusyViewOptions extends IViewOptions {
-    img?: string
+    img?: string;
     delay?: number | string;
 }
 
@@ -21,50 +20,54 @@ export class BusyElView extends BaseElView {
     private _delay: number;
     private _timeOut: number;
     private _loaderPath: string;
-    private _$loader: any;
+    private _img: HTMLImageElement;
     private _isBusy: boolean;
 
-    constructor(options: IBusyViewOptions) {
-        super(options);
+    constructor(el: HTMLElement, options: IBusyViewOptions) {
+        super(el, options);
         let img: string;
-        if (!!options.img)
+        if (!!options.img) {
             img = options.img;
-        else
+        } else {
             img = LOADER_GIF.Default;
+        }
         this._delay = 400;
         this._timeOut = null;
-        if (!checks.isNt(options.delay))
+        if (!isNt(options.delay)) {
             this._delay = parseInt("" + options.delay);
+        }
         this._loaderPath = bootstrap.getImagePath(img);
-        this._$loader = $(new Image());
-        this._$loader.css({ position: "absolute", display: "none", zIndex: "10000" });
-        this._$loader.prop("src", this._loaderPath);
-        this._$loader.appendTo(this.el);
+        this._img = new Image();
+        this._img.style.position = "absolute";
+        this._img.style.display = "none";
+        this._img.style.zIndex = "10000";
+        this._img.src = this._loaderPath;
+        this.el.appendChild(this._img);
         this._isBusy = false;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
-        this._isDestroyCalled = true;
+        }
+        this.setDisposing();
         if (!!this._timeOut) {
             clearTimeout(this._timeOut);
             this._timeOut = null;
         }
-        this._$loader.remove();
-        this._$loader = null;
-        super.destroy();
+        dom.removeNode(this._img);
+        super.dispose();
     }
     toString() {
         return "BusyElView";
     }
     get isBusy() { return this._isBusy; }
     set isBusy(v) {
-        let self = this, fn = function () {
+        const self = this, fn = () => {
             self._timeOut = null;
-            self._$loader.show();
-            self._$loader.position({
-                //"my": "right top",
-                //"at": "left bottom",
+            self._img.style.display = "";
+            $(self._img).position({
+                // "my": "right top",
+                // "at": "left bottom",
                 "of": $(self.el)
             });
         };
@@ -76,28 +79,24 @@ export class BusyElView extends BaseElView {
                     clearTimeout(self._timeOut);
                     self._timeOut = null;
                 }
-                if (self._delay > 0) {
-                    self._timeOut = setTimeout(fn, self._delay);
-                }
-                else
-                    fn();
-            }
-            else {
+
+                self._timeOut = setTimeout(fn, self._delay);
+            } else {
                 if (!!self._timeOut) {
                     clearTimeout(self._timeOut);
                     self._timeOut = null;
+                } else {
+                    self._img.style.display = "none";
                 }
-                else
-                    self._$loader.hide();
             }
-            self.raisePropertyChanged(PROP_NAME.isBusy);
+            self.objEvents.raiseProp("isBusy");
         }
     }
     get delay() { return this._delay; }
     set delay(v) {
         if (v !== this._delay) {
             this._delay = v;
-            this.raisePropertyChanged(PROP_NAME.delay);
+            this.objEvents.raiseProp("delay");
         }
     }
 }

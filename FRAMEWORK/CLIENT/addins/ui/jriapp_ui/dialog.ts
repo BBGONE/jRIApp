@@ -1,16 +1,16 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     Utils, IBaseObject, IVoidPromise, IEditable, TEventHandler, IDeferred, IPromise, LocaleSTRS as STRS, BaseObject
 } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
+import { $ } from "./utils/jquery";
 import { DomUtils } from "jriapp/utils/dom";
 import { ITemplate, ITemplateEvents, IApplication, ISelectableProvider } from "jriapp/int";
 import { createTemplate } from "jriapp/template";
 import { bootstrap } from "jriapp/bootstrap";
 import { ViewModel } from "jriapp/mvvm";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str,
-    coreUtils = utils.core, sys = utils.sys, doc = DomUtils.document,
+const utils = Utils, { _undefined, isFunc } = utils.check, { format } = utils.str,
+    { extend, getNewID } = utils.core, sys = utils.sys, _async = utils.defer, dom = DomUtils, doc = dom.document,
     ERROR = utils.err, boot = bootstrap;
 
 export const enum DIALOG_ACTION { Default = 0, StayOpen = 1 };
@@ -27,6 +27,7 @@ export interface IDialogConstructorOptions {
     fn_OnClose?: (dialog: DataEditDialog) => void;
     fn_OnOK?: (dialog: DataEditDialog) => DIALOG_ACTION;
     fn_OnShow?: (dialog: DataEditDialog) => void;
+    fn_OnOpen?: (dialog: DataEditDialog) => void;
     fn_OnCancel?: (dialog: DataEditDialog) => DIALOG_ACTION;
     fn_OnTemplateCreated?: (template: ITemplate) => void;
     fn_OnTemplateDestroy?: (template: ITemplate) => void;
@@ -35,7 +36,7 @@ export interface IDialogConstructorOptions {
 export interface IButton {
     id: string;
     text: string;
-    'class': string;
+    "class": string;
     click: () => void;
 }
 
@@ -46,50 +47,96 @@ interface IDialogOptions {
     autoOpen: boolean;
     modal: boolean;
     close: (event: any, ui: any) => void;
+    open: (event: any, ui: any) => void;
     buttons: IButton[];
 }
 
-const DLG_EVENTS = {
-    close: "close",
-    refresh: "refresh"
-};
-const PROP_NAME = {
-    dataContext: "dataContext",
-    isSubmitOnOK: "isSubmitOnOK",
-    width: "width",
-    height: "height",
-    title: "title",
-    canRefresh: "canRefresh",
-    canCancel: "canCancel"
-};
+const enum DLG_EVENTS {
+    close = "close",
+    refresh = "refresh"
+}
+
+class SubmitInfo {
+    private _submitError: boolean;
+    private _dataContext: any;
+    private _editable: IEditable;
+
+    constructor(dataContext: any) {
+        this._dataContext = dataContext;
+        this._submitError = false;
+        this._editable = sys.getEditable(this._dataContext);
+    }
+    submit(): IVoidPromise {
+        const self = this, submittable = sys.getSubmittable(this._dataContext);
+        if (!submittable || !submittable.isCanSubmit) {
+            // signals immediatly
+            return _async.resolve<void>();
+        }
+        const promise = submittable.submitChanges();
+        promise.then(() => {
+            self._submitError = false;
+        }).catch(() => {
+            self._submitError = true;
+        });
+        return promise;
+    }
+    reject(): void {
+        const submittable = sys.getSubmittable(this._dataContext);
+        if (!!submittable) {
+            submittable.rejectChanges();
+        }
+        this._submitError = false;
+    }
+    cancel(): void {
+        if (!!this._editable) {
+            this._editable.cancelEdit();
+        }
+        if (!!this._submitError) {
+            this.reject();
+        }
+    }
+    endEdit(): boolean {
+        return (!!this._editable && this._editable.isEditing) ? this._editable.endEdit() : true;
+    }
+    beginEdit(): boolean {
+        return (!!this._editable) ? (this._editable.isEditing || this._editable.beginEdit()) : false;
+    }
+    get dataContext(): any { return this._dataContext; }
+    get submitError(): boolean { return this._submitError; }
+    get editable(): IEditable {
+        return this._editable;
+    }
+}
+
+export type TResult = "ok" | "cancel";
 
 export class DataEditDialog extends BaseObject implements ITemplateEvents {
-    private _objId: string;
+    private _uniqueID: string;
     private _dataContext: any;
     private _templateID: string;
     private _submitOnOK: boolean;
     private _canRefresh: boolean;
     private _canCancel: boolean;
-    private _fn_OnClose: (dialog: DataEditDialog) => void;
-    private _fn_OnOK: (dialog: DataEditDialog) => DIALOG_ACTION;
-    private _fn_OnShow: (dialog: DataEditDialog) => void;
-    private _fn_OnCancel: (dialog: DataEditDialog) => DIALOG_ACTION;
-    private _fn_OnTemplateCreated: (template: ITemplate) => void;
-    private _fn_OnTemplateDestroy: (template: ITemplate) => void;
-    private _editable: IEditable;
+    private _fnOnClose: (dialog: DataEditDialog) => void;
+    private _fnOnOK: (dialog: DataEditDialog) => DIALOG_ACTION;
+    private _fnOnShow: (dialog: DataEditDialog) => void;
+    private _fnOnOpen: (dialog: DataEditDialog) => void;
+    private _fnOnCancel: (dialog: DataEditDialog) => DIALOG_ACTION;
+    private _fnOnTemplateCreated: (template: ITemplate) => void;
+    private _fnOnTemplateDestroy: (template: ITemplate) => void;
     private _template: ITemplate;
     private _$dlgEl: JQuery;
-    private _result: "ok" | "cancel";
+    private _result: TResult;
     private _options: IDialogOptions;
-    private _fn_submitOnOK: () => IVoidPromise;
-    //save the global's currentSelectable  before showing and restore it on dialog's closing
-    private _currentSelectable: ISelectableProvider;
-    private _deferred: IDeferred<ITemplate>;
+    private _submitInfo: SubmitInfo;
+    // saves the bootstrap's selectedControl  before showing and restore it on dialog's closing
+    private _selectedControl: ISelectableProvider;
+    private _deferredTemplate: IDeferred<ITemplate>;
 
     constructor(options: IDialogConstructorOptions) {
         super();
-        let self = this;
-        options = coreUtils.extend({
+        const self = this;
+        options = extend({
             dataContext: null,
             templateID: null,
             width: 500,
@@ -101,132 +148,125 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             fn_OnClose: null,
             fn_OnOK: null,
             fn_OnShow: null,
+            fn_OnOpen: null,
             fn_OnCancel: null,
             fn_OnTemplateCreated: null,
             fn_OnTemplateDestroy: null
         }, options);
-        this._objId = coreUtils.getNewID("dlg");
+        this._uniqueID = getNewID("dlg");
         this._dataContext = options.dataContext;
         this._templateID = options.templateID;
         this._submitOnOK = options.submitOnOK;
         this._canRefresh = options.canRefresh;
         this._canCancel = options.canCancel;
-        this._fn_OnClose = options.fn_OnClose;
-        this._fn_OnOK = options.fn_OnOK;
-        this._fn_OnShow = options.fn_OnShow;
-        this._fn_OnCancel = options.fn_OnCancel;
-        this._fn_OnTemplateCreated = options.fn_OnTemplateCreated;
-        this._fn_OnTemplateDestroy = options.fn_OnTemplateDestroy;
+        this._fnOnClose = options.fn_OnClose;
+        this._fnOnOK = options.fn_OnOK;
+        this._fnOnShow = options.fn_OnShow;
+        this._fnOnOpen = options.fn_OnOpen;
+        this._fnOnCancel = options.fn_OnCancel;
+        this._fnOnTemplateCreated = options.fn_OnTemplateCreated;
+        this._fnOnTemplateDestroy = options.fn_OnTemplateDestroy;
 
-        this._editable = null;
         this._template = null;
         this._$dlgEl = null;
         this._result = null;
-        this._currentSelectable = null;
-        this._fn_submitOnOK = function () {
-            let submittable = sys.getSubmittable(self._dataContext);
-            if (!submittable || !submittable.isCanSubmit) {
-                //signals immediatly
-                return utils.defer.createDeferred<void>().resolve();
-            }
-            return submittable.submitChanges();
-        };
-        this._updateIsEditable();
+        this._selectedControl = null;
+        this._submitInfo = null;
         this._options = {
             width: options.width,
             height: options.height,
             title: options.title,
             autoOpen: false,
             modal: true,
-            close: function (event, ui) {
+            open: (event, ui) => {
+                self._onOpen();
+            },
+            close: (event, ui) => {
                 self._onClose();
             },
             buttons: self._getButtons()
         };
-        this._deferred = utils.defer.createDeferred<ITemplate>();
+        this._deferredTemplate = utils.defer.createDeferred<ITemplate>();
         this._createDialog();
     }
-    addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(DLG_EVENTS.close, fn, nmspace, context);
+    addOnClose(fn: TEventHandler<DataEditDialog, any>, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.on(DLG_EVENTS.close, fn, nmspace, context);
     }
-    removeOnClose(nmspace?: string) {
-        this._removeHandler(DLG_EVENTS.close, nmspace);
+    offOnClose(nmspace?: string): void {
+        this.objEvents.off(DLG_EVENTS.close, nmspace);
     }
-    addOnRefresh(fn: TEventHandler<DataEditDialog, { isHandled: boolean; }>, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(DLG_EVENTS.refresh, fn, nmspace, context);
+    addOnRefresh(fn: TEventHandler<DataEditDialog, { isHandled: boolean; }>, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.on(DLG_EVENTS.refresh, fn, nmspace, context);
     }
-    removeOnRefresh(nmspace?: string) {
-        this._removeHandler(DLG_EVENTS.refresh, nmspace);
+    offOnRefresh(nmspace?: string): void {
+        this.objEvents.off(DLG_EVENTS.refresh, nmspace);
     }
-    protected _updateIsEditable() {
-        this._editable = sys.getEditable(this._dataContext);
-    }
-    protected _createDialog() {
+    protected _createDialog(): void {
         try {
             this._template = this._createTemplate();
             this._$dlgEl = $(this._template.el);
             doc.body.appendChild(this._template.el);
             (<any>this._$dlgEl).dialog(this._options);
-        }
-        catch (ex) {
+        } catch (ex) {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
-    protected _getEventNames() {
-        let base_events = super._getEventNames();
-        return [DLG_EVENTS.close, DLG_EVENTS.refresh].concat(base_events);
-    }
     templateLoading(template: ITemplate): void {
-        //noop
+        // noop
     }
     templateLoaded(template: ITemplate, error?: any): void {
-        if (this.getIsDestroyCalled() || !!error) {
-            if (!!this._deferred)
-                this._deferred.reject(error);
+        if (this.getIsStateDirty() || !!error) {
+            if (!!this._deferredTemplate) {
+                this._deferredTemplate.reject(error);
+            }
             return;
         }
-        if (!!this._fn_OnTemplateCreated) {
-            this._fn_OnTemplateCreated(template);
+        if (!!this._fnOnTemplateCreated) {
+            this._fnOnTemplateCreated(template);
         }
-        this._deferred.resolve(template);
+        this._deferredTemplate.resolve(template);
     }
     templateUnLoading(template: ITemplate): void {
-        if (!!this._fn_OnTemplateDestroy) {
-            this._fn_OnTemplateDestroy(template);
+        if (!!this._fnOnTemplateDestroy) {
+            this._fnOnTemplateDestroy(template);
         }
     }
     protected _createTemplate(): ITemplate {
-        const template = createTemplate(null, this);
+        const template = createTemplate({
+            parentEl: null,
+            templEvents: this
+        });
         template.templateID = this._templateID;
         return template;
     }
-    protected _destroyTemplate() {
-        if (!!this._template)
-            this._template.destroy();
+    protected _destroyTemplate(): void {
+        if (!!this._template) {
+            this._template.dispose();
+        }
     }
     protected _getButtons(): IButton[] {
         const self = this, buttons = [
             {
-                'id': self._objId + "_Refresh",
-                'text': STRS.TEXT.txtRefresh,
-                'class': "btn btn-info",
-                'click': function () {
+                "id": self._uniqueID + "_Refresh",
+                "text": STRS.TEXT.txtRefresh,
+                "class": "btn btn-info",
+                "click": () => {
                     self._onRefresh();
                 }
             },
             {
-                'id': self._objId + "_Ok",
-                'text': STRS.TEXT.txtOk,
-                'class': "btn btn-info",
-                'click': function () {
+                "id": self._uniqueID + "_Ok",
+                "text": STRS.TEXT.txtOk,
+                "class": "btn btn-info",
+                "click": () => {
                     self._onOk();
                 }
             },
             {
-                'id': self._objId + "_Cancel",
-                'text': STRS.TEXT.txtCancel,
-                'class': "btn btn-info",
-                'click': function () {
+                "id": self._uniqueID + "_Cancel",
+                "text": STRS.TEXT.txtCancel,
+                "class": "btn btn-info",
+                "click": () => {
                     self._onCancel();
                 }
             }
@@ -239,129 +279,136 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }
         return buttons;
     }
-    protected _getOkButton() {
-        return $("#" + this._objId + "_Ok");
+    protected _getOkButton(): JQuery {
+        return $("#" + this._uniqueID + "_Ok");
     }
-    protected _getCancelButton() {
-        return $("#" + this._objId + "_Cancel");
+    protected _getCancelButton(): JQuery {
+        return $("#" + this._uniqueID + "_Cancel");
     }
-    protected _getRefreshButton() {
-        return $("#" + this._objId + "_Refresh");
+    protected _getRefreshButton(): JQuery {
+        return $("#" + this._uniqueID + "_Refresh");
     }
-    protected _getAllButtons() {
+    protected _getAllButtons(): JQuery[] {
         return [this._getOkButton(), this._getCancelButton(), this._getRefreshButton()];
     }
-    protected _disableButtons(isDisable: boolean) {
-        let btns = this._getAllButtons();
-        btns.forEach(function ($btn) {
+    protected _updateStyles(): void {
+        /*
+        const btns = this._getAllButtons();
+        btns.forEach(($btn) => {
+            $btn.removeClass("ui-button");
+            $btn.find("span.ui-button-icon").removeClass("ui-button-icon ui-icon");
+        });
+        */
+    }
+    protected _disableButtons(isDisable: boolean): void {
+        const btns = this._getAllButtons();
+        btns.forEach(($btn) => {
             $btn.prop("disabled", !!isDisable);
         });
     }
-    protected _onOk() {
-        let self = this, canCommit: boolean, action = DIALOG_ACTION.Default;
-        if (!!this._fn_OnOK) {
-            action = this._fn_OnOK(this);
-        }
-        if (action === DIALOG_ACTION.StayOpen)
+    protected _onOk(): void {
+        const self = this, action = (!!this._fnOnOK) ? this._fnOnOK(this) : DIALOG_ACTION.Default;
+        if (action === DIALOG_ACTION.StayOpen) {
             return;
+        }
 
         if (!this._dataContext) {
             self.hide();
             return;
         }
 
-        if (!!this._editable)
-            canCommit = this._editable.endEdit();
-        else
-            canCommit = true;
+        const canCommit = this._submitInfo.endEdit();
 
-        if (canCommit) {
-            if (this._submitOnOK) {
-                this._disableButtons(true);
-                let title = this.title;
-                this.title = STRS.TEXT.txtSubmitting;
-                let promise = this._fn_submitOnOK();
-                promise.always(function () {
-                    self._disableButtons(false);
-                    self.title = title;
-                });
-                promise.then(function () {
-                    self._result = "ok";
-                    self.hide();
-                }, function () {
-                    //resume editing if fn_onEndEdit callback returns false in isOk argument
-                    if (!!self._editable) {
-                        if (!self._editable.beginEdit()) {
-                            self._result = "cancel";
-                            self.hide();
-                        }
-                    }
-                });
-            }
-            else {
+        if (!canCommit) {
+            return;
+        }
+
+        if (this._submitOnOK) {
+            this._disableButtons(true);
+            const title = this.title;
+            this.title = STRS.TEXT.txtSubmitting;
+            const promise = this._submitInfo.submit();
+            promise.finally(() => {
+                self._disableButtons(false);
+                self.title = title;
+            });
+
+            promise.then(() => {
                 self._result = "ok";
                 self.hide();
-            }
+            }).catch(() => {
+                if (!self._submitInfo.beginEdit()) {
+                    self._result = "cancel";
+                    self.hide();
+                }
+            });
+        } else {
+            self._result = "ok";
+            self.hide();
         }
     }
-    protected _onCancel() {
-        let action = DIALOG_ACTION.Default;
-        if (!!this._fn_OnCancel) {
-            action = this._fn_OnCancel(this);
-        }
-        if (action === DIALOG_ACTION.StayOpen)
+    protected _onCancel(): void {
+        const action = (!!this._fnOnCancel) ? this._fnOnCancel(this) : DIALOG_ACTION.Default;
+        if (action === DIALOG_ACTION.StayOpen) {
             return;
-        if (!!this._editable)
-            this._editable.cancelEdit();
+        }
+        this._submitInfo.cancel();
         this._result = "cancel";
         this.hide();
     }
-    protected _onRefresh() {
-        let args = { isHandled: false };
-        this.raiseEvent(DLG_EVENTS.refresh, args);
-        if (args.isHandled)
+    protected _onRefresh(): void {
+        const args = { isHandled: false };
+        this.objEvents.raise(DLG_EVENTS.refresh, args);
+        if (args.isHandled) {
             return;
-        let dctx = this._dataContext;
+        }
+        const dctx = this._dataContext;
         if (!!dctx) {
-            if (checks.isFunc(dctx.refresh)) {
+            if (isFunc(dctx.refresh)) {
                 dctx.refresh();
-            }
-            else if (!!dctx._aspect && checks.isFunc(dctx._aspect.refresh)) {
+            } else if (!!dctx._aspect && isFunc(dctx._aspect.refresh)) {
                 dctx._aspect.refresh();
             }
         }
     }
-    protected _onClose() {
-        try {
-            if (this._result !== "ok" && !!this._dataContext) {
-                if (!!this._editable) {
-                    this._editable.cancelEdit();
-                }
-            }
-            if (!!this._fn_OnClose)
-                this._fn_OnClose(this);
-            this.raiseEvent(DLG_EVENTS.close, {});
+    protected _onOpen(): void {
+        if (!!this._fnOnOpen) {
+            this._fnOnOpen(this);
         }
-        finally {
-            this._template.dataContext = null;
-        }
-        let csel = this._currentSelectable;
-        this._currentSelectable = null;
-        setTimeout(function () { boot.currentSelectable = csel; csel = null; }, 0);
     }
-    protected _onShow() {
-        this._currentSelectable = boot.currentSelectable;
-        if (!!this._fn_OnShow) {
-            this._fn_OnShow(this);
+    protected _onClose(): void {
+        try {
+            if (this._result !== "ok" && !!this._submitInfo) {
+                this._submitInfo.cancel();
+            }
+            if (!!this._fnOnClose) {
+                this._fnOnClose(this);
+            }
+            this.objEvents.raise(DLG_EVENTS.close, {});
+        } finally {
+            this._template.dataContext = null;
+            this._submitInfo = null;
+        }
+        let csel = this._selectedControl;
+        this._selectedControl = null;
+        utils.queue.enque(() => { boot.selectedControl = csel; csel = null; });
+    }
+    protected _onShow(): void {
+        this._selectedControl = boot.selectedControl;
+        this._submitInfo = new SubmitInfo(this.dataContext);
+        this._updateStyles();
+        if (!!this._fnOnShow) {
+            this._fnOnShow(this);
         }
     }
     show(): IPromise<DataEditDialog> {
-        let self = this;
-        if (self.getIsDestroyCalled())
+        const self = this;
+        if (self.getIsStateDirty()) {
             return utils.defer.createDeferred<DataEditDialog>().reject();
+        }
         self._result = null;
-        return this._deferred.promise().then((template) => {
-            if (self.getIsDestroyCalled() || !self._$dlgEl) {
+        return this._deferredTemplate.promise().then((template) => {
+            if (self.getIsStateDirty() || !self._$dlgEl) {
                 ERROR.abort();
             }
             (<any>self._$dlgEl).dialog("option", "buttons", self._getButtons());
@@ -371,94 +418,115 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
         }).then(() => {
             return self;
         }, (err) => {
-            if (!self.getIsDestroyCalled())
+            if (!self.getIsStateDirty()) {
                 self.handleError(err, self);
-            ERROR.abort();
+            }
+            return ERROR.abort();
         });
     }
-    hide() {
-        let self = this;
-        if (!this._$dlgEl)
+    hide(): void {
+        const self = this;
+        if (!this._$dlgEl) {
             return;
+        }
         (<any>self._$dlgEl).dialog("close");
     }
-    getOption(name: string) {
-        if (!this._$dlgEl)
-            return checks.undefined;
+    getOption(name: string): any {
+        if (!this._$dlgEl) {
+            return _undefined;
+        }
         return (<any>this._$dlgEl).dialog("option", name);
     }
-    setOption(name: string, value: any) {
-        let self = this;
+    setOption(name: string, value: any): void {
+        const self = this;
         (<any>self._$dlgEl).dialog("option", name, value);
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
-        this._isDestroyCalled = true;
+        }
+        this.setDisposing();
         this.hide();
         this._destroyTemplate();
         this._$dlgEl = null;
         this._template = null;
         this._dataContext = null;
-        this._fn_submitOnOK = null;
-        this._editable = null;
-        super.destroy();
+        this._submitInfo = null;
+        super.dispose();
     }
-    get dataContext() { return this._dataContext; }
+    get dataContext(): any {
+        return this._dataContext;
+    }
     set dataContext(v) {
         if (v !== this._dataContext) {
             this._dataContext = v;
-            this._updateIsEditable();
-            this.raisePropertyChanged(PROP_NAME.dataContext);
+            this._submitInfo = new SubmitInfo(this._dataContext);
+            this.objEvents.raiseProp("dataContext");
         }
     }
-    get result() { return this._result; }
-    get template() { return this._template; }
-    get isSubmitOnOK() { return this._submitOnOK; }
+    get result(): TResult {
+        return this._result;
+    }
+    get template(): ITemplate {
+        return this._template;
+    }
+    get isSubmitOnOK(): boolean {
+        return this._submitOnOK;
+    }
     set isSubmitOnOK(v) {
         if (this._submitOnOK !== v) {
             this._submitOnOK = v;
-            this.raisePropertyChanged(PROP_NAME.isSubmitOnOK);
+            this.objEvents.raiseProp("isSubmitOnOK");
         }
     }
-    get width() { return this.getOption("width"); }
+    get width(): any {
+        return this.getOption("width");
+    }
     set width(v) {
-        let x = this.getOption("width");
+        const x = this.getOption("width");
         if (v !== x) {
             this.setOption("width", v);
-            this.raisePropertyChanged(PROP_NAME.width);
+            this.objEvents.raiseProp("width");
         }
     }
-    get height() { return this.getOption("height"); }
+    get height(): any {
+        return this.getOption("height");
+    }
     set height(v) {
-        let x = this.getOption("height");
+        const x = this.getOption("height");
         if (v !== x) {
             this.setOption("height", v);
-            this.raisePropertyChanged(PROP_NAME.height);
+            this.objEvents.raiseProp("height");
         }
     }
-    get title() { return this.getOption("title"); }
+    get title(): string {
+        return this.getOption("title");
+    }
     set title(v) {
-        let x = this.getOption("title");
+        const x = this.getOption("title");
         if (v !== x) {
             this.setOption("title", v);
-            this.raisePropertyChanged(PROP_NAME.title);
+            this.objEvents.raiseProp("title");
         }
     }
-    get canRefresh() { return this._canRefresh; }
+    get canRefresh(): boolean {
+        return this._canRefresh;
+    }
     set canRefresh(v) {
-        let x = this._canRefresh;
+        const x = this._canRefresh;
         if (v !== x) {
             this._canRefresh = v;
-            this.raisePropertyChanged(PROP_NAME.canRefresh);
+            this.objEvents.raiseProp("canRefresh");
         }
     }
-    get canCancel() { return this._canCancel; }
+    get canCancel(): boolean {
+        return this._canCancel;
+    }
     set canCancel(v) {
-        let x = this._canCancel;
+        const x = this._canCancel;
         if (v !== x) {
             this._canCancel = v;
-            this.raisePropertyChanged(PROP_NAME.canCancel);
+            this.objEvents.raiseProp("canCancel");
         }
     }
 }
@@ -473,9 +541,9 @@ export class DialogVM extends ViewModel<IApplication> {
         this._dialogs = {};
     }
     createDialog(name: string, options: IDialogConstructorOptions): () => DataEditDialog {
-        let self = this;
-        //the map stores functions those create dialogs (aka factories)
-        this._factories[name] = function () {
+        const self = this;
+        // the map stores functions those create dialogs (aka factories)
+        this._factories[name] = () => {
             let dialog = self._dialogs[name];
             if (!dialog) {
                 dialog = new DataEditDialog(options);
@@ -486,32 +554,35 @@ export class DialogVM extends ViewModel<IApplication> {
         return this._factories[name];
     }
     showDialog(name: string, dataContext: any): DataEditDialog {
-        let dlg = this.getDialog(name);
-        if (!dlg)
-            throw new Error(strUtils.format("Invalid DataEditDialog name:  {0}", name));
+        const dlg = this.getDialog(name);
+        if (!dlg) {
+            throw new Error(format("Invalid DataEditDialog name:  {0}", name));
+        }
         dlg.dataContext = dataContext;
-        //timeout helps to set dialog properties on returned DataEditDialog before its showing
+        // timeout helps to set dialog properties on returned DataEditDialog before its showing
         setTimeout(() => {
             dlg.show();
         }, 0);
         return dlg;
     }
     getDialog(name: string): DataEditDialog {
-        let factory = this._factories[name];
-        if (!factory)
+        const factory = this._factories[name];
+        if (!factory) {
             return null;
+        }
         return factory();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed()) {
             return;
-        this._isDestroyCalled = true;
-        let self = this, keys = Object.keys(this._dialogs);
-        keys.forEach(function (key: string) {
-            self._dialogs[key].destroy();
+        }
+        this.setDisposing();
+        const self = this, keys = Object.keys(this._dialogs);
+        keys.forEach((key: string) => {
+            self._dialogs[key].dispose();
         });
         this._factories = {};
         this._dialogs = {};
-        super.destroy();
+        super.dispose();
     }
 }

@@ -1,21 +1,21 @@
-﻿using System;
+﻿using RIAPP.DataService.Core;
+using RIAPP.DataService.Core.Exceptions;
+using RIAPP.DataService.Core.Types;
+using RIAPP.DataService.Resources;
+using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using RIAPP.DataService.DomainService.Exceptions;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.Resources;
-using RIAPP.DataService.Utils.Interfaces;
 
 namespace RIAPP.DataService.Utils
 {
-    public class ValidationHelper : IValidationHelper
+    public class ValidationHelper<TService> : IValidationHelper<TService>
+         where TService : BaseDomainService
     {
-        private readonly IValueConverter valueConverter;
+        private readonly IValueConverter<TService> valueConverter;
 
-        public ValidationHelper(IValueConverter valueConverter)
+        public ValidationHelper(IValueConverter<TService> valueConverter)
         {
-            this.valueConverter = valueConverter;
+            this.valueConverter = valueConverter ?? throw new ArgumentNullException(nameof(valueConverter));
         }
 
         public void CheckString(Field fieldInfo, string val)

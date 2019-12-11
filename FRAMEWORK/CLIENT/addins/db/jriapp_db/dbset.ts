@@ -1,51 +1,68 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    FIELD_TYPE, DATE_CONVERSION, DATA_TYPE, SORT_ORDER,
-    COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER, ITEM_STATUS
+    FIELD_TYPE, SORT_ORDER, COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER, ITEM_STATUS
 } from "jriapp_shared/collection/const";
 import {
     IIndexer, IValidationInfo, TEventHandler, IBaseObject,
-    IPromise, TPriority, LocaleERRS as ERRS, BaseObject, Debounce, Utils
+    IPromise, TPriority, LocaleERRS as ERRS, Debounce, Utils
 } from "jriapp_shared";
 import {
     IInternalCollMethods, IFieldInfo
 } from "jriapp_shared/collection/int";
 import { BaseCollection } from "jriapp_shared/collection/base";
 import {
-    valueUtils, fn_traverseField, fn_traverseFields, fn_getPropertyByName
+    ValueUtils, CollUtils
 } from "jriapp_shared/collection/utils";
 import {
-    IFieldName, IEntityItem, IEntityConstructor, IValueChange, IRowInfo, ITrackAssoc, IQueryResponse,
-    IPermissions, IDbSetConstuctorOptions, IAssociationInfo, IDbSetInfo, ICalcFieldImpl, INavFieldImpl,
-    IQueryResult, IQueryRequest, IQueryParamInfo, IRowData, IDbSetLoadedArgs
-} from "int";
-import { PROP_NAME, REFRESH_MODE } from "const";
-import { DataCache } from "datacache";
-import { DataQuery } from "dataquery";
-import { DbContext } from "dbcontext";
-import { EntityAspect } from "entity_aspect";
+    IFieldName, IEntityItem, IRowInfo, ITrackAssoc, IQueryResponse,
+    IPermissions, IDbSetConstuctorOptions, IAssociationInfo, ICalcFieldImpl, INavFieldImpl,
+    IQueryResult, IRowData, IDbSetLoadedArgs
+} from "./int";
+import { REFRESH_MODE } from "./const";
+import { DataQuery, TDataQuery } from "./dataquery";
+import { DbContext } from "./dbcontext";
+import { EntityAspect } from "./entity_aspect";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str, coreUtils = utils.core, ERROR = utils.err,
-    valUtils = valueUtils;
+const utils = Utils, { isArray, isNt } = utils.check, { format } = utils.str,
+    { getValue, setValue, merge, forEach, Indexer } = utils.core, ERROR = utils.err,
+    { parseValue, stringifyValue } = ValueUtils, { getPKFields, walkField, walkFields, objToVals, initVals, getObjectField } = CollUtils;
 
+function doFieldDependences(dbSet: TDbSet, info: IFieldInfo) {
+    if (!info.dependentOn) {
+        return;
+    }
+    const deps: string[] = info.dependentOn.split(",");
+    deps.forEach((depOn) => {
+        const depOnFld = dbSet.getFieldInfo(depOn);
+        if (!depOnFld) {
+            throw new Error(format(ERRS.ERR_CALC_FIELD_DEFINE, depOn));
+        }
+        if (info === depOnFld) {
+            throw new Error(format(ERRS.ERR_CALC_FIELD_SELF_DEPEND, depOn));
+        }
+        if (depOnFld.dependents.indexOf(info.fullName) < 0) {
+            depOnFld.dependents.push(info.fullName);
+        }
+    });
+}
 
 export interface IFillFromServiceArgs {
     res: IQueryResponse;
     reason: COLL_CHANGE_REASON;
-    query: DataQuery<IEntityItem>;
+    query: TDataQuery;
     onFillEnd: () => void;
 }
 
 export interface IFillFromCacheArgs {
     reason: COLL_CHANGE_REASON;
-    query: DataQuery<IEntityItem>;
+    query: TDataQuery;
 }
 
-export interface IInternalDbSetMethods<TItem extends IEntityItem> extends IInternalCollMethods<TItem> {
+export interface IInternalDbSetMethods<TItem extends IEntityItem, TObj> extends IInternalCollMethods<TItem> {
     getCalcFieldVal(fieldName: string, item: IEntityItem): any;
     getNavFieldVal(fieldName: string, item: IEntityItem): any;
     setNavFieldVal(fieldName: string, item: IEntityItem, value: any): void;
-    beforeLoad(query: DataQuery<TItem>, oldQuery: DataQuery<TItem>): void;
+    beforeLoad(query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>): void;
     updatePermissions(perms: IPermissions): void;
     getChildToParentNames(childFieldName: string): string[];
     fillFromService(info: IFillFromServiceArgs): IQueryResult<TItem>;
@@ -57,20 +74,23 @@ export interface IInternalDbSetMethods<TItem extends IEntityItem> extends IInter
     addToChanged(item: TItem): void;
     removeFromChanged(key: string): void;
     onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS): void;
+    setQuery(query: DataQuery<TItem, TObj>): void;
 }
 
-const DBSET_EVENTS = {
-    loaded: "loaded"
-};
-
-export interface IDbSetConstructor<TItem extends IEntityItem> {
-    new (dbContext: DbContext): DbSet<TItem, DbContext>;
+const enum DBSET_EVENTS {
+    loaded = "dbset_loaded"
 }
 
-export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> extends BaseCollection<TItem> {
+export interface IDbSetConstructor<TItem extends IEntityItem, TObj> {
+    new (dbContext: DbContext): DbSet<TItem, TObj, DbContext>;
+}
+
+export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extends IIndexer<any> = IIndexer<any>, TDbContext extends DbContext = DbContext> extends BaseCollection<TItem> {
     private _dbContext: TDbContext;
     private _isSubmitOnDelete: boolean;
     private _trackAssoc: { [name: string]: IAssociationInfo; };
+    private _fieldMap: IIndexer<IFieldInfo>;
+    private _fieldInfos: IFieldInfo[];
     private _trackAssocMap: { [childFieldName: string]: string[]; };
     private _childAssocMap: { [fieldName: string]: IAssociationInfo; };
     private _parentAssocMap: { [fieldName: string]: IAssociationInfo; };
@@ -78,61 +98,64 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
     private _changeCache: { [key: string]: TItem; };
     protected _navfldMap: { [fieldName: string]: INavFieldImpl<TItem>; };
     protected _calcfldMap: { [fieldName: string]: ICalcFieldImpl<TItem>; };
-    protected _itemsByKey: { [key: string]: TItem; };
-    protected _entityType: IEntityConstructor<TItem>;
     protected _ignorePageChanged: boolean;
-    protected _query: DataQuery<TItem>;
+    protected _query: DataQuery<TItem, TObj>;
     private _pageDebounce: Debounce;
     private _dbSetName: string;
+    private _pkFields: IFieldInfo[];
+    private _isPageFilled: boolean;
+    private _newKey: number;
 
     constructor(opts: IDbSetConstuctorOptions) {
         super();
-        let self = this, dbContext = opts.dbContext, dbSetInfo = opts.dbSetInfo, fieldInfos = dbSetInfo.fieldInfos;
+        const self = this, dbContext = opts.dbContext, dbSetInfo = opts.dbSetInfo, fieldInfos = dbSetInfo.fieldInfos;
         this._dbContext = <TDbContext>dbContext;
         this._dbSetName = dbSetInfo.dbSetName;
-        this._options.enablePaging = dbSetInfo.enablePaging;
-        this._options.pageSize = dbSetInfo.pageSize;
+        this.options.enablePaging = dbSetInfo.enablePaging;
+        this.options.pageSize = dbSetInfo.pageSize;
         this._query = null;
-        this._entityType = null;
         this._isSubmitOnDelete = false;
-        this._navfldMap = {};
-        this._calcfldMap = {};
+        this._navfldMap = Indexer();
+        this._calcfldMap = Indexer();
+        this._fieldMap = Indexer();
         this._fieldInfos = fieldInfos;
+        this._pkFields = getPKFields(fieldInfos);
+        this._isPageFilled = false;
+        this._newKey = 0;
+        // used when page index is changed
         this._pageDebounce = new Debounce(400);
-        //association infos maped by name
-        //we should track changes in navigation properties for this associations
-        this._trackAssoc = {};
-        //map childToParentName by childField as a key
-        this._trackAssocMap = {};
-        //map association infos by childToParent fieldname
-        this._childAssocMap = {};
-        //map association infos by parentToChildren fieldname
-        this._parentAssocMap = {};
+        // association infos maped by name
+        // we should track changes in navigation properties for this associations
+        this._trackAssoc = Indexer();
+        // map childToParentName by childField as a key
+        this._trackAssocMap = Indexer();
+        // map association infos by childToParent fieldname
+        this._childAssocMap = Indexer();
+        // map association infos by parentToChildren fieldname
+        this._parentAssocMap = Indexer();
 
         this._changeCount = 0;
-        this._changeCache = {};
+        this._changeCache = Indexer();
         this._ignorePageChanged = false;
-        fieldInfos.forEach(function (f) {
+        fieldInfos.forEach((f) => {
             self._fieldMap[f.fieldName] = f;
-            fn_traverseField(f, (fld, fullName) => {
+            walkField(f, (fld, fullName) => {
                 fld.dependents = [];
                 fld.fullName = fullName;
             });
         });
-        fn_traverseFields(fieldInfos, (fld, fullName) => {
+        walkFields(fieldInfos, (fld, fullName) => {
             if (fld.fieldType === FIELD_TYPE.Navigation) {
-                //navigation fields can NOT be on nested fields
-                coreUtils.setValue(self._navfldMap, fullName, self._doNavigationField(opts, fld), true);
-            }
-            else if (fld.fieldType === FIELD_TYPE.Calculated) {
-                //calculated fields can be on nested fields
-                coreUtils.setValue(self._calcfldMap, fullName, self._doCalculatedField(opts, fld), true);
+                // navigation fields can NOT be on nested fields
+                setValue(self._navfldMap, fullName, self._doNavigationField(opts, fld), true);
+            } else if (fld.fieldType === FIELD_TYPE.Calculated) {
+                // calculated fields can be on nested fields
+                setValue(self._calcfldMap, fullName, self._doCalculatedField(opts, fld), true);
             }
         });
 
         self._mapAssocFields();
-        Object.freeze(this._perms);
-        const internalObj = {
+        const extraInternal = {
             getCalcFieldVal: (fieldName: string, item: TItem) => {
                 return self._getCalcFieldVal(fieldName, item);
             },
@@ -142,7 +165,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             setNavFieldVal: (fieldName: string, item: TItem, value: any) => {
                 self._setNavFieldVal(fieldName, item, value);
             },
-            beforeLoad: (query: DataQuery<TItem>, oldQuery: DataQuery<TItem>) => {
+            beforeLoad: (query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>) => {
                 self._beforeLoad(query, oldQuery);
             },
             updatePermissions: (perms: IPermissions) => {
@@ -177,273 +200,332 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             },
             onItemStatusChanged: (item: TItem, oldStatus: ITEM_STATUS) => {
                 self._onItemStatusChanged(item, oldStatus);
+            },
+            setQuery: (query: DataQuery<TItem, TObj>) => {
+                self._setQuery(query);
             }
         };
-        coreUtils.merge(internalObj, this._internal);
-        this.dbContext.addOnPropertyChange(PROP_NAME.isSubmiting, (s, a) => {
-            self.raisePropertyChanged(PROP_NAME.isBusy);
+        let internal = this._getInternal();
+        this._setInternal(merge(extraInternal, internal));
+        this.dbContext.objEvents.onProp("isSubmiting", (s, a) => {
+            self.objEvents.raiseProp("isBusy");
         }, this.dbSetName);
-        this.addOnPropertyChange(PROP_NAME.isLoading, (s, a) => { self.raisePropertyChanged(PROP_NAME.isBusy); });
+        this.objEvents.onProp("isLoading", (s, a) => {
+            self.objEvents.raiseProp("isBusy");
+        });
     }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this._pageDebounce.dispose();
+        this._pageDebounce = null;
+        this.clear();
+        const dbContext = this.dbContext;
+        this._dbContext = null;
+        if (!!dbContext) {
+            dbContext.objEvents.offNS(this.dbSetName);
+        }
+        this._navfldMap = Indexer();
+        this._calcfldMap = Indexer();
+        super.dispose();
+    }
+    abstract itemFactory(aspect: EntityAspect<TItem, TObj, TDbContext>): TItem;
     public handleError(error: any, source: any): boolean {
-        if (!this._dbContext)
-            return super.handleError(error, source);
-        else
-            return this._dbContext.handleError(error, source);
+        return (!this._dbContext) ? super.handleError(error, source) : this._dbContext.handleError(error, source);
     }
-    protected _getEventNames() {
-        let base_events = super._getEventNames();
-        return [DBSET_EVENTS.loaded].concat(base_events);
-    }
-    protected _mapAssocFields() {
-        let trackAssoc = this._trackAssoc, assoc: IAssociationInfo, tasKeys = Object.keys(trackAssoc),
-            frel: { childField: string; parentField: string; },
-            trackAssocMap = this._trackAssocMap;
-        for (let i = 0, len = tasKeys.length; i < len; i += 1) {
-            assoc = trackAssoc[tasKeys[i]];
-            for (let j = 0, len2 = assoc.fieldRels.length; j < len2; j += 1) {
-                frel = assoc.fieldRels[j];
-                if (!checks.isArray(trackAssocMap[frel.childField])) {
+    protected _mapAssocFields(): void {
+        const trackAssoc = this._trackAssoc, tasKeys = Object.keys(trackAssoc), trackAssocMap = this._trackAssocMap;
+        const len = tasKeys.length;
+        for (let i = 0; i < len; i += 1) {
+            const assoc: IAssociationInfo = trackAssoc[tasKeys[i]], len2 = assoc.fieldRels.length;
+            for (let j = 0; j < len2; j += 1) {
+                const frel: { childField: string; parentField: string; } = assoc.fieldRels[j];
+                if (!isArray(trackAssocMap[frel.childField])) {
                     trackAssocMap[frel.childField] = [assoc.childToParentName];
-                }
-                else {
+                } else {
                     trackAssocMap[frel.childField].push(assoc.childToParentName);
                 }
             }
         }
     }
     protected _doNavigationField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): INavFieldImpl<TItem> {
-        let self = this, isChild = true, result: INavFieldImpl<TItem> = { getFunc: (item) => { throw new Error("Function is not implemented"); }, setFunc: function (v: any) { throw new Error("Function is not implemented"); } };
-        let assocs = opts.childAssoc.filter(function (a) {
+        const self = this, result: INavFieldImpl<TItem> = {
+            getFunc: (item) => {
+                throw new Error(`Navigation get function for the field: ${fieldInfo.fieldName} is not implemented`);
+            },
+            setFunc: (v: any, item: TItem) => {
+                throw new Error(`Navigation set function for the field: ${fieldInfo.fieldName} is not implemented`);
+            }
+        };
+        let isChild = true, assocs = opts.childAssoc.filter((a) => {
             return a.childToParentName === fieldInfo.fieldName;
         });
 
         if (assocs.length === 0) {
-            assocs = opts.parentAssoc.filter(function (a) {
+            assocs = opts.parentAssoc.filter((a) => {
                 return a.parentToChildrenName === fieldInfo.fieldName;
             });
             isChild = false;
         }
 
-        if (assocs.length !== 1)
-            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID_TYPE, "assocs", "Array"));
-        let assocName = assocs[0].name;
+        if (assocs.length !== 1) {
+            throw new Error(format(ERRS.ERR_PARAM_INVALID_TYPE, "assocs", "Array"));
+        }
+        const assocName = assocs[0].name;
         fieldInfo.isReadOnly = true;
         if (isChild) {
             fieldInfo.isReadOnly = false;
             self._childAssocMap[assocs[0].childToParentName] = assocs[0];
-            assocs[0].fieldRels.forEach(function (frel) {
-                let chf = self.getFieldInfo(frel.childField);
-                if (!fieldInfo.isReadOnly && chf.isReadOnly) {
+            assocs[0].fieldRels.forEach((frel) => {
+                const childFld = self.getFieldInfo(frel.childField);
+                if (!fieldInfo.isReadOnly && (childFld.isReadOnly && !childFld.allowClientDefault)) {
                     fieldInfo.isReadOnly = true;
                 }
             });
-            //this property should return parent
-            result.getFunc = function (item: TItem) {
-                let assoc = self.dbContext.getAssociation(assocName);
+            // this property should return parent
+            result.getFunc = (item: TItem) => {
+                const assoc = self.dbContext.getAssociation(assocName);
                 return assoc.getParentItem(item);
             };
 
             if (!fieldInfo.isReadOnly) {
-                //should track this association for new items parent - child relationship changes
+                // should track this association for new items parent - child relationship changes
                 self._trackAssoc[assocName] = assocs[0];
+                result.setFunc = (v: any, item: TItem) => {
+                    const assoc = self.dbContext.getAssociation(assocName);
+                    if (!!v) {
+                        if (((<IEntityItem>v)._aspect.dbSetName !== assoc.parentDS.dbSetName)) {
+                            throw new Error(format(ERRS.ERR_PARAM_INVALID_TYPE, "value", assoc.parentDS.dbSetName));
+                        }
 
-                result.setFunc = function (v) {
-                    let entity: TItem = this, i: number, len: number, assoc = self.dbContext.getAssociation(assocName);
-                    if (!!v && !(v instanceof assoc.parentDS.entityType)) {
-                        throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID_TYPE, "value", assoc.parentDS.dbSetName));
-                    }
-                    if (!!v && !!v._aspect && (<IEntityItem>v)._aspect.isNew) {
-                        entity._aspect._setFieldVal(fieldInfo.fieldName, (<IEntityItem>v)._key);
-                    }
-                    else if (!!v) {
-                        for (i = 0, len = assoc.childFldInfos.length; i < len; i += 1) {
-                            (<any>entity)[assoc.childFldInfos[i].fieldName] = v[assoc.parentFldInfos[i].fieldName];
+                        if ((<IEntityItem>v)._aspect.isNew) {
+                            item._aspect._setFieldVal(fieldInfo.fieldName, (<IEntityItem>v)._key);
+                        } else {
+                            const len = assoc.childFldInfos.length;
+                            for (let i = 0; i < len; i += 1) {
+                                (<any>item)[assoc.childFldInfos[i].fieldName] = v[assoc.parentFldInfos[i].fieldName];
+                            }
                         }
-                    }
-                    else {
-                        let oldKey = entity._aspect._getFieldVal(fieldInfo.fieldName);
+                    } else {
+                        const oldKey = item._aspect._getFieldVal(fieldInfo.fieldName);
                         if (!!oldKey) {
-                            entity._aspect._setFieldVal(fieldInfo.fieldName, null);
+                            item._aspect._setFieldVal(fieldInfo.fieldName, null);
                         }
-                        for (i = 0, len = assoc.childFldInfos.length; i < len; i += 1) {
-                            (<any>entity)[assoc.childFldInfos[i].fieldName] = null;
+                        const len = assoc.childFldInfos.length;
+                        for (let i = 0; i < len; i += 1) {
+                            (<any>item)[assoc.childFldInfos[i].fieldName] = null;
                         }
                     }
                 };
             }
-        } //if (isChild)
-        else {
+            // if (isChild)
+        } else {
             self._parentAssocMap[assocs[0].parentToChildrenName] = assocs[0];
-            //returns items children
-            result.getFunc = function (item: TItem) {
+            // returns items children
+            result.getFunc = (item: TItem) => {
                 return self.dbContext.getAssociation(assocName).getChildItems(item);
             };
         }
         return result;
     }
     protected _doCalculatedField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): ICalcFieldImpl<TItem> {
-        let self = this, result: ICalcFieldImpl<TItem> = { getFunc: (item) => { throw new Error(strUtils.format("Calculated field:'{0}' is not initialized", fieldInfo.fieldName)); } };
-        function doDependences(info: IFieldInfo) {
-            if (!info.dependentOn)
-                return;
-            let deps: string[] = info.dependentOn.split(",");
-            deps.forEach(function (depOn) {
-                let depOnFld = self.getFieldInfo(depOn);
-                if (!depOnFld)
-                    throw new Error(strUtils.format(ERRS.ERR_CALC_FIELD_DEFINE, depOn));
-                if (info === depOnFld)
-                    throw new Error(strUtils.format(ERRS.ERR_CALC_FIELD_SELF_DEPEND, depOn));
-                if (depOnFld.dependents.indexOf(info.fullName) < 0) {
-                    depOnFld.dependents.push(info.fullName);
-                }
-            });
+        const self = this, result: ICalcFieldImpl<TItem> = {
+            getFunc: (item) => { throw new Error(format("Calculated field:'{0}' is not initialized", fieldInfo.fieldName)); }
         };
         fieldInfo.isReadOnly = true;
         if (!!fieldInfo.dependentOn) {
-            doDependences(fieldInfo);
+            doFieldDependences(self, fieldInfo);
         }
         return result;
     }
     protected _refreshValues(path: string, item: IEntityItem, values: any[], names: IFieldName[], rm: REFRESH_MODE): void {
-        let self = this;
-        values.forEach(function (value, index) {
-            let name: IFieldName = names[index], fieldName = path + name.n, fld = self.getFieldInfo(fieldName);
-            if (!fld)
-                throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
+        const self = this;
+        values.forEach((value, index) => {
+            const name: IFieldName = names[index], fieldName = path + name.n, fld = self.getFieldInfo(fieldName);
+            if (!fld) {
+                throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
+            }
 
             if (fld.fieldType === FIELD_TYPE.Object) {
-                //for object fields the value should be an array of values - recursive processing
+                // for object fields the value should be an array of values - recursive processing
                 self._refreshValues(fieldName + ".", item, <any[]>value, name.p, rm);
-            }
-            else {
-                //for other fields the value is a string
+            } else {
+                // for other fields the value is a string
                 item._aspect._refreshValue(value, fieldName, rm);
             }
         });
     }
-    protected _setCurrentItem(v: TItem) {
-        if (!!v && !(v instanceof this._entityType)) {
-            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID_TYPE, "currentItem", this.dbSetName));
-        }
-        super._setCurrentItem(v);
+    protected _applyFieldVals(vals: any, path: string, values: any[], names: IFieldName[]) {
+        const self = this, stz = self.dbContext.serverTimezone;
+        values.forEach((value, index) => {
+            const name: IFieldName = names[index], fieldName = path + name.n,
+                fld = self.getFieldInfo(fieldName);
+            if (!fld) {
+                throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, fieldName));
+            }
+
+            if (fld.fieldType === FIELD_TYPE.Object) {
+                // for object fields the value should be an array of values - recursive processing
+                self._applyFieldVals(vals, fieldName + ".", <any[]>value, name.p);
+            } else {
+                // for other fields the value is a string, which is parsed to a typed value
+                const val = parseValue(value, fld.dataType, fld.dateConversion, stz);
+                setValue(vals, fieldName, val, false);
+            }
+        });
     }
-    protected _getNewKey(item: TItem) {
-        //client's item ID
-        let key = "clkey_" + this._newKey;
+    protected _getNewKey(): string {
+        // client's item ID
+        const key = "clkey_" + this._newKey;
         this._newKey += 1;
         return key;
     }
-    //override
+    // override
+    protected _onItemAdded(item: TItem): void {
+        super._onItemAdded(item);
+        this._addToChanged(item);
+    }
+    // override
     protected _createNew(): TItem {
-        return this.createEntity(null, null);
+        return this.createEntityFromData(null, null);
     }
-    protected _clearChangeCache() {
-        const old = this._changeCount;
-        this._changeCache = {};
-        this._changeCount = 0;
-        if (old !== this._changeCount)
-            this.raisePropertyChanged(PROP_NAME.isHasChanges);
+    // override
+    protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER): void {
+        try {
+            super._clear(reason, oper);
+        } finally {
+            this._newKey = 0;
+            this._isPageFilled = false;
+        }
     }
-    protected _onPageChanging() {
+    protected _onPageChanging(): boolean {
         const res = super._onPageChanging();
         if (!res) {
             return res;
         }
-        if (this.isHasChanges) {
-            this.rejectChanges();
+        this.rejectChanges();
+
+        const query = this.query;
+        if (!!query && query.loadPageCount > 1 && this._isPageFilled) {
+            query._getInternal().updateCache(this.pageIndex, this.items);
         }
         return res;
     }
-    protected _onPageChanged() {
+    protected _onPageChanged(): void {
         const self = this;
+        this._isPageFilled = false;
         this.cancelEdit();
         super._onPageChanged();
-        if (this._ignorePageChanged)
+        if (this._ignorePageChanged) {
             return;
+        }
         self.query.pageIndex = self.pageIndex;
         self._pageDebounce.enque(() => {
             self.dbContext._getInternal().load(self.query, COLL_CHANGE_REASON.PageChange);
         });
     }
-    protected _onPageSizeChanged() {
+    protected _onPageSizeChanged(): void {
         super._onPageSizeChanged();
-        if (!!this._query)
+        if (!!this._query) {
             this._query.pageSize = this.pageSize;
+        }
     }
-    protected _defineCalculatedField(fullName: string, getFunc: (item: TItem) => any) {
-        const calcDef: ICalcFieldImpl<TItem> = coreUtils.getValue(this._calcfldMap, fullName);
+    protected _defineCalculatedField(fullName: string, getFunc: (item: TItem) => any): void {
+        const calcDef: ICalcFieldImpl<TItem> = getValue(this._calcfldMap, fullName);
         if (!calcDef) {
-            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "calculated fieldName", fullName));
+            throw new Error(format(ERRS.ERR_PARAM_INVALID, "calculated fieldName", fullName));
         }
         calcDef.getFunc = getFunc;
     }
-    protected _getStrValue(val: any, fieldInfo: IFieldInfo) {
+    protected _getStrValue(val: any, fieldInfo: IFieldInfo): string {
         const dcnv = fieldInfo.dateConversion, stz = this.dbContext.serverTimezone;
-        return valUtils.stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+        return stringifyValue(val, dcnv, fieldInfo.dataType, stz);
+    }
+    protected _getKeyValue(vals: any): string {
+        const pkFlds = this._pkFields, len = pkFlds.length;
+        if (len === 1) {
+            const val = getValue(vals, pkFlds[0].fieldName);
+            if (isNt(val)) {
+                throw new Error(`Empty key field value for: ${pkFlds[0].fieldName}`);
+            }
+            return this._getStrValue(val, pkFlds[0]);
+        } else {
+            const pkVals: string[] = [];
+            for (let i = 0; i < len; i += 1) {
+                const val = getValue(vals, pkFlds[i].fieldName);
+                if (isNt(val)) {
+                    throw new Error(`Empty key field value for: ${pkFlds[i].fieldName}`);
+                }
+                const strval = this._getStrValue(val, pkFlds[i]);
+                pkVals.push(strval);
+            }
+            return pkVals.join(";");
+        }
     }
     protected _getCalcFieldVal(fieldName: string, item: TItem): any {
         try {
-            let val: ICalcFieldImpl<TItem> = coreUtils.getValue(this._calcfldMap, fieldName);
+            const val: ICalcFieldImpl<TItem> = getValue(this._calcfldMap, fieldName);
             return val.getFunc.call(item, item);
-        }
-        catch (err)
-        {
+        } catch (err) {
             ERROR.reThrow(err, this.handleError(err, this));
         }
     }
     protected _getNavFieldVal(fieldName: string, item: TItem): any {
-        let val: INavFieldImpl<TItem> = coreUtils.getValue(this._navfldMap, fieldName);
+        const val: INavFieldImpl<TItem> = getValue(this._navfldMap, fieldName);
         return val.getFunc.call(item, item);
     }
     protected _setNavFieldVal(fieldName: string, item: TItem, value: any): void {
-        let val: INavFieldImpl<TItem> = coreUtils.getValue(this._navfldMap, fieldName);
-        val.setFunc.call(item, value);
+        const val: INavFieldImpl<TItem> = getValue(this._navfldMap, fieldName);
+        val.setFunc.call(item, value, item);
     }
-    protected _beforeLoad(query: DataQuery<TItem>, oldQuery: DataQuery<TItem>): void {
-        if (!!query && oldQuery !== query) {
+    protected _beforeLoad(query: DataQuery<TItem, TObj>, oldQuery: DataQuery<TItem, TObj>): void {
+        if (!!query.isForAppend) {
+            query.pageSize = this.pageSize;
+            query.pageIndex = this.pageIndex;
             this._query = query;
-            this._query.pageIndex = 0;
-        }
+        } else {
+            if (oldQuery !== query) {
+                query.pageIndex = 0;
+                this._query = query;
 
-        if (!!oldQuery && oldQuery !== query) {
-            oldQuery.destroy();
-        }
+                if (!!oldQuery) {
+                    oldQuery.dispose();
+                }
+            }
 
-        if (query.pageSize !== this.pageSize) {
-            this._ignorePageChanged = true;
-            try {
-                this.pageIndex = 0;
-                this.pageSize = query.pageSize;
+            if (query.pageSize !== this.pageSize) {
+                this._ignorePageChanged = true;
+                try {
+                    this.pageIndex = 0;
+                    this.pageSize = query.pageSize;
+                } finally {
+                    this._ignorePageChanged = false;
+                }
             }
-            finally {
-                this._ignorePageChanged = false;
-            }
-        }
 
-        if (query.pageIndex !== this.pageIndex) {
-            this._ignorePageChanged = true;
-            try {
-                this.pageIndex = query.pageIndex;
+            if (query.pageIndex !== this.pageIndex) {
+                this._ignorePageChanged = true;
+                try {
+                    this.pageIndex = query.pageIndex;
+                } finally {
+                    this._ignorePageChanged = false;
+                }
             }
-            finally {
-                this._ignorePageChanged = false;
-            }
-        }
 
-        if (!query.isCacheValid) {
-            query._getInternal().clearCache();
+            if (!query.isCacheValid) {
+                query._getInternal().clearCache();
+            }
         }
-    }
-    protected _updatePermissions(perms: IPermissions): void {
-        this._perms = perms;
     }
     protected _getChildToParentNames(childFieldName: string): string[] { return this._trackAssocMap[childFieldName]; }
     protected _afterFill(result: IQueryResult<TItem>, isClearAll?: boolean) {
         const self = this;
-
-        if (!checks.isNt(result.fetchedItems))
+        // fetchedItems is null when loaded from the data cache
+        if (!isNt(result.fetchedItems)) {
             this._onLoaded(result.fetchedItems);
+        }
 
         this._onCollectionChanged({
             changeType: !isClearAll ? COLL_CHANGE_TYPE.Add : COLL_CHANGE_TYPE.Reset,
@@ -459,78 +541,70 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             reason: result.reason
         });
 
+        this._isPageFilled = true;
+
         if (!!isClearAll) {
             self.moveFirst();
         }
     }
     protected _fillFromService(info: IFillFromServiceArgs): IQueryResult<TItem> {
-        let self = this, res = info.res, fieldNames = res.names, rows = res.rows || [], rowCount = rows.length,
-            newItems: TItem[] = [], positions: number[] = [], arr: TItem[] = [], fetchedItems: TItem[] = [],
-            isPagingEnabled = this.isPagingEnabled, query = info.query, isClearAll = true, dataCache: DataCache, items: TItem[] = [];
+        const self = this, res = info.res, fieldNames = res.names, rows = res.rows || [],
+            isPagingEnabled = this.isPagingEnabled, query = info.query;
+        let isClearAll = true;
 
-        if (!!query && !query.getIsDestroyCalled()) {
+        if (!!query && !query.getIsStateDirty()) {
             isClearAll = query.isClearPrevData;
-            if (query.isClearCacheOnEveryLoad)
+            if (query.isClearCacheOnEveryLoad) {
                 query._getInternal().clearCache();
-            if (isClearAll)
+            }
+            if (isClearAll) {
                 this._clear(info.reason, COLL_CHANGE_OPER.Fill);
-            query._getInternal().reindexCache();
-            if (query.loadPageCount > 1 && isPagingEnabled) {
-                dataCache = query._getInternal().getCache();
-                if (query.isIncludeTotalCount && !checks.isNt(res.totalCount))
-                    dataCache.totalCount = res.totalCount;
             }
         }
 
-        fetchedItems = rows.map(function (row) {
-            //row.key already a string value generated on server (no need to convert to string)
-            let key = row.k;
-            if (!key)
+        const fetchedItems = rows.map((row) => {
+            // row.key already a string value generated on server (no need to convert to string)
+            const key = row.k;
+            if (!key) {
                 throw new Error(ERRS.ERR_KEY_IS_EMPTY);
+            }
 
-            let item = self._itemsByKey[key];
+            let item = self.getItemByKey(key);
             if (!item) {
-                if (!!dataCache) {
-                    item = <TItem>dataCache.getItemByKey(key);
-                }
-            }
-            if (!item) {
-                item = self.createEntity(row, fieldNames);
-            }
-            else {
+                item = self.createEntityFromData(row, fieldNames);
+            } else {
                 self._refreshValues("", item, row.v, fieldNames, REFRESH_MODE.RefreshCurrent);
             }
+
             return item;
         });
 
-        arr = fetchedItems;
+        let arr = fetchedItems;
 
-        if (!!query && !query.getIsDestroyCalled()) {
-            if (query.isIncludeTotalCount && !checks.isNt(res.totalCount)) {
+        if (!!query && !query.getIsStateDirty()) {
+            if (query.isIncludeTotalCount && !isNt(res.totalCount)) {
                 this.totalCount = res.totalCount;
             }
 
             if (query.loadPageCount > 1 && isPagingEnabled) {
-                dataCache.fillCache(res.pageIndex, fetchedItems);
-                const page = dataCache.getCachedPage(query.pageIndex);
-                if (!page)
-                    arr = [];
-                else
-                    arr = <TItem[]>page.items;
+                const dataCache = query._getInternal().getCache();
+                if (query.isIncludeTotalCount && !isNt(res.totalCount)) {
+                    dataCache.totalCount = res.totalCount;
+                }
+                dataCache.fill(res.pageIndex, fetchedItems);
+                arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
             }
         }
 
-        arr.forEach(function (item) {
-            const oldItem = self._itemsByKey[item._key];
+        const newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
+        arr.forEach((item) => {
+            const oldItem = self.getItemByKey(item._key);
             if (!oldItem) {
-                self._items.push(item);
-                positions.push(self._items.length - 1);
-                self._itemsByKey[item._key] = item;
+                positions.push(self._appendItem(item));
                 newItems.push(item);
                 items.push(item);
-                item._aspect._setIsDetached(false);
-            }
-            else {
+                item._aspect._setIsAttached(true);
+            } else {
                 items.push(oldItem);
             }
         });
@@ -539,7 +613,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             this._onCountChanged();
         }
 
-        let result: IQueryResult<TItem> = {
+        const result: IQueryResult<TItem> = {
             newItems: {
                 items: newItems,
                 pos: positions
@@ -554,25 +628,22 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         this._afterFill(result, isClearAll);
         return result;
     }
-    protected _fillFromCache(info: IFillFromCacheArgs): IQueryResult<TItem> {
-        let self = this, positions: number[] = [], items: TItem[] = [], query = info.query;
-        if (!query)
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query is not null"));
-        if (query.getIsDestroyCalled())
-            throw new Error(strUtils.format(ERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
-        const dataCache = query._getInternal().getCache(),
-            cachedPage = dataCache.getCachedPage(query.pageIndex),
-            arr = !cachedPage ? <TItem[]>[] : <TItem[]>cachedPage.items;
+    protected _fillFromCache(args: IFillFromCacheArgs): IQueryResult<TItem> {
+        const query = args.query;
+        if (!query) {
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "query is not null"));
+        }
+        if (query.getIsStateDirty()) {
+            throw new Error(format(ERRS.ERR_ASSERTION_FAILED, "query not destroyed"));
+        }
+        const dataCache = query._getInternal().getCache(), arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
 
+        this._replaceItems(args.reason, COLL_CHANGE_OPER.Fill, arr);
 
-        this._clear(info.reason, COLL_CHANGE_OPER.Fill);
-        this._items = arr;
-
-        arr.forEach(function (item, index) {
-            self._itemsByKey[item._key] = item;
+        const positions: number[] = [], items: TItem[] = [];
+        arr.forEach((item, index) => {
             positions.push(index);
             items.push(item);
-            item._aspect._setIsDetached(false);
         });
 
         if (items.length > 0) {
@@ -586,7 +657,7 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
             },
             fetchedItems: null,
             items: items,
-            reason: info.reason,
+            reason: args.reason,
             outOfBandData: null
         };
 
@@ -594,62 +665,60 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         return result;
     }
     protected _commitChanges(rows: IRowInfo[]): void {
-        let self = this;
-
-        rows.forEach(function (rowInfo) {
-            let key = rowInfo.clientKey, item: TItem = self._itemsByKey[key];
+        const self = this;
+        rows.forEach((rowInfo) => {
+            const oldKey = rowInfo.clientKey, newKey = rowInfo.serverKey,
+                item: TItem = self.getItemByKey(oldKey);
             if (!item) {
-                throw new Error(strUtils.format(ERRS.ERR_KEY_IS_NOTFOUND, key));
+                throw new Error(format(ERRS.ERR_KEY_IS_NOTFOUND, oldKey));
             }
-            let itemStatus = item._aspect.status;
+            const itemStatus = item._aspect.status;
             item._aspect._acceptChanges(rowInfo);
             if (itemStatus === ITEM_STATUS.Added) {
-                //on insert
-                delete self._itemsByKey[key];
+                // on insert
                 item._aspect._updateKeys(rowInfo.serverKey);
-                self._itemsByKey[item._key] = item;
+                self._remapItem(oldKey, newKey, item);
                 self._onCollectionChanged({
                     changeType: COLL_CHANGE_TYPE.Remap,
                     reason: COLL_CHANGE_REASON.None,
                     oper: COLL_CHANGE_OPER.Commit,
                     items: [item],
-                    old_key: key,
-                    new_key: item._key
+                    old_key: oldKey,
+                    new_key: newKey
                 });
             }
         });
     }
     protected _setItemInvalid(row: IRowInfo): TItem {
-        const keyMap = this._itemsByKey, item = keyMap[row.clientKey],
-            errors: IIndexer<string[]> = {};
+        const item = this.getItemByKey(row.clientKey), errors = Indexer<string[]>();
         row.invalid.forEach((err) => {
-            if (!err.fieldName)
+            if (!err.fieldName) {
                 err.fieldName = "*";
-            if (checks.isArray(errors[err.fieldName])) {
-                errors[err.fieldName].push(err.message);
             }
-            else {
+            if (isArray(errors[err.fieldName])) {
+                errors[err.fieldName].push(err.message);
+            } else {
                 errors[err.fieldName] = [err.message];
             }
         });
         const res: IValidationInfo[] = [];
-        coreUtils.forEachProp(errors, (fieldName, err) => {
+        forEach(errors, (fieldName, err) => {
             res.push({ fieldName: fieldName, errors: err });
         });
-        this._addErrors(item, res);
+        this.errors.addErrors(item, res);
         return item;
     }
     protected _getChanges(): IRowInfo[] {
         const changes: IRowInfo[] = [], csh = this._changeCache;
-        coreUtils.forEachProp(csh, function (key, item) {
+        forEach(csh, (key, item) => {
             changes.push(item._aspect._getRowInfo());
         });
         return changes;
     }
     protected _getTrackAssocInfo(): ITrackAssoc[] {
         const self = this, res: ITrackAssoc[] = [], csh = this._changeCache, trackAssoc = self._trackAssoc;
-        coreUtils.forEachProp(csh, function (key, item) {
-            coreUtils.forEachProp(trackAssoc, function (assocName, assocInfo) {
+        forEach(csh, (key, item) => {
+            forEach(trackAssoc, (assocName, assocInfo) => {
                 const parentKey = item._aspect._getFieldVal(assocInfo.childToParentName),
                     childKey = item._key;
                 if (!!parentKey && !!childKey) {
@@ -660,71 +729,74 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         return res;
     }
     protected _addToChanged(item: TItem): void {
-        if (!item._key)
+        if (item._aspect.isDetached) {
             return;
+        }
         if (!this._changeCache[item._key]) {
             this._changeCache[item._key] = item;
             this._changeCount += 1;
-            if (this._changeCount === 1)
-                this.raisePropertyChanged(PROP_NAME.isHasChanges);
+            if (this._changeCount === 1) {
+                this.objEvents.raiseProp("isHasChanges");
+            }
         }
     }
     protected _removeFromChanged(key: string): void {
-        if (!key)
+        if (!key) {
             return;
+        }
         if (!!this._changeCache[key]) {
             delete this._changeCache[key];
             this._changeCount -= 1;
-            if (this._changeCount === 0)
-                this.raisePropertyChanged(PROP_NAME.isHasChanges);
+            if (this._changeCount === 0) {
+                this.objEvents.raiseProp("isHasChanges");
+            }
         }
     }
-    //occurs when item Status Changed (not used in simple collections)
+    protected _setQuery(query: DataQuery<TItem, TObj>): void {
+        this._query = query;
+    }
+    // occurs when item Status Changed (not used in simple collections)
     protected _onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS): void {
         super._onItemStatusChanged(item, oldStatus);
         if (item._aspect.isDeleted && this.isSubmitOnDelete) {
-            this.dbContext.submitChanges();
+            this.dbContext.submitChanges().catch((err) => {
+                utils.queue.enque(() => {
+                    this.dbContext.rejectChanges();
+                });
+            });
         }
     }
     protected _onRemoved(item: TItem, pos: number): void {
         this._removeFromChanged(item._key);
         super._onRemoved(item, pos);
     }
+    // reports ALL the values returned from the server 
+    // it is not not triggered when loaded from the Data Cache
     protected _onLoaded(items: TItem[]) {
-        this.raiseEvent(DBSET_EVENTS.loaded, { items: items });
+        // canRaise is checked because creating vals is an expensive operation
+        if (this.objEvents.canRaise(DBSET_EVENTS.loaded)) {
+            const vals = items.map((item) => <TObj>item._aspect.vals);
+            this.objEvents.raise(DBSET_EVENTS.loaded, { vals: vals });
+        }
     }
     protected _destroyQuery(): void {
-        let query = this._query;
+        const query = this._query;
         this._query = null;
         if (!!query) {
-            query.destroy();
+            query.dispose();
         }
-    }
-    protected _getPKFields(): IFieldInfo[] {
-        const fieldInfos = this.getFieldInfos(), pkFlds: IFieldInfo[] = [];
-        for (let i = 0, len = fieldInfos.length; i < len; i += 1) {
-            let fld = fieldInfos[i];
-            if (fld.isPrimaryKey > 0) {
-                pkFlds.push(fld);
-            }
-        }
-
-       return pkFlds.sort((f1, f2) => {
-            return f1.isPrimaryKey - f2.isPrimaryKey;
-        });
     }
     protected _getNames(): IFieldName[] {
-        let self = this, fieldInfos = this.getFieldInfos(), names: IFieldName[] = [];
-        fn_traverseFields(fieldInfos, (fld, fullName, arr) => {
+        const fieldInfos = this.getFieldInfos(), names: IFieldName[] = [];
+        walkFields(fieldInfos, (fld, fullName, arr) => {
             if (fld.fieldType === FIELD_TYPE.Object) {
-                let res: any[] = [];
+                const res: any[] = [];
                 arr.push({
                     n: fld.fieldName, p: res
                 });
                 return res;
-            }
-            else {
-                let isOK = fld.fieldType === FIELD_TYPE.None || fld.fieldType === FIELD_TYPE.RowTimeStamp || fld.fieldType === FIELD_TYPE.ServerCalculated;
+            } else {
+                const isOK = fld.fieldType === FIELD_TYPE.None || fld.fieldType === FIELD_TYPE.RowTimeStamp || fld.fieldType === FIELD_TYPE.ServerCalculated;
                 if (isOK) {
                     arr.push({
                         n: fld.fieldName, p: null
@@ -735,114 +807,85 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         }, names);
         return names;
     }
-    protected createEntity(row: IRowData, fieldNames: IFieldName[]) {
-        let aspect = new EntityAspect<TItem, TDbContext>(this, row, fieldNames);
-        let item = new this.entityType(aspect);
-        aspect.item = item;
-        if (!row)
-            aspect.key = this._getNewKey(item);
-        return item;
+    // override
+    getFieldMap(): IIndexer<IFieldInfo> {
+        return this._fieldMap;
     }
-    _getInternal(): IInternalDbSetMethods<TItem> {
-        return <IInternalDbSetMethods<TItem>>this._internal;
+    // override
+    getFieldInfos(): IFieldInfo[] {
+        return this._fieldInfos;
     }
-    addOnLoaded(fn: TEventHandler<DbSet<TItem, TDbContext>, IDbSetLoadedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority) {
-        this._addHandler(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
+    createEntityFromObj(obj: TObj, key?: string): TItem {
+        const isNew = !obj, vals: any = objToVals(this.getFieldInfos(), obj),
+            _key = isNew ? this._getNewKey() : (!key ? this._getKeyValue(vals) : key);
+        const aspect = new EntityAspect<TItem, TObj, TDbContext>(this, vals, _key, isNew);
+        return aspect.item;
     }
-    removeOnLoaded(nmspace?: string) {
-        this._removeHandler(DBSET_EVENTS.loaded, nmspace);
+    createEntityFromData(row: IRowData, fieldNames: IFieldName[]): TItem {
+        const vals: any = initVals(this.getFieldInfos(), {}), isNew = !row;
+        if (!!row) {
+            this._applyFieldVals(vals, "", row.v, fieldNames);
+        }
+        const aspect = new EntityAspect<TItem, TObj, TDbContext>(this, vals, isNew ? this._getNewKey() : row.k, isNew);
+        return aspect.item;
     }
-    waitForNotBusy(callback: () => void, groupName: string) {
-        this._waitQueue.enQueue({
-            prop: PROP_NAME.isBusy,
-            groupName: groupName,
-            predicate: function (val: any) {
-                return !val;
-            },
-            action: callback,
-            actionArgs: [],
-            lastWins: !!groupName
+    _getInternal(): IInternalDbSetMethods<TItem, TObj> {
+        return <IInternalDbSetMethods<TItem, TObj>>super._getInternal();
+    }
+    refreshData(data: {
+        names: IFieldName[];
+        rows: IRowData[];
+    }): void {
+        data.rows.forEach((row) => {
+            // row.key already a string value generated on server (no need to convert to string)
+            const key = row.k;
+            if (!key) {
+                throw new Error(ERRS.ERR_KEY_IS_EMPTY);
+            }
+
+            let item = this.getItemByKey(key);
+            if (!!item) {
+                this._refreshValues("", item, row.v, data.names, REFRESH_MODE.RefreshCurrent);
+            }
         });
     }
-    getFieldInfo(fieldName: string): IFieldInfo {
-        let assoc: IAssociationInfo, parentDB: DbSet<IEntityItem, DbContext>, parts = fieldName.split(".");
-        let fld = this._fieldMap[parts[0]];
-        if (parts.length === 1) {
-            return fld;
-        }
-
-        if (fld.fieldType === FIELD_TYPE.Object) {
-            for (let i = 1; i < parts.length; i += 1) {
-                fld = fn_getPropertyByName(parts[i], fld.nested);
-            }
-            return fld;
-        }
-        else if (fld.fieldType === FIELD_TYPE.Navigation) {
-            //for example Customer.Name
-            assoc = this._childAssocMap[fld.fieldName];
-            if (!!assoc) {
-                parentDB = this.dbContext.getDbSet(assoc.parentDbSetName);
-                return parentDB.getFieldInfo(parts.slice(1).join("."));
-            }
-        }
-
-        throw new Error(strUtils.format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
-    }
-    sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
-        const self = this, query = self.query;
-        if (!checks.isNt(query)) {
-            query.clearSort();
-            for (let i = 0; i < fieldNames.length; i += 1) {
-                if (i === 0)
-                    query.orderBy(fieldNames[i], sortOrder);
-                else
-                    query.thenBy(fieldNames[i], sortOrder);
-            }
-
-            query.isClearPrevData = true;
-            query.pageIndex = 0;
-            return self.dbContext._getInternal().load(query, COLL_CHANGE_REASON.Sorting);
-        }
-        else {
-            return super.sort(fieldNames, sortOrder);
-        }
-    }
+    // fill items from row data (in wire format)
     fillData(data: {
         names: IFieldName[];
         rows: IRowData[];
-    }, isAppendData?: boolean): IQueryResult<TItem> {
+    }, isAppend?: boolean): IQueryResult<TItem> {
         const self = this, reason = COLL_CHANGE_REASON.None;
-        let newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [], query = this.query;
-        const isClearAll = !isAppendData;
-        if (isClearAll)
+        this._destroyQuery();
+        const isClearAll = !isAppend;
+        if (isClearAll) {
             self._clear(reason, COLL_CHANGE_OPER.Fill);
+        }
 
-        const fetchedItems = data.rows.map(function (row) {
-            //row.key already a string value generated on server (no need to convert to string)
-            let key = row.k;
-            if (!key)
+        const fetchedItems = data.rows.map((row) => {
+            // row.key already a string value generated on server (no need to convert to string)
+            const key = row.k;
+            if (!key) {
                 throw new Error(ERRS.ERR_KEY_IS_EMPTY);
-
-            let item = self._itemsByKey[key];
-            if (!item) {
-                item = self.createEntity(row, data.names);
             }
-            else {
+
+            let item = self.getItemByKey(key);
+            if (!item) {
+                item = self.createEntityFromData(row, data.names);
+            } else {
                 self._refreshValues("", item, row.v, data.names, REFRESH_MODE.RefreshCurrent);
             }
             return item;
         });
 
-        fetchedItems.forEach(function (item) {
-            let oldItem = self._itemsByKey[item._key];
+        const newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
+        fetchedItems.forEach((item) => {
+            const oldItem = self.getItemByKey(item._key);
             if (!oldItem) {
-                self._items.push(item);
-                positions.push(self._items.length - 1);
-                self._itemsByKey[item._key] = item;
+                positions.push(self._appendItem(item));
                 newItems.push(item);
                 items.push(item);
-            }
-            else {
+                item._aspect._setIsAttached(true);
+            } else {
                 items.push(oldItem);
             }
         });
@@ -867,136 +910,186 @@ export class DbSet<TItem extends IEntityItem, TDbContext extends DbContext> exte
         this._afterFill(result, isClearAll);
         return result;
     }
-    //manually fill items for an array of objects
-    fillItems<TObj>(data: TObj[], isAppend?: boolean): IQueryResult<TItem> {
-        const self = this;
-        const fieldInfos = this.getFieldInfos(), pkFlds = self._getPKFields();
-        const fn_ProcessField = (data: IIndexer<any>, keys: string[], fld: IFieldInfo, name: string, arr: any[]) => {
-            const isOK = fld.fieldType === FIELD_TYPE.None || fld.fieldType === FIELD_TYPE.RowTimeStamp || fld.fieldType === FIELD_TYPE.ServerCalculated;
-            if (!isOK) {
-                return;
-            }
+    // manually fill items for an array of objects
+    fillItems(data: TObj[], isAppend?: boolean): IQueryResult<TItem> {
+        const self = this, reason = COLL_CHANGE_REASON.None;
+        this._destroyQuery();
+        const isClearAll = !isAppend;
+        if (isClearAll) {
+            self._clear(reason, COLL_CHANGE_OPER.Fill);
+        }
 
-            try {
-                let val = coreUtils.getValue(data, name);
-                let strval = self._getStrValue(val, fld);
+        const fetchedItems = data.map((obj) => {
+            return self.createEntityFromObj(obj);
+        });
 
-                if (fld.isPrimaryKey > 0) {
-                    let keyIndex = pkFlds.indexOf(fld);
-                    keys[keyIndex] = strval;
-                }
-                arr.push(strval);
+        const newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
+        fetchedItems.forEach((item) => {
+            const oldItem = self.getItemByKey(item._key);
+            if (!oldItem) {
+                positions.push(self._appendItem(item));
+                newItems.push(item);
+                items.push(item);
+                item._aspect._setIsAttached(true);
+            } else {
+                items.push(oldItem);
             }
-            catch (err) {
-                self.handleError(err, self);
-                ERROR.throwDummy(err);
-            }
+        });
+
+        if (newItems.length > 0) {
+            this._onCountChanged();
+        }
+
+        this.totalCount = fetchedItems.length;
+
+        const result: IQueryResult<TItem> = {
+            newItems: {
+                items: newItems,
+                pos: positions
+            },
+            fetchedItems: fetchedItems,
+            items: items,
+            reason: COLL_CHANGE_REASON.None,
+            outOfBandData: null
         };
 
-        try {
-            //obtain field names
-            const names = self._getNames();
-            //obtain rows
-            const rows = data.map(function (dataItem: IIndexer<any>) {
-                let row: IRowData = { k: null, v: [] };
-                let keys: string[] = new Array<string>(pkFlds.length);
-
-                fn_traverseFields(fieldInfos, (fld, fullName, arr) => {
-                    if (fld.fieldType === FIELD_TYPE.Object) {
-                        let res: any[] = [];
-                        arr.push(res);
-                        return res;
-                    }
-                    else {
-                        fn_ProcessField(dataItem, keys, fld, fullName, arr);
-                        return arr;
-                    }
-                }, row.v);
-
-                row.k = keys.join(";");
-                return row;
-            });
-
-            self._destroyQuery();
-            return self.fillData({ names: names, rows: rows }, !!isAppend);
+        this._afterFill(result, isClearAll);
+        return result;
+    }
+    addOnLoaded(fn: TEventHandler<DbSet<TItem, TObj, TDbContext>, IDbSetLoadedArgs<TObj>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void {
+        this.objEvents.on(DBSET_EVENTS.loaded, fn, nmspace, context, priority);
+    }
+    offOnLoaded(nmspace?: string): void {
+        this.objEvents.off(DBSET_EVENTS.loaded, nmspace);
+    }
+    waitForNotBusy(callback: () => void, groupName: string): void {
+        this._waitForProp("isBusy", callback, groupName);
+    }
+    getFieldInfo(fieldName: string): IFieldInfo {
+        const parts = fieldName.split(".");
+        let fld = this._fieldMap[parts[0]];
+        if (!fld) {
+            throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
         }
-        catch (err) {
-            self.handleError(err, self);
-            ERROR.throwDummy(err);
+        if (parts.length === 1) {
+            return fld;
+        }
+        if (fld.fieldType === FIELD_TYPE.Object) {
+            for (let i = 1; i < parts.length; i += 1) {
+                fld = getObjectField(parts[i], fld.nested);
+            }
+            return fld;
+        } else if (fld.fieldType === FIELD_TYPE.Navigation) {
+            // for example Customer.Name
+            const assoc = this._childAssocMap[fld.fieldName];
+            if (!!assoc) {
+                const parentDB = this.dbContext.getDbSet(assoc.parentDbSetName);
+                return parentDB.getFieldInfo(parts.slice(1).join("."));
+            }
+        }
+
+        throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, this.dbSetName, fieldName));
+    }
+    sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
+        const self = this, query = self.query;
+        if (!isNt(query)) {
+            query.clearSort();
+            for (let i = 0; i < fieldNames.length; i += 1) {
+                switch (i) {
+                    case 0:
+                       query.orderBy(fieldNames[i], sortOrder);
+                    break;
+                    default:
+                       query.thenBy(fieldNames[i], sortOrder);
+                    break;
+                }
+            }
+
+            query.isClearPrevData = true;
+            query.pageIndex = 0;
+            return self.dbContext._getInternal().load(query, COLL_CHANGE_REASON.Sorting);
+        } else {
+            return super.sort(fieldNames, sortOrder);
         }
     }
-    acceptChanges() {
-        let csh = this._changeCache;
-        coreUtils.forEachProp(csh, function (key) {
-            let item = csh[key];
+    acceptChanges(): void {
+        if (!this.isHasChanges) {
+            return;
+        }
+        const csh = this._changeCache;
+        forEach(csh, (key) => {
+            const item = csh[key];
             item._aspect.acceptChanges();
         });
-        this._changeCount = 0;
+        if (this.isHasChanges) {
+            // should never happen
+            throw new Error("Invalid Operation: the changes are left after the acceptChanges operation");
+        }
     }
-    rejectChanges() {
-        let csh = this._changeCache;
-        coreUtils.forEachProp(csh, function (key) {
-            let item = csh[key];
+    // override
+    rejectChanges(): void {
+        if (!this.isHasChanges) {
+            return;
+        }
+        const csh = this._changeCache;
+        forEach(csh, (key) => {
+            const item = csh[key];
             item._aspect.rejectChanges();
         });
+        if (this.isHasChanges) {
+            // should never happen
+            throw new Error("Invalid Operation: the changes are left after the rejectChanges operation");
+        }
     }
-    deleteOnSubmit(item: TItem) {
+    deleteOnSubmit(item: TItem): void {
         item._aspect.deleteOnSubmit();
     }
-    clear() {
+    clear(): void {
         this._destroyQuery();
         super.clear();
     }
-    createQuery(name: string): DataQuery<TItem> {
-        let queryInfo = this.dbContext._getInternal().getQueryInfo(name);
+    createQuery(name: string): DataQuery<TItem, TObj> {
+        const queryInfo = this.dbContext._getInternal().getQueryInfo(name);
         if (!queryInfo) {
-            throw new Error(strUtils.format(ERRS.ERR_QUERY_NAME_NOTFOUND, name));
+            throw new Error(format(ERRS.ERR_QUERY_NAME_NOTFOUND, name));
         }
-        return new DataQuery<TItem>(this, queryInfo);
+        return new DataQuery<TItem, TObj>(this, queryInfo);
     }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        this._pageDebounce.destroy();
-        this._pageDebounce = null;
-        this.clear();
-        let dbContext = this.dbContext;
-        this._dbContext = null;
-        if (!!dbContext) {
-            dbContext.removeNSHandlers(this.dbSetName);
-        }
-        this._navfldMap = {};
-        this._calcfldMap = {};
-        super.destroy();
-    }
-    toString() {
+    toString(): string {
         return this.dbSetName;
     }
-    get items() { return this._items; }
     get dbContext(): TDbContext {
         return this._dbContext;
     }
-    get dbSetName() { return this._dbSetName; }
-    get entityType() { return this._entityType; }
-    get query() { return this._query; }
-    get isHasChanges(): boolean { return this._changeCount > 0; }
+    get dbSetName(): string {
+        return this._dbSetName;
+    }
+    get query(): DataQuery<TItem, TObj> {
+        return this._query;
+    }
+    get isHasChanges(): boolean {
+        return this._changeCount > 0;
+    }
     get cacheSize(): number {
-        let query = this._query, dataCache: DataCache;
+        const query = this._query;
         if (!!query && query.isCacheValid) {
-            dataCache = query._getInternal().getCache();
+            const dataCache = query._getInternal().getCache();
             return dataCache.cacheSize;
         }
         return 0;
     }
-    get isSubmitOnDelete(): boolean { return this._isSubmitOnDelete; }
+    get isSubmitOnDelete(): boolean {
+        return this._isSubmitOnDelete;
+    }
     set isSubmitOnDelete(v: boolean) {
         if (this._isSubmitOnDelete !== v) {
             this._isSubmitOnDelete = !!v;
-            this.raisePropertyChanged(PROP_NAME.isSubmitOnDelete);
+            this.objEvents.raiseProp("isSubmitOnDelete");
         }
     }
-    get isBusy() { return this.isLoading || this.dbContext.isSubmiting; }
+    get isBusy(): boolean {
+        return this.isLoading || this.dbContext.isSubmiting;
+    }
 }
 
-export type TDbSet = DbSet<IEntityItem, DbContext>;
+export type TDbSet = DbSet;

@@ -1,21 +1,19 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IViewOptions } from "jriapp/int";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { bootstrap } from "jriapp/bootstrap";
-import { BaseElView, PROP_NAME } from "./baseview";
+import { BaseElView } from "./baseview";
 
-export class ImgElView extends BaseElView {
-    constructor(options: IViewOptions) {
-        super(options);
-    }
-    toString() {
+export class ImgElView extends BaseElView<HTMLImageElement> {
+    toString(): string {
         return "ImgElView";
     }
-    get src(): string { return (<HTMLImageElement>this.el).src; }
+    get src(): string {
+        return this.el.src;
+    }
     set src(v: string) {
         const x = this.src;
         if (x !== v) {
-            (<HTMLImageElement>this.el).src = v;
-            this.raisePropertyChanged(PROP_NAME.src);
+            this.el.src = v;
+            this.objEvents.raiseProp("src");
         }
     }
 }

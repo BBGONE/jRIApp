@@ -1,82 +1,80 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-    Utils,
-} from "jriapp_shared";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DomUtils } from "jriapp/utils/dom";
-import { BINDING_MODE } from "jriapp/const";
-import { IElView, IConstructorContentOptions } from "jriapp/int";
-import { LifeTimeScope } from "jriapp/utils/lifetime";
-import { CheckBoxElView } from "../checkbox";
+import { IConstructorContentOptions } from "jriapp/int";
+import { cssStyles } from "../int";
+import { BasicContent, IContentView, getBindingOption, getView } from "./basic";
 
-import { css } from "./int";
-import { BasicContent } from "./basic";
 
 const dom = DomUtils, doc = dom.document;
 
 export class BoolContent extends BasicContent {
+    private _label: HTMLElement;
+
     constructor(options: IConstructorContentOptions) {
         super(options);
-        this._target = this.createTargetElement();
-        const bindingInfo = this._options.bindingInfo;
-        if (!!bindingInfo) {
-            this.updateCss();
-            this._lfScope = new LifeTimeScope();
-            let options = this.getBindingOption(bindingInfo, this._target, this._dataContext, "checked");
-            options.mode = BINDING_MODE.TwoWay;
-            this._lfScope.addObj(this.app.bind(options));
+        this._label = null;
+    }
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        super.dispose();
+        // do it at the end!
+        if (!!this._label) {
+            dom.removeNode(this._label);
+            this._label = null;
         }
     }
-    //override
-    protected cleanUp(): void {
-        //noop
-    }
-    protected createCheckBoxView() {
-        let chk = document.createElement("input");
+    protected createCheckBoxView(): IContentView {
+        const finf = this.getFieldInfo(), isNullable = !finf ? false: finf.isNullable;
+        
+        const chk = document.createElement("input");
         chk.setAttribute("type", "checkbox");
-        dom.addClass([chk], css.checkbox);
-        let chbxView = new CheckBoxElView({ el: chk });
-        return chbxView;
-    }
-    protected createTargetElement(): IElView {
-        let tgt = this._target;
-        if (!tgt) {
-            tgt = this.createCheckBoxView();
-            this._el = tgt.el;
+        dom.addClass([chk], cssStyles.checkbox);
+        const view = isNullable ? getView(chk, "checkbox3", {}) : getView(chk, "checkbox", {});
+        if (!!view) {
+            this.lfScope.addObj(view);
         }
-        let label = doc.createElement("label");
-        dom.addClass([label], css.checkbox);
-        label.appendChild(this._el);
+        const label = doc.createElement("label");
+        dom.addClass([label], cssStyles.checkbox);
+        label.appendChild(view.el);
         label.appendChild(doc.createElement("span"));
-        this._parentEl.appendChild(label);
-        return tgt;
+        this._label = label;
+
+        const options = getBindingOption(true, this.options.fieldName, view, this.dataContext, "checked");
+        this.lfScope.addObj(this.app.bind(options));
+        return view;
     }
+    // override
+    protected createdEditingView(): IContentView {
+        return this.createCheckBoxView();
+    }
+    // overrride
+    protected createdReadingView(): IContentView {
+        return this.createCheckBoxView();
+    }
+    // override
+    protected beforeCreateView(): boolean {
+        const res = !this.view && !!this.options.fieldName;
+        if (!!this.view) {
+            this.updateCss();
+        }
+        return res;
+    }
+    // override
+    protected afterCreateView(): void {
+        this.parentEl.appendChild(this._label);
+    }
+    // override
     protected updateCss() {
         super.updateCss();
-        let el = <HTMLInputElement>this._el;
+        const el = <HTMLInputElement>this.el;
         if (this.isEditing && this.getIsCanBeEdited()) {
              el.disabled = false;
-        }
-        else {
+        } else {
              el.disabled = true;
         }
-    }
-    render() {
-        this.cleanUp();
-        this.updateCss();
-    }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        if (!!this._lfScope) {
-            this._lfScope.destroy();
-            this._lfScope = null;
-        }
-        if (!!this._target) {
-            this._target.destroy();
-            this._target = null;
-        }
-        super.destroy();
     }
     toString() {
         return "BoolContent";

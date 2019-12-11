@@ -1,55 +1,77 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils } from "jriapp_shared";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DomUtils } from "jriapp/utils/dom";
-import { IViewOptions } from "jriapp/int";
-import { bootstrap } from "jriapp/bootstrap";
-import { css, PROP_NAME, IEventChangedArgs, EVENT_CHANGE_TYPE } from "./baseview";
-import { ICommand } from "jriapp/mvvm";
-import { CommandElView } from "./command";
+import { SubscribeFlags } from "jriapp/consts";
+import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
+import { cssStyles } from "./int";
+import { CommandElView, ICommandViewOptions } from "./command";
 
-const dom = DomUtils, boot = bootstrap;
+const dom = DomUtils, boot = bootstrap, subscribeMap = subscribeWeakMap;
 
-export interface IAncorOptions extends IViewOptions {
+export interface IAncorOptions extends ICommandViewOptions {
     imageSrc?: string;
     glyph?: string;
 }
 
-export class AnchorElView extends CommandElView {
+export class AnchorElView extends CommandElView<HTMLAnchorElement> {
     private _imageSrc: string;
     private _glyph: string;
     private _image: HTMLImageElement;
     private _span: HTMLSpanElement;
 
-    constructor(options: IAncorOptions) {
-        super(options);
+    constructor(el: HTMLAnchorElement, options: IAncorOptions) {
+        super(el, options);
         const self = this;
         this._imageSrc = null;
         this._image = null;
         this._span = null;
         this._glyph = null;
 
-        if (!!options.imageSrc)
+        if (!!options.imageSrc) {
             this.imageSrc = options.imageSrc;
+        }
 
-        if (!!options.glyph)
+        if (!!options.glyph) {
             this.glyph = options.glyph;
+        }
 
-        dom.addClass([this.el], css.commandLink);
-        dom.events.on(this.el, "click", function (e) {
-            self._onClick(e);
-        }, this.uniqueID);
+        dom.addClass([el], cssStyles.commandLink);
+        if (this.isDelegationOn) {
+            subscribeMap.set(el, this);
+            this._setIsSubcribed(SubscribeFlags.click);
+        } else {
+            dom.events.on(el, "click", (e) => {
+                self.handle_click(e);
+            }, this.uniqueID);
+        }
     }
-    protected _onClick(e: Event) {
-        if (this.stopPropagation)
-            e.stopPropagation();
-        if (this.preventDefault)
-            e.preventDefault();
-        this.invokeCommand(null, true);
-    }
-    protected _updateImage(src: string) {
-        let el = this.el, self = this;
-        if (this._imageSrc === src)
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
+        }
+        this.setDisposing();
+        dom.removeClass([this.el], cssStyles.commandLink);
+        this.imageSrc = null;
+        this.glyph = null;
+        super.dispose();
+    }
+    handle_click(e: Event): boolean {
+        if (this.stopPropagation) {
+            e.stopPropagation();
+        }
+        if (this.preventDefault) {
+            e.preventDefault();
+        }
+        this.onClick();
+        return this.stopPropagation;
+    }
+    protected onClick(): void {
+        this.invokeCommand();
+    }
+    protected _updateImage(src: string): void {
+        const el = this.el;
+        if (this._imageSrc === src) {
+            return;
+        }
         this._imageSrc = src;
 
         if (!!this._image && !src) {
@@ -68,12 +90,13 @@ export class AnchorElView extends CommandElView {
             this._image.src = src;
         }
     }
-    protected _updateGlyph(glyph: string) {
-        let el = this.el;
+    protected _updateGlyph(glyph: string): void {
+        const el = this.el;
 
-        if (this._glyph === glyph)
+        if (this._glyph === glyph) {
             return;
-        let oldGlyph = this._glyph;
+        }
+        const oldGlyph = this._glyph;
         this._glyph = glyph;
 
         if (!!oldGlyph && !glyph) {
@@ -87,72 +110,63 @@ export class AnchorElView extends CommandElView {
                 this._span = dom.document.createElement("span");
                 el.appendChild(this._span);
             }
-        
+
             if (!!oldGlyph) {
                 dom.removeClass([this._span], oldGlyph);
             }
             dom.addClass([this._span], glyph);
         }
     }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        dom.removeClass([this.el], css.commandLink);
-        this.imageSrc = null;
-        this.glyph = null;
-        super.destroy();
-    }
-    toString() {
+    toString(): string {
         return "AnchorElView";
     }
-    get imageSrc() { return this._imageSrc; }
-    set imageSrc(v) {
-        let x = this._imageSrc;
+    get imageSrc(): string { return this._imageSrc; }
+    set imageSrc(v: string) {
+        const x = this._imageSrc;
         if (x !== v) {
             this._updateImage(v);
-            this.raisePropertyChanged(PROP_NAME.imageSrc);
+            this.objEvents.raiseProp("imageSrc");
         }
     }
-    get glyph() { return this._glyph; }
-    set glyph(v) {
-        let x = this._glyph;
+    get glyph(): string { return this._glyph; }
+    set glyph(v: string) {
+        const x = this._glyph;
         if (x !== v) {
             this._updateGlyph(v);
-            this.raisePropertyChanged(PROP_NAME.glyph);
+            this.objEvents.raiseProp("glyph");
         }
     }
-    get html() {
+    get html(): string {
         return this.el.innerHTML;
     }
-    set html(v) {
-        let x = this.el.innerHTML;
+    set html(v: string) {
+        const x = this.el.innerHTML;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             this.el.innerHTML = v;
-            this.raisePropertyChanged(PROP_NAME.html);
+            this.objEvents.raiseProp("html");
         }
     }
-    get text() {
+    get text(): string {
         return this.el.textContent;
     }
-    set text(v) {
-        let x = this.el.textContent;
+    set text(v: string) {
+        const x = this.el.textContent;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             this.el.textContent = v;
-            this.raisePropertyChanged(PROP_NAME.text);
+            this.objEvents.raiseProp("text");
         }
     }
     get href(): string {
-        return (<HTMLAnchorElement>this.el).href;
+        return this.el.href;
     }
-    set href(v) {
-        let x = this.href;
+    set href(v: string) {
+        const x = this.href;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            (<HTMLAnchorElement>this.el).href = v;
-            this.raisePropertyChanged(PROP_NAME.href);
+            this.el.href = v;
+            this.objEvents.raiseProp("href");
         }
     }
 }

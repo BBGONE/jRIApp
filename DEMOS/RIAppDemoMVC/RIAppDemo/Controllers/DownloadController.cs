@@ -1,36 +1,41 @@
-﻿using System;
+﻿using RIAppDemo.BLL.Utils;
+using System;
 using System.IO;
 using System.Net.Mime;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.SessionState;
-using RIAppDemo.BLL.DataServices;
 
 namespace RIAppDemo.Controllers
 {
     [SessionState(SessionStateBehavior.Disabled)]
     public class DownloadController : Controller
     {
+        readonly IThumbnailService _thumbnailService;
+
+        public DownloadController(IThumbnailService thumbnailService)
+        {
+            _thumbnailService = thumbnailService;
+        }
+
+
         public ActionResult Index()
         {
             return new EmptyResult();
         }
 
-        public ActionResult ThumbnailDownload(int id)
+        public async Task<ActionResult> ThumbnailDownload(int id)
         {
             try
             {
-                var svc = ThumbnailServiceFactory.Create(User);
-                using (svc)
-                {
-                    var stream = new MemoryStream();
-                    var fileName = svc.GetThumbnail(id, stream);
-                    if (string.IsNullOrEmpty(fileName))
-                        return new HttpStatusCodeResult(400);
-                    stream.Position = 0;
-                    var res = new FileStreamResult(stream, MediaTypeNames.Image.Jpeg);
-                    res.FileDownloadName = fileName;
-                    return res;
-                }
+                var stream = new MemoryStream();
+                var fileName = await _thumbnailService.GetThumbnail(id, stream);
+                if (string.IsNullOrEmpty(fileName))
+                    return new HttpStatusCodeResult(400);
+                stream.Position = 0;
+                var res = new FileStreamResult(stream, MediaTypeNames.Image.Jpeg);
+                res.FileDownloadName = fileName;
+                return res;
             }
             catch (Exception)
             {

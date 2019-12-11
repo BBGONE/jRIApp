@@ -6,11 +6,16 @@ using System.Data.SqlClient;
 
 namespace RIAppDemo.BLL
 {
-    public static class DBConnectionFactory
+    public class DBConnectionFactory
     {
         public const string CONNECTION_STRING_DEFAULT = "DBConnectionStringADW";
 
-        private static string GetConnectionString(string name)
+        public DBConnectionFactory()
+        {
+            
+        }
+
+        private string GetConnectionString(string name)
         {
             var connstrings = ConfigurationManager.ConnectionStrings[name];
             if (connstrings == null)
@@ -20,14 +25,14 @@ namespace RIAppDemo.BLL
             return connstrings.ConnectionString;
         }
 
-        public static string GetRIAppDemoConnectionString()
+        public string GetRIAppDemoConnectionString()
         {
             var connStr = GetConnectionString(CONNECTION_STRING_DEFAULT);
             var scsb = new SqlConnectionStringBuilder(connStr);
             return scsb.ToString();
         }
 
-        public static DbConnection GetRIAppDemoConnection()
+        public DbConnection GetRIAppDemoConnection()
         {
             var connStr = GetRIAppDemoConnectionString();
             var cn = SqlClientFactory.Instance.CreateConnection();

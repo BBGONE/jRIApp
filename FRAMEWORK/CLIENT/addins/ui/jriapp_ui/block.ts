@@ -1,33 +1,31 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { $ } from "jriapp/utils/jquery";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { bootstrap } from "jriapp/bootstrap";
-import { BaseElView, css, PROP_NAME } from "./baseview";
 import { SpanElView } from "./span";
 
 const boot = bootstrap;
 
 export class BlockElView extends SpanElView {
-    toString() {
+    toString(): string {
         return "BlockElView";
     }
-    get width() {
+    get width(): number {
         return this.el.offsetWidth;
     }
-    set width(v) {
-        let x = this.width;
+    set width(v: number) {
+        const x = this.width;
         if (v !== x) {
             this.el.style.width = v + "px";
-            this.raisePropertyChanged(PROP_NAME.width);
+            this.objEvents.raiseProp("width");
         }
     }
-    get height() {
+    get height(): number {
         return this.el.offsetHeight;
     }
-    set height(v) {
-        let x = this.height;
+    set height(v: number) {
+        const x = this.height;
         if (v !== x) {
             this.el.style.height = v + "px";
-            this.raisePropertyChanged(PROP_NAME.height);
+            this.objEvents.raiseProp("height");
         }
     }
 }

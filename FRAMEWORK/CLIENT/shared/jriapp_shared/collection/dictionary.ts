@@ -1,61 +1,67 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER } from "./const";
 import { Utils } from "../utils/utils";
 import { ERRS } from "../lang";
-import {
-    COLL_CHANGE_REASON, COLL_CHANGE_TYPE, COLL_CHANGE_OPER
-} from "./const";
+import { IIndexer } from "../int";
 import { IPropInfo, ICollectionItem } from "./int";
+import { CollUtils } from "./utils";
 import { BaseCollection } from "./base";
-import { BaseList, IListItem, IListItemConstructor } from "./list";
+import { BaseList, IListItem, ListItemAspect } from "./list";
 
-const utils = Utils, strUtils = utils.str, checks = utils.check, sys = utils.sys;
+const utils = Utils, { format } = utils.str, { isNt } = utils.check, sys = utils.sys, collUtils = CollUtils;
 
 sys.getItemByProp = (obj: any, prop: string) => {
     if (obj instanceof BaseDictionary) {
         return (<BaseDictionary<IListItem, any>>obj).getItemByKey(prop);
-    }
-    else if (obj instanceof BaseCollection) {
-        (<BaseCollection<ICollectionItem>>obj).getItemByPos(parseInt(prop, 10));
-    }
-    else
+    } else if (obj instanceof BaseCollection) {
+        return (<BaseCollection<ICollectionItem>>obj).getItemByPos(parseInt(prop, 10));
+    } else {
         return null;
+    }
 };
 
 
-export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TItem, TObj>{
+export abstract class BaseDictionary<TItem extends IListItem, TObj extends IIndexer<any>> extends BaseList<TItem, TObj> {
     private _keyName: string;
-    constructor(itemType: IListItemConstructor<TItem, TObj>, keyName: string, props: IPropInfo[]) {
-        if (!keyName)
-            throw new Error(strUtils.format(ERRS.ERR_PARAM_INVALID, "keyName", keyName));
-        super(itemType, props);
+
+    constructor(keyName: string, props: IPropInfo[]) {
+        if (!keyName) {
+            throw new Error(format(ERRS.ERR_PARAM_INVALID, "keyName", keyName));
+        }
+        super(props);
         this._keyName = keyName;
-        let keyFld = this.getFieldInfo(keyName);
-        if (!keyFld)
-            throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_NOTFOUND, keyName));
+        const keyFld = this.getFieldInfo(keyName);
+        if (!keyFld) {
+            throw new Error(format(ERRS.ERR_DICTKEY_IS_NOTFOUND, keyName));
+        }
         keyFld.isPrimaryKey = 1;
     }
-    protected _getNewKey(item: TItem) {
-        if (!item || item._aspect.isNew) {
-            return super._getNewKey(item);
+    // override
+    protected createItem(obj?: TObj): TItem {
+        const isNew = !obj, vals: any = isNew ? collUtils.initVals(this.getFieldInfos(), {}) : obj;
+        let key: string;
+        if (isNew) {
+            key = this._getNewKey();
+        } else {
+            if (isNt(vals[this._keyName])) {
+                throw new Error(format(ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
+            }
+            key = "" + vals[this._keyName];
         }
-        let key = (<any>item)[this._keyName];
-        if (checks.isNt(key))
-            throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
-        return "" + key;
+        const aspect = new ListItemAspect<TItem, TObj>(this, vals, key, isNew);
+        return aspect.item;
     }
-    //override
-    protected _onItemAdded(item: TItem) {
+    // override
+    protected _onItemAdded(item: TItem): void {
         super._onItemAdded(item);
-        let key = (<any>item)[this._keyName], self = this;
-        if (checks.isNt(key))
-            throw new Error(strUtils.format(ERRS.ERR_DICTKEY_IS_EMPTY, this.keyName));
-
-        let oldkey = item._key, newkey = "" + key;
+        const key = (<any>item)[this._keyName], self = this;
+        if (isNt(key)) {
+            throw new Error(format(ERRS.ERR_DICTKEY_IS_EMPTY, this._keyName));
+        }
+        const oldkey = item._key, newkey = "" + key;
         if (oldkey !== newkey) {
-            delete self._itemsByKey[oldkey];
-            item._aspect.key = newkey;
-            self._itemsByKey[item._key] = item;
-            self._onCollectionChanged({
+            self._remapItem(oldkey, newkey, item);
+            this._onCollectionChanged({
                 changeType: COLL_CHANGE_TYPE.Remap,
                 reason: COLL_CHANGE_REASON.None,
                 oper: COLL_CHANGE_OPER.Commit,
@@ -64,18 +70,18 @@ export class BaseDictionary<TItem extends IListItem, TObj> extends BaseList<TIte
                 new_key: newkey
             });
         }
-        this.raisePropertyChanged("[" + item._key + "]");
+        this.objEvents.raiseProp(<any>`[${item._key}]`);
     }
-    //override
-    protected _onRemoved(item: TItem, pos: number) {
-        let key = (<any>item)[this._keyName];
+    // override
+    protected _onRemoved(item: TItem, pos: number): void {
+        const key = (<any>item)[this._keyName];
         super._onRemoved(item, pos);
-        this.raisePropertyChanged("[" + key + "]");
+        this.objEvents.raiseProp(<any>`[${key}]`);
     }
-    get keyName() {
+    get keyName(): string {
         return this._keyName;
     }
-    toString() {
+    toString(): string {
         return "BaseDictionary";
     }
 }

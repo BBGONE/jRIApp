@@ -1,10 +1,9 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
    LocaleERRS
 } from "jriapp_shared";
 import {
-    IContentFactory, IContentFactoryList, IConstructorContentOptions,
-    TFactoryGetter, IContent, IContentOptions, IContentConstructor
+    IContentFactory, IContentFactoryList, TFactoryGetter, IContentOptions, IContentConstructor
 } from "./int";
 
 const ERRS = LocaleERRS;
@@ -13,10 +12,8 @@ export function createContentFactoryList(): IContentFactoryList {
     return new FactoryList();
 }
 
-//the base content factory It is always the last in the chain of factories
+// the base content factory It is always the last in the chain of factories
 class LastFactory implements IContentFactory {
-    constructor() {
-    }
     getContentType(options: IContentOptions): IContentConstructor {
         throw new Error(ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
     }
@@ -31,7 +28,7 @@ class FactoryList implements IContentFactoryList {
     constructor() {
         this._factory = new LastFactory();
     }
-    addFactory(factoryGetter: TFactoryGetter) {
+    addFactory(factoryGetter: TFactoryGetter): void {
         this._factory = factoryGetter(this._factory);
     }
     getContentType(options: IContentOptions): IContentConstructor {

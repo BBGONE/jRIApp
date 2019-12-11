@@ -1,55 +1,78 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
-import { bootstrap } from "jriapp/bootstrap";
-import { css, PROP_NAME } from "./baseview";
+import { SubscribeFlags } from "jriapp/consts";
+import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { InputElView } from "./input";
 
-const dom = DomUtils;
+const dom = DomUtils, subscribeMap = subscribeWeakMap;
 
-const TXTBOX_EVENTS = {
-    keypress: "keypress"
-};
+const enum TXTBOX_EVENTS {
+    keypress = "keypress"
+}
 
 export interface ITextBoxOptions extends IViewOptions {
     updateOnKeyUp?: boolean;
 }
 
-export type TKeyPressArgs = { keyCode: number; value: string; isCancel: boolean; };
+export type TKeyPressArgs = {
+    keyCode: number;
+    value: string;
+    isCancel: boolean;
+};
 
-export class TextBoxElView extends InputElView {
-    constructor(options: ITextBoxOptions) {
-        super(options);
+export class TextBoxElView<TElement extends HTMLInputElement | HTMLTextAreaElement = HTMLInputElement> extends InputElView<TElement> {
+    constructor(el: TElement, options: ITextBoxOptions) {
+        super(el, options);
         const self = this;
-        dom.events.on(this.el, "change", function (e) {
-            e.stopPropagation();
-            self.raisePropertyChanged(PROP_NAME.value);
-        }, this.uniqueID);
-
-        dom.events.on(this.el, "keypress", function (e) {
-            e.stopPropagation();
-            const args: TKeyPressArgs = { keyCode: e.which, value: (<any>e.target).value, isCancel: false };
-            self.raiseEvent(TXTBOX_EVENTS.keypress, args);
-            if (args.isCancel)
-                e.preventDefault();
-        }, this.uniqueID);
-
-        if (!!options.updateOnKeyUp) {
-            dom.events.on(this.el, "keyup", function (e) {
+        if (this.isDelegationOn) {
+            subscribeMap.set(el, this);
+            this._setIsSubcribed(SubscribeFlags.change);
+            this._setIsSubcribed(SubscribeFlags.keypress);
+            if (!!options.updateOnKeyUp) {
+                this._setIsSubcribed(SubscribeFlags.keyup);
+            }
+        } else {
+            dom.events.on(el, "change", (e) => {
                 e.stopPropagation();
-                self.raisePropertyChanged(PROP_NAME.value);
+                self.handle_change(e);
             }, this.uniqueID);
+            dom.events.on(el, "keypress", (e) => {
+                self.handle_keypress(e);
+            }, this.uniqueID);
+            if (!!options.updateOnKeyUp) {
+                dom.events.on(el, "keyup", (e) => {
+                    self.handle_keyup(e);
+                }, this.uniqueID);
+            }
         }
     }
-    protected _getEventNames() {
-        const base_events = super._getEventNames();
-        return [TXTBOX_EVENTS.keypress].concat(base_events);
+    handle_change(e: Event): boolean {
+        this.objEvents.raiseProp("value");
+        // stop propagation
+        return true;
     }
-    addOnKeyPress(fn: (sender: TextBoxElView, args: TKeyPressArgs) => void, nmspace?: string) {
-        this._addHandler(TXTBOX_EVENTS.keypress, fn, nmspace);
+    handle_keypress(e: KeyboardEvent): boolean {
+        const args: TKeyPressArgs = {
+            keyCode: e.which,
+            value: (<TElement>e.target).value,
+            isCancel: false
+        };
+        this.objEvents.raise(TXTBOX_EVENTS.keypress, args);
+        if (args.isCancel) {
+            e.preventDefault();
+        }
+        // stop propagation
+        return true;
     }
-    removeOnKeyPress(nmspace?: string) {
-        this._removeHandler(TXTBOX_EVENTS.keypress, nmspace);
+    handle_keyup(e: KeyboardEvent): void {
+        this.objEvents.raiseProp("value");
+    }
+    addOnKeyPress(fn: (sender: TextBoxElView<TElement>, args: TKeyPressArgs) => void, nmspace?: string) {
+        this.objEvents.on(TXTBOX_EVENTS.keypress, fn, nmspace);
+    }
+    offOnKeyPress(nmspace?: string) {
+        this.objEvents.off(TXTBOX_EVENTS.keypress, nmspace);
     }
     toString() {
         return "TextBoxElView";
@@ -61,7 +84,7 @@ export class TextBoxElView extends InputElView {
         const x = this.el.style.color;
         if (v !== x) {
             this.el.style.color = v;
-            this.raisePropertyChanged(PROP_NAME.color);
+            this.objEvents.raiseProp("color");
         }
     }
 }

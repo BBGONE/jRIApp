@@ -1,13 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Transactions;
+﻿using RIAPP.DataService.Core;
+using RIAPP.DataService.Core.Metadata;
+using RIAPP.DataService.Core.Types;
+using System;
 using System.Data.Metadata.Edm;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using RIAPP.DataService.DomainService;
-using RIAPP.DataService.DomainService.Interfaces;
-using RIAPP.DataService.DomainService.Types;
-using RIAPP.DataService.EF.Utils;
+using System.Transactions;
 
 namespace RIAPP.DataService.EF
 {
@@ -17,26 +16,13 @@ namespace RIAPP.DataService.EF
         private TDB _db;
         private bool _ownsDb = false;
 
-        public EFDomainService(TDB db, IServiceArgs args)
-            :base(args)
+        public EFDomainService(IServiceContainer serviceContainer, TDB db = default(TDB))
+            : base(serviceContainer)
         {
             this._db = db;
         }
 
-        public EFDomainService(IServiceArgs args)
-            : this(null,args)
-        {
-            
-        }
-
-
         #region Overridable Methods
-        protected override void ConfigureCodeGen()
-        {
-            base.ConfigureCodeGen();
-            this.AddOrReplaceCodeGen("csharp", () => new CsharpProvider<TDB>(this));
-        }
-
         protected virtual TDB CreateDataContext() {
             return Activator.CreateInstance<TDB>();
         }
@@ -50,7 +36,7 @@ namespace RIAPP.DataService.EF
                 
                 transScope.Complete();
             }
-            return this.AfterExecuteChangeSet();
+            return Task.CompletedTask;
         }
 
         protected virtual DataType DataTypeFromType(string fullName, out bool isArray)
@@ -104,10 +90,10 @@ namespace RIAPP.DataService.EF
             }
         }
 
-        protected override Metadata GetMetadata(bool isDraft)
+        protected override DesignTimeMetadata GetDesignTimeMetadata(bool isDraft)
         {
-            Metadata metadata = new Metadata();
-           
+            var metadata = new DesignTimeMetadata();
+
             var container = this.DB.MetadataWorkspace.GetEntityContainer(this.DB.DefaultContainerName, DataSpace.CSpace);
             var entitySetsDic = (from meta in container.BaseEntitySets
                         where meta.BuiltInTypeKind == BuiltInTypeKind.EntitySet
@@ -137,9 +123,9 @@ namespace RIAPP.DataService.EF
                 Type entityType = this.GetEntityType2(entityTypeName);
                 DbSetInfo dbSetInfo = new DbSetInfo()
                 {
-                    dbSetName = entityTypeName,
-                    EntityType = entityType
+                    dbSetName = entityTypeName
                 };
+                dbSetInfo.SetEntityType(entityType);
                 metadata.DbSets.Add(dbSetInfo);
                 var edmProps = entityEdmType.Properties.ToArray();
 
@@ -323,6 +309,8 @@ namespace RIAPP.DataService.EF
                 this._db = null;
                 this._ownsDb = false;
             }
+
+            base.Dispose(isDisposing);
         }
     }
 

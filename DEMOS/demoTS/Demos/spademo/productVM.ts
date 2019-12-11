@@ -1,13 +1,8 @@
 ﻿import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 
-import * as COMMON from "common";
 import * as DEMODB from "./domainModel";
 import { DemoApplication } from "./app";
 import { OrderDetailVM } from "./orderDetVM";
-
-var utils = RIAPP.Utils, $ = RIAPP.$;
 
 export class ProductVM extends RIAPP.ViewModel<DemoApplication> {
     private _orderDetailVM: OrderDetailVM;
@@ -15,7 +10,7 @@ export class ProductVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(orderDetailVM: OrderDetailVM) {
         super(orderDetailVM.app);
-        var self = this;
+        const self = this;
         this._orderDetailVM = orderDetailVM;
         this._dbSet = this.dbSets.Product;
 
@@ -24,23 +19,23 @@ export class ProductVM extends RIAPP.ViewModel<DemoApplication> {
         }, self.uniqueID);
 
         //here we load products which are referenced in order details
-        this._orderDetailVM.dbSet.addOnFill(function (sender, args) {
+        this._orderDetailVM.dbSet.addOnFill(function (_s, args) {
             self.loadProductsForOrderDetails(args.items);
         }, self.uniqueID);
 
-        this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+        this._dbSet.objEvents.onProp('currentItem', function (_s, args) {
             self._onCurrentChanged();
         }, self.uniqueID);
     }
     protected _onCurrentChanged() {
-        this.raisePropertyChanged('currentItem');
+        this.objEvents.raiseProp('currentItem');
     }
     clear() {
         this.dbSet.clear();
     }
     //returns promise
     loadProductsForOrderDetails(orderDetails: DEMODB.SalesOrderDetail[]) {
-        var ids: number[] = orderDetails.map(function (item) {
+        let ids: number[] = orderDetails.map(function (item) {
             return item.ProductID;
         }).filter(function (id) {
             return id !== null;
@@ -50,21 +45,21 @@ export class ProductVM extends RIAPP.ViewModel<DemoApplication> {
     }
     //returns promise
     load(ids: number[], isClearTable: boolean) {
-        var query = this.dbSet.createReadProductByIdsQuery({ productIDs: ids });
+        let query = this.dbSet.createReadProductByIdsQuery({ productIDs: ids });
         query.isClearPrevData = isClearTable;
         return query.load();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._dbSet) {
-            this._dbSet.removeNSHandlers(this.uniqueID);
+            this._dbSet.objEvents.offNS(this.uniqueID);
         }
-        this._customerDbSet.removeNSHandlers(this.uniqueID);
-        this._orderDetailVM.removeNSHandlers(this.uniqueID);
+        this._customerDbSet.objEvents.offNS(this.uniqueID);
+        this._orderDetailVM.objEvents.offNS(this.uniqueID);
         this._orderDetailVM = null;
-        super.destroy();
+        super.dispose();
     }
     get _customerDbSet() { return this._orderDetailVM.orderVM.customerVM.dbSet; }
     get dbContext() { return this.app.dbContext; }

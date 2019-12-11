@@ -1,16 +1,12 @@
 ﻿import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
 
-import * as COMMON from "common";
 import * as DEMODB from "./domainModel";
 import { DemoApplication } from "./app";
 import { IMyGridEvents, CustomerGridEvents } from "./gridEvents";
 import { MainRoute, CustDetRoute } from "./routes";
 import { CustomerAddressVM } from "./custAddressVM";
 import { OrderVM } from "./orderVM";
-
-var utils = RIAPP.Utils, $ = RIAPP.$;
 
 export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     private _dbSet: DEMODB.CustomerDb;
@@ -33,15 +29,15 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication) {
         super(app);
-        var self = this;
+        const self = this;
         this._dbSet = this.dbSets.Customer;
         this._dbSet.isSubmitOnDelete = true;
         this._propWatcher = new RIAPP.PropWatcher();
         this._uiMainRoute = new MainRoute();
         this._uiCustDetRoute = new CustDetRoute();
-        this._uiMainRoute.addOnPropertyChange('viewName', function (sender, a) {
+        this._uiMainRoute.objEvents.onProp('viewName', function (sender) {
             self._uiCustDetRoute.reset();
-            if (sender.viewName == sender.custTemplName) {
+            if (sender.viewName === sender.custTemplName) {
                 setTimeout(function () {
                     if (!!self._gridEvents) {
                         self._gridEvents.focusGrid();
@@ -52,13 +48,13 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         this._gridEvents = new CustomerGridEvents(this);
 
 
-        this._dbSet.addOnItemDeleting(function (sender, args) {
+        this._dbSet.addOnItemDeleting(function (_s, args) {
             if (!confirm('Are you sure that you want to delete customer?'))
                 args.isCancel = true;
         }, self.uniqueID);
 
-        this._dbSet.addOnPageIndexChanged(function (sender, args) {
-            self.raiseEvent('page_changed', {});
+        this._dbSet.addOnPageIndexChanged(function (_s, args) {
+            self.objEvents.raise('page_changed', {});
         }, self.uniqueID);
 
         this._dbSet.addOnItemAdded((s, args) => {
@@ -67,89 +63,83 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
             args.item.ComplexProp.FirstName = "Dummy2";
         });
 
-        this._editCommand = new RIAPP.Command(function (sender, param) {
+        this._editCommand = new RIAPP.Command(function () {
             self.currentItem._aspect.beginEdit();
-        }, self,
-            function (sender, param) {
+        }, function () {
                 return !!self.currentItem;
             });
 
 
-        this._endEditCommand = new RIAPP.Command(function (sender, param) {
+        this._endEditCommand = new RIAPP.Command(function () {
             if (self.currentItem._aspect.endEdit())
                 self.dbContext.submitChanges();
-        }, self,
-            function (sender, param) {
+        }, function () {
                 return !!self.currentItem;
             });
 
-        this._cancelEditCommand = new RIAPP.Command(function (sender, param) {
+        this._cancelEditCommand = new RIAPP.Command(function () {
             self.currentItem._aspect.cancelEdit();
             self.dbContext.rejectChanges();
-        }, self,
-            function (sender, param) {
+        }, function () {
                 return !!self.currentItem;
             });
 
-        //adds new customer - uses dialog to enter the data
-        this._addNewCommand = new RIAPP.Command(function (sender, param) {
+        // adds new customer - uses dialog to enter the data
+        this._addNewCommand = new RIAPP.Command(function () {
             //showing of the dialog is handled by the datagrid
             self._dbSet.addNew();
-        }, self, function (sender, param) {
-            //the command is always enabled
-            return true;
         });
 
-        //saves changes (submitts them to the service)
-        this._saveCommand = new RIAPP.Command(function (sender, param) {
+        // saves changes (submitts them to the service)
+        this._saveCommand = new RIAPP.Command(function () {
             self.dbContext.submitChanges();
-        }, self, function (s, p) {
-            //the command is enabled when there are pending changes
+        }, function () {
+            // the command is enabled when there are pending changes
             return self.dbContext.isHasChanges;
         });
 
 
-        this._undoCommand = new RIAPP.Command(function (sender, param) {
+        this._undoCommand = new RIAPP.Command(function () {
             self.dbContext.rejectChanges();
-        }, self, function (s, p) {
-            //the command is enabled when there are pending changes
+        }, function () {
+            // the command is enabled when there are pending changes
             return self.dbContext.isHasChanges;
         });
 
-        //load data from the server
-        this._loadCommand = new RIAPP.Command(function (sender, args) {
+        // load data from the server
+        this._loadCommand = new RIAPP.Command(function () {
             self.load();
-        }, self, null);
+        });
 
-        this._switchViewCommand = new RIAPP.Command(function (sender, param) {
+        this._switchViewCommand = new RIAPP.Command<string>(function (param) {
             self.uiMainRoute.viewName = param;
-        }, self, null);
+        });
 
-        this._switchDetViewCommand = new RIAPP.Command(function (sender, param) {
+        this._switchDetViewCommand = new RIAPP.Command<string>(function (param) {
             self.uiCustDetRoute.viewName = param;
-        }, self, null);
+        });
 
 
-        //the property watcher helps us handling properties changes
-        //more convenient than using addOnPropertyChange
-        this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function (prop) {
+        // the property watcher helps us handling properties changes
+        // more convenient than using addOnPropertyChange
+        this._propWatcher.addPropWatch(self.dbContext, 'isHasChanges', function () {
             self._saveCommand.raiseCanExecuteChanged();
             self._undoCommand.raiseCanExecuteChanged();
         });
 
-        this._propWatcher.addPropWatch(this._dbSet, 'currentItem', function (prop) {
+        this._propWatcher.addPropWatch(this._dbSet, 'currentItem', function () {
             self._editCommand.raiseCanExecuteChanged();
             self._endEditCommand.raiseCanExecuteChanged();
             self._cancelEditCommand.raiseCanExecuteChanged();
             self._onCurrentChanged();
         });
 
-        this._dbSet.addOnCleared(function (s, a) {
+        this._dbSet.addOnCleared(function () {
             self.dbSets.CustomerAddress.clear();
             self.dbSets.Address.clear();
         }, self.uniqueID);
 
-        var custAssoc = self.dbContext.associations.getCustAddrToCustomer();
+        let custAssoc = self.dbContext.associations.getCustAddrToCustomer();
 
         //the view to filter CustomerAddresses related to the current customer only
         this._custAdressView = new dbMOD.ChildDataView<DEMODB.CustomerAddress>(
@@ -161,13 +151,9 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
         this._ordersVM = new OrderVM(this);
         this._customerAddressVM = new CustomerAddressVM(this);
     }
-    protected _getEventNames() {
-        var base_events = super._getEventNames();
-        return ['row_expanded', 'page_changed'].concat(base_events);
-    }
     protected _onCurrentChanged() {
         this._custAdressView.parentItem = this._dbSet.currentItem;
-        this.raisePropertyChanged('currentItem');
+        this.objEvents.raiseProp('currentItem');
     }
 
     _onGridPageChanged() {
@@ -175,38 +161,38 @@ export class CustomerVM extends RIAPP.ViewModel<DemoApplication> {
     _onGridRowSelected(item: DEMODB.Customer) {
     }
     _onGridRowExpanded(item: DEMODB.Customer) {
-        this.raiseEvent('row_expanded', { customer: item, isExpanded: true });
+        this.objEvents.raise('row_expanded', { customer: item, isExpanded: true });
     }
     _onGridRowCollapsed(item: DEMODB.Customer) {
-        this.raiseEvent('row_expanded', { customer: item, isExpanded: false });
+        this.objEvents.raise('row_expanded', { customer: item, isExpanded: false });
     }
-    //returns promise
+    // returns promise
     load() {
-        var query = this._dbSet.createReadCustomerQuery({ includeNav: true });
+        const query = this._dbSet.createReadCustomerQuery({ includeNav: true });
         query.pageSize = 50;
-        //load without filtering
+        // load without filtering
         query.orderBy('ComplexProp.LastName').thenBy('ComplexProp.MiddleName').thenBy('ComplexProp.FirstName');
         return this.dbContext.load(query);
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        this._propWatcher.destroy();
+        this.setDisposing();
+        this._propWatcher.dispose();
         this._propWatcher = null;
 
         if (!!this._dbSet) {
-            this._dbSet.removeNSHandlers(this.uniqueID);
+            this._dbSet.objEvents.offNS(this.uniqueID);
         }
-        this._gridEvents.destroy();
+        this._gridEvents.dispose();
         this._gridEvents = null;
-        this._ordersVM.destroy()
+        this._ordersVM.dispose()
         this._ordersVM = null;
-        this._customerAddressVM.destroy();
+        this._customerAddressVM.dispose();
         this._customerAddressVM = null;
-        this._custAdressView.destroy();
+        this._custAdressView.dispose();
         this._custAdressView = null;
-        super.destroy();
+        super.dispose();
     }
     get dbContext() { return this.app.dbContext; }
     get dbSets() { return this.dbContext.dbSets; }

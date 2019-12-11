@@ -9,7 +9,7 @@ import { CustomerVM } from "./customerVM";
 import { OrderDetailVM } from "./orderDetVM";
 import { AddressVM } from "./addressVM";
 
-var utils = RIAPP.Utils, $ = RIAPP.$;
+const utils = RIAPP.Utils, $ = uiMOD.$, dates = utils.dates;
 
 export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.ITabsEvents {
     private _customerVM: CustomerVM;
@@ -25,7 +25,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
 
     constructor(customerVM: CustomerVM) {
         super(customerVM.app);
-        var self = this;
+        const self = this;
         this._customerVM = customerVM;
         this._dbSet = this.dbSets.SalesOrderHeader;
         this._currentCustomer = null;
@@ -38,55 +38,46 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
         { key: 4, val: 'Status 4' }, { key: 5, val: 'Completed Order' }], true);
 
         //loads the data only when customer's row is expanded
-        this._customerVM.addHandler('row_expanded', function (sender, args) {
+        this._customerVM.objEvents.on('row_expanded', function (_s, args) {
             if (args.isExpanded) {
                 self.currentCustomer = args.customer;
-            }
-            else {
+            } else {
                 self.currentCustomer = null;
             }
         }, self.uniqueID);
 
-        this._dbSet.addOnPropertyChange('currentItem', function (sender, args) {
+        this._dbSet.objEvents.onProp('currentItem', function () {
             self._onCurrentChanged();
         }, self.uniqueID);
 
-        this._dbSet.addOnItemDeleting(function (sender, args) {
+        this._dbSet.addOnItemDeleting(function (_s, args) {
             if (!confirm('Are you sure that you want to delete order ?'))
                 args.isCancel = true;
         }, self.uniqueID);
 
-        this._dbSet.addOnItemAdded(function (sender, args) {
-            //can be solved soon with generics
-            var item = args.item;
+        this._dbSet.addOnItemAdded(function (_s, args) {
+            const item = args.item;
             item.Customer = self.currentCustomer;
-            //datejs extension
-            item.OrderDate = moment().toDate();
-            item.DueDate = moment().add(7, 'days').toDate();
+            item.OrderDate = new Date();
+            item.DueDate = dates.add(new Date(), 7, RIAPP.TIME_KIND.DAY);
             item.OnlineOrderFlag = false;
         }, self.uniqueID);
 
-        //adds new order - uses dialog to fill the data
-        this._addNewCommand = new RIAPP.Command(function (sender, param) {
-            //the dialog shown by the datagrid
+        // adds new order - uses dialog to fill the data
+        this._addNewCommand = new RIAPP.Command(function () {
+            // the dialog shown by the datagrid
             self._dbSet.addNew();
-        }, self, function (sender, param) {
-            return true;
         });
 
         this._addressVM = new AddressVM(this);
         this._orderDetailVM = new OrderDetailVM(this);
     }
-    protected _getEventNames() {
-        var base_events = super._getEventNames();
-        return ['row_expanded'].concat(base_events);
-    }
     protected _addGrid(grid: uiMOD.DataGrid): void {
-        var self = this;
+        const self = this;
         if (!!this._dataGrid)
             this._removeGrid();
         this._dataGrid = grid;
-        this._dataGrid.addOnRowExpanded(function (s, args) {
+        this._dataGrid.addOnRowExpanded(function (_s, args) {
             if (args.isExpanded)
                 self.onRowExpanded(args.expandedRow);
             else
@@ -96,16 +87,17 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
     protected _removeGrid(): void {
         if (!this._dataGrid)
             return;
-        this._dataGrid.removeNSHandlers(this.uniqueID);
+        this._dataGrid.objEvents.offNS(this.uniqueID);
         this._dataGrid = null;
     }
     protected onRowExpanded(row: uiMOD.DataGridRow): void {
-        this.raiseEvent('row_expanded', { order: row.item, isExpanded: true });
-        if (!!this._tabs)
+        this.objEvents.raise('row_expanded', { order: row.item, isExpanded: true });
+        if (!!this._tabs) {
             this.onTabSelected(this._tabs);
+        }
     }
     protected onRowCollapsed(row: uiMOD.DataGridRow): void {
-        this.raiseEvent('row_expanded', { order: row.item, isExpanded: false });
+        this.objEvents.raise('row_expanded', { order: row.item, isExpanded: false });
     }
 
     //#begin uiMOD.ITabsEvents
@@ -117,7 +109,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
     }
     onTabSelected(tabs: uiMOD.ITabs): void {
         this._selectedTabIndex = tabs.tabIndex;
-        this.raisePropertyChanged('selectedTabIndex');
+        this.objEvents.raiseProp('selectedTabIndex');
 
         if (this._selectedTabIndex == 2) {
             //load details only when the tab which contains the details grid is selected
@@ -127,7 +119,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
     //#end uiMOD.ITabsEvents
 
     protected _onCurrentChanged() {
-        this.raisePropertyChanged('currentItem');
+        this.objEvents.raiseProp('currentItem');
     }
     clear() {
         this.dbSet.clear();
@@ -137,32 +129,32 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
         //explicitly clear before every load
         this.clear();
         if (!this.currentCustomer || this.currentCustomer._aspect.isNew) {
-            var deferred = utils.defer.createDeferred<dbMOD.IQueryResult<DEMODB.SalesOrderHeader>>();
+            let deferred = utils.defer.createDeferred<dbMOD.IQueryResult<DEMODB.SalesOrderHeader>>();
             deferred.reject();
             return deferred.promise();
         }
-        var query = this.dbSet.createReadSalesOrderHeaderQuery();
+        let query = this.dbSet.createReadSalesOrderHeaderQuery();
         query.where('CustomerID', RIAPP.FILTER_TYPE.Equals, [this.currentCustomer.CustomerID]);
         query.orderBy('OrderDate').thenBy('SalesOrderID');
         return query.load();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._dbSet) {
-            this._dbSet.removeNSHandlers(this.uniqueID);
+            this._dbSet.objEvents.offNS(this.uniqueID);
         }
         if (!!this._dataGrid) {
-            this._dataGrid.removeNSHandlers(this.uniqueID);
+            this._dataGrid.objEvents.offNS(this.uniqueID);
         }
         this.currentCustomer = null;
-        this._addressVM.destroy();
+        this._addressVM.dispose();
         this._addressVM = null;
-        this._orderDetailVM.destroy();
+        this._orderDetailVM.dispose();
         this._orderDetailVM = null;
         this._customerVM = null;
-        super.destroy();
+        super.dispose();
     }
     get dbContext() { return this.app.dbContext; }
     get dbSets() { return this.dbContext.dbSets; }
@@ -174,7 +166,7 @@ export class OrderVM extends RIAPP.ViewModel<DemoApplication> implements uiMOD.I
     set currentCustomer(v) {
         if (v !== this._currentCustomer) {
             this._currentCustomer = v;
-            this.raisePropertyChanged('currentCustomer');
+            this.objEvents.raiseProp('currentCustomer');
             this.load();
         }
     }

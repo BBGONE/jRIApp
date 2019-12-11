@@ -1,4 +1,4 @@
-﻿export class {{DBSET_TYPE}} extends dbMOD.DbSet<{{ENTITY_INTERFACE}}, DbContext>
+﻿export class {{DBSET_TYPE}} extends dbMOD.DbSet<{{INTERFACE_NAME}}, {{VALS_NAME}}, DbContext>
 {
 	constructor(dbContext: DbContext) {
 		var opts: dbMOD.IDbSetConstuctorOptions = {
@@ -9,13 +9,12 @@
 		};
 		opts.dbSetInfo.fieldInfos = ({{FIELD_INFOS}});
 		super(opts);
-		this._createEntityType();
 	}
-	private _createEntityType(): void {
-		//class expression
-		this._entityType =  {{ENTITY}};
+	// override
+	itemFactory(aspect: {{ASPECT_NAME}}): {{INTERFACE_NAME}}  {
+		return new {{ENTITY_NAME}}(aspect);
 	}
-	findEntity({{PK_VALS}}): {{ENTITY_INTERFACE}} {
+	findEntity({{PK_VALS}}): {{INTERFACE_NAME}} {
 		return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
 	}
 	toString(): string {

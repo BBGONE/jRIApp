@@ -8,6 +8,16 @@
     "outFile": "../built/jriapp_shared.js",
     "declaration": true,
     "sourceMap": false,
-    "noFallthroughCasesInSwitch": true
-  }
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true
+  },
+  "files": [
+    "jriapp_shared.ts"
+  ],
+  "include": [
+    "../thirdparty/moment.d.ts",
+    "global.d.ts"
+  ]
 }

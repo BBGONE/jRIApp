@@ -1,12 +1,8 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { Utils } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DomUtils } from "jriapp/utils/dom";
-import { DATA_ATTR } from "jriapp/const";
-import { IContent, IBindingInfo, IContentOptions } from "jriapp/int";
-import { BoolContent } from "../../content/bool";
+import { DATA_ATTR } from "jriapp/consts";
 
-import { css, PROP_NAME } from "../const";
+import { css } from "../consts";
 import { BaseCell, ICellOptions } from "./base";
 import { RowSelectorColumn } from "../columns/rowselector";
 
@@ -31,23 +27,24 @@ export class RowSelectorCell extends BaseCell<RowSelectorColumn> {
         this._chk = chk;
         dom.setData(chk, "cell", this);
     }
-    get checked() {
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        dom.removeData(this._chk);
+        super.dispose();
+    }
+    get checked(): boolean {
         return this._chk.checked;
     }
-    set checked(v) {
+    set checked(v: boolean) {
         const bv = !!v;
         if (bv !== this._chk.checked) {
             this._chk.checked = bv;
         }
     }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        dom.removeData(this._chk);
-        super.destroy();
-    }
-    toString() {
+    toString(): string {
         return "RowSelectorCell";
     }
 }

@@ -4,12 +4,11 @@ import * as dbMOD from "jriapp_db";
 import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
 
-const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+const bootstrap = RIAPP.bootstrap;
 
 export class CustomerBag extends RIAPP.JsonBag {
     private _addresses: RIAPP.JsonArray = null;
-    private _owner: DEMODB.CustomerJSON;
-
+ 
     constructor(item: DEMODB.CustomerJSON) {
         super(item.Data, (data: string) => {
             const dbSet = item._aspect.dbSet, saveIsEditing = item._aspect.isEditing;
@@ -30,28 +29,123 @@ export class CustomerBag extends RIAPP.JsonBag {
             }
         });
 
-        item.addOnPropertyChange("Data", (s, a) => {
+        item.objEvents.onProp("Data", (s, a) => {
             this.resetJson(item.Data);
         }, null, null, RIAPP.TPriority.AboveNormal);
-    }
 
-    destroy() {
-        if (this._isDestroyed)
+        this.initCustomerValidations();
+    }
+    private initCustomerValidations(): void {
+        const validations = [{
+            fieldName: <string>null, fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
+                if (!bag.getProp("[Level1.Level2.Phone]") && !bag.getProp("[Level1.Level2.EmailAddress]")) {
+                    errors.push('at least Phone or Email address must be filled');
+                }
+            }
+        },
+        {
+            fieldName: "[Title]", fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
+                if (!bag.getProp("[Title]")) {
+                    errors.push('Title must be filled');
+                }
+            }
+        },
+        {
+            fieldName: "[Level1.FirstName]", fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
+                if (!bag.getProp("[Level1.FirstName]")) {
+                    errors.push('First name must be filled');
+                }
+            }
+        },
+        {
+            fieldName: "[Level1.LastName]", fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
+                if (!bag.getProp("[Level1.LastName]")) {
+                    errors.push('Last name must be filled');
+                }
+            }
+        }];
+
+        //perform all validations
+        this.addOnValidateBag((s, args) => {
+            let bag = args.bag;
+            validations.forEach((val) => {
+                let errors: string[] = [];
+                val.fn(bag, errors);
+                if (errors.length > 0)
+                    args.result.push({ fieldName: val.fieldName, errors: errors });
+            });
+        });
+
+        //validate only specific field
+        this.addOnValidateField((s, args) => {
+            let bag = args.bag;
+            validations.filter((val) => {
+                return args.fieldName === val.fieldName;
+            }).forEach((val) => {
+                val.fn(bag, args.errors);
+            });
+        });
+    }
+    private initAddressValidations(addresses: RIAPP.JsonArray): void {
+        const validations = [{
+            fieldName: "[City]", fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
+                if (!bag.getProp("[City]")) {
+                    errors.push('City must be filled');
+                }
+            }
+        },
+        {
+            fieldName: "[Line1]", fn: (bag: RIAPP.IPropertyBag, errors: string[]) => {
+                if (!bag.getProp("[Line1]")) {
+                    errors.push('Line1 name must be filled');
+                }
+            }
+        }];
+
+        //perform all validations
+        addresses.addOnValidateBag((s, args) => {
+            let bag = args.bag;
+            validations.forEach((val) => {
+                let errors: string[] = [];
+                val.fn(bag, errors);
+                if (errors.length > 0)
+                    args.result.push({ fieldName: val.fieldName, errors: errors });
+            });
+        });
+
+        //validate only specific field
+        addresses.addOnValidateField((s, args) => {
+            let bag = args.bag;
+            validations.filter((val) => {
+                return args.fieldName === val.fieldName;
+            }).forEach((val) => {
+                val.fn(bag, args.errors);
+            });
+        });
+    }
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._addresses) {
-            this._addresses.destroy();
+            this._addresses.dispose();
         }
         this._addresses = null;
-        super.destroy();
+        super.dispose();
     }
     get Addresses() {
-        if (this._isDestroyCalled)
+        if (this.getIsStateDirty())
             return void 0;
         if (!this._addresses) {
             this._addresses = new RIAPP.JsonArray(this, "Addresses");
+            this.initAddressValidations(this._addresses);
         }
         return this._addresses.list;
+    }
+    //just for testing eval in converter param (instead of fixed param value)
+    get dateFormat(): string
+    {
+        return "DD.MM.YYYY HH:mm:ss";
     }
 }
 
@@ -71,12 +165,12 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         this._propWatcher = new RIAPP.PropWatcher();
      
         //when currentItem property changes, invoke our viewmodel's method
-        this._dbSet.addOnPropertyChange('currentItem', function (sender, data) {
+        this._dbSet.objEvents.onProp('currentItem', function (_s, data) {
             self._onCurrentChanged();
         }, self.uniqueID);
 
         //if we need to confirm the deletion, this is how it is done
-        this._dbSet.addOnItemDeleting(function (sender, args) {
+        this._dbSet.addOnItemDeleting(function (_s, args) {
             if (!confirm('Are you sure that you want to delete ' + args.item.CustomerID + ' ?'))
                 args.isCancel = true;
         }, self.uniqueID);
@@ -86,34 +180,35 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
         this._dbSet.isSubmitOnDelete = true;
 
         //adds new product - uses dialog to enter the data
-        this._addNewCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, param) {
+        this._addNewCommand = new RIAPP.Command(function () {
             //grid will show the edit dialog, because we set grid options isHandleAddNew:true
             //see the options for the grid on the HTML demo page
-            var item = self._dbSet.addNew();
+            let item = self._dbSet.addNew();
+            item.Data = JSON.stringify({});
             //P.S. - grids editor options also has submitOnOK:true, which means
             //on clicking OK button all changes are submitted to the service
         });
 
-        this._addNewAddrCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, param) {
+        this._addNewAddrCommand = new RIAPP.Command(() => {
             const curCustomer = <CustomerBag>self.currentItem.Customer;
-            var item = curCustomer.Addresses.addNew();
-        }, self, function (s, p) {
+            curCustomer.Addresses.addNew();
+        }, () => {
             return !!self.currentItem;
         });
 
-        this._saveCommand = new RIAPP.Command(function (sender, param) {
+        this._saveCommand = new RIAPP.Command(() => {
             self.dbContext.submitChanges();
-        }, self, function (s, p) {
+        }, () => {
             //the command is enabled when there are pending changes
             return self.dbContext.isHasChanges;
         });
 
-
-        this._undoCommand = new RIAPP.Command(function (sender, param) {
-            self.dbContext.rejectChanges();
-        }, self, function (s, p) {
+        //with typed "this" inside the callbacks
+        this._undoCommand = new RIAPP.Command(() => {
+            this.dbContext.rejectChanges();
+        }, () => {
             //the command is enabled when there are pending changes
-            return self.dbContext.isHasChanges;
+            return this.dbContext.isHasChanges;
         });
 
         //the property watcher helps us handling properties changes
@@ -123,10 +218,10 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
             self._undoCommand.raiseCanExecuteChanged();
         });
 
-        //loads data from the server for the products
-        this._loadCommand = new RIAPP.TCommand<any, CustomerViewModel>(function (sender, data, viewModel) {
-            viewModel.load();
-        }, self, null);
+        //loads data from the server for the products (with typed "this" inside the callback)
+        this._loadCommand = new RIAPP.Command(() => {
+            this.load();
+        });
 
         this._dbSet.defineCustomerField(function (item) {
             let bag = <CustomerBag>item._aspect.getCustomVal("jsonBag");
@@ -139,22 +234,22 @@ export class CustomerViewModel extends RIAPP.ViewModel<DemoApplication> {
     }
     protected _onCurrentChanged() {
         this._addNewAddrCommand.raiseCanExecuteChanged();
-        this.raisePropertyChanged('currentItem');
+        this.objEvents.raiseProp('currentItem');
     }
     load() {
-        var query = this.dbSet.createReadCustomerJSONQuery();
+        let query = this.dbSet.createReadCustomerJSONQuery();
         query.pageSize = 50;
         query.orderBy('CustomerID');
         return query.load();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         if (!!this._dbSet) {
-            this._dbSet.removeNSHandlers(this.uniqueID);
+            this._dbSet.objEvents.offNS(this.uniqueID);
         }
-        super.destroy();
+        super.dispose();
     }
     get dbSet() { return this._dbSet; }
     get addNewCommand() { return this._addNewCommand; }
@@ -180,7 +275,6 @@ export class DemoApplication extends RIAPP.Application {
 
     constructor(options: IMainOptions) {
         super(options);
-        var self = this;
         this._dbContext = null;
         this._errorVM = null;
         this._customerVM = null;
@@ -195,8 +289,8 @@ export class DemoApplication extends RIAPP.Application {
             self._handleError(sender, data);
         };
         //here we could process application's errors
-        this.addOnError(handleError);
-        this._dbContext.addOnError(handleError);
+        this.objEvents.addOnError(handleError);
+        this._dbContext.objEvents.addOnError(handleError);
 
         super.onStartUp();
     }
@@ -206,28 +300,32 @@ export class DemoApplication extends RIAPP.Application {
         this.errorVM.error = data.error;
         this.errorVM.showDialog();
     }
-    //really, the destroy method is redundant here because the application lives while the page lives
-    destroy() {
-        if (this._isDestroyed)
+    //really, the dispose method is redundant here because the application lives while the page lives
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
+        this.setDisposing();
         const self = this;
         try {
-            self._errorVM.destroy();
-            self._customerVM.destroy();
-            self._dbContext.destroy();
+            self._errorVM.dispose();
+            self._customerVM.dispose();
+            self._dbContext.dispose();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get options() { return <IMainOptions>this._options; }
     get dbContext() { return this._dbContext; }
     get errorVM() { return this._errorVM; }
     get customerVM() { return this._customerVM; }
+    //just for testing eval in converter param (instead of fixed param value)
+    get dateFormat(): string {
+        return "MM.DD.YYYY HH:mm:ss";
+    }
 }
 
 //bootstrap error handler - the last resort (typically display message to the user)
-bootstrap.addOnError(function (sender, args) {
+bootstrap.objEvents.addOnError(function (_s, args) {
     debugger;
     alert(args.error.message);
     args.isHandled = true;

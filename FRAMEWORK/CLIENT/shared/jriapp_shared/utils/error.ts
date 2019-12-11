@@ -1,10 +1,13 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { APP_NAME } from "../const";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { APP_NAME } from "../consts";
 import { DummyError, AbortError } from "../errors";
 import { IIndexer, IErrorHandler } from "../int";
+import { CoreUtils } from "./coreutils";
+
+const { Indexer } = CoreUtils;
 
 export class ERROR {
-    private static _handlers: IIndexer<IErrorHandler> = {};
+    private static _handlers: IIndexer<IErrorHandler> = Indexer();
 
     static addHandler(name: string, handler: IErrorHandler): void {
         ERROR._handlers[name] = handler;
@@ -21,9 +24,9 @@ export class ERROR {
 
         handler = ERROR._handlers[APP_NAME];
         if (!!handler) {
-            if (handler === sender)
+            if (handler === sender) {
                 handler = null;
-            else {
+            } else {
                 isHandled = handler.handleError(error, source);
             }
         }
@@ -31,34 +34,37 @@ export class ERROR {
         if (!isHandled) {
             handler = ERROR._handlers["*"];
             if (!!handler) {
-                if (handler === sender)
+                if (handler === sender) {
                     handler = null;
-                else
+                } else {
                     isHandled = handler.handleError(error, source);
+                }
             }
         }
 
         return isHandled;
     }
-    static throwDummy(err: any): void {
-        if (ERROR.checkIsDummy(err))
+    static throwDummy(err: any): never {
+        if (ERROR.checkIsDummy(err)) {
             throw err;
-        else
+        } else {
             throw new DummyError(err);
+        }
     }
     static checkIsDummy(error: any): boolean {
         return !!error && !!error.isDummy;
     }
-    static checkIsAbort(error: any): boolean {
+    static checkIsAbort(error: any): error is AbortError  {
         return !!error && (error instanceof AbortError);
     }
-    static reThrow(ex: any, isHandled: boolean) {
-        if (!isHandled)
+    static reThrow(ex: any, isHandled: boolean): never {
+        if (!isHandled) {
             throw ex;
-        else
-            ERROR.throwDummy(ex);
+        } else {
+            return ERROR.throwDummy(ex);
+        }
     }
-    static abort(reason?: string) {
+    static abort(reason?: string): never {
         throw new AbortError(reason);
     }
 }

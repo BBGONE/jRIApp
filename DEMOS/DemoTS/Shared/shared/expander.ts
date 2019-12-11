@@ -1,0 +1,77 @@
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { Application } from "jriapp";
+import { AnchorElView, IAncorOptions } from "jriapp_ui";
+
+//export { ExpanderElView, IExpanderOptions } from "./jriapp_ui/expander";
+
+export interface IExpanderOptions extends IAncorOptions {
+    expandedsrc?: string;
+    collapsedsrc?: string;
+    isExpanded?: boolean;
+}
+
+export const enum PROP_NAME {
+    isExpanded = "isExpanded"
+}
+
+// const COLLAPSE_IMG = "collapse.jpg", EXPAND_IMG = "expand.jpg";
+const COLLAPSE_IMG = "fas fa-angle-double-up", EXPAND_IMG = "fas fa-angle-double-down";
+
+export class ExpanderElView extends AnchorElView {
+    private _expandedsrc: string;
+    private _collapsedsrc: string;
+    private _isExpanded: boolean;
+
+    constructor(el: HTMLAnchorElement, options: IExpanderOptions) {
+        const expandedsrc = options.expandedsrc || COLLAPSE_IMG;
+        const collapsedsrc = options.collapsedsrc || EXPAND_IMG;
+        const isExpanded = !!options.isExpanded;
+        options.imageSrc = null;
+        super(el, options);
+        this._expandedsrc = expandedsrc;
+        this._collapsedsrc = collapsedsrc;
+        this.isExpanded = isExpanded;
+    }
+    protected refresh(): void {
+        if (this.getIsStateDirty()) {
+            return;
+        }
+        // this.imageSrc = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
+        this.glyph = this._isExpanded ? this._expandedsrc : this._collapsedsrc;
+    }
+    protected _onCommandChanged(): void {
+        super._onCommandChanged();
+        this.invokeCommand();
+    }
+    protected onClick(): void {
+        this.isExpanded = !this.isExpanded;
+    }
+    // override
+    protected _getCommandParam(): any {
+        return { isExpanded: this.isExpanded };
+    }
+    // override
+    invokeCommand(): void {
+        this.refresh();
+        super.invokeCommand();
+    }
+    toString(): string {
+        return "ExpanderElView";
+    }
+    get isExpanded(): boolean {
+        return this._isExpanded;
+    }
+    set isExpanded(v: boolean) {
+        if (this._isExpanded !== v) {
+            this._isExpanded = v;
+            this.invokeCommand();
+            this.objEvents.raiseProp("isExpanded");
+        }
+    }
+}
+
+// this function is executed when an application which uses this module is created
+export function initModule(app: Application) {
+    app.registerElView("expander", ExpanderElView);
+}
+

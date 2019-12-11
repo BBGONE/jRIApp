@@ -1,12 +1,11 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     IIndexer, Utils
 } from "jriapp_shared";
 import { DomUtils } from "./dom";
-import { IJRIAppConfig, Config as config } from "../int";
+import { Config as config } from "../int";
 
-const utils = Utils, doc = DomUtils.document, head = doc.head || doc.getElementsByTagName("head")[0],
-    arrHelper = utils.arr, strUtils = utils.str;
+const utils = Utils, doc = DomUtils.document, arrHelper = utils.arr, { format, ltrim, rtrim } = utils.str;
 export const frameworkJS = config.frameworkJS || "jriapp.js";
 const stylesDir = "css", imageDir = "img";
 
@@ -21,16 +20,16 @@ export interface IUrlParts {
     search: string;
 }
 
-//private to the module function
+// private to the module function
 function fn_getFrameworkPath(): string {
-    let name = frameworkJS;
-    let arr = arrHelper.fromList<HTMLScriptElement>(doc.scripts);
+    const name = frameworkJS;
+    const arr = arrHelper.fromList<HTMLScriptElement>(doc.scripts);
 
     for (let i = 0; i < arr.length; i += 1) {
-        let script = arr[i];
+        const script = arr[i];
         if (!!script.src) {
-            let parts = PathHelper.getUrlParts(script.src);
-            let pathName = strUtils.rtrim(parts.pathname, "/");
+            const parts = PathHelper.getUrlParts(script.src);
+            let pathName = rtrim(parts.pathname, ["/"]);
             if (!!parts.pathname) {
                 pathName = pathName.toLowerCase();
                 if (!!pathName && pathName.lastIndexOf(name) > -1) {
@@ -44,27 +43,30 @@ function fn_getFrameworkPath(): string {
     return null;
 }
 
-let _cache = <IIndexer<string>>{};
+const _cache = <IIndexer<string>>{};
 
 export class PathHelper {
     private static _anchor: HTMLAnchorElement = doc.createElement("a");
     static appendBust(url: string): string {
-        let bust = config.bust;
-        if (!bust)
+        const bust = config.bust;
+        if (!bust) {
             return url;
+        }
         return PathHelper.appendSearch(url, bust);
     }
     static appendSearch(url: string, search: string): string {
-        search = strUtils.ltrim(search, "?");
-        let parts = PathHelper.getUrlParts(url);
-        let oldSearch = strUtils.ltrim(parts.search, "?");
-        if (!!oldSearch && oldSearch.lastIndexOf(search) > -1)
+        search = ltrim(search, ["?"," "]);
+        const parts = PathHelper.getUrlParts(url);
+        const oldSearch = ltrim(parts.search, ["?", " "]);
+        if (!!oldSearch && oldSearch.lastIndexOf(search) > -1) {
             return url;
+        }
 
-        if (!oldSearch)
+        if (!oldSearch) {
             url = url + "?" + search;
-        else
+        } else {
             url = url + "&" + search;
+        }
 
         return url;
     }
@@ -73,7 +75,7 @@ export class PathHelper {
         return PathHelper._anchor.href;
     }
     static getUrlParts(url: string): IUrlParts {
-        let parser = PathHelper._anchor;
+        const parser = PathHelper._anchor;
         parser.href = url;
         // IE doesn't populate all link properties when setting .href with a relative URL,
         // however .href will return an absolute URL which then can be used on itself
@@ -105,12 +107,13 @@ export class PathHelper {
     static getFrameworkPath(): string {
         let res = _cache["root"];
         if (!res) {
-            //we have a provided jriapp root already in global variable
+            //if we have a provided jriapp root already in global variable
             if (!!config.frameworkPath) {
-                res = config.frameworkPath;
+               // append slash (if not present)
+               res = config.frameworkPath.replace(/\/?$/, '/');
             }
 
-            //still no result
+            // still no result
             if (!res) {
                 res = fn_getFrameworkPath();
             }
@@ -120,12 +123,13 @@ export class PathHelper {
             }
         }
 
-        if (!res)
-            throw new Error(strUtils.format("Can not resolve {0} framework path", name));
+        if (!res) {
+            throw new Error(format("Can not resolve {0} framework path", name));
+        }
 
         return res;
     }
-    static getFrameworkCssPath() {
+    static getFrameworkCssPath(): string {
         let res = _cache["css"];
         if (!res) {
             res = PathHelper.getFrameworkPath() + [stylesDir, "/"].join("");
@@ -133,7 +137,7 @@ export class PathHelper {
         }
         return res;
     }
-    static getFrameworkImgPath() {
+    static getFrameworkImgPath(): string {
         let res = _cache["img"];
         if (!res) {
             res = PathHelper.getFrameworkPath() + [imageDir, "/"].join("");

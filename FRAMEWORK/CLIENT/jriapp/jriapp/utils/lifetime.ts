@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     IBaseObject, BaseObject, Utils
 } from "jriapp_shared";
@@ -6,7 +6,7 @@ import { ILifeTimeScope } from "../int";
 
 const utils = Utils;
 /*
-LifeTimeScope used to hold references to objects and destroys 
+LifeTimeScope used to hold references to objects and destroys
 them all when LifeTimeScope is destroyed itself
 */
 export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
@@ -16,31 +16,41 @@ export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
         super();
         this._objs = [];
     }
-    static create() {
-        return new LifeTimeScope();
-    }
-    addObj(b: IBaseObject) {
-        if (this._objs.indexOf(b) < 0)
-            this._objs.push(b);
-    }
-    removeObj(b: IBaseObject) {
-        utils.arr.remove(this._objs, b);
-    }
-    getObjs() {
-        return this._objs;
-    }
-    destroy() {
-        if (this._isDestroyed)
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
-        this._isDestroyCalled = true;
+        }
+        this.setDisposing();
         this._objs.forEach(function (obj) {
-            if (!obj.getIsDestroyCalled())
-                obj.destroy();
+            if (!obj.getIsStateDirty()) {
+                obj.dispose();
+            }
         });
         this._objs = [];
-        super.destroy();
+        super.dispose();
     }
-    toString() {
+    addObj(b: IBaseObject): void {
+        this._objs.push(b);
+    }
+    removeObj(b: IBaseObject): void {
+        utils.arr.remove(this._objs, b);
+    }
+    getObjs(): IBaseObject[] {
+        return this._objs;
+    }
+    findAll<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj[] {
+        return <TObj[]>this._objs.filter(predicate);
+    }
+    findFirst<TObj extends IBaseObject>(predicate: (obj: IBaseObject) => boolean): TObj {
+        const arr = this._objs, len = arr.length;
+        for (let i = 0; i < len; i += 1) {
+            if (predicate(arr[i])) {
+                return <TObj>arr[i];
+            }
+        }
+        return null;
+    }
+    toString(): string {
         return "LifeTimeScope";
     }
 }

@@ -4,25 +4,27 @@
     Layout = null;
 }
 
-<script id="customerAddr" type="text/html" data-role="template">
+<script id="custAdrGroup.customerAddr" type="text/x-template">
     <div style="margin: 4px; padding-top:10px; width: 95%;" data-require="test3,test1,test2,css!css/test2.css">
         <fieldset>
-            <legend>Addresses of <span data-name="test2" data-bind="{this.value,to=currentItem.ComplexProp.Name}"></span></legend>
+            <legend>Addresses of <span data-name="test2" data-bind="this.value,to=currentItem.ComplexProp.Name"></span></legend>
             <nav>
                 <ul class="nav nav-pills">
                     <li>
-                        <a data-bind="{this.command,to=switchViewCommand}{this.commandParam,to=uiMainRoute.custTemplName}"><i class="icon-list"></i>&nbsp;Back to all customers</a>
+                        <a data-bind-1="this.command,to=switchViewCommand"
+                           data-bind-2="this.commandParam,to=uiMainRoute.custTemplName"><i class="icon-list"></i>&nbsp;Back to all customers</a>
                     </li>
                     <li>
-                        <a data-bind="{this.command,to=switchDetViewCommand}{this.commandParam,to=uiCustDetRoute.infoTemplName}"><i class="icon-user"></i>&nbsp;Back to customer's info</a>
+                        <a data-bind-1="this.command,to=switchDetViewCommand"
+                           data-bind-2="this.commandParam,to=uiCustDetRoute.infoTemplName"><i class="icon-user"></i>&nbsp;Back to customer's info</a>
                     </li>
                 </ul>
             </nav>
 
             <!--
-            <span data-bind="{this.someProp,to=customerAddressVM}" data-view="name=debugger"></span>
+            <span data-bind="this.someProp,to=customerAddressVM" data-view="debugger"></span>
             -->
-            <table data-name="gridCustAddr" data-bind="{this.dataSource,to=custAdressView}" data-view="options={wrapCss:addressTableWrap,headerCss:addressTableHeader}">
+            <table data-name="gridCustAddr" data-bind="this.dataSource,to=custAdressView" data-view-options="wrapCss:addressTableWrap,headerCss:addressTableHeader">
                 <thead>
                     <tr>
                         <th data-column="width:10%,title=Type,sortable:true,sortMemberName=AddressType;AddressLine" data-content="fieldName:AddressType,readOnly:true"></th>
@@ -37,24 +39,24 @@
                 <tbody></tbody>
             </table>
             <button class="btn btn-info btn-small" style="float: right; margin: 5px;" 
-                    data-bind-1="{this.command,to=customerAddressVM.addAddressVM.addNewCommand}"
+                    data-bind-1="this.command,to=customerAddressVM.addAddressVM.addNewCommand"
                     @* just to show how to pass parameters to the command using inline object *@
-                    data-bind-2="{this.commandParam,source={width:880, height:580}}">Manage Addresses</button>
+                    data-bind-2="this.commandParam,source={width:880, height:580}">Manage Addresses</button>
         </fieldset>
     </div>
 </script>
 
-<script id="addressTemplate" type="text/html" data-role="template">
+<script id="custAdrGroup.addressTemplate" type="text/x-template">
     @*used for display of customer's address*@
-    <div class="addressTemplate" style="margin: 4px; width: 95%;">
+    <div class="custAdrGroup.addressTemplate" style="margin: 4px; width: 95%;">
         <fieldset>
             <legend style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">
-                <span class="address" data-bind="{this.value,to=AddressType}"></span>
+                <span class="address" data-bind="this.value,to=AddressType"></span>
             </legend>
             <!-- we can use dataform to assign to it datacontext that is other than inside this template.
             the look of the form changes to editing when the current entity is began editing
             -->
-            <form action="#" style="width: 100%" data-bind="{this.dataContext,to=Address}" data-view="name=dataform">
+            <form action="#" style="width: 100%" data-bind="this.dataContext,to=Address" data-view="dataform">
                 <dl class="dl-horizontal">
                     <dt>
                         <span class="addressLabel">AddressLine1:</span>
@@ -99,26 +101,27 @@
     </div>
 </script>
 
-<script id="addAddressTemplate" type="text/html" data-role="template">
-    <!--addressTemplate-->
+<script id="custAdrGroup.addAddressTemplate" type="text/x-template">
+    <!--custAdrGroup.addressTemplate-->
     @*used for managing of customer's addresses in many to many relationship*@
     <div style="margin: 4px; width: 95%;">
         <div style="margin-bottom: 4px;">
-            <span>Customer:</span>&nbsp;<span style="color: Blue; font-weight: bold;" data-bind="{this.value,to=customer.ComplexProp.Name}"></span>
+            <span>Customer:</span>&nbsp;<span style="color: Blue; font-weight: bold;" data-bind="this.value,to=customer.ComplexProp.Name"></span>
         </div>
-        <!--for switching views between linkAdrTemplate and newAdrTemplate-->
-        <div id="addrDynaContent" data-bind="{this.templateID,to=uiAddressRoute.viewName}{this.dataContext}" data-view="name=dynacontent"></div>
+        <!--for switching views between custAdrGroup.linkAdrTemplate and custAdrGroup.newAdrTemplate-->
+        <div id="addrDynaContent" data-bind-1="this.templateID,to=uiAddressRoute.viewName"
+             data-bind-2="this.dataContext" data-view="dynacontent"></div>
     </div>
 </script>
 
-<script id="linkAdrTemplate" type="text/html" data-role="template">
+<script id="custAdrGroup.linkAdrTemplate" type="text/x-template">
     <div data-name="search">
         <div style="margin: 5px 0px 5px 0px;">
             <span class="addressLabel">Search existing Address:</span>
             <input type="text" class="span2"
-                   data-bind-1="{this.value,to=searchString,mode=TwoWay}"
-                   data-bind-2="{this.toolTip,to=searchToolTip}" />
-            <a class="btn btn-info btn-small" data-bind="{this.command,to=execSearchCommand}">
+                   data-bind-1="this.value,to=searchString,mode=TwoWay"
+                   data-bind-2="this.toolTip,to=searchToolTip" />
+            <a class="btn btn-info btn-small" data-bind="this.command,to=execSearchCommand">
                 <i class="icon-search"></i>
             </a>
         </div>
@@ -128,8 +131,8 @@
                     <!--left section - already linked to customer addresses -->
                     <td style="vertical-align: top;">
                         <div style="height: 310px; vertical-align: top; width: 350px;">
-                            <table data-name="gridCustAddr" data-bind="{this.dataSource,to=custAdressView,source=customerVM.customerAddressVM}"
-                                   data-view="options={wrapCss:findAddrTableWrap,isCanDelete=false,isCanEdit=true,isUseScrollInto=false}">
+                            <table data-name="gridCustAddr" data-bind="this.dataSource,to=custAdressView,source=customerVM.customerAddressVM"
+                                   data-view-options="wrapCss:findAddrTableWrap,isCanDelete=false,isCanEdit=true,isUseScrollInto=false">
                                 <thead>
                                     <tr>
                                         <th data-column="width:50px,type:row_actions"></th>
@@ -144,12 +147,12 @@
                     <!--middle section - buttons -->
                     <td style="text-align: center; vertical-align: middle;">
                         <div style="padding: 3px">
-                            <a class="btn btn-info btn-small" data-bind="{this.command,to=linkCommand}">
+                            <a class="btn btn-info btn-small" data-bind="this.command,to=linkCommand">
                                 <i class="icon-hand-left"></i>
                             </a>
                         </div>
                         <div style="padding: 3px">
-                            <a class="btn btn-info btn-small" data-bind="{this.command,to=unLinkCommand}">
+                            <a class="btn btn-info btn-small" data-bind="this.command,to=unLinkCommand">
                                 <i class="icon-hand-right">
                                 </i>
                             </a>
@@ -158,8 +161,10 @@
                     <!--right section AddressInfos -->
                     <td style="vertical-align: top;">
                         <div style="height: 310px; vertical-align: top;">
-                            <table style="position: relative" data-bind="{this.dataSource,to=addressInfosView}{this.grid,to=grid,mode=BackWay}"
-                                   data-view="options={wrapCss:findAddrTableWrap}">
+                            <table style="position: relative" 
+                                   data-bind-1="this.dataSource,to=addressInfosView"
+                                   data-bind-2="this.grid,to=grid,mode=BackWay"
+                                   data-view-options="wrapCss:findAddrTableWrap">
                                 <thead>
                                     <tr>
                                         <th data-column="width:100%,sortable:true,title:Address" data-content="fieldName:AddressLine1,readOnly:true"></th>
@@ -178,17 +183,19 @@
                 </tr>
                 <tr>
                     <td colspan="2">
-                        <a class="btn btn-info btn-small" data-bind="{this.command,to=addNewAddressCommand}">
+                        <a class="btn btn-info btn-small" data-bind="this.command,to=addNewAddressCommand">
                             <i class="icon-plus"></i>&nbsp;New Address
                         </a>
                     </td>
                     <td>
-                        <div style="border: none; height: 40px; margin-bottom: 5px; margin-top: 3px; text-align: left; width: 100%;">
+                        <div style="border: none; height: 40px; margin-bottom: 5px; margin-top: 10px; text-align: left; width: 100%;">
                             <!--pager-->
-                            <div style="float: left;" data-bind="{this.dataSource,to=addressInfosView}" data-view="name=pager,options={sliderSize:10}">
+                            <div style="float: left;" data-bind="this.dataSource,to=addressInfosView" 
+                                 data-view="pager" 
+                                 data-view-options="sliderSize:5">
                             </div>
-                            <div style="float: left; padding-left: 10px; padding-top: 10px;">
-                                <span>Total:</span>&nbsp;<span data-bind="{this.value,to=addressInfosView.totalCount}"></span>
+                            <div style="float: left; padding-left: 10px; padding-top: 10px; padding-bottom:10px;">
+                                <span>Total rows:</span>&nbsp;<span data-bind="this.value,to=addressInfosView.totalCount"></span>
                             </div>
                         </div>
                     </td>
@@ -198,10 +205,10 @@
     </div>
 </script>
 
-<script id="newAdrTemplate" type="text/html" data-role="template">
+<script id="custAdrGroup.newAdrTemplate" type="text/x-template">
     <div data-name="newAddress" style="margin: 4px; max-width: 500px; width: 95%;">
-        <form action="#" style="width: 100%" data-bind="{this.dataContext,to=newAddress}"
-              data-view="name=dataform">
+        <form action="#" style="width: 100%" data-bind="this.dataContext,to=newAddress"
+              data-view="dataform">
             <dl class="dl-horizontal">
                 <dt>
                     <span class="addressLabel">AddressLine1:</span>

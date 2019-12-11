@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EntityFramework.6.3.0\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.3.0\build\EntityFramework.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,9 +11,11 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>RIAppDemo.BLL</RootNamespace>
     <AssemblyName>RIAppDemo.BLL</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,36 +38,46 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\EntityFramework.6.3.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\EntityFramework.6.3.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=3.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.3.0.1\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Transactions" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataServices\Config\DataManagerConfig.cs" />
-    <Compile Include="DataServices\Config\ValidatorConfig.cs" />
-    <Compile Include="DataServices\DataManagers\AdWDataManager.cs" />
-    <Compile Include="DataServices\DataManagers\LookUpProductDM.cs" />
-    <Compile Include="DataServices\DataManagers\ProductDM .cs" />
-    <Compile Include="DataServices\DataManagers\CustomerAddressDM.cs" />
+    <Compile Include="Config\DataManagerConfig.cs" />
+    <Compile Include="Config\FolderBrowserServiceConfig .cs" />
+    <Compile Include="Config\RIAppDemoServiceEFConfig.cs" />
+    <Compile Include="Config\SvcOptions.cs" />
+    <Compile Include="Config\ThumbnailServiceConfig.cs" />
+    <Compile Include="Config\ValidatorConfig.cs" />
+    <Compile Include="DataManagers\AdWDataManager.cs" />
+    <Compile Include="DataManagers\LookUpProductDM.cs" />
+    <Compile Include="DataManagers\ProductDM .cs" />
+    <Compile Include="DataManagers\CustomerAddressDM.cs" />
     <Compile Include="DataServices\FolderBrowserService.cs" />
-    <Compile Include="DataServices\IThumbnailService.cs" />
     <Compile Include="DataServices\RIAppDemoServiceEF.cs" />
-    <Compile Include="DataServices\ThumbnailServiceFactory.cs" />
+    <Compile Include="DataServices\TumbnailService.cs" />
     <Compile Include="Models\AddressInfo.cs" />
     <Compile Include="Models\CustomerJSON.cs" />
+    <Compile Include="Models\DEMOCLS.cs" />
     <Compile Include="Models\RadioVal.cs" />
     <Compile Include="Models\StrKeyVal.cs" />
     <Compile Include="Models\HistoryItem.cs" />
@@ -76,8 +89,13 @@
     <Compile Include="Models\TestModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\BlobStream.cs" />
+    <Compile Include="Utils\FileContent.cs" />
+    <Compile Include="Utils\IDataContent.cs" />
+    <Compile Include="Utils\IHostAddrService.cs" />
+    <Compile Include="Utils\IThumbnailService.cs" />
     <Compile Include="Utils\ResourceHelper.cs" />
     <Compile Include="Utils\Serializer.cs" />
+    <Compile Include="Utils\StreamContent.cs" />
     <Compile Include="Validators\ProductValidator.cs" />
     <Compile Include="Validators\CustomerValidator.cs" />
   </ItemGroup>
@@ -86,9 +104,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService.EF6_CF\RIAPP.DataService.EF6_CF.csproj">
-      <Project>{8a2062b4-6992-4132-9341-6f95cd3ff138}</Project>
-      <Name>RIAPP.DataService.EF6_CF</Name>
+    <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService.EF2\RIAPP.DataService.EF2.csproj">
+      <Project>{610fc4c8-33d2-4cc6-b585-b0af6577d02f}</Project>
+      <Name>RIAPP.DataService.EF2</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\FRAMEWORK\SERVER\RIAPP.DataService\RIAPP.DataService.csproj">
       <Project>{5fa08d23-6bae-47ad-930b-a11eafff11dc}</Project>
@@ -110,6 +128,14 @@
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\EntityFramework.6.3.0\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.3.0\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.3.0\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.3.0\build\EntityFramework.targets'))" />
+  </Target>
+  <Import Project="..\packages\EntityFramework.6.3.0\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.3.0\build\EntityFramework.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

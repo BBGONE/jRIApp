@@ -1,27 +1,31 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     DATE_CONVERSION, FILTER_TYPE, DATA_TYPE, SORT_ORDER, COLL_CHANGE_REASON
 } from "jriapp_shared/collection/const";
 import {
-    ICollectionItem, IPermissions as ICollPermissions,
-    ICollectionOptions, IFieldInfo
+    ICollectionItem, IPermissions as ICollPermissions, IFieldInfo
 } from "jriapp_shared/collection/int";
 import { DELETE_ACTION } from "./const";
 import { EntityAspect } from "./entity_aspect";
 import { DbContext } from "./dbcontext";
-import { DbSet } from "./dbset";
-import { DataQuery, TDataQuery } from "./dataquery";
 
 export interface IFieldName {
-    n: string; //field's name
-    p: IFieldName[]; //for object field contains its properties, for others is null
+    n: string; // field's name
+    p: IFieldName[]; // for object field contains its properties, for others is null
 }
 
 export interface IEntityItem extends ICollectionItem {
-    readonly _aspect: EntityAspect<IEntityItem, DbContext>;
+    readonly _aspect: EntityAspect<IEntityItem, any, DbContext>;
 }
-export interface IEntityConstructor<TItem extends IEntityItem> {
-    new (aspect: EntityAspect<TItem, DbContext>): TItem;
+
+export interface IKV {
+    key: string;
+    val: any;
+}
+
+export interface ICachedPage {
+    keys: string[];
+    pageIndex: number;
 }
 
 export interface IQueryParamInfo {
@@ -80,6 +84,12 @@ export interface IErrorInfo {
     message: string;
 }
 
+export interface ISubset {
+    names: IFieldName[];
+    rows: IRowData[];
+    dbSetName: string;
+}
+
 export interface IInvokeRequest {
     methodName: string;
     paramInfo: IParamInfo;
@@ -90,7 +100,12 @@ export interface IInvokeResponse {
     error: IErrorInfo;
 }
 
-export interface IRefreshRowInfo {
+export interface IRefreshRequest {
+    dbSetName: string;
+    rowInfo: IRowInfo;
+}
+
+export interface IRefreshResponse {
     dbSetName: string;
     rowInfo: IRowInfo;
     error: { name: string; message: string; };
@@ -103,8 +118,8 @@ export interface IDbSetConstuctorOptions {
     parentAssoc: IAssociationInfo[];
 }
 
-export interface IDbSetLoadedArgs<TItem extends IEntityItem> {
-    items: TItem[];
+export interface IDbSetLoadedArgs<TObj> {
+    vals: TObj[];
 }
 
 export interface IAssocConstructorOptions {
@@ -149,10 +164,15 @@ export interface ITrackAssoc {
     childKey: string;
 }
 
-export interface IChangeSet {
+export interface IChangeRequest {
+    dbSets: { dbSetName: string; rows: IRowInfo[]; }[];
+    trackAssocs: ITrackAssoc[];
+}
+
+export interface IChangeResponse {
     dbSets: { dbSetName: string; rows: IRowInfo[]; }[];
     error: { name: string; message: string; };
-    trackAssocs: ITrackAssoc[];
+    subsets: ISubset[] | null | undefined;
 }
 
 export interface IFilterInfo {
@@ -162,7 +182,6 @@ export interface IFilterInfo {
 export interface ISortInfo {
     sortItems: { fieldName: string; sortOrder: SORT_ORDER; }[];
 }
-
 
 export interface IQueryRequest {
     dbSetName: string;
@@ -177,7 +196,7 @@ export interface IQueryRequest {
 }
 
 export interface IRowData {
-    k: string; v: any[]; //key and values
+    k: string; v: any[]; // key and values
 }
 
 export interface IQueryItems<TItem extends IEntityItem> {
@@ -188,15 +207,9 @@ export interface IQueryItems<TItem extends IEntityItem> {
 export interface IQueryResult<TItem extends IEntityItem> {
     fetchedItems: TItem[];
     items: TItem[];
-    newItems: IQueryItems<TItem>,
+    newItems: IQueryItems<TItem>;
     reason: COLL_CHANGE_REASON;
     outOfBandData: any;
-}
-
-export interface ISubset {
-    names: IFieldName[];
-    rows: IRowData[];
-    dbSetName: string;
 }
 
 export interface IQueryResponse {
@@ -208,7 +221,7 @@ export interface IQueryResponse {
     totalCount: number;
     extraInfo: any;
     error: IErrorInfo;
-    subsets: ISubset[];
+    subsets: ISubset[] | null | undefined;
 }
 
 
@@ -218,5 +231,5 @@ export interface ICalcFieldImpl<TItem extends IEntityItem> {
 
 export interface INavFieldImpl<TItem extends IEntityItem> {
     getFunc: (item: TItem) => any;
-    setFunc: (v: any) => void;
+    setFunc: (v: any, item: TItem) => void;
 }

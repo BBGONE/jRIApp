@@ -1,11 +1,8 @@
-﻿/// <reference path="../../built/shared/shared.d.ts" />
-import * as RIAPP from "jriapp";
-import * as dbMOD from "jriapp_db";
-import * as uiMOD from "jriapp_ui";
+﻿import * as RIAPP from "jriapp";
 import * as DEMODB from "./demoDB";
 import * as COMMON from "common";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
+let bootstrap = RIAPP.bootstrap;
 
 export class RadioValueConverter extends RIAPP.BaseConverter {
     convertToSource(val: any, param: any, dataContext: any) {
@@ -23,7 +20,6 @@ export class RadioDemoVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication) {
         super(app);
-        var self = this;
         this._radioValue = null;
         //one property in a dictionary  must be unique and used as key (its name does not matter )
         this._radioValues = new DEMODB.RadioValDictionary();
@@ -40,19 +36,15 @@ export class RadioDemoVM extends RIAPP.ViewModel<DemoApplication> {
         ], true);
         //console.log(this._testDict.items2[3].SomeProperty2[0]);
     }
-    _getEventNames() {
-        var base_events = super._getEventNames();
-        return ['radio_value_changed'].concat(base_events);
-    }
     //can be overriden in descendants as in his example
     _onRadioValueChanged() {
-        this.raiseEvent('radio_value_changed', { value: this.radioValue })
+        this.objEvents.raise('radio_value_changed', { value: this.radioValue })
     }
     get radioValue() { return this._radioValue; }
     set radioValue(v) {
         if (this._radioValue !== v) {
             this._radioValue = v;
-            this.raisePropertyChanged('radioValue');
+            this.objEvents.raiseProp('radioValue');
             this._onRadioValueChanged();
         }
     }
@@ -67,17 +59,17 @@ export class RadioDemo2VM extends RadioDemoVM {
 
     constructor(app: DemoApplication, currentValue?: string) {
         super(app);
-        var self = this;
+        const self = this;
         if (!!currentValue)
             this.radioValue = currentValue;
         this._historyList = new DEMODB.HistoryList();
-        this._historyList.addOnPropertyChange('count', function (s, a) {
+        this._historyList.objEvents.onProp('count', () => {
             self._clearListCommand.raiseCanExecuteChanged();
         }, this.uniqueID);
-        this._clearListCommand = new RIAPP.Command(function (sender, param) {
+        this._clearListCommand = new RIAPP.Command(() => {
             self.clearList();
             self.radioValue = null;
-        }, self, function (sender, param) {
+        }, function () {
             return self._historyList.count > 0;
         });
     }
@@ -85,7 +77,7 @@ export class RadioDemo2VM extends RadioDemoVM {
     _onRadioValueChanged() {
         super._onRadioValueChanged();
         if (!!this.radioValue) {
-            var item = this._historyList.addNew();
+            let item = this._historyList.addNew();
             item.radioValue = this.radioValue;
             item.time = new Date();
             item._aspect.endEdit();
@@ -113,17 +105,16 @@ export class DemoApplication extends RIAPP.Application {
 
     constructor(options: RIAPP.IAppOptions) {
         super(options);
-        var self = this;
         this._errorVM = null;
         this._demoVM = null;
     }
     onStartUp() {
-        var self = this;
+        const self = this;
         this._errorVM = new COMMON.ErrorViewModel(this);
         this._demoVM = new RadioDemo2VM(this);
 
         //here we could process application's errors
-        this.addOnError(function (sender, data) {
+        this.objEvents.addOnError(function (_s, data) {
             debugger;
             data.isHandled = true;
             self.errorVM.error = data.error;
@@ -131,16 +122,16 @@ export class DemoApplication extends RIAPP.Application {
         });
         super.onStartUp();
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        var self = this;
+        this.setDisposing();
+        const self = this;
         try {
-            self._errorVM.destroy();
-            self._demoVM.destroy();
+            self._errorVM.dispose();
+            self._demoVM.dispose();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get errorVM() { return this._errorVM; }
@@ -149,7 +140,7 @@ export class DemoApplication extends RIAPP.Application {
 }
 
 //bootstrap error handler - the last resort (typically display message to the user)
-bootstrap.addOnError(function (sender, args) {
+bootstrap.objEvents.addOnError(function (_s, args) {
     debugger;
     alert(args.error.message);
 });
@@ -158,7 +149,7 @@ function initModule(app: RIAPP.Application) {
     app.registerConverter('radioValueConverter', new RadioValueConverter());
 };
 
-export var appOptions: RIAPP.IAppOptions = {
+export let appOptions: RIAPP.IAppOptions = {
     modulesInits: {
         "COMMON": COMMON.initModule,
         "COLLDEMO": initModule

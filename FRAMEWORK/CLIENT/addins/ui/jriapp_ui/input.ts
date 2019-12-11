@@ -1,31 +1,30 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { IViewOptions } from "jriapp/int";
-import { BaseElView, PROP_NAME } from "./baseview";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { BaseElView } from "./baseview";
 
-export class InputElView extends BaseElView {
-    toString() {
+export class InputElView<TElement extends HTMLInputElement | HTMLTextAreaElement = HTMLInputElement> extends BaseElView<TElement> {
+    toString(): string {
         return "InputElView";
     }
-    get isEnabled() {
-        return (<HTMLInputElement>this.el).disabled;
+    get isEnabled(): boolean {
+        return this.el.disabled;
     }
     set isEnabled(v: boolean) {
         v = !v;
-        const el = <HTMLInputElement>this.el;
+        const el = this.el;
         if (v !== !this.isEnabled) {
             el.disabled = v;
-            this.raisePropertyChanged(PROP_NAME.isEnabled);
+            this.objEvents.raiseProp("isEnabled");
         }
     }
     get value(): string {
-        return (<HTMLInputElement>this.el).value;
+        return this.el.value;
     }
-    set value(v) {
+    set value(v: string) {
         const x = this.value, str = "" + v;
         v = (!v) ? "" : str;
         if (x !== v) {
-            (<HTMLInputElement>this.el).value = v;
-            this.raisePropertyChanged(PROP_NAME.value);
+            this.el.value = v;
+            this.objEvents.raiseProp("value");
         }
     }
 }

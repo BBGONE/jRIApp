@@ -1,12 +1,8 @@
-﻿/// <reference path="../../jriapp/jriapp_shared.d.ts" />
-/// <reference path="../../jriapp/jriapp.d.ts" />
-/// <reference path="../../jriapp/jriapp_ui.d.ts" />
-/// <reference path="../../jriapp/jriapp_db.d.ts" />
-import * as RIAPP from "jriapp";
+﻿import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 
-const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = RIAPP.$;
+const utils = RIAPP.Utils;
 
 export interface IGridEvents<TItem extends RIAPP.ICollectionItem> {
     regFocusGridFunc(doFocus: () => void): void;
@@ -16,19 +12,19 @@ export interface IGridEvents<TItem extends RIAPP.ICollectionItem> {
     onRowCollapsed(item: TItem): void;
 }
 
-export function addTextQuery(query: dbMOD.TDataQuery, fldName: string, val: any): dbMOD.DataQuery<dbMOD.IEntityItem> {
-    var tmp: string;
+export function addTextQuery(query: dbMOD.TDataQuery, fldName: string, val: any): dbMOD.TDataQuery {
+    let tmp: string;
     if (!!val) {
         if (utils.str.startsWith(val, '%') && utils.str.endsWith(val, '%')) {
-            tmp = utils.str.trim(val, '% ');
+            tmp = utils.str.trim(val, ['%',' ']);
             query.where(fldName, RIAPP.FILTER_TYPE.Contains, [tmp])
         }
         else if (utils.str.startsWith(val, '%')) {
-            tmp = utils.str.trim(val, '% ');
+            tmp = utils.str.trim(val, ['%', ' ']);
             query.where(fldName, RIAPP.FILTER_TYPE.EndsWith, [tmp])
         }
         else if (utils.str.endsWith(val, '%')) {
-            tmp = utils.str.trim(val, '% ');
+            tmp = utils.str.trim(val, ['%', ' ']);
             query.where(fldName, RIAPP.FILTER_TYPE.StartsWith, [tmp])
         }
         else {
@@ -43,12 +39,12 @@ export interface IDLinkOptions extends RIAPP.IViewOptions {
     baseUri?: string;
 }
 
-export class DownloadLinkElView extends uiMOD.BaseElView {
-    _baseUri: string;
-    _id: string;
+export class DownloadLinkElView extends uiMOD.BaseElView<HTMLAnchorElement> {
+    private _baseUri: string;
+    private _id: string;
 
-    constructor(options: IDLinkOptions) {
-        super(options);
+    constructor(el: HTMLAnchorElement, options: IDLinkOptions) {
+        super(el, options);
         this._baseUri = '';
         if (!!options.baseUri)
             this._baseUri = options.baseUri;
@@ -58,136 +54,136 @@ export class DownloadLinkElView extends uiMOD.BaseElView {
         return this.el.textContent;
     }
     set text(v) {
-        var el = this.el;
-        var x = this.text;
+        let el = this.el;
+        let x = this.text;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             el.textContent = v;
-            this.raisePropertyChanged('text');
+            this.objEvents.raiseProp('text');
         }
     }
     get href(): string {
-        return (<HTMLAnchorElement>this.el).href;
+        return this.el.href;
     }
     set href(v) {
         let x = this.href;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
-            (<HTMLAnchorElement>this.el).href = v;
-            this.raisePropertyChanged("href");
+            this.el.href = v;
+            this.objEvents.raiseProp("href");
         }
     }
-    get id() { return this._id; }
+    get id() {
+        return this._id;
+    }
     set id(v) {
-        var x = this._id;
+        let x = this._id;
         v = (!v) ? "" : ("" + v);
         if (x !== v) {
             this._id = v;
             this.href = this._baseUri + '/' + this._id;
-            this.raisePropertyChanged('id');
+            this.objEvents.raiseProp('id');
         }
     }
 }
 
-export class FileImgElView extends uiMOD.BaseElView {
+export class FileImgElView extends uiMOD.BaseElView<HTMLImageElement> {
     private _baseUri: string;
     private _id: string;
     private _fileName: string;
-    private _debounce: number;
+    private _debounce: RIAPP.Debounce;
     private _src: string;
 
-    constructor(options: IDLinkOptions) {
-        super(options);
-        this._debounce = null;
+    constructor(el: HTMLImageElement, options: IDLinkOptions) {
+        super(el, options);
+        this._debounce = new RIAPP.Debounce();
         this._baseUri = '';
-        if (!!options.baseUri)
+        if (!!options.baseUri) {
             this._baseUri = options.baseUri;
+        }
         this._id = '';
         this._src = null;
         this._fileName = null;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose(): void {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        clearTimeout(this._debounce);
-        this._debounce = null;
-        super.destroy();
+        this.setDisposing();
+        this._debounce.dispose();
+        super.dispose();
     }
     reloadImg(): void {
         if (!!this.src) {
-            var src = this.src;
-            var pos = src.indexOf('?');
+            let src = this.src, pos = src.indexOf('?');
             if (pos >= 0) {
                 src = src.substr(0, pos);
             }
-            var date = new Date();
+            let date = new Date();
             this.src = src + '?v=' + date.getTime();
         }
     }
-    get fileName() { return this._fileName; }
+    get fileName(): string {
+        return this._fileName;
+    }
     set fileName(v) {
-        var x = this._fileName;
+        const x = this._fileName;
         if (x !== v) {
             this._fileName = v;
-            this.raisePropertyChanged('fileName');
+            this.objEvents.raiseProp('fileName');
             this.reloadImg();
         }
     }
-    get src() {
+    get src(): string {
         return this._src;
     }
     set src(v) {
         if (this._src !== v) {
             this._src = v;
-            this.raisePropertyChanged('src');
+            this.objEvents.raiseProp('src');
         }
-        clearTimeout(this._debounce);
-        this._debounce = setTimeout(() => {
-            this._debounce = null;
-            var img = this.el;
+        const img = this.el;
+        //set empty image as a stub
+        img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+
+        this._debounce.enque(() => {
             if (!!this._src) {
-                (<HTMLImageElement>img).src = this._src;
+                img.src = this._src;
             }
-            else {
-                (<HTMLImageElement>img).src = "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
-            }
-        }, 100);
+        });
     }
-    get id() { return this._id; }
+    get id(): string {
+        return this._id;
+    }
     set id(v) {
-        var x = this._id;
-        if (v === null)
-            v = '';
-        else
-            v = '' + v;
+        let x = this._id;
+        v = (v === null) ? '' : ('' + v);
         if (x !== v) {
             this._id = v;
             if (!this._id)
                 this.src = null;
             else
                 this.src = this._baseUri + '/' + this._id;
-            this.raisePropertyChanged('id');
+            this.objEvents.raiseProp('id');
         }
     }
 }
 
 export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
-    _error: any;
-    _errors: any[];
-    _message: string;
-    _title: string;
-    _dialogVM: uiMOD.DialogVM;
+    private _error: any;
+    private _errors: any[];
+    private _message: string;
+    private _title: string;
+    private _dialogVM: uiMOD.DialogVM;
 
     constructor(app: RIAPP.IApplication) {
         super(app);
-        var self = this;
+        let self = this;
         this._error = null;
         this._errors = [];
         this._message = null;
         this._title = '';
         this._dialogVM = new uiMOD.DialogVM(app);
-        var dialogOptions: uiMOD.IDialogConstructorOptions = {
+        let dialogOptions: uiMOD.IDialogConstructorOptions = {
             templateID: 'errorTemplate',
             width: 500,
             height: 300,
@@ -197,7 +193,7 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
                 while (!!self.error && !!self.error.origError) {
                     //get real error
                     self._error = self.error.origError;
-                    self.raisePropertyChanged('error');
+                    self.objEvents.raiseProp('error');
                 }
 
                 if (self.error instanceof dbMOD.AccessDeniedError)
@@ -219,8 +215,8 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
                 self._error = null;
                 self._errors = [];
                 self._message = null;
-                self.raisePropertyChanged('error');
-                self.raisePropertyChanged('message');
+                self.objEvents.raiseProp('error');
+                self.objEvents.raiseProp('message');
             }
         };
         //dialogs are distinguished by their given names
@@ -229,20 +225,22 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
     showDialog() {
         this._dialogVM.showDialog('errorDialog', this);
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        this._dialogVM.destroy();
+        this.setDisposing();
+        this._dialogVM.dispose();
         this._dialogVM = null;
         this._error = null;
         this._errors = [];
         this._message = null;
-        super.destroy();
+        super.dispose();
     }
-    get error() { return this._error; }
+    get error(): any {
+        return this._error;
+    }
     set error(v) {
-        var self = this, old = this._error;
+        let self = this, old = this._error;
         if (!old) {
             this._error = v;
             let msg: string = '';
@@ -251,30 +249,34 @@ export class ErrorViewModel extends RIAPP.ViewModel<RIAPP.IApplication> {
             else
                 msg = 'Error!';
             this.message = msg;
-            this.raisePropertyChanged('error');
+            this.objEvents.raiseProp('error');
         }
         else {
             this._errors.push(v);
-            this.raisePropertyChanged('errorCount');
+            this.objEvents.raiseProp('errorCount');
         }
     }
-    get title() { return this._title; }
+    get title(): string {
+        return this._title;
+    }
     set title(v) {
-        var old = this._title;
+        let old = this._title;
         if (old !== v) {
             this._title = v;
-            this.raisePropertyChanged('title');
+            this.objEvents.raiseProp('title');
         }
     }
-    get message() { return this._message; }
+    get message(): string {
+        return this._message;
+    }
     set message(v) {
-        var old = this._message;
+        let old = this._message;
         if (old !== v) {
             this._message = v;
-            this.raisePropertyChanged('message');
+            this.objEvents.raiseProp('message');
         }
     }
-    get errorCount() {
+    get errorCount(): number {
         return this._errors.length + 1;
     }
 }

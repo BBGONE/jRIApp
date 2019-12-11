@@ -1,56 +1,65 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { BaseObject, Utils } from "jriapp_shared";
-import { $ } from "jriapp/utils/jquery";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { BaseObject } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
-import { css } from "../const";
+import { css } from "../consts";
 import { FillSpaceCell } from "../cells/fillspace";
-import { DataGrid } from "../datagrid"
+import { DataGrid } from "../datagrid";
 
-const dom = DomUtils;
+const dom = DomUtils, doc = dom.document;
 
 export class FillSpaceRow extends BaseObject {
     private _grid: DataGrid;
     private _tr: HTMLTableRowElement;
     private _cell: FillSpaceCell;
 
-    constructor(options: { grid: DataGrid; tr: HTMLTableRowElement; }) {
+    constructor(options: { grid: DataGrid; }) {
         super();
-        let self = this, tr = options.tr;
+        const tr = <HTMLTableRowElement>doc.createElement("tr");
         this._grid = options.grid;
         this._tr = tr;
         this._cell = null;
         this._createCell();
         dom.addClass([tr], css.fillVSpace);
     }
-    private _createCell() {
-        let td: HTMLTableCellElement = <HTMLTableCellElement>document.createElement("td");
-        this._cell = new FillSpaceCell({ row: this, td: td });
-    }
-    destroy() {
-        if (this._isDestroyed)
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
-        this._isDestroyCalled = true;
+        }
+        this.setDisposing();
         if (!!this._cell) {
-            this._cell.destroy();
+            this._cell.dispose();
             this._cell = null;
         }
         dom.removeNode(this.tr);
         this._tr = null;
         this._grid = null;
-        super.destroy();
+        super.dispose();
     }
-    toString() {
+    private _createCell(): void {
+        this._cell = new FillSpaceCell({ row: this });
+    }
+    toString(): string {
         return "FillSpaceRow";
     }
-    attach() {
+    attach(): void {
         this._grid._tBodyEl.appendChild(this.tr);
     }
-    detach() {
+    detach(): void {
         dom.removeNode(this.tr);
     }
-    get tr() { return this._tr; }
-    get grid() { return this._grid; }
-    get cell() { return this._cell; }
-    get height() { return this._cell.height; }
-    set height(v) { this._cell.height = v; }
+    get tr(): HTMLTableRowElement {
+        return this._tr;
+    }
+    get grid(): DataGrid {
+        return this._grid;
+    }
+    get cell(): FillSpaceCell {
+        return this._cell;
+    }
+    get height(): number {
+        return this._cell.height;
+    }
+    set height(v: number) {
+        this._cell.height = v;
+    }
 }

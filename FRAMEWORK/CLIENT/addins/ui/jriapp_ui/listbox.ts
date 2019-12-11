@@ -1,6 +1,6 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    Utils, BaseObject, IBaseObject, LocaleERRS as ERRS, TEventHandler, Debounce
+    Utils, BaseObject, LocaleERRS as ERRS, TEventHandler, Debounce
 } from "jriapp_shared";
 import { DomUtils } from "jriapp/utils/dom";
 import {
@@ -9,13 +9,13 @@ import {
 import {
     ICollection, ICollectionItem, ICollChangedArgs
 } from "jriapp_shared/collection/int";
-import { IViewOptions } from "jriapp/int";
-import { bootstrap } from "jriapp/bootstrap";
+import { SubscribeFlags } from "jriapp/consts";
+import { IViewOptions, ISubscriber } from "jriapp/int";
+import { bootstrap, subscribeWeakMap } from "jriapp/bootstrap";
 import { BaseElView } from "./baseview";
 
 const utils = Utils, dom = DomUtils, doc = dom.document, sys = utils.sys,
-    checks = utils.check, strUtils = utils.str, coreUtils = utils.core,
-    boot = bootstrap, win = DomUtils.window;
+    { _undefined, isString, isNt } = utils.check, { forEach, extend, getNewID, Indexer } = utils.core, boot = bootstrap, subscribeMap = subscribeWeakMap;
 
 export interface IOptionStateProvider {
     getCSS(item: ICollectionItem, itemIndex: number, val: any): string;
@@ -30,49 +30,36 @@ export interface IListBoxOptions {
     textPath: string;
     statePath?: string;
     emptyOptionText?: string;
+    syncSetDatasource?: boolean;
+    nodelegate?: boolean;
 }
 
 export interface IListBoxConstructorOptions extends IListBoxOptions {
-    el: HTMLSelectElement;
-    dataSource: ICollection<ICollectionItem>;
+    dataSource?: ICollection<ICollectionItem>;
 }
+
 export interface IMappedItem {
     item: ICollectionItem;
     op: HTMLOptionElement;
 }
 
-const PROP_NAME = {
-    dataSource: "dataSource",
-    selectedItem: "selectedItem",
-    selectedValue: "selectedValue",
-    valuePath: "valuePath",
-    textPath: "textPath",
-    isEnabled: "isEnabled",
-    listBox: "listBox",
-    value: "value",
-    textProvider: "textProvider",
-    stateProvider: "stateProvider"
-};
+const enum LISTBOX_EVENTS {
+    refreshed = "refreshed"
+}
 
-const LISTBOX_EVENTS = {
-    refreshed: "refreshed"
-};
+function fn_Str(v: any): string {
+    return (isNt(v)) ? "" : ("" + v);
+}
 
- function fn_Str(v: any): string {
-    if (checks.isNt(v))
-        return "";
-    return "" + v;
- }
-
-export class ListBox extends BaseObject {
+export class ListBox extends BaseObject implements ISubscriber {
     private _el: HTMLSelectElement;
-    private _objId: string;
+    private _uniqueID: string;
     private _isRefreshing: boolean;
     private _selectedValue: any;
     private _keyMap: { [key: string]: IMappedItem; };
     private _valMap: { [val: string]: IMappedItem; };
     private _options: IListBoxConstructorOptions;
-    private _fn_state: (data: IMappedItem) => void;
+    private _fnState: (data: IMappedItem) => void;
     private _textProvider: IOptionTextProvider;
     private _stateProvider: IOptionStateProvider;
     private _savedVal: any;
@@ -80,30 +67,28 @@ export class ListBox extends BaseObject {
     private _txtDebounce: Debounce;
     private _stDebounce: Debounce;
     private _changeDebounce: Debounce;
-    private _fn_checkChanges: () => void;
-   
-    constructor(options: IListBoxConstructorOptions) {
+    private _fnCheckSelected: () => void;
+    private _isDSFilled: boolean;
+
+    constructor(el: HTMLSelectElement, options: IListBoxConstructorOptions) {
         super();
         const self = this;
-        options = coreUtils.extend(
+        options = extend(
             {
-                el: null,
                 dataSource: null,
                 valuePath: null,
                 textPath: null,
-                statePath: null
+                statePath: null,
+                syncSetDatasource: false,
+                nodelegate: false
             }, options);
-        if (!!options.dataSource && !sys.isCollection(options.dataSource))
+        if (!!options.dataSource && !sys.isCollection(options.dataSource)) {
             throw new Error(ERRS.ERR_LISTBOX_DATASRC_INVALID);
-        this._el = options.el;
+        }
+        this._el = el;
         this._options = options;
-        this._objId = coreUtils.getNewID("lst");
-        dom.events.on(this.el, "change", function (e) {
-            e.stopPropagation();
-            if (self._isRefreshing)
-                return;
-            self._onChanged();
-        }, this._objId);
+        this._uniqueID = getNewID("lst");
+        this._isDSFilled = false;
         this._textProvider = null;
         this._stateProvider = null;
         this._isRefreshing = false;
@@ -112,54 +97,209 @@ export class ListBox extends BaseObject {
         this._stDebounce = new Debounce();
         this._txtDebounce = new Debounce();
         this._changeDebounce = new Debounce();
-        this._keyMap = {};
-        this._valMap = {};
-        this._savedVal = checks.undefined;
-        this._fn_state = (data: IMappedItem) => {
-            if (!data || !data.item || data.item.getIsDestroyCalled())
+        this._keyMap = Indexer();
+        this._valMap = Indexer();
+        this._savedVal = _undefined;
+        this._fnState = (data: IMappedItem) => {
+            if (!data || !data.item || data.item.getIsStateDirty()) {
                 return;
+            }
             const item = data.item, path = self.statePath,
                 val = !path ? null : sys.resolvePath(item, path), spr = self._stateProvider;
             data.op.className = !spr ? "" : spr.getCSS(item, data.op.index, val);
         };
-
+        if (!this._options.nodelegate) {
+            subscribeMap.set(el, this);
+        } else {
+            dom.events.on(el, "change", (e) => this.handle_change(e), this._uniqueID);            
+        }
         const ds = this._options.dataSource;
-        this._setDataSource(ds);
+        this.setDataSource(ds);
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
-        this._isDestroyCalled = true;
-        this._dsDebounce.destroy();
-        this._stDebounce.destroy();
-        this._txtDebounce.destroy();
-        this._changeDebounce.destroy();
-        this._fn_checkChanges = null;
+        }
+        this.setDisposing();
+        if (!this._options.nodelegate) {
+            subscribeMap.delete(this._el);
+        }
+        dom.events.offNS(this._el, this._uniqueID);
+        this._dsDebounce.dispose();
+        this._stDebounce.dispose();
+        this._txtDebounce.dispose();
+        this._changeDebounce.dispose();
+        this._fnCheckSelected = null;
         this._unbindDS();
-        dom.events.offNS(this._el, this._objId);
         this._clear();
         this._el = null;
-        this._selectedValue = checks.undefined;
-        this._savedVal = checks.undefined;
+        this._selectedValue = _undefined;
+        this._savedVal = _undefined;
         this._options = <any>{};
         this._textProvider = null;
         this._stateProvider = null;
-        super.destroy();
+        this._isDSFilled = false;
+        super.dispose();
     }
-    protected _getEventNames() {
-        const base_events = super._getEventNames();
-        const events = Object.keys(LISTBOX_EVENTS).map((key, i, arr) => {
-            return <string>(<any>LISTBOX_EVENTS)[key];
+    private _bindDS(): void {
+        const self = this, ds = this.dataSource;
+        if (!ds) {
+            return;
+        }
+        ds.addOnCollChanged(self._onDSCollectionChanged, self._uniqueID, self);
+        ds.addOnBeginEdit((sender, args) => {
+            self._onEdit(args.item, true, false);
+        }, self._uniqueID);
+        ds.addOnEndEdit((sender, args) => {
+            self._onEdit(args.item, false, args.isCanceled);
+        }, self._uniqueID);
+        ds.addOnStatusChanged((sender, args) => {
+            self._onStatusChanged(args.item, args.oldStatus);
+        }, self._uniqueID);
+        ds.addOnCommitChanges((sender, args) => {
+            self._onCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
+        }, self._uniqueID);
+    }
+    private _unbindDS(): void {
+        const self = this, ds = this.dataSource;
+        if (!ds) {
+            return;
+        }
+        ds.objEvents.offNS(self._uniqueID);
+    }
+    private _addOption(item: ICollectionItem, first: boolean): IMappedItem {
+        const key = !item ? "" : item._key;
+        if (!!this._keyMap[key]) {
+            return null;
+        }
+
+        const selEl = this.el;
+        let text = "";
+        if (!item) {
+            if (isString(this._options.emptyOptionText)) {
+                text = this._options.emptyOptionText;
+            }
+        } else {
+            text = this._getText(item, selEl.options.length);
+        }
+        const val = fn_Str(this._getValue(item));
+        const oOption = doc.createElement("option");
+        oOption.text = text;
+        oOption.value = key;
+        const data: IMappedItem = { item: item, op: oOption };
+        this._keyMap[key] = data;
+        if (!!val) {
+            this._valMap[val] = data;
+        }
+        if (!!first) {
+            if (selEl.options.length < 2) {
+                selEl.add(oOption, null);
+            } else {
+                const firstOp = <any>selEl.options[1];
+                selEl.add(oOption, firstOp);
+            }
+        } else {
+            selEl.add(oOption, null);
+        }
+
+        if (!!item) {
+            if (!!this.statePath) {
+                item.objEvents.onProp(this.statePath, this._fnState, this._uniqueID);
+            }
+            this._fnState(data);
+        }
+
+        return data;
+    }
+    private _mapByValue(): void {
+        const self = this;
+        this._valMap = Indexer();
+        forEach(this._keyMap, (key) => {
+            const data = self._keyMap[key], val = fn_Str(self._getValue(data.item));
+            if (!!val) {
+                self._valMap[val] = data;
+            }
         });
-        return events.concat(base_events);
     }
-    addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any) {
-        this._addHandler(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
+    private _resetText(): void {
+        const self = this;
+        forEach(this._keyMap, (key) => {
+            const data = self._keyMap[key];
+            data.op.text = self._getText(data.item, data.op.index);
+        });
     }
-    removeOnRefreshed(nmspace?: string) {
-        this._removeHandler(LISTBOX_EVENTS.refreshed, nmspace);
+    private _resetState(): void {
+        const self = this;
+        forEach(this._keyMap, (key) => {
+            self._fnState(self._keyMap[key]);
+        });
     }
-    protected _onChanged() {
+    private _removeOption(item: ICollectionItem): void {
+        if (!!item) {
+            const key = item._key, data = this._keyMap[key];
+            if (!data) {
+                return;
+            }
+
+            item.objEvents.offNS(this._uniqueID);
+            this.el.remove(data.op.index);
+            const val = fn_Str(this._getValue(item));
+            delete this._keyMap[key];
+            if (!!val) {
+                delete this._valMap[val];
+            }
+
+            const curVal = this.getByIndex(this.selectedIndex);
+            const v = (!curVal ? null : this._getValue(curVal.item));
+            this._selectedValue = v;
+            this.updateSelected(v);
+        }
+    }
+    private _clear(): void {
+        const self = this, keys = Object.keys(self._keyMap);
+        keys.forEach((key) => {
+            const data = self._keyMap[key];
+            if (!!data && !!data.item) {
+                data.item.objEvents.offNS(self._uniqueID);
+            }
+        });
+        this.el.options.length = 0;
+        this._keyMap = Indexer();
+        this._valMap = Indexer();
+    }
+    private _refresh(): void {
+        const self = this, ds = this.dataSource;
+        this.beginTrackSelected();
+        this._isRefreshing = true;
+        try {
+            this._clear();
+            this._addOption(null, false);
+            let cnt = 0;
+            if (!!ds) {
+                ds.forEach((item) => {
+                    self._addOption(item, false);
+                    ++cnt;
+                });
+            }
+
+            if (this._isDSFilled && !isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
+                this.selectedValue = null;
+            } else {
+                self.updateSelected(this._selectedValue);
+            }
+
+            if (cnt > 0) {
+                this._isDSFilled = true;
+            }
+
+        } finally {
+            self._isRefreshing = false;
+            this.endTrackSelected();
+        }
+
+        this.objEvents.raise(LISTBOX_EVENTS.refreshed, {});
+    }
+    protected _onSelectedChanged(): void {
         const data: IMappedItem = this.getByIndex(this.selectedIndex);
         if (!data) {
             this.selectedValue = null;
@@ -176,8 +316,7 @@ export class ListBox extends BaseObject {
 
         if (!!this._options.valuePath) {
             return sys.resolvePath(item, this._options.valuePath);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -190,16 +329,15 @@ export class ListBox extends BaseObject {
         if (!!this._options.textPath) {
             const t = sys.resolvePath(item, this._options.textPath);
             res = fn_Str(t);
-        }
-        else {
+        } else {
             res = fn_Str(this._getValue(item));
         }
 
-        return (!this._textProvider)? res: this._textProvider.getText(item, index, res);
+        return (!this._textProvider) ? res : this._textProvider.getText(item, index, res);
     }
     protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>) {
         const self = this;
-        this.setChanges();
+        this.beginTrackSelected();
         try {
             switch (args.changeType) {
                 case COLL_CHANGE_TYPE.Reset:
@@ -209,18 +347,19 @@ export class ListBox extends BaseObject {
                     break;
                 case COLL_CHANGE_TYPE.Add:
                     {
-                        args.items.forEach(function (item) {
+                        args.items.forEach((item) => {
                             self._addOption(item, item._aspect.isNew);
                         });
                     }
                     break;
                 case COLL_CHANGE_TYPE.Remove:
                     {
-                        args.items.forEach(function (item) {
+                        args.items.forEach((item) => {
                             self._removeOption(item);
                         });
-                        if (!!self._textProvider)
+                        if (!!self._textProvider) {
                             self._resetText();
+                        }
                     }
                     break;
                 case COLL_CHANGE_TYPE.Remap:
@@ -234,91 +373,85 @@ export class ListBox extends BaseObject {
                     }
                     break;
             }
-        }
-        finally {
-            this.checkChanges();
+        } finally {
+            this.endTrackSelected();
         }
     }
     protected _onEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean) {
         const self = this;
         if (isBegin) {
-            this.setChanges();
+            this.beginTrackSelected();
             this._savedVal = this._getValue(item);
-        }
-        else {
+        } else {
             try {
                 if (!isCanceled) {
                     const oldVal = this._savedVal;
-                    this._savedVal = checks.undefined;
+                    this._savedVal = _undefined;
                     const key = item._key, data = self._keyMap[key];
                     if (!!data) {
                         data.op.text = self._getText(item, data.op.index);
                         const val = this._getValue(item);
                         if (oldVal !== val) {
-                            if (!checks.isNt(oldVal)) {
+                            if (!isNt(oldVal)) {
                                 delete self._valMap[fn_Str(oldVal)];
                             }
-                            if (!checks.isNt(val)) {
+                            if (!isNt(val)) {
                                 self._valMap[fn_Str(val)] = data;
                             }
                         }
-                    }
-                    else {
-                        if (!checks.isNt(oldVal)) {
+                    } else {
+                        if (!isNt(oldVal)) {
                             delete self._valMap[fn_Str(oldVal)];
                         }
                     }
                 }
-            }
-            finally {
-                this.checkChanges();
+            } finally {
+                this.endTrackSelected();
             }
         }
     }
     protected _onStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS) {
-        const self = this, newStatus = item._aspect.status;
-        this.setChanges();
+        const newStatus = item._aspect.status;
+        this.beginTrackSelected();
         if (newStatus === ITEM_STATUS.Deleted) {
             this._removeOption(item);
             if (!!this._textProvider) {
-                //need to reset text due to the index changes
+                // need to reset text due to the index changes
                 this._resetText();
             }
         }
-        this.checkChanges();
+        this.endTrackSelected();
     }
     protected _onCommitChanges(item: ICollectionItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS) {
         const self = this;
         if (isBegin) {
-            this.setChanges();
+            this.beginTrackSelected();
 
             if (isRejected && status === ITEM_STATUS.Added) {
                 return;
-            }
-            else if (!isRejected && status === ITEM_STATUS.Deleted) {
+            } else if (!isRejected && status === ITEM_STATUS.Deleted) {
                 return;
             }
 
             this._savedVal = this._getValue(item);
-        }
-        else {
+        } else {
             const oldVal = this._savedVal;
-            this._savedVal = checks.undefined;
-            //delete is rejected
+            this._savedVal = _undefined;
+            // delete is rejected
             if (isRejected && status === ITEM_STATUS.Deleted) {
                 this._addOption(item, true);
-                this.checkChanges();
+                this.endTrackSelected();
                 return;
             }
 
             try {
                 const val = this._getValue(item), data = self._keyMap[item._key];
                 if (oldVal !== val) {
-                    if (!checks.isNt(oldVal)) {
+                    if (!isNt(oldVal)) {
                         delete self._valMap[fn_Str(oldVal)];
                     }
 
-                    if (!!data && !checks.isNt(val)) {
+                    if (!!data && !isNt(val)) {
                         self._valMap[fn_Str(val)] = data;
                     }
                 }
@@ -326,299 +459,161 @@ export class ListBox extends BaseObject {
                 if (!!data) {
                     data.op.text = self._getText(item, data.op.index);
                 }
-            }
-            finally {
-                this.checkChanges();
+            } finally {
+                this.endTrackSelected();
             }
         }
     }
-    private _bindDS() {
-        const self = this, ds = this.dataSource;
-        if (!ds)
-            return;
-        ds.addOnCollChanged(self._onDSCollectionChanged, self._objId, self);
-        ds.addOnBeginEdit(function (sender, args) {
-            self._onEdit(args.item, true, false);
-        }, self._objId);
-        ds.addOnEndEdit(function (sender, args) {
-            self._onEdit(args.item, false, args.isCanceled);
-        }, self._objId);
-        ds.addOnStatusChanged(function (sender, args) {
-            self._onStatusChanged(args.item, args.oldStatus);
-        }, self._objId);
-        ds.addOnCommitChanges(function (sender, args) {
-            self._onCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
-        }, self._objId);
-    }
-    private _unbindDS() {
-        const self = this, ds = this.dataSource;
-        if (!ds)
-            return;
-        ds.removeNSHandlers(self._objId);
-    }
-    private _addOption(item: ICollectionItem, first: boolean): IMappedItem {
-        const key = (!item ? "" : item._key);
-        if (!!this._keyMap[key]) {
-            return null;
-        }
-
-        const selEl = this.el;
-        let text = "";
-        if (!item) {
-            if (checks.isString(this._options.emptyOptionText)) {
-                text = this._options.emptyOptionText;
-            }
-        }
-        else {
-           text = this._getText(item, selEl.options.length);
-        }
-        let val = fn_Str(this._getValue(item));
-        let oOption = doc.createElement("option");
-        oOption.text = text;
-        oOption.value = key;
-        const data: IMappedItem = { item: item, op: oOption };
-        this._keyMap[key] = data;
-        if (!!val) {
-            this._valMap[val] = data;
-        }
-        if (!!first) {
-            if (selEl.options.length < 2)
-                selEl.add(oOption, null);
-            else {
-                const firstOp = <any>selEl.options[1];
-                selEl.add(oOption, firstOp);
-            }
-        }
-        else {
-            selEl.add(oOption, null);
-        }
-
-        if (!!item) {
-            if (!!this.statePath) {
-                item.addOnPropertyChange(this.statePath, this._fn_state, this._objId);
-            }
-            this._fn_state(data);
-        }
-
-        return data;
-    }
-    private _mapByValue() {
-        const self = this;
-        this._valMap = {};
-        coreUtils.forEachProp(this._keyMap, (key) => {
-            const data = self._keyMap[key], val = fn_Str(self._getValue(data.item));
-            if (!!val) {
-                self._valMap[val] = data;
-            }
-        });
-    }
-    private _resetText() {
-        const self = this;
-        coreUtils.forEachProp(this._keyMap, (key) => {
-            const data = self._keyMap[key];
-            data.op.text = self._getText(data.item, data.op.index);
-        });
-    }
-    private _resetState() {
-        const self = this;
-        coreUtils.forEachProp(this._keyMap, (key) => {
-            self._fn_state(self._keyMap[key]);
-        });
-    }
-    private _removeOption(item: ICollectionItem) {
-        if (!!item) {
-            const key = item._key, data = this._keyMap[key];
-            if (!data) {
-                return;
-            }
-
-            item.removeNSHandlers(this._objId);
-            this.el.remove(data.op.index);
-            const val = fn_Str(this._getValue(item));
-            delete this._keyMap[key];
-            if (!!val) {
-                delete this._valMap[val];
-            }
-
-            const curVal = this.getByIndex(this.selectedIndex);
-            const v = (!curVal ? null : this._getValue(curVal.item));
-            this._selectedValue = v;
-            this.updateSelected(v);
-        }
-    }
-    private _clear() {
-        const self = this, keys = Object.keys(self._keyMap);
-        keys.forEach((key) => {
-            const data = self._keyMap[key];
-            if (!!data && !!data.item) {
-                data.item.removeNSHandlers(self._objId);
-            }
-        });
-        this.el.options.length = 0;
-        this._keyMap = {};
-        this._valMap = {};
-    }
-    private _refresh(): void {
-        const self = this, ds = this.dataSource;
-        this.setChanges();
-        this._isRefreshing = true;
-        try {
-            this._clear();
-            this._addOption(null, false);
-            if (!!ds) {
-                ds.forEach(function (item) {
-                    self._addOption(item, false);
-                });
-            }
-            if (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
-                this.selectedValue = null;
-            }
-            else {
-                self.updateSelected(this._selectedValue);
-            }
-
-        } finally {
-            self._isRefreshing = false;
-            this.checkChanges();
-        }
-
-        this.raiseEvent(LISTBOX_EVENTS.refreshed, {});
-    }
-    protected getItemIndex(item: ICollectionItem) {
-        if (!item || item.getIsDestroyCalled()) {
+    protected getItemIndex(item: ICollectionItem): number {
+        if (!item || item.getIsStateDirty()) {
             return -1;
         }
         const data: IMappedItem = this._keyMap[item._key];
-        return (!data)? -1: data.op.index;
+        return (!data) ? -1 : data.op.index;
     }
     protected getByValue(val: any): IMappedItem {
-        if (checks.isNt(val))
+        if (isNt(val)) {
             return null;
+        }
         const key = fn_Str(val);
         const data: IMappedItem = this._valMap[key];
         return (!data) ? null : data;
     }
     protected getByIndex(index: number): IMappedItem {
         if (index >= 0 && index < this.el.length) {
-            let op = this.el.options[index];
-            let key = op.value;
+            const op: HTMLOptionElement = <HTMLOptionElement>this.el.options[index], key = op.value;
             return this._keyMap[key];
         }
         return null;
     }
-    protected updateSelected(v: any) {
-        const data: IMappedItem = (checks.isNt(v) ? null : this.getByValue(v));
+    protected updateSelected(v: any): void {
+        const data: IMappedItem = (isNt(v) ? null : this.getByValue(v));
         const index = (!data ? 0 : data.op.index), oldRefreshing = this._isRefreshing;
         this._isRefreshing = true;
         try {
             this.selectedIndex = index;
-        }
-        finally {
+        } finally {
             this._isRefreshing = oldRefreshing;
         }
     }
-    protected setChanges(): void {
-        //if already set then return
-        if (!!this._fn_checkChanges)
+    protected beginTrackSelected(): void {
+        // if already set then return
+        if (!!this._fnCheckSelected) {
             return;
+        }
         const self = this, prevVal = fn_Str(self.selectedValue), prevItem = self.selectedItem;
-        this._fn_checkChanges = function () {
-            //reset function
-            self._fn_checkChanges = null;
+        this._fnCheckSelected = () => {
+            // reset function
+            self._fnCheckSelected = null;
             const newVal = fn_Str(self.selectedValue), newItem = self.selectedItem;
             if (prevVal !== newVal) {
-                self.raisePropertyChanged(PROP_NAME.selectedValue);
+                self.objEvents.raiseProp("selectedValue");
             }
             if (prevItem !== newItem) {
-                self.raisePropertyChanged(PROP_NAME.selectedItem);
+                self.objEvents.raiseProp("selectedItem");
             }
         };
     }
-    protected checkChanges(): void {
+    protected endTrackSelected(): void {
         this._changeDebounce.enque(() => {
-            const fn = this._fn_checkChanges;
-            this._fn_checkChanges = null;
-            if (!!fn)
+            const fn = this._fnCheckSelected;
+            this._fnCheckSelected = null;
+            if (!!fn) {
                 fn();
+            }
         });
     }
-    protected _setIsEnabled(el: HTMLSelectElement, v: boolean) {
+    protected setIsEnabled(el: HTMLSelectElement, v: boolean): void {
         el.disabled = !v;
     }
-    protected _getIsEnabled(el: HTMLSelectElement) {
+    protected getIsEnabled(el: HTMLSelectElement): boolean {
         return !el.disabled;
     }
-    protected _setDataSource(v: ICollection<ICollectionItem>) {
-        this.setChanges();
+    protected setDataSource(v: ICollection<ICollectionItem>): void {
+        this._isDSFilled = false;
+        this.beginTrackSelected();
         this._unbindDS();
         this._options.dataSource = v;
-        this._dsDebounce.enque(() => {
+        const fn_init = () => {
             try {
                 const ds = this._options.dataSource;
                 this._txtDebounce.cancel();
                 this._stDebounce.cancel();
 
-                if (!!ds && !ds.getIsDestroyCalled()) {
+                if (!!ds && !ds.getIsStateDirty()) {
                     this._bindDS();
                     this._refresh();
-                }
-                else {
+                } else {
                     this._clear();
                     this._addOption(null, false);
                 }
+            } finally {
+                this.endTrackSelected();
             }
-            finally {
-                this.checkChanges();
-            }
-        });
+        };
+
+        if (!!this._options.syncSetDatasource) {
+            fn_init();
+        } else {
+            this._dsDebounce.enque(fn_init);
+        }
     }
     protected get selectedIndex(): number {
-        if (!this.el || this.el.length == 0)
-            return -1;
-        return this.el.selectedIndex;
+        return (!this.el || this.el.length == 0) ? -1 : this.el.selectedIndex;
     }
     protected set selectedIndex(v: number) {
         if (!!this.el && this.el.length > v && this.selectedIndex !== v) {
             this.el.selectedIndex = v;
         }
     }
+    isSubscribed(flag: SubscribeFlags): boolean {
+        return !this._options.nodelegate && flag === SubscribeFlags.change;
+    }
+    handle_change(e: Event): boolean {
+        if (this._isRefreshing) {
+            return true;
+        }
+        this._onSelectedChanged();
+        return true;
+    }
+    addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void {
+        this.objEvents.on(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
+    }
+    offOnRefreshed(nmspace?: string): void {
+        this.objEvents.off(LISTBOX_EVENTS.refreshed, nmspace);
+    }
     getText(val: any): string {
         const data: IMappedItem = this.getByValue(val);
-        if (!data)
-            return "";
-        else
-            return data.op.text;
+        return (!data) ? "" : data.op.text;
     }
-    toString() {
+    toString(): string {
         return "ListBox";
     }
-    get dataSource() {
+    get dataSource(): ICollection<ICollectionItem> {
         return this._options.dataSource;
     }
     set dataSource(v) {
         if (this.dataSource !== v) {
-            this._setDataSource(v);
-            this.raisePropertyChanged(PROP_NAME.dataSource);
+            this.setDataSource(v);
+            this.objEvents.raiseProp("dataSource");
         }
     }
-    get selectedValue() {
-        if (!checks.isNt(this._selectedValue) && !this.getByValue(this._selectedValue))
-            return checks.undefined;
-        return this._selectedValue;
+    get selectedValue(): any {
+        return (!isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) ? _undefined : this._selectedValue;
     }
     set selectedValue(v) {
         if (this._selectedValue !== v) {
             const oldItem = this.selectedItem;
             this._selectedValue = v;
             this.updateSelected(v);
-            this._fn_checkChanges = null;
-            this.raisePropertyChanged(PROP_NAME.selectedValue);
+            this._fnCheckSelected = null;
+            this.objEvents.raiseProp("selectedValue");
             if (oldItem !== this.selectedItem) {
-                this.raisePropertyChanged(PROP_NAME.selectedItem);
+                this.objEvents.raiseProp("selectedItem");
             }
         }
     }
-    get selectedItem() {
+    get selectedItem(): ICollectionItem {
         const item: IMappedItem = this.getByValue(this._selectedValue);
         return (!item ? null : item.item);
     }
@@ -628,58 +623,72 @@ export class ListBox extends BaseObject {
             this._selectedValue = newVal;
             const item = this.getByValue(newVal);
             this.selectedIndex = (!item ? 0 : item.op.index);
-            this._fn_checkChanges = null;
-            this.raisePropertyChanged(PROP_NAME.selectedValue);
+            this._fnCheckSelected = null;
+            this.objEvents.raiseProp("selectedValue");
             if (oldItem !== this.selectedItem) {
-                this.raisePropertyChanged(PROP_NAME.selectedItem);
+                this.objEvents.raiseProp("selectedItem");
             }
         }
     }
-    get valuePath() { return this._options.valuePath; }
+    get valuePath(): string {
+        return this._options.valuePath;
+    }
     set valuePath(v: string) {
         if (v !== this.valuePath) {
             this._options.valuePath = v;
             this._mapByValue();
-            this.raisePropertyChanged(PROP_NAME.valuePath);
+            this.objEvents.raiseProp("valuePath");
         }
     }
-    get textPath() { return this._options.textPath; }
+    get textPath(): string {
+        return this._options.textPath;
+    }
     set textPath(v: string) {
         if (v !== this.textPath) {
             this._options.textPath = v;
             this._resetText();
-            this.raisePropertyChanged(PROP_NAME.textPath);
+            this.objEvents.raiseProp("textPath");
         }
     }
-    get statePath() { return this._options.statePath; }
-    get isEnabled() { return this._getIsEnabled(this.el); }
+    get statePath(): string {
+        return this._options.statePath;
+    }
+    get isEnabled(): boolean {
+        return this.getIsEnabled(this.el);
+    }
     set isEnabled(v) {
         if (v !== this.isEnabled) {
-            this._setIsEnabled(this.el, v);
-            this.raisePropertyChanged(PROP_NAME.isEnabled);
+            this.setIsEnabled(this.el, v);
+            this.objEvents.raiseProp("isEnabled");
         }
     }
-    get textProvider() { return this._textProvider; }
+    get textProvider(): IOptionTextProvider {
+        return this._textProvider;
+    }
     set textProvider(v: IOptionTextProvider) {
         if (v !== this._textProvider) {
             this._textProvider = v;
             this._txtDebounce.enque(() => {
                 this._resetText();
             });
-            this.raisePropertyChanged(PROP_NAME.textProvider);
+            this.objEvents.raiseProp("textProvider");
         }
     }
-    get stateProvider() { return this._stateProvider; }
+    get stateProvider(): IOptionStateProvider {
+        return this._stateProvider;
+    }
     set stateProvider(v: IOptionStateProvider) {
         if (v !== this._stateProvider) {
             this._stateProvider = v;
             this._stDebounce.enque(() => {
                 this._resetState();
             });
-            this.raisePropertyChanged(PROP_NAME.stateProvider);
+            this.objEvents.raiseProp("stateProvider");
         }
     }
-    get el() { return this._el; }
+    get el(): HTMLSelectElement {
+        return this._el;
+    }
 }
 
 export interface IListBoxViewOptions extends IListBoxOptions, IViewOptions {
@@ -687,44 +696,56 @@ export interface IListBoxViewOptions extends IListBoxOptions, IViewOptions {
 
 export class ListBoxElView extends BaseElView {
     private _listBox: ListBox;
- 
-    constructor(options: IListBoxViewOptions) {
-        super(options);
+
+    constructor(el: HTMLSelectElement, options: IListBoxViewOptions) {
+        super(el, options);
         const self = this;
-        self._listBox = new ListBox(<IListBoxConstructorOptions>options);
-        self._listBox.addOnPropertyChange("*", function (sender, args) {
+        self._listBox = new ListBox(el, <IListBoxConstructorOptions>options);
+        self._listBox.objEvents.onProp("*", (sender, args) => {
             switch (args.property) {
-                case PROP_NAME.dataSource:
-                case PROP_NAME.isEnabled:
-                case PROP_NAME.selectedValue:
-                case PROP_NAME.selectedItem:
-                case PROP_NAME.valuePath:
-                case PROP_NAME.textPath:
-                case PROP_NAME.textProvider:
-                case PROP_NAME.stateProvider:
-                    self.raisePropertyChanged(args.property);
+                case "dataSource":
+                case "isEnabled":
+                case "selectedValue":
+                case "selectedItem":
+                case "valuePath":
+                case "textPath":
+                case "textProvider":
+                case "stateProvider":
+                    self.objEvents.raiseProp(args.property);
                     break;
             }
         }, self.uniqueID);
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
-        this._isDestroyCalled = true;
-        if (!this._listBox.getIsDestroyCalled()) {
-            this._listBox.destroy();
         }
-        super.destroy();
+        this.setDisposing();
+        if (!this._listBox.getIsStateDirty()) {
+            this._listBox.dispose();
+        }
+        super.dispose();
     }
-    toString() {
+    toString(): string {
         return "ListBoxElView";
     }
-    get isEnabled() { return !(<HTMLSelectElement>this.el).disabled; }
+    addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void {
+        this._listBox.objEvents.on(LISTBOX_EVENTS.refreshed, fn, nmspace, context);
+    }
+    offOnRefreshed(nmspace?: string): void {
+        this._listBox.objEvents.off(LISTBOX_EVENTS.refreshed, nmspace);
+    }
+    getText(val: any): string {
+        return this._listBox.getText(val);
+    }
+    get isEnabled(): boolean {
+        return !(<HTMLSelectElement>this.el).disabled;
+    }
     set isEnabled(v: boolean) {
         v = !v;
         if (v !== !this.isEnabled) {
             (<HTMLSelectElement>this.el).disabled = v;
-            this.raisePropertyChanged(PROP_NAME.isEnabled);
+            this.objEvents.raiseProp("isEnabled");
         }
     }
     get dataSource(): ICollection<ICollectionItem> {
@@ -736,41 +757,47 @@ export class ListBoxElView extends BaseElView {
             self._listBox.dataSource = v;
         }
     }
-    get selectedValue() {
-        if (this.getIsDestroyCalled())
-            return checks.undefined;
-        return this._listBox.selectedValue;
+    get selectedValue(): any {
+        return (this.getIsStateDirty()) ? _undefined : this._listBox.selectedValue;
     }
     set selectedValue(v) {
         if (this._listBox.selectedValue !== v) {
             this._listBox.selectedValue = v;
         }
     }
-    get selectedItem() {
-        if (this.getIsDestroyCalled())
-            return checks.undefined;
-        return this._listBox.selectedItem;
+    get selectedItem(): ICollectionItem {
+        return (this.getIsStateDirty()) ? _undefined : this._listBox.selectedItem;
     }
     set selectedItem(v: ICollectionItem) {
         this._listBox.selectedItem = v;
     }
-    get valuePath() { return this._listBox.valuePath; }
+    get valuePath(): string {
+        return this._listBox.valuePath;
+    }
     set valuePath(v: string) {
         this._listBox.valuePath = v;
     }
-    get textPath() { return this._listBox.textPath; }
+    get textPath(): string {
+        return this._listBox.textPath;
+    }
     set textPath(v: string) {
         this._listBox.textPath = v;
     }
-    get textProvider() { return this._listBox.textProvider; }
+    get textProvider(): IOptionTextProvider {
+        return this._listBox.textProvider;
+    }
     set textProvider(v: IOptionTextProvider) {
         this._listBox.textProvider = v;
     }
-    get stateProvider() { return this._listBox.stateProvider; }
+    get stateProvider(): IOptionStateProvider {
+        return this._listBox.stateProvider;
+    }
     set stateProvider(v: IOptionStateProvider) {
         this._listBox.stateProvider = v;
     }
-    get listBox() { return this._listBox; }
+    get listBox(): ListBox {
+        return this._listBox;
+    }
 }
 
 

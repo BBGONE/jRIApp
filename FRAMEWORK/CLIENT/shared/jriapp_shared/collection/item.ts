@@ -1,47 +1,33 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { BaseObject } from "../object";
-import { ICollectionItem, ITEM_EVENTS } from "./int";
+import { ICollectionItem } from "./int";
 import { ItemAspect } from "./aspect";
 
-export class CollectionItem<TAspect extends ItemAspect<ICollectionItem>> extends BaseObject implements ICollectionItem {
+export class CollectionItem<TAspect extends ItemAspect<ICollectionItem, any>> extends BaseObject implements ICollectionItem {
     private __aspect: TAspect;
 
     constructor(aspect: TAspect) {
         super();
         this.__aspect = aspect;
     }
-    protected _fakeDestroy() {
-        this.raiseEvent(ITEM_EVENTS.destroyed, {});
-        this.removeNSHandlers();
-    }
-    get _aspect() { return this.__aspect; }
-    get _key(): string { return !!this.__aspect ? this.__aspect.key : null; }
-    set _key(v: string) { if (!this.__aspect) return; this.__aspect.key = v; }
-    destroy() {
-        if (this._isDestroyed)
+    dispose(): void {
+        if (this.getIsDisposed()) {
             return;
-        this._isDestroyCalled = true;
-        const aspect = this.__aspect;
-        
-        if (!!aspect) {
-            if (!aspect.getIsDestroyCalled()) {
-                aspect.destroy();
-            }
-
-            if (aspect.isCached) {
-                try {
-                    this._fakeDestroy();
-                }
-                finally {
-                    this._isDestroyCalled = false;
-                }
-            }
-            else {
-                super.destroy();
-            }
         }
+        this.setDisposing();
+        const aspect = this.__aspect;
+        if (!aspect.getIsStateDirty()) {
+            aspect.dispose();
+        }
+        super.dispose();
     }
-    toString() {
+    get _aspect(): TAspect {
+        return this.__aspect;
+    }
+    get _key(): string {
+        return this.__aspect.key;
+    }
+    toString(): string {
         return "CollectionItem";
     }
 }

@@ -1,24 +1,26 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { DEBUG_LEVEL } from "./const";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { DEBUG_LEVEL } from "./consts";
 import { IVoidPromise } from "./utils/ideferred";
 
-//config global variable can be used using this interface
+// config global variable can be used using this interface
 export interface IConfig {
     debugLevel?: DEBUG_LEVEL;
 }
 
-//get config variable
-export const Config: IConfig = (<any>window).jriapp_config || {};
+// get global config variable
+export const Config: IConfig = jriapp_config || {};
 export let DebugLevel = (!Config.debugLevel) ? DEBUG_LEVEL.NONE : Config.debugLevel;
 
-export type TEventHandler<T, U> = (sender: T, args: U) => void;
+export type TEventHandler<T = any, U = any> = (sender: T, args: U) => void;
 export type TErrorArgs = { error: any; source: any; isHandled: boolean; };
-export type TErrorHandler = (sender: any, args: TErrorArgs) => void;
-export type TPropChangedHandler = (sender: any, args: { property: string; }) => void;
+export type TErrorHandler<T = any> = (sender: T, args: TErrorArgs) => void;
+export type TPropChangedHandler<T = any> = (sender: T, args: { property: string; }) => void;
 export type TFunc = { (...args: any[]): void; };
+export type TAnyConstructor<T> = new (...args: any[]) => T;
 
 export interface IDisposable {
-    destroy(): void;
+    dispose(): void;
+    getIsDisposed(): boolean;
 }
 
 export interface IIndexer<T> {
@@ -30,7 +32,6 @@ export interface IErrorHandler {
 }
 
 export interface IPropertyBag extends IBaseObject {
-    onBagPropChanged(name: string): void;
     getProp(name: string): any;
     setProp(name: string, val: any): void;
     isPropertyBag: boolean;
@@ -40,44 +41,66 @@ export const enum TPriority {
     Normal = 0, AboveNormal = 1, High = 2
 }
 
-export interface IBaseObject extends IErrorHandler, IDisposable {
-    _isHasProp(prop: string): boolean;
-    getIsDestroyed(): boolean;
-    getIsDestroyCalled(): boolean;
-    raisePropertyChanged(name: string): void;
-    addHandler(name: string, handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeHandler(name?: string, nmspace?: string): void;
-    addOnPropertyChange(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnPropertyChange(prop?: string, nmspace?: string): void;
-    removeNSHandlers(nmspace?: string): void;
-    addOnError(handler: TErrorHandler, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnError(nmspace?: string): void;
-    addOnDestroyed(handler: TEventHandler<any, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnDestroyed(nmspace?: string): void;
-    raiseEvent(name: string, args: any): void;
+export type PropertyNames<T> = keyof T | "*" | "[*]";
+
+export interface IEvents<T = any> {
+    canRaise(name: string): boolean;
+    on(name: string, handler: TEventHandler<T, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+    off(name?: string, nmspace?: string): void;
+    // remove event handlers by their namespace
+    offNS(nmspace?: string): void;
+    raise(name: string, args: any): void;
+    raiseProp(name: PropertyNames<T>): void;
+    // to subscribe for changes on all properties, pass in the prop parameter: '*'
+    onProp(prop: PropertyNames<T>, handler: TPropChangedHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
+    offProp(prop?: PropertyNames<T>, nmspace?: string): void;
 }
 
-export interface IEditable {
+export interface IBaseObject extends IErrorHandler, IDisposable {
+    getIsStateDirty(): boolean;
+    isHasProp(prop: string): boolean;
+    readonly objEvents: IObjectEvents;
+}
+
+export interface IObjectEvents<T = any> extends IEvents<T> {
+    addOnError(handler: TErrorHandler<T>, nmspace?: string, context?: object, priority?: TPriority): void;
+    offOnError(nmspace?: string): void;
+    addOnDisposed(handler: TEventHandler<T, any>, nmspace?: string, context?: object, priority?: TPriority): void;
+    offOnDisposed(nmspace?: string): void;
+    readonly owner: T;
+}
+
+export interface IEditable extends IBaseObject {
     beginEdit(): boolean;
     endEdit(): boolean;
     cancelEdit(): boolean;
     readonly isEditing: boolean;
 }
 
-export interface ISubmittable {
+export interface ISubmittable extends IBaseObject {
     submitChanges(): IVoidPromise;
+    rejectChanges(): void;
     readonly isCanSubmit: boolean;
 }
 
 export interface IValidationInfo {
     readonly fieldName: string;
-    readonly errors: string[];
+    errors: string[];
 }
 
-export interface IErrorNotification {
+export interface IValidatable {
+    validationErrors: IValidationInfo[];
+}
+
+export interface IValidationError {
+    readonly item: any;
+    readonly validations: IValidationInfo[];
+}
+
+export interface IErrorNotification extends IBaseObject {
     getIsHasErrors(): boolean;
-    addOnErrorsChanged(fn: TEventHandler<any, any>, nmspace?: string, context?: any): void;
-    removeOnErrorsChanged(nmspace?: string): void;
+    addOnErrorsChanged(fn: TEventHandler, nmspace?: string, context?: any): void;
+    offOnErrorsChanged(nmspace?: string): void;
     getFieldErrors(fieldName: string): IValidationInfo[];
     getAllErrors(): IValidationInfo[];
     getIErrorNotification(): IErrorNotification;

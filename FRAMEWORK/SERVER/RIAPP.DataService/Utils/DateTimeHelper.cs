@@ -1,4 +1,4 @@
-﻿using RIAPP.DataService.DomainService.Types;
+﻿using RIAPP.DataService.Core.Types;
 using System;
 using System.Globalization;
 

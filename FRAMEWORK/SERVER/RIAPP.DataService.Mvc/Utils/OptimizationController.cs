@@ -98,7 +98,9 @@ namespace RIAPP.DataService.Mvc.Utils
                         bytes = MinifyCss(physicalPath);
                     }
                     else
+                    {
                         bytes = GetFileBytes(physicalPath);
+                    }
 
                     cachedResult = new CachedResult {bytes = bytes, contentType = contentType, lastWrite = lastWrite};
                     return cachedResult;

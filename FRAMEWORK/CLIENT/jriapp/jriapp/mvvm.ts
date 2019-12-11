@@ -1,130 +1,138 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    BaseObject, Utils, IErrorHandler, IBaseObject
+    BaseObject, Utils, IBaseObject, TEventHandler, TErrorHandler
 } from "jriapp_shared";
-import { ITemplate, IApplication } from "./int";
+import { IApplication } from "./int";
 
-const coreUtils = Utils.core;
+const { getNewID } = Utils.core;
 
-export interface ICommand {
-    canExecute: (sender: any, param: any) => boolean;
-    execute: (sender: any, param: any) => void;
-    raiseCanExecuteChanged: () => void;
-    addOnCanExecuteChanged(fn: (sender: ICommand, args: {}) => void, nmspace?: string, context?: IBaseObject): void;
-    removeOnCanExecuteChanged(nmspace?: string): void;
+export interface IExecutor<TParam = any> {
+    execute: (param: TParam) => void;
 }
 
-const CMD_EVENTS = {
-    can_execute_changed: "canExecute_changed"
-};
+export interface ICommand<TParam = any> extends IExecutor<TParam> {
+    canExecute: (param: TParam) => boolean;
+    raiseCanExecuteChanged: () => void;
+    addOnCanExecuteChanged(fn: (sender: ICommand<TParam>, args: any) => void, nmspace?: string, context?: IBaseObject): void;
+    offOnCanExecuteChanged(nmspace?: string): void;
+}
 
-export type TAction<TParam, TThis> = (sender: any, param: TParam, thisObj: TThis) => void;
-export type TPredicate<TParam, TThis> = (sender: any, param: TParam, thisObj: TThis) => boolean;
+const enum CMD_EVENTS {
+    can_execute_changed = "canExecute_changed"
+}
 
-export class TCommand<TParam, TThis> extends BaseObject implements ICommand {
-    protected _action: TAction<TParam, TThis>;
-    protected _thisObj: TThis;
-    protected _predicate: TPredicate<TParam, TThis>;
-    private _objId: string;
+export type Action<TParam = any> = (param: TParam) => void;
+export type Predicate<TParam = any> = (param: TParam) => boolean;
 
-    constructor(fn_action: TAction<TParam, TThis>, thisObj?: TThis, fn_canExecute?: TPredicate<TParam, TThis>) {
+export class Command<TParam = any> extends BaseObject implements ICommand<TParam> {
+    private _action: Action<TParam>;
+    private _predicate: Predicate<TParam>;
+    private _uniqueID: string;
+
+    constructor(fnAction: Action<TParam>, fnCanExecute?: Predicate<TParam>) {
         super();
-        this._objId = coreUtils.getNewID("cmd");
-        this._action = fn_action;
-        this._thisObj = !thisObj ? null : thisObj;
-        this._predicate = !fn_canExecute ? null : fn_canExecute;
+        this._uniqueID = getNewID("cmd");
+        this._action = fnAction;
+        this._predicate = fnCanExecute;
     }
-    protected _getEventNames() {
-        let base_events = super._getEventNames();
-        return [CMD_EVENTS.can_execute_changed].concat(base_events);
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this._action = null;
+        this._predicate = null;
+        super.dispose();
     }
-    protected _canExecute(sender: any, param: TParam, context: any): boolean {
-        if (!this._predicate)
-            return true;
-        return this._predicate.apply(context, [sender, param, this._thisObj]);
+    protected _canExecute(param: TParam): boolean {
+        const predicate = this._predicate;
+        return !predicate ? true : predicate(param);
     }
-    protected _execute(sender: any, param: TParam, context: any) {
-        if (!!this._action) {
-            this._action.apply(context, [sender, param, this._thisObj]);
+    protected _execute(param: TParam): void {
+        const action = this._action;
+        if (!!action) {
+            action(param);
         }
     }
-    addOnCanExecuteChanged(fn: (sender: ICommand, args: any) => void, nmspace?: string, context?: IBaseObject) {
-        this._addHandler(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
+    addOnCanExecuteChanged(fn: (sender: this, args: any) => void, nmspace?: string, context?: IBaseObject): void {
+        this.objEvents.on(CMD_EVENTS.can_execute_changed, fn, nmspace, context);
     }
-    removeOnCanExecuteChanged(nmspace?: string) {
-        this._removeHandler(CMD_EVENTS.can_execute_changed, nmspace);
+    offOnCanExecuteChanged(nmspace?: string): void {
+        this.objEvents.off(CMD_EVENTS.can_execute_changed, nmspace);
     }
-    canExecute(sender: any, param: TParam): boolean {
-        return this._canExecute(sender, param, this._thisObj || this);
+    canExecute(param: TParam): boolean {
+        return this._canExecute(param);
     }
-    execute(sender: any, param: TParam) {
-        this._execute(sender, param, this._thisObj || this);
+    execute(param: TParam): void {
+        this._execute(param);
     }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        this._action = null;
-        this._thisObj = null;
-        this._predicate = null;
-        super.destroy();
+    raiseCanExecuteChanged(): void {
+        this.objEvents.raise(CMD_EVENTS.can_execute_changed, {});
     }
-    raiseCanExecuteChanged() {
-        this.raiseEvent(CMD_EVENTS.can_execute_changed, {});
-    }
-    toString() {
+    toString(): string {
         return "Command";
     }
-    get uniqueID() {
-        return this._objId;
-    }
-    get thisObj() {
-        return this._thisObj;
+    get uniqueID(): string {
+        return this._uniqueID;
     }
 }
 
-export abstract class BaseCommand<TParam, TThis> extends TCommand<TParam, TThis>
-{
-    constructor(thisObj: TThis) {
-        super(null, thisObj, null);
-        this._action = this.Action;
-        this._predicate = this.getIsCanExecute;
+export abstract class BaseCommand<TOwner, TParam = any> extends Command<TParam> {
+    private _owner: TOwner;
+
+    constructor(owner: TOwner) {
+        super(null, null);
+        this._owner = owner;
     }
-    canExecute(sender: any, param: TParam): boolean {
-        return this._canExecute(sender, param, this);
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        this._owner = null;
+        super.dispose();
     }
-    execute(sender: any, param: TParam) {
-        this._execute(sender, param, this);
+    // override
+    protected _canExecute(param: TParam): boolean {
+        return this.isCanExecute(param);
     }
-    protected abstract Action(sender: any, param: TParam): void;
-    protected abstract getIsCanExecute(sender: any, param: TParam): boolean;
+    // override
+    protected _execute(param: TParam): void {
+        this.action(param);
+    }
+    protected abstract action(param: TParam): void;
+    protected abstract isCanExecute(param: TParam): boolean;
+    get owner(): TOwner {
+        return this._owner;
+    }
 }
 
-export type Command = TCommand<any, any>;
-export const Command: new (fn_action: TAction<any, any>, thisObj?: any, fn_canExecute?: TPredicate<any, any>) => Command = TCommand;
-
-//for strongly typed parameters
-export type TemplateCommand = TCommand<{ template: ITemplate; isLoaded: boolean; }, any>;
-export const TemplateCommand: new (fn_action: TAction<{ template: ITemplate; isLoaded: boolean; }, any>, thisObj?: any, fn_canExecute?: TPredicate<{ template: ITemplate; isLoaded: boolean; }, any>) => TemplateCommand = TCommand;
-
-export class ViewModel<TApp extends IApplication> extends BaseObject {
-    private _objId: string;
+export class ViewModel<TApp extends IApplication = IApplication> extends BaseObject {
+    private _uniqueID: string;
     private _app: TApp;
 
     constructor(app: TApp) {
         super();
         this._app = app;
-        this._objId = coreUtils.getNewID("vm");
+        this._uniqueID = getNewID("vm");
     }
-    toString() {
+    addOnDisposed(handler: TEventHandler<ViewModel<TApp>, any>, nmspace?: string, context?: object): void {
+        this.objEvents.addOnDisposed(handler, nmspace, context);
+    }
+    offOnDisposed(nmspace?: string): void {
+        this.objEvents.offOnDisposed(nmspace);
+    }
+    addOnError(handler: TErrorHandler<ViewModel<TApp>>, nmspace?: string, context?: object): void {
+        this.objEvents.addOnError(handler, nmspace, context);
+    }
+    offOnError(nmspace?: string): void {
+        this.objEvents.offOnError(nmspace);
+    }
+    toString(): string {
         return "ViewModel";
     }
-    destroy() {
-        this._app = null;
-        super.destroy();
-    }
-    get uniqueID() {
-        return this._objId;
+    get uniqueID(): string {
+        return this._uniqueID;
     }
     get app(): TApp {
         return this._app;

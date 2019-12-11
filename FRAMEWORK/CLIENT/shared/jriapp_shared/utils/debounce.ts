@@ -1,7 +1,9 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IDisposable, TFunc } from "../int";
-import { ITaskQueue } from "./ideferred";
 import { getTaskQueue } from "./deferred";
+import { ERROR } from "./error";
+
+const error = ERROR, win = window;
 
 export class Debounce implements IDisposable {
     private _timer: number;
@@ -10,17 +12,29 @@ export class Debounce implements IDisposable {
 
     constructor(interval: number = 0) {
         this._timer = null;
-        this._interval = !interval ? 0 : interval;
+        this._interval = interval;
         this._fn = null;
     }
-    enque(fn: TFunc) {
-        //important, no error (just return with no action)!!!
-        if (this.IsDestroyed)
+    dispose(): void {
+        this.cancel();
+        this._timer = void 0;
+    }
+    enque(fn: TFunc): void {
+        // important, no error (just return with no action)!!!
+        if (this.getIsDisposed()) {
             return;
-        if (!fn)
-            throw new Error("Debounce: Invalid operation");
-        //the last wins
+        }
+        if (!fn) {
+            throw new Error("Debounce: Invalid Operation");
+        }
+        // the last wins
         this._fn = fn;
+
+
+        if (!!this._interval && !!this._timer) {
+            clearTimeout(this._timer);
+            this._timer = null;
+        }
 
         if (!this._timer) {
             const callback = () => {
@@ -29,38 +43,36 @@ export class Debounce implements IDisposable {
                 this._fn = null;
 
                 if (!!fn) {
-                    fn();
+                    try {
+                        fn();
+                    } catch (err) {
+                        error.handleError(win, err, win);
+                    }
                 }
             };
 
             if (!this._interval) {
                 this._timer = getTaskQueue().enque(callback);
-            }
-            else {
+            } else {
                 this._timer = setTimeout(callback, this._interval);
             }
         }
     }
-    cancel() {
-        //just set to null
-        this._fn = null;
-    }
-    destroy(): void {
+    cancel(): void {
         if (!!this._timer) {
             if (!this._interval) {
                 getTaskQueue().cancel(this._timer);
-            }
-            else {
+            } else {
                 clearTimeout(this._timer);
             }
         }
-        this._timer = void 0;
+        this._timer = null;
         this._fn = null;
     }
-    get interval() {
+    get interval(): number {
         return this._interval;
     }
-    get IsDestroyed(): boolean {
+    getIsDisposed(): boolean {
         return this._timer === void 0;
     }
 }

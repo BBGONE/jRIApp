@@ -1,12 +1,11 @@
-﻿/// <reference path="../../built/shared/shared.d.ts" />
-import * as RIAPP from "jriapp";
+﻿import * as RIAPP from "jriapp";
 import * as dbMOD from "jriapp_db";
 import * as uiMOD from "jriapp_ui";
 import * as FOLDERBROWSER_SVC from "./folderBrowserSvc";
 import * as COMMON from "common";
 
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = RIAPP.$;
-declare var DTNodeStatus_Ok: any;
+let bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
+declare let DTNodeStatus_Ok: any;
 
 export interface IMainOptions extends RIAPP.IAppOptions {
     service_url: string;
@@ -36,33 +35,26 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication, options: IFolderBrowserOptions) {
         super(app);
-        var self = this;
+        const self = this;
         self._includeFiles = options.includeFiles;
         self._$tree = options.$tree;
         this._infotype = null;
         self._dbSet = self.dbContext.dbSets.FileSystemObject;
 
-        self._loadRootCommand = new RIAPP.Command(function (s, a) {
+        self._loadRootCommand = new RIAPP.Command(() => {
             self.loadRootFolder();
-        }, self,
-            function (s, a) {
-                return true;
-            });
+        });
 
         this._createDynaTree();
     }
-    _getEventNames() {
-        var base_events = super._getEventNames();
-        return ['node_selected'].concat(base_events);
-    }
     addOnNodeSelected(fn: (sender: FolderBrowser, args: { item: FOLDERBROWSER_SVC.FileSystemObject; }) => void, namespace?: string) {
-        this.addHandler('node_selected', fn, namespace);
+        this.objEvents.on('node_selected', fn, namespace);
     }
     private _createDynaTree() {
-        var self = this;
+        const self = this;
         (<any>this._$tree).dynatree({
             onActivate: function (node: any) {
-                self.raiseEvent('node_selected', { item: node.data.item });
+                self.objEvents.raise('node_selected', { item: node.data.item });
             },
             onClick: function (node: any, event: any) {
             },
@@ -71,7 +63,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
             onExpand: function (flag: any, node: any) {
                 if (!flag) {
                     node.visit(function (child: any) {
-                        var item = <FOLDERBROWSER_SVC.FileSystemObject>child.data.item;
+                        let item = <FOLDERBROWSER_SVC.FileSystemObject>child.data.item;
                         if (!item)
                             return;
                         item._aspect.deleteItem();
@@ -92,18 +84,18 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         this._$treeRoot = (<any>this._$tree).dynatree("getRoot");
     }
     loadRootFolder() {
-        var self = this, query = self._dbSet.createReadRootQuery({ includeFiles: self._includeFiles, infoType: self.infotype });
+        const self = this, query = self._dbSet.createReadRootQuery({ includeFiles: self._includeFiles, infoType: self.infotype });
         query.isClearPrevData = true;
-        var promise = query.load();
+        let promise = query.load();
         promise.then(function (res) {
             self._onLoaded(res.fetchedItems);
         });
         return promise;
     }
     loadChildren(item: FOLDERBROWSER_SVC.FileSystemObject) {
-        var self = this, query = self._dbSet.createReadChildrenQuery({ parentKey: item.Key, level: item.Level + 1, path: item.fullPath, includeFiles: self._includeFiles, infoType: self.infotype });
+        const self = this, query = self._dbSet.createReadChildrenQuery({ parentKey: item.Key, level: item.Level + 1, path: item.fullPath, includeFiles: self._includeFiles, infoType: self.infotype });
         query.isClearPrevData = false;
-        var promise = query.load();
+        let promise = query.load();
         promise.then(function (res) {
             self._onLoaded(res.fetchedItems);
         });
@@ -112,7 +104,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
     private _onLoaded(fetchedItems: FOLDERBROWSER_SVC.FileSystemObject[]) {
         const self = this;
         try {
-            var topLevel = fetchedItems.filter(function (item) {
+            let topLevel = fetchedItems.filter(function (item) {
                 return item.Level == 0;
             });
             if (topLevel.length > 0) {
@@ -124,7 +116,7 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
         }
     }
     private _addItemsToNode(node: any, items: FOLDERBROWSER_SVC.FileSystemObject[]) {
-        var arr = items.map(function (item) {
+        let arr = items.map(function (item) {
             return { title: item.Name, isLazy: item.HasSubDirs, isFolder: item.IsFolder, item: item };
         });
         node.removeChildren();
@@ -133,25 +125,24 @@ export class FolderBrowser extends RIAPP.ViewModel<DemoApplication> {
     private _addItemsToTree(items: FOLDERBROWSER_SVC.FileSystemObject[]) {
         this._addItemsToNode(this._$treeRoot, items);
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        var self = this;
+        this.setDisposing();
         if (!!this._$treeRoot)
             this._$treeRoot.removeChildren();
-        super.destroy();
+        super.dispose();
     }
     get dbContext() { return this.app.dbContext; }
     get loadRootCommand() { return this._loadRootCommand; }
     get infotype() { return this._infotype; }
-    set infotype(v) { if (this._infotype !== v) { this._infotype = v; this.raisePropertyChanged('infotype'); } }
+    set infotype(v) { if (this._infotype !== v) { this._infotype = v; this.objEvents.raiseProp('infotype'); } }
     get dbSet() { return this._dbSet; }
 }
 
 function fn_getTemplateElement(template: RIAPP.ITemplate, name: string) {
-    var t = template;
-    var els = t.findElByDataName(name);
+    let t = template;
+    let els = t.findElByDataName(name);
     if (els.length < 1)
         return null;
     return els[0];
@@ -167,29 +158,28 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
 
     constructor(app: DemoApplication, options: IOptions) {
         super(app);
-        var self = this;
+        const self: FolderBrowserVM = this;
         this._selectedItem = null;
         //we defined this custom type in common.js
         this._dialogVM = new uiMOD.DialogVM(app);
         this._folderBrowser = null;
         this._options = options;
         this._infotype = null;
-        var title = self._options.includeFiles ? 'Выбор файла' : 'Выбор папки';
-        var dialogOptions: uiMOD.IDialogConstructorOptions = {
+        let title = self._options.includeFiles ? 'Выбор файла' : 'Выбор папки';
+        let dialogOptions: uiMOD.IDialogConstructorOptions = {
             templateID: 'treeTemplate',
             width: 650,
             height: 700,
             title: title,
             fn_OnTemplateCreated: function (template) {
                 //executed in the context of the dialog
-                var dialog = this;
-                var $tree = $(fn_getTemplateElement(template, 'tree'));
-                var options = <IFolderBrowserOptions>coreUtils.merge(self._options, { $tree: $tree });
+                let $tree = $(fn_getTemplateElement(template, 'tree'));
+                let options = <IFolderBrowserOptions>coreUtils.merge(self._options, { $tree: $tree });
                 self._folderBrowser = new FolderBrowser(app, options);
                 self._folderBrowser.addOnNodeSelected(function (s, a) {
                     self.selectedItem = a.item;
                 }, self.uniqueID)
-                self.raisePropertyChanged('folderBrowser');
+                self.objEvents.raiseProp('folderBrowser');
             },
             fn_OnShow: function (dialog) {
                 self.selectedItem = null;
@@ -205,40 +195,34 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
 
         this._dialogVM.createDialog('folderBrowser', dialogOptions);
 
-        this._dialogCommand = new RIAPP.Command(function (sender, param) {
+        this._dialogCommand = new RIAPP.Command(() => {
             try {
                 self.showDialog();
             } catch (ex) {
-                self.handleError(ex, this);
+                self.handleError(ex, self);
             }
-        }, self, function (sender, param) {
-            return true;
         });
     }
-    _getEventNames() {
-        var base_events = super._getEventNames();
-        return ['item_selected'].concat(base_events);
-    }
     addOnItemSelected(fn: (sender: FolderBrowserVM, args: { fullPath: string }) => void, namespace?: string) {
-        this.addHandler('item_selected', fn, namespace);
+        this.objEvents.on('item_selected', fn, namespace);
     }
     _onSelected(item: RIAPP.ICollectionItem, fullPath: string) {
-        this.raiseEvent('item_selected', { fullPath: fullPath });
+        this.objEvents.raise('item_selected', { fullPath: fullPath });
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        var self = this;
+        this.setDisposing();
+        const self = this;
         if (!!self._folderBrowser) {
-            self._folderBrowser.destroy();
+            self._folderBrowser.dispose();
             self._folderBrowser = null;
         }
         if (!!self._dialogVM) {
-            self._dialogVM.destroy();
+            self._dialogVM.dispose();
             self._dialogVM = null;
         }
-        super.destroy();
+        super.dispose();
     }
     showDialog() {
         this._dialogVM.showDialog('folderBrowser', this);
@@ -248,13 +232,13 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
     set selectedItem(v) {
         if (v !== this._selectedItem) {
             this._selectedItem = v;
-            this.raisePropertyChanged('selectedItem');
+            this.objEvents.raiseProp('selectedItem');
         }
     }
     get dialogCommand() { return this._dialogCommand; }
     get includeFiles() { return this._options.includeFiles; }
     get infotype() { return this._infotype; }
-    set infotype(v) { if (this._infotype !== v) { this._infotype = v; this.raisePropertyChanged('infotype'); } }
+    set infotype(v) { if (this._infotype !== v) { this._infotype = v; this.objEvents.raiseProp('infotype'); } }
 }
 
 export class DemoApplication extends RIAPP.Application {
@@ -266,14 +250,13 @@ export class DemoApplication extends RIAPP.Application {
 
     constructor(options: IMainOptions) {
         super(options);
-        var self = this;
         this._errorVM = null;
         this._fbrowserVM1 = null;
         this._fbrowserVM2 = null;
         this._selectedPath = null;
     }
     onStartUp() {
-        var self = this, options: IMainOptions = self.options;
+        const self = this, options: IMainOptions = self.options;
         self._dbContext = new FOLDERBROWSER_SVC.DbContext();
         self._dbContext.initialize({
             serviceUrl: options.service_url,
@@ -294,14 +277,14 @@ export class DemoApplication extends RIAPP.Application {
         this._fbrowserVM2.infotype = "BASE_ROOT";
         this._fbrowserVM1.addOnItemSelected((s, a) => {
             self._selectedPath = s.infotype + '\\' + a.fullPath;
-            self.raisePropertyChanged('selectedPath');
+            self.objEvents.raiseProp('selectedPath');
         });
         this._fbrowserVM2.addOnItemSelected((s, a) => {
             self._selectedPath = s.infotype + '\\' + a.fullPath;
-            self.raisePropertyChanged('selectedPath');
+            self.objEvents.raiseProp('selectedPath');
         });
         //here we could process application's errors
-        this.addOnError(function (sender, data) {
+        this.objEvents.addOnError(function (_s, data) {
             debugger;
             data.isHandled = true;
             self.errorVM.error = data.error;
@@ -310,14 +293,15 @@ export class DemoApplication extends RIAPP.Application {
         super.onStartUp();
     }
     private _getFullPath(item: FOLDERBROWSER_SVC.FileSystemObject, path: string): string {
-        var self = this, part: string;
+        const self = this;
+        let part: string;
         if (utils.check.isNt(path))
             path = '';
         if (!path)
             part = '';
         else
             part = '\\' + path;
-        var parent = <FOLDERBROWSER_SVC.FileSystemObject>self.dbContext.associations.getChildToParent().getParentItem(item);
+        let parent = <FOLDERBROWSER_SVC.FileSystemObject>self.dbContext.associations.getChildToParent().getParentItem(item);
         if (!parent) {
             return item.Name + part;
         }
@@ -328,18 +312,18 @@ export class DemoApplication extends RIAPP.Application {
     getFullPath(item: FOLDERBROWSER_SVC.FileSystemObject) {
         return this._getFullPath(item, null);
     }
-    //really, the destroy method is redundant here because application lives till the page lives
-    destroy() {
-        if (this._isDestroyed)
+    //really, the dispose method is redundant here because application lives till the page lives
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        var self = this;
+        this.setDisposing();
+        const self = this;
         try {
-            self._errorVM.destroy();
-            self._fbrowserVM1.destroy();
-            self._fbrowserVM2.destroy();
+            self._errorVM.dispose();
+            self._fbrowserVM1.dispose();
+            self._fbrowserVM2.dispose();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get options() { return <IMainOptions>this._options; }
@@ -352,7 +336,7 @@ export class DemoApplication extends RIAPP.Application {
 }
 
 //bootstrap error handler - the last resort (typically display message to the user)
-RIAPP.bootstrap.addOnError(function (sender, args) {
+RIAPP.bootstrap.objEvents.addOnError(function (_s, args) {
     debugger;
     alert(args.error.message);
 });

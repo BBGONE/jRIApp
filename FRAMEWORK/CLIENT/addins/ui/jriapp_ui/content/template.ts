@@ -1,17 +1,14 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import { $ } from "jriapp/utils/jquery";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { BaseObject, LocaleERRS as ERRS, Utils } from "jriapp_shared";
 import {
-    IContent, ITemplateEvents, IApplication, ITemplate, ITemplateInfo,
-    IConstructorContentOptions
+    IContent, IApplication, ITemplate, ITemplateInfo, IConstructorContentOptions, IContentOptions
 } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { bootstrap } from "jriapp/bootstrap";
 import { createTemplate } from "jriapp/template";
+import { cssStyles } from "../int";
 
-import { css } from "./int";
-
-const utils = Utils, coreUtils = utils.core, dom = DomUtils, boot = bootstrap, ERROR = utils.err;
+const utils = Utils, { extend } = utils.core, dom = DomUtils, boot = bootstrap, ERROR = utils.err;
 
 export class TemplateContent extends BaseObject implements IContent {
     private _parentEl: HTMLElement;
@@ -19,12 +16,12 @@ export class TemplateContent extends BaseObject implements IContent {
     private _templateInfo: ITemplateInfo;
     private _isEditing: boolean;
     private _dataContext: any;
-    private _isDisabled: boolean;
     private _templateID: string;
+    private readonly _options: IContentOptions;
 
     constructor(options: IConstructorContentOptions) {
         super();
-        options = coreUtils.extend(
+        options = extend(
             {
                 parentEl: null,
                 contentOptions: null,
@@ -36,15 +33,59 @@ export class TemplateContent extends BaseObject implements IContent {
         this._parentEl = options.parentEl;
         this._isEditing = options.isEditing;
         this._dataContext = options.dataContext;
-        this._templateInfo = options.contentOptions.templateInfo;
+        this._templateInfo = options.contentOptions.template;
         this._template = null;
-        dom.addClass([this._parentEl], css.content);
+        this._options = options.contentOptions;
+        dom.addClass([this._parentEl], cssStyles.content);
     }
-    private getTemplateID() {
+    dispose(): void {
+        if (this.getIsDisposed()) {
+            return;
+        }
+        this.setDisposing();
+        dom.removeClass([this._parentEl], cssStyles.content);
+        const displayInfo = this._options.css;
+        if (!!displayInfo && !!displayInfo.readCss) {
+            dom.removeClass([this._parentEl], displayInfo.readCss);
+        }
+        if (!!displayInfo && !!displayInfo.editCss) {
+            dom.removeClass([this._parentEl], displayInfo.editCss);
+        }
+        this.cleanUp();
+        this._parentEl = null;
+        this._dataContext = null;
+        this._templateInfo = null;
+        super.dispose();
+    }
+    protected updateCss(): void {
+        const displayInfo = this._options.css, parentEl = this._parentEl;
+
+        if (this._isEditing) {
+            if (!!displayInfo) {
+                if (!!displayInfo.editCss) {
+                    dom.addClass([parentEl], displayInfo.editCss);
+                }
+                if (!!displayInfo.readCss) {
+                    dom.removeClass([parentEl], displayInfo.readCss);
+                }
+            }
+        } else {
+            if (!!displayInfo) {
+                if (!!displayInfo.readCss) {
+                    dom.addClass([parentEl], displayInfo.readCss);
+                }
+                if (!!displayInfo.editCss) {
+                    dom.removeClass([parentEl], displayInfo.editCss);
+                }
+            }
+        }
+    }
+    private getTemplateID(): string {
         if (!this._templateInfo) {
             throw new Error(ERRS.ERR_TEMPLATE_ID_INVALID);
         }
-        let info = this._templateInfo, id = info.displayID;
+        const info = this._templateInfo;
+        let id = info.readID;
         if (this._isEditing && !!info.editID) {
             id = info.editID;
         }
@@ -53,59 +94,57 @@ export class TemplateContent extends BaseObject implements IContent {
             id = info.editID;
         }
 
-        if (!id)
+        if (!id) {
             throw new Error(ERRS.ERR_TEMPLATE_ID_INVALID);
+        }
         return id;
     }
-    private createTemplate(): ITemplate {
-        const template = createTemplate(this._dataContext);
+    private createTemplate(parentEl: HTMLElement): ITemplate {
+        const template = createTemplate({ parentEl: parentEl, dataContext: this._dataContext });
         template.templateID = this._templateID;
         return template;
     }
-    protected cleanUp() {
+    protected cleanUp(): void {
         if (!!this._template) {
-            this._template.destroy();
+            this._template.dispose();
             this._template = null;
             this._templateID = null;
         }
     }
-    render() {
+    render(): void {
         try {
             const id = this.getTemplateID();
             if (this._templateID !== id) {
                 this.cleanUp();
                 this._templateID = id;
-                this._template = this.createTemplate();
-                this._parentEl.appendChild(this._template.el);
+                this._template = this.createTemplate(this.parentEl);
             }
+            this.updateCss();
         } catch (ex) {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
-    destroy() {
-        if (this._isDestroyed)
-            return;
-        this._isDestroyCalled = true;
-        dom.removeClass([this._parentEl], css.content);
-        this.cleanUp();
-        this._parentEl = null;
-        this._dataContext = null;
-        this._templateInfo = null;
-        super.destroy();
-    }
-    toString() {
+    toString(): string {
         return "TemplateContent";
     }
-    get parentEl() { return this._parentEl; }
-    get template() { return this._template; }
-    get isEditing() { return this._isEditing; }
+    get parentEl(): HTMLElement {
+        return this._parentEl;
+    }
+    get template(): ITemplate {
+        return this._template;
+    }
+    get isEditing(): boolean {
+        return this._isEditing;
+    }
     set isEditing(v) {
         if (this._isEditing !== v) {
             this._isEditing = v;
             this.render();
         }
     }
-    get dataContext() { return this._dataContext; }
+    get dataContext(): any {
+        return this._dataContext;
+    }
     set dataContext(v) {
         if (this._dataContext !== v) {
             this._dataContext = v;
@@ -114,5 +153,7 @@ export class TemplateContent extends BaseObject implements IContent {
             }
         }
     }
-    get app(): IApplication { return boot.getApp(); }
+    get app(): IApplication {
+        return boot.app;
+    }
 }

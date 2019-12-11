@@ -1,4 +1,4 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     DATE_CONVERSION, DATA_TYPE, SORT_ORDER, FIELD_TYPE, COLL_CHANGE_OPER,
     COLL_CHANGE_REASON, COLL_CHANGE_TYPE, ITEM_STATUS
@@ -6,7 +6,7 @@ import {
 import { IPromise } from "../utils/ideferred";
 import {
     IBaseObject, IErrorNotification, IEditable, ISubmittable, TEventHandler, TPropChangedHandler,
-    IValidationInfo, TPriority
+    IValidationInfo, TPriority, IIndexer
 } from "../int";
 
 export const PROP_NAME = {
@@ -18,15 +18,16 @@ export const PROP_NAME = {
     pageSize: "pageSize",
     pageIndex: "pageIndex",
     isUpdating: "isUpdating",
-    isLoading: "isLoading"
+    isLoading: "isLoading",
+    isRefreshing: "isRefreshing"
 };
 
-export const ITEM_EVENTS = {
-    errors_changed: "errors_changed",
-    destroyed: "destroyed"
-};
+export const enum ITEM_EVENTS {
+    errors_changed = "errors_changed",
+    destroyed = "destroyed"
+}
 
-//--Collection interfaces
+// Collection interfaces
 export interface IFieldInfo {
     fieldName: string;
     isPrimaryKey: number;
@@ -59,33 +60,32 @@ export interface IPermissions {
     canRefreshRow: boolean;
 }
 
-export interface IItemAspect<TItem extends ICollectionItem> extends IBaseObject, IErrorNotification, IEditable, ISubmittable {
+export interface IItemAspect<TItem extends ICollectionItem, TObj extends IIndexer<any>> extends IBaseObject, IErrorNotification, IEditable, ISubmittable {
     getFieldInfo(fieldName: string): IFieldInfo;
     getFieldNames(): string[];
     getErrorString(): string;
     deleteItem(): boolean;
-    _onAttaching(): void;
-    _onAttach(): void;
-    _setIsDetached(v: boolean): void;
-    _setIsCached(v: boolean): void;
-    raiseErrorsChanged(args: any): void;
-    readonly isCanSubmit: boolean;
+    _setKey(v: string): void;
+    _setIsAttached(v: boolean): void;
+    raiseErrorsChanged(): void;
+    readonly vals: TObj;
+    readonly item: TItem;
+    readonly key: string;
+    readonly coll: ICollection<TItem>;
     readonly status: ITEM_STATUS;
+    readonly isUpdating: boolean;
+    readonly isEditing: boolean;
+    readonly isCanSubmit: boolean;
+    readonly isHasChanges: boolean;
     readonly isNew: boolean;
     readonly isDeleted: boolean;
-    readonly collection: ICollection<TItem>;
-    readonly isUpdating: boolean;
-    readonly isHasChanges: boolean;
-    readonly isEditing: boolean;
+    readonly isEdited: boolean;
     readonly isDetached: boolean;
-    readonly isCached: boolean;
-    key: string;
-    item: TItem;
 }
 
 export interface ICollectionItem extends IBaseObject {
-    readonly _aspect: IItemAspect<ICollectionItem>;
-    _key: string;
+    readonly _aspect: IItemAspect<ICollectionItem, any>;
+    readonly _key: string;
 }
 
 export interface ICollChangedArgs<TItem extends ICollectionItem> {
@@ -104,7 +104,15 @@ export interface ICollFillArgs<TItem extends ICollectionItem> {
     newItems: TItem[];
 }
 
-export interface ICollValidateArgs<TItem extends ICollectionItem> { item: TItem; fieldName: string; errors: string[]; }
+export interface ICollValidateFieldArgs<TItem extends ICollectionItem> {
+    readonly item: TItem;
+    readonly fieldName: string;
+    errors: string[];
+}
+export interface ICollValidateItemArgs<TItem extends ICollectionItem> {
+    readonly item: TItem;
+    result: IValidationInfo[];
+}
 export interface ICollItemStatusArgs<TItem extends ICollectionItem> { item: TItem; oldStatus: ITEM_STATUS; key: string; }
 export interface ICollItemAddedArgs<TItem extends ICollectionItem> { item: TItem; isAddNewHandled: boolean; }
 export interface ICommitChangesArgs<TItem extends ICollectionItem> { item: TItem; isBegin: boolean; isRejected: boolean; status: ITEM_STATUS; }
@@ -117,35 +125,35 @@ export interface ICurrentChangingArgs<TItem extends ICollectionItem> { newCurren
 
 export interface ICollectionEvents<TItem extends ICollectionItem> {
     addOnClearing(fn: TEventHandler<ICollection<TItem>, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnClearing(nmspace?: string): void;
+    offOnClearing(nmspace?: string): void;
     addOnCleared(fn: TEventHandler<ICollection<TItem>, any>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnCleared(nmspace?: string): void;
+    offOnCleared(nmspace?: string): void;
     addOnCollChanged(fn: TEventHandler<ICollection<TItem>, ICollChangedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnCollChanged(nmspace?: string): void;
+    offOnCollChanged(nmspace?: string): void;
     addOnFill(fn: TEventHandler<ICollection<TItem>, ICollFillArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnFill(nmspace?: string): void;
-    addOnValidate(fn: TEventHandler<ICollection<TItem>, ICollValidateArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnValidate(nmspace?: string): void;
+    offOnFill(nmspace?: string): void;
+    addOnValidateField(fn: TEventHandler<ICollection<TItem>, ICollValidateFieldArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
+    offOnValidateField(nmspace?: string): void;
     addOnItemDeleting(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnItemDeleting(nmspace?: string): void;
+    offOnItemDeleting(nmspace?: string): void;
     addOnItemAdding(fn: TEventHandler<ICollection<TItem>, ICancellableArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnItemAdding(nmspace?: string): void;
+    offOnItemAdding(nmspace?: string): void;
     addOnItemAdded(fn: TEventHandler<ICollection<TItem>, IItemAddedArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnItemAdded(nmspace?: string): void;
+    offOnItemAdded(nmspace?: string): void;
     addOnCurrentChanging(fn: TEventHandler<ICollection<TItem>, ICurrentChangingArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnCurrentChanging(nmspace?: string): void;
+    offOnCurrentChanging(nmspace?: string): void;
     addOnPageChanging(fn: TEventHandler<ICollection<TItem>, IPageChangingArgs>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnPageChanging(nmspace?: string): void;
+    offOnPageChanging(nmspace?: string): void;
     addOnErrorsChanged(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnErrorsChanged(nmspace?: string): void;
+    offOnErrorsChanged(nmspace?: string): void;
     addOnBeginEdit(fn: TEventHandler<ICollection<TItem>, ICollItemArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnBeginEdit(nmspace?: string): void;
+    offOnBeginEdit(nmspace?: string): void;
     addOnEndEdit(fn: TEventHandler<ICollection<TItem>, ICollEndEditArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnEndEdit(nmspace?: string): void;
+    offOnEndEdit(nmspace?: string): void;
     addOnCommitChanges(fn: TEventHandler<ICollection<TItem>, ICommitChangesArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnCommitChanges(nmspace?: string): void;
+    offOnCommitChanges(nmspace?: string): void;
     addOnStatusChanged(fn: TEventHandler<ICollection<TItem>, ICollItemStatusArgs<TItem>>, nmspace?: string, context?: IBaseObject, priority?: TPriority): void;
-    removeOnStatusChanged(nmspace?: string): void;
+    offOnStatusChanged(nmspace?: string): void;
     addOnPageIndexChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
     addOnPageSizeChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
     addOnTotalCountChanged(handler: TPropChangedHandler, nmspace?: string, context?: IBaseObject): void;
@@ -157,17 +165,16 @@ export interface IEditableCollection<TItem extends ICollectionItem> {
     cancelEdit(): void;
     endEdit(): void;
     addNew(): TItem;
-    getItemsWithErrors(): TItem[];
-    getIsHasErrors(): boolean;
     isEditing: boolean;
     isUpdating: boolean;
     permissions: IPermissions;
 }
 
 export interface ISimpleCollection<TItem extends ICollectionItem> extends IBaseObject {
-    getFieldInfo(fieldName: string): IFieldInfo;
     getFieldNames(): string[];
+    getFieldInfo(fieldName: string): IFieldInfo;
     getFieldInfos(): IFieldInfo[];
+    getFieldMap(): IIndexer<IFieldInfo>;
     getItemByPos(pos: number): TItem;
     getItemByKey(key: string): TItem;
     findByPK(...vals: any[]): TItem;
@@ -192,7 +199,8 @@ export interface ISimpleCollection<TItem extends ICollectionItem> extends IBaseO
 }
 
 export interface ICollection<TItem extends ICollectionItem> extends ISimpleCollection<TItem>, IEditableCollection<TItem>, ICollectionEvents<TItem> {
-    options: ICollectionOptions;
+    readonly options: ICollectionOptions;
+    readonly uniqueID: string;
 }
 
 export interface IValueUtils {
@@ -213,22 +221,18 @@ export interface IErrors {
 }
 
 export interface IErrorsList {
-    [item_key: string]: IErrors;
+    [itemKey: string]: IErrors;
 }
 
 export interface IInternalCollMethods<TItem extends ICollectionItem> {
+    setIsLoading(v: boolean): void;
     getEditingItem(): TItem;
     getStrValue(val: any, fieldInfo: IFieldInfo): string;
     onBeforeEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
     onEditing(item: TItem, isBegin: boolean, isCanceled: boolean): void;
     onCommitChanges(item: TItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
-    validateItem(item: TItem): IValidationInfo;
-    validateItemField(item: TItem, fieldName: string): IValidationInfo;
-    addErrors(item: TItem, errors: IValidationInfo[]): void;
-    addError(item: TItem, fieldName: string, errors: string[]): void;
-    removeError(item: TItem, fieldName: string): void;
-    removeAllErrors(item: TItem): void;
-    getErrors(item: TItem): IErrors;
-    onErrorsChanged(item: TItem): void;
     onItemDeleting(args: ICancellableArgs<TItem>): boolean;
+    onErrorsChanged(args: ICollItemArgs<TItem>): void;
+    validateItemField(args: ICollValidateFieldArgs<TItem>): IValidationInfo;
+    validateItem(args: ICollValidateItemArgs<TItem>): IValidationInfo[];
 }

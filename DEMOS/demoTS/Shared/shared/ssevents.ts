@@ -1,12 +1,10 @@
-﻿/// <reference path="../../jriapp/jriapp.d.ts" />
-/// <reference path="../../thirdparty/sse.d.ts"/>
-import * as RIAPP from "jriapp";
+﻿import * as RIAPP from "jriapp";
 
 //server side events client
-var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+const bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
 
 export class SSEventsVM extends RIAPP.BaseObject {
-    private _es: sse.IEventSourceStatic;
+    private _es: EventSource;
     private _baseUrl: string;
     private _url: string;
     private _closeClientUrl: string;
@@ -19,7 +17,7 @@ export class SSEventsVM extends RIAPP.BaseObject {
 
     constructor(baseUrl: string, clientID: string) {
         super();
-        var self = this;
+        const self = this;
         this._es = null;
         this._deffered = null;
 
@@ -29,23 +27,20 @@ export class SSEventsVM extends RIAPP.BaseObject {
         this._closeClientUrl = this._baseUrl + "/CloseClient?id=" + clientID;
         this._postMsgUrl = this._baseUrl + "/PostMessage";
 
-        this._openESCommand = new RIAPP.Command(function (sender, data) {
-            self.open().then(() => {
-            }, (res) => {
+        this._openESCommand = new RIAPP.Command(function () {
+            self.open().catch((res) => {
                 self.handleError(res, self);
             });
-        }, null, () => {
-            return !self._es;
+        }, () => {
+            return !this._es;
         });
-        this._closeESCommand = new RIAPP.TCommand(function (sender, data) {
+        this._closeESCommand = new RIAPP.Command(function () {
             self.close();
-        }, null, () => {
-            return !!self._es;
+        }, () => {
+            return !!this._es;
         });
 
-        bootstrap.addOnUnLoad(function (s, a) {
-            self.close();
-        });
+        bootstrap.addOnUnLoad(() => self.close());
     }
     static isSupported(): boolean {
         try {
@@ -54,9 +49,8 @@ export class SSEventsVM extends RIAPP.BaseObject {
             return false;
         }
     }
-    protected _getEventNames() {
-        var base_events = super._getEventNames();
-        return ['open', 'close', 'error', 'message'].concat(base_events);
+    getEventNames() {
+        return ['open', 'close', 'error', 'message'];
     }
     private _onEsOpen(event:any) {
         clearTimeout(this._timeOut);
@@ -71,11 +65,10 @@ export class SSEventsVM extends RIAPP.BaseObject {
         this.close();
     }
     private _onMsg(event:any) {
-        var data = JSON.parse(event.data);
-        this.raiseEvent('message', { message: event.data, data: data });
+        const data = JSON.parse(event.data);
+        this.objEvents.raise('message', { message: event.data, data: data });
     }
     private _close() {
-        var self = this;
         if (!!this._timeOut)
             clearTimeout(this._timeOut);
         this._timeOut = null;
@@ -98,10 +91,10 @@ export class SSEventsVM extends RIAPP.BaseObject {
         }
     }
     addOnMessage(fn: (sender: any, args: { message: string; data: any; }) => void, namespace?: string) {
-        this.addHandler('message', fn, namespace);
+        this.objEvents.on('message', fn, namespace);
     }
     open(): RIAPP.IPromise<any> {
-        var self = this;
+        const self = this;
         if (!!this._deffered)
             return this._deffered.promise();
         this._deffered = utils.defer.createDeferred<any>();
@@ -131,32 +124,30 @@ export class SSEventsVM extends RIAPP.BaseObject {
     }
     //gracefully close the sse client
     close() {
-        var self = this, postData:any = null;
+        let postData:any = null;
         if (!this._es)
             return;
         try {
-            self._close();
+            this._close();
         }
         finally {
-            utils.http.postAjax(self._closeClientUrl, postData);
+            utils.http.postAjax(this._closeClientUrl, postData);
         }
     }
     //post message (to itself or another client)
     post(message: string, clientID?: string): RIAPP.IAbortablePromise<string> {
-        var payload = { message: message };
-        var self = this, postData = JSON.stringify({ payload: payload, clientID: !clientID ? self._clientID : clientID });
-        var req_promise = utils.http.postAjax(self._postMsgUrl, postData);
+        let payload = { message: message }, postData = JSON.stringify({ payload: payload, clientID: !clientID ? this._clientID : clientID });
+        let req_promise = utils.http.postAjax(this._postMsgUrl, postData);
         return req_promise;
     }
-    destroy() {
-        if (this._isDestroyed)
+    dispose() {
+        if (this.getIsDisposed())
             return;
-        this._isDestroyCalled = true;
-        var self = this;
+        this.setDisposing();
         try {
-            self.close();
+            this.close();
         } finally {
-            super.destroy();
+            super.dispose();
         }
     }
     get es() { return this._es; }

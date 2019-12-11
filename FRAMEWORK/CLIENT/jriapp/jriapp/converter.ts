@@ -1,87 +1,73 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     LocaleERRS, Utils
 } from "jriapp_shared";
 import { IConverter } from "./int";
 import { bootstrap } from "./bootstrap";
+import { IDatepicker } from "jriapp/int";
 
-const utils = Utils, checks = utils.check, strUtils = utils.str,
-    coreUtils = utils.core, boot = bootstrap,
-    ERRS = LocaleERRS;
+const utils = Utils, { isNt, isNumber } = utils.check, { format, stripNonNumeric, formatNumber } = utils.str,
+    { round } = utils.core, { strToDate, dateToStr } = utils.dates, boot = bootstrap, ERRS = LocaleERRS;
 
 export const NUM_CONV = { None: 0, Integer: 1, Decimal: 2, Float: 3, SmallInt: 4 };
 
 export class BaseConverter implements IConverter {
     convertToSource(val: any, param: any, dataContext: any): any {
         return val;
-   }
+    }
     convertToTarget(val: any, param: any, dataContext: any): any {
-        if (checks.isNt(val))
-            return null;
-        return val;
-   }
-};
+        return (isNt(val)) ? null : val;
+    }
+}
 export let baseConverter = new BaseConverter();
 
 export class DateConverter implements IConverter {
     convertToSource(val: any, param: any, dataContext: any): Date {
-        if (!val)
+        if (!val) {
             return null;
-        let defaults = bootstrap.defaults, datepicker = defaults.datepicker;
-        if (!!datepicker)
-            return datepicker.parseDate(val);
-        else
-            return dateTimeConverter.convertToSource(val, defaults.dateFormat, dataContext);
-   }
+        }
+        const defaults = boot.defaults, datepicker = boot.getSvc<IDatepicker>("IDatepicker");
+        return (!!datepicker) ? datepicker.parseDate(val) : dateTimeConverter.convertToSource(val, defaults.dateFormat, dataContext);
+    }
     convertToTarget(val: any, param: any, dataContext: any): string {
-        if (checks.isNt(val))
+        if (isNt(val)) {
             return "";
-        let defaults = bootstrap.defaults, datepicker = defaults.datepicker;
-        if (!!datepicker)
-            return datepicker.formatDate(val);
-        else
-            return dateTimeConverter.convertToTarget(val, defaults.dateFormat, dataContext);
-   }
+        }
+        const defaults = boot.defaults, datepicker = boot.getSvc<IDatepicker>("IDatepicker");
+        return (!!datepicker) ? datepicker.formatDate(val) : dateTimeConverter.convertToTarget(val, defaults.dateFormat, dataContext);
+    }
     toString() {
         return "DateConverter";
-   }
-};
-let dateConverter = new DateConverter();
+    }
+}
+const dateConverter = new DateConverter();
 
 export class DateTimeConverter implements IConverter {
-    convertToSource(val: any, param: any, dataContext: any): Date {
-        if (!val)
-            return null;
-        let m = moment(val, param);
-        if (!m.isValid()) {
-            throw new Error(strUtils.format(ERRS.ERR_CONV_INVALID_DATE, val));
-       }
-        return m.toDate();
-   }
-    convertToTarget(val: any, param: any, dataContext: any): string {
-        if (checks.isNt(val)) {
-            return "";
-       }
-        let m = moment(val);
-        return m.format(param);
-   }
+    convertToSource(val: string, param: string, dataContext: any): Date {
+        return strToDate(val, param);
+    }
+    convertToTarget(val: Date, param: string, dataContext: any): string {
+        return dateToStr(val, param);
+    }
     toString() {
         return "DateTimeConverter";
-   }
-};
-let dateTimeConverter = new DateTimeConverter();
+    }
+}
+const dateTimeConverter = new DateTimeConverter();
 
 export class NumberConverter implements IConverter {
     convertToSource(val: any, param: any, dataContext: any): number {
-        if (checks.isNt(val))
+        if (isNt(val)) {
             return null;
-        let defaults = bootstrap.defaults, dp = defaults.decimalPoint, thousand_sep = defaults.thousandSep, prec = 4;
-        let value = val.replace(thousand_sep, "");
+        }
+        const defaults = bootstrap.defaults, dp = defaults.decimalPoint, thousandSep = defaults.thousandSep;
+        let prec = 4;
+        let value = val.replace(thousandSep, "");
         value = value.replace(dp, ".");
-        value = strUtils.stripNonNumeric(value);
+        value = stripNonNumeric(value);
         if (value === "") {
             return null;
-       }
+        }
         let num: number = null;
         switch (param) {
             case NUM_CONV.SmallInt:
@@ -92,7 +78,7 @@ export class NumberConverter implements IConverter {
                 break;
             case NUM_CONV.Decimal:
                 prec = defaults.decPrecision;
-                num = coreUtils.round(parseFloat(value), prec);
+                num = round(parseFloat(value), prec);
                 break;
             case NUM_CONV.Float:
                 num = parseFloat(value);
@@ -100,100 +86,101 @@ export class NumberConverter implements IConverter {
             default:
                 num = Number(value);
                 break;
-       }
+        }
 
-        if (!checks.isNumber(num)) {
-            throw new Error(strUtils.format(ERRS.ERR_CONV_INVALID_NUM, val));
-       }
+        if (!isNumber(num)) {
+            throw new Error(format(ERRS.ERR_CONV_INVALID_NUM, val));
+        }
         return num;
-   }
+    }
     convertToTarget(val: any, param: any, dataContext: any): string {
-        if (checks.isNt(val)) {
+        if (isNt(val)) {
             return "";
-       }
-        let defaults = bootstrap.defaults, dp = defaults.decimalPoint, thousand_sep = defaults.thousandSep, prec: number;
+        }
+        const defaults = bootstrap.defaults, dp = defaults.decimalPoint, thousandSep = defaults.thousandSep;
+        let prec: number;
         switch (param) {
             case NUM_CONV.Integer:
                 prec = 0;
-                return strUtils.formatNumber(val, prec, dp, thousand_sep);
+                return formatNumber(val, prec, dp, thousandSep);
             case NUM_CONV.Decimal:
                 prec = defaults.decPrecision;
-                return strUtils.formatNumber(val, prec, dp, thousand_sep);
+                return formatNumber(val, prec, dp, thousandSep);
             case NUM_CONV.SmallInt:
                 prec = 0;
-                return strUtils.formatNumber(val, prec, dp, "");
+                return formatNumber(val, prec, dp, "");
             case NUM_CONV.Float:
-                //float number type preserves all number precision
-                return strUtils.formatNumber(val, null, dp, thousand_sep);
+                // float number type preserves all number precision
+                return formatNumber(val, null, dp, thousandSep);
             default:
-                return strUtils.formatNumber(val, null, dp, thousand_sep);
-       }
-   }
+                return formatNumber(val, null, dp, thousandSep);
+        }
+    }
     toString() {
         return "NumberConverter";
-   }
-};
-let numberConverter = new NumberConverter();
+    }
+}
+const numberConverter = new NumberConverter();
 
 export class IntegerConverter implements IConverter {
     convertToSource(val: any, param: any, dataContext: any): number {
         return numberConverter.convertToSource(val, NUM_CONV.Integer, dataContext);
-   }
+    }
     convertToTarget(val: any, param: any, dataContext: any): string {
         return numberConverter.convertToTarget(val, NUM_CONV.Integer, dataContext);
-   }
+    }
     toString() {
         return "IntegerConverter";
-   }
-};
-let integerConverter = new IntegerConverter();
+    }
+}
+const integerConverter = new IntegerConverter();
 
 export class SmallIntConverter implements IConverter {
     convertToSource(val: any, param: any, dataContext: any): number {
         return numberConverter.convertToSource(val, NUM_CONV.SmallInt, dataContext);
-   }
+    }
     convertToTarget(val: any, param: any, dataContext: any): string {
         return numberConverter.convertToTarget(val, NUM_CONV.SmallInt, dataContext);
-   }
+    }
     toString() {
         return "SmallIntConverter";
-   }
-};
-let smallIntConverter = new SmallIntConverter();
+    }
+}
+const smallIntConverter = new SmallIntConverter();
 
 export class DecimalConverter implements IConverter {
     convertToSource(val: any, param: any, dataContext: any): number {
         return numberConverter.convertToSource(val, NUM_CONV.Decimal, dataContext);
-   }
+    }
     convertToTarget(val: any, param: any, dataContext: any): string {
         return numberConverter.convertToTarget(val, NUM_CONV.Decimal, dataContext);
-   }
+    }
     toString() {
         return "DecimalConverter";
-   }
-};
-let decimalConverter = new DecimalConverter();
+    }
+}
+const decimalConverter = new DecimalConverter();
 
 export class FloatConverter implements IConverter {
     convertToSource(val: any, param: any, dataContext: any): number {
         return numberConverter.convertToSource(val, NUM_CONV.Float, dataContext);
-   }
+    }
     convertToTarget(val: any, param: any, dataContext: any): string {
         return numberConverter.convertToTarget(val, NUM_CONV.Float, dataContext);
-   }
+    }
     toString() {
         return "FloatConverter";
-   }
-};
-let floatConverter = new FloatConverter();
+    }
+}
+const floatConverter = new FloatConverter();
 
 export class NotConverter implements IConverter {
     convertToSource(val: any, param: any, dataContext: any): boolean {
         return !val;
-   }
+    }
     convertToTarget(val: any, param: any, dataContext: any): boolean {
         return !val;
-   }
+    }
 }
 
 boot.registerConverter("BaseConverter", baseConverter);

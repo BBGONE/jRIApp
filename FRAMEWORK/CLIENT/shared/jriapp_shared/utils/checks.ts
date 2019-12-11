@@ -1,69 +1,69 @@
-﻿/** The MIT License (MIT) Copyright(c) 2016 Maxim V.Tsapov */
-import {
-   IThenable
-} from "./ideferred";
-import {
-    IBaseObject, IEditable, ISubmittable, IErrorNotification, IPropertyBag
-} from "../int";
+﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
+import { IThenable } from "./ideferred";
+const GUID_RX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const _undefined: undefined = void (0);
+
+function isNt(a: any): a is void {
+    return (a === null || a === _undefined);
+}
+
+function isFunc(a: any): a is (...args: any[]) => any {
+    return (isNt(a)) ? false : ((typeof a === "function") || (typeof a === "object" && a instanceof Function));
+}
+
+function isString(a: any): a is string {
+    return (isNt(a)) ? false : ((typeof a === "string") || (typeof a === "object" && a instanceof String));
+}
+
+function isNumber(a: any): a is Number {
+    return (isNt(a)) ? false : (typeof a === "number" || (typeof a === "object" && a instanceof Number));
+}
 
 export class Checks {
-    static readonly undefined: any = void (0);
-
+    static readonly _undefined: undefined = _undefined;
     static isHasProp(obj: any, prop: string): boolean {
-        if (!obj)
-            return false;
-        return prop in obj;
+        return (!obj) ? false : (prop in obj);
     }
     static isNull(a: any): a is void {
         return a === null;
     }
     static isUndefined(a: any): a is void {
-        return a === Checks.undefined;
+        return a === _undefined;
     }
-    static isNt(a: any): a is void {
-        return (a === null || a === Checks.undefined);
-    }
+    static readonly isNt: (a: any) => a is void = isNt;
     static isObject(a: any): boolean {
-        if (Checks.isNt(a)) return false;
-        return (typeof a === "object");
+        return (isNt(a)) ? false : (typeof a === "object");
     }
-    static isSimpleObject(a: any): boolean {
-        if (!a) return false;
-        return ((typeof a === "object") && Object.prototype === Object.getPrototypeOf(a));
+    static isPlainObject(a: any): boolean {
+        if (!!a && typeof a == 'object') {
+            const proto = Object.getPrototypeOf(a);
+            return proto === Object.prototype || proto === null;
+        }
+
+        return false;
     }
-    static isString(a: any): a is string {
-        if (Checks.isNt(a)) return false;
-        return (typeof a === "string") || (typeof a === "object" && a instanceof String);
-    }
-    static isFunc(a: any): a is Function {
-        if (Checks.isNt(a)) return false;
-        return (typeof a === "function") || (typeof a === "object" && a instanceof Function);
-    }
+    static readonly isString: (a: any) => a is string = isString;
+    static readonly isFunc: (a: any) => a is (...args: any[]) => any = isFunc;
     static isBoolean(a: any): a is boolean {
-        if (Checks.isNt(a)) return false;
-        return (typeof a === "boolean") || (typeof a === "object" && a instanceof Boolean);
+        return (isNt(a)) ? false : ((typeof a === "boolean") || (typeof a === "object" && a instanceof Boolean));
     }
     static isDate(a: any): a is Date {
-        if (Checks.isNt(a)) return false;
-        return (typeof a === "object" && a instanceof Date);
+        return (isNt(a)) ? false : (typeof a === "object" && a instanceof Date);
     }
-    static isNumber(a: any): a is Number {
-        if (Checks.isNt(a)) return false;
-        return typeof a === "number" || (typeof a === "object" && a instanceof Number);
-    }
+    static readonly isNumber: (a: any) => a is Number = isNumber;
     static isNumeric(a: any): a is Number {
-        return Checks.isNumber(a) || (Checks.isString(a) && !isNaN(Number(a)));
+        return isNumber(a) || (isString(a) && !isNaN(Number(a)));
     }
     static isBoolString(a: any): boolean {
-        if (Checks.isNt(a)) return false;
-        return (a === "true" || a === "false");
+        return (isNt(a)) ? false : (a === "true" || a === "false");
+    }
+    static isGuid(a: any): boolean {
+        return isString(a) && GUID_RX.test(a);
     }
     static isArray<T>(a: any): a is Array<T> {
-        if (!a) return false;
-        return Array.isArray(a);
+        return (!a) ? false : Array.isArray(a);
     }
     static isThenable(a: any): a is IThenable<any> {
-        if (!a) return false;
-        return ((typeof (a) === "object") && Checks.isFunc(a.then));
+        return (!a) ? false : ((typeof (a) === "object") && isFunc(a.then));
     }
 }

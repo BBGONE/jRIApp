@@ -1,35 +1,72 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define(["require", "exports", "jriapp", "./demoDB", "common"], function (require, exports, RIAPP, DEMODB, COMMON) {
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], function (require, exports, RIAPP, DEMODB, COMMON, MONTHPICKER) {
     "use strict";
-    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, dates = utils.dates;
     var UppercaseConverter = (function (_super) {
         __extends(UppercaseConverter, _super);
         function UppercaseConverter() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         UppercaseConverter.prototype.convertToSource = function (val, param, dataContext) {
-            if (utils.check.isString(val))
+            if (utils.check.isString(val)) {
                 return val.toLowerCase();
-            else
+            }
+            else {
                 return val;
+            }
         };
         UppercaseConverter.prototype.convertToTarget = function (val, param, dataContext) {
-            if (utils.check.isString(val))
+            if (utils.check.isString(val)) {
                 return val.toUpperCase();
-            else
+            }
+            else {
                 return val;
+            }
         };
         return UppercaseConverter;
     }(RIAPP.BaseConverter));
     exports.UppercaseConverter = UppercaseConverter;
+    var YearMonthConverter = (function (_super) {
+        __extends(YearMonthConverter, _super);
+        function YearMonthConverter() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        YearMonthConverter.prototype.convertToSource = function (val, param, dataContext) {
+            if (utils.check.isString(val)) {
+                return dates.strToDate('01/' + val, 'DD/' + param);
+            }
+            else {
+                return null;
+            }
+        };
+        YearMonthConverter.prototype.convertToTarget = function (val, param, dataContext) {
+            if (utils.check.isDate(val)) {
+                return dates.dateToStr(val, param);
+            }
+            else {
+                return "";
+            }
+        };
+        return YearMonthConverter;
+    }(RIAPP.BaseConverter));
+    exports.YearMonthConverter = YearMonthConverter;
     var NotConverter = (function (_super) {
         __extends(NotConverter, _super);
         function NotConverter() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         NotConverter.prototype.convertToSource = function (val, param, dataContext) {
             return !val;
@@ -40,27 +77,38 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         return NotConverter;
     }(RIAPP.BaseConverter));
     exports.NotConverter = NotConverter;
+    function RGBToHex(r, g, b) {
+        var bin = r << 16 | g << 8 | b;
+        return (function (h) {
+            return new Array(7 - h.length).join("0") + h;
+        })(bin.toString(16).toUpperCase());
+    }
     var TestObject = (function (_super) {
         __extends(TestObject, _super);
         function TestObject(initPropValue) {
-            _super.call(this);
-            var self = this;
-            this._testProperty1 = initPropValue;
-            this._testProperty2 = null;
-            this._testProperty3 = null;
-            this._boolProperty = null;
-            this._testCommand = new RIAPP.Command(function (sender, args) {
+            var _this = _super.call(this) || this;
+            var self = _this;
+            _this._testProperty1 = initPropValue;
+            _this._testProperty2 = null;
+            _this._testProperty3 = null;
+            _this._boolProperty = null;
+            _this._yearmonth = null;
+            _this._testCommand = new RIAPP.Command(function () {
                 self._onTestCommandExecuted();
-            }, self, function (sender, args) {
+            }, function () {
                 return self.isEnabled;
             });
-            this._month = new Date().getMonth() + 1;
-            this._months = new DEMODB.KeyValDictionary();
-            this._fillMonths();
-            this._format = 'PDF';
-            this._formatItem = null;
-            this._formats = new DEMODB.StrKeyValDictionary();
-            this._fillFormats();
+            _this._paramCommand = new RIAPP.Command(function (param) {
+                alert(param.color + ": #" + RGBToHex(param.r, param.g, param.b));
+            });
+            _this._month = new Date().getMonth() + 1;
+            _this._months = new DEMODB.KeyValDictionary();
+            _this._fillMonths();
+            _this._format = 'PDF';
+            _this._formatItem = null;
+            _this._formats = new DEMODB.StrKeyValDictionary();
+            _this._fillFormats();
+            return _this;
         }
         TestObject.prototype._fillMonths = function () {
             this._months.fillItems([{ key: 1, val: 'January' }, { key: 2, val: 'February' }, { key: 3, val: 'March' },
@@ -80,8 +128,8 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             set: function (v) {
                 if (this._testProperty1 != v) {
                     this._testProperty1 = v;
-                    this.raisePropertyChanged('testProperty1');
-                    this.raisePropertyChanged('isEnabled');
+                    this.objEvents.raiseProp('testProperty1');
+                    this.objEvents.raiseProp('isEnabled');
                     this._testCommand.raiseCanExecuteChanged();
                 }
             },
@@ -93,7 +141,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             set: function (v) {
                 if (this._testProperty2 != v) {
                     this._testProperty2 = v;
-                    this.raisePropertyChanged('testProperty2');
+                    this.objEvents.raiseProp('testProperty2');
                 }
             },
             enumerable: true,
@@ -104,7 +152,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             set: function (v) {
                 if (this._testProperty3 != v) {
                     this._testProperty3 = v;
-                    this.raisePropertyChanged('testProperty3');
+                    this.objEvents.raiseProp('testProperty3');
                 }
             },
             enumerable: true,
@@ -115,7 +163,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             set: function (v) {
                 if (this._boolProperty != v) {
                     this._boolProperty = v;
-                    this.raisePropertyChanged('boolProperty');
+                    this.objEvents.raiseProp('boolProperty');
                 }
             },
             enumerable: true,
@@ -123,6 +171,11 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         });
         Object.defineProperty(TestObject.prototype, "testCommand", {
             get: function () { return this._testCommand; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TestObject.prototype, "paramCommand", {
+            get: function () { return this._paramCommand; },
             enumerable: true,
             configurable: true
         });
@@ -139,7 +192,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             set: function (v) {
                 if (this._format !== v) {
                     this._format = v;
-                    this.raisePropertyChanged('format');
+                    this.objEvents.raiseProp('format');
                 }
             },
             enumerable: true,
@@ -150,7 +203,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             set: function (v) {
                 if (this._formatItem !== v) {
                     this._formatItem = v;
-                    this.raisePropertyChanged('formatItem');
+                    this.objEvents.raiseProp('formatItem');
                 }
             },
             enumerable: true,
@@ -173,7 +226,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             set: function (v) {
                 if (v !== this._month) {
                     this._month = v;
-                    this.raisePropertyChanged('month');
+                    this.objEvents.raiseProp('month');
                 }
             },
             enumerable: true,
@@ -184,21 +237,33 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(TestObject.prototype, "yearmonth", {
+            get: function () { return this._yearmonth; },
+            set: function (v) {
+                if (v !== this._yearmonth) {
+                    this._yearmonth = v;
+                    this.objEvents.raiseProp('yearmonth');
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         return TestObject;
     }(RIAPP.BaseObject));
     exports.TestObject = TestObject;
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
-            _super.call(this, options);
-            this._errorVM = null;
-            this._testObject = null;
+            var _this = _super.call(this, options) || this;
+            _this._errorVM = null;
+            _this._testObject = null;
+            return _this;
         }
         DemoApplication.prototype.onStartUp = function () {
             var self = this;
             this._errorVM = new COMMON.ErrorViewModel(this);
             this._testObject = new TestObject('some initial text');
-            this.addOnError(function (sender, data) {
+            this.objEvents.addOnError(function (_s, data) {
                 debugger;
                 data.isHandled = true;
                 self.errorVM.error = data.error;
@@ -206,19 +271,19 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
             });
             _super.prototype.onStartUp.call(this);
         };
-        DemoApplication.prototype.destroy = function () {
-            if (this._isDestroyed)
+        DemoApplication.prototype.dispose = function () {
+            if (this.getIsDisposed())
                 return;
-            this._isDestroyCalled = true;
+            this.setDisposing();
             var self = this;
             try {
-                self._errorVM.destroy();
-                self._testObject.destroy();
+                self._errorVM.dispose();
+                self._testObject.dispose();
                 if (!!self.UC.createdBinding)
-                    self.UC.createdBinding.destroy();
+                    self.UC.createdBinding.dispose();
             }
             finally {
-                _super.prototype.destroy.call(this);
+                _super.prototype.dispose.call(this);
             }
         };
         Object.defineProperty(DemoApplication.prototype, "errorVM", {
@@ -239,19 +304,21 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         return DemoApplication;
     }(RIAPP.Application));
     exports.DemoApplication = DemoApplication;
-    bootstrap.addOnError(function (sender, args) {
+    bootstrap.objEvents.addOnError(function (_s, args) {
         debugger;
         alert(args.error.message);
     });
     function initModule(app) {
-        console.log("INIT Module");
+        console.log("INIT bindingsDemo Module");
         app.registerConverter('uppercaseConverter', new UppercaseConverter());
         app.registerConverter('notConverter', new NotConverter());
+        app.registerConverter('yearmonthConverter', new YearMonthConverter());
     }
     ;
     exports.appOptions = {
         modulesInits: {
             "COMMON": COMMON.initModule,
+            "MONTHPICK": MONTHPICKER.initModule,
             "BINDDEMO": initModule
         }
     };
