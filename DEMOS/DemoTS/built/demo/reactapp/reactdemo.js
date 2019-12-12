@@ -353,7 +353,8 @@ define("views/simple", ["require", "exports", "react", "views/react", "actions/c
     Object.defineProperty(exports, "__esModule", { value: true });
     var spacerStyle = {
         marginLeft: '15px',
-        marginRight: '5px'
+        marginRight: '5px',
+        display: 'inline-block'
     };
     var spanStyle = {
         color: 'blue'
@@ -393,10 +394,10 @@ define("views/simple", ["require", "exports", "react", "views/react", "actions/c
             var _this = this;
             var _a = this.state, title = _a.title, value = _a.value;
             return (React.createElement(React.Fragment, null,
-                React.createElement("label", { className: "d-block" }, title ? title : 'This is a React component'),
-                React.createElement("input", { className: "form-control form-control-sm d-inline-block", style: { width: '150px' }, value: value, onChange: function (e) { _this.value = e.target.value; } }),
-                React.createElement("div", { className: "d-inline-block", style: spacerStyle },
-                    React.createElement("span", { className: "mr-2" }, "You entered: "),
+                React.createElement("label", { style: { display: 'block' } }, title ? title : 'This is a React component'),
+                React.createElement("input", { style: { width: '150px', display: 'inline-block' }, value: value, onChange: function (e) { _this.value = e.target.value; } }),
+                React.createElement("div", { style: spacerStyle },
+                    React.createElement("span", { style: { marginRight: '5px' } }, "You entered: "),
                     React.createElement("span", { className: "text-success", style: spanStyle }, value))));
         };
         Object.defineProperty(SimpleElView.prototype, "value", {

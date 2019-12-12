@@ -16,7 +16,8 @@ export interface ISimpleViewOptions extends RIAPP.IViewOptions
 
 const spacerStyle = {
     marginLeft: '15px',
-    marginRight: '5px'
+    marginRight: '5px',
+    display: 'inline-block'
 };
 
 const spanStyle = {
@@ -68,10 +69,10 @@ export class SimpleElView extends ReactElView<IState> {
 
         return (
             <React.Fragment>
-                <label className="d-block" >{title ? title : 'This is a React component'}</label>
-                <input className="form-control form-control-sm d-inline-block" style={{ width: '150px' }} value={value} onChange={(e) => { this.value = e.target.value; }} />
-                <div className="d-inline-block" style={spacerStyle}>
-                    <span className="mr-2">You entered: </span>
+                <label style={{ display: 'block' }}  >{title ? title : 'This is a React component'}</label>
+                <input style={{ width: '150px', display: 'inline-block' }} value={value} onChange={(e) => { this.value = e.target.value; }} />
+                <div style={spacerStyle}>
+                    <span style={{ marginRight: '5px' }}>You entered: </span>
                     <span className="text-success" style={spanStyle}>{value}</span>
                 </div>
             </React.Fragment> 
