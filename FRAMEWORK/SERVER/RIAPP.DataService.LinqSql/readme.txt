@@ -1,1 +1,0 @@
-	-This project contains LinqForSqlDomainService<TDB> class which is a specialized Data Service used to work with Linq For SQL.

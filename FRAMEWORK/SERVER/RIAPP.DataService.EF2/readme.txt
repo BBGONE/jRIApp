@@ -1,1 +1,0 @@
-	-This project contains EFDomainService<TDB> class which is a specialized Data Service used to work with Entity Framework 6 which uses DbContext instead of ObjectContext.

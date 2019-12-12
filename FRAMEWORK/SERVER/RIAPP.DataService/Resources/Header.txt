@@ -1,2 +1,0 @@
-﻿import * as RIAPP from "jriapp_shared";
-import * as dbMOD from "jriapp_db";
