@@ -1,0 +1,15 @@
+﻿export class {{DICT_NAME}} extends RIAPP.BaseDictionary<{{INTERFACE_NAME}}, {{VALS_NAME}}> {
+	constructor() {
+		super('{{KEY_NAME}}',{{PROPS}});
+	}
+	// override
+	itemFactory(aspect: {{ASPECT_NAME}}): {{INTERFACE_NAME}} {
+		return new {{ITEM_TYPE_NAME}}(aspect);
+	}
+	findItem({{PK_VALS}}): {{INTERFACE_NAME}} {
+		return this.findByPK(RIAPP.Utils.arr.fromList(arguments));
+	}
+	toString() {
+		return '{{DICT_NAME}}';
+	}
+}

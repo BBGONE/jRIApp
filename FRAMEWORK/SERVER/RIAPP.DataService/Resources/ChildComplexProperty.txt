@@ -1,0 +1,17 @@
+﻿export interface {{INTERFACE_NAME}}
+{
+{{INTERFACE_FIELDS}}              
+}
+
+export class {{TYPE_NAME}} extends dbMOD.ChildComplexProperty implements {{INTERFACE_NAME}} 
+{
+{{FIELDS_DEF}}
+	constructor(name: string, parent: dbMOD.BaseComplexProperty) {
+		super(name,parent);
+{{FIELDS_INIT}}
+	}
+{{PROPERTIES}}
+	toString() {
+		return '{{TYPE_NAME}}';
+	}
+}

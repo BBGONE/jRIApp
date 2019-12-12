@@ -1,0 +1,29 @@
+﻿{
+  "compilerOptions": {
+    "module": "amd",
+    "target": "es5",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "outFile": "../../built/jriapp_langs.js",
+    "declaration": true,
+    "sourceMap": false,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true
+  },
+  "files": [
+    "jriapp_ru.ts"
+  ],
+  "include": [
+    "../../built/jriapp_shared.d.ts",
+    "../../built/jriapp.d.ts",
+    "../../thirdparty/jquery.d.ts",
+    "../../thirdparty/jqueryui.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

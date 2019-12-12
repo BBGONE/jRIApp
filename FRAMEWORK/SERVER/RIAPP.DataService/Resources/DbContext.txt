@@ -1,0 +1,20 @@
+﻿export class DbSets extends dbMOD.DbSets{
+	constructor(dbContext:DbContext) {
+		super(dbContext);
+{{DBSETS}}
+	}
+{{DBSETS_PROPS}}
+}
+
+export class DbContext extends dbMOD.DbContext<DbSets, ISvcMethods, IAssocs>
+{
+	protected _createDbSets(): DbSets {
+        return new DbSets(this);
+    }
+	protected _createAssociations(): dbMOD.IAssociationInfo[]  {
+        return {{ASSOCIATIONS}};
+    }
+	protected _createMethods(): dbMOD.IQueryInfo[] {
+        return {{METHODS}};
+    }
+}

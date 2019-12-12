@@ -1,0 +1,12 @@
+﻿export interface {{VALS_NAME}}
+{
+{{VALS_FIELDS}}              
+}
+
+export type {{ASPECT_NAME}} = dbMOD.EntityAspect<{{INTERFACE_NAME}}, {{VALS_NAME}}, DbContext>;
+
+export interface {{INTERFACE_NAME}} extends {{VALS_NAME}}, dbMOD.IEntityItem
+{
+	readonly _aspect: {{ASPECT_NAME}};
+{{ENTITY_FIELDS}}              
+}

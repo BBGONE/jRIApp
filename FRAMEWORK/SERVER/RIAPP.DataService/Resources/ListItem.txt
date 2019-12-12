@@ -1,0 +1,13 @@
+﻿export type {{ASPECT_NAME}} = RIAPP.ListItemAspect<{{INTERFACE_NAME}}, {{VALS_NAME}}>;
+
+export interface {{INTERFACE_NAME}} extends {{VALS_NAME}}, RIAPP.IListItem
+{
+	readonly _aspect: {{ASPECT_NAME}};
+}
+
+class {{LIST_ITEM_NAME}} extends RIAPP.CollectionItem<{{ASPECT_NAME}}> implements {{INTERFACE_NAME}} {
+{{ITEM_PROPS}}
+	toString() {
+		return '{{LIST_ITEM_NAME}}';
+	}
+}

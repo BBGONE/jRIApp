@@ -1,0 +1,12 @@
+﻿class {{ENTITY_NAME}} extends RIAPP.CollectionItem<{{ASPECT_NAME}}> implements {{INTERFACE_NAME}} 
+		{
+		{{FIELDS_DEF}}
+		constructor(aspect: {{ASPECT_NAME}}) {
+			super(aspect);
+		{{FIELDS_INIT}}
+		}
+		toString() {
+			return '{{ENTITY_NAME}}';
+		}         
+{{ENTITY_FIELDS}}              
+}
