@@ -48,6 +48,6 @@ namespace RIAPP.DataService.Core
     public interface IServiceContainer<TService> : IServiceContainer
         where TService : BaseDomainService
     {
-        IServiceContainer<TService> CreateScope();
+        new IServiceContainer<TService> CreateScope();
     }
 }
