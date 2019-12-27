@@ -4,7 +4,6 @@ using Pipeline;
 using RIAPP.DataService.Core.CodeGen;
 using RIAPP.DataService.Core.Config;
 using RIAPP.DataService.Core.Security;
-using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Core.UseCases.CRUDMiddleware;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils;
@@ -46,14 +45,12 @@ namespace RIAPP.DataService.Core.Config
             }
 
             services.TryAddScoped<IDataManagerContainer<TService>>((sp) => {
-                var service = sp.GetRequiredService<TService>();
-                var serviceContainer = (IServiceContainer<TService>)service.ServiceContainer;
+                var serviceContainer = sp.GetRequiredService<IServiceContainer<TService>>();
                 return new DataManagerContainer<TService>(serviceContainer, options.DataManagerRegister);
             });
 
             services.TryAddScoped<IValidatorContainer<TService>>((sp) => {
-                var service = sp.GetRequiredService<TService>();
-                var serviceContainer = (IServiceContainer<TService>)service.ServiceContainer;
+                var serviceContainer = sp.GetRequiredService<IServiceContainer<TService>>();
                 return new ValidatorContainer<TService>(serviceContainer, options.ValidatorRegister);
             });
 
