@@ -8,23 +8,37 @@ namespace RIAPP.DataService.Core
     public delegate Task AfterChangeSetExecuted();
     public delegate Task AfterChangeSetCommited(SubResultList subResults);
 
+    public class CRUDServiceMethods
+    {
+        public CRUDServiceMethods(Action<Exception> onError,
+        Action<RowInfo> trackChanges,
+        ChangeSetExecutor executeChangeSet,
+        AfterChangeSetExecuted afterChangeSetExecuted,
+        AfterChangeSetCommited subResultsExecutor)
+        {
+            OnError = onError;
+            TrackChanges = trackChanges;
+            ExecuteChangeSet = executeChangeSet;
+            AfterChangeSetExecuted = afterChangeSetExecuted;
+            AfterChangeSetCommited = subResultsExecutor;
+        }
+        public Action<Exception> OnError { get; }
+        public Action<RowInfo> TrackChanges { get; }
+        public ChangeSetExecutor ExecuteChangeSet { get; }
+        public AfterChangeSetExecuted AfterChangeSetExecuted { get; }
+        public AfterChangeSetCommited AfterChangeSetCommited { get; }
+    }
+
+
     public interface ICRUDOperationsUseCaseFactory
     {
-        ICRUDOperationsUseCase Create(BaseDomainService service, Action<Exception> onError, 
-            Action<RowInfo> trackChanges, 
-            ChangeSetExecutor executeChangeSet, 
-            AfterChangeSetExecuted afterChangeSetExecuted,
-            AfterChangeSetCommited afterChangeSetCommited);
+        ICRUDOperationsUseCase Create(BaseDomainService service, CRUDServiceMethods serviceMethods);
     }
 
     public interface ICRUDOperationsUseCaseFactory<TService>: ICRUDOperationsUseCaseFactory
         where TService: BaseDomainService
     {
-        ICRUDOperationsUseCase<TService> Create(TService service, Action<Exception> onError, 
-            Action<RowInfo> trackChanges, 
-            ChangeSetExecutor executeChangeSet, 
-            AfterChangeSetExecuted afterChangeSetExecuted,
-            AfterChangeSetCommited afterChangeSetCommited);
+        ICRUDOperationsUseCase<TService> Create(TService service, CRUDServiceMethods serviceMethods);
     }
 
 }

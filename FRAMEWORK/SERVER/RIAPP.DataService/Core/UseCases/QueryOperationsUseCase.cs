@@ -22,12 +22,12 @@ namespace RIAPP.DataService.Core
         private readonly IDataHelper<TService> _dataHelper;
         private readonly Action<Exception> _onError;
 
-        public QueryOperationsUseCase(IServiceContainer<TService> serviceContainer, BaseDomainService service, Action<Exception> onError)
+        public QueryOperationsUseCase(BaseDomainService service, Action<Exception> onError)
         {
+            _serviceContainer = (IServiceContainer<TService>)service.ServiceContainer;
             _service = service;
             _onError = onError ?? throw new ArgumentNullException(nameof(onError));
             _metadata = this._service.GetMetadata();
-            _serviceContainer = serviceContainer;
             _serviceHelper = _serviceContainer.GetServiceHelper();
             _dataHelper = _serviceContainer.GetDataHelper();
             _authorizer = _serviceContainer.GetAuthorizer();

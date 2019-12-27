@@ -31,7 +31,12 @@ namespace RIAPP.DataService.Core
             _serializer = serializer;
         }
 
-        public IServiceContainer CreateScope()
+        IServiceContainer IServiceContainer.CreateScope()
+        {
+            return this.CreateScope();
+        }
+
+        public IServiceContainer<TService> CreateScope()
         {
             return new ServiceContainer<TService>(this, _serializer);
         }

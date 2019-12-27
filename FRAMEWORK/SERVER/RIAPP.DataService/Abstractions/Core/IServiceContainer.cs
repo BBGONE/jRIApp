@@ -8,9 +8,9 @@ namespace RIAPP.DataService.Core
 {
     public interface IServiceContainer
     {
+        IServiceContainer CreateScope();
         IServiceProvider ServiceProvider { get; }
         ISerializer Serializer { get; }
-        IServiceContainer CreateScope();
 
         IServiceOperationsHelper ServiceHelper { get; }
 
@@ -48,5 +48,6 @@ namespace RIAPP.DataService.Core
     public interface IServiceContainer<TService> : IServiceContainer
         where TService : BaseDomainService
     {
+        IServiceContainer<TService> CreateScope();
     }
 }

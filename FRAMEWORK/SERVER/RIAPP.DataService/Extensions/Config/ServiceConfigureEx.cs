@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Pipeline;
 using RIAPP.DataService.Core.CodeGen;
 using RIAPP.DataService.Core.Config;
 using RIAPP.DataService.Core.Security;
 using RIAPP.DataService.Core.Types;
+using RIAPP.DataService.Core.UseCases.CRUDMiddleware;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils;
 using System;
-using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Core.Config
 {
@@ -45,16 +46,24 @@ namespace RIAPP.DataService.Core.Config
             }
 
             services.TryAddScoped<IDataManagerContainer<TService>>((sp) => {
-                var serviceContainer = sp.GetRequiredService<IServiceContainer<TService>>();
+                var service = sp.GetRequiredService<TService>();
+                var serviceContainer = (IServiceContainer<TService>)service.ServiceContainer;
                 return new DataManagerContainer<TService>(serviceContainer, options.DataManagerRegister);
             });
 
             services.TryAddScoped<IValidatorContainer<TService>>((sp) => {
-                var serviceContainer = sp.GetRequiredService<IServiceContainer<TService>>();
+                var service = sp.GetRequiredService<TService>();
+                var serviceContainer = (IServiceContainer<TService>)service.ServiceContainer;
                 return new ValidatorContainer<TService>(serviceContainer, options.ValidatorRegister);
             });
 
             services.TryAddScoped<IServiceContainer<TService>, ServiceContainer<TService>>();
+
+            services.TryAddSingleton<RequestDelegate<CRUDContext<TService>>>((sp) => {
+                var builder = new PipelineBuilder<TService, CRUDContext<TService>>(sp);
+                Configuration.ConfigureCRUD<TService>(builder);
+                return builder.Build();
+            });
 
             #region  CodeGen
 
@@ -72,16 +81,13 @@ namespace RIAPP.DataService.Core.Config
             #endregion
 
             #region UseCases
-            var crudCaseFactory = ActivatorUtilities.CreateFactory(typeof(CRUDOperationsUseCase<TService>), new System.Type[] { typeof(BaseDomainService), 
-                typeof(Action<Exception>),
-                typeof(Action<RowInfo>), 
-                typeof(ChangeSetExecutor), 
-                typeof(AfterChangeSetExecuted),
-                typeof(AfterChangeSetCommited)
+            var crudCaseFactory = ActivatorUtilities.CreateFactory(typeof(CRUDOperationsUseCase<TService>), 
+                new System.Type[] { typeof(BaseDomainService), 
+                typeof(CRUDServiceMethods)
             });
 
-            services.TryAddScoped<ICRUDOperationsUseCaseFactory<TService>>((sp) => new CRUDOperationsUseCaseFactory<TService>((svc, onError, trackChanges, executeChangeSet, afterChangeSetExecuted, afterChangeSetCommited) =>
-                (ICRUDOperationsUseCase<TService>)crudCaseFactory(sp, new object[] { svc, onError, trackChanges, executeChangeSet, afterChangeSetExecuted, afterChangeSetCommited })));
+            services.TryAddScoped<ICRUDOperationsUseCaseFactory<TService>>((sp) => new CRUDOperationsUseCaseFactory<TService>((svc, serviceMethods) =>
+                (ICRUDOperationsUseCase<TService>)crudCaseFactory(sp, new object[] { svc, serviceMethods })));
 
             var queryCaseFactory = ActivatorUtilities.CreateFactory(typeof(QueryOperationsUseCase<TService>), new System.Type[] { typeof(BaseDomainService), typeof(Action<Exception>) });
 
@@ -101,11 +107,17 @@ namespace RIAPP.DataService.Core.Config
             services.TryAddTransient(typeof(IResponsePresenter<,>), typeof(OperationOutput<,>));
             #endregion
 
-            var serviceFactory = ActivatorUtilities.CreateFactory(typeof(TService), new Type[] { typeof(IServiceContainer<TService>) } );
+            var serviceFactory = ActivatorUtilities.CreateFactory(typeof(TService), 
+                new Type[] { typeof(IServiceContainer<TService>) } );
             
             services.TryAddScoped<TService>((sp) => {
                 var sc = sp.GetRequiredService<IServiceContainer<TService>>();
                 return (TService)serviceFactory(sp, new object[] { sc });
+            });
+
+            services.TryAddScoped<IValidatorContainer<TService>>((sp) => {
+                var serviceContainer = sp.GetRequiredService<IServiceContainer<TService>>();
+                return new ValidatorContainer<TService>(serviceContainer, options.ValidatorRegister);
             });
         }
     }

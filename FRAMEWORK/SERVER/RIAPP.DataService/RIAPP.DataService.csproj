@@ -186,6 +186,13 @@
     <Compile Include="Core\Types\ValidationErrorInfo.cs" />
     <Compile Include="Core\Types\Value.cs" />
     <Compile Include="Core\Types\ValueChange.cs" />
+    <Compile Include="Core\UseCases\CRUDMiddleware\ApplyChangesMiddleware.cs" />
+    <Compile Include="Core\UseCases\CRUDMiddleware\CommitChangesMiddleware.cs" />
+    <Compile Include="Core\UseCases\CRUDMiddleware\ValidateChangesMiddleware.cs" />
+    <Compile Include="Core\UseCases\CRUDMiddleware\AuthorizeMiddleware.cs" />
+    <Compile Include="Core\UseCases\CRUDMiddleware\Configuration.cs" />
+    <Compile Include="Core\UseCases\CRUDMiddleware\CRUDContext.cs" />
+    <Compile Include="Core\UseCases\CRUDMiddleware\CRUDMiddlewareOptions.cs" />
     <Compile Include="Core\UseCases\CRUDOperationsUseCase.cs" />
     <Compile Include="Core\UseCases\CRUDOperationsUseCaseFactory.cs" />
     <Compile Include="Core\UseCases\InvokeOperationsUseCase.cs" />
@@ -285,6 +292,17 @@
     <Compile Include="Utils\DynamicLinq\Validation\CoreStrings.cs" />
     <Compile Include="Utils\JetBrains.Annotations.cs" />
     <Compile Include="Utils\MultiMap.cs" />
+    <Compile Include="Utils\Pipeline\PipelineBuilder.cs" />
+    <Compile Include="Utils\Pipeline\Extensions\MapWhenExtensions.cs" />
+    <Compile Include="Utils\Pipeline\Extensions\RunExtensions.cs" />
+    <Compile Include="Utils\Pipeline\Extensions\UseExtensions.cs" />
+    <Compile Include="Utils\Pipeline\Extensions\UseMiddlewareExtensions.cs" />
+    <Compile Include="Utils\Pipeline\Extensions\UseWhenExtensions.cs" />
+    <Compile Include="Utils\Pipeline\IPipelineBuilder.cs" />
+    <Compile Include="Utils\Pipeline\Middleware\IMiddleware.cs" />
+    <Compile Include="Utils\Pipeline\Middleware\MapWhenMiddleware.cs" />
+    <Compile Include="Utils\Pipeline\IRequestContext.cs" />
+    <Compile Include="Utils\Pipeline\RequestDelegate.cs" />
     <Compile Include="Utils\RequestCallContext.cs" />
     <Compile Include="Utils\TemplateParser.cs" />
     <Compile Include="Utils\ValidationHelper.cs" />
@@ -311,6 +329,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -221,7 +221,7 @@ namespace RIAPP.DataService.Core
         public async Task<ChangeSetResponse> ServiceApplyChangeSet(ChangeSetRequest changeSet)
         {
             var factory = this.ServiceContainer.CRUDOperationsUseCaseFactory;
-            ICRUDOperationsUseCase uc = factory.Create(this,
+            var serviceMethods = new CRUDServiceMethods(
                 (err) => this._OnError(err),
                 (row) => this.TrackChangesToEntity(row),
                 async () =>
@@ -235,11 +235,12 @@ namespace RIAPP.DataService.Core
                 async (subResults) =>
                 {
                     await this.AfterChangeSetCommited(changeSet, subResults);
-                }
-            );
+                });
+
+            ICRUDOperationsUseCase uc = factory.Create(this, serviceMethods);
 
             var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<ChangeSetResponse, ChangeSetResponse>>();
-            
+
             bool res = await uc.Handle(changeSet, output);
 
             return output.Response;
@@ -272,7 +273,10 @@ namespace RIAPP.DataService.Core
 
         protected virtual void Dispose(bool isDisposing)
         {
-           // NOOP
+           if (isDisposing)
+            {
+                (this.ServiceContainer as IDisposable).Dispose();
+            }
         }
 
         void IDisposable.Dispose()
