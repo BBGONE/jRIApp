@@ -54,8 +54,6 @@ namespace RIAPP.DataService.Core.Config
                 return new ValidatorContainer<TService>(serviceContainer, options.ValidatorRegister);
             });
 
-            services.TryAddScoped<IServiceContainer<TService>, ServiceContainer<TService>>();
-
             services.TryAddSingleton<RequestDelegate<CRUDContext<TService>>>((sp) => {
                 var builder = new PipelineBuilder<TService, CRUDContext<TService>>(sp);
                 Configuration.ConfigureCRUD<TService>(builder);
@@ -104,17 +102,14 @@ namespace RIAPP.DataService.Core.Config
             services.TryAddTransient(typeof(IResponsePresenter<,>), typeof(OperationOutput<,>));
             #endregion
 
+            services.TryAddScoped<IServiceContainer<TService>, ServiceContainer<TService>>();
+
             var serviceFactory = ActivatorUtilities.CreateFactory(typeof(TService), 
                 new Type[] { typeof(IServiceContainer<TService>) } );
             
             services.TryAddScoped<TService>((sp) => {
                 var sc = sp.GetRequiredService<IServiceContainer<TService>>();
                 return (TService)serviceFactory(sp, new object[] { sc });
-            });
-
-            services.TryAddScoped<IValidatorContainer<TService>>((sp) => {
-                var serviceContainer = sp.GetRequiredService<IServiceContainer<TService>>();
-                return new ValidatorContainer<TService>(serviceContainer, options.ValidatorRegister);
             });
         }
     }
