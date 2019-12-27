@@ -273,10 +273,7 @@ namespace RIAPP.DataService.Core
 
         protected virtual void Dispose(bool isDisposing)
         {
-           if (isDisposing)
-            {
-                (this.ServiceContainer as IDisposable).Dispose();
-            }
+          
         }
 
         void IDisposable.Dispose()
