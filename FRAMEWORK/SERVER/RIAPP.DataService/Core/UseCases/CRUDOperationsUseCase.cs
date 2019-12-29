@@ -41,7 +41,9 @@ namespace RIAPP.DataService.Core
             {
                 if (ex is TargetInvocationException)
                     ex = ex.InnerException;
+
                 response.error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name);
+
                 _serviceMethods.OnError(ex);
             }
 

@@ -2,24 +2,21 @@
 using RIAPP.DataService.Core.Types;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.ExceptionServices;
 
-namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
+namespace RIAPP.DataService.Core.UseCases.RefreshMiddleware
 {
-    public class CRUDContext<TService> : IRequestContext
+    public class RefreshContext<TService> : IRequestContext
         where TService : BaseDomainService
     {
-        public const string CHANGE_GRAPH_KEY = "change_graph";
-        public const string CHANGE_METHODS_KEY = "change_methods";
-
         private ExceptionDispatchInfo _ExceptionInfo;
 
-        public CRUDContext(
-            ChangeSetRequest request, 
-            ChangeSetResponse response,
+        public RefreshContext(
+            RefreshInfoRequest request,
+            RefreshInfoResponse response,
             TService service,
-            IServiceContainer<TService> serviceContainer)
+            IServiceContainer<TService> serviceContainer
+          )
         {
             _ExceptionInfo = null;
             Request = request;
@@ -29,23 +26,23 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
             Properties = new Dictionary<string, object>();
         }
 
-        public static RequestContext CreateRequestContext(TService service, ChangeSetRequest changeSet, RowInfo rowInfo = null)
+        public static RequestContext CreateRequestContext(TService service, RowInfo rowInfo)
         {
-            DbSet dbSet = rowInfo == null? null : changeSet.dbSets.Where(d => d.dbSetName == rowInfo.GetDbSetInfo().dbSetName).Single();
-            return new RequestContext(service, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
-                operation: ServiceOperationType.SaveChanges);
+            return new RequestContext(service, rowInfo: rowInfo, operation: ServiceOperationType.RowRefresh);
         }
 
        
         // Gets a key/value collection that can be used to share data between middleware.
         public IDictionary<string, object> Properties { get; }
 
+        public bool IsMultyPage { get; }
+
         public void AddLogItem(string str)
         {
         }
 
-        public ChangeSetRequest Request { get; }
-        public ChangeSetResponse Response { get; }
+        public RefreshInfoRequest Request { get; }
+        public RefreshInfoResponse Response { get; }
         public IServiceProvider RequestServices { get { return ServiceContainer.ServiceProvider; } }
 
         public void CaptureException(Exception ex)

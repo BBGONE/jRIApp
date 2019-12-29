@@ -2,22 +2,18 @@
 using RIAPP.DataService.Core.Types;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.ExceptionServices;
 
-namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
+namespace RIAPP.DataService.Core.UseCases.InvokeMiddleware
 {
-    public class CRUDContext<TService> : IRequestContext
+    public class InvokeContext<TService> : IRequestContext
         where TService : BaseDomainService
     {
-        public const string CHANGE_GRAPH_KEY = "change_graph";
-        public const string CHANGE_METHODS_KEY = "change_methods";
-
         private ExceptionDispatchInfo _ExceptionInfo;
 
-        public CRUDContext(
-            ChangeSetRequest request, 
-            ChangeSetResponse response,
+        public InvokeContext(
+            InvokeRequest request,
+            InvokeResponse response,
             TService service,
             IServiceContainer<TService> serviceContainer)
         {
@@ -29,11 +25,9 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
             Properties = new Dictionary<string, object>();
         }
 
-        public static RequestContext CreateRequestContext(TService service, ChangeSetRequest changeSet, RowInfo rowInfo = null)
+        public static RequestContext CreateRequestContext(TService service)
         {
-            DbSet dbSet = rowInfo == null? null : changeSet.dbSets.Where(d => d.dbSetName == rowInfo.GetDbSetInfo().dbSetName).Single();
-            return new RequestContext(service, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
-                operation: ServiceOperationType.SaveChanges);
+            return new RequestContext(service, operation: ServiceOperationType.InvokeMethod);
         }
 
        
@@ -44,8 +38,8 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
         {
         }
 
-        public ChangeSetRequest Request { get; }
-        public ChangeSetResponse Response { get; }
+        public InvokeRequest Request { get; }
+        public InvokeResponse Response { get; }
         public IServiceProvider RequestServices { get { return ServiceContainer.ServiceProvider; } }
 
         public void CaptureException(Exception ex)

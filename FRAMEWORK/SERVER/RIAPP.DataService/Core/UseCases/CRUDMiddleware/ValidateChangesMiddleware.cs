@@ -4,6 +4,7 @@ using RIAPP.DataService.Core.Metadata;
 using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils;
+using RIAPP.DataService.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -45,17 +46,14 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
             var metadata = ctx.Service.GetMetadata();
             var changeSet = ctx.Request;
 
-            if (!ctx.Properties.TryGetValue(CRUDContext<TService>.CHANGE_GRAPH_KEY, out var graph))
-            {
-                throw new Exception("Could not get Graph changes from properties");
-            }
-            
-            if (!await ValidateRows(ctx, changeSet, metadata, (graph as IChangeSetGraph).InsertList))
+            var graph = ctx.Properties.Get<IChangeSetGraph>(CRUDContext<TService>.CHANGE_GRAPH_KEY) ?? throw new InvalidOperationException("Could not get Graph changes from properties");
+
+            if (!await ValidateRows(ctx, changeSet, metadata, graph.InsertList))
             {
                 throw new ValidationException(ErrorStrings.ERR_SVC_CHANGES_ARENOT_VALID);
             }
 
-            if (!await ValidateRows(ctx, changeSet, metadata, (graph as IChangeSetGraph).UpdateList))
+            if (!await ValidateRows(ctx, changeSet, metadata, graph.UpdateList))
             {
                 throw new ValidationException(ErrorStrings.ERR_SVC_CHANGES_ARENOT_VALID);
             }

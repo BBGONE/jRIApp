@@ -1,6 +1,7 @@
 ﻿using Pipeline;
 using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Utils;
+using RIAPP.DataService.Utils.Extensions;
 using System;
 using System.Threading.Tasks;
 
@@ -22,27 +23,18 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
             var dataHelper = ctx.ServiceContainer.GetDataHelper();
             var metadata = ctx.Service.GetMetadata();
             var changeSet = ctx.Request;
-
-            if (!ctx.Properties.TryGetValue(CRUDContext<TService>.CHANGE_GRAPH_KEY, out var graph))
-            {
-                throw new Exception("Could not get Graph changes from properties");
-            }
-
-            if (!ctx.Properties.TryGetValue(CRUDContext<TService>.CHANGE_METHODS_KEY, out var serviceMethods))
-            {
-                throw new Exception("Could not get CRUD Service methods from properties");
-            }
-
+            var graph = ctx.Properties.Get<IChangeSetGraph>(CRUDContext<TService>.CHANGE_GRAPH_KEY) ?? throw new InvalidOperationException("Could not get Graph changes from properties");
+            var serviceMethods = ctx.Properties.Get<CRUDServiceMethods>(CRUDContext<TService>.CHANGE_METHODS_KEY) ?? throw new InvalidOperationException("Could not get CRUD Service methods from properties");
 
             var req = CRUDContext<TService>.CreateRequestContext(ctx.Service, changeSet);
 
             using (var callContext = new RequestCallContext(req))
             {
-                await (serviceMethods as CRUDServiceMethods).ExecuteChangeSet();
+                await serviceMethods.ExecuteChangeSet();
                 await serviceHelper.AfterExecuteChangeSet(changeSet);
-                await (serviceMethods as CRUDServiceMethods).AfterChangeSetExecuted();
+                await serviceMethods.AfterChangeSetExecuted();
 
-                foreach (RowInfo rowInfo in (graph as IChangeSetGraph).AllList)
+                foreach (RowInfo rowInfo in graph.AllList)
                 {
                     if (rowInfo.changeType != ChangeType.Deleted)
                         serviceHelper.UpdateRowInfoAfterUpdates(rowInfo);

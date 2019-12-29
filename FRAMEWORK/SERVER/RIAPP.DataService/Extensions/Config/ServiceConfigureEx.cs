@@ -4,7 +4,11 @@ using Pipeline;
 using RIAPP.DataService.Core.CodeGen;
 using RIAPP.DataService.Core.Config;
 using RIAPP.DataService.Core.Security;
+using RIAPP.DataService.Core.UseCases;
 using RIAPP.DataService.Core.UseCases.CRUDMiddleware;
+using RIAPP.DataService.Core.UseCases.InvokeMiddleware;
+using RIAPP.DataService.Core.UseCases.QueryMiddleware;
+using RIAPP.DataService.Core.UseCases.RefreshMiddleware;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils;
 using System;
@@ -54,11 +58,33 @@ namespace RIAPP.DataService.Core.Config
                 return new ValidatorContainer<TService>(serviceContainer, options.ValidatorRegister);
             });
 
-            services.TryAddSingleton<RequestDelegate<CRUDContext<TService>>>((sp) => {
+            #region Pipeline
+
+            services.TryAddSingleton((sp) => {
                 var builder = new PipelineBuilder<TService, CRUDContext<TService>>(sp);
-                Configuration.ConfigureCRUD<TService>(builder);
+                Configuration.ConfigureCRUD(builder);
                 return builder.Build();
             });
+
+            services.TryAddSingleton((sp) => {
+                var builder = new PipelineBuilder<TService, QueryContext<TService>>(sp);
+                Configuration.ConfigureQuery(builder);
+                return builder.Build();
+            });
+
+            services.TryAddSingleton((sp) => {
+                var builder = new PipelineBuilder<TService, InvokeContext<TService>>(sp);
+                Configuration.ConfigureInvoke(builder);
+                return builder.Build();
+            });
+
+            services.TryAddSingleton((sp) => {
+                var builder = new PipelineBuilder<TService, RefreshContext<TService>>(sp);
+                Configuration.ConfigureRefresh(builder);
+                return builder.Build();
+            });
+
+            #endregion
 
             #region  CodeGen
 
