@@ -2,52 +2,96 @@
 using RIAPP.DataService.Core.Metadata;
 using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Resources;
+using RIAPP.DataService.Utils.Extensions;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
 namespace RIAPP.DataService.Utils
 {
-    public class DataHelper
+    static class ListFactory
     {
-        protected static IList CreateList<T>()
+        static readonly ConcurrentDictionary<Type, Func<IList>> _cacheCreateList = new ConcurrentDictionary<Type, Func<IList>>();
+        static readonly ConcurrentDictionary<Type, Func<IList, IEnumerable>> _cacheToArray = new ConcurrentDictionary<Type, Func<IList, IEnumerable>>();
+
+        public static IList CreateList(Type type)
         {
-            return new List<T>();
+            var del = _cacheCreateList.GetOrAdd(type, Internal.GetCreateListDelegate);
+            return del();
         }
 
-        protected static IEnumerable CreateArray<T>(List<T> list)
+        public static IEnumerable ToArray(Type elementType, IList list)
         {
-            return list.ToArray();
+            var del = _cacheToArray.GetOrAdd(elementType, Internal.GetToArrayDelegate);
+            return del(list);
+        }
+
+        private static class Internal
+        {
+            static readonly MethodInfo ListDelegateMI = typeof(Internal).GetMethod(nameof(Internal._GetCreateListDelegate), BindingFlags.Public | BindingFlags.Static);
+            static readonly MethodInfo ToArrayDelegateMI = typeof(Internal).GetMethod(nameof(Internal._GetToArrayDelegate), BindingFlags.Public | BindingFlags.Static);
+
+            public static Func<IList> GetCreateListDelegate(Type type)
+            {
+                MethodInfo miConstructed = ListDelegateMI.MakeGenericMethod(type);
+                return (Func<IList>)miConstructed.Invoke(null, null);
+            }
+
+            public static Func<IList, IEnumerable> GetToArrayDelegate(Type type)
+            {
+                MethodInfo miConstructed = ToArrayDelegateMI.MakeGenericMethod(type);
+                return (Func<IList, IEnumerable>)miConstructed.Invoke(null, null);
+            }
+
+
+            public static Func<IList> _GetCreateListDelegate<T>()
+            {
+                return delegate
+                {
+                    return new List<T>();
+                };
+            }
+
+            public static Func<IList, IEnumerable> _GetToArrayDelegate<T>()
+            {
+                return delegate(IList list)
+                {
+                    return ((IList<T>)list).ToArray();
+                };
+            }
         }
     }
 
-    public class DataHelper<TService> : DataHelper, IDataHelper<TService>
+    public class DataHelper<TService> : IDataHelper<TService>
         where TService : BaseDomainService
     {
-        private readonly IValueConverter<TService> valueConverter;
-        private readonly ISerializer serializer;
+        private readonly IValueConverter<TService> _valueConverter;
+        private readonly ISerializer _serializer;
 
         public DataHelper(ISerializer serializer, IValueConverter<TService> valueConverter)
         {
-            this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer), ErrorStrings.ERR_NO_SERIALIZER);
-            this.valueConverter = valueConverter ?? throw new ArgumentNullException(nameof(valueConverter));
+            this._serializer = serializer ?? throw new ArgumentNullException(nameof(serializer), ErrorStrings.ERR_NO_SERIALIZER);
+            this._valueConverter = valueConverter ?? throw new ArgumentNullException(nameof(valueConverter));
         }
 
         protected T Deserialize<T>(string val)
         {
-            return (T)this.serializer.DeSerialize(val, typeof(T));
+            return (T)this._serializer.DeSerialize(val, typeof(T));
         }
 
         protected object[] SerializeObjectField(object fieldOwner, Field objectFieldInfo)
         {
             var fieldInfos = objectFieldInfo.GetNestedInResultFields();
             var res = new object[fieldInfos.Length];
+
             for (var i = 0; i < fieldInfos.Length; ++i)
             {
                 res[i] = SerializeField(fieldOwner, fieldInfos[i]);
             }
+
             return res;
         }
 
@@ -55,10 +99,12 @@ namespace RIAPP.DataService.Utils
         {
             var fieldInfos = objectFieldInfo.GetNestedInResultFields();
             var res = new object[fieldInfos.Length];
+
             for (var i = 0; i < fieldInfos.Length; ++i)
             {
                 res[i] = DeserializeField(propType, fieldInfos[i], values[i]);
             }
+
             return res;
         }
 
@@ -70,6 +116,7 @@ namespace RIAPP.DataService.Utils
             val = null;
             var enityType = fieldOwner.GetType();
             var pinfo = enityType.GetProperty(fieldInfo.fieldName);
+
             if (pinfo == null)
             {
                 if (!optional)
@@ -78,14 +125,16 @@ namespace RIAPP.DataService.Utils
             }
 
             var propValue = pinfo.GetValue(fieldOwner, null);
+
             if (fieldInfo.fieldType == FieldType.Object)
             {
                 val = this.SerializeObjectField(propValue, fieldInfo);
             }
             else
             {
-                val = this.valueConverter.SerializeField(pinfo.PropertyType, fieldInfo, propValue);
+                val = this._valueConverter.SerializeField(pinfo.PropertyType, fieldInfo, propValue);
             }
+
             return true;
         }
 
@@ -94,17 +143,24 @@ namespace RIAPP.DataService.Utils
             var parts = propertyName.Split('.');
             var enityType = obj.GetType();
             var pinfo = enityType.GetProperty(parts[0]);
+            
             if (pinfo == null && throwErrors)
                 throw new Exception(string.Format(ErrorStrings.ERR_PROPERTY_IS_MISSING, enityType.Name, propertyName));
+
             if (pinfo == null)
+            {
                 return null;
+            }
+
             if (parts.Length == 1)
             {
                 return pinfo.GetValue(obj, null);
             }
+
             var pval = pinfo.GetValue(obj, null);
             if (pval == null)
                 throw new Exception(string.Format(ErrorStrings.ERR_PPROPERTY_ISNULL, enityType.Name, pinfo.Name));
+
             return GetValue(pval, string.Join(".", parts.Skip(1)), throwErrors);
         }
 
@@ -113,10 +169,15 @@ namespace RIAPP.DataService.Utils
             var parts = propertyName.Split('.');
             var enityType = obj.GetType();
             var pinfo = enityType.GetProperty(parts[0]);
+
             if (pinfo == null && throwErrors)
                 throw new Exception(string.Format(ErrorStrings.ERR_PROPERTY_IS_MISSING, enityType.Name, propertyName));
+
             if (pinfo == null)
+            {
                 return false;
+            }
+
             if (parts.Length == 1)
             {
                 if (!pinfo.CanWrite)
@@ -129,9 +190,12 @@ namespace RIAPP.DataService.Utils
                 pinfo.SetValue(obj, value, null);
                 return true;
             }
+
             var pval = pinfo.GetValue(obj, null);
+
             if (pval == null)
                 throw new Exception(string.Format(ErrorStrings.ERR_PPROPERTY_ISNULL, enityType.Name, pinfo.Name));
+
             return SetValue(pval, string.Join(".", parts.Skip(1)), value, throwErrors);
         }
 
@@ -143,6 +207,7 @@ namespace RIAPP.DataService.Utils
             if (pinfo == null)
                 throw new Exception(string.Format(ErrorStrings.ERR_PROPERTY_IS_MISSING, enityType.Name,
                     fieldInfo.fieldName));
+
             if (parts.Length == 1)
             {
                 if (!pinfo.CanWrite)
@@ -152,19 +217,25 @@ namespace RIAPP.DataService.Utils
                 }
 
                 var propType = pinfo.PropertyType;
-                var IsNullableType = this.valueConverter.IsNullableType(propType);
-                var val = this.valueConverter.DeserializeField(propType, fieldInfo, value);
+                var val = this._valueConverter.DeserializeField(propType, fieldInfo, value);
 
                 if (val != null)
+                {
                     pinfo.SetValue(entity, val, null);
-                else if (IsNullableType && val == null)
-                    pinfo.SetValue(entity, val, null);
-                else if (!propType.IsValueType && val == null)
-                    pinfo.SetValue(entity, val, null);
+                }
                 else
-                    throw new Exception(string.Format(ErrorStrings.ERR_FIELD_IS_NOT_NULLABLE, fieldInfo.fieldName));
+                {
+                    if (propType.IsNullableType())
+                        pinfo.SetValue(entity, val, null);
+                    else if (!propType.IsValueType)
+                        pinfo.SetValue(entity, val, null);
+                    else
+                        throw new Exception(string.Format(ErrorStrings.ERR_FIELD_IS_NOT_NULLABLE, fieldInfo.fieldName));
+                }
+                
                 return val;
             }
+
             var pval = pinfo.GetValue(entity, null);
             if (pval == null)
                 throw new Exception(string.Format(ErrorStrings.ERR_PPROPERTY_ISNULL, enityType.Name, pinfo.Name));
@@ -181,6 +252,7 @@ namespace RIAPP.DataService.Utils
         public string SerializeField(object fieldOwner, string fullName, Field fieldInfo)
         {
             var parts = fullName.Split('.');
+
             if (parts.Length == 1)
             {
                 var enityType = fieldOwner.GetType();
@@ -190,9 +262,11 @@ namespace RIAPP.DataService.Utils
                     throw new Exception(string.Format(ErrorStrings.ERR_PROPERTY_IS_MISSING, enityType.Name,
                         fieldInfo.fieldName));
                 }
+
                 var fieldValue = pinfo.GetValue(fieldOwner, null);
-                return this.valueConverter.SerializeField(pinfo.PropertyType, fieldInfo, fieldValue);
+                return this._valueConverter.SerializeField(pinfo.PropertyType, fieldInfo, fieldValue);
             }
+
             for (var i = 0; i < parts.Length - 1; i += 1)
             {
                 var enityType = fieldOwner.GetType();
@@ -201,6 +275,7 @@ namespace RIAPP.DataService.Utils
                     throw new Exception(string.Format(ErrorStrings.ERR_PROPERTY_IS_MISSING, enityType.Name, parts[i]));
                 fieldOwner = pinfo.GetValue(fieldOwner, null);
             }
+
             return SerializeField(fieldOwner, parts[parts.Length - 1], fieldInfo);
         }
 
@@ -215,33 +290,34 @@ namespace RIAPP.DataService.Utils
             {
                 return DeSerializeObjectField(propInfo.PropertyType, fieldInfo, (object[]) value);
             }
-            return this.valueConverter.DeserializeField(propInfo.PropertyType, fieldInfo, (string) value);
+
+            return this._valueConverter.DeserializeField(propInfo.PropertyType, fieldInfo, (string) value);
+        }
+
+        private object ParseArray(Type paramType, ParamMetadata pinfo, string val)
+        {
+            string[] arr = this.Deserialize<string[]>(val);
+
+            if (arr == null)
+            {
+                return null;
+            }
+
+            Type elementType = paramType.GetElementType();
+
+            var list = ListFactory.CreateList(elementType);
+
+            foreach (var v in arr)
+            {
+                list.Add(ParseParameter(elementType, pinfo, false, v));
+            }
+
+            return ListFactory.ToArray(elementType, list);
         }
 
         public object ParseParameter(Type paramType, ParamMetadata pinfo, bool isArray, string val)
         {
-            var dataType = pinfo.dataType;
-
-            if (isArray && val != null)
-            {
-                var arr = this.Deserialize<string[]>(val);
-                if (arr == null)
-                    return null;
-                var list = (IList) typeof(DataHelper).GetMethod("CreateList", BindingFlags.NonPublic | BindingFlags.Static)
-                        .MakeGenericMethod(paramType.GetElementType())
-                        .Invoke(null, new object[] {});
-
-                foreach (var v in arr)
-                {
-                    list.Add(ParseParameter(paramType.GetElementType(), pinfo, false, v));
-                }
-
-                return typeof(DataHelper).GetMethod("CreateArray", BindingFlags.NonPublic | BindingFlags.Static)
-                    .MakeGenericMethod(paramType.GetElementType())
-                    .Invoke(null, new object[] {list});
-            }
-
-            return this.valueConverter.DeserializeValue(paramType, dataType, pinfo.dateConversion, val);
+            return (isArray && val != null)? ParseArray(paramType, pinfo, val): this._valueConverter.DeserializeValue(paramType, pinfo.dataType, pinfo.dateConversion, val);
         }
 
         public Field GetFieldInfo(DbSetInfo dbSetInfo, string fullName)

@@ -30,11 +30,11 @@ namespace RIAPP.DataService.Core.Config
 
             services.TryAddScoped<IAuthorizer<TService>, Authorizer<TService>>();
 
-            services.TryAddScoped<IValueConverter<TService>, ValueConverter<TService>>();
+            services.TryAddSingleton<IValueConverter<TService>, ValueConverter<TService>>();
 
-            services.TryAddScoped<IDataHelper<TService>, DataHelper<TService>>();
+            services.TryAddSingleton<IDataHelper<TService>, DataHelper<TService>>();
 
-            services.TryAddScoped<IValidationHelper<TService>, ValidationHelper<TService>>();
+            services.TryAddSingleton<IValidationHelper<TService>, ValidationHelper<TService>>();
 
             services.TryAddScoped<IServiceOperationsHelper<TService>, ServiceOperationsHelper<TService>>();
 

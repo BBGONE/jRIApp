@@ -2,23 +2,18 @@
 using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Resources;
+using RIAPP.DataService.Utils.Extensions;
 using System;
 using System.Globalization;
 using System.Text;
 
 namespace RIAPP.DataService.Utils
 {
-    public class ValueConverter
+    static class ConverterFunctions
     {
-        public static bool IsNullableTypeCore(Type propType)
+        public static DataType DataTypeFromType(Type type, out bool isArray)
         {
-            return propType.IsGenericType &&
-                   propType.GetGenericTypeDefinition() == typeof(System.Nullable<>);
-        }
-
-        public static DataType DataTypeFromTypeCore(Type type, out bool isArray)
-        {
-            bool isNullable = IsNullableTypeCore(type);
+            bool isNullable = type.IsNullableType();
             isArray = false;
             Type realType = (!isNullable) ? type : Nullable.GetUnderlyingType(type);
             string fullName = realType.FullName, name = fullName;
@@ -67,7 +62,7 @@ namespace RIAPP.DataService.Utils
         }
     }
 
-    public class ValueConverter<TService> : ValueConverter, IValueConverter<TService>
+    public class ValueConverter<TService> : IValueConverter<TService>
         where TService : BaseDomainService
     {
         private readonly ISerializer serializer;
@@ -86,7 +81,7 @@ namespace RIAPP.DataService.Utils
             string value)
         {
             object result = null;
-            var IsNullable = IsNullableTypeCore(propType);
+            var IsNullable = propType.IsNullableType();
             Type propMainType = (!IsNullable)? propType : Nullable.GetUnderlyingType(propType);
 
             switch (dataType)
@@ -134,7 +129,7 @@ namespace RIAPP.DataService.Utils
         {
             if (value == null)
                 return null;
-            var isNullable = IsNullableTypeCore(propType);
+            var isNullable = propType.IsNullableType();
             Type realType = (!isNullable) ? propType : Nullable.GetUnderlyingType(propType);
 
             if (realType == typeof(Guid))
@@ -170,20 +165,15 @@ namespace RIAPP.DataService.Utils
 
         public virtual DataType DataTypeFromType(Type type, out bool isArray)
         {
-            return DataTypeFromTypeCore(type, out isArray);
-        }
-
-        public bool IsNullableType(Type propType)
-        {
-            return IsNullableTypeCore(propType);
+            return ConverterFunctions.DataTypeFromType(type, out isArray);
         }
 
         protected object CreateGenericInstance(Type propType, Type propMainType, object[] constructorArgs)
         {
             var typeToConstruct = propType.GetGenericTypeDefinition();
             Type[] argsType = { propMainType };
-            var nullableType = typeToConstruct.MakeGenericType(argsType);
-            var val = Activator.CreateInstance(nullableType, constructorArgs);
+            var concreteType = typeToConstruct.MakeGenericType(argsType);
+            var val = Activator.CreateInstance(concreteType, constructorArgs);
             return val;
         }
 

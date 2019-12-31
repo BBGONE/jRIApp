@@ -1,6 +1,7 @@
 ﻿using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Utils;
+using RIAPP.DataService.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -221,7 +222,7 @@ namespace RIAPP.DataService.Core.Metadata
                 var isArray = false;
                 try
                 {
-                    res = ValueConverter.DataTypeFromTypeCore(propType, out isArray);
+                    res = ConverterFunctions.DataTypeFromType(propType, out isArray);
                     if (isArray)
                         res = DataType.None;
                 }
@@ -243,7 +244,7 @@ namespace RIAPP.DataService.Core.Metadata
                 select new XElement(NS_DATA + "Field",
                     new XAttribute("fieldName", prop.Name),
                     new XAttribute("dataType", toDataType(prop.PropertyType)),
-                    ValueConverter.IsNullableTypeCore(prop.PropertyType) || prop.PropertyType == typeof(string)
+                    prop.PropertyType.IsNullableType() || prop.PropertyType == typeof(string)
                         ? new[] {new XAttribute("isNullable", true)}
                         : new XAttribute[0],
                     prop.SetMethod == null ? new[] {new XAttribute("isReadOnly", true)} : new XAttribute[0],
