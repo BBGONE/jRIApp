@@ -396,28 +396,29 @@ namespace RIAPP.DataService.Core.CodeGen
 
                 sbProps.Append("[");
                 var isFirst = true;
-                var isArray = false;
 
                 props.ForEach(propInfo =>
                 {
                     if (!isFirst)
                         sbProps.Append(",");
                     var dataType = DataType.None;
+
                     try
                     {
-                        dataType = dotNet2TS.DataTypeFromDotNetType(propInfo.PropertyType, out isArray);
-                        if (isArray)
-                            dataType = DataType.None;
+                        bool isArray = propInfo.PropertyType.IsArrayType();
+                        dataType = isArray? DataType.None : dotNet2TS.DataTypeFromDotNetType(propInfo.PropertyType);
                     }
                     catch (UnsupportedTypeException)
                     {
                         dataType = DataType.None;
                     }
+
                     sbProps.Append("{");
                     sbProps.Append(string.Format("name:'{0}',dtype:{1}", propInfo.Name, (int)dataType));
                     sbProps.Append("}");
                     isFirst = false;
                 });
+
                 sbProps.Append("]");
 
                 return sbProps.ToString();

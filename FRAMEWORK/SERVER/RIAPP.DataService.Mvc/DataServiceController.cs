@@ -93,9 +93,11 @@ namespace RIAPP.DataService.Mvc
                     case "ts":
                     case "typescript":
                         return GetTypeScript();
+                    case "xml":
                     case "xaml":
                         return GetXAML();
                     case "csharp":
+                    case "c#":
                         return GetCSharp();
                     default:
                         throw new Exception(string.Format("Unknown lang argument: {0}", lang));

@@ -161,6 +161,7 @@ namespace RIAPP.DataService.Core.Metadata
         {
             classTypes = classTypes.Where(t => t.IsClass && !t.IsArray);
             var dic_types = new Dictionary<Type, string>();
+
             foreach (var classType in classTypes)
             {
                 var ns_dal = string.Format("clr-namespace:{0};assembly={1}", classType.Namespace,
@@ -170,7 +171,8 @@ namespace RIAPP.DataService.Core.Metadata
 
             var dic_ns_prefix = new Dictionary<string, string>();
             var dal_ns_attributes = new LinkedList<XAttribute>();
-            var i = 0;
+            int i = 0;
+
             foreach (var ns in dic_types.Values)
             {
                 if (!dic_ns_prefix.ContainsKey(ns))
@@ -219,17 +221,23 @@ namespace RIAPP.DataService.Core.Metadata
             Func<Type, DataType> toDataType = propType =>
             {
                 var res = DataType.None;
-                var isArray = false;
+                var isArray = propType.IsArrayType();
                 try
                 {
-                    res = ConverterFunctions.DataTypeFromType(propType, out isArray);
                     if (isArray)
+                    {
                         res = DataType.None;
+                    }
+                    else
+                    {
+                        res = propType.GetDataType();
+                    }
                 }
                 catch (UnsupportedTypeException)
                 {
                     res = DataType.None;
                 }
+
                 return res;
             };
 

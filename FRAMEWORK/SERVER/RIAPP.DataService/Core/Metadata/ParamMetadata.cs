@@ -64,7 +64,9 @@ namespace RIAPP.DataService.Core.Metadata
         {
             var ptype = pinfo.ParameterType;
             if (pinfo.IsOut)
+            {
                 throw new DomainServiceException("Out parameters are not supported in service methods");
+            }
 
             var paramInfo = new ParamMetadata();
             paramInfo.isNullable = ptype.IsNullableType();
@@ -79,18 +81,17 @@ namespace RIAPP.DataService.Core.Metadata
                 paramInfo.dateConversion = dateConvert.DateConversion;
             }
 
-            bool isArray = false;
-
+            bool isArray = realType.IsArrayType();
             try
             {
-                paramInfo.dataType = valueConverter.DataTypeFromType(realType, out isArray);
+                paramInfo.dataType = valueConverter.DataTypeFromType(realType);
+                paramInfo.isArray = isArray;
             }
             catch (UnsupportedTypeException)
             {
                 paramInfo.dataType = DataType.None;
             }
 
-            paramInfo.isArray = isArray;
             return paramInfo;
         }
     }

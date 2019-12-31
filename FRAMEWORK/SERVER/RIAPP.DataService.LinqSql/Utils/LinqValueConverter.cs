@@ -52,9 +52,8 @@ namespace RIAPP.DataService.LinqSql.Utils
                 return base.SerializeField(propType, fieldInfo, value);
         }
    
-        public override DataType DataTypeFromType(Type type, out bool isArray)
+        public override DataType DataTypeFromType(Type type)
         {
-            isArray = false;
             string name = type.FullName;
 
             switch (name)
@@ -64,7 +63,7 @@ namespace RIAPP.DataService.LinqSql.Utils
                 case "System.Xml.Linq.XElement":
                     return DataType.String;
                 default:
-                    return base.DataTypeFromType(type, out isArray);
+                    return base.DataTypeFromType(type);
             }
         }
     }

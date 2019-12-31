@@ -2,6 +2,7 @@
 using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Utils;
+using RIAPP.DataService.Utils.Extensions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -41,10 +42,11 @@ namespace RIAPP.DataService.Core.CodeGen
         /// <returns>registered type name</returns>
         public string RegisterType(Type t)
         {
-            var isArray = false;
+            var isArray = t.IsArrayType();
             var isEnumerable = false;
             var isEnum = false;
-            var res = "any";
+            string result = "any";
+
             try
             {
                 if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
@@ -57,7 +59,7 @@ namespace RIAPP.DataService.Core.CodeGen
                     t = t.GetGenericArguments().First();
                     isEnumerable = true;
                 }
-                else if (t.IsArray)
+                else if (isArray)
                 {
                     isEnumerable = true;
                     t = t.GetElementType();
@@ -77,11 +79,15 @@ namespace RIAPP.DataService.Core.CodeGen
                     isEnum = true;
                 }
 
-                var dtype = _valueConverter.DataTypeFromType(t, out isArray);
-                res = GetTSTypeNameFromDataType(dtype);
+                var dtype = _valueConverter.DataTypeFromType(t);
+                result = GetTSTypeNameFromDataType(dtype);
+
                 if (isArray || isEnumerable)
-                    res = string.Format("{0}[]", res);
-                return res;
+                {
+                    result = string.Format("{0}[]", result);
+                }
+
+                return result;
             }
             catch (UnsupportedTypeException)
             {
@@ -273,9 +279,9 @@ namespace RIAPP.DataService.Core.CodeGen
             return fieldType;
         }
 
-        public DataType DataTypeFromDotNetType(Type type, out bool isArray)
+        public DataType DataTypeFromDotNetType(Type type)
         {
-            return _valueConverter.DataTypeFromType(type, out isArray);
+            return _valueConverter.DataTypeFromType(type);
         }
 
         void IDisposable.Dispose()

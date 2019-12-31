@@ -1,5 +1,4 @@
 ﻿using RIAPP.DataService.Core;
-using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils.Extensions;
@@ -9,59 +8,6 @@ using System.Text;
 
 namespace RIAPP.DataService.Utils
 {
-    static class ConverterFunctions
-    {
-        public static DataType DataTypeFromType(Type type, out bool isArray)
-        {
-            bool isNullable = type.IsNullableType();
-            isArray = false;
-            Type realType = (!isNullable) ? type : Nullable.GetUnderlyingType(type);
-            string fullName = realType.FullName, name = fullName;
-            if (fullName.EndsWith("[]"))
-            {
-                isArray = true;
-                name = fullName.Substring(0, fullName.Length - 2);
-            }
-
-            switch (name)
-            {
-                case "System.Byte":
-                    if (isArray)
-                    {
-                        //Binary is data type separate from the array (although it is array by its nature)
-                        isArray = false;
-                        return DataType.Binary;
-                    }
-                    return DataType.Integer;
-                case "System.String":
-                    return DataType.String;
-                case "System.Int16":
-                case "System.Int32":
-                case "System.Int64":
-                case "System.UInt16":
-                case "System.UInt32":
-                case "System.UInt64":
-                    return DataType.Integer;
-                case "System.Decimal":
-                    return DataType.Decimal;
-                case "System.Double":
-                case "System.Single":
-                    return DataType.Float;
-                case "System.DateTime":
-                case "System.DateTimeOffset":
-                    return DataType.DateTime;
-                case "System.TimeSpan":
-                    return DataType.Time;
-                case "System.Boolean":
-                    return DataType.Bool;
-                case "System.Guid":
-                    return DataType.Guid;
-                default:
-                    throw new UnsupportedTypeException(string.Format("Unsupported method type {0}", realType.FullName));
-            }
-        }
-    }
-
     public class ValueConverter<TService> : IValueConverter<TService>
         where TService : BaseDomainService
     {
@@ -163,9 +109,9 @@ namespace RIAPP.DataService.Utils
             return value.ToString();
         }
 
-        public virtual DataType DataTypeFromType(Type type, out bool isArray)
+        public virtual DataType DataTypeFromType(Type type)
         {
-            return ConverterFunctions.DataTypeFromType(type, out isArray);
+            return type.GetDataType();
         }
 
         protected object CreateGenericInstance(Type propType, Type propMainType, object[] constructorArgs)

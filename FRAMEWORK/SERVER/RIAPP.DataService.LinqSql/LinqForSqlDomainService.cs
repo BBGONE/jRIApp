@@ -1,6 +1,7 @@
 ﻿using RIAPP.DataService.Core;
 using RIAPP.DataService.Core.Metadata;
 using RIAPP.DataService.Core.Types;
+using RIAPP.DataService.Utils.Extensions;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -69,10 +70,15 @@ namespace RIAPP.DataService.LinqSql
                             fieldInfo.maxLength = (short)maxLength;
                         }
                     }
-                    bool isArray = false;
-                    fieldInfo.dataType = this.ServiceContainer.ValueConverter.DataTypeFromType(propInfo2.PropertyType, out isArray);
+
+                    bool isArray = propInfo2.PropertyType.IsArrayType();
+                    fieldInfo.dataType = isArray? DataType.None : this.ServiceContainer.ValueConverter.DataTypeFromType(propInfo2.PropertyType);
+
                     if (colAttr.DbType.IndexOf("NOT NULL", StringComparison.OrdinalIgnoreCase) > 0)
+                    {
                         fieldInfo.isNullable = false;
+                    }
+
                     fieldInfo.fieldType = colAttr.IsVersion?FieldType.RowTimeStamp: FieldType.None;
                     fieldInfo.isReadOnly = !propInfo2.CanWrite;
                     dbSetInfo.fieldInfos.Add(fieldInfo);
