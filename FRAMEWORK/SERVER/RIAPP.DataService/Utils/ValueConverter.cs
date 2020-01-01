@@ -26,8 +26,8 @@ namespace RIAPP.DataService.Utils
         public virtual object DeserializeValue(Type propType, DataType dataType, DateConversion dateConversion,
             string value)
         {
-            object result = null;
-            var IsNullable = propType.IsNullableType();
+            object result;
+            bool IsNullable = propType.IsNullableType();
             Type propMainType = (!IsNullable)? propType : Nullable.GetUnderlyingType(propType);
 
             switch (dataType)
@@ -42,9 +42,13 @@ namespace RIAPP.DataService.Utils
                     if (result != null)
                     {
                         if (propMainType == typeof(DateTimeOffset))
+                        {
                             result = new DateTimeOffset((DateTime)result);
+                        }
                         else if (propMainType == typeof(TimeSpan))
+                        {
                             result = ((DateTime)result).TimeOfDay;
+                        }
                     }
                     break;
                 case DataType.Guid:
@@ -114,6 +118,7 @@ namespace RIAPP.DataService.Utils
             return type.GetDataType();
         }
 
+        /*
         protected object CreateGenericInstance(Type propType, Type propMainType, object[] constructorArgs)
         {
             var typeToConstruct = propType.GetGenericTypeDefinition();
@@ -122,43 +127,41 @@ namespace RIAPP.DataService.Utils
             var val = Activator.CreateInstance(concreteType, constructorArgs);
             return val;
         }
+        */
 
         protected virtual object ConvertToBool(string value, bool IsNullableType)
         {
-            if (value == null)
-                return null;
-            return (IsNullableType) ? new Nullable<bool>(bool.Parse(value)): bool.Parse(value);
+            return value == null ? (bool?)null: bool.Parse(value);
         }
 
         protected virtual object ConvertToDate(string value, bool IsNullableType, DateConversion dateConversion)
         {
-            if (value == null)
-                return null;
-            var dt = DateTimeHelper.ParseDateTime(value, dateConversion);
-            return (IsNullableType) ? new Nullable<DateTime>(dt) : dt;
+            return value == null ? (DateTime?)null: DateTimeHelper.ParseDateTime(value, dateConversion);
         }
 
         protected virtual object ConvertToGuid(string value, bool IsNullableType)
         {
-            if (value == null)
-                return null;
-            return (IsNullableType)? new Nullable<Guid>(new Guid(value)): new Guid(value);
+            return value == null ? (Guid?)null : new Guid(value);
         }
 
         protected virtual object ConvertToNumber(string value, bool IsNullableType, Type propType, Type propMainType)
         {
-            if (value == null)
-                return null;
-            var typedVal = Convert.ChangeType(value, propMainType, CultureInfo.InvariantCulture);
-            return (IsNullableType)? CreateGenericInstance(propType, propMainType, new[] { typedVal }): typedVal;
+            return value == null? null: Convert.ChangeType(value, propMainType, CultureInfo.InvariantCulture);
+
+            // commented, because no need to create nullable type here - on boxing it turns into ordinary value anyway
+            // return (IsNullableType)? CreateGenericInstance(propType, propMainType, new[] { typedVal }): typedVal;
         }
 
         protected virtual object ConvertToBinary(string value, Type propType)
         {
             if (value == null)
+            {
                 return null;
+            }
+
             if (propType != typeof(byte[]))
                 throw new Exception(string.Format(ErrorStrings.ERR_VAL_DATATYPE_INVALID, propType.FullName));
+
             var sb = new StringBuilder(value);
             sb.Remove(sb.Length - 1, 1); //remove ]
             sb.Remove(0, 1); //remove [
@@ -174,7 +177,8 @@ namespace RIAPP.DataService.Utils
 
             var bytes = new byte[bytesCnt];
             bytesCnt = 0; //calculate again
-            var val = "";
+            string val = "";
+
             for (var i = 0; i < cnt; ++i)
             {
                 if (sb[i] == ',')
@@ -186,42 +190,50 @@ namespace RIAPP.DataService.Utils
                 else
                 {
                     if (sb[i] != '"' && sb[i] != ' ')
+                    {
                         val += sb[i];
+                    }
                 }
             }
+
             if (val != "")
             {
                 bytes[bytesCnt] = byte.Parse(val);
                 bytesCnt += 1;
-                val = "";
             }
 
             byte[] bytes2;
+
             if (bytesCnt < bytes.Length)
             {
                 bytes2 = new byte[bytesCnt];
                 Buffer.BlockCopy(bytes, 0, bytes2, 0, bytesCnt);
             }
             else
+            {
                 bytes2 = bytes;
+            }
 
             return bytes2;
         }
 
         protected virtual object ConvertToString(string value, Type propType)
         {
-            if (value == null)
+            if (value == null) {
                 return null;
-            if (propType != typeof(string))
-                throw new Exception(string.Format(ErrorStrings.ERR_VAL_DATATYPE_INVALID, propType.FullName));
-            return value;
+            }
+
+            return propType == typeof(string) ? value : throw new Exception(string.Format(ErrorStrings.ERR_VAL_DATATYPE_INVALID, propType.FullName));
         }
 
         protected virtual object ConvertTo(string value, bool IsNullableType, Type propType, Type propMainType)
         {
             if (value == null)
+            {
                 return null;
-            object typedVal = null;
+            }
+
+            object typedVal;
 
             if (!propMainType.IsValueType)
             {
@@ -239,11 +251,10 @@ namespace RIAPP.DataService.Utils
                 }
             }
 
-            if (IsNullableType)
-            {
-                return CreateGenericInstance(propType, propMainType, new[] { typedVal });
-            }
             return typedVal;
+
+            // commented, because no need to create nullable type here - on boxing it turns into ordinary value anyway
+            // return IsNullableType ? CreateGenericInstance(propType, propMainType, new[] { typedVal }) : typedVal;
         }
 
         protected virtual string GuidToString(object value)
@@ -253,27 +264,17 @@ namespace RIAPP.DataService.Utils
 
         protected virtual string DateOffsetToString(object value, bool IsNullable, DateConversion dateConversion)
         {
-            return (IsNullable)? DateTimeHelper.DateOffsetToString(((DateTimeOffset?)value).Value, dateConversion): DateTimeHelper.DateOffsetToString((DateTimeOffset)value, dateConversion);
+            return (value == null)? null: DateTimeHelper.DateOffsetToString((DateTimeOffset)value, dateConversion);
         }
 
         protected virtual string DateToString(object value, bool IsNullable, DateConversion dateConversion)
         {
-            return (IsNullable)? DateTimeHelper.DateToString(((DateTime?)value).Value, dateConversion): DateTimeHelper.DateToString((DateTime)value, dateConversion);
+            return (value == null)? null: DateTimeHelper.DateToString((DateTime)value, dateConversion);
         }
 
         protected virtual string TimeToString(object value, bool IsNullable, DateConversion dateConversion)
         {
-            if (IsNullable)
-            {
-                TimeSpan time = ((TimeSpan?)value).Value;
-                return DateTimeHelper.TimeToString(time, dateConversion);
-            }
-            else
-            {
-                TimeSpan time = (TimeSpan)value;
-                return DateTimeHelper.TimeToString(time, dateConversion);
-            }
-
+            return (value == null) ? null : DateTimeHelper.TimeToString((TimeSpan)value, dateConversion);
         }
 
         protected virtual string BoolToString(object value)
@@ -286,12 +287,14 @@ namespace RIAPP.DataService.Utils
             var bytes = (byte[])value;
             var sb = new StringBuilder(bytes.Length * 4);
             sb.Append("[");
+
             for (var i = 0; i < bytes.Length; ++i)
             {
                 if (i > 0)
                     sb.Append(",");
                 sb.Append(bytes[i]);
             }
+
             sb.Append("]");
             return sb.ToString();
         }
