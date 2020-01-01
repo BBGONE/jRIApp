@@ -42,7 +42,7 @@ namespace RIAPP.DataService.Core.CodeGen
         /// <returns>registered type name</returns>
         public string RegisterType(Type t)
         {
-            var isArray = t.IsArrayType();
+            var isArray = t.IsArray;
             var isEnumerable = false;
             var isEnum = false;
             string result = "any";
