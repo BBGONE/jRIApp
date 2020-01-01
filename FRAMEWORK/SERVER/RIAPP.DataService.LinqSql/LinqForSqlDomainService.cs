@@ -71,8 +71,7 @@ namespace RIAPP.DataService.LinqSql
                         }
                     }
 
-                    bool isArray = propInfo2.PropertyType.IsArrayType();
-                    fieldInfo.dataType = isArray? DataType.None : this.ServiceContainer.ValueConverter.DataTypeFromType(propInfo2.PropertyType);
+                    fieldInfo.dataType = propInfo2.PropertyType.IsArrayType() ? DataType.None : this.ServiceContainer.ValueConverter.DataTypeFromType(propInfo2.PropertyType);
 
                     if (colAttr.DbType.IndexOf("NOT NULL", StringComparison.OrdinalIgnoreCase) > 0)
                     {

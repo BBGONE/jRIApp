@@ -106,16 +106,16 @@ namespace RIAPP.DataService.Core.CodeGen
         /// <returns>registered type name</returns>
         protected internal string RegisterComplexType(Type t, bool isArray, bool isEnumerable, bool isEnum)
         {
-            string registeredName = "any";
-            ExtendsAttribute extendsAttr = null;
-            TypeNameAttribute typeNameAttr = null;
-            var typeName = isEnum ? t.Name : string.Format("I{0}", t.Name);
-            typeNameAttr = t.GetCustomAttributes(typeof(TypeNameAttribute), false).OfType<TypeNameAttribute>().FirstOrDefault();
+            string typeName = isEnum ? t.Name : string.Format("I{0}", t.Name);
+            TypeNameAttribute typeNameAttr = t.GetCustomAttributes(typeof(TypeNameAttribute), false).OfType<TypeNameAttribute>().FirstOrDefault();
             if (typeNameAttr != null)
+            {
                 typeName = typeNameAttr.Name;
+            }
+
             if (!isEnum)
             {
-                extendsAttr = t.GetCustomAttributes(typeof(ExtendsAttribute), false).OfType<ExtendsAttribute>().FirstOrDefault();
+                ExtendsAttribute extendsAttr = t.GetCustomAttributes(typeof(ExtendsAttribute), false).OfType<ExtendsAttribute>().FirstOrDefault();
                 StringBuilder extendsSb = null;
                 if (extendsAttr != null && extendsAttr.InterfaceNames.Length > 0)
                 {
@@ -129,15 +129,18 @@ namespace RIAPP.DataService.Core.CodeGen
                         isFirst = false;
                     }
                 }
-                registeredName = GetTypeInterface(t, typeName, extendsSb?.ToString());
+                string registeredName = GetTypeInterface(t, typeName, extendsSb?.ToString());
             }
             else
             {
-                registeredName = GetTSEnum(t, typeName);
+                string registeredName = GetTSEnum(t, typeName);
             }
 
             if (isArray || isEnumerable)
+            {
                 return string.Format("{0}[]", typeName);
+            }
+
             return typeName;
         }
 

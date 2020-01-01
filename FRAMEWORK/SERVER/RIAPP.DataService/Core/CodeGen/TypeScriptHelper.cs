@@ -405,8 +405,7 @@ namespace RIAPP.DataService.Core.CodeGen
 
                     try
                     {
-                        bool isArray = propInfo.PropertyType.IsArrayType();
-                        dataType = isArray? DataType.None : dotNet2TS.DataTypeFromDotNetType(propInfo.PropertyType);
+                        dataType = propInfo.PropertyType.IsArrayType() ? DataType.None : dotNet2TS.DataTypeFromDotNetType(propInfo.PropertyType);
                     }
                     catch (UnsupportedTypeException)
                     {

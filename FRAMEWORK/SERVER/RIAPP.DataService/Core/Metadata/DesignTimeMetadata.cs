@@ -218,20 +218,12 @@ namespace RIAPP.DataService.Core.Metadata
             if (level > MAX_DEPTH)
                 return Enumerable.Empty<XElement>();
 
-            Func<Type, DataType> toDataType = propType =>
+            DataType toDataType(Type propType)
             {
-                var res = DataType.None;
-                var isArray = propType.IsArrayType();
+                DataType res;
                 try
                 {
-                    if (isArray)
-                    {
-                        res = DataType.None;
-                    }
-                    else
-                    {
-                        res = propType.GetDataType();
-                    }
+                    res = propType.IsArrayType() ? DataType.None : propType.GetDataType();
                 }
                 catch (UnsupportedTypeException)
                 {
@@ -241,12 +233,11 @@ namespace RIAPP.DataService.Core.Metadata
                 return res;
             };
 
-            Func<Type, bool> isComplexType =
-                propType =>
-                {
-                    return propType.IsClass && propType != typeof(string) && !propType.IsArray &&
-                           propType.GetProperties().Any();
-                };
+            bool isComplexType(Type propType)
+            {
+                return propType.IsClass && propType != typeof(string) && !propType.IsArray &&
+                       propType.GetProperties().Any();
+            };
 
             return from prop in props
                 select new XElement(NS_DATA + "Field",
@@ -314,6 +305,7 @@ namespace RIAPP.DataService.Core.Metadata
         private static FieldsList _XElementsToFieldList(IEnumerable<XElement> xFields)
         {
             var fields = new FieldsList();
+
             foreach (var xField in xFields)
             {
                 var field = new Field

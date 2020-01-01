@@ -41,12 +41,7 @@ namespace RIAPP.DataService.Utils.Extensions
             switch (name)
             {
                 case "System.Byte":
-                    if (isArray)
-                    {
-                        // Binary is data type separate from the array (although it is array by its nature)
-                        return DataType.Binary;
-                    }
-                    return DataType.Integer;
+                    return isArray ? DataType.Binary : DataType.Integer;
                 case "System.String":
                     return DataType.String;
                 case "System.Int16":
