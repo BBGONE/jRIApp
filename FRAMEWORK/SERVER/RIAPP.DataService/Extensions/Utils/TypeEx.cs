@@ -1,6 +1,7 @@
 ﻿using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Core.Types;
 using System;
+using System.Collections.Generic;
 
 namespace RIAPP.DataService.Utils.Extensions
 {
@@ -24,6 +25,26 @@ namespace RIAPP.DataService.Utils.Extensions
             }
 
         }
+       
+        static readonly Dictionary<Type, DataType> typeMap = new Dictionary<Type, DataType>
+        {
+            { typeof(byte), DataType.Binary },
+            { typeof(string), DataType.String },
+            { typeof(Int16), DataType.Integer },
+            { typeof(Int32), DataType.Integer },
+            { typeof(Int64), DataType.Integer },
+            { typeof(UInt16), DataType.Integer },
+            { typeof(UInt32), DataType.Integer },
+            { typeof(UInt64), DataType.Integer },
+            { typeof(Decimal), DataType.Decimal },
+            { typeof(Double), DataType.Float },
+            { typeof(Single), DataType.Float },
+            { typeof(DateTime), DataType.DateTime },
+            { typeof(DateTimeOffset), DataType.DateTime },
+            { typeof(TimeSpan), DataType.Time },
+            { typeof(Boolean), DataType.Bool },
+            { typeof(Guid), DataType.Guid }
+        };
 
         public static DataType GetDataType(this Type type)
         {
@@ -36,37 +57,18 @@ namespace RIAPP.DataService.Utils.Extensions
             bool isNullable = type.IsNullableType();
             Type realType = (!isNullable) ? type : Nullable.GetUnderlyingType(type);
 
-            string fullName = realType.FullName, name = fullName;
-
-            switch (name)
+            if (typeMap.TryGetValue(realType, out DataType dataType))
             {
-                case "System.Byte":
-                    return isArray ? DataType.Binary : DataType.Integer;
-                case "System.String":
-                    return DataType.String;
-                case "System.Int16":
-                case "System.Int32":
-                case "System.Int64":
-                case "System.UInt16":
-                case "System.UInt32":
-                case "System.UInt64":
-                    return DataType.Integer;
-                case "System.Decimal":
-                    return DataType.Decimal;
-                case "System.Double":
-                case "System.Single":
-                    return DataType.Float;
-                case "System.DateTime":
-                case "System.DateTimeOffset":
-                    return DataType.DateTime;
-                case "System.TimeSpan":
-                    return DataType.Time;
-                case "System.Boolean":
-                    return DataType.Bool;
-                case "System.Guid":
-                    return DataType.Guid;
-                default:
-                    throw new UnsupportedTypeException(string.Format("Unsupported method type {0}", fullName));
+                if (dataType == DataType.Binary && !isArray)
+                {
+                    dataType = DataType.Integer;
+                }
+
+                return dataType;
+            } 
+            else
+            {
+                throw new UnsupportedTypeException($"Unsupported type {type.FullName}");
             }
         }
     }
