@@ -14,16 +14,9 @@ namespace RIAPP.DataService.Utils
 {
     static class ListFactory
     {
-        static readonly ConcurrentDictionary<Type, Func<IList>> _cacheCreateList = new ConcurrentDictionary<Type, Func<IList>>();
-        static readonly ConcurrentDictionary<Type, Func<IList, IEnumerable>> _cacheToArray = new ConcurrentDictionary<Type, Func<IList, IEnumerable>>();
+        static readonly ConcurrentDictionary<Type, Func<IEnumerable, IEnumerable>> _cacheToArray = new ConcurrentDictionary<Type, Func<IEnumerable, IEnumerable>>();
 
-        public static IList CreateList(Type type)
-        {
-            var del = _cacheCreateList.GetOrAdd(type, Internal.GetCreateListDelegate);
-            return del();
-        }
-
-        public static IEnumerable ToArray(Type elementType, IList list)
+        public static IEnumerable ToArray(Type elementType, IEnumerable list)
         {
             var del = _cacheToArray.GetOrAdd(elementType, Internal.GetToArrayDelegate);
             return del(list);
@@ -31,35 +24,19 @@ namespace RIAPP.DataService.Utils
 
         private static class Internal
         {
-            static readonly MethodInfo ListDelegateMI = typeof(Internal).GetMethod(nameof(Internal._GetCreateListDelegate), BindingFlags.Public | BindingFlags.Static);
             static readonly MethodInfo ToArrayDelegateMI = typeof(Internal).GetMethod(nameof(Internal._GetToArrayDelegate), BindingFlags.Public | BindingFlags.Static);
 
-            public static Func<IList> GetCreateListDelegate(Type type)
-            {
-                MethodInfo miConstructed = ListDelegateMI.MakeGenericMethod(type);
-                return (Func<IList>)miConstructed.Invoke(null, null);
-            }
-
-            public static Func<IList, IEnumerable> GetToArrayDelegate(Type type)
+            public static Func<IEnumerable, IEnumerable> GetToArrayDelegate(Type type)
             {
                 MethodInfo miConstructed = ToArrayDelegateMI.MakeGenericMethod(type);
-                return (Func<IList, IEnumerable>)miConstructed.Invoke(null, null);
+                return (Func<IEnumerable, IEnumerable>)miConstructed.Invoke(null, null);
             }
 
-
-            public static Func<IList> _GetCreateListDelegate<T>()
+            public static Func<IEnumerable, IEnumerable> _GetToArrayDelegate<T>()
             {
-                return delegate
+                return delegate(IEnumerable list)
                 {
-                    return new List<T>();
-                };
-            }
-
-            public static Func<IList, IEnumerable> _GetToArrayDelegate<T>()
-            {
-                return delegate(IList list)
-                {
-                    return ((IList<T>)list).ToArray();
+                    return list.Cast<T>().ToArray();
                 };
             }
         }
@@ -194,7 +171,9 @@ namespace RIAPP.DataService.Utils
             var pval = pinfo.GetValue(obj, null);
 
             if (pval == null)
+            {
                 throw new Exception(string.Format(ErrorStrings.ERR_PPROPERTY_ISNULL, enityType.Name, pinfo.Name));
+            }
 
             return SetValue(pval, string.Join(".", parts.Skip(1)), value, throwErrors);
         }
@@ -294,6 +273,14 @@ namespace RIAPP.DataService.Utils
             return this._valueConverter.DeserializeField(propInfo.PropertyType, fieldInfo, (string) value);
         }
 
+        private IEnumerable ToEnumerable(Type elementType, ParamMetadata pinfo, string[] arr)
+        {
+            foreach (string v in arr)
+            {
+                yield return ParseParameter(elementType, pinfo, false, v);
+            }
+        }
+
         private object ParseArray(Type paramType, ParamMetadata pinfo, string val)
         {
             string[] arr = this.Deserialize<string[]>(val);
@@ -305,14 +292,9 @@ namespace RIAPP.DataService.Utils
 
             Type elementType = paramType.GetElementType();
 
-            var list = ListFactory.CreateList(elementType);
+            IEnumerable data = ToEnumerable(elementType, pinfo, arr);
 
-            foreach (var v in arr)
-            {
-                list.Add(ParseParameter(elementType, pinfo, false, v));
-            }
-
-            return ListFactory.ToArray(elementType, list);
+            return ListFactory.ToArray(elementType, data);
         }
 
         public object ParseParameter(Type paramType, ParamMetadata pinfo, bool isArray, string val)
