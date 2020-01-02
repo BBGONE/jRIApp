@@ -26,7 +26,7 @@ namespace RIAPP.DataService.Utils
                 { typeof(TimeSpan), (value, fieldInfo) =>  TimeToString(value, fieldInfo.dateConversion) },
                 { typeof(DateTimeOffset), (value, fieldInfo) =>  DateOffsetToString(value, fieldInfo.dateConversion) },
                 { typeof(bool), (value, fieldInfo) =>  BoolToString(value) },
-                { typeof(byte[]), (value, fieldInfo) =>  BytesToString(value) }
+                { typeof(byte[]), (value, fieldInfo) =>  BinaryToString(value) }
             };
         }
 
@@ -164,7 +164,7 @@ namespace RIAPP.DataService.Utils
                 throw new Exception(string.Format(ErrorStrings.ERR_VAL_DATATYPE_INVALID, propType.FullName));
             }
 
-            return Convert.FromBase64String(value);
+            return value.ConvertToBinary();
         }
 
         protected virtual object ConvertToString(string value, Type propType)
@@ -232,10 +232,24 @@ namespace RIAPP.DataService.Utils
             return (value == null) ? null : value.ToString().ToLowerInvariant();
         }
 
-        protected virtual string BytesToString(object value)
+        protected virtual string BinaryToString(object value)
         {
             byte[] bytes = (byte[])value;
-            return Convert.ToBase64String(bytes);
+            var sb = new StringBuilder(bytes.Length * 4);
+            sb.Append("[");
+
+            for (int i = 0; i < bytes.Length; ++i)
+            {
+                if (i > 0)
+                {
+                    sb.Append(",");
+                }
+                sb.Append(bytes[i]);
+            }
+
+            sb.Append("]");
+            return sb.ToString();
+
         }
     }
 }
