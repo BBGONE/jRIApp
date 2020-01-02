@@ -234,22 +234,13 @@ namespace RIAPP.DataService.Utils
 
         protected virtual string BinaryToString(object value)
         {
-            byte[] bytes = (byte[])value;
-            var sb = new StringBuilder(bytes.Length * 4);
-            sb.Append("[");
-
-            for (int i = 0; i < bytes.Length; ++i)
+            if (value == null)
             {
-                if (i > 0)
-                {
-                    sb.Append(",");
-                }
-                sb.Append(bytes[i]);
+                return null;
             }
 
-            sb.Append("]");
-            return sb.ToString();
-
+            byte[] bytes = (byte[])value;
+            return bytes.ConvertToString();
         }
     }
 }

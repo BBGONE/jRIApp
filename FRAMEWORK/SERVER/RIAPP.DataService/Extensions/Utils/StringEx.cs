@@ -10,7 +10,7 @@ namespace RIAPP.DataService.Utils.Extensions
             return str.Length > 1 ? str.Substring(0, 1).ToLower() + str.Substring(1, str.Length - 1) : str.ToLower();
         }
 
-        public static object ConvertToBinary(this string value)
+        public static byte[] ConvertToBinary(this string value)
         {
             var sb = new StringBuilder(value);
             sb.Remove(sb.Length - 1, 1); //remove ]

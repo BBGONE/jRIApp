@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using RIAPP.DataService.Core.CodeGen;
+using RIAPP.DataService.Mvc;
 using RIAPP.DataService.Utils;
 using RIAppDemo.BLL;
 using RIAppDemo.BLL.DataServices.Config;
-using RIAppDemo.BLL.Utils;
 using RIAppDemo.Utils;
 using System;
 using System.Linq;

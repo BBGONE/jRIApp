@@ -27,11 +27,17 @@
                     <span>Product Name: </span>
                     <input type="text" style="color: Green; margin: 5px; width: 220px;" data-bind="this.value,to=Name,mode=TwoWay" />
                     <br />
-                    <a class="btn btn-info btn-small" 
+                    <a class="btn btn-info btn-small"
                        data-bind-1="this.command,to=testInvokeCommand,source=productVM"
                        data-bind-2="this.commandParam"
                        data-view-options="tip='Invokes method on the server and displays result'">
-                        Click Me to invoke service method
+                        Click Me to invoke simple service method
+                    </a>
+                    <a class="btn btn-info btn-small"
+                       data-bind-1="this.command,to=testComplexInvokeCommand,source=productVM"
+                       data-bind-2="this.commandParam"
+                       data-view-options="tip='Invokes method on the server and displays result'">
+                        Click Me to invoke complex service method
                     </a>
                 </div>
                 <div id="b">

@@ -1,36 +1,58 @@
-﻿using Newtonsoft.Json;
-using RIAPP.DataService.Utils;
+﻿using RIAPP.DataService.Utils;
 using System;
 using System.IO;
-using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using RIAPP.DataService.Utils.Extensions;
 
 namespace RIAPP.DataService.Mvc
 {
+    public class BytesConverter : JsonConverter<byte[]>
+    {
+        public override byte[] Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options) => reader.GetString()?.ConvertToBinary();
+
+        public override void Write(
+            Utf8JsonWriter writer,
+            byte[] value, JsonSerializerOptions options)
+        {
+            writer.WriteStartArray();
+            foreach (var val in value)
+            {
+                writer.WriteNumberValue(val);
+            }
+            writer.WriteEndArray();
+        }
+    }
+
+    /// <summary>
+    ///  serialize an object to JSON
+    /// </summary>
     public class Serializer : ISerializer
     {
+        private static readonly JsonSerializerOptions Options = new JsonSerializerOptions();
+
+        static Serializer()
+        {
+            Options.Converters.Add(new BytesConverter());
+        }
+
         public string Serialize(object obj)
         {
-            return JsonConvert.SerializeObject(obj);
+            return JsonSerializer.Serialize(obj, Options);
         }
 
         public Task SerializeAsync<T>(T obj, Stream stream)
         {
-            var serializer = new JsonSerializer();
-            serializer.NullValueHandling = NullValueHandling.Include;
-
-            using (var writer = new StreamWriter(stream, Encoding.UTF8, 1024 * 32, true))
-            using (JsonWriter jsonWriter = new JsonTextWriter(writer))
-            {
-                serializer.Serialize(writer, obj);
-            }
-            return Task.CompletedTask;
+            return JsonSerializer.SerializeAsync<T>(stream, obj, Options);
         }
 
         public object DeSerialize(string input, Type targetType)
         {
-            return JsonConvert.DeserializeObject(input, targetType);
+            return JsonSerializer.Deserialize(input, targetType, Options);
         }
     }
-
 }

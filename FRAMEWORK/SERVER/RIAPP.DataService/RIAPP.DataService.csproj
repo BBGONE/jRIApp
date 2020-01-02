@@ -239,6 +239,7 @@
     <Compile Include="Extensions\Types\RefreshInfoEx.cs" />
     <Compile Include="Extensions\Types\RowInfoEx.cs" />
     <Compile Include="Extensions\Utils\EnumerableEx.cs" />
+    <Compile Include="Extensions\Utils\ByteArrayEx.cs" />
     <Compile Include="Extensions\Utils\TypeEx.cs" />
     <Compile Include="Extensions\Utils\ServiceCollectionEx.cs" />
     <Compile Include="Extensions\Utils\DictionaryEx.cs" />
