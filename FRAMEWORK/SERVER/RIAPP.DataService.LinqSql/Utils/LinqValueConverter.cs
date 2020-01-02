@@ -41,7 +41,7 @@ namespace RIAPP.DataService.LinqSql.Utils
             if (value == null)
                 return null;
             byte[] res = ((System.Data.Linq.Binary)value).ToArray();
-            return this.BytesToString(res);
+            return this.BinaryToString(res);
         }
 
         public override string SerializeField(Type propType, Field fieldInfo, object value)
