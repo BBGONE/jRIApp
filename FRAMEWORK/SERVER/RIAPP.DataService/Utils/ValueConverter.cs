@@ -3,6 +3,7 @@ using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Resources;
 using RIAPP.DataService.Utils.Extensions;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
@@ -12,10 +13,21 @@ namespace RIAPP.DataService.Utils
         where TService : BaseDomainService
     {
         private readonly ISerializer serializer;
+        private readonly Dictionary<Type, Func<object, Field, string>> convertMap;
 
         public ValueConverter(ISerializer serializer)
         {
             this.serializer = serializer?? throw new ArgumentNullException(nameof(serializer), ErrorStrings.ERR_NO_SERIALIZER);
+
+            this.convertMap = new Dictionary<Type, Func<object, Field, string>>
+            {
+                { typeof(Guid), (value, fieldInfo) =>  GuidToString(value) },
+                { typeof(DateTime), (value, fieldInfo) =>  DateToString(value, fieldInfo.dateConversion) },
+                { typeof(TimeSpan), (value, fieldInfo) =>  TimeToString(value, fieldInfo.dateConversion) },
+                { typeof(DateTimeOffset), (value, fieldInfo) =>  DateOffsetToString(value, fieldInfo.dateConversion) },
+                { typeof(bool), (value, fieldInfo) =>  BoolToString(value) },
+                { typeof(byte[]), (value, fieldInfo) =>  BytesToString(value) }
+            };
         }
 
         public virtual object DeserializeField(Type propType, Field fieldInfo, string value)
@@ -66,7 +78,7 @@ namespace RIAPP.DataService.Utils
                     result = ConvertToString(value, propType);
                     break;
                 case DataType.None:
-                    result = (propType == typeof(string))? value: ConvertTo(value, IsNullable, propType, propMainType);
+                    result = (propType == typeof(string))? value: ConvertTo(value, propType, propMainType);
                     break;
                 default:
                     throw new Exception(string.Format(ErrorStrings.ERR_VAL_DATATYPE_INVALID, dataType));
@@ -74,43 +86,31 @@ namespace RIAPP.DataService.Utils
 
             return result;
         }
+        
+        
 
         public virtual string SerializeField(Type propType, Field fieldInfo, object value)
         {
             if (value == null)
+            {
                 return null;
-            var isNullable = propType.IsNullableType();
-            Type realType = (!isNullable) ? propType : Nullable.GetUnderlyingType(propType);
+            }
 
-            if (realType == typeof(Guid))
+            bool isNullable = propType.IsNullableType();
+            Type mainType = (!isNullable) ? propType : Nullable.GetUnderlyingType(propType);
+
+            if (convertMap.TryGetValue(mainType, out var converter))
             {
-                return GuidToString(value);
+                return converter(value, fieldInfo);
             }
-            if (realType == typeof(DateTime))
-            {
-                return DateToString(value, isNullable, fieldInfo.dateConversion);
-            }
-            if (realType == typeof(TimeSpan))
-            {
-                return TimeToString(value, isNullable, fieldInfo.dateConversion);
-            }
-            if (realType == typeof(DateTimeOffset))
-            {
-                return DateOffsetToString(value, isNullable, fieldInfo.dateConversion);
-            }
-            if (realType == typeof(bool))
-            {
-                return BoolToString(value);
-            }
-            if (value is byte[])
-            {
-                return BytesToString(value);
-            }
-            if (realType.IsValueType)
+            else if (mainType.IsValueType)
             {
                 return (string)Convert.ChangeType(value, typeof(string), CultureInfo.InvariantCulture);
             }
-            return value.ToString();
+            else
+            {
+                return value.ToString();
+            }
         }
 
         public virtual DataType DataTypeFromType(Type type)
@@ -226,7 +226,7 @@ namespace RIAPP.DataService.Utils
             return propType == typeof(string) ? value : throw new Exception(string.Format(ErrorStrings.ERR_VAL_DATATYPE_INVALID, propType.FullName));
         }
 
-        protected virtual object ConvertTo(string value, bool IsNullableType, Type propType, Type propMainType)
+        protected virtual object ConvertTo(string value, Type propType, Type propMainType)
         {
             if (value == null)
             {
@@ -259,27 +259,27 @@ namespace RIAPP.DataService.Utils
 
         protected virtual string GuidToString(object value)
         {
-            return value.ToString();
+            return (value == null) ? null : value.ToString();
         }
 
-        protected virtual string DateOffsetToString(object value, bool IsNullable, DateConversion dateConversion)
+        protected virtual string DateOffsetToString(object value, DateConversion dateConversion)
         {
             return (value == null)? null: DateTimeHelper.DateOffsetToString((DateTimeOffset)value, dateConversion);
         }
 
-        protected virtual string DateToString(object value, bool IsNullable, DateConversion dateConversion)
+        protected virtual string DateToString(object value, DateConversion dateConversion)
         {
             return (value == null)? null: DateTimeHelper.DateToString((DateTime)value, dateConversion);
         }
 
-        protected virtual string TimeToString(object value, bool IsNullable, DateConversion dateConversion)
+        protected virtual string TimeToString(object value, DateConversion dateConversion)
         {
             return (value == null) ? null : DateTimeHelper.TimeToString((TimeSpan)value, dateConversion);
         }
 
         protected virtual string BoolToString(object value)
         {
-            return value.ToString().ToLowerInvariant();
+            return (value == null) ? null : value.ToString().ToLowerInvariant();
         }
 
         protected virtual string BytesToString(object value)
