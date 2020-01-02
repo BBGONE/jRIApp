@@ -160,61 +160,11 @@ namespace RIAPP.DataService.Utils
             }
 
             if (propType != typeof(byte[]))
+            {
                 throw new Exception(string.Format(ErrorStrings.ERR_VAL_DATATYPE_INVALID, propType.FullName));
-
-            var sb = new StringBuilder(value);
-            sb.Remove(sb.Length - 1, 1); //remove ]
-            sb.Remove(0, 1); //remove [
-            int cnt = sb.Length, bytesCnt = cnt > 0 ? 1 : 0;
-
-            for (var i = 0; i < cnt; ++i)
-            {
-                if (sb[i] == ',')
-                {
-                    bytesCnt += 1;
-                }
             }
 
-            var bytes = new byte[bytesCnt];
-            bytesCnt = 0; //calculate again
-            string val = "";
-
-            for (var i = 0; i < cnt; ++i)
-            {
-                if (sb[i] == ',')
-                {
-                    bytes[bytesCnt] = byte.Parse(val);
-                    bytesCnt += 1;
-                    val = "";
-                }
-                else
-                {
-                    if (sb[i] != '"' && sb[i] != ' ')
-                    {
-                        val += sb[i];
-                    }
-                }
-            }
-
-            if (val != "")
-            {
-                bytes[bytesCnt] = byte.Parse(val);
-                bytesCnt += 1;
-            }
-
-            byte[] bytes2;
-
-            if (bytesCnt < bytes.Length)
-            {
-                bytes2 = new byte[bytesCnt];
-                Buffer.BlockCopy(bytes, 0, bytes2, 0, bytesCnt);
-            }
-            else
-            {
-                bytes2 = bytes;
-            }
-
-            return bytes2;
+            return Convert.FromBase64String(value);
         }
 
         protected virtual object ConvertToString(string value, Type propType)
@@ -284,19 +234,8 @@ namespace RIAPP.DataService.Utils
 
         protected virtual string BytesToString(object value)
         {
-            var bytes = (byte[])value;
-            var sb = new StringBuilder(bytes.Length * 4);
-            sb.Append("[");
-
-            for (var i = 0; i < bytes.Length; ++i)
-            {
-                if (i > 0)
-                    sb.Append(",");
-                sb.Append(bytes[i]);
-            }
-
-            sb.Append("]");
-            return sb.ToString();
+            byte[] bytes = (byte[])value;
+            return Convert.ToBase64String(bytes);
         }
     }
 }
