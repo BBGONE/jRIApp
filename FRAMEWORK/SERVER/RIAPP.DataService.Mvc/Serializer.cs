@@ -1,10 +1,10 @@
 ﻿using RIAPP.DataService.Utils;
+using RIAPP.DataService.Utils.Extensions;
 using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using RIAPP.DataService.Utils.Extensions;
 
 namespace RIAPP.DataService.Mvc
 {
@@ -19,12 +19,19 @@ namespace RIAPP.DataService.Mvc
             Utf8JsonWriter writer,
             byte[] value, JsonSerializerOptions options)
         {
-            writer.WriteStartArray();
-            foreach (var val in value)
+            if (value == null)
             {
-                writer.WriteNumberValue(val);
+                writer.WriteNullValue();
+            } 
+            else
+            {
+                writer.WriteStartArray();
+                foreach (var val in value)
+                {
+                    writer.WriteNumberValue(val);
+                }
+                writer.WriteEndArray();
             }
-            writer.WriteEndArray();
         }
     }
 

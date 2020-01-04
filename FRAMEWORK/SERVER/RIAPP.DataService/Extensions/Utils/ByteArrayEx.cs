@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 
 namespace RIAPP.DataService.Utils.Extensions
 {
@@ -15,13 +14,8 @@ namespace RIAPP.DataService.Utils.Extensions
             }
         }
 
-        public static string ConvertToString(this byte[] bytes)
+        private static char[] ConvertToChars(this byte[] bytes)
         {
-            if (bytes == null)
-            {
-                return null;
-            }
-
             int len = 2;
 
             for (int i = 0; i < bytes.Length; ++i)
@@ -49,23 +43,28 @@ namespace RIAPP.DataService.Utils.Extensions
             char[] chars = new char[len];
 
             chars[0] = '[';
-            chars[len-1] = ']';
+            chars[len - 1] = ']';
             int pos = 1;
-            
-            foreach(var val in bytes)
+
+            foreach (var val in bytes)
             {
                 if (pos > 1)
                 {
                     chars[pos++] = ',';
                 }
                 string str = BYTES_MAP[val];
-                foreach(var ch in str)
+                foreach (var ch in str)
                 {
                     chars[pos++] = ch;
                 }
             }
-     
-            return new String(chars);
+
+            return chars;
+        }
+
+        public static string ConvertToString(this byte[] bytes)
+        {
+            return bytes == null ? null : new String(ConvertToChars(bytes));
         }
     }
 }
