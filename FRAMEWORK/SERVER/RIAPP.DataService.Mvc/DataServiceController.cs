@@ -116,7 +116,7 @@ namespace RIAPP.DataService.Mvc
 
         [ActionName("query")]
         [HttpPost]
-        public async Task<ActionResult> PerformQuery([SericeParamsBinder] QueryRequest request)
+        public async Task<ActionResult> PerformQuery([ServiceParamsBinder] QueryRequest request)
         {
             var response = await DomainService.ServiceGetData(request);
             return new ChunkedResult<QueryResponse>(response, Serializer);
@@ -124,7 +124,7 @@ namespace RIAPP.DataService.Mvc
 
         [ActionName("save")]
         [HttpPost]
-        public async Task<ActionResult> Save([SericeParamsBinder] ChangeSetRequest changeSet)
+        public async Task<ActionResult> Save([ServiceParamsBinder] ChangeSetRequest changeSet)
         {
             var response = await DomainService.ServiceApplyChangeSet(changeSet);
             return new ChunkedResult<ChangeSetResponse>(response, Serializer);
@@ -132,7 +132,7 @@ namespace RIAPP.DataService.Mvc
 
         [ActionName("refresh")]
         [HttpPost]
-        public async Task<ActionResult> Refresh([SericeParamsBinder] RefreshRequest refreshInfo)
+        public async Task<ActionResult> Refresh([ServiceParamsBinder] RefreshRequest refreshInfo)
         {
             var response = await DomainService.ServiceRefreshRow(refreshInfo);
             return new ChunkedResult<RefreshResponse>(response, Serializer);
@@ -140,7 +140,7 @@ namespace RIAPP.DataService.Mvc
 
         [ActionName("invoke")]
         [HttpPost]
-        public async Task<ActionResult> Invoke([SericeParamsBinder] InvokeRequest invokeInfo)
+        public async Task<ActionResult> Invoke([ServiceParamsBinder] InvokeRequest invokeInfo)
         {
             var response = await DomainService.ServiceInvokeMethod(invokeInfo);
             return new ChunkedResult<InvokeResponse>(response, Serializer);

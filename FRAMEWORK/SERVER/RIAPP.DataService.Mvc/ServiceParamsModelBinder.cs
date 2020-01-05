@@ -1,9 +1,10 @@
-﻿using System;
+﻿using RIAPP.DataService.Utils;
+using System;
 using System.Web.Mvc;
 
 namespace RIAPP.DataService.Mvc
 {
-    public class SericeParamsBinderAttribute : CustomModelBinderAttribute
+    public class ServiceParamsBinderAttribute : CustomModelBinderAttribute
     {
         public override IModelBinder GetBinder()
         {
@@ -12,6 +13,8 @@ namespace RIAPP.DataService.Mvc
 
         public class JsonModelBinder : IModelBinder
         {
+            static readonly ISerializer serializer = new Serializer();
+
             public object BindModel(ControllerContext controllerContext, ModelBindingContext bindingContext)
             {
                 try
@@ -20,7 +23,7 @@ namespace RIAPP.DataService.Mvc
                     controllerContext.HttpContext.Request.InputStream.Position = 0;
                     controllerContext.HttpContext.Request.InputStream.Read(bytes, 0, bytes.Length);
                     var body = controllerContext.HttpContext.Request.ContentEncoding.GetString(bytes);
-                    var serializer = new Serializer();
+                   
                     return serializer.DeSerialize(body, bindingContext.ModelType);
                 }
                 catch (Exception)
