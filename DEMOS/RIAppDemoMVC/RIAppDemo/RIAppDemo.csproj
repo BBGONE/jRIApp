@@ -167,6 +167,7 @@
     <Content Include="Scripts\demo\css\test2.css" />
     <Content Include="Scripts\demo\css\test1.css" />
     <Content Include="Scripts\demo\demoDB.js" />
+    <Content Include="Scripts\demo\ExProps.js" />
     <Content Include="Scripts\demo\filesDemo.js" />
     <Content Include="Scripts\demo\folderBrowserSvc.js" />
     <Content Include="Scripts\demo\gridDemo\main.js" />
