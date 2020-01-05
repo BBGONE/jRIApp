@@ -18,11 +18,12 @@ namespace RIAPP.DataService.Core.Metadata
     {
         private static readonly MetadataCache _metadataCache = new MetadataCache();
 
-        public static RunTimeMetadata GetInitializedMetadata(BaseDomainService domainService, 
-            IDataHelper dataHelper, 
+        public static RunTimeMetadata GetInitializedMetadata(BaseDomainService domainService,
+            IDataHelper dataHelper,
             IValueConverter valueConverter)
         {
-            RunTimeMetadata result = _metadataCache.GetOrAdd(domainService.GetType(), (svcType) => {
+            RunTimeMetadata result = _metadataCache.GetOrAdd(domainService.GetType(), (svcType) =>
+            {
                 RunTimeMetadata runTimeMetadata = null;
                 try
                 {
@@ -43,7 +44,7 @@ namespace RIAPP.DataService.Core.Metadata
 
         private static RunTimeMetadata InitMetadata(BaseDomainService domainService,
             DesignTimeMetadata designTimeMetadata,
-            IDataHelper dataHelper, 
+            IDataHelper dataHelper,
             IValueConverter valueConverter,
             IDataManagerContainer dataManagerContainer)
         {
@@ -67,11 +68,11 @@ namespace RIAPP.DataService.Core.Metadata
             return runTimeMetadata;
         }
 
-        private static void InitCachedMetadata(Type domainServiceType, 
-            DesignTimeMetadata designTimeMetadata, 
+        private static void InitCachedMetadata(Type domainServiceType,
+            DesignTimeMetadata designTimeMetadata,
             RunTimeMetadata runTimeMetadata,
-            IDataHelper dataHelper, 
-            IValueConverter valueConverter, 
+            IDataHelper dataHelper,
+            IValueConverter valueConverter,
             IDataManagerContainer dataManagerContainer)
         {
             foreach (DbSetInfo dbSetInfo in designTimeMetadata.DbSets)
@@ -85,7 +86,7 @@ namespace RIAPP.DataService.Core.Metadata
                 dbSetInfo.Initialize(dataHelper);
             }
 
-            foreach(var descriptor in dataManagerContainer.Descriptors)
+            foreach (var descriptor in dataManagerContainer.Descriptors)
             {
                 ProcessMethodDescriptions(descriptor.ImplementationType, runTimeMetadata, valueConverter);
             }
@@ -193,23 +194,46 @@ namespace RIAPP.DataService.Core.Metadata
             {
                 var crudMethod = crudMethods.FirstOrDefault(m => m.MethodInfo == methodInfo);
                 if (crudMethod != null)
+                {
                     return crudMethod.MethodType;
+                }
             }
 
             if (methodInfo.IsDefined(typeof(QueryAttribute), false))
+            {
                 return MethodType.Query;
+            }
+
             if (methodInfo.IsDefined(typeof(InvokeAttribute), false))
+            {
                 return MethodType.Invoke;
+            }
+
             if (crudMethods == null && methodInfo.IsDefined(typeof(InsertAttribute), false))
+            {
                 return MethodType.Insert;
+            }
+
             if (crudMethods == null && methodInfo.IsDefined(typeof(UpdateAttribute), false))
+            {
                 return MethodType.Update;
+            }
+
             if (crudMethods == null && methodInfo.IsDefined(typeof(DeleteAttribute), false))
+            {
                 return MethodType.Delete;
+            }
+
             if (methodInfo.IsDefined(typeof(ValidateAttribute), false))
+            {
                 return MethodType.Validate;
+            }
+
             if (methodInfo.IsDefined(typeof(RefreshAttribute), false))
+            {
                 return MethodType.Refresh;
+            }
+
             return MethodType.None;
         }
 
@@ -281,12 +305,12 @@ namespace RIAPP.DataService.Core.Metadata
             }
 
             var allList = methodInfos.Select(m => new MethodInfoData
-                        {
-                            OwnerType = fromType,
-                            MethodInfo = m,
-                            MethodType = _GetMethodType(m, crudMethods),
-                            IsInDataManager = isDataManager
-                        }).Where(m => m.MethodType != MethodType.None).ToArray();
+            {
+                OwnerType = fromType,
+                MethodInfo = m,
+                MethodType = _GetMethodType(m, crudMethods),
+                IsInDataManager = isDataManager
+            }).Where(m => m.MethodType != MethodType.None).ToArray();
 
             Array.ForEach(allList, data =>
             {

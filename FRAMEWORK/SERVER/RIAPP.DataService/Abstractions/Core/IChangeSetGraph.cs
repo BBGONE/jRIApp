@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using RIAPP.DataService.Core.Types;
+﻿using RIAPP.DataService.Core.Types;
+using System.Collections.Generic;
 
 namespace RIAPP.DataService.Core
 {

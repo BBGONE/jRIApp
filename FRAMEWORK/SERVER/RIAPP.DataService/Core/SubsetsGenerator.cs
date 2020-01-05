@@ -23,13 +23,18 @@ namespace RIAPP.DataService.Core
         {
             var result = new SubsetList();
             if (subResults == null)
+            {
                 return result;
+            }
+
             foreach (var subResult in subResults)
             {
                 var dbSetInfo = _metadata.DbSets[subResult.dbSetName];
 
                 if (result.Any(r => r.dbSetName == subResult.dbSetName))
+                {
                     throw new DomainServiceException(string.Format("The included sub results already have DbSet {0} entities", dbSetInfo.dbSetName));
+                }
 
                 var rowGenerator = new RowGenerator(dbSetInfo, subResult.Result, _dataHelper);
 

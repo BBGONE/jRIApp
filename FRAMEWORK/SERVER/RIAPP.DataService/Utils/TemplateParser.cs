@@ -55,7 +55,7 @@ namespace RIAPP.DataService.Utils
                     {
                         if (sb.Length > 0)
                         {
-                            list.AddLast(new DocPart {isPlaceHolder = false, value = sb.ToString()});
+                            list.AddLast(new DocPart { isPlaceHolder = false, value = sb.ToString() });
                             sb = new StringBuilder();
                         }
                         isPlaceHolder = true;
@@ -81,13 +81,17 @@ namespace RIAPP.DataService.Utils
                     sb.Append(ch);
                 }
                 else
+                {
                     sb.Append(ch);
+                }
 
                 prevChar = ch;
             }
 
             if (sb.Length > 0)
-                list.AddLast(new DocPart {isPlaceHolder = false, value = sb.ToString()});
+            {
+                list.AddLast(new DocPart { isPlaceHolder = false, value = sb.ToString() });
+            }
 
             return list;
         }
@@ -111,7 +115,9 @@ namespace RIAPP.DataService.Utils
                 else
                 {
                     if (parts.ContainsKey(part.value))
+                    {
                         result.Append(parts[part.value]());
+                    }
                 }
             });
         }
@@ -119,7 +125,10 @@ namespace RIAPP.DataService.Utils
         public string ProcessTemplate(IDictionary<string, Func<string>> parts = null)
         {
             if (parts == null)
+            {
                 parts = new Dictionary<string, Func<string>>();
+            }
+
             StringBuilder result = new StringBuilder();
             this.ProcessTemplate(parts, result);
             return result.ToString();

@@ -1,7 +1,7 @@
 ﻿using JetBrains.Annotations;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Linq.Dynamic.Core.Validation;
+using System.Reflection;
 
 namespace System.Linq.Dynamic.Core.CustomTypeProviders
 {

@@ -832,17 +832,35 @@ namespace System.Linq.Dynamic.Core.Parser
                 _textParser.NextToken();
                 if (!string.IsNullOrEmpty(qualifier))
                 {
-                    if (qualifier == "U" || qualifier == "u") return ConstantExpressionHelper.CreateLiteral((uint)value, text);
-                    if (qualifier == "L" || qualifier == "l") return ConstantExpressionHelper.CreateLiteral((long)value, text);
+                    if (qualifier == "U" || qualifier == "u")
+                    {
+                        return ConstantExpressionHelper.CreateLiteral((uint)value, text);
+                    }
+
+                    if (qualifier == "L" || qualifier == "l")
+                    {
+                        return ConstantExpressionHelper.CreateLiteral((long)value, text);
+                    }
 
                     // in case of UL, just return
                     return ConstantExpressionHelper.CreateLiteral(value, text);
                 }
 
                 // if (value <= (int)short.MaxValue) return ConstantExpressionHelper.CreateLiteral((short)value, text);
-                if (value <= int.MaxValue) return ConstantExpressionHelper.CreateLiteral((int)value, text);
-                if (value <= uint.MaxValue) return ConstantExpressionHelper.CreateLiteral((uint)value, text);
-                if (value <= long.MaxValue) return ConstantExpressionHelper.CreateLiteral((long)value, text);
+                if (value <= int.MaxValue)
+                {
+                    return ConstantExpressionHelper.CreateLiteral((int)value, text);
+                }
+
+                if (value <= uint.MaxValue)
+                {
+                    return ConstantExpressionHelper.CreateLiteral((uint)value, text);
+                }
+
+                if (value <= long.MaxValue)
+                {
+                    return ConstantExpressionHelper.CreateLiteral((long)value, text);
+                }
 
                 return ConstantExpressionHelper.CreateLiteral(value, text);
             }
@@ -867,16 +885,24 @@ namespace System.Linq.Dynamic.Core.Parser
                 if (!string.IsNullOrEmpty(qualifier))
                 {
                     if (qualifier == "L" || qualifier == "l")
+                    {
                         return ConstantExpressionHelper.CreateLiteral(value, text);
+                    }
 
                     if (qualifier == "F" || qualifier == "f")
+                    {
                         return TryParseAsFloat(text, qualifier[0]);
+                    }
 
                     if (qualifier == "D" || qualifier == "d")
+                    {
                         return TryParseAsDouble(text, qualifier[0]);
+                    }
 
                     if (qualifier == "M" || qualifier == "m")
+                    {
                         return TryParseAsDecimal(text, qualifier[0]);
+                    }
 
                     throw ParseError(Res.MinusCannotBeAppliedToUnsignedInteger);
                 }
@@ -970,15 +996,50 @@ namespace System.Linq.Dynamic.Core.Parser
                     return ParseTypeAccess(typeValue);
                 }
 
-                if (value == (object)KeywordsHelper.KEYWORD_IT) return ParseIt();
-                if (value == (object)KeywordsHelper.KEYWORD_PARENT) return ParseParent();
-                if (value == (object)KeywordsHelper.KEYWORD_ROOT) return ParseRoot();
-                if (value == (object)KeywordsHelper.SYMBOL_IT) return ParseIt();
-                if (value == (object)KeywordsHelper.SYMBOL_PARENT) return ParseParent();
-                if (value == (object)KeywordsHelper.SYMBOL_ROOT) return ParseRoot();
-                if (value == (object)KeywordsHelper.KEYWORD_IIF) return ParseIif();
-                if (value == (object)KeywordsHelper.KEYWORD_NEW) return ParseNew();
-                if (value == (object)KeywordsHelper.KEYWORD_ISNULL) return ParseIsNull();
+                if (value == (object)KeywordsHelper.KEYWORD_IT)
+                {
+                    return ParseIt();
+                }
+
+                if (value == (object)KeywordsHelper.KEYWORD_PARENT)
+                {
+                    return ParseParent();
+                }
+
+                if (value == (object)KeywordsHelper.KEYWORD_ROOT)
+                {
+                    return ParseRoot();
+                }
+
+                if (value == (object)KeywordsHelper.SYMBOL_IT)
+                {
+                    return ParseIt();
+                }
+
+                if (value == (object)KeywordsHelper.SYMBOL_PARENT)
+                {
+                    return ParseParent();
+                }
+
+                if (value == (object)KeywordsHelper.SYMBOL_ROOT)
+                {
+                    return ParseRoot();
+                }
+
+                if (value == (object)KeywordsHelper.KEYWORD_IIF)
+                {
+                    return ParseIif();
+                }
+
+                if (value == (object)KeywordsHelper.KEYWORD_NEW)
+                {
+                    return ParseNew();
+                }
+
+                if (value == (object)KeywordsHelper.KEYWORD_ISNULL)
+                {
+                    return ParseIsNull();
+                }
 
                 _textParser.NextToken();
 

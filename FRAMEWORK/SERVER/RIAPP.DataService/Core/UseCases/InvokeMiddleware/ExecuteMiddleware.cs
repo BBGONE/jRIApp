@@ -1,10 +1,7 @@
 ﻿using Pipeline;
 using RIAPP.DataService.Core.Metadata;
-using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.Utils;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Core.UseCases.InvokeMiddleware
@@ -44,7 +41,7 @@ namespace RIAPP.DataService.Core.UseCases.InvokeMiddleware
                     ctx.Response.result = methodResult;
                 }
             }
-            
+
             await _next(ctx);
         }
     }

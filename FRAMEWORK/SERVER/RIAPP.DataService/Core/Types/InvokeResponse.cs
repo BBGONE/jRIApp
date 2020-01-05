@@ -1,11 +1,9 @@
-﻿using System.Runtime.Serialization;
-
-namespace RIAPP.DataService.Core.Types
+﻿namespace RIAPP.DataService.Core.Types
 {
-    [DataContract]
+
     public class InvokeResponse
     {
-        [DataMember]
+
         public object result { get; set; }
 
         /// <summary>
@@ -13,7 +11,7 @@ namespace RIAPP.DataService.Core.Types
         ///     if all ok, then error is empty
         ///     otherwise it contains error message
         /// </summary>
-        [DataMember]
+
         public ErrorInfo error { get; set; }
     }
 }

@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
 
 namespace RIAPP.DataService.Core.Types
 {
-    [DataContract]
+
     public class SortItem
     {
         public SortItem()
@@ -12,15 +11,15 @@ namespace RIAPP.DataService.Core.Types
             sortOrder = SortOrder.ASC;
         }
 
-        [DataMember]
+
         public string fieldName { get; set; }
 
-        [DataMember]
+
         public SortOrder sortOrder { get; set; }
     }
 
 
-    [DataContract]
+
     public class SortInfo
     {
         public SortInfo()
@@ -28,7 +27,7 @@ namespace RIAPP.DataService.Core.Types
             sortItems = new List<SortItem>();
         }
 
-        [DataMember]
+
         public List<SortItem> sortItems { get; set; }
     }
 }

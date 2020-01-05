@@ -8,8 +8,8 @@ namespace RIAPP.DataService.Core
         IValidator<TModel> GetValidator<TModel>();
     }
 
-    public interface IValidatorContainer<TService>: IValidatorContainer
-        where TService: BaseDomainService
+    public interface IValidatorContainer<TService> : IValidatorContainer
+        where TService : BaseDomainService
     {
     }
 }

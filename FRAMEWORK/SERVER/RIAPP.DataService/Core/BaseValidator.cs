@@ -25,7 +25,7 @@ namespace RIAPP.DataService.Core
 
         public Task<IEnumerable<ValidationErrorInfo>> ValidateModelAsync(object model, string[] modifiedField)
         {
-            return ValidateModelAsync((T) model, modifiedField);
+            return ValidateModelAsync((T)model, modifiedField);
         }
 
         public abstract Task<IEnumerable<ValidationErrorInfo>> ValidateModelAsync(T model, string[] modifiedField);

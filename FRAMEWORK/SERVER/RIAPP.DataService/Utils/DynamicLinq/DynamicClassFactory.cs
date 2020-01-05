@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using JetBrains.Annotations;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Dynamic.Core.Validation;
@@ -7,7 +8,6 @@ using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
-using JetBrains.Annotations;
 
 namespace System.Linq.Dynamic.Core
 {
@@ -42,8 +42,8 @@ namespace System.Linq.Dynamic.Core
         private static readonly MethodInfo EqualityComparerGetHashCode = EqualityComparer.GetMethod("GetHashCode", new[] { EqualityComparerGenericArgument });
         private static int _index = -1;
 
-        private static string DynamicAssemblyName = "System.Linq.Dynamic.Core.DynamicClasses, Version=1.0.0.0";
-        private static string DynamicModuleName = "System.Linq.Dynamic.Core.DynamicClasses";
+        private static readonly string DynamicAssemblyName = "System.Linq.Dynamic.Core.DynamicClasses, Version=1.0.0.0";
+        private static readonly string DynamicModuleName = "System.Linq.Dynamic.Core.DynamicClasses";
 
         /// <summary>
         /// Initializes the <see cref="DynamicClassFactory"/> class.

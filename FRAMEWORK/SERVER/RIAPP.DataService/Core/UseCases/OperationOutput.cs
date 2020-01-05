@@ -1,7 +1,7 @@
 ﻿namespace RIAPP.DataService.Core
 {
     public class OperationOutput<TUseCaseResponse, TResponse> : IResponsePresenter<TUseCaseResponse, TResponse>
-        where TUseCaseResponse: TResponse
+        where TUseCaseResponse : TResponse
     {
         public TResponse Response
         {

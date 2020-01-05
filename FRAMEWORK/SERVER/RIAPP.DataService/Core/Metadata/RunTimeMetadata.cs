@@ -41,7 +41,10 @@ namespace RIAPP.DataService.Core.Metadata
                     if (!string.IsNullOrWhiteSpace(dbSetName))
                     {
                         if (!this.DbSets.ContainsKey(dbSetName))
+                        {
                             throw new DomainServiceException(string.Format("Can not determine the DbSet for a query method: {0} by DbSetName {1}", md.methodName, dbSetName));
+                        }
+
                         _svcMethods.Add(dbSetName, md);
                     }
                     else
@@ -120,12 +123,12 @@ namespace RIAPP.DataService.Core.Metadata
 
         public IEnumerable<MethodDescription> GetInvokeMethods()
         {
-           return _svcMethods.GetInvokeMethods();
+            return _svcMethods.GetInvokeMethods();
         }
 
         public MethodInfoData GetOperationMethodInfo(string dbSetName, MethodType methodType)
         {
-           return _operMethods.GetMethod(dbSetName, methodType);
+            return _operMethods.GetMethod(dbSetName, methodType);
         }
 
         public DbSetsDictionary DbSets { get; }

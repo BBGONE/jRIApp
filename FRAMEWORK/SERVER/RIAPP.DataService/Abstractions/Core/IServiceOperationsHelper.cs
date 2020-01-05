@@ -8,7 +8,7 @@ namespace RIAPP.DataService.Core
 {
     public interface IServiceOperationsHelper
     {
-        IDataHelper DataHelper { get;  }
+        IDataHelper DataHelper { get; }
 
         IValidationHelper ValidationHelper { get; }
 
@@ -37,7 +37,7 @@ namespace RIAPP.DataService.Core
         Task<object> GetMethodResult(object invokeRes);
     }
 
-    public interface IServiceOperationsHelper<TService>: IServiceOperationsHelper
+    public interface IServiceOperationsHelper<TService> : IServiceOperationsHelper
         where TService : BaseDomainService
     {
 

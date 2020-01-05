@@ -45,5 +45,15 @@ namespace RIAPP.DataService.Core.Types
         {
             field._TypeScriptDataType = typeScriptDataType;
         }
+
+        public static string GetDataTypeName(this Field field)
+        {
+            return field.dataTypeName;
+        }
+
+        public static void SetDataTypeName(this Field field, string dataTypeName)
+        {
+            field.dataTypeName = dataTypeName;
+        }
     }
 }

@@ -37,7 +37,9 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
                 foreach (RowInfo rowInfo in graph.AllList)
                 {
                     if (rowInfo.changeType != ChangeType.Deleted)
+                    {
                         serviceHelper.UpdateRowInfoAfterUpdates(rowInfo);
+                    }
                 }
 
                 var subResults = new SubResultList();

@@ -25,7 +25,7 @@ namespace RIAPP.DataService.Utils.Extensions
             }
 
         }
-       
+
         static readonly Dictionary<Type, DataType> typeMap = new Dictionary<Type, DataType>
         {
             { typeof(byte), DataType.Binary },
@@ -65,7 +65,7 @@ namespace RIAPP.DataService.Utils.Extensions
                 }
 
                 return dataType;
-            } 
+            }
             else
             {
                 throw new UnsupportedTypeException($"Unsupported type {type.FullName}");

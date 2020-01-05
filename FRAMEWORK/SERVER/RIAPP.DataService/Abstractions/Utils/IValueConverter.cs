@@ -12,7 +12,7 @@ namespace RIAPP.DataService.Utils
         DataType DataTypeFromType(Type type);
     }
 
-    public interface IValueConverter<TService>: IValueConverter
+    public interface IValueConverter<TService> : IValueConverter
         where TService : BaseDomainService
     {
 

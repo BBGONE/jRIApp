@@ -5,7 +5,7 @@ using System.Text;
 
 namespace RIAPP.DataService.Core.CodeGen
 {
-    public class CodeGenTemplate: TemplateParser
+    public class CodeGenTemplate : TemplateParser
     {
         private const string NAMESPACE = "RIAPP.DataService.Resources";
 
@@ -28,7 +28,7 @@ namespace RIAPP.DataService.Core.CodeGen
         public CodeGenTemplate(string ID) :
             base(() => GetTemplate(ID))
         {
-           
+
         }
     }
 }

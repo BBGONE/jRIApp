@@ -31,7 +31,7 @@ namespace RIAPP.DataService.Core.UseCases.RefreshMiddleware
             return new RequestContext(service, rowInfo: rowInfo, operation: ServiceOperationType.RowRefresh);
         }
 
-       
+
         // Gets a key/value collection that can be used to share data between middleware.
         public IDictionary<string, object> Properties { get; }
 

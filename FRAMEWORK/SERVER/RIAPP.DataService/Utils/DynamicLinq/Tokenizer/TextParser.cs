@@ -6,7 +6,7 @@ namespace System.Linq.Dynamic.Core.Tokenizer
 {
     internal class TextParser
     {
-        private static char NumberDecimalSeparator = '.';
+        private static readonly char NumberDecimalSeparator = '.';
 
         // These aliases are supposed to simply the where clause and make it more human readable
         // As an addition it is compatible with the OData.Filter specification
@@ -48,7 +48,11 @@ namespace System.Linq.Dynamic.Core.Tokenizer
 
         private void NextChar()
         {
-            if (_textPos < _textLen) _textPos++;
+            if (_textPos < _textLen)
+            {
+                _textPos++;
+            }
+
             _ch = _textPos < _textLen ? _text[_textPos] : '\0';
         }
 
@@ -265,13 +269,18 @@ namespace System.Linq.Dynamic.Core.Tokenizer
                             if (_ch == '\\')
                             {
                                 escaped = true;
-                                if (_textPos < _textLen) NextChar();
+                                if (_textPos < _textLen)
+                                {
+                                    NextChar();
+                                }
                             }
                         }
                         while (_textPos < _textLen && (_ch != quote || escaped));
 
                         if (_textPos == _textLen)
+                        {
                             throw ParseError(_textPos, Res.UnterminatedStringLiteral);
+                        }
 
                         NextChar();
                     } while (_ch == quote);
@@ -316,8 +325,14 @@ namespace System.Linq.Dynamic.Core.Tokenizer
                             NextChar();
                             if (_ch == 'L')
                             {
-                                if (_text[_textPos - 1] == 'U') NextChar();
-                                else throw ParseError(_textPos, Res.InvalidIntegerQualifier, _text.Substring(_textPos - 1, 2));
+                                if (_text[_textPos - 1] == 'U')
+                                {
+                                    NextChar();
+                                }
+                                else
+                                {
+                                    throw ParseError(_textPos, Res.InvalidIntegerQualifier, _text.Substring(_textPos - 1, 2));
+                                }
                             }
                             ValidateExpression();
                             break;
@@ -343,7 +358,11 @@ namespace System.Linq.Dynamic.Core.Tokenizer
                         {
                             tokenId = TokenId.RealLiteral;
                             NextChar();
-                            if (_ch == '+' || _ch == '-') NextChar();
+                            if (_ch == '+' || _ch == '-')
+                            {
+                                NextChar();
+                            }
+
                             ValidateDigit();
                             do
                             {
@@ -351,9 +370,21 @@ namespace System.Linq.Dynamic.Core.Tokenizer
                             } while (char.IsDigit(_ch));
                         }
 
-                        if (_ch == 'F' || _ch == 'f') NextChar();
-                        if (_ch == 'D' || _ch == 'd') NextChar();
-                        if (_ch == 'M' || _ch == 'm') NextChar();
+                        if (_ch == 'F' || _ch == 'f')
+                        {
+                            NextChar();
+                        }
+
+                        if (_ch == 'D' || _ch == 'd')
+                        {
+                            NextChar();
+                        }
+
+                        if (_ch == 'M' || _ch == 'm')
+                        {
+                            NextChar();
+                        }
+
                         break;
                     }
 

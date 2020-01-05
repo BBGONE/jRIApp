@@ -2,12 +2,11 @@
 using RIAPP.DataService.Utils;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Core.Metadata
 {
-    [DataContract]
+
     public class MethodDescription
     {
         public MethodDescription(MethodInfoData data)
@@ -16,16 +15,16 @@ namespace RIAPP.DataService.Core.Metadata
             parameters = new List<ParamMetadata>();
         }
 
-        [DataMember]
+
         public string methodName
         {
             get { return _methodData.MethodInfo.Name; }
         }
 
-        [DataMember]
+
         public List<ParamMetadata> parameters { get; set; }
 
-        [DataMember]
+
         [Description("Is it returns or not result from method's invocation")]
         public bool methodResult
         {
@@ -37,7 +36,7 @@ namespace RIAPP.DataService.Core.Metadata
             }
         }
 
-        [DataMember]
+
         [Description("Is it a Query method")]
         public bool isQuery
         {

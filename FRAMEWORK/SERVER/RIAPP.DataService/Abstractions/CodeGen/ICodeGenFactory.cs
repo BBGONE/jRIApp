@@ -7,7 +7,7 @@
         ICodeGenProvider GetCodeGen(BaseDomainService dataService, string lang);
     }
 
-    public interface ICodeGenFactory<TService>: ICodeGenFactory
+    public interface ICodeGenFactory<TService> : ICodeGenFactory
         where TService : BaseDomainService
     {
     }

@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
 
 namespace RIAPP.DataService.Core.Types
 {
-    [DataContract]
+
     public class FilterItem
     {
         public FilterItem()
@@ -13,17 +12,17 @@ namespace RIAPP.DataService.Core.Types
             kind = FilterType.Equals;
         }
 
-        [DataMember]
+
         public string fieldName { get; set; }
 
-        [DataMember]
+
         public List<string> values { get; set; }
 
-        [DataMember]
+
         public FilterType kind { get; set; }
     }
 
-    [DataContract]
+
     public class FilterInfo
     {
         public FilterInfo()
@@ -31,7 +30,7 @@ namespace RIAPP.DataService.Core.Types
             filterItems = new List<FilterItem>();
         }
 
-        [DataMember]
+
         public List<FilterItem> filterItems { get; set; }
     }
 }

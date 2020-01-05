@@ -4,7 +4,7 @@ namespace RIAPP.DataService.Core
 {
 
     public class CRUDOperationsUseCaseFactory<TService> : ICRUDOperationsUseCaseFactory<TService>
-        where TService:BaseDomainService
+        where TService : BaseDomainService
     {
         private readonly Func<BaseDomainService, CRUDServiceMethods, ICRUDOperationsUseCase<TService>> _func;
 

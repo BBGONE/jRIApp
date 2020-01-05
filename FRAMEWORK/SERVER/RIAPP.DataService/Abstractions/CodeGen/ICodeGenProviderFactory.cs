@@ -1,6 +1,4 @@
-﻿using RIAPP.DataService.Core;
-
-namespace RIAPP.DataService.Core.CodeGen
+﻿namespace RIAPP.DataService.Core.CodeGen
 {
     public interface ICodeGenProviderFactory
     {
@@ -12,7 +10,7 @@ namespace RIAPP.DataService.Core.CodeGen
         }
     }
 
-    public interface ICodeGenProviderFactory<TService>: ICodeGenProviderFactory
+    public interface ICodeGenProviderFactory<TService> : ICodeGenProviderFactory
         where TService : BaseDomainService
     {
         ICodeGenProvider<TService> Create(TService owner);

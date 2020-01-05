@@ -217,7 +217,10 @@ namespace System.Linq.Dynamic.Core.Parser.SupportedMethods
             if (!types.Contains(type))
             {
                 types.Add(type);
-                foreach (Type t in type.GetInterfaces()) AddInterface(types, t);
+                foreach (Type t in type.GetInterfaces())
+                {
+                    AddInterface(types, t);
+                }
             }
         }
     }

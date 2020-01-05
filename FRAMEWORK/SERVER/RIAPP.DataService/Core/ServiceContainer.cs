@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace RIAPP.DataService.Core
 {
-    public class ServiceContainer<TService>: IServiceContainer<TService>, IDisposable
+    public class ServiceContainer<TService> : IServiceContainer<TService>, IDisposable
         where TService : BaseDomainService
     {
         private IDisposable _scope;
@@ -18,7 +18,7 @@ namespace RIAPP.DataService.Core
         public ServiceContainer(IServiceProvider serviceProvider, ISerializer serializer)
         {
             _provider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-           _serializer =  serializer ?? throw new ArgumentNullException(nameof(serializer));
+            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             _scope = null;
         }
 

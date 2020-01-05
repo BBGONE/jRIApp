@@ -4,14 +4,13 @@ using RIAPP.DataService.Utils;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.Serialization;
 
 namespace RIAPP.DataService.Core.Types
 {
     /// <summary>
     ///  Stores parameter description (it's attributes)
     /// </summary>
-    [DataContract]
+
     public class MethodParameter
     {
         public MethodParameter()
@@ -20,17 +19,17 @@ namespace RIAPP.DataService.Core.Types
             value = null;
         }
 
-        [DataMember]
+
         [Description("Parameter name")]
         public string name { get; set; }
 
 
-        [DataMember]
+
         [Description("Parameter value as string")]
         public string value { get; set; }
     }
 
-    [DataContract]
+
     public class MethodParameters
     {
         public MethodParameters()
@@ -38,14 +37,17 @@ namespace RIAPP.DataService.Core.Types
             parameters = new List<MethodParameter>();
         }
 
-        [DataMember]
+
         public List<MethodParameter> parameters { get; set; }
 
         public object GetValue(string name, MethodDescription methodDescription, IDataHelper dataHelper)
         {
             var par = parameters.Where(p => p.name == name).FirstOrDefault();
             if (par == null)
+            {
                 return null;
+            }
+
             var paraminfo = methodDescription.parameters.Where(p => p.name == name).FirstOrDefault();
             if (paraminfo == null)
             {

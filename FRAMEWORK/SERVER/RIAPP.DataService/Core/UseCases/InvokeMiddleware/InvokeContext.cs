@@ -30,7 +30,7 @@ namespace RIAPP.DataService.Core.UseCases.InvokeMiddleware
             return new RequestContext(service, operation: ServiceOperationType.InvokeMethod);
         }
 
-       
+
         // Gets a key/value collection that can be used to share data between middleware.
         public IDictionary<string, object> Properties { get; }
 

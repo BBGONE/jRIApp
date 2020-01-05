@@ -1,8 +1,6 @@
-﻿using System.Runtime.Serialization;
-
-namespace RIAPP.DataService.Core.Types
+﻿namespace RIAPP.DataService.Core.Types
 {
-    [DataContract]
+
     public class ErrorInfo
     {
         public ErrorInfo() :
@@ -16,10 +14,10 @@ namespace RIAPP.DataService.Core.Types
             this.name = name;
         }
 
-        [DataMember]
+
         public string message { get; set; }
 
-        [DataMember]
+
         public string name { get; set; }
     }
 }

@@ -30,9 +30,9 @@ namespace RIAPP.DataService.Core.CodeGen
         private readonly CodeGenTemplate _listItemTemplate = new CodeGenTemplate("ListItem.txt");
         private readonly CodeGenTemplate _dbSetTemplate = new CodeGenTemplate("DbSet.txt");
 
-        public TypeScriptHelper(ISerializer serializer, 
-            IDataHelper dataHelper, 
-            IValueConverter valueConverter, 
+        public TypeScriptHelper(ISerializer serializer,
+            IDataHelper dataHelper,
+            IValueConverter valueConverter,
             RunTimeMetadata metadata,
             IEnumerable<Type> clientTypes)
         {
@@ -79,7 +79,9 @@ namespace RIAPP.DataService.Core.CodeGen
         private static string TrimEnd(string s)
         {
             if (!string.IsNullOrEmpty(s))
+            {
                 return s.TrimEnd('\r', '\n', '\t', ' ');
+            }
 
             return string.Empty;
         }
@@ -305,7 +307,9 @@ namespace RIAPP.DataService.Core.CodeGen
         {
             var pkProp = propList.Where(propInfo => keyName == propInfo.Name).SingleOrDefault();
             if (pkProp == null)
+            {
                 throw new Exception(string.Format("Dictionary item does not have a property with a name {0}", keyName));
+            }
 
             var pkVals = pkProp.Name.ToCamelCase() + ": " + dotNet2TS.RegisterType(pkProp.PropertyType);
 
@@ -366,22 +370,33 @@ namespace RIAPP.DataService.Core.CodeGen
             var listAttr = type.GetCustomAttributes(typeof(ListAttribute), false).OfType<ListAttribute>().FirstOrDefault();
 
             if (dictAttr != null && dictAttr.KeyName == null)
+            {
                 throw new ArgumentException("DictionaryAttribute KeyName property must not be null");
+            }
+
             var sb = new StringBuilder(512);
             string dictName = null;
             string listName = null;
             if (dictAttr != null)
+            {
                 dictName = dictAttr.DictionaryName == null
                     ? $"{type.Name}Dict"
                     : dictAttr.DictionaryName;
+            }
+
             if (listAttr != null)
+            {
                 listName = listAttr.ListName == null ? $"{type.Name}List" : listAttr.ListName;
+            }
+
             var isListItem = dictAttr != null || listAttr != null;
             var valsName = dotNet2TS.RegisterType(type);
 
             //can return here if no need to create Dictionary or List
             if (!type.IsClass || !isListItem)
+            {
                 return sb.ToString();
+            }
 
             var itemName = $"{type.Name}ListItem";
             var aspectName = $"T{type.Name}ItemAspect";
@@ -400,7 +415,10 @@ namespace RIAPP.DataService.Core.CodeGen
                 props.ForEach(propInfo =>
                 {
                     if (!isFirst)
+                    {
                         sbProps.Append(",");
+                    }
+
                     var dataType = DataType.None;
 
                     try
@@ -568,7 +586,10 @@ namespace RIAPP.DataService.Core.CodeGen
             foreach (var pkField in pkFields)
             {
                 if (!string.IsNullOrEmpty(pkVals))
+                {
                     pkVals += ", ";
+                }
+
                 pkVals += pkField.fieldName.ToCamelCase() + ": " + GetFieldDataType(pkField);
             }
             Dictionary<string, Func<string>> dic = new Dictionary<string, Func<string>>();
@@ -578,7 +599,8 @@ namespace RIAPP.DataService.Core.CodeGen
             dic.Add("ASPECT_NAME", () => entityDef.aspectName);
             dic.Add("INTERFACE_NAME", () => entityDef.interfaceName);
             dic.Add("VALS_NAME", () => entityDef.valsName);
-            dic.Add("DBSET_INFO", () => {
+            dic.Add("DBSET_INFO", () =>
+            {
                 //we are making copy of the object, in order that we don't change original object
                 //while it can be accessed by other threads
                 //we change our own copy, making it threadsafe
@@ -627,10 +649,12 @@ namespace RIAPP.DataService.Core.CodeGen
             var sbValsFields = new StringBuilder();
 
             if (dotNet2TS.IsTypeNameRegistered(entityDef.interfaceName))
+            {
                 throw new ApplicationException(
                     string.Format("Names collision. Name '{0}' can not be used for an entity type's name because this name is used for a client's type.",
                         entityDef.interfaceName));
-            
+            }
+
             Action<Field> AddCalculatedField = f =>
             {
                 var dataType = GetFieldDataType(f);
@@ -733,23 +757,27 @@ namespace RIAPP.DataService.Core.CodeGen
 
         private string GetFieldDataType(Field fieldInfo)
         {
-            var fieldName = fieldInfo.fieldName;
-            var fieldType = "any";
+            string result;
             var dataType = fieldInfo.dataType;
 
             if (fieldInfo.fieldType == FieldType.Navigation)
             {
-                fieldType = fieldInfo.GetTypeScriptDataType();
+                result = fieldInfo.GetTypeScriptDataType();
             }
             else if (fieldInfo.fieldType == FieldType.Object)
             {
-                fieldType = fieldInfo.GetTypeScriptDataType();
+                result = fieldInfo.GetTypeScriptDataType();
+            }
+            else if (dataType == DataType.None && !string.IsNullOrWhiteSpace(fieldInfo.GetDataTypeName()))
+            {
+                result = fieldInfo.GetDataTypeName();
             }
             else
             {
-                fieldType = DotNet2TS.GetTSTypeNameFromDataType(dataType);
+                result = DotNet2TS.GetTSTypeNameFromDataType(dataType);
             }
-            return fieldType;
+
+            return result;
         }
 
         public static string GetDbSetTypeName(string dbSetName)

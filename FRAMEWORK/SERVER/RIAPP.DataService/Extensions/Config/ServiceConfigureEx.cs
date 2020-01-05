@@ -17,7 +17,7 @@ namespace RIAPP.DataService.Core.Config
 {
     public static class ServiceConfigureEx
     {
-        public static void AddDomainService<TService>(this IServiceCollection services, 
+        public static void AddDomainService<TService>(this IServiceCollection services,
             Action<ServiceOptions> configure)
          where TService : BaseDomainService
         {
@@ -25,7 +25,7 @@ namespace RIAPP.DataService.Core.Config
             configure?.Invoke(options);
 
             var getUser = options.UserFactory ?? throw new ArgumentNullException(nameof(options.UserFactory), ErrorStrings.ERR_NO_USER);
-            
+
             services.TryAddScoped<IUserProvider>((sp) => new UserProvider(() => getUser(sp)));
 
             services.TryAddScoped<IAuthorizer<TService>, Authorizer<TService>>();
@@ -48,37 +48,43 @@ namespace RIAPP.DataService.Core.Config
                 services.TryAddScoped(descriptor.ServiceType, descriptor.ImplementationType);
             }
 
-            services.TryAddScoped<IDataManagerContainer<TService>>((sp) => {
+            services.TryAddScoped<IDataManagerContainer<TService>>((sp) =>
+            {
                 var serviceContainer = sp.GetRequiredService<IServiceContainer<TService>>();
                 return new DataManagerContainer<TService>(serviceContainer, options.DataManagerRegister);
             });
 
-            services.TryAddScoped<IValidatorContainer<TService>>((sp) => {
+            services.TryAddScoped<IValidatorContainer<TService>>((sp) =>
+            {
                 var serviceContainer = sp.GetRequiredService<IServiceContainer<TService>>();
                 return new ValidatorContainer<TService>(serviceContainer, options.ValidatorRegister);
             });
 
             #region Pipeline
 
-            services.TryAddSingleton((sp) => {
+            services.TryAddSingleton((sp) =>
+            {
                 var builder = new PipelineBuilder<TService, CRUDContext<TService>>(sp);
                 Configuration.ConfigureCRUD(builder);
                 return builder.Build();
             });
 
-            services.TryAddSingleton((sp) => {
+            services.TryAddSingleton((sp) =>
+            {
                 var builder = new PipelineBuilder<TService, QueryContext<TService>>(sp);
                 Configuration.ConfigureQuery(builder);
                 return builder.Build();
             });
 
-            services.TryAddSingleton((sp) => {
+            services.TryAddSingleton((sp) =>
+            {
                 var builder = new PipelineBuilder<TService, InvokeContext<TService>>(sp);
                 Configuration.ConfigureInvoke(builder);
                 return builder.Build();
             });
 
-            services.TryAddSingleton((sp) => {
+            services.TryAddSingleton((sp) =>
+            {
                 var builder = new PipelineBuilder<TService, RefreshContext<TService>>(sp);
                 Configuration.ConfigureRefresh(builder);
                 return builder.Build();
@@ -90,11 +96,13 @@ namespace RIAPP.DataService.Core.Config
 
             services.TryAddScoped<ICodeGenFactory<TService>, CodeGenFactory<TService>>();
 
-            services.AddScoped<ICodeGenProviderFactory<TService>>((sp) => {
+            services.AddScoped<ICodeGenProviderFactory<TService>>((sp) =>
+            {
                 return new XamlProviderFactory<TService>();
             });
 
-            services.AddScoped<ICodeGenProviderFactory<TService>>((sp) => {
+            services.AddScoped<ICodeGenProviderFactory<TService>>((sp) =>
+            {
                 var sc = sp.GetRequiredService<IServiceContainer<TService>>();
                 return new TypeScriptProviderFactory<TService>(sc, options.ClientTypes);
             });
@@ -102,8 +110,8 @@ namespace RIAPP.DataService.Core.Config
             #endregion
 
             #region UseCases
-            var crudCaseFactory = ActivatorUtilities.CreateFactory(typeof(CRUDOperationsUseCase<TService>), 
-                new System.Type[] { typeof(BaseDomainService), 
+            var crudCaseFactory = ActivatorUtilities.CreateFactory(typeof(CRUDOperationsUseCase<TService>),
+                new System.Type[] { typeof(BaseDomainService),
                 typeof(CRUDServiceMethods)
             });
 
@@ -130,10 +138,11 @@ namespace RIAPP.DataService.Core.Config
 
             services.TryAddScoped<IServiceContainer<TService>, ServiceContainer<TService>>();
 
-            var serviceFactory = ActivatorUtilities.CreateFactory(typeof(TService), 
-                new Type[] { typeof(IServiceContainer<TService>) } );
-            
-            services.TryAddScoped<TService>((sp) => {
+            var serviceFactory = ActivatorUtilities.CreateFactory(typeof(TService),
+                new Type[] { typeof(IServiceContainer<TService>) });
+
+            services.TryAddScoped<TService>((sp) =>
+            {
                 var sc = sp.GetRequiredService<IServiceContainer<TService>>();
                 return (TService)serviceFactory(sp, new object[] { sc });
             });

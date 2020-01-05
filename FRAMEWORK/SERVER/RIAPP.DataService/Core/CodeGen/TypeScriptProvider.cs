@@ -19,8 +19,8 @@ namespace RIAPP.DataService.Core.CodeGen
             IMetaDataProvider owner,
             ISerializer serializer,
             IDataHelper dataHelper,
-            IValueConverter valueConverter, 
-            string lang, 
+            IValueConverter valueConverter,
+            string lang,
             Func<IEnumerable<Type>> clientTypes)
         {
             this.Owner = owner ?? throw new ArgumentNullException(nameof(owner));
@@ -52,7 +52,7 @@ namespace RIAPP.DataService.Core.CodeGen
         private readonly IServiceContainer<TService> _serviceContainer;
         private readonly Func<IEnumerable<Type>> _clientTypes;
 
-        public TypeScriptProviderFactory(IServiceContainer<TService> serviceContainer,  Func<IEnumerable<Type>> clientTypes = null)
+        public TypeScriptProviderFactory(IServiceContainer<TService> serviceContainer, Func<IEnumerable<Type>> clientTypes = null)
         {
             this._serviceContainer = serviceContainer ?? throw new ArgumentNullException(nameof(serviceContainer));
             this._clientTypes = clientTypes;
@@ -66,7 +66,7 @@ namespace RIAPP.DataService.Core.CodeGen
         public ICodeGenProvider<TService> Create(TService owner)
         {
             return new TypeScriptProvider<TService>(owner,
-                _serviceContainer.Serializer, 
+                _serviceContainer.Serializer,
                 _serviceContainer.GetDataHelper(),
                 _serviceContainer.GetValueConverter(),
                 this.Lang, this._clientTypes);

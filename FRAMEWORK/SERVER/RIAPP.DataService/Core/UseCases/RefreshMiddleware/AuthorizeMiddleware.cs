@@ -25,8 +25,10 @@ namespace RIAPP.DataService.Core.UseCases.RefreshMiddleware
 
             MethodInfoData methodData = metadata.GetOperationMethodInfo(ctx.Request.dbSetName, MethodType.Refresh);
             if (methodData == null)
+            {
                 throw new InvalidOperationException(string.Format(ErrorStrings.ERR_REC_REFRESH_INVALID,
                     dbSetInfo.GetEntityType().Name, GetType().Name));
+            }
 
             await authorizer.CheckUserRightsToExecute(methodData);
 

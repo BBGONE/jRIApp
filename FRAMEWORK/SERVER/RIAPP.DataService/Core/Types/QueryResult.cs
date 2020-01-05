@@ -46,7 +46,7 @@ namespace RIAPP.DataService.Core.Types
 
         public IEnumerable<T> getResult()
         {
-            return (IEnumerable<T>) Result;
+            return (IEnumerable<T>)Result;
         }
     }
 }

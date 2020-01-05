@@ -35,8 +35,8 @@ namespace RIAPP.DataService.Core
         ICRUDOperationsUseCase Create(BaseDomainService service, CRUDServiceMethods serviceMethods);
     }
 
-    public interface ICRUDOperationsUseCaseFactory<TService>: ICRUDOperationsUseCaseFactory
-        where TService: BaseDomainService
+    public interface ICRUDOperationsUseCaseFactory<TService> : ICRUDOperationsUseCaseFactory
+        where TService : BaseDomainService
     {
         ICRUDOperationsUseCase<TService> Create(TService service, CRUDServiceMethods serviceMethods);
     }

@@ -10,7 +10,7 @@ namespace RIAPP.DataService.Utils
         void CheckValue(Field fieldInfo, string val);
     }
 
-    public interface IValidationHelper<TService>: IValidationHelper
+    public interface IValidationHelper<TService> : IValidationHelper
          where TService : BaseDomainService
     {
 

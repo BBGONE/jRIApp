@@ -138,7 +138,7 @@ namespace RIAPP.DataService.Utils.Extensions
             int cnt = 0;
             char[] lastValue = new char[3];
             int lastValueSize = 0;
-            
+
             foreach (char ch in value)
             {
                 if (ch == ']')
@@ -155,12 +155,12 @@ namespace RIAPP.DataService.Utils.Extensions
                 {
                     result[cnt++] = byte.Parse(new String(lastValue, 0, lastValueSize));
                     lastValueSize = 0;
-                } 
-                else if (!char.IsWhiteSpace(ch)  && ch != '[')
+                }
+                else if (!char.IsWhiteSpace(ch) && ch != '[')
                 {
                     lastValue[lastValueSize++] = ch;
                 }
-         }
+            }
 
 
             throw new InvalidOperationException(INPUT_ERROR);

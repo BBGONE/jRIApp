@@ -17,12 +17,17 @@ namespace RIAPP.DataService.Core.CodeGen
         public ICodeGenProvider GetCodeGen(BaseDomainService dataService, string lang)
         {
             if (!this.IsCodeGenEnabled)
+            {
                 throw new InvalidOperationException(ErrorStrings.ERR_CODEGEN_DISABLED);
+            }
+
             var factories = dataService.ServiceContainer.GetServices<ICodeGenProviderFactory<TService>>();
             var providerFactory = factories.Where(c => c.Lang == lang).FirstOrDefault();
 
             if (providerFactory == null)
+            {
                 throw new InvalidOperationException(string.Format(ErrorStrings.ERR_CODEGEN_NOT_IMPLEMENTED, lang));
+            }
 
             return providerFactory.Create(dataService);
         }

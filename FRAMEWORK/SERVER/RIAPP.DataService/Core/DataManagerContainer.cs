@@ -5,12 +5,12 @@ using System.Collections.Generic;
 namespace RIAPP.DataService.Core
 {
     public class DataManagerContainer<TService> : IDataManagerContainer<TService>
-        where TService: BaseDomainService
+        where TService : BaseDomainService
     {
         private readonly IServiceContainer<TService> _serviceContainer;
         private readonly IDataManagerRegister _dataManagerRegister;
 
-        public DataManagerContainer(IServiceContainer<TService> serviceContainer, 
+        public DataManagerContainer(IServiceContainer<TService> serviceContainer,
             IDataManagerRegister dataManagerRegister)
         {
             _serviceContainer = serviceContainer ?? throw new ArgumentNullException(nameof(serviceContainer));
@@ -21,7 +21,10 @@ namespace RIAPP.DataService.Core
         {
             ServiceTypeDescriptor descriptor;
             if (_dataManagerRegister.TryGetDescriptor(modelType, out descriptor))
+            {
                 return _serviceContainer.GetService(descriptor.ServiceType);
+            }
+
             return null;
         }
 
@@ -29,7 +32,7 @@ namespace RIAPP.DataService.Core
             where TModel : class
         {
             var res = GetDataManager(typeof(TModel));
-            return (IDataManager<TModel>) res;
+            return (IDataManager<TModel>)res;
         }
 
         public IEnumerable<ServiceTypeDescriptor> Descriptors

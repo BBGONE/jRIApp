@@ -23,12 +23,12 @@ namespace RIAPP.DataService.Core.UseCases.RefreshMiddleware
             var serviceHelper = ctx.ServiceContainer.GetServiceHelper();
             var metadata = ctx.Service.GetMetadata();
 
-            var req = RefreshContext<TService>.CreateRequestContext(ctx.Service,ctx.Request.rowInfo);
+            var req = RefreshContext<TService>.CreateRequestContext(ctx.Service, ctx.Request.rowInfo);
             using (var callContext = new RequestCallContext(req))
             {
                 MethodInfoData methodData = metadata.GetOperationMethodInfo(ctx.Request.dbSetName, MethodType.Refresh);
                 object instance = serviceHelper.GetMethodOwner(methodData);
-                object invokeRes = methodData.MethodInfo.Invoke(instance, new object[] { ctx.Request});
+                object invokeRes = methodData.MethodInfo.Invoke(instance, new object[] { ctx.Request });
                 object dbEntity = await serviceHelper.GetMethodResult(invokeRes);
 
                 if (dbEntity != null)

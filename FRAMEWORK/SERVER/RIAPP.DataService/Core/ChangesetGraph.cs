@@ -108,8 +108,10 @@ namespace RIAPP.DataService.Core
             {
                 var dbSetInfo = _metadata.DbSets[dbSet.dbSetName];
                 if (dbSetInfo.GetEntityType() == null)
+                {
                     throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_ENTITYTYPE_INVALID,
                         dbSetInfo.dbSetName));
+                }
 
                 foreach (var rowInfo in dbSet.rows)
                 {

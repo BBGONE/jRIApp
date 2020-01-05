@@ -32,7 +32,7 @@ namespace RIAPP.DataService.Core.UseCases.QueryMiddleware
             return new RequestContext(service, queryInfo: queryInfo, operation: ServiceOperationType.Query);
         }
 
-       
+
         // Gets a key/value collection that can be used to share data between middleware.
         public IDictionary<string, object> Properties { get; }
 

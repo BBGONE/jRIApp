@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace RIAPP.DataService.Core.Security
+﻿namespace RIAPP.DataService.Core.Security
 {
-    interface IOverrideAuthorizeData: IAuthorizeData
+    interface IOverrideAuthorizeData : IAuthorizeData
     {
     }
 }

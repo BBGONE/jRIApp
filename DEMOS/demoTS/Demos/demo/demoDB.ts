@@ -1,5 +1,5 @@
 ﻿/*
-	Generated from: /RIAppDemoServiceEF/code?lang=ts on 2020-01-03 at 01:21
+	Generated from: /RIAppDemoServiceEF/code?lang=ts on 2020-01-05 at 13:43
 	Don't make manual changes here, they will be lost when this interface will be regenerated!
 */
 

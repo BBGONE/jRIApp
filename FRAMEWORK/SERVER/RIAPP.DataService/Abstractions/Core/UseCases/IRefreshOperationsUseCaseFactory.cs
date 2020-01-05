@@ -7,7 +7,7 @@ namespace RIAPP.DataService.Core
         IRefreshOperationsUseCase Create(BaseDomainService service, Action<Exception> onError);
     }
 
-    public interface IRefreshOperationsUseCaseFactory<TService>: IRefreshOperationsUseCaseFactory
+    public interface IRefreshOperationsUseCaseFactory<TService> : IRefreshOperationsUseCaseFactory
         where TService : BaseDomainService
     {
         IRefreshOperationsUseCase<TService> Create(TService service, Action<Exception> onError);

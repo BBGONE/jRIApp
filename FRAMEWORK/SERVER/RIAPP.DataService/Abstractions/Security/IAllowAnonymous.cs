@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RIAPP.DataService.Core.Security
+﻿namespace RIAPP.DataService.Core.Security
 {
     public interface IAllowAnonymous
     {

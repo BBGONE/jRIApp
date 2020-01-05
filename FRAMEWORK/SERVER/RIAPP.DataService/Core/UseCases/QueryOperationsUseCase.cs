@@ -50,13 +50,16 @@ namespace RIAPP.DataService.Core
                     (TService)_service,
                     _serviceContainer,
                     isMultyPageRequest);
-                
+
                 await _pipeline(context);
             }
             catch (Exception ex)
             {
                 if (ex is TargetInvocationException)
+                {
                     ex = ex.InnerException;
+                }
+
                 response.error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name);
 
                 _onError(ex);

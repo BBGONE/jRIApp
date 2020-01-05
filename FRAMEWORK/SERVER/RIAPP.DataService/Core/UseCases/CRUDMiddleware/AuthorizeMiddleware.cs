@@ -31,11 +31,15 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
                 Dictionary<string, MethodInfoData> domainServiceMethods = new Dictionary<string, MethodInfoData>();
                 DbSetInfo dbInfo = metadata.DbSets[dbSet.dbSetName];
 
-                dbSet.rows.Aggregate<RowInfo, Dictionary<string, MethodInfoData>>(domainServiceMethods, (dict, rowInfo) => {
+                dbSet.rows.Aggregate<RowInfo, Dictionary<string, MethodInfoData>>(domainServiceMethods, (dict, rowInfo) =>
+                {
                     MethodInfoData method = rowInfo.GetCRUDMethodInfo(metadata, dbInfo.dbSetName);
                     if (method == null)
+                    {
                         throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
                             dbInfo.GetEntityType().Name, rowInfo.changeType));
+                    }
+
                     string dicKey = string.Format("{0}:{1}", method.OwnerType.FullName, method.MethodInfo.Name);
                     if (!dict.ContainsKey(dicKey))
                     {

@@ -16,14 +16,20 @@ namespace RIAPP.DataService.Utils
             System.Type objType = obj.GetType();
             var pinfo = objType.GetProperty(parts[0]);
             if (pinfo == null)
+            {
                 throw new Exception(string.Format(ErrorStrings.ERR_PROPERTY_IS_MISSING, objType.Name, propertyName));
+            }
+
             if (parts.Length == 1)
             {
                 return pinfo.GetValue(obj, null);
             }
             var pval = pinfo.GetValue(obj, null);
             if (pval == null)
+            {
                 throw new Exception(string.Format(ErrorStrings.ERR_PPROPERTY_ISNULL, objType.Name, pinfo.Name));
+            }
+
             return GetValue(pval, string.Join(".", parts.Skip(1)));
         }
 
@@ -31,7 +37,10 @@ namespace RIAPP.DataService.Utils
         {
             var res = new Dictionary<string, object>();
             if (obj == null)
+            {
                 return res;
+            }
+
             foreach (var name in propNames)
             {
                 res.Add(name, GetValue(obj, name));
@@ -122,8 +131,8 @@ namespace RIAPP.DataService.Utils
 
             string pkval = string.Join(",", pkNames.Select(nm => dpk[nm].ToString()));
 
-            var x = new XElement("diffgram", 
-                new XAttribute("dbset-name", dbSetName), 
+            var x = new XElement("diffgram",
+                new XAttribute("dbset-name", dbSetName),
                 new XAttribute("key-name", string.Join(",", pkNames)),
                 new XAttribute("key-val", pkval),
                 new XAttribute("change-type", changeType),
@@ -141,7 +150,7 @@ namespace RIAPP.DataService.Utils
             var d2 = GetValues(t, obj2, propNames);
             var obj = obj2 == null ? obj1 : obj2;
             var dpk = GetValues(t, obj, pkNames);
-            
+
             return GetDiffGram(d1, d2, t, pkNames, dpk, changeType, dbSetName);
         }
 

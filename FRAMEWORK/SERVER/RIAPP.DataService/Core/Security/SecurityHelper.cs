@@ -16,7 +16,10 @@ namespace RIAPP.DataService.Core.Security
         {
             MethodInfo meth = null;
             if (!string.IsNullOrEmpty(name))
+            {
                 meth = type.GetMethod(name);
+            }
+
             return meth;
         }
 
@@ -28,11 +31,13 @@ namespace RIAPP.DataService.Core.Security
                 MethodName = method.MethodInfo.Name,
                 AuthorizeData = Enumerable.Empty<IAuthorizeData>(),
                 IsOverride = false,
-                IsAllowAnonymous= attr.Where(a => a is IAllowAnonymous).Any()
+                IsAllowAnonymous = attr.Where(a => a is IAllowAnonymous).Any()
             };
 
             if (methodAuthorization.IsAllowAnonymous)
+            {
                 return methodAuthorization;
+            }
 
             var attributes = attr.Where(a => a is IAuthorizeData).Cast<IAuthorizeData>().ToArray();
 
@@ -63,12 +68,14 @@ namespace RIAPP.DataService.Core.Security
                 ManagerType = managerType,
                 AuthorizeData = Enumerable.Empty<IAuthorizeData>(),
                 MethodsAuthorization = new MethodAuthorization[0],
-                IsOverride= false,
-                IsAllowAnonymous = attr.Where(a=> a is IAllowAnonymous).Any()
+                IsOverride = false,
+                IsAllowAnonymous = attr.Where(a => a is IAllowAnonymous).Any()
             };
 
             if (managerAuthorization.IsAllowAnonymous)
+            {
                 return managerAuthorization;
+            }
 
             var attributes = attr.Where(a => a is IAuthorizeData).Cast<IAuthorizeData>().ToArray();
 
@@ -106,9 +113,11 @@ namespace RIAPP.DataService.Core.Security
 
         private static IEnumerable<DataManagerAuthorization> _GetDataManagersAuthorization(IEnumerable<MethodInfoData> methods)
         {
-            var selectedMethods =  methods.Where(m => m.IsInDataManager).ToArray();
+            var selectedMethods = methods.Where(m => m.IsInDataManager).ToArray();
             if (!selectedMethods.Any())
+            {
                 return Enumerable.Empty<DataManagerAuthorization>();
+            }
 
             Dictionary<Type, DataManagerAuthorization> authorizationDict = new Dictionary<Type, DataManagerAuthorization>();
             Dictionary<Type, Dictionary<string, MethodAuthorization>> ownerMethodAuthorizationDict = new Dictionary<Type, Dictionary<string, MethodAuthorization>>();
@@ -146,7 +155,9 @@ namespace RIAPP.DataService.Core.Security
         {
             var selectedMethods = methods.Where(m => !m.IsInDataManager).ToArray();
             if (!selectedMethods.Any())
+            {
                 return Enumerable.Empty<MethodAuthorization>();
+            }
 
             Dictionary<string, MethodAuthorization> methodAuthorizationDict = new Dictionary<string, MethodAuthorization>();
 
@@ -171,7 +182,7 @@ namespace RIAPP.DataService.Core.Security
                 MethodsAuthorization = _GetMethodsAuthorization(methods)
             };
         }
-   
+
         public static MethodInfoData GetCRUDMethodInfo(this RowInfo rowInfo, RunTimeMetadata metadata, string dbSetName)
         {
             MethodInfoData method = null;
@@ -201,7 +212,9 @@ namespace RIAPP.DataService.Core.Security
 
         public static async Task<DbSetPermit> GetDbSetPermissions(this IAuthorizer authorizer, RunTimeMetadata metadata, string dbSetName)
         {
-            return new DbSetPermit() { dbSetName = dbSetName,
+            return new DbSetPermit()
+            {
+                dbSetName = dbSetName,
                 canAddRow = await authorizer.CanAccessOperation(metadata, dbSetName, MethodType.Insert),
                 canEditRow = await authorizer.CanAccessOperation(metadata, dbSetName, MethodType.Update),
                 canDeleteRow = await authorizer.CanAccessOperation(metadata, dbSetName, MethodType.Delete),

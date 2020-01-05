@@ -16,8 +16,8 @@ namespace RIAPP.DataService.Core
         private readonly CRUDServiceMethods _serviceMethods;
         private readonly RequestDelegate<CRUDContext<TService>> _pipeline;
 
-        public CRUDOperationsUseCase(BaseDomainService service, 
-            CRUDServiceMethods serviceMethods, 
+        public CRUDOperationsUseCase(BaseDomainService service,
+            CRUDServiceMethods serviceMethods,
             RequestDelegate<CRUDContext<TService>> pipeline)
         {
             _service = service;
@@ -40,7 +40,9 @@ namespace RIAPP.DataService.Core
             catch (Exception ex)
             {
                 if (ex is TargetInvocationException)
+                {
                     ex = ex.InnerException;
+                }
 
                 response.error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name);
 

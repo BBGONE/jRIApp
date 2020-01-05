@@ -2,7 +2,7 @@
 
 namespace RIAPP.DataService.Core
 {
-    public class QueryOperationsUseCaseFactory<TService>: IQueryOperationsUseCaseFactory<TService>
+    public class QueryOperationsUseCaseFactory<TService> : IQueryOperationsUseCaseFactory<TService>
         where TService : BaseDomainService
     {
         private readonly Func<BaseDomainService, Action<Exception>, IQueryOperationsUseCase<TService>> _func;

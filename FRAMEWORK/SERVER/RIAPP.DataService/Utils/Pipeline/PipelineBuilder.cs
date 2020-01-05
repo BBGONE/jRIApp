@@ -7,18 +7,18 @@ namespace Pipeline
 {
     public class PipelineBuilder<TService, TContext> : IPipelineBuilder<TService, TContext>
         where TService : BaseDomainService
-        where TContext: IRequestContext
+        where TContext : IRequestContext
     {
         public PipelineBuilder(IServiceProvider services)
         {
             ApplicationServices = services;
         }
 
-        public IServiceProvider ApplicationServices 
+        public IServiceProvider ApplicationServices
         {
             get;
         }
-     
+
         public PipelineBuilder<TService, TContext> New()
         {
             return new PipelineBuilder<TService, TContext>(ApplicationServices);
@@ -35,7 +35,7 @@ namespace Pipeline
             }
 
             return _components.First.Value.Process;
-            
+
             // if needed to catch unhandled exceptions
             // return GetCatchError(_components.First.Value.Process);
         }
@@ -92,6 +92,6 @@ namespace Pipeline
             return this;
         }
 
-        LinkedList<MiddlewareComponentNode<TContext>> _components = new LinkedList<MiddlewareComponentNode<TContext>>();
+        readonly LinkedList<MiddlewareComponentNode<TContext>> _components = new LinkedList<MiddlewareComponentNode<TContext>>();
     }
 }

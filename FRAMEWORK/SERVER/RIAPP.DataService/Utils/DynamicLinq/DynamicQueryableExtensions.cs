@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using JetBrains.Annotations;
 using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq.Dynamic.Core.Exceptions;
-using System.Diagnostics;
 using System.Linq.Dynamic.Core.Extensions;
+using System.Linq.Dynamic.Core.Parser;
 using System.Linq.Dynamic.Core.Validation;
 using System.Linq.Expressions;
 using System.Reflection;
-using JetBrains.Annotations;
-using System.Linq.Dynamic.Core.Parser;
 
 namespace System.Linq.Dynamic.Core
 {
@@ -589,7 +589,10 @@ namespace System.Linq.Dynamic.Core
 
         static IEnumerable<GroupResult> GroupByManyInternal<TElement>(IEnumerable<TElement> source, Func<TElement, object>[] keySelectors, int currentSelector)
         {
-            if (currentSelector >= keySelectors.Length) return null;
+            if (currentSelector >= keySelectors.Length)
+            {
+                return null;
+            }
 
             var selector = keySelectors[currentSelector];
 
@@ -1520,7 +1523,9 @@ namespace System.Linq.Dynamic.Core
 
             //no need to skip if count is zero
             if (count == 0)
+            {
                 return source;
+            }
 
             return CreateQuery(_skip, source, Expression.Constant(count));
         }

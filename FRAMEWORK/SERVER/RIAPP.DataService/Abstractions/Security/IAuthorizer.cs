@@ -15,7 +15,7 @@ namespace RIAPP.DataService.Core.Security
         Task CheckUserRightsToExecute(MethodInfoData method);
     }
 
-    public interface IAuthorizer<TService>: IAuthorizer
+    public interface IAuthorizer<TService> : IAuthorizer
         where TService : BaseDomainService
     {
 

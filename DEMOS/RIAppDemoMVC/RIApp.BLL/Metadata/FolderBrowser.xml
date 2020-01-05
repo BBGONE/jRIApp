@@ -12,7 +12,7 @@
         <data:Field fieldName="HasSubDirs" dataType="Bool" isNullable="False" isReadOnly="True" />
         <data:Field fieldName="IsFolder" dataType="Bool" isNullable="False" isReadOnly="True" />
         <data:Field fieldName="fullPath" dataType="String" fieldType="Calculated" />
-        <data:Field fieldName="ExtraProps" fieldType="Calculated" />
+        <data:Field fieldName="ExtraProps" fieldType="Calculated"  dataTypeName="ExProps" />
       </data:DbSetInfo.fieldInfos>
     </data:DbSetInfo>
   </data:Metadata.DbSets>

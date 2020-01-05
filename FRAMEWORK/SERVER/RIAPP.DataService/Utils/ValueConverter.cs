@@ -5,7 +5,6 @@ using RIAPP.DataService.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 
 namespace RIAPP.DataService.Utils
 {
@@ -17,7 +16,7 @@ namespace RIAPP.DataService.Utils
 
         public ValueConverter(ISerializer serializer)
         {
-            this.serializer = serializer?? throw new ArgumentNullException(nameof(serializer), ErrorStrings.ERR_NO_SERIALIZER);
+            this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer), ErrorStrings.ERR_NO_SERIALIZER);
 
             this.convertMap = new Dictionary<Type, Func<object, Field, string>>
             {
@@ -40,7 +39,7 @@ namespace RIAPP.DataService.Utils
         {
             object result;
             bool IsNullable = propType.IsNullableType();
-            Type propMainType = (!IsNullable)? propType : Nullable.GetUnderlyingType(propType);
+            Type propMainType = (!IsNullable) ? propType : Nullable.GetUnderlyingType(propType);
 
             switch (dataType)
             {
@@ -78,7 +77,7 @@ namespace RIAPP.DataService.Utils
                     result = ConvertToString(value, propType);
                     break;
                 case DataType.None:
-                    result = (propType == typeof(string))? value: ConvertTo(value, propType, propMainType);
+                    result = (propType == typeof(string)) ? value : ConvertTo(value, propType, propMainType);
                     break;
                 default:
                     throw new Exception(string.Format(ErrorStrings.ERR_VAL_DATATYPE_INVALID, dataType));
@@ -86,8 +85,8 @@ namespace RIAPP.DataService.Utils
 
             return result;
         }
-        
-        
+
+
 
         public virtual string SerializeField(Type propType, Field fieldInfo, object value)
         {
@@ -131,12 +130,12 @@ namespace RIAPP.DataService.Utils
 
         protected virtual object ConvertToBool(string value, bool IsNullableType)
         {
-            return value == null ? (bool?)null: bool.Parse(value);
+            return value == null ? (bool?)null : bool.Parse(value);
         }
 
         protected virtual object ConvertToDate(string value, bool IsNullableType, DateConversion dateConversion)
         {
-            return value == null ? (DateTime?)null: DateTimeHelper.ParseDateTime(value, dateConversion);
+            return value == null ? (DateTime?)null : DateTimeHelper.ParseDateTime(value, dateConversion);
         }
 
         protected virtual object ConvertToGuid(string value, bool IsNullableType)
@@ -146,7 +145,7 @@ namespace RIAPP.DataService.Utils
 
         protected virtual object ConvertToNumber(string value, bool IsNullableType, Type propType, Type propMainType)
         {
-            return value == null? null: Convert.ChangeType(value, propMainType, CultureInfo.InvariantCulture);
+            return value == null ? null : Convert.ChangeType(value, propMainType, CultureInfo.InvariantCulture);
 
             // commented, because no need to create nullable type here - on boxing it turns into ordinary value anyway
             // return (IsNullableType)? CreateGenericInstance(propType, propMainType, new[] { typedVal }): typedVal;
@@ -169,7 +168,8 @@ namespace RIAPP.DataService.Utils
 
         protected virtual object ConvertToString(string value, Type propType)
         {
-            if (value == null) {
+            if (value == null)
+            {
                 return null;
             }
 
@@ -214,12 +214,12 @@ namespace RIAPP.DataService.Utils
 
         protected virtual string DateOffsetToString(object value, DateConversion dateConversion)
         {
-            return (value == null)? null: DateTimeHelper.DateOffsetToString((DateTimeOffset)value, dateConversion);
+            return (value == null) ? null : DateTimeHelper.DateOffsetToString((DateTimeOffset)value, dateConversion);
         }
 
         protected virtual string DateToString(object value, DateConversion dateConversion)
         {
-            return (value == null)? null: DateTimeHelper.DateToString((DateTime)value, dateConversion);
+            return (value == null) ? null : DateTimeHelper.DateToString((DateTime)value, dateConversion);
         }
 
         protected virtual string TimeToString(object value, DateConversion dateConversion)

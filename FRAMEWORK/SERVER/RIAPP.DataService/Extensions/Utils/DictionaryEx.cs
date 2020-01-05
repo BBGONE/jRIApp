@@ -12,7 +12,7 @@
         }
 
         public static T Get<T>(this System.Collections.Generic.IDictionary<string, T> dic, string key)
-            where T: class
+            where T : class
         {
             if (!dic.TryGetValue(key, out var obj))
             {

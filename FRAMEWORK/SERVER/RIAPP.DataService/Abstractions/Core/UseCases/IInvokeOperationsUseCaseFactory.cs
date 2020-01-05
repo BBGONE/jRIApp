@@ -7,7 +7,7 @@ namespace RIAPP.DataService.Core
         IInvokeOperationsUseCase Create(BaseDomainService service, Action<Exception> onError);
     }
 
-    public interface IInvokeOperationsUseCaseFactory<TService>: IInvokeOperationsUseCaseFactory
+    public interface IInvokeOperationsUseCaseFactory<TService> : IInvokeOperationsUseCaseFactory
         where TService : BaseDomainService
     {
         IInvokeOperationsUseCase<TService> Create(TService service, Action<Exception> onError);

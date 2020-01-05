@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.Serialization;
 
 namespace RIAPP.DataService.Core.Types
 {
-    [DataContract]
+
     public class DbSetInfo
     {
         internal FieldsList _fieldInfos = new FieldsList();
@@ -19,7 +18,7 @@ namespace RIAPP.DataService.Core.Types
         {
             _inResultFields = new Lazy<Field[]>(
                     () => _fieldInfos.Where(f => f.GetIsIncludeInResult()).OrderBy(f => f.GetOrdinal()).ToArray(), true);
-            _pkFields =  new Lazy<Field[]>(
+            _pkFields = new Lazy<Field[]>(
                     () => fieldInfos.Where(fi => fi.isPrimaryKey > 0).OrderBy(fi => fi.isPrimaryKey).ToArray(), true);
             _timestampField = new Lazy<Field>(() => fieldInfos.Where(fi => fi.fieldType == FieldType.RowTimeStamp).FirstOrDefault(),
                     true);
@@ -30,19 +29,19 @@ namespace RIAPP.DataService.Core.Types
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-        [DataMember]
+
         public FieldsList fieldInfos
         {
             get { return _fieldInfos; }
         }
 
-        [DataMember]
+
         public bool enablePaging { get; set; }
 
-        [DataMember]
+
         public int pageSize { get; set; }
 
-        [DataMember]
+
         public string dbSetName { get; set; }
 
         #region NonSerializable properties
@@ -66,7 +65,7 @@ namespace RIAPP.DataService.Core.Types
             return _timestampField.Value;
         }
 
-       
+
         internal Type _EntityType { get; set; }
 
         [DefaultValue(false)]

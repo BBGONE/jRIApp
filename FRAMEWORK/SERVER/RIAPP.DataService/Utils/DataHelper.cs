@@ -176,11 +176,11 @@ namespace RIAPP.DataService.Utils
                         throw new Exception(string.Format(ErrorStrings.ERR_FIELD_IS_NOT_NULLABLE, fieldInfo.fieldName));
                     }
                 }
-                
+
                 return val;
             }
 
-            object pval = pinfo.GetValue(entity, null)?? throw new Exception(string.Format(ErrorStrings.ERR_PPROPERTY_ISNULL, enityType.Name, pinfo.Name));
+            object pval = pinfo.GetValue(entity, null) ?? throw new Exception(string.Format(ErrorStrings.ERR_PPROPERTY_ISNULL, enityType.Name, pinfo.Name));
 
             return SetFieldValue(pval, string.Join(".", parts.Skip(1)), fieldInfo, value);
         }
@@ -225,10 +225,10 @@ namespace RIAPP.DataService.Utils
 
             if (fieldInfo.fieldType == FieldType.Object)
             {
-                return DeSerializeObjectField(propInfo.PropertyType, fieldInfo, (object[]) value);
+                return DeSerializeObjectField(propInfo.PropertyType, fieldInfo, (object[])value);
             }
 
-            return this._valueConverter.DeserializeField(propInfo.PropertyType, fieldInfo, (string) value);
+            return this._valueConverter.DeserializeField(propInfo.PropertyType, fieldInfo, (string)value);
         }
 
         private IEnumerable ToEnumerable(Type elementType, ParamMetadata pinfo, string[] arr)
@@ -257,7 +257,7 @@ namespace RIAPP.DataService.Utils
 
         public object ParseParameter(Type paramType, ParamMetadata pinfo, bool isArray, string val)
         {
-            return (isArray && val != null)? ParseArray(paramType, pinfo, val): this._valueConverter.DeserializeValue(paramType, pinfo.dataType, pinfo.dateConversion, val);
+            return (isArray && val != null) ? ParseArray(paramType, pinfo, val) : this._valueConverter.DeserializeValue(paramType, pinfo.dataType, pinfo.dateConversion, val);
         }
 
         public Field GetFieldInfo(DbSetInfo dbSetInfo, string fullName)

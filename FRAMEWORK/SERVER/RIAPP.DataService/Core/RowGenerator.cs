@@ -59,7 +59,10 @@ namespace RIAPP.DataService.Core
                 if (keyIndex > -1)
                 {
                     if (fv == null)
+                    {
                         throw new Exception(string.Format("Primary Key Field \"{0}\" Has a NULL Value", fieldInfo.GetFullName()));
+                    }
+
                     pk[keyIndex] = fv.ToString();
                 }
                 v[i] = fv;

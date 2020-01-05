@@ -40,7 +40,9 @@ namespace RIAPP.DataService.Core
             catch (Exception ex)
             {
                 if (ex is TargetInvocationException)
+                {
                     ex = ex.InnerException;
+                }
 
                 response.error = new ErrorInfo(ex.GetFullMessage(), ex.GetType().Name);
 

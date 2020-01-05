@@ -69,13 +69,19 @@ namespace RIAPP.DataService.Utils
         private void Dispose(bool disposing)
         {
             if (_isDisposed)
+            {
                 return;
+            }
+
             if (disposing)
             {
                 lock (SyncRoot)
                 {
                     if (_isDisposed)
+                    {
                         return;
+                    }
+
                     var outerScope = _outerScope;
                     while (outerScope != null && outerScope._isDisposed)
                     {
@@ -90,7 +96,9 @@ namespace RIAPP.DataService.Utils
                     {
                         _isDisposed = true;
                         if (_contextData is IDisposable)
+                        {
                             ((IDisposable)_contextData).Dispose();
+                        }
                     }
                 }
             }

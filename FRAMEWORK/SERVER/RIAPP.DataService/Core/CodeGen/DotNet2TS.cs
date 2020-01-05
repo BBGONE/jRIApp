@@ -21,7 +21,7 @@ namespace RIAPP.DataService.Core.CodeGen
         }
     }
 
-    public class DotNet2TS: IDisposable
+    public class DotNet2TS : IDisposable
     {
         // a container for available services (something like dependency injection container)
         // maps type name to its definition
@@ -124,7 +124,10 @@ namespace RIAPP.DataService.Core.CodeGen
                     foreach (var intfName in extendsAttr.InterfaceNames)
                     {
                         if (!isFirst)
+                        {
                             extendsSb.Append(", ");
+                        }
+
                         extendsSb.Append(intfName);
                         isFirst = false;
                     }
@@ -165,13 +168,20 @@ namespace RIAPP.DataService.Core.CodeGen
         protected internal string GetTypeInterface(Type t, string typeName, string extends)
         {
             if (t == typeof(Type))
+            {
                 throw new ArgumentException("Can not generate interface for a System.Type");
+            }
 
             var name = typeName;
             if (string.IsNullOrEmpty(typeName))
+            {
                 name = RegisterType(t);
+            }
+
             if (_tsTypes.ContainsKey(name))
+            {
                 return _tsTypes[name];
+            }
 
             var commentAttr = t.GetCustomAttributes(typeof(CommentAttribute), false).OfType<CommentAttribute>().FirstOrDefault();
 
@@ -189,7 +199,7 @@ namespace RIAPP.DataService.Core.CodeGen
             sb.AppendLine();
             sb.AppendLine("{");
             var objProps = t.GetProperties();
-            foreach(var propInfo in objProps)
+            foreach (var propInfo in objProps)
             {
                 sb.AppendFormat("\t{0}{1}:{2};", propInfo.CanWrite ? "" : "readonly ", propInfo.Name, RegisterType(propInfo.PropertyType));
                 sb.AppendLine();
@@ -209,9 +219,14 @@ namespace RIAPP.DataService.Core.CodeGen
         {
             var name = typeName;
             if (string.IsNullOrEmpty(typeName))
+            {
                 name = RegisterType(t);
+            }
+
             if (_tsTypes.ContainsKey(name))
+            {
                 return _tsTypes[name];
+            }
 
             var commentAttr =
                 t.GetCustomAttributes(typeof(CommentAttribute), false).OfType<CommentAttribute>().FirstOrDefault();
@@ -229,7 +244,10 @@ namespace RIAPP.DataService.Core.CodeGen
             Array.ForEach(enumVals, val =>
             {
                 if (!isFirst)
+                {
                     sb.AppendLine(",");
+                }
+
                 var valname = Enum.GetName(t, val);
                 sb.AppendFormat("\t{0}={1}", valname, val);
                 isFirst = false;

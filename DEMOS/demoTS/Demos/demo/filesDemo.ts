@@ -242,11 +242,11 @@ export class FolderBrowserVM extends RIAPP.ViewModel<DemoApplication> {
 }
 
 export class DemoApplication extends RIAPP.Application {
-    _errorVM: COMMON.ErrorViewModel;
-    _fbrowserVM1: FolderBrowserVM;
-    _fbrowserVM2: FolderBrowserVM;
-    _selectedPath: string;
-    _dbContext: FOLDERBROWSER_SVC.DbContext;
+    private _errorVM: COMMON.ErrorViewModel;
+    private _fbrowserVM1: FolderBrowserVM;
+    private _fbrowserVM2: FolderBrowserVM;
+    private _selectedPath: string;
+    private _dbContext: FOLDERBROWSER_SVC.DbContext;
 
     constructor(options: IMainOptions) {
         super(options);

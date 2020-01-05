@@ -35,17 +35,25 @@ namespace RIAPP.DataService.Core.Query
         {
             var result = entities;
             if (sort == null || sort.sortItems == null || sort.sortItems.Count == 0)
+            {
                 return result;
+            }
 
             if (sort == null || sort.sortItems == null || sort.sortItems.Count == 0)
+            {
                 return result;
+            }
+
             var first = true;
             var sb = new StringBuilder();
             foreach (var si in sort.sortItems)
             {
                 var fldName = si.fieldName;
                 if (!first)
+                {
                     sb.Append(",");
+                }
+
                 sb.Append(fldName);
                 if (si.sortOrder == SortOrder.DESC)
                 {
@@ -65,7 +73,10 @@ namespace RIAPP.DataService.Core.Query
             var dataHelper = dataService.ServiceContainer.DataHelper;
             var result = entities;
             if (filter == null || filter.filterItems == null || filter.filterItems.Count == 0)
+            {
                 return result;
+            }
+
             int cnt = 0;
             var sb = new StringBuilder();
             var filterParams = new LinkedList<object>();
@@ -73,7 +84,10 @@ namespace RIAPP.DataService.Core.Query
             {
                 var field = dbInfo.fieldInfos.Where(finf => finf.fieldName == filterItem.fieldName).FirstOrDefault();
                 if (field == null)
+                {
                     throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_FIELDNAME_INVALID, dbInfo.dbSetName, filterItem.fieldName));
+                }
+
                 if (cnt > 0)
                 {
                     sb.Append(" and ");
@@ -148,11 +162,17 @@ namespace RIAPP.DataService.Core.Query
         {
             var result = entities;
             if (!dbInfo.enablePaging || pageIndex < 0)
+            {
                 return result;
+            }
+
             if (pageSize < 0)
+            {
                 pageSize = 0;
-            var skipRows = pageIndex*pageSize;
-            result = Queryable.Take(Queryable.Skip(entities, skipRows), pageSize*pageCount);
+            }
+
+            var skipRows = pageIndex * pageSize;
+            result = Queryable.Take(Queryable.Skip(entities, skipRows), pageSize * pageCount);
             return result;
         }
 
@@ -188,7 +208,8 @@ namespace RIAPP.DataService.Core.Query
 
             if (countQuery != null && totalCountFunc != null)
             {
-                dataCount = () => totalCountFunc(countQuery).ContinueWith(t => {
+                dataCount = () => totalCountFunc(countQuery).ContinueWith(t =>
+                {
                     return (int?)t.Result;
                 }, TaskContinuationOptions.ExecuteSynchronously);
             }
@@ -199,7 +220,7 @@ namespace RIAPP.DataService.Core.Query
         public static IQueryable<T> PerformQuery<T>(this IDataServiceComponent dataService, IQueryable<T> entities, ref int? totalCount)
             where T : class
         {
-            IQueryable <T> result = PerformQuery(dataService, entities, out var countQuery);
+            IQueryable<T> result = PerformQuery(dataService, entities, out var countQuery);
 
             if (countQuery != null && !totalCount.HasValue)
             {
@@ -233,7 +254,7 @@ namespace RIAPP.DataService.Core.Query
                     rowInfo.GetDbSetInfo().GetEntityType().Name, string.Join(";", pkValues)));
             }
 
-           return entities.Where(predicate, pkValues);
+            return entities.Where(predicate, pkValues);
         }
     }
 }

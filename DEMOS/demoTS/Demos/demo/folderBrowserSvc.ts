@@ -1,10 +1,11 @@
 ﻿/*
-	Generated from: /FolderBrowserService/code?lang=ts on 2018-11-06 at 16:12
+	Generated from: /FolderBrowserService/code?lang=ts on 2020-01-05 at 13:44
 	Don't make manual changes here, they will be lost when this interface will be regenerated!
 */
 
 import * as RIAPP from "jriapp_shared";
 import * as dbMOD from "jriapp_db";
+import { ExProps } from "./ExProps";
 
 export interface ISvcMethods {
 }
@@ -23,7 +24,7 @@ export type TFileSystemObjectAspect = dbMOD.EntityAspect<FileSystemObject, IFile
 export interface FileSystemObject extends IFileSystemObject, dbMOD.IEntityItem {
     readonly _aspect: TFileSystemObjectAspect;
     readonly fullPath: string;
-    readonly ExtraProps: any;
+    readonly ExtraProps: ExProps;
     Parent: FileSystemObject;
     readonly Children: FileSystemObject[];
 }
@@ -44,7 +45,7 @@ class FileSystemObjectEntity extends RIAPP.CollectionItem<TFileSystemObjectAspec
     get HasSubDirs(): boolean { return this._aspect._getFieldVal('HasSubDirs'); }
     get IsFolder(): boolean { return this._aspect._getFieldVal('IsFolder'); }
     get fullPath(): string { return this._aspect._getCalcFieldVal('fullPath'); }
-    get ExtraProps(): any { return this._aspect._getCalcFieldVal('ExtraProps'); }
+    get ExtraProps(): ExProps { return this._aspect._getCalcFieldVal('ExtraProps'); }
     get Parent(): FileSystemObject { return this._aspect._getNavFieldVal('Parent'); }
     set Parent(v: FileSystemObject) { this._aspect._setNavFieldVal('Parent', v); }
     get Children(): FileSystemObject[] { return this._aspect._getNavFieldVal('Children'); }
@@ -100,7 +101,7 @@ export class FileSystemObjectDb extends dbMOD.DbSet<FileSystemObject, IFileSyste
         return query;
     }
     definefullPathField(getFunc: (item: FileSystemObject) => string) { this._defineCalculatedField('fullPath', getFunc); }
-    defineExtraPropsField(getFunc: (item: FileSystemObject) => any) { this._defineCalculatedField('ExtraProps', getFunc); }
+    defineExtraPropsField(getFunc: (item: FileSystemObject) => ExProps) { this._defineCalculatedField('ExtraProps', getFunc); }
 }
 
 export interface IAssocs {

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace RIAPP.DataService.Core
 {
     public class ServiceOperationsHelper<TService> : IServiceOperationsHelper<TService>, IDisposable
-        where TService: BaseDomainService
+        where TService : BaseDomainService
     {
         /// <summary>
         ///    Already created instances of DataManagers indexed by modelType
@@ -28,10 +28,10 @@ namespace RIAPP.DataService.Core
 
         public IValidationHelper ValidationHelper => _validationHelper;
 
-        public ServiceOperationsHelper(TService domainService, 
-            IDataHelper<TService> dataHelper, 
-            IValidationHelper<TService> validationHelper, 
-            IDataManagerContainer<TService> dataManagerContainer, 
+        public ServiceOperationsHelper(TService domainService,
+            IDataHelper<TService> dataHelper,
+            IValidationHelper<TService> validationHelper,
+            IDataManagerContainer<TService> dataManagerContainer,
             IValidatorContainer<TService> validatorsContainer)
         {
             _domainService = domainService ?? throw new ArgumentNullException(nameof(domainService));
@@ -42,7 +42,7 @@ namespace RIAPP.DataService.Core
             _dataManagers = new ConcurrentDictionary<Type, object>();
         }
 
-         public void Dispose()
+        public void Dispose()
         {
             _domainService = null;
             IDisposable[] dataManagers = _dataManagers.Values.Where(m => m is IDisposable).Select(m => (IDisposable)m).ToArray();
@@ -53,9 +53,15 @@ namespace RIAPP.DataService.Core
         public object GetMethodOwner(MethodInfoData methodData)
         {
             if (!methodData.IsInDataManager)
+            {
                 return _domainService;
+            }
+
             if (methodData.EntityType == null)
+            {
                 return _domainService;
+            }
+
             RunTimeMetadata metadata = _domainService.GetMetadata();
             object managerInstance = _dataManagers.GetOrAdd(methodData.EntityType,
                 t => { return _dataManagerContainer.GetDataManager(t); });
@@ -88,10 +94,14 @@ namespace RIAPP.DataService.Core
                 string fullName = path + val.fieldName;
                 Field fieldInfo = _dataHelper.GetFieldInfo(dbSetInfo, fullName);
                 if (!fieldInfo.GetIsIncludeInResult())
+                {
                     return;
+                }
                 //Server Side calculated fields are never set on entities from updates
                 if (fieldInfo.fieldType == FieldType.ServerCalculated)
+                {
                     return;
+                }
 
                 if (fieldInfo.fieldType == FieldType.Object && val.nested != null)
                 {
@@ -110,7 +120,9 @@ namespace RIAPP.DataService.Core
             if (isOriginal)
             {
                 if ((val.flags & ValueFlags.Setted) == ValueFlags.Setted)
+                {
                     _dataHelper.SetFieldValue(entity, fullName, fieldInfo, val.orig);
+                }
             }
             else
             {
@@ -120,7 +132,9 @@ namespace RIAPP.DataService.Core
                         {
                             // for delete fill only original values
                             if ((val.flags & ValueFlags.Setted) == ValueFlags.Setted)
+                            {
                                 _dataHelper.SetFieldValue(entity, fullName, fieldInfo, val.orig);
+                            }
                         }
                         break;
                     case ChangeType.Added:
@@ -148,8 +162,10 @@ namespace RIAPP.DataService.Core
                             if ((val.flags & ValueFlags.Changed) == ValueFlags.Changed)
                             {
                                 if (fieldInfo.isReadOnly)
+                                {
                                     throw new ValidationException(string.Format(ErrorStrings.ERR_PROPERTY_IS_READONLY,
                                         entity.GetType().Name, fieldInfo.fieldName));
+                                }
 
                                 if (!fieldInfo.isNullable && val.val == null)
                                 {
@@ -202,7 +218,10 @@ namespace RIAPP.DataService.Core
                 string fullName = path + val.fieldName;
                 Field fieldInfo = _dataHelper.GetFieldInfo(dbSetInfo, fullName);
                 if (!fieldInfo.GetIsIncludeInResult())
+                {
                     return;
+                }
+
                 if (fieldInfo.fieldType == FieldType.Object && val.nested != null)
                 {
                     UpdateValuesFromEntity(entity, fullName + '.', dbSetInfo, val.nested.ToArray());
@@ -223,7 +242,10 @@ namespace RIAPP.DataService.Core
                 string fullName = path + val.fieldName;
                 Field fieldInfo = _dataHelper.GetFieldInfo(dbSetInfo, fullName);
                 if (!fieldInfo.GetIsIncludeInResult())
+                {
                     return;
+                }
+
                 if (fieldInfo.fieldType == FieldType.Object && val.nested != null)
                 {
                     CheckValuesChanges(rowInfo, fullName + '.', val.nested.ToArray());
@@ -256,7 +278,10 @@ namespace RIAPP.DataService.Core
             string oldVal = null;
             newVal = _dataHelper.SerializeField(changeState.Entity, fullName, fieldInfo);
             if (changeState.OriginalEntity != null)
+            {
                 oldVal = _dataHelper.SerializeField(changeState.OriginalEntity, fullName, fieldInfo);
+            }
+
             return newVal != oldVal;
         }
 
@@ -300,7 +325,9 @@ namespace RIAPP.DataService.Core
             }
             var parents = rowInfo.GetChangeState().ParentRows;
             if (parents.Length == 0)
+            {
                 return null;
+            }
 
             return
                 parents.Where(p => p.ParentRow.GetDbSetInfo().GetEntityType() == entityType)
@@ -319,12 +346,18 @@ namespace RIAPP.DataService.Core
         {
             DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
             if (rowInfo.changeType != ChangeType.Added)
+            {
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
                     dbSetInfo.GetEntityType().Name, rowInfo.changeType));
+            }
+
             MethodInfoData methodData = metadata.GetOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Insert);
             if (methodData == null)
+            {
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_INSERT_NOT_IMPLEMENTED,
                     dbSetInfo.GetEntityType().Name, GetType().Name));
+            }
+
             var dbEntity = Activator.CreateInstance(dbSetInfo.GetEntityType());
             UpdateEntityFromRowInfo(dbEntity, rowInfo, false);
             rowInfo.GetChangeState().Entity = dbEntity;
@@ -336,12 +369,18 @@ namespace RIAPP.DataService.Core
         {
             DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
             if (rowInfo.changeType != ChangeType.Updated)
+            {
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
                     dbSetInfo.GetEntityType().Name, rowInfo.changeType));
+            }
+
             MethodInfoData methodData = metadata.GetOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Update);
             if (methodData == null)
+            {
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_UPDATE_NOT_IMPLEMENTED,
                     dbSetInfo.GetEntityType().Name, GetType().Name));
+            }
+
             var dbEntity = Activator.CreateInstance(dbSetInfo.GetEntityType());
             UpdateEntityFromRowInfo(dbEntity, rowInfo, false);
             var original = GetOriginalEntity(dbEntity, rowInfo);
@@ -356,13 +395,17 @@ namespace RIAPP.DataService.Core
         {
             DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
             if (rowInfo.changeType != ChangeType.Deleted)
+            {
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
                     dbSetInfo.GetEntityType().Name, rowInfo.changeType));
+            }
 
             MethodInfoData methodData = metadata.GetOperationMethodInfo(dbSetInfo.dbSetName, MethodType.Delete);
             if (methodData == null)
+            {
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_DELETE_NOT_IMPLEMENTED,
                     dbSetInfo.GetEntityType().Name, GetType().Name));
+            }
 
             var dbEntity = Activator.CreateInstance(dbSetInfo.GetEntityType());
             UpdateEntityFromRowInfo(dbEntity, rowInfo, true);
@@ -397,9 +440,14 @@ namespace RIAPP.DataService.Core
                 _dataHelper.ForEachFieldInfo("", fieldInfo, (fullName, f) =>
                 {
                     if (!f.GetIsIncludeInResult())
+                    {
                         return;
+                    }
+
                     if (f.fieldType == FieldType.Object || f.fieldType == FieldType.ServerCalculated)
+                    {
                         return;
+                    }
 
                     string value = _dataHelper.SerializeField(rowInfo.GetChangeState().Entity, fullName, f);
 

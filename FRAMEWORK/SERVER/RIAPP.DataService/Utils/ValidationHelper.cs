@@ -21,7 +21,9 @@ namespace RIAPP.DataService.Utils
         public void CheckString(Field fieldInfo, string val)
         {
             if (val == null)
+            {
                 return;
+            }
 
             if (fieldInfo.maxLength > 0)
             {
@@ -48,7 +50,10 @@ namespace RIAPP.DataService.Utils
         public void CheckRange(Field fieldInfo, string val)
         {
             if (val == null)
+            {
                 return;
+            }
+
             if (!string.IsNullOrEmpty(fieldInfo.range))
             {
                 var rangeParts = fieldInfo.range.Split(',');
@@ -57,44 +62,52 @@ namespace RIAPP.DataService.Utils
                     case DataType.Integer:
                     case DataType.Decimal:
                     case DataType.Float:
-                    {
-                        var dblval = double.Parse(val, CultureInfo.InvariantCulture);
-                        if (!string.IsNullOrEmpty(rangeParts[0]))
                         {
-                            var minDbl = double.Parse(rangeParts[0], CultureInfo.InvariantCulture);
-                            if (dblval < minDbl)
-                                throw new ValidationException(string.Format(ErrorStrings.ERR_VAL_RANGE_NOT_VALID,
-                                    fieldInfo.fieldName, fieldInfo.range));
+                            var dblval = double.Parse(val, CultureInfo.InvariantCulture);
+                            if (!string.IsNullOrEmpty(rangeParts[0]))
+                            {
+                                var minDbl = double.Parse(rangeParts[0], CultureInfo.InvariantCulture);
+                                if (dblval < minDbl)
+                                {
+                                    throw new ValidationException(string.Format(ErrorStrings.ERR_VAL_RANGE_NOT_VALID,
+                                        fieldInfo.fieldName, fieldInfo.range));
+                                }
+                            }
+                            if (!string.IsNullOrEmpty(rangeParts[1]))
+                            {
+                                var maxDbl = double.Parse(rangeParts[1], CultureInfo.InvariantCulture);
+                                if (dblval > maxDbl)
+                                {
+                                    throw new ValidationException(string.Format(ErrorStrings.ERR_VAL_RANGE_NOT_VALID,
+                                        fieldInfo.fieldName, fieldInfo.range));
+                                }
+                            }
                         }
-                        if (!string.IsNullOrEmpty(rangeParts[1]))
-                        {
-                            var maxDbl = double.Parse(rangeParts[1], CultureInfo.InvariantCulture);
-                            if (dblval > maxDbl)
-                                throw new ValidationException(string.Format(ErrorStrings.ERR_VAL_RANGE_NOT_VALID,
-                                    fieldInfo.fieldName, fieldInfo.range));
-                        }
-                    }
                         break;
                     case DataType.Date:
                     case DataType.DateTime:
-                    {
-                        var dtval = (DateTime)this.valueConverter.DeserializeValue(typeof(DateTime), DataType.DateTime,
-                                    fieldInfo.dateConversion, val);
-                        if (!string.IsNullOrEmpty(rangeParts[0]))
                         {
-                            var minDt = DateTime.ParseExact(rangeParts[0], "yyyy-MM-dd", CultureInfo.InvariantCulture);
-                            if (dtval < minDt)
-                                throw new ValidationException(string.Format(ErrorStrings.ERR_VAL_RANGE_NOT_VALID,
-                                    fieldInfo.fieldName, fieldInfo.range));
+                            var dtval = (DateTime)this.valueConverter.DeserializeValue(typeof(DateTime), DataType.DateTime,
+                                        fieldInfo.dateConversion, val);
+                            if (!string.IsNullOrEmpty(rangeParts[0]))
+                            {
+                                var minDt = DateTime.ParseExact(rangeParts[0], "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                                if (dtval < minDt)
+                                {
+                                    throw new ValidationException(string.Format(ErrorStrings.ERR_VAL_RANGE_NOT_VALID,
+                                        fieldInfo.fieldName, fieldInfo.range));
+                                }
+                            }
+                            if (!string.IsNullOrEmpty(rangeParts[1]))
+                            {
+                                var maxDt = DateTime.ParseExact(rangeParts[1], "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                                if (dtval > maxDt)
+                                {
+                                    throw new ValidationException(string.Format(ErrorStrings.ERR_VAL_RANGE_NOT_VALID,
+                                        fieldInfo.fieldName, fieldInfo.range));
+                                }
+                            }
                         }
-                        if (!string.IsNullOrEmpty(rangeParts[1]))
-                        {
-                            var maxDt = DateTime.ParseExact(rangeParts[1], "yyyy-MM-dd", CultureInfo.InvariantCulture);
-                            if (dtval > maxDt)
-                                throw new ValidationException(string.Format(ErrorStrings.ERR_VAL_RANGE_NOT_VALID,
-                                    fieldInfo.fieldName, fieldInfo.range));
-                        }
-                    }
                         break;
                     default:
                         return;

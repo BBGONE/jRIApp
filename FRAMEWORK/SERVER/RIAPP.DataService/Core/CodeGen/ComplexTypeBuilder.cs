@@ -20,7 +20,9 @@ namespace RIAPP.DataService.Core.CodeGen
         private static string TrimEnd(string s)
         {
             if (!string.IsNullOrEmpty(s))
+            {
                 return s.TrimEnd('\r', '\n', '\t', ' ');
+            }
 
             return string.Empty;
         }
@@ -37,7 +39,7 @@ namespace RIAPP.DataService.Core.CodeGen
                 //to prevent names collision the type name is a three part name
                 typeName = string.Format("{0}_{1}{2}", dbSetInfo.dbSetName, fieldInfo.fieldName, level);
             }
-            string interfaceName= string.Format("I{0}", typeName);
+            string interfaceName = string.Format("I{0}", typeName);
             fieldInfo.SetTypeScriptDataType(typeName);
 
             var sbProperties = new StringBuilder();
@@ -112,7 +114,9 @@ namespace RIAPP.DataService.Core.CodeGen
 
             var templateName = "RootComplexProperty.txt";
             if (level > 0)
+            {
                 templateName = "ChildComplexProperty.txt";
+            }
 
             Dictionary<string, Func<string>> dic = new Dictionary<string, Func<string>>();
             dic.Add("PROPERTIES", () => TrimEnd(sbProperties.ToString()));
@@ -120,7 +124,7 @@ namespace RIAPP.DataService.Core.CodeGen
             dic.Add("FIELDS_DEF", () => sbFieldsDef.ToString());
             dic.Add("FIELDS_INIT", () => sbFieldsInit.ToString());
             dic.Add("INTERFACE_NAME", () => interfaceName);
-            dic.Add("INTERFACE_FIELDS", () =>  TrimEnd(sbInterfaceFields.ToString()));
+            dic.Add("INTERFACE_FIELDS", () => TrimEnd(sbInterfaceFields.ToString()));
 
             string complexType = new CodeGenTemplate(templateName).ProcessTemplate(dic);
 

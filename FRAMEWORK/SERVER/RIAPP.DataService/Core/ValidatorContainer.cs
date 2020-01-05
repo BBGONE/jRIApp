@@ -4,12 +4,12 @@ using System;
 namespace RIAPP.DataService.Core
 {
     public class ValidatorContainer<TService> : IValidatorContainer<TService>
-        where TService: BaseDomainService
+        where TService : BaseDomainService
     {
         private readonly IServiceContainer<TService> _serviceContainer;
         private readonly IValidatorRegister _validatorRegister;
 
-        public ValidatorContainer(IServiceContainer<TService> serviceContainer, 
+        public ValidatorContainer(IServiceContainer<TService> serviceContainer,
             IValidatorRegister validatorRegister)
         {
             _serviceContainer = serviceContainer ?? throw new ArgumentNullException(nameof(serviceContainer));
@@ -20,7 +20,10 @@ namespace RIAPP.DataService.Core
         {
             ServiceTypeDescriptor descriptor;
             if (_validatorRegister.TryGetDescriptor(modelType, out descriptor))
+            {
                 return (IValidator)_serviceContainer.GetService(descriptor.ServiceType);
+            }
+
             return null;
         }
 

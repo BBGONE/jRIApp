@@ -1,8 +1,6 @@
-﻿using System.Runtime.Serialization;
-
-namespace RIAPP.DataService.Core.Types
+﻿namespace RIAPP.DataService.Core.Types
 {
-    [DataContract]
+
     public class RowInfo
     {
         public RowInfo()
@@ -14,16 +12,16 @@ namespace RIAPP.DataService.Core.Types
             _changeState = null;
         }
 
-        [DataMember]
+
         public ValuesList values { get; set; }
 
-        [DataMember]
+
         public ChangeType changeType { get; set; }
 
         /// <summary>
         ///     Unique server row id in DbSet - primary key values concantenated by ;
         /// </summary>
-        [DataMember]
+
         public string serverKey { get; set; }
 
         /// <summary>
@@ -31,14 +29,14 @@ namespace RIAPP.DataService.Core.Types
         ///     client assigns unique row id to the added row, so after executing insert operation on server
         ///     the client could find the row in its rows store.
         /// </summary>
-        [DataMember]
+
         public string clientKey { get; set; }
 
-        [DataMember]
+
         public string error { get; set; }
 
 
-        [DataMember]
+
         public ValidationErrorInfo[] invalid { get; set; }
 
         internal DbSetInfo _dbSetInfo { get; set; }

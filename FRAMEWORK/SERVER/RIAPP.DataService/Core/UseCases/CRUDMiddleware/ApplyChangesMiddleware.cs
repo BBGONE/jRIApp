@@ -24,12 +24,16 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
             DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
 
             if (dbSetInfo.GetEntityType() == null)
+            {
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_DB_ENTITYTYPE_INVALID,
                     dbSetInfo.dbSetName));
+            }
 
             if (rowInfo.changeType == ChangeType.None)
+            {
                 throw new DomainServiceException(string.Format(ErrorStrings.ERR_REC_CHANGETYPE_INVALID,
                                 dbSetInfo.GetEntityType().Name, rowInfo.changeType));
+            }
         }
 
         private void Insert(CRUDContext<TService> ctx, RunTimeMetadata metadata, ChangeSetRequest changeSet, IChangeSetGraph graph, RowInfo rowInfo)

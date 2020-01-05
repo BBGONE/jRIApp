@@ -39,8 +39,8 @@ namespace RIAPP.DataService.Core
             get;
         }
 
-        BaseDomainService IDataServiceComponent.DataService 
-        { 
+        BaseDomainService IDataServiceComponent.DataService
+        {
             get
             {
                 return this;
@@ -60,13 +60,16 @@ namespace RIAPP.DataService.Core
         protected internal void _OnError(Exception ex)
         {
             if (ex is DummyException)
+            {
                 return;
+            }
+
             OnError(ex);
         }
 
         #region Overridable Methods
         protected abstract DesignTimeMetadata GetDesignTimeMetadata(bool isDraft);
-      
+
         /// <summary>
         ///     Can be used for tracking what is changed by CRUD methods
         /// </summary>
@@ -98,7 +101,9 @@ namespace RIAPP.DataService.Core
             var dbSetInfo = rowInfo.GetDbSetInfo();
 
             if (!dbSetInfo.GetIsTrackChanges())
+            {
                 return;
+            }
 
             try
             {
@@ -129,7 +134,7 @@ namespace RIAPP.DataService.Core
                 _OnError(ex);
             }
         }
-        
+
         #endregion
 
         #region DataService Data Operations
@@ -144,7 +149,7 @@ namespace RIAPP.DataService.Core
         /// <returns></returns>
         public async Task<QueryResponse> GetQueryData(string dbSetName, string queryName)
         {
-            QueryRequest getInfo = new QueryRequest {dbSetName = dbSetName, queryName = queryName};
+            QueryRequest getInfo = new QueryRequest { dbSetName = dbSetName, queryName = queryName };
             return await ServiceGetData(getInfo);
         }
 
@@ -160,7 +165,7 @@ namespace RIAPP.DataService.Core
                 ICodeGenProvider codeGen = codeGenfactory.GetCodeGen(this, args.lang);
                 return codeGen.GenerateScript(args.comment, args.isDraft);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 this._OnError(ex);
                 throw;
@@ -197,7 +202,7 @@ namespace RIAPP.DataService.Core
                 RunTimeMetadata metadata = this.GetMetadata();
                 MetadataResult result = new MetadataResult() { methods = metadata.MethodDescriptions };
                 result.associations.AddRange(metadata.Associations.Values);
-                result.dbSets.AddRange(metadata.DbSets.Values.OrderBy(d=>d.dbSetName));
+                result.dbSets.AddRange(metadata.DbSets.Values.OrderBy(d => d.dbSetName));
                 return result;
             }
             catch (Exception ex)
@@ -210,7 +215,7 @@ namespace RIAPP.DataService.Core
         public async Task<QueryResponse> ServiceGetData(QueryRequest message)
         {
             var factory = this.ServiceContainer.QueryOperationsUseCaseFactory;
-            IQueryOperationsUseCase uc  = factory.Create(this, (err) => _OnError(err));
+            IQueryOperationsUseCase uc = factory.Create(this, (err) => _OnError(err));
             var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<QueryResponse, QueryResponse>>();
 
             bool res = await uc.Handle(message, output);
@@ -273,7 +278,7 @@ namespace RIAPP.DataService.Core
 
         protected virtual void Dispose(bool isDisposing)
         {
-          
+
         }
 
         void IDisposable.Dispose()

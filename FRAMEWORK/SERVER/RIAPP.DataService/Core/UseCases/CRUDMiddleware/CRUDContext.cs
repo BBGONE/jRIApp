@@ -16,7 +16,7 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
         private ExceptionDispatchInfo _ExceptionInfo;
 
         public CRUDContext(
-            ChangeSetRequest request, 
+            ChangeSetRequest request,
             ChangeSetResponse response,
             TService service,
             IServiceContainer<TService> serviceContainer)
@@ -31,12 +31,12 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
 
         public static RequestContext CreateRequestContext(TService service, ChangeSetRequest changeSet, RowInfo rowInfo = null)
         {
-            DbSet dbSet = rowInfo == null? null : changeSet.dbSets.Where(d => d.dbSetName == rowInfo.GetDbSetInfo().dbSetName).Single();
+            DbSet dbSet = rowInfo == null ? null : changeSet.dbSets.Where(d => d.dbSetName == rowInfo.GetDbSetInfo().dbSetName).Single();
             return new RequestContext(service, changeSet: changeSet, dbSet: dbSet, rowInfo: rowInfo,
                 operation: ServiceOperationType.SaveChanges);
         }
 
-       
+
         // Gets a key/value collection that can be used to share data between middleware.
         public IDictionary<string, object> Properties { get; }
 

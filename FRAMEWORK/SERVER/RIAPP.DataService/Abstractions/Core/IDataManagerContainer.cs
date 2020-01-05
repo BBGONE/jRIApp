@@ -15,8 +15,8 @@ namespace RIAPP.DataService.Core
     }
 
     public interface IDataManagerContainer<TService> : IDataManagerContainer
-        where TService: BaseDomainService
+        where TService : BaseDomainService
     {
-   
+
     }
 }

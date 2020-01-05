@@ -1,8 +1,6 @@
-﻿using System.Runtime.Serialization;
-
-namespace RIAPP.DataService.Core.Types
+﻿namespace RIAPP.DataService.Core.Types
 {
-    [DataContract]
+
     public class Row
     {
         public Row()
@@ -21,7 +19,7 @@ namespace RIAPP.DataService.Core.Types
         ///     array of row values, each value in its string form
         ///     but for object fields the value is an array of values (that's why the property uses object[] type)
         /// </summary>
-        [DataMember]
+
         public object[] v { get; set; }
 
 
@@ -29,7 +27,7 @@ namespace RIAPP.DataService.Core.Types
         ///     Unique key in a DbSet - primary key values concantenated by ;
         ///     used on the client to uniquely identify Entities
         /// </summary>
-        [DataMember]
+
         public string k { get; set; }
     }
 }

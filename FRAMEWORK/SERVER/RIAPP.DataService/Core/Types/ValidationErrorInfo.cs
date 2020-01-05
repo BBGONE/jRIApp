@@ -1,8 +1,6 @@
-﻿using System.Runtime.Serialization;
-
-namespace RIAPP.DataService.Core.Types
+﻿namespace RIAPP.DataService.Core.Types
 {
-    [DataContract]
+
     public class ValidationErrorInfo
     {
         public ValidationErrorInfo()
@@ -20,10 +18,10 @@ namespace RIAPP.DataService.Core.Types
             this.message = message;
         }
 
-        [DataMember]
+
         public string fieldName { get; set; }
 
-        [DataMember]
+
         public string message { get; set; }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using RIAPP.DataService.Core.Exceptions;
 using RIAPP.DataService.Core.Types;
-using RIAPP.DataService.Utils;
 using RIAPP.DataService.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -39,10 +38,10 @@ namespace RIAPP.DataService.Core.Metadata
                     from dbset in DbSets
                     select new XElement(NS_DATA + "DbSetInfo",
                         new XAttribute("dbSetName", dbset.dbSetName),
-                        new[] {new XAttribute("isTrackChanges", dbset.GetIsTrackChanges())},
+                        new[] { new XAttribute("isTrackChanges", dbset.GetIsTrackChanges()) },
                         new XAttribute("enablePaging", dbset.enablePaging),
-                        dbset.enablePaging ? new[] {new XAttribute("pageSize", dbset.pageSize)} : new XAttribute[0],
-                        new XAttribute("EntityType", string.Format("{{x:Type dal:{0}}}", dbset.GetEntityType().Name)),
+                        dbset.enablePaging ? new[] { new XAttribute("pageSize", dbset.pageSize) } : new XAttribute[0],
+                        new XAttribute("EntityType", $"{{x:Type dal:{dbset.GetEntityType().Name}}}"),
                         new XElement(NS_DATA + "DbSetInfo.fieldInfos", _FieldsToXElements(dbset.fieldInfos)
                             ))),
                 new XElement(NS_DATA + "Metadata.Associations",
@@ -51,19 +50,19 @@ namespace RIAPP.DataService.Core.Metadata
                         new XAttribute("name", assoc.name),
                         string.IsNullOrWhiteSpace(assoc.parentDbSetName)
                             ? new XAttribute[0]
-                            : new[] {new XAttribute("parentDbSetName", assoc.parentDbSetName)},
+                            : new[] { new XAttribute("parentDbSetName", assoc.parentDbSetName) },
                         string.IsNullOrWhiteSpace(assoc.childDbSetName)
                             ? new XAttribute[0]
-                            : new[] {new XAttribute("childDbSetName", assoc.childDbSetName)},
+                            : new[] { new XAttribute("childDbSetName", assoc.childDbSetName) },
                         string.IsNullOrWhiteSpace(assoc.childToParentName)
                             ? new XAttribute[0]
-                            : new[] {new XAttribute("childToParentName", assoc.childToParentName)},
+                            : new[] { new XAttribute("childToParentName", assoc.childToParentName) },
                         string.IsNullOrWhiteSpace(assoc.parentToChildrenName)
                             ? new XAttribute[0]
-                            : new[] {new XAttribute("parentToChildrenName", assoc.parentToChildrenName)},
+                            : new[] { new XAttribute("parentToChildrenName", assoc.parentToChildrenName) },
                         assoc.onDeleteAction == DeleteAction.NoAction
                             ? new XAttribute[0]
-                            : new[] {new XAttribute("onDeleteAction", assoc.onDeleteAction)},
+                            : new[] { new XAttribute("onDeleteAction", assoc.onDeleteAction) },
                         new XElement(NS_DATA + "Association.fieldRels",
                             from fldRel in assoc.fieldRels
                             select new XElement(NS_DATA + "FieldRel",
@@ -93,16 +92,25 @@ namespace RIAPP.DataService.Core.Metadata
 
                     var dbSetInfo = new DbSetInfo
                     {
-                        dbSetName = (string) xdbSet.Attribute("dbSetName")
+                        dbSetName = (string)xdbSet.Attribute("dbSetName")
                     };
                     dbSetInfo.SetEntityType(_entityType);
 
                     if (xdbSet.Attributes("enablePaging").Any())
+                    {
                         dbSetInfo.enablePaging = (bool)xdbSet.Attribute("enablePaging");
+                    }
+
                     if (xdbSet.Attributes("pageSize").Any())
+                    {
                         dbSetInfo.pageSize = (int)xdbSet.Attribute("pageSize");
+                    }
+
                     if (xdbSet.Attributes("isTrackChanges").Any())
+                    {
                         dbSetInfo.SetIsTrackChanges((bool)xdbSet.Attribute("isTrackChanges"));
+                    }
+
                     metadata.DbSets.Add(dbSetInfo);
 
                     var xFields = xdbSet.Element(NS_DATA + "DbSetInfo.fieldInfos");
@@ -118,19 +126,34 @@ namespace RIAPP.DataService.Core.Metadata
                 {
                     var assoc = new Association
                     {
-                        name = (string) xAssoc.Attribute("name")
+                        name = (string)xAssoc.Attribute("name")
                     };
                     if (xAssoc.Attributes("parentDbSetName").Any())
-                        assoc.parentDbSetName = (string) xAssoc.Attribute("parentDbSetName");
+                    {
+                        assoc.parentDbSetName = (string)xAssoc.Attribute("parentDbSetName");
+                    }
+
                     if (xAssoc.Attributes("childDbSetName").Any())
-                        assoc.childDbSetName = (string) xAssoc.Attribute("childDbSetName");
+                    {
+                        assoc.childDbSetName = (string)xAssoc.Attribute("childDbSetName");
+                    }
+
                     if (xAssoc.Attributes("childToParentName").Any())
-                        assoc.childToParentName = (string) xAssoc.Attribute("childToParentName");
+                    {
+                        assoc.childToParentName = (string)xAssoc.Attribute("childToParentName");
+                    }
+
                     if (xAssoc.Attributes("parentToChildrenName").Any())
-                        assoc.parentToChildrenName = (string) xAssoc.Attribute("parentToChildrenName");
+                    {
+                        assoc.parentToChildrenName = (string)xAssoc.Attribute("parentToChildrenName");
+                    }
+
                     if (xAssoc.Attributes("onDeleteAction").Any())
+                    {
                         assoc.onDeleteAction =
-                            (DeleteAction) Enum.Parse(typeof(DeleteAction), xAssoc.Attribute("onDeleteAction").Value);
+                            (DeleteAction)Enum.Parse(typeof(DeleteAction), xAssoc.Attribute("onDeleteAction").Value);
+                    }
+
                     var xFieldRels = xAssoc.Element(NS_DATA + "Association.fieldRels");
                     if (xFieldRels != null)
                     {
@@ -138,8 +161,8 @@ namespace RIAPP.DataService.Core.Metadata
                         {
                             var fldRel = new FieldRel
                             {
-                                parentField = (string) xFieldRel.Attribute("parentField"),
-                                childField = (string) xFieldRel.Attribute("childField")
+                                parentField = (string)xFieldRel.Attribute("parentField"),
+                                childField = (string)xFieldRel.Attribute("childField")
                             };
                             assoc.fieldRels.Add(fldRel);
                         }
@@ -206,7 +229,7 @@ namespace RIAPP.DataService.Core.Metadata
 
         public static string ClassTypeToXML(Type classType)
         {
-            return ClassTypesToXML(new[] {classType});
+            return ClassTypesToXML(new[] { classType });
         }
 
         #region Helper methods
@@ -216,7 +239,9 @@ namespace RIAPP.DataService.Core.Metadata
         private static IEnumerable<XElement> _PropsToXElements(PropertyInfo[] props, int level)
         {
             if (level > MAX_DEPTH)
+            {
                 return Enumerable.Empty<XElement>();
+            }
 
             DataType toDataType(Type propType)
             {
@@ -240,66 +265,69 @@ namespace RIAPP.DataService.Core.Metadata
             };
 
             return from prop in props
-                select new XElement(NS_DATA + "Field",
-                    new XAttribute("fieldName", prop.Name),
-                    new XAttribute("dataType", toDataType(prop.PropertyType)),
-                    prop.PropertyType.IsNullableType() || prop.PropertyType == typeof(string)
-                        ? new[] {new XAttribute("isNullable", true)}
-                        : new XAttribute[0],
-                    prop.SetMethod == null ? new[] {new XAttribute("isReadOnly", true)} : new XAttribute[0],
-                    isComplexType(prop.PropertyType)
-                        ? new[] {new XAttribute("fieldType", FieldType.Object)}
-                        : new XAttribute[0],
-                    isComplexType(prop.PropertyType) && level < MAX_DEPTH
-                        ? new[]
-                        {
+                   select new XElement(NS_DATA + "Field",
+                       new XAttribute("fieldName", prop.Name),
+                       new XAttribute("dataType", toDataType(prop.PropertyType)),
+                       prop.PropertyType.IsNullableType() || prop.PropertyType == typeof(string)
+                           ? new[] { new XAttribute("isNullable", true) }
+                           : new XAttribute[0],
+                       prop.SetMethod == null ? new[] { new XAttribute("isReadOnly", true) } : new XAttribute[0],
+                       isComplexType(prop.PropertyType)
+                           ? new[] { new XAttribute("fieldType", FieldType.Object) }
+                           : new XAttribute[0],
+                       isComplexType(prop.PropertyType) && level < MAX_DEPTH
+                           ? new[]
+                           {
                             new XElement(NS_DATA + "Field.nested",
                                 _PropsToXElements(prop.PropertyType.GetProperties(), level + 1))
-                        }
-                        : new XElement[0]
-                    );
+                           }
+                           : new XElement[0]
+                       );
         }
 
         private static IEnumerable<XElement> _FieldsToXElements(FieldsList fields)
         {
             return from fld in fields
-                select new XElement(NS_DATA + "Field",
-                    new XAttribute("fieldName", fld.fieldName),
-                    fld.dataType != DataType.None ? new XAttribute("dataType", fld.dataType) : null,
-                    fld.isPrimaryKey > 0 ? new[] {new XAttribute("isPrimaryKey", fld.isPrimaryKey)} : new XAttribute[0],
-                    fld.dataType == DataType.String && fld.maxLength > -1
-                        ? new[] {new XAttribute("maxLength", fld.maxLength)}
-                        : new XAttribute[0],
-                    !fld.isNullable ? new[] {new XAttribute("isNullable", fld.isNullable)} : new XAttribute[0],
-                    fld.isAutoGenerated
-                        ? new[] {new XAttribute("isAutoGenerated", fld.isAutoGenerated)}
-                        : new XAttribute[0],
-                    fld.allowClientDefault
-                        ? new[] {new XAttribute("allowClientDefault", fld.allowClientDefault)}
-                        : new XAttribute[0],
-                    !fld.isNeedOriginal
-                        ? new[] {new XAttribute("isNeedOriginal", fld.isNeedOriginal)}
-                        : new XAttribute[0],
-                    fld.isReadOnly ? new[] {new XAttribute("isReadOnly", fld.isReadOnly)} : new XAttribute[0],
-                    fld.fieldType != FieldType.None
-                        ? new[] {new XAttribute("fieldType", fld.fieldType)}
-                        : new XAttribute[0],
-                    fld.dateConversion != DateConversion.None
-                        ? new[] {new XAttribute("dateConversion", fld.dateConversion)}
-                        : new XAttribute[0],
-                    !string.IsNullOrWhiteSpace(fld.range)
-                        ? new[] {new XAttribute("range", fld.range)}
-                        : new XAttribute[0],
-                    !string.IsNullOrWhiteSpace(fld.regex)
-                        ? new[] {new XAttribute("regex", fld.regex)}
-                        : new XAttribute[0],
-                    !string.IsNullOrWhiteSpace(fld.dependentOn)
-                        ? new[] {new XAttribute("dependentOn", fld.dependentOn)}
-                        : new XAttribute[0],
-                    !fld.IsHasNestedFields()
-                        ? new XElement[0]
-                        : new[] {new XElement(NS_DATA + "Field.nested", _FieldsToXElements(fld.nested))}
-                    );
+                   select new XElement(NS_DATA + "Field",
+                       new XAttribute("fieldName", fld.fieldName),
+                       fld.dataType != DataType.None ? new XAttribute("dataType", fld.dataType) : null,
+                       fld.isPrimaryKey > 0 ? new[] { new XAttribute("isPrimaryKey", fld.isPrimaryKey) } : new XAttribute[0],
+                       fld.dataType == DataType.String && fld.maxLength > -1
+                           ? new[] { new XAttribute("maxLength", fld.maxLength) }
+                           : new XAttribute[0],
+                       !fld.isNullable ? new[] { new XAttribute("isNullable", fld.isNullable) } : new XAttribute[0],
+                       fld.isAutoGenerated
+                           ? new[] { new XAttribute("isAutoGenerated", fld.isAutoGenerated) }
+                           : new XAttribute[0],
+                       fld.allowClientDefault
+                           ? new[] { new XAttribute("allowClientDefault", fld.allowClientDefault) }
+                           : new XAttribute[0],
+                       !fld.isNeedOriginal
+                           ? new[] { new XAttribute("isNeedOriginal", fld.isNeedOriginal) }
+                           : new XAttribute[0],
+                       fld.isReadOnly ? new[] { new XAttribute("isReadOnly", fld.isReadOnly) } : new XAttribute[0],
+                       fld.fieldType != FieldType.None
+                           ? new[] { new XAttribute("fieldType", fld.fieldType) }
+                           : new XAttribute[0],
+                       fld.dateConversion != DateConversion.None
+                           ? new[] { new XAttribute("dateConversion", fld.dateConversion) }
+                           : new XAttribute[0],
+                       !string.IsNullOrWhiteSpace(fld.range)
+                           ? new[] { new XAttribute("range", fld.range) }
+                           : new XAttribute[0],
+                       !string.IsNullOrWhiteSpace(fld.regex)
+                           ? new[] { new XAttribute("regex", fld.regex) }
+                           : new XAttribute[0],
+                       !string.IsNullOrWhiteSpace(fld.dependentOn)
+                           ? new[] { new XAttribute("dependentOn", fld.dependentOn) }
+                           : new XAttribute[0],
+                       !string.IsNullOrWhiteSpace(fld.GetDataTypeName())
+                           ? new[] { new XAttribute("dataTypeName", fld.GetDataTypeName()) }
+                           : new XAttribute[0],
+                       !fld.IsHasNestedFields()
+                           ? new XElement[0]
+                           : new[] { new XElement(NS_DATA + "Field.nested", _FieldsToXElements(fld.nested)) }
+                       );
         }
 
         private static FieldsList _XElementsToFieldList(IEnumerable<XElement> xFields)
@@ -310,61 +338,116 @@ namespace RIAPP.DataService.Core.Metadata
             {
                 var field = new Field
                 {
-                    fieldName = (string) xField.Attribute("fieldName")
+                    fieldName = (string)xField.Attribute("fieldName")
                 };
                 if (xField.Attributes("isPrimaryKey").Any())
-                    field.isPrimaryKey = (short) xField.Attribute("isPrimaryKey");
+                {
+                    field.isPrimaryKey = (short)xField.Attribute("isPrimaryKey");
+                }
+
                 if (xField.Attributes("dataType").Any())
-                    field.dataType = (DataType) Enum.Parse(typeof(DataType), xField.Attribute("dataType").Value);
+                {
+                    field.dataType = (DataType)Enum.Parse(typeof(DataType), xField.Attribute("dataType").Value);
+                }
+
                 if (xField.Attributes("maxLength").Any())
-                    field.maxLength = (short) xField.Attribute("maxLength");
+                {
+                    field.maxLength = (short)xField.Attribute("maxLength");
+                }
+
                 if (xField.Attributes("isNullable").Any())
-                    field.isNullable = (bool) xField.Attribute("isNullable");
+                {
+                    field.isNullable = (bool)xField.Attribute("isNullable");
+                }
+
                 if (xField.Attributes("isReadOnly").Any())
-                    field.isReadOnly = (bool) xField.Attribute("isReadOnly");
+                {
+                    field.isReadOnly = (bool)xField.Attribute("isReadOnly");
+                }
+
                 if (xField.Attributes("isAutoGenerated").Any())
-                    field.isAutoGenerated = (bool) xField.Attribute("isAutoGenerated");
+                {
+                    field.isAutoGenerated = (bool)xField.Attribute("isAutoGenerated");
+                }
+
                 if (xField.Attributes("allowClientDefault").Any())
-                    field.allowClientDefault = (bool) xField.Attribute("allowClientDefault");
+                {
+                    field.allowClientDefault = (bool)xField.Attribute("allowClientDefault");
+                }
+
                 if (xField.Attributes("isNeedOriginal").Any())
-                    field.isNeedOriginal = (bool) xField.Attribute("isNeedOriginal");
+                {
+                    field.isNeedOriginal = (bool)xField.Attribute("isNeedOriginal");
+                }
+
                 if (xField.Attributes("dateConversion").Any())
+                {
                     field.dateConversion =
-                        (DateConversion) Enum.Parse(typeof(DateConversion), xField.Attribute("dateConversion").Value);
+                        (DateConversion)Enum.Parse(typeof(DateConversion), xField.Attribute("dateConversion").Value);
+                }
+
                 if (xField.Attributes("fieldType").Any())
-                    field.fieldType = (FieldType) Enum.Parse(typeof(FieldType), xField.Attribute("fieldType").Value);
+                {
+                    field.fieldType = (FieldType)Enum.Parse(typeof(FieldType), xField.Attribute("fieldType").Value);
+                }
+
                 if (xField.Attributes("range").Any())
-                    field.range = (string) xField.Attribute("range");
+                {
+                    field.range = (string)xField.Attribute("range");
+                }
+
                 if (xField.Attributes("regex").Any())
-                    field.regex = (string) xField.Attribute("regex");
+                {
+                    field.regex = (string)xField.Attribute("regex");
+                }
+
                 if (xField.Attributes("dependentOn").Any())
-                    field.dependentOn = (string) xField.Attribute("dependentOn");
+                {
+                    field.dependentOn = (string)xField.Attribute("dependentOn");
+                }
+
+                if (xField.Attributes("dataTypeName").Any())
+                {
+                    field.SetDataTypeName((string)xField.Attribute("dataTypeName"));
+                }
 
                 if (xField.Elements(NS_DATA + "Field.nested").Any())
                 {
-                    field.nested.AddRange(
-                        _XElementsToFieldList(xField.Element(NS_DATA + "Field.nested").Elements(NS_DATA + "Field")));
+                    field.nested.AddRange(_XElementsToFieldList(xField.Element(NS_DATA + "Field.nested").Elements(NS_DATA + "Field")));
                 }
+
                 fields.Add(field);
             }
+
             return fields;
         }
 
         private static Type _GetTypeFromXType(string xType, XDocument xdoc)
         {
             if (!(xType.StartsWith("{") && xType.EndsWith("}")))
+            {
                 throw new Exception(string.Format("Invalid EntityType attribute value: {0}", xType));
+            }
+
             var typeParts = xType.TrimStart('{').TrimEnd('}').Split(' ');
             if (typeParts.Length != 2)
+            {
                 throw new Exception(string.Format("Invalid entity type: {0}", xType));
+            }
+
             var typeParts1 = typeParts[0].Split(':').Select(s => s.Trim()).ToArray();
             var typeParts2 = typeParts[1].Split(':').Select(s => s.Trim()).ToArray();
 
             var xaml_ns = xdoc.Root.GetNamespaceOfPrefix(typeParts1[0]);
             if (xaml_ns != NS_XAML)
+            {
                 throw new Exception(string.Format("Can not get xaml namespace for xType: {0}", typeParts1[0]));
+            }
+
             if (typeParts1[1] != "Type")
+            {
                 throw new Exception(string.Format("Invalid EntityType attribute value: {0}", xType));
+            }
 
             var xEntity_ns = xdoc.Root.GetNamespaceOfPrefix(typeParts2[0]);
             if (xEntity_ns == null)
@@ -372,7 +455,9 @@ namespace RIAPP.DataService.Core.Metadata
                 throw new Exception(string.Format("Can not get clr namespace for the prefix: {0}", typeParts2[0]));
             }
             if (xEntity_ns.ToString().IndexOf("clr-namespace:") < 0)
+            {
                 throw new Exception(string.Format("The namespace: {0} is not valid clr namespace", xEntity_ns));
+            }
 
             var entity_ns = RemoveWhitespace(xEntity_ns.ToString()).Replace("clr-namespace:", "");
             var entityTypeName = typeParts2[1];

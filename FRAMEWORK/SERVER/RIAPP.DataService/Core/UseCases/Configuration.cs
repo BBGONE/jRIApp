@@ -17,7 +17,7 @@ namespace RIAPP.DataService.Core.UseCases
              where TService : BaseDomainService
         {
             CRUDMiddlewareOptions<TService> middlewareOptions = new CRUDMiddlewareOptions<TService>();
-            
+
             builder.UseMiddleware<CRUDMiddleware.AuthorizeMiddleware<TService>, TService, CRUDContext<TService>>(middlewareOptions);
             builder.UseMiddleware<ApplyChangesMiddleware<TService>, TService, CRUDContext<TService>>(middlewareOptions);
             builder.UseMiddleware<ValidateChangesMiddleware<TService>, TService, CRUDContext<TService>>(middlewareOptions);
