@@ -5,7 +5,7 @@ namespace RIAppDemo.BLL.Utils
 {
     public class FileContent : IDataContent
     {
-        private string _filePath;
+        private readonly string _filePath;
 
         public FileContent(string filePath)
         {
@@ -16,7 +16,7 @@ namespace RIAppDemo.BLL.Utils
 
         public async Task CopyToAsync(Stream stream, int bufferSize = 131072)
         {
-            using(var fileStream = File.OpenRead(this.FilePath))
+            using (var fileStream = File.OpenRead(this.FilePath))
             {
                 await fileStream.CopyToAsync(stream);
             }
@@ -25,7 +25,9 @@ namespace RIAppDemo.BLL.Utils
         public void CleanUp()
         {
             if (File.Exists(this.FilePath))
+            {
                 File.Delete(this.FilePath);
+            }
         }
     }
 }

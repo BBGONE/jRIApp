@@ -9,7 +9,7 @@ namespace RIAppDemo.Controllers
     [SessionState(SessionStateBehavior.Disabled)]
     public class RIAppDemoServiceEFController : DataServiceController<RIAppDemoServiceEF>, IHostAddrService
     {
-        public RIAppDemoServiceEFController(RIAppDemoServiceEF domainService):
+        public RIAppDemoServiceEFController(RIAppDemoServiceEF domainService) :
             base(domainService)
         {
         }

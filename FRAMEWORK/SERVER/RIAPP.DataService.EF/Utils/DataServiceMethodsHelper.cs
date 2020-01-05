@@ -14,10 +14,13 @@ namespace RIAPP.DataService.EF.Utils
             Type tableType = typeof(System.Data.Objects.ObjectSet<>).MakeGenericType(entityType);
             var propertyInfo = DB.GetType().GetProperties().Where(p => p.PropertyType.IsGenericType && p.PropertyType == tableType).FirstOrDefault();
             if (propertyInfo == null)
+            {
                 return string.Empty;
+            }
+
             return propertyInfo.Name;
         }
-          
+
         private static string CreateDbSetMethods(DbSetInfo dbSetInfo, string tableName)
         {
             var sb = new StringBuilder(512);
@@ -29,7 +32,7 @@ namespace RIAPP.DataService.EF.Utils
             sb.AppendLine("{");
             sb.AppendLine("\tint? totalCount = null;");
             sb.AppendLine(string.Format("\tvar res = this.PerformQuery(this.DB.{0}, ref totalCount).AsEnumerable();", tableName));
-            sb.AppendLine(string.Format("\treturn new QueryResult<{0}>(res, totalCount);",dbSetInfo.GetEntityType().Name));
+            sb.AppendLine(string.Format("\treturn new QueryResult<{0}>(res, totalCount);", dbSetInfo.GetEntityType().Name));
             sb.AppendLine("}");
             sb.AppendLine("");
 
@@ -39,7 +42,7 @@ namespace RIAPP.DataService.EF.Utils
             sb.AppendLine("{");
             sb.AppendLine(string.Format("\tif (({0}.EntityState != EntityState.Detached))", dbSetInfo.dbSetName.ToLower()));
             sb.AppendLine("\t{");
-            sb.AppendLine(string.Format("\t\tthis.DB.ObjectStateManager.ChangeObjectState({0}, EntityState.Added);",dbSetInfo.dbSetName.ToLower()));
+            sb.AppendLine(string.Format("\t\tthis.DB.ObjectStateManager.ChangeObjectState({0}, EntityState.Added);", dbSetInfo.dbSetName.ToLower()));
             sb.AppendLine("\t}");
             sb.AppendLine("\telse");
             sb.AppendLine("\t{");
@@ -74,11 +77,11 @@ namespace RIAPP.DataService.EF.Utils
             sb.AppendLine("}");
             sb.AppendLine("");
 
-             sb.AppendLine("#endregion");
-             return sb.ToString();
+            sb.AppendLine("#endregion");
+            return sb.ToString();
         }
 
-        public static string CreateMethods(RunTimeMetadata metadata, System.Data.Objects.ObjectContext DB) 
+        public static string CreateMethods(RunTimeMetadata metadata, System.Data.Objects.ObjectContext DB)
         {
             var sb = new StringBuilder(4096);
 
@@ -87,7 +90,10 @@ namespace RIAPP.DataService.EF.Utils
             {
                 string tableName = GetTableName(DB, dbSetInfo.GetEntityType());
                 if (tableName == string.Empty)
+                {
                     return;
+                }
+
                 sb.AppendLine(CreateDbSetMethods(dbSetInfo, tableName));
             });
             return sb.ToString();

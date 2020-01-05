@@ -13,11 +13,13 @@ namespace RIAPP.DataService.EF
              where TService : EFDomainService<TDB>
              where TDB : System.Data.Objects.ObjectContext
         {
-            services.AddDomainService<TService>((options) => {
+            services.AddDomainService<TService>((options) =>
+            {
                 configure?.Invoke(options);
             });
 
-            services.AddScoped<ICodeGenProviderFactory<TService>>((sp) => {
+            services.AddScoped<ICodeGenProviderFactory<TService>>((sp) =>
+            {
                 return new CsharpProviderFactory<TService, TDB>();
             });
         }

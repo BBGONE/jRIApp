@@ -27,21 +27,22 @@ namespace RIAPP.DataService.EF2
         }
 
         #region Overridable Methods
-        protected virtual TDB CreateDataContext() {
+        protected virtual TDB CreateDataContext()
+        {
             return Activator.CreateInstance<TDB>();
         }
 
         protected override async Task ExecuteChangeSet()
         {
-            using (TransactionScope transScope = new TransactionScope(TransactionScopeOption.RequiresNew, 
+            using (TransactionScope transScope = new TransactionScope(TransactionScopeOption.RequiresNew,
                 new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted, Timeout = TimeSpan.FromMinutes(1.0) }, TransactionScopeAsyncFlowOption.Enabled))
             {
                 await this.DB.SaveChangesAsync();
-                
+
                 transScope.Complete();
             }
         }
-        
+
         private void GenerateFieldInfos(DbSetInfo dbSetInfo, string[] keys, EdmProperty[] edmProps)
         {
             short pkNum = 0;
@@ -80,7 +81,7 @@ namespace RIAPP.DataService.EF2
                 }
                 catch (UnSupportedTypeException)
                 {
-                    var typeKind= edmProp.TypeUsage.EdmType.BuiltInTypeKind;
+                    var typeKind = edmProp.TypeUsage.EdmType.BuiltInTypeKind;
                     if (typeKind == BuiltInTypeKind.ComplexType)
                     {
                         fieldInfo.dataType = DataType.None;
@@ -115,7 +116,7 @@ namespace RIAPP.DataService.EF2
             {
                 string entityTypeName = entityEdmType.Name;
                 string name = entityTypeName;
-                var keys = entityEdmType.Members.Select(m=>m.Name).Take(1).ToArray();
+                var keys = entityEdmType.Members.Select(m => m.Name).Take(1).ToArray();
                 Type entityType = this.GetEntityType2(entityTypeName);
                 DbSetInfo dbSetInfo = new DbSetInfo()
                 {
@@ -130,7 +131,10 @@ namespace RIAPP.DataService.EF2
             Array.ForEach(entityEdmTypes, (entityEdmType) =>
             {
                 if (entityEdmType.Abstract)
+                {
                     return;
+                }
+
                 string entityTypeName = entityEdmType.Name;
                 string name = entityTypeName;
                 if (entityEdmType.BaseType != null)
@@ -162,7 +166,9 @@ namespace RIAPP.DataService.EF2
                     return table;
                 }
                 else
+                {
                     return n.FullName;
+                }
             };
 
             foreach (AssociationType asstype in associations)
@@ -174,7 +180,7 @@ namespace RIAPP.DataService.EF2
                     try
                     {
                         Association ass = metadata.Associations.Where(a => a.name == constraint.ToString()).FirstOrDefault();
-                    
+
                         if (ass == null)
                         {
                             var parentEnd = (constraint.FromRole.RelationshipMultiplicity == RelationshipMultiplicity.One || constraint.FromRole.RelationshipMultiplicity == RelationshipMultiplicity.ZeroOrOne) ? constraint.FromRole : constraint.ToRole;
@@ -245,7 +251,10 @@ namespace RIAPP.DataService.EF2
                         return DataType.Binary;
                     }
                     else
+                    {
                         return DataType.Integer;
+                    }
+
                 case "String":
                     return DataType.String;
                 case "Int16":
@@ -271,7 +280,7 @@ namespace RIAPP.DataService.EF2
                 case "Guid":
                     return DataType.Guid;
                 default:
-                   throw new UnSupportedTypeException(fullName);
+                    throw new UnSupportedTypeException(fullName);
             }
         }
 
@@ -292,18 +301,26 @@ namespace RIAPP.DataService.EF2
         {
             var propMetadata = prop.MetadataProperties.Where(p => p.Name.EndsWith("StoreGeneratedPattern")).FirstOrDefault();
             if (propMetadata != null && (propMetadata.Value.ToString() == "Identity" || propMetadata.Value.ToString() == "Computed"))
+            {
                 return true;
+            }
             else
+            {
                 return false;
+            }
         }
 
         private bool isComputed(EdmProperty prop)
         {
             var propMetadata = prop.MetadataProperties.Where(p => p.Name.EndsWith("StoreGeneratedPattern")).FirstOrDefault();
             if (propMetadata != null && (propMetadata.Value.ToString() == "Computed"))
+            {
                 return true;
+            }
             else
+            {
                 return false;
+            }
         }
         #endregion
 

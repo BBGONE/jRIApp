@@ -32,7 +32,7 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
             // include related SalesOrderDetails with the products in the same query result
             queryResult.subResults.Add(subResult);
             // example of returning out of band information and use it on the client (of it can be more useful than it)
-            queryResult.extraInfo = new {test = "ReadProduct Extra Info: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss")};
+            queryResult.extraInfo = new { test = "ReadProduct Extra Info: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") };
             return queryResult;
         }
 
@@ -43,7 +43,7 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
             return new QueryResult<Product>(res, totalCount: null);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         public override void Insert(Product product)
         {
             product.ModifiedDate = DateTime.Now;
@@ -51,7 +51,7 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
             DB.Products.Add(product);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         public override void Update(Product product)
         {
             product.ModifiedDate = DateTime.Now;
@@ -60,7 +60,7 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
             DB.Entry(product).OriginalValues.SetValues(orig);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         public override void Delete(Product product)
         {
             DB.Products.Attach(product);

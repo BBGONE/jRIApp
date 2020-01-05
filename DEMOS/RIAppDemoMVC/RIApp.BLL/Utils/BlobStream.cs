@@ -26,7 +26,7 @@ namespace RIAppDemo.BLL.Utils
 
         public BlobStream(SqlConnection Connection, string TableName, string ColName, string Where)
         {
-            m_BufferLen = 1024*64; //64KB
+            m_BufferLen = 1024 * 64; //64KB
             this.Connection = Connection;
             m_TableName = TableName;
             m_ColName = ColName;
@@ -115,11 +115,17 @@ namespace RIAppDemo.BLL.Utils
 
             var read = 0;
             if (m_DataLength == 0)
+            {
                 read = 0;
+            }
             else if (count > m_DataLength - m_Position)
+            {
                 read = (int)(m_DataLength - m_Position);
+            }
             else
+            {
                 read = count;
+            }
 
             var pos = m_Position;
             var chunk = 0;
@@ -140,9 +146,13 @@ namespace RIAppDemo.BLL.Utils
 
                 object obj = null;
                 if (isAsync)
+                {
                     obj = await m_cmdReadText.ExecuteScalarAsync(cancellationToken);
+                }
                 else
+                {
                     obj = m_cmdReadText.ExecuteScalar();
+                }
 
                 if (obj == null)
                 {
@@ -209,7 +219,9 @@ namespace RIAppDemo.BLL.Utils
                 {
                     chunk = m_BufferLen;
                     if (buff == null || buff.Length != chunk)
+                    {
                         buff = new byte[chunk];
+                    }
                 }
                 else
                 {
@@ -225,9 +237,13 @@ namespace RIAppDemo.BLL.Utils
                 {
                     var to_right = m_DataLength - m_Position;
                     if (to_right > chunk)
+                    {
                         delete = chunk;
+                    }
                     else
+                    {
                         delete = (int)to_right;
+                    }
                 }
                 else
                 {
@@ -239,9 +255,13 @@ namespace RIAppDemo.BLL.Utils
                 m_cmdUpdateText.Parameters["@length"].Value = delete;
                 m_cmdUpdateText.Parameters["@data"].Value = buff;
                 if (isAsync)
+                {
                     await m_cmdUpdateText.ExecuteNonQueryAsync(cancellationToken);
+                }
                 else
+                {
                     m_cmdUpdateText.ExecuteNonQuery();
+                }
 
                 pos += chunk;
                 offset += chunk;
@@ -265,7 +285,10 @@ namespace RIAppDemo.BLL.Utils
         public virtual void Insert(byte[] buffer, int offset, int count)
         {
             if (count == 0)
+            {
                 return;
+            }
+
             if (!IsOpen)
             {
                 throw new Exception("StreamIsClosed");
@@ -297,11 +320,13 @@ namespace RIAppDemo.BLL.Utils
                 {
                     chunk = m_BufferLen;
                     if (buff == null || buff.Length != chunk)
+                    {
                         buff = new byte[chunk];
+                    }
                 }
                 else
                 {
-                    chunk = (int) append;
+                    chunk = (int)append;
                     buff = new byte[chunk];
                 }
                 var delete = 0;
@@ -331,36 +356,36 @@ namespace RIAppDemo.BLL.Utils
             switch (loc)
             {
                 case SeekOrigin.Begin:
-                {
-                    if (offset < 0)
                     {
-                        throw new IOException("IO.IO_SeekBeforeBegin");
+                        if (offset < 0)
+                        {
+                            throw new IOException("IO.IO_SeekBeforeBegin");
+                        }
+                        m_Position = offset;
+                        break;
                     }
-                    m_Position = offset;
-                    break;
-                }
                 case SeekOrigin.Current:
-                {
-                    if (offset + m_Position < 0)
                     {
-                        throw new IOException("IO.IO_SeekBeforeBegin");
+                        if (offset + m_Position < 0)
+                        {
+                            throw new IOException("IO.IO_SeekBeforeBegin");
+                        }
+                        m_Position += offset;
+                        break;
                     }
-                    m_Position += offset;
-                    break;
-                }
                 case SeekOrigin.End:
-                {
-                    if (m_DataLength + offset < 0)
                     {
-                        throw new IOException("IO.IO_SeekBeforeBegin");
+                        if (m_DataLength + offset < 0)
+                        {
+                            throw new IOException("IO.IO_SeekBeforeBegin");
+                        }
+                        m_Position = m_DataLength + offset;
+                        break;
                     }
-                    m_Position = m_DataLength + offset;
-                    break;
-                }
                 default:
-                {
-                    throw new ArgumentException("Argument_InvalidSeekOrigin");
-                }
+                    {
+                        throw new ArgumentException("Argument_InvalidSeekOrigin");
+                    }
             }
             return m_Position;
         }
@@ -388,7 +413,9 @@ namespace RIAppDemo.BLL.Utils
                     {
                         chunk = m_BufferLen;
                         if (buff == null || buff.Length != chunk)
+                        {
                             buff = new byte[chunk];
+                        }
                     }
                     else
                     {
@@ -412,7 +439,9 @@ namespace RIAppDemo.BLL.Utils
                 m_cmdUpdateText.ExecuteNonQuery();
                 m_DataLength = GetLength();
                 if (m_Position > m_DataLength)
+                {
                     m_Position = m_DataLength;
+                }
             }
         }
 
@@ -420,8 +449,11 @@ namespace RIAppDemo.BLL.Utils
         {
             var res = m_cmdDataLength.ExecuteScalar();
             if (res == null || res is DBNull)
+            {
                 return 0;
-            return (long) Convert.ChangeType(res, typeof(long));
+            }
+
+            return (long)Convert.ChangeType(res, typeof(long));
         }
 
         public void InitColumn()

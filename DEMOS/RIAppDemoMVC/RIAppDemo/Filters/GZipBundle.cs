@@ -13,7 +13,11 @@ namespace RIAppDemo.Filters
 
         public override BundleResponse CacheLookup(BundleContext context)
         {
-            if (null != context) GZipEncodePage(context.HttpContext);
+            if (null != context)
+            {
+                GZipEncodePage(context.HttpContext);
+            }
+
             return base.CacheLookup(context);
         }
 
@@ -48,8 +52,8 @@ namespace RIAppDemo.Filters
     // Represents a bundle that does CSS minification and GZip compression.
     public sealed class GZipStyleBundle : GZipBundle
     {
-        public GZipStyleBundle(string virtualPath, params IBundleTransform[] transforms) : 
-            base(virtualPath, transforms) 
+        public GZipStyleBundle(string virtualPath, params IBundleTransform[] transforms) :
+            base(virtualPath, transforms)
         {
             base.ConcatenationToken = Environment.NewLine;
         }

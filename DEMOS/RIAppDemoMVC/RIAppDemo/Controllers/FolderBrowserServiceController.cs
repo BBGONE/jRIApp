@@ -1,7 +1,7 @@
-﻿using System.Web.Mvc;
-using System.Web.SessionState;
+﻿using RIAPP.DataService.Mvc;
 using RIAppDemo.BLL.DataServices;
-using RIAPP.DataService.Mvc;
+using System.Web.Mvc;
+using System.Web.SessionState;
 
 namespace RIAppDemo.Controllers
 {
@@ -9,7 +9,7 @@ namespace RIAppDemo.Controllers
     public class FolderBrowserServiceController : DataServiceController<FolderBrowserService>
     {
 
-        public FolderBrowserServiceController(FolderBrowserService domainService): 
+        public FolderBrowserServiceController(FolderBrowserService domainService) :
             base(domainService)
         {
 

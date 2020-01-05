@@ -7,7 +7,6 @@ using RIAPP.DataService.Core.Security;
 using RIAPP.DataService.Core.Types;
 using RIAPP.DataService.EF2;
 using RIAppDemo.BLL.Models;
-using RIAppDemo.BLL.Utils;
 using RIAppDemo.DAL.EF;
 using System;
 using System.Collections.Generic;
@@ -29,13 +28,15 @@ namespace RIAppDemo.BLL.DataServices
         public RIAppDemoServiceEF(IServiceContainer serviceContainer, ADWDbContext db)
             : base(serviceContainer, db)
         {
-            
+
         }
 
         protected override DesignTimeMetadata GetDesignTimeMetadata(bool isDraft)
         {
             if (isDraft)
+            {
                 return base.GetDesignTimeMetadata(true);
+            }
             else
             {
                 return DesignTimeMetadata.FromXML(ResourceHelper.GetResourceString("RIAppDemo.BLL.Metadata.MainDemo2.xml"));
@@ -63,7 +64,9 @@ namespace RIAppDemo.BLL.DataServices
         {
             var msg = "";
             if (ex != null)
+            {
                 msg = ex.GetFullMessage();
+            }
         }
 
         protected override void Dispose(bool isDisposing)
@@ -120,8 +123,8 @@ namespace RIAppDemo.BLL.DataServices
                     .Select(s => s.SalesPerson)
                     .Distinct()
                     .OrderBy(s => s)
-                    .Select(s => new SalesInfo {SalesPerson = s});
-            var resPage = res.Skip(queryInfo.pageIndex*queryInfo.pageSize).Take(queryInfo.pageSize);
+                    .Select(s => new SalesInfo { SalesPerson = s });
+            var resPage = res.Skip(queryInfo.pageIndex * queryInfo.pageSize).Take(queryInfo.pageSize);
             return new QueryResult<SalesInfo>(resPage, res.Count());
         }
 
@@ -164,7 +167,10 @@ namespace RIAppDemo.BLL.DataServices
                 Array.ForEach(param1, item =>
                 {
                     if (sb.Length > 0)
+                    {
                         sb.Append(", ");
+                    }
+
                     sb.Append(item);
                 });
 
@@ -220,7 +226,7 @@ namespace RIAppDemo.BLL.DataServices
         [Query]
         public async Task<QueryResult<CustomerJSON>> ReadCustomerJSON()
         {
-            var customers = DB.Customers.AsNoTracking().Where(c=>c.CustomerAddresses.Any()) as IQueryable<Customer>;
+            var customers = DB.Customers.AsNoTracking().Where(c => c.CustomerAddresses.Any()) as IQueryable<Customer>;
             var queryInfo = this.GetCurrentQueryInfo();
             //calculate totalCount only when we fetch first page (to speed up query)
             int? totalCount = queryInfo.pageIndex == 0 ? (int?)null : -1;
@@ -229,21 +235,22 @@ namespace RIAppDemo.BLL.DataServices
             var custList = await custQuery.ToListAsync();
 
             var custAddresses = (from cust in custQuery
-                             from custAddr in cust.CustomerAddresses
-                             join addr in DB.Addresses on custAddr.AddressID equals addr.AddressID
-                             select new
-                             {
-                                 CustomerID = custAddr.CustomerID,
-                                 ID = addr.AddressID,
-                                 Line1 = addr.AddressLine1,
-                                 Line2 = addr.AddressLine2,
-                                 City = addr.City,
-                                 Region = addr.CountryRegion
-                             }).ToLookup((addr) => addr.CustomerID);
+                                 from custAddr in cust.CustomerAddresses
+                                 join addr in DB.Addresses on custAddr.AddressID equals addr.AddressID
+                                 select new
+                                 {
+                                     CustomerID = custAddr.CustomerID,
+                                     ID = addr.AddressID,
+                                     Line1 = addr.AddressLine1,
+                                     Line2 = addr.AddressLine2,
+                                     City = addr.City,
+                                     Region = addr.CountryRegion
+                                 }).ToLookup((addr) => addr.CustomerID);
 
             //i create JSON Data myself because there's no entity in db
             //which has json data in its fields
-            var res = custList.Select(c => new CustomerJSON() {
+            var res = custList.Select(c => new CustomerJSON()
+            {
                 CustomerID = c.CustomerID,
                 rowguid = c.rowguid,
                 Data = this.Serializer.Serialize(new
@@ -265,11 +272,11 @@ namespace RIAppDemo.BLL.DataServices
 
                         }
                     },
-                    Addresses = custAddresses[c.CustomerID].Select(ca => new { ca.Line1, ca.Line2, ca.City, ca.Region})
-                    })
-                });
+                    Addresses = custAddresses[c.CustomerID].Select(ca => new { ca.Line1, ca.Line2, ca.City, ca.Region })
+                })
+            });
 
-            return new QueryResult<CustomerJSON>(res, totalCount == -1? null: totalCount);
+            return new QueryResult<CustomerJSON>(res, totalCount == -1 ? null : totalCount);
         }
 
         [Authorize(Roles = new[] { ADMINS_ROLE })]
@@ -310,9 +317,13 @@ namespace RIAppDemo.BLL.DataServices
             {
                 queryInfo.sortInfo.sortItems.Remove(addressCountSortItem);
                 if (addressCountSortItem.sortOrder == SortOrder.ASC)
+                {
                     customers = customers.OrderBy(c => c.CustomerAddresses.Count());
+                }
                 else
+                {
                     customers = customers.OrderByDescending(c => c.CustomerAddresses.Count());
+                }
             }
 
             // perform query
@@ -342,7 +353,8 @@ namespace RIAppDemo.BLL.DataServices
 
                 // since we have preloaded customer addresses then update server side calculated field: AddressCount 
                 // (which i have introduced for testing purposes as a server calculated field)
-                customersList.ForEach(customer => {
+                customersList.ForEach(customer =>
+                {
                     customer.AddressCount = customer.CustomerAddresses.Count();
                 });
 
@@ -354,7 +366,7 @@ namespace RIAppDemo.BLL.DataServices
             return queryRes;
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         [Insert]
         public void InsertCustomer(Customer customer)
         {
@@ -365,7 +377,7 @@ namespace RIAppDemo.BLL.DataServices
             DB.Customers.Add(customer);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         [Update]
         public void UpdateCustomer(Customer customer)
         {
@@ -375,7 +387,7 @@ namespace RIAppDemo.BLL.DataServices
             DB.Entry(customer).OriginalValues.SetValues(orig);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         [Delete]
         public void DeleteCustomer(Customer customer)
         {
@@ -416,7 +428,7 @@ namespace RIAppDemo.BLL.DataServices
             return Enumerable.Empty<ValidationErrorInfo>();
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         [Insert]
         public void InsertAddress(Address address)
         {
@@ -425,7 +437,7 @@ namespace RIAppDemo.BLL.DataServices
             DB.Addresses.Add(address);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         [Update]
         public void UpdateAddress(Address address)
         {
@@ -434,7 +446,7 @@ namespace RIAppDemo.BLL.DataServices
             DB.Entry(address).OriginalValues.SetValues(orig);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         [Delete]
         public void DeleteAddress(Address address)
         {
@@ -454,7 +466,7 @@ namespace RIAppDemo.BLL.DataServices
             return new QueryResult<SalesOrderHeader>(res, totalCount);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         [Insert]
         public void InsertSalesOrderHeader(SalesOrderHeader salesorderheader)
         {
@@ -465,7 +477,7 @@ namespace RIAppDemo.BLL.DataServices
             DB.SalesOrderHeaders.Add(salesorderheader);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         [Update]
         public void UpdateSalesOrderHeader(SalesOrderHeader salesorderheader)
         {
@@ -474,7 +486,7 @@ namespace RIAppDemo.BLL.DataServices
             DB.Entry(salesorderheader).OriginalValues.SetValues(orig);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         [Delete]
         public void DeleteSalesOrderHeader(SalesOrderHeader salesorderheader)
         {
@@ -494,7 +506,7 @@ namespace RIAppDemo.BLL.DataServices
             return new QueryResult<SalesOrderDetail>(res, totalCount);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         [Insert]
         public void InsertSalesOrderDetail(SalesOrderDetail salesorderdetail)
         {
@@ -503,7 +515,7 @@ namespace RIAppDemo.BLL.DataServices
             DB.SalesOrderDetails.Add(salesorderdetail);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         [Update]
         public void UpdateSalesOrderDetail(SalesOrderDetail salesorderdetail)
         {
@@ -512,7 +524,7 @@ namespace RIAppDemo.BLL.DataServices
             DB.Entry(salesorderdetail).OriginalValues.SetValues(orig);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         [Delete]
         public void DeleteSalesOrderDetail(SalesOrderDetail salesorderdetail)
         {

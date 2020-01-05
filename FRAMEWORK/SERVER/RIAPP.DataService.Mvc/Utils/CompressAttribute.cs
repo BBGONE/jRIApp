@@ -8,14 +8,18 @@ namespace RIAPP.DataService.Mvc.Utils
         public override void OnResultExecuting(ResultExecutingContext filterContext)
         {
             if (filterContext.Result is INoCompressResult)
+            {
                 return;
+            }
 
             var request = filterContext.HttpContext.Request;
 
             var acceptEncoding = request.Headers["Accept-Encoding"];
 
             if (string.IsNullOrEmpty(acceptEncoding))
+            {
                 return;
+            }
 
             acceptEncoding = acceptEncoding.ToUpperInvariant();
 

@@ -58,10 +58,15 @@ namespace RIAPP.DataService.Mvc.Utils
         public ActionResult Index(string bust, int min, string path)
         {
             if (!IsAllowed(path))
+            {
                 return new HttpStatusCodeResult(404);
+            }
+
             var lastModified = DateTime.MinValue;
             if (!DateTime.TryParse(Request.Headers["If-Modified-Since"], out lastModified))
+            {
                 lastModified = DateTime.MinValue;
+            }
 
             //System.Diagnostics.Trace.WriteLine(path);
 
@@ -69,7 +74,9 @@ namespace RIAPP.DataService.Mvc.Utils
             if (_cache.TryGetValue(path, out cachedResult))
             {
                 if (lastModified >= cachedResult.lastWrite)
+                {
                     return new NotModifiedResult();
+                }
 
                 Response.Cache.SetCacheability(HttpCacheability.Private);
                 Response.Cache.SetMaxAge(TimeSpan.FromDays(365));
@@ -102,7 +109,7 @@ namespace RIAPP.DataService.Mvc.Utils
                         bytes = GetFileBytes(physicalPath);
                     }
 
-                    cachedResult = new CachedResult {bytes = bytes, contentType = contentType, lastWrite = lastWrite};
+                    cachedResult = new CachedResult { bytes = bytes, contentType = contentType, lastWrite = lastWrite };
                     return cachedResult;
                 });
             }
@@ -110,7 +117,10 @@ namespace RIAPP.DataService.Mvc.Utils
             var isImage = Array.IndexOf(_imgMediaTypes, cachedResult.contentType) > -1;
 
             if (isImage)
+            {
                 return new NoCompressFileResult(cachedResult.bytes, cachedResult.contentType);
+            }
+
             return new FileContentResult(cachedResult.bytes, cachedResult.contentType);
         }
 
@@ -153,28 +163,38 @@ namespace RIAPP.DataService.Mvc.Utils
         private bool IsAllowed(string path)
         {
             if (string.IsNullOrEmpty(path))
+            {
                 return false;
+            }
 
             var lowerPath = path.ToLower();
             if (lowerPath.Contains(".."))
+            {
                 return false;
+            }
 
             var isOk = false;
             foreach (var check in _checks1)
             {
                 isOk = check(lowerPath);
                 if (isOk)
+                {
                     break;
+                }
             }
             if (!isOk)
+            {
                 return false;
+            }
 
             isOk = false;
             foreach (var check in _checks2)
             {
                 isOk = check(lowerPath);
                 if (isOk)
+                {
                     break;
+                }
             }
 
             return isOk;

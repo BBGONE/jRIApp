@@ -1,6 +1,6 @@
-﻿using System.Web.Mvc;
+﻿using RIAppDemo.Models;
+using System.Web.Mvc;
 using System.Web.SessionState;
-using RIAppDemo.Models;
 
 namespace RIAppDemo.Controllers
 {

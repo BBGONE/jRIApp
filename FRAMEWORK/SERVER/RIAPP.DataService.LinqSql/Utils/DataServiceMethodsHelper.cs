@@ -14,10 +14,13 @@ namespace RIAPP.DataService.LinqSql.Utils
             Type tableType = typeof(System.Data.Linq.Table<>).MakeGenericType(entityType);
             var propertyInfo = DB.GetType().GetProperties().Where(p => p.PropertyType.IsGenericType && p.PropertyType == tableType).FirstOrDefault();
             if (propertyInfo == null)
+            {
                 return string.Empty;
+            }
+
             return propertyInfo.Name;
         }
-          
+
         private static string CreateDbSetMethods(DbSetInfo dbSetInfo, string tableName)
         {
             var sb = new StringBuilder(512);
@@ -29,10 +32,10 @@ namespace RIAPP.DataService.LinqSql.Utils
             sb.AppendLine("{");
             sb.AppendLine("\tint? totalCount = null;");
             sb.AppendLine(string.Format("\tvar res = this.PerformQuery(this.DB.{0}, ref totalCount).AsEnumerable();", tableName));
-            sb.AppendLine(string.Format("\treturn new QueryResult<{0}>(res, totalCount);",dbSetInfo.GetEntityType().Name));
+            sb.AppendLine(string.Format("\treturn new QueryResult<{0}>(res, totalCount);", dbSetInfo.GetEntityType().Name));
             sb.AppendLine("}");
             sb.AppendLine("");
-            
+
             sb.AppendLine("[Insert]");
             sb.AppendFormat("public void Insert{1}({0} {2})", dbSetInfo.GetEntityType().Name, dbSetInfo.dbSetName, dbSetInfo.dbSetName.ToLower());
             sb.AppendLine("");
@@ -59,11 +62,11 @@ namespace RIAPP.DataService.LinqSql.Utils
             sb.AppendLine("}");
             sb.AppendLine("");
 
-             sb.AppendLine("#endregion");
-             return sb.ToString();
+            sb.AppendLine("#endregion");
+            return sb.ToString();
         }
 
-        public static string CreateMethods(RunTimeMetadata metadata, System.Data.Linq.DataContext DB) 
+        public static string CreateMethods(RunTimeMetadata metadata, System.Data.Linq.DataContext DB)
         {
             var sb = new StringBuilder(4096);
 
@@ -72,7 +75,10 @@ namespace RIAPP.DataService.LinqSql.Utils
             {
                 string tableName = GetTableName(DB, dbSetInfo.GetEntityType());
                 if (tableName == string.Empty)
+                {
                     return;
+                }
+
                 sb.AppendLine(CreateDbSetMethods(dbSetInfo, tableName));
             });
             return sb.ToString();

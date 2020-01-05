@@ -23,17 +23,18 @@ namespace RIAPP.DataService.EF
         }
 
         #region Overridable Methods
-        protected virtual TDB CreateDataContext() {
+        protected virtual TDB CreateDataContext()
+        {
             return Activator.CreateInstance<TDB>();
         }
 
         protected override Task ExecuteChangeSet()
         {
-            using (TransactionScope transScope = new TransactionScope(TransactionScopeOption.RequiresNew, 
+            using (TransactionScope transScope = new TransactionScope(TransactionScopeOption.RequiresNew,
                 new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted, Timeout = TimeSpan.FromMinutes(1.0) }))
             {
                 this.DB.SaveChanges();
-                
+
                 transScope.Complete();
             }
             return Task.CompletedTask;
@@ -60,7 +61,10 @@ namespace RIAPP.DataService.EF
                         return DataType.Binary;
                     }
                     else
+                    {
                         return DataType.Integer;
+                    }
+
                 case "String":
                     return DataType.String;
                 case "Int16":
@@ -96,9 +100,9 @@ namespace RIAPP.DataService.EF
 
             var container = this.DB.MetadataWorkspace.GetEntityContainer(this.DB.DefaultContainerName, DataSpace.CSpace);
             var entitySetsDic = (from meta in container.BaseEntitySets
-                        where meta.BuiltInTypeKind == BuiltInTypeKind.EntitySet
-                        select new { EntitySetName = meta.Name, EntityTypeName = meta.ElementType.Name }).ToDictionary(es=>es.EntityTypeName);
-            
+                                 where meta.BuiltInTypeKind == BuiltInTypeKind.EntitySet
+                                 select new { EntitySetName = meta.Name, EntityTypeName = meta.ElementType.Name }).ToDictionary(es => es.EntityTypeName);
+
 
             var CSpace = this.DB.MetadataWorkspace.GetItemCollection(System.Data.Metadata.Edm.DataSpace.CSpace);
             var SSpace = this.DB.MetadataWorkspace.GetItemCollection(System.Data.Metadata.Edm.DataSpace.SSpace);
@@ -108,7 +112,10 @@ namespace RIAPP.DataService.EF
             Array.ForEach(entityEdmTypes, (entityEdmType) =>
             {
                 if (entityEdmType.Abstract)
+                {
                     return;
+                }
+
                 string entityTypeName = entityEdmType.Name;
                 string name = entityTypeName;
                 if (entityEdmType.BaseType != null)
@@ -164,7 +171,7 @@ namespace RIAPP.DataService.EF
                 });
             });
 
-            var associations = CSpace.GetItems<AssociationType>().Where(a=>a.IsForeignKey).OrderBy(e => e.Name);
+            var associations = CSpace.GetItems<AssociationType>().Where(a => a.IsForeignKey).OrderBy(e => e.Name);
 
             Func<EdmType, string> fn_name = (EdmType n) =>
             {
@@ -176,19 +183,21 @@ namespace RIAPP.DataService.EF
                     return table;
                 }
                 else
+                {
                     return n.FullName;
+                }
             };
 
             foreach (AssociationType asstype in associations)
             {
-                var endMembers= asstype.RelationshipEndMembers;
+                var endMembers = asstype.RelationshipEndMembers;
 
                 foreach (ReferentialConstraint constraint in asstype.ReferentialConstraints)
                 {
                     try
                     {
                         Association ass = metadata.Associations.Where(a => a.name == constraint.ToString()).FirstOrDefault();
-                 
+
                         if (ass == null)
                         {
                             var parentEnd = (constraint.FromRole.RelationshipMultiplicity == RelationshipMultiplicity.One || constraint.FromRole.RelationshipMultiplicity == RelationshipMultiplicity.ZeroOrOne) ? constraint.FromRole : constraint.ToRole;
@@ -197,8 +206,8 @@ namespace RIAPP.DataService.EF
                             var child = childEnd.TypeUsage.EdmType;
                             string parentName = fn_name(parent);
                             string childName = fn_name(child);
-                            var parentEntity = entityEdmTypes.Where(en => parentName==en.FullName).First();
-                            var childEntity = entityEdmTypes.Where(en => childName==en.FullName).First();
+                            var parentEntity = entityEdmTypes.Where(en => parentName == en.FullName).First();
+                            var childEntity = entityEdmTypes.Where(en => childName == en.FullName).First();
                             var parentToChildren = parentEntity.NavigationProperties.Where(np => np.FromEndMember.Name == parentEnd.Name && np.ToEndMember.Name == childEnd.Name).FirstOrDefault();
                             var childToParent = childEntity.NavigationProperties.Where(np => np.FromEndMember.Name == childEnd.Name && np.ToEndMember.Name == parentEnd.Name).FirstOrDefault();
 
@@ -270,18 +279,26 @@ namespace RIAPP.DataService.EF
         {
             var propMetadata = prop.MetadataProperties.Where(p => p.Name.EndsWith("StoreGeneratedPattern")).FirstOrDefault();
             if (propMetadata != null && (propMetadata.Value.ToString() == "Identity" || propMetadata.Value.ToString() == "Computed"))
+            {
                 return true;
+            }
             else
+            {
                 return false;
+            }
         }
 
         private bool isComputed(EdmProperty prop)
         {
             var propMetadata = prop.MetadataProperties.Where(p => p.Name.EndsWith("StoreGeneratedPattern")).FirstOrDefault();
             if (propMetadata != null && (propMetadata.Value.ToString() == "Computed"))
+            {
                 return true;
+            }
             else
+            {
                 return false;
+            }
         }
         #endregion
 

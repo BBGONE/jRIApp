@@ -41,16 +41,17 @@ namespace RIAppDemo
                         isNoRoles? new Claim(ClaimTypes.Role,  "Users"): null,
                         new Claim(ClaimTypes.Name, "DUMMY_USER"),
                         new Claim(ClaimTypes.NameIdentifier, "DUMMY_USER Basic")
-               }.Where(c=>c!= null),
+               }.Where(c => c != null),
                      "Basic"));
 
-        
+
             HttpContext.Current.User = Thread.CurrentPrincipal = basicPrincipal;
         }
 
         protected void Application_End(object sender, EventArgs e)
         {
-            if (_serviceProvider != null) {
+            if (_serviceProvider != null)
+            {
                 (_serviceProvider as IDisposable).Dispose();
             }
         }

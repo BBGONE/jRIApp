@@ -36,7 +36,9 @@ namespace RIAppDemo.BLL.DataServices
                         fileName = db.Products.Where(a => a.ProductID == id).Select(a => a.ThumbnailPhotoFileName).FirstOrDefault();
 
                         if (string.IsNullOrEmpty(fileName))
+                        {
                             throw new Exception($"Product: {id} is not found");
+                        }
 
                         using (var bstrm = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", "ThumbNailPhoto",
                             string.Format("WHERE [ProductID]={0}", id)))
@@ -55,7 +57,9 @@ namespace RIAppDemo.BLL.DataServices
             {
                 var msg = "";
                 if (ex != null)
+                {
                     msg = ex.GetFullMessage();
+                }
                 // _logger.LogError(ex, msg);
                 throw;
             }
@@ -79,7 +83,9 @@ namespace RIAppDemo.BLL.DataServices
                     {
                         var product = db.Products.Where(a => a.ProductID == id).FirstOrDefault();
                         if (product == null)
+                        {
                             throw new Exception(string.Format("Product {0} is Not Found", id));
+                        }
 
                         using (var blobStream = new BlobStream(conn as SqlConnection, "[SalesLT].[Product]", "ThumbNailPhoto",
                             string.Format("WHERE [ProductID]={0}", id)))
@@ -90,7 +96,10 @@ namespace RIAppDemo.BLL.DataServices
                             Task delayTask = Task.Delay(TimeSpan.FromSeconds(15));
                             Task completedTask = await Task.WhenAny(content.CopyToAsync(bufferedStream), delayTask);
                             if (completedTask == delayTask)
+                            {
                                 throw new Exception("Saving Image took longer than expected");
+                            }
+
                             await bufferedStream.FlushAsync();
                         }
 
@@ -100,11 +109,13 @@ namespace RIAppDemo.BLL.DataServices
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 var msg = "";
                 if (ex != null)
+                {
                     msg = ex.GetFullMessage();
+                }
                 // _logger.LogError(ex, msg);
                 throw;
             }

@@ -15,14 +15,16 @@ namespace RIAPP.DataService.LinqSql
              where TService : LinqForSqlDomainService<TDB>
              where TDB : System.Data.Linq.DataContext
         {
-            services.AddDomainService<TService>((options) => {
+            services.AddDomainService<TService>((options) =>
+            {
                 configure?.Invoke(options);
             });
 
             services.RemoveService(typeof(IValueConverter<TService>));
             services.AddScoped<IValueConverter<TService>, LinqValueConverter<TService>>();
 
-            services.AddScoped<ICodeGenProviderFactory<TService>>((sp) => {
+            services.AddScoped<ICodeGenProviderFactory<TService>>((sp) =>
+            {
                 return new CsharpProviderFactory<TService, TDB>();
             });
         }

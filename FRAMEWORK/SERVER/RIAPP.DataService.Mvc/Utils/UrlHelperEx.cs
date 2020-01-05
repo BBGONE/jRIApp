@@ -10,7 +10,9 @@ namespace RIAPP.DataService.Mvc.Utils
         public static string Content(this UrlHelper Url, string Path, bool addTimeStamp)
         {
             if (!addTimeStamp)
+            {
                 return Url.Content(Path);
+            }
 
             var serverPath = HttpContext.Current.Server.MapPath(Path);
             var lastWrite = File.GetLastWriteTimeUtc(serverPath);
@@ -23,7 +25,7 @@ namespace RIAPP.DataService.Mvc.Utils
             var bust = Bust(Url);
             var min = minify ? "1" : "0";
 
-            return Url.RouteUrl("Assets", new {bust, min, path});
+            return Url.RouteUrl("Assets", new { bust, min, path });
         }
 
         public static string Bust(this UrlHelper Url)

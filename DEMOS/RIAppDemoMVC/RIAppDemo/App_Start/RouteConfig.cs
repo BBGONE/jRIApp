@@ -10,7 +10,7 @@ namespace RIAppDemo
             routes.MapRoute(
                 "Assets",
                 "asset/{bust}/{min}/{*path}",
-                new {controller = "Assets", action = "Index"}
+                new { controller = "Assets", action = "Index" }
                 );
 
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
@@ -18,7 +18,7 @@ namespace RIAppDemo
             routes.MapRoute(
                 "Default", // Route name
                 "{controller}/{action}/{id}", // URL with parameters
-                new {controller = "Demo", action = "Index", id = UrlParameter.Optional} // Parameter defaults
+                new { controller = "Demo", action = "Index", id = UrlParameter.Optional } // Parameter defaults
                 );
         }
     }

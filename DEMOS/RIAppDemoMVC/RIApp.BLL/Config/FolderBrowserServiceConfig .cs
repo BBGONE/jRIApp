@@ -9,7 +9,8 @@ namespace RIAppDemo.BLL.DataServices.Config
         public static void AddFolderBrowser(this IServiceCollection services,
            Action<SvcOptions> configure)
         {
-            services.AddDomainService<FolderBrowserService>((options) => {
+            services.AddDomainService<FolderBrowserService>((options) =>
+            {
                 var svcOptions = new SvcOptions();
                 configure?.Invoke(svcOptions);
 

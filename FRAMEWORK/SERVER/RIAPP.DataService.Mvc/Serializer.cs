@@ -22,7 +22,7 @@ namespace RIAPP.DataService.Mvc
             if (value == null)
             {
                 writer.WriteNullValue();
-            } 
+            }
             else
             {
                 writer.WriteStartArray();

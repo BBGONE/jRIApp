@@ -31,7 +31,10 @@ namespace RIAppDemo.Controllers
                 var stream = new MemoryStream();
                 var fileName = await _thumbnailService.GetThumbnail(id, stream);
                 if (string.IsNullOrEmpty(fileName))
+                {
                     return new HttpStatusCodeResult(400);
+                }
+
                 stream.Position = 0;
                 var res = new FileStreamResult(stream, MediaTypeNames.Image.Jpeg);
                 res.FileDownloadName = fileName;
@@ -49,7 +52,10 @@ namespace RIAppDemo.Controllers
             var path1 = Path.Combine(baseDir, "Templates");
             var path2 = Path.GetFullPath(Path.Combine(path1, string.Format("{0}.html", name)));
             if (!path2.StartsWith(path1))
+            {
                 throw new Exception("template name is invalid");
+            }
+
             return new FilePathResult(path2, MediaTypeNames.Text.Plain);
         }
     }

@@ -25,7 +25,7 @@ namespace RIAppDemo
 
             Func<IServiceProvider, ClaimsPrincipal> getCurrentUser = (sp) =>
             {
-                return (HttpContext.Current?.User as ClaimsPrincipal)?? new ClaimsPrincipal(new ClaimsIdentity(null, Enumerable.Empty<Claim>()));
+                return (HttpContext.Current?.User as ClaimsPrincipal) ?? new ClaimsPrincipal(new ClaimsIdentity(null, Enumerable.Empty<Claim>()));
             };
 
             services.AddSingleton<ICodeGenConfig, CodeGenConfig>();
@@ -33,10 +33,12 @@ namespace RIAppDemo
             services.AddSingleton<DBConnectionFactory>();
 
             services.AddThumbnailService();
-            services.AddFolderBrowser((options) => {
+            services.AddFolderBrowser((options) =>
+            {
                 options.GetUser = getCurrentUser;
             });
-            services.AddRIAppDemoService((options) => {
+            services.AddRIAppDemoService((options) =>
+            {
                 options.GetUser = getCurrentUser;
             });
         }

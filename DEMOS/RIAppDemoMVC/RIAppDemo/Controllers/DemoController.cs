@@ -1,5 +1,4 @@
 ﻿using System.Web.Mvc;
-using RIAppDemo.Models;
 
 namespace RIAppDemo.Controllers
 {

@@ -5,7 +5,7 @@ using System;
 
 namespace RIAPP.DataService.LinqSql.Utils
 {
-    public class LinqValueConverter<TService>: ValueConverter<TService>
+    public class LinqValueConverter<TService> : ValueConverter<TService>
          where TService : BaseDomainService
     {
         public LinqValueConverter(ISerializer serializer)
@@ -16,9 +16,14 @@ namespace RIAPP.DataService.LinqSql.Utils
         protected override object ConvertToBinary(string value, Type propType)
         {
             if (value == null)
+            {
                 return null;
+            }
+
             if (propType != typeof(System.Data.Linq.Binary))
-                  return base.ConvertToBinary(value, propType);
+            {
+                return base.ConvertToBinary(value, propType);
+            }
             else
             {
                 return new System.Data.Linq.Binary((byte[])base.ConvertToBinary(value, typeof(byte[])));
@@ -28,18 +33,28 @@ namespace RIAPP.DataService.LinqSql.Utils
         protected override object ConvertToString(string value, Type propType)
         {
             if (value == null)
+            {
                 return null;
+            }
+
             if (propType != typeof(System.Xml.Linq.XElement))
+            {
                 return base.ConvertToString(value, propType);
+            }
             else
+            {
                 return System.Xml.Linq.XElement.Parse(value);
+            }
         }
 
-      
+
         protected string LinqBinaryToString(object value)
         {
             if (value == null)
+            {
                 return null;
+            }
+
             byte[] res = ((System.Data.Linq.Binary)value).ToArray();
             return this.BinaryToString(res);
         }
@@ -47,11 +62,15 @@ namespace RIAPP.DataService.LinqSql.Utils
         public override string SerializeField(Type propType, Field fieldInfo, object value)
         {
             if (propType == typeof(System.Data.Linq.Binary))
+            {
                 return LinqBinaryToString(value);
+            }
             else
+            {
                 return base.SerializeField(propType, fieldInfo, value);
+            }
         }
-   
+
         public override DataType DataTypeFromType(Type type)
         {
             string name = type.FullName;

@@ -12,7 +12,7 @@ namespace RIAppDemo.BLL
 
         public DBConnectionFactory()
         {
-            
+
         }
 
         private string GetConnectionString(string name)
@@ -38,7 +38,10 @@ namespace RIAppDemo.BLL
             var cn = SqlClientFactory.Instance.CreateConnection();
             cn.ConnectionString = connStr;
             if (cn.State == ConnectionState.Closed)
+            {
                 cn.Open();
+            }
+
             return cn;
         }
     }

@@ -11,7 +11,8 @@ namespace RIAppDemo.BLL.DataServices.Config
         public static void AddRIAppDemoService(this IServiceCollection services,
             Action<SvcOptions> configure)
         {
-            services.AddEF2DomainService<RIAppDemoServiceEF, ADWDbContext>((options) => {
+            services.AddEF2DomainService<RIAppDemoServiceEF, ADWDbContext>((options) =>
+            {
 
                 ValidatorConfig.RegisterValidators(options.ValidatorRegister);
                 DataManagerConfig.RegisterDataManagers(options.DataManagerRegister);
@@ -24,7 +25,8 @@ namespace RIAppDemo.BLL.DataServices.Config
                 options.UserFactory = svcOptions.GetUser;
             });
 
-            services.AddScoped<ADWDbContext>((sp) => {
+            services.AddScoped<ADWDbContext>((sp) =>
+            {
                 var res = new ADWDbContext(sp.GetRequiredService<DBConnectionFactory>().GetRIAppDemoConnection());
                 return res;
             });

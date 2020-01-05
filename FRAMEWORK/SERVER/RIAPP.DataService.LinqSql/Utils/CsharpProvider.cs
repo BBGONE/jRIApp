@@ -45,5 +45,5 @@ namespace RIAPP.DataService.LinqSql.Utils
             }
         }
     }
- 
+
 }

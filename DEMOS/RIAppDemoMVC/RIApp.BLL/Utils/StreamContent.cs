@@ -5,7 +5,7 @@ namespace RIAppDemo.BLL.Utils
 {
     public class StreamContent : IDataContent
     {
-        private Stream _stream;
+        private readonly Stream _stream;
 
         public StreamContent(Stream stream)
         {

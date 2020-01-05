@@ -15,7 +15,7 @@ namespace RIAPP.DataService.LinqSql
         public BaseLinqForSqlDomainService(IServiceContainer serviceContainer)
             : base(serviceContainer)
         {
-            
+
         }
     }
 
@@ -32,7 +32,8 @@ namespace RIAPP.DataService.LinqSql
         }
 
         #region Overridable Methods
-        protected virtual TDB CreateDataContext() {
+        protected virtual TDB CreateDataContext()
+        {
             return Activator.CreateInstance<TDB>();
         }
 
@@ -61,7 +62,7 @@ namespace RIAPP.DataService.LinqSql
                     {
                         fieldInfo.isPrimaryKey = ++pkNum;
                     }
-                    if (!string.IsNullOrWhiteSpace(colAttr.DbType) && colAttr.DbType.IndexOf("Char(", StringComparison.OrdinalIgnoreCase)>= 0)
+                    if (!string.IsNullOrWhiteSpace(colAttr.DbType) && colAttr.DbType.IndexOf("Char(", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         string len = System.Text.RegularExpressions.Regex.Match(colAttr.DbType, @"\(([^)]*)\)").Groups[1].Value;
                         int maxLength = -1;
@@ -78,7 +79,7 @@ namespace RIAPP.DataService.LinqSql
                         fieldInfo.isNullable = false;
                     }
 
-                    fieldInfo.fieldType = colAttr.IsVersion?FieldType.RowTimeStamp: FieldType.None;
+                    fieldInfo.fieldType = colAttr.IsVersion ? FieldType.RowTimeStamp : FieldType.None;
                     fieldInfo.isReadOnly = !propInfo2.CanWrite;
                     dbSetInfo.fieldInfos.Add(fieldInfo);
                 });
@@ -105,9 +106,9 @@ namespace RIAPP.DataService.LinqSql
                             ass.fieldRels.Add(frel);
                         }
                         Type entityType3 = propInfo3.PropertyType.GetGenericArguments().First();
-                        ass.childDbSetName =entityType3.Name;
+                        ass.childDbSetName = entityType3.Name;
                         ass.parentToChildrenName = propInfo3.Name;
-                        frel.childField= attr.OtherKey;
+                        frel.childField = attr.OtherKey;
                         frel.parentField = attr.ThisKey;
                     }
                     else
@@ -131,11 +132,11 @@ namespace RIAPP.DataService.LinqSql
 
         protected override Task ExecuteChangeSet()
         {
-            using (TransactionScope transScope = new TransactionScope(TransactionScopeOption.RequiresNew, 
+            using (TransactionScope transScope = new TransactionScope(TransactionScopeOption.RequiresNew,
                 new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted, Timeout = TimeSpan.FromMinutes(1.0) }))
             {
                 this.DB.SubmitChanges();
-                
+
                 transScope.Complete();
             }
             return Task.CompletedTask;

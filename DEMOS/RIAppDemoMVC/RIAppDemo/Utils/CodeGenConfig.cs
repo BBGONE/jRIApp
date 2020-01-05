@@ -6,7 +6,7 @@ namespace RIAppDemo.Utils
     {
         public CodeGenConfig()
         {
-            
+
         }
 
         bool ICodeGenConfig.IsCodeGenEnabled => true;

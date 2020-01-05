@@ -98,102 +98,102 @@ namespace RIAPP.DataService.Mvc.Utils
                 switch (theA)
                 {
                     case ' ':
-                    {
-                        if (isAlphanum(theB))
                         {
-                            action(1);
-                        }
-                        else
-                        {
-                            action(2);
-                        }
-                        break;
-                    }
-                    case '\n':
-                    {
-                        switch (theB)
-                        {
-                            case '{':
-                            case '[':
-                            case '(':
-                            case '+':
-                            case '-':
+                            if (isAlphanum(theB))
                             {
                                 action(1);
-                                break;
                             }
-                            case ' ':
+                            else
                             {
-                                action(3);
-                                break;
+                                action(2);
                             }
-                            default:
-                            {
-                                if (isAlphanum(theB))
-                                {
-                                    action(1);
-                                }
-                                else
-                                {
-                                    action(2);
-                                }
-                                break;
-                            }
+                            break;
                         }
-                        break;
-                    }
-                    default:
-                    {
-                        switch (theB)
+                    case '\n':
                         {
-                            case ' ':
+                            switch (theB)
                             {
-                                if (isAlphanum(theA))
-                                {
-                                    action(1);
-                                    break;
-                                }
-                                action(3);
-                                break;
-                            }
-                            case '\n':
-                            {
-                                switch (theA)
-                                {
-                                    case '}':
-                                    case ']':
-                                    case ')':
-                                    case '+':
-                                    case '-':
-                                    case '"':
-                                    case '\'':
+                                case '{':
+                                case '[':
+                                case '(':
+                                case '+':
+                                case '-':
                                     {
                                         action(1);
                                         break;
                                     }
-                                    default:
+                                case ' ':
                                     {
-                                        if (isAlphanum(theA))
+                                        action(3);
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        if (isAlphanum(theB))
                                         {
                                             action(1);
                                         }
                                         else
                                         {
-                                            action(3);
+                                            action(2);
                                         }
                                         break;
                                     }
-                                }
-                                break;
                             }
-                            default:
-                            {
-                                action(1);
-                                break;
-                            }
+                            break;
                         }
-                        break;
-                    }
+                    default:
+                        {
+                            switch (theB)
+                            {
+                                case ' ':
+                                    {
+                                        if (isAlphanum(theA))
+                                        {
+                                            action(1);
+                                            break;
+                                        }
+                                        action(3);
+                                        break;
+                                    }
+                                case '\n':
+                                    {
+                                        switch (theA)
+                                        {
+                                            case '}':
+                                            case ']':
+                                            case ')':
+                                            case '+':
+                                            case '-':
+                                            case '"':
+                                            case '\'':
+                                                {
+                                                    action(1);
+                                                    break;
+                                                }
+                                            default:
+                                                {
+                                                    if (isAlphanum(theA))
+                                                    {
+                                                        action(1);
+                                                    }
+                                                    else
+                                                    {
+                                                        action(3);
+                                                    }
+                                                    break;
+                                                }
+                                        }
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        action(1);
+                                        break;
+                                    }
+                            }
+                            break;
+                        }
                 }
             }
         }
@@ -217,7 +217,7 @@ namespace RIAPP.DataService.Mvc.Utils
                 theA = theB;
                 if (theA == '\'' || theA == '"')
                 {
-                    for (;;)
+                    for (; ; )
                     {
                         put(theA);
                         theA = get();
@@ -248,7 +248,7 @@ namespace RIAPP.DataService.Mvc.Utils
                 {
                     put(theA);
                     put(theB);
-                    for (;;)
+                    for (; ; )
                     {
                         theA = get();
                         if (theA == '/')
@@ -285,43 +285,43 @@ namespace RIAPP.DataService.Mvc.Utils
                 switch (peek())
                 {
                     case '/':
-                    {
-                        for (;;)
                         {
-                            c = get();
-                            if (c <= '\n')
+                            for (; ; )
                             {
-                                return c;
+                                c = get();
+                                if (c <= '\n')
+                                {
+                                    return c;
+                                }
                             }
                         }
-                    }
                     case '*':
-                    {
-                        get();
-                        for (;;)
                         {
-                            switch (get())
+                            get();
+                            for (; ; )
                             {
-                                case '*':
+                                switch (get())
                                 {
-                                    if (peek() == '/')
-                                    {
-                                        get();
-                                        return ' ';
-                                    }
-                                    break;
-                                }
-                                case EOF:
-                                {
-                                    throw new Exception("Error: JSMIN Unterminated comment.\n");
+                                    case '*':
+                                        {
+                                            if (peek() == '/')
+                                            {
+                                                get();
+                                                return ' ';
+                                            }
+                                            break;
+                                        }
+                                    case EOF:
+                                        {
+                                            throw new Exception("Error: JSMIN Unterminated comment.\n");
+                                        }
                                 }
                             }
                         }
-                    }
                     default:
-                    {
-                        return c;
-                    }
+                        {
+                            return c;
+                        }
                 }
             }
 
@@ -366,7 +366,7 @@ namespace RIAPP.DataService.Mvc.Utils
 
         private void put(int c)
         {
-            sw.Write((char) c);
+            sw.Write((char)c);
         }
 
         /* isAlphanum -- return true if the character is a letter, digit, underscore,

@@ -30,7 +30,8 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
                 var customersList = await DB.Customers.AsNoTracking().Where(c => custIDs.Contains(c.CustomerID)).ToListAsync();
                 var customerAddress = await DB.CustomerAddresses.AsNoTracking().Where(ca => custIDs.Contains(ca.CustomerID)).Select(ca => ca.CustomerID).ToListAsync();
 
-                customersList.ForEach(customer => {
+                customersList.ForEach(customer =>
+                {
                     customer.AddressCount = customerAddress.Count(id => id == customer.CustomerID);
                 });
 
@@ -58,7 +59,7 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
             return new QueryResult<CustomerAddress>(res, totalCount);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         public override void Insert(CustomerAddress customeraddress)
         {
             customeraddress.ModifiedDate = DateTime.Now;
@@ -66,7 +67,7 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
             DB.CustomerAddresses.Add(customeraddress);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         public override void Update(CustomerAddress customeraddress)
         {
             customeraddress.ModifiedDate = DateTime.Now;
@@ -75,7 +76,7 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
             DB.Entry(customeraddress).OriginalValues.SetValues(orig);
         }
 
-        [Authorize(Roles = new[] {ADMINS_ROLE})]
+        [Authorize(Roles = new[] { ADMINS_ROLE })]
         public override void Delete(CustomerAddress customeraddress)
         {
             DB.CustomerAddresses.Attach(customeraddress);

@@ -17,7 +17,7 @@ namespace RIAPP.DataService.Mvc
     public abstract class DataServiceController<TService> : Controller
         where TService : BaseDomainService
     {
-        private TService _DomainService;
+        private readonly TService _DomainService;
 
         public DataServiceController(TService domainService)
         {
