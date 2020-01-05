@@ -12,7 +12,7 @@ namespace RIAPP.DataService.Core.Metadata
 {
     public class DesignTimeMetadata
     {
-        private static readonly XNamespace NS_XAML_PRESENTATION = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+        // private static readonly XNamespace NS_XAML_PRESENTATION = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
         private static readonly XNamespace NS_DATA = $"clr-namespace:{typeof(DbSetInfo).Namespace};assembly={typeof(DbSetInfo).Assembly.GetName().Name}";
         private static readonly XNamespace NS_XAML = "http://schemas.microsoft.com/winfx/2006/xaml";
 
@@ -187,8 +187,7 @@ namespace RIAPP.DataService.Core.Metadata
 
             foreach (var classType in classTypes)
             {
-                var ns_dal = string.Format("clr-namespace:{0};assembly={1}", classType.Namespace,
-                    classType.Assembly.GetName().Name);
+                var ns_dal = $"clr-namespace:{classType.Namespace};assembly={classType.Assembly.GetName().Name}";
                 dic_types.Add(classType, ns_dal);
             }
 
@@ -201,7 +200,7 @@ namespace RIAPP.DataService.Core.Metadata
                 if (!dic_ns_prefix.ContainsKey(ns))
                 {
                     ++i;
-                    var prefix = string.Format("dal{0}", i);
+                    var prefix = $"dal{i}";
                     dic_ns_prefix.Add(ns, prefix);
                     dal_ns_attributes.AddLast(new XAttribute(XNamespace.Xmlns + prefix, ns));
                 }
@@ -218,8 +217,7 @@ namespace RIAPP.DataService.Core.Metadata
                         new XAttribute("dbSetName", classType.Name),
                         new XAttribute("enablePaging", true),
                         new XAttribute("pageSize", 25),
-                        new XAttribute("EntityType",
-                            string.Format("{{x:Type {0}:{1}}}", dic_ns_prefix[dic_types[classType]], classType.Name)),
+                        new XAttribute("EntityType", $"{{x:Type {dic_ns_prefix[dic_types[classType]]}:{classType.Name}}}"),
                         new XElement(NS_DATA + "DbSetInfo.fieldInfos", _PropsToXElements(classType.GetProperties(), 0)
                             )))
                 );
@@ -463,10 +461,10 @@ namespace RIAPP.DataService.Core.Metadata
             var entityTypeName = typeParts2[1];
             var nsparts = entity_ns.Split(';');
 
-            entityTypeName = string.Format("{0}.{1}", nsparts[0], entityTypeName);
+            entityTypeName = $"{nsparts[0]}.{entityTypeName}";
             if (nsparts.Length == 2 && nsparts[1].IndexOf("assembly=") >= 0)
             {
-                entityTypeName = string.Format("{0}, {1}", entityTypeName, nsparts[1].Replace("assembly=", ""));
+                entityTypeName = $"{entityTypeName}, {nsparts[1].Replace("assembly=", "")}";
             }
             var entityType = Type.GetType(entityTypeName, true);
             return entityType;

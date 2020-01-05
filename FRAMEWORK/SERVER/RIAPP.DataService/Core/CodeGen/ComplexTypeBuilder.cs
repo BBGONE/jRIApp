@@ -149,7 +149,7 @@ namespace RIAPP.DataService.Core.CodeGen
             var fieldType = "any";
             var dataType = fieldInfo.dataType;
 
-            fieldType = DotNet2TS.GetTSTypeNameFromDataType(dataType);
+            fieldType = DotNet2TS.DataTypeToTypeName(dataType);
             return fieldType;
         }
     }

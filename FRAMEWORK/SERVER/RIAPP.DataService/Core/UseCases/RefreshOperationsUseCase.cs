@@ -24,9 +24,9 @@ namespace RIAPP.DataService.Core
             _pipeline = pipeline;
         }
 
-        public async Task<bool> Handle(RefreshInfoRequest message, IOutputPort<RefreshInfoResponse> outputPort)
+        public async Task<bool> Handle(RefreshRequest message, IOutputPort<RefreshResponse> outputPort)
         {
-            RefreshInfoResponse response = new RefreshInfoResponse { rowInfo = message.rowInfo, dbSetName = message.dbSetName };
+            RefreshResponse response = new RefreshResponse { rowInfo = message.rowInfo, dbSetName = message.dbSetName };
 
             try
             {

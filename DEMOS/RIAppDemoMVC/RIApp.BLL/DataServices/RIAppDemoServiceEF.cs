@@ -396,7 +396,7 @@ namespace RIAppDemo.BLL.DataServices
         }
 
         [Refresh]
-        public async Task<Customer> RefreshCustomer(RefreshInfoRequest refreshInfo)
+        public async Task<Customer> RefreshCustomer(RefreshRequest refreshInfo)
         {
             var query = this.GetRefreshedEntityQuery(DB.Customers, refreshInfo);
             return await query.SingleAsync();

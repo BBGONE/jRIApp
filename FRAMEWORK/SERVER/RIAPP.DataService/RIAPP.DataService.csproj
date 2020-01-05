@@ -183,8 +183,8 @@
     <Compile Include="Core\Types\QueryRequest.cs" />
     <Compile Include="Core\Types\QueryResponse.cs" />
     <Compile Include="Core\Types\QueryResult.cs" />
-    <Compile Include="Core\Types\RefreshInfoResponse.cs" />
-    <Compile Include="Core\Types\RefreshInfoRequest.cs" />
+    <Compile Include="Core\Types\RefreshResponse.cs" />
+    <Compile Include="Core\Types\RefreshRequest.cs" />
     <Compile Include="Core\Types\Row.cs" />
     <Compile Include="Core\Types\RowInfo.cs" />
     <Compile Include="Core\Types\SortInfo.cs" />

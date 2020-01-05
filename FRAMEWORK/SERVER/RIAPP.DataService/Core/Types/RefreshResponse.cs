@@ -1,14 +1,12 @@
 ﻿namespace RIAPP.DataService.Core.Types
 {
 
-    public class RefreshInfoRequest : IUseCaseRequest<RefreshInfoResponse>
+    public class RefreshResponse
     {
-
         public string dbSetName { get; set; }
-
 
         public RowInfo rowInfo { get; set; }
 
-        internal DbSetInfo _dbSetInfo { get; set; }
+        public ErrorInfo error { get; set; }
     }
 }

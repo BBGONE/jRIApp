@@ -2,7 +2,7 @@
 
 namespace RIAPP.DataService.Core
 {
-    public interface IRefreshOperationsUseCase : IUseCaseRequestHandler<RefreshInfoRequest, RefreshInfoResponse>
+    public interface IRefreshOperationsUseCase : IUseCaseRequestHandler<RefreshRequest, RefreshResponse>
     {
     }
 

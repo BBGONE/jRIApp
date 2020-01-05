@@ -12,8 +12,8 @@ namespace RIAPP.DataService.Core.UseCases.RefreshMiddleware
         private ExceptionDispatchInfo _ExceptionInfo;
 
         public RefreshContext(
-            RefreshInfoRequest request,
-            RefreshInfoResponse response,
+            RefreshRequest request,
+            RefreshResponse response,
             TService service,
             IServiceContainer<TService> serviceContainer
           )
@@ -41,8 +41,8 @@ namespace RIAPP.DataService.Core.UseCases.RefreshMiddleware
         {
         }
 
-        public RefreshInfoRequest Request { get; }
-        public RefreshInfoResponse Response { get; }
+        public RefreshRequest Request { get; }
+        public RefreshResponse Response { get; }
         public IServiceProvider RequestServices { get { return ServiceContainer.ServiceProvider; } }
 
         public void CaptureException(Exception ex)

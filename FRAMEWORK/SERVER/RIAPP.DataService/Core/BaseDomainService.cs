@@ -251,11 +251,11 @@ namespace RIAPP.DataService.Core
             return output.Response;
         }
 
-        public async Task<RefreshInfoResponse> ServiceRefreshRow(RefreshInfoRequest message)
+        public async Task<RefreshResponse> ServiceRefreshRow(RefreshRequest message)
         {
             var factory = this.ServiceContainer.RefreshOperationsUseCaseFactory;
             IRefreshOperationsUseCase uc = factory.Create(this, (err) => _OnError(err));
-            var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<RefreshInfoResponse, RefreshInfoResponse>>();
+            var output = this.ServiceContainer.GetRequiredService<IResponsePresenter<RefreshResponse, RefreshResponse>>();
 
             bool res = await uc.Handle(message, output);
 

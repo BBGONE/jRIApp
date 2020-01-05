@@ -212,7 +212,7 @@ namespace RIAPP.DataService.Core.CodeGen
             return string.Format("{0}{1}: {2}{3};", paramInfo.name, paramInfo.isNullable ? "?" : "",
                 paramInfo.dataType == DataType.None
                     ? dotNet2TS.RegisterType(paramInfo.GetParameterType())
-                    : DotNet2TS.GetTSTypeNameFromDataType(paramInfo.dataType),
+                    : DotNet2TS.DataTypeToTypeName(paramInfo.dataType),
                 paramInfo.dataType != DataType.None && paramInfo.isArray ? "[]" : "");
         }
 
@@ -774,7 +774,7 @@ namespace RIAPP.DataService.Core.CodeGen
             }
             else
             {
-                result = DotNet2TS.GetTSTypeNameFromDataType(dataType);
+                result = fieldInfo.isNullable ? $"{DotNet2TS.DataTypeToTypeName(dataType)} | null" : DotNet2TS.DataTypeToTypeName(dataType);
             }
 
             return result;

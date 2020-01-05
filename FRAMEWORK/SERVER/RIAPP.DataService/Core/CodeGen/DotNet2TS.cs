@@ -80,7 +80,7 @@ namespace RIAPP.DataService.Core.CodeGen
                 }
 
                 var dtype = _valueConverter.DataTypeFromType(t);
-                result = GetTSTypeNameFromDataType(dtype);
+                result = DataTypeToTypeName(dtype);
 
                 if (isArray || isEnumerable)
                 {
@@ -271,7 +271,7 @@ namespace RIAPP.DataService.Core.CodeGen
             return sb.ToString().TrimEnd('\r', '\n');
         }
 
-        public static string GetTSTypeNameFromDataType(DataType dataType)
+        public static string DataTypeToTypeName(DataType dataType)
         {
             var fieldType = "any";
             switch (dataType)

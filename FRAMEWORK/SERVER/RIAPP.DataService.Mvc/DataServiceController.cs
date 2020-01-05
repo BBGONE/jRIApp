@@ -132,10 +132,10 @@ namespace RIAPP.DataService.Mvc
 
         [ActionName("refresh")]
         [HttpPost]
-        public async Task<ActionResult> Refresh([SericeParamsBinder] RefreshInfoRequest refreshInfo)
+        public async Task<ActionResult> Refresh([SericeParamsBinder] RefreshRequest refreshInfo)
         {
             var response = await DomainService.ServiceRefreshRow(refreshInfo);
-            return new ChunkedResult<RefreshInfoResponse>(response, Serializer);
+            return new ChunkedResult<RefreshResponse>(response, Serializer);
         }
 
         [ActionName("invoke")]
