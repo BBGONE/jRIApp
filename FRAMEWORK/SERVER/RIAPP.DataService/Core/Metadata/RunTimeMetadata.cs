@@ -10,90 +10,32 @@ namespace RIAPP.DataService.Core.Metadata
 {
     public class RunTimeMetadata
     {
-        private readonly Lazy<ILookup<Type, DbSetInfo>> _dbSetsByTypeLookUp;
         private readonly OperationalMethods _operMethods;
         private readonly MethodMap _svcMethods;
 
-        public RunTimeMetadata()
+        public RunTimeMetadata(DbSetsDictionary dbSets,
+            ILookup<Type, DbSetInfo> dbSetsByTypeLookUp,
+            AssociationsDictionary associations, 
+            MethodMap svcMethods, 
+            OperationalMethods operMethods,
+            string[] typeScriptImports)
         {
-            DbSets = new DbSetsDictionary();
-            Associations = new AssociationsDictionary();
-            _dbSetsByTypeLookUp = new Lazy<ILookup<Type, DbSetInfo>>(() => { return DbSets.Values.ToLookup(v => v.GetEntityType()); }, true);
-            _svcMethods = new MethodMap();
-            _operMethods = new OperationalMethods();
+            DbSets = dbSets;
+            this.dbSetsByTypeLookUp = dbSetsByTypeLookUp;
+            Associations = associations;
+            _svcMethods = svcMethods;
+            _operMethods = operMethods;
+            TypeScriptImports = typeScriptImports;
+        }
+
+        public string[] TypeScriptImports
+        {
+            get;
         }
 
         public ILookup<Type, DbSetInfo> dbSetsByTypeLookUp
         {
-            get { return _dbSetsByTypeLookUp.Value; }
-        }
-
-        internal void InitSvcMethods(MethodsList methods)
-        {
-            methods.ForEach(md =>
-            {
-                if (md.isQuery)
-                {
-                    //First check QueryAtrribute if it contains info for Entity Type or DbSet Name
-                    QueryAttribute queryAttribute = (QueryAttribute)md.GetMethodData().MethodInfo.GetCustomAttributes(typeof(QueryAttribute), false).FirstOrDefault();
-
-                    string dbSetName = queryAttribute.DbSetName;
-                    if (!string.IsNullOrWhiteSpace(dbSetName))
-                    {
-                        if (!this.DbSets.ContainsKey(dbSetName))
-                        {
-                            throw new DomainServiceException(string.Format("Can not determine the DbSet for a query method: {0} by DbSetName {1}", md.methodName, dbSetName));
-                        }
-
-                        _svcMethods.Add(dbSetName, md);
-                    }
-                    else
-                    {
-                        System.Type entityType = queryAttribute.EntityType ?? md.GetMethodData().EntityType;
-
-                        IEnumerable<DbSetInfo> dbSets = dbSetsByTypeLookUp[entityType];
-                        if (!dbSets.Any())
-                        {
-                            throw new DomainServiceException(string.Format("Can not determine the DbSet for a query method: {0}", md.methodName));
-                        }
-
-                        foreach (var dbSetInfo in dbSets)
-                        {
-                            _svcMethods.Add(dbSetInfo.dbSetName, md);
-                        }
-                    }
-                }
-                else
-                {
-                    _svcMethods.Add("", md);
-                }
-            });
-        }
-
-        internal void InitOperMethods(IEnumerable<MethodInfoData> methods)
-        {
-            var otherMethods = methods.ToArray();
-            Array.ForEach(otherMethods, md =>
-            {
-                if (md.EntityType != null)
-                {
-                    var dbSets = dbSetsByTypeLookUp[md.EntityType];
-                    foreach (var dbSetInfo in dbSets)
-                    {
-                        _operMethods.Add(dbSetInfo.dbSetName, md);
-                    }
-                }
-                else
-                {
-                    _operMethods.Add("", md);
-                }
-            });
-        }
-
-        internal void InitCompleted()
-        {
-            _operMethods.MakeReadOnly();
-            _svcMethods.MakeReadOnly();
+            get;
         }
 
         public MethodDescription GetQueryMethod(string dbSetName, string name)
@@ -139,5 +81,6 @@ namespace RIAPP.DataService.Core.Metadata
         {
             get { return new MethodsList(_svcMethods.Values); }
         }
+
     }
 }

@@ -22,6 +22,8 @@ namespace RIAPP.DataService.Core.Metadata
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
         public AssocList Associations { get; } = new AssocList();
 
+        public List<string> TypeScriptImports = new List<string>();
+
 
         public string ToXML()
         {
@@ -83,6 +85,13 @@ namespace RIAPP.DataService.Core.Metadata
             var xdoc = XDocument.Parse(xml);
             var xmetadata = xdoc.Element(NS_DATA + "Metadata");
             var xdbSets = xmetadata.Element(NS_DATA + "Metadata.DbSets");
+            var ximports = xmetadata.Nodes().Where(n => n is XProcessingInstruction && (n as XProcessingInstruction).Target == "import").Cast<XProcessingInstruction>();
+
+            foreach(var xpc in ximports)
+            {
+                metadata.TypeScriptImports.Add(xpc.Data);
+            }
+
             if (xdbSets != null)
             {
                 foreach (var xdbSet in xdbSets.Elements(NS_DATA + "DbSetInfo"))

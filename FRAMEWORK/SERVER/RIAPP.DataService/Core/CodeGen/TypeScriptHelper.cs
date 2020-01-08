@@ -45,11 +45,11 @@ namespace RIAPP.DataService.Core.CodeGen
             _associations = _metadata.Associations.Values.OrderBy(a => a.name).ToList();
         }
 
-        private void _OnNewClientTypeAdded(object sender, NewTypeArgs e)
+        private void _OnNewClientTypeAdded(Type type)
         {
-            if (!_clientTypes.Contains(e.ClientType))
+            if (!_clientTypes.Contains(type))
             {
-                _clientTypes.Add(e.ClientType);
+                _clientTypes.Add(type);
             }
         }
 
@@ -88,9 +88,8 @@ namespace RIAPP.DataService.Core.CodeGen
 
         public string CreateTypeScript(string comment = null)
         {
-            using (var dotNet2TS = new DotNet2TS(_valueConverter))
+            using (var dotNet2TS = new DotNet2TS(_valueConverter, (t)=> _OnNewClientTypeAdded(t)))
             {
-                dotNet2TS.NewClientTypeAdded += _OnNewClientTypeAdded;
                 _sb.Length = 0;
                 if (!string.IsNullOrWhiteSpace(comment))
                 {
@@ -177,7 +176,15 @@ namespace RIAPP.DataService.Core.CodeGen
 
         private string CreateHeader()
         {
-            return new CodeGenTemplate("Header.txt").ProcessTemplate();
+            Dictionary<string, Func<string>> dic = new Dictionary<string, Func<string>>();
+            StringBuilder sb = new StringBuilder();
+            foreach(string str in _metadata.TypeScriptImports)
+            {
+                sb.AppendLine($"import {str};");
+            }
+            string imports = sb.ToString();
+            dic.Add("IMPORTS", () => imports);
+            return new CodeGenTemplate("Header.txt").ProcessTemplate(dic);
         }
 
         private string CreateDbSetProps()
@@ -258,7 +265,7 @@ namespace RIAPP.DataService.Core.CodeGen
                     if (methodInfo.methodResult)
                     {
                         sbArgs.Append("\t}) => RIAPP.IPromise<");
-                        sbArgs.Append(dotNet2TS.RegisterType(MetadataHelper.GetTaskResultType(methodInfo.GetMethodData().MethodInfo.ReturnType)));
+                        sbArgs.Append(dotNet2TS.RegisterType(methodInfo.GetMethodData().MethodInfo.ReturnType.GetTaskResultType()));
                         sbArgs.Append(">");
                     }
                     else
@@ -271,7 +278,7 @@ namespace RIAPP.DataService.Core.CodeGen
                     if (methodInfo.methodResult)
                     {
                         sbArgs.Append("() => RIAPP.IPromise<");
-                        sbArgs.Append(dotNet2TS.RegisterType(MetadataHelper.GetTaskResultType(methodInfo.GetMethodData().MethodInfo.ReturnType)));
+                        sbArgs.Append(dotNet2TS.RegisterType(methodInfo.GetMethodData().MethodInfo.ReturnType.GetTaskResultType()));
                         sbArgs.Append(">");
                     }
                     else

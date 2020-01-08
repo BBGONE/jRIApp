@@ -11,29 +11,19 @@ using System.Text;
 
 namespace RIAPP.DataService.Core.CodeGen
 {
-    public class NewTypeArgs : EventArgs
-    {
-        public readonly Type ClientType;
-
-        public NewTypeArgs(Type clientType)
-        {
-            this.ClientType = clientType;
-        }
-    }
-
     public class DotNet2TS : IDisposable
     {
         // a container for available services (something like dependency injection container)
         // maps type name to its definition
         private readonly Dictionary<string, string> _tsTypes = new Dictionary<string, string>();
         private readonly IValueConverter _valueConverter;
+        private readonly Action<Type> _onClientTypeAdded;
 
-        public DotNet2TS(IValueConverter valueConverter)
+        public DotNet2TS(IValueConverter valueConverter, Action<Type> onClientTypeAdded)
         {
             _valueConverter = valueConverter ?? throw new ArgumentNullException(nameof(valueConverter));
+            _onClientTypeAdded = onClientTypeAdded == null ? delegate { } : onClientTypeAdded;
         }
-
-        public event EventHandler<NewTypeArgs> NewClientTypeAdded;
 
         /// <summary>
         /// Registers type
@@ -206,7 +196,7 @@ namespace RIAPP.DataService.Core.CodeGen
             }
             sb.AppendLine("}");
             _tsTypes.Add(name, sb.ToString());
-            NewClientTypeAdded?.Invoke(this, new NewTypeArgs(t));
+            _onClientTypeAdded(t);
             return _tsTypes[name];
         }
 
@@ -307,7 +297,7 @@ namespace RIAPP.DataService.Core.CodeGen
 
         void IDisposable.Dispose()
         {
-            NewClientTypeAdded = null;
+           // NOOP
         }
     }
 }

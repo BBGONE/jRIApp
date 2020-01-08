@@ -1,4 +1,6 @@
 ﻿using RIAPP.DataService.Core.Types;
+using RIAPP.DataService.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,9 +20,22 @@ namespace RIAPP.DataService.Core.Metadata
 
         public static IEnumerable<MethodInfoData> GetOthersOnly(this IEnumerable<MethodInfoData> allList)
         {
-            return allList.Where(
-                    info => !(info.MethodType == MethodType.Query || info.MethodType == MethodType.Invoke ||
+            return allList.Where(info => !(info.MethodType == MethodType.Query || info.MethodType == MethodType.Invoke ||
                           info.MethodType == MethodType.None));
+        }
+
+        public static MethodsList GetSvcMethods(this IEnumerable<MethodInfoData> allList, IValueConverter valueConverter)
+        {
+            var queryAndInvokes = allList.GetQueryAndInvokeOnly().ToArray();
+            var methodList = new MethodsList();
+
+            Array.ForEach(queryAndInvokes, info =>
+            {
+                var methodDescription = MethodDescription.FromMethodInfo(info, valueConverter);
+                methodList.Add(methodDescription);
+            });
+
+            return methodList;
         }
     }
 }

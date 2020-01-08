@@ -2,11 +2,23 @@
 using RIAPP.DataService.Core.Types;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Utils.Extensions
 {
     public static class TypeEx
     {
+        public static Type GetTaskResultType(this Type type)
+        {
+            if (type.IsGenericType && typeof(Task).IsAssignableFrom(type))
+            {
+                return type.GetGenericArguments().First();
+            }
+
+            return type;
+        }
+
         public static bool IsNullableType(this Type type)
         {
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(System.Nullable<>);

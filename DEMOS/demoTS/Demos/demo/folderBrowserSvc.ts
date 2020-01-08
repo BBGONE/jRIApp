@@ -1,5 +1,5 @@
 ﻿/*
-	Generated from: /FolderBrowserService/code?lang=ts on 2020-01-05 at 13:44
+	Generated from: /FolderBrowserService/code?lang=ts on 2020-01-08 at 11:56
 	Don't make manual changes here, they will be lost when this interface will be regenerated!
 */
 
@@ -7,12 +7,13 @@ import * as RIAPP from "jriapp_shared";
 import * as dbMOD from "jriapp_db";
 import { ExProps } from "./ExProps";
 
+
 export interface ISvcMethods {
 }
 
 export interface IFileSystemObject {
     readonly Key: string;
-    readonly ParentKey: string;
+    readonly ParentKey: string | null;
     readonly Name: string;
     readonly Level: number;
     readonly HasSubDirs: boolean;
@@ -23,7 +24,7 @@ export type TFileSystemObjectAspect = dbMOD.EntityAspect<FileSystemObject, IFile
 
 export interface FileSystemObject extends IFileSystemObject, dbMOD.IEntityItem {
     readonly _aspect: TFileSystemObjectAspect;
-    readonly fullPath: string;
+    readonly fullPath: string | null;
     readonly ExtraProps: ExProps;
     Parent: FileSystemObject;
     readonly Children: FileSystemObject[];
@@ -39,12 +40,12 @@ class FileSystemObjectEntity extends RIAPP.CollectionItem<TFileSystemObjectAspec
         return 'FileSystemObjectEntity';
     }
     get Key(): string { return this._aspect._getFieldVal('Key'); }
-    get ParentKey(): string { return this._aspect._getFieldVal('ParentKey'); }
+    get ParentKey(): string | null { return this._aspect._getFieldVal('ParentKey'); }
     get Name(): string { return this._aspect._getFieldVal('Name'); }
     get Level(): number { return this._aspect._getFieldVal('Level'); }
     get HasSubDirs(): boolean { return this._aspect._getFieldVal('HasSubDirs'); }
     get IsFolder(): boolean { return this._aspect._getFieldVal('IsFolder'); }
-    get fullPath(): string { return this._aspect._getCalcFieldVal('fullPath'); }
+    get fullPath(): string | null { return this._aspect._getCalcFieldVal('fullPath'); }
     get ExtraProps(): ExProps { return this._aspect._getCalcFieldVal('ExtraProps'); }
     get Parent(): FileSystemObject { return this._aspect._getNavFieldVal('Parent'); }
     set Parent(v: FileSystemObject) { this._aspect._setNavFieldVal('Parent', v); }
@@ -100,7 +101,7 @@ export class FileSystemObjectDb extends dbMOD.DbSet<FileSystemObject, IFileSyste
         query.params = args;
         return query;
     }
-    definefullPathField(getFunc: (item: FileSystemObject) => string) { this._defineCalculatedField('fullPath', getFunc); }
+    definefullPathField(getFunc: (item: FileSystemObject) => string | null) { this._defineCalculatedField('fullPath', getFunc); }
     defineExtraPropsField(getFunc: (item: FileSystemObject) => ExProps) { this._defineCalculatedField('ExtraProps', getFunc); }
 }
 

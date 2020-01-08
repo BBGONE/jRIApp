@@ -150,6 +150,7 @@
     <Compile Include="Core\Metadata\MethodMap.cs" />
     <Compile Include="Core\Metadata\OperationalMethods.cs" />
     <Compile Include="Core\Metadata\ParamMetadata.cs" />
+    <Compile Include="Core\Metadata\RunTimeMetadataBuilder.cs" />
     <Compile Include="Core\Metadata\RunTimeMetadata.cs" />
     <Compile Include="Core\RequestContext.cs" />
     <Compile Include="Core\RowGenerator.cs" />

@@ -1,10 +1,11 @@
 ﻿/*
-	Generated from: /RIAppDemoServiceEF/code?lang=ts on 2020-01-05 at 22:27
+	Generated from: /RIAppDemoServiceEF/code?lang=ts on 2020-01-08 at 11:57
 	Don't make manual changes here, they will be lost when this interface will be regenerated!
 */
 
 import * as RIAPP from "jriapp_shared";
 import * as dbMOD from "jriapp_db";
+
 
 //******BEGIN INTERFACE REGION******
 export interface IAddressInfo2 {
