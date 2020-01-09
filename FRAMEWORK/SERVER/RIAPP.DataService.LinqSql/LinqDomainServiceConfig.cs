@@ -21,7 +21,7 @@ namespace RIAPP.DataService.LinqSql
             });
 
             services.RemoveService(typeof(IValueConverter<TService>));
-            services.AddScoped<IValueConverter<TService>, LinqValueConverter<TService>>();
+            services.AddSingleton<IValueConverter<TService>, LinqValueConverter<TService>>();
 
             services.AddScoped<ICodeGenProviderFactory<TService>>((sp) =>
             {
