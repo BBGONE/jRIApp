@@ -187,6 +187,7 @@ namespace RIAppDemo.BLL.DataServices
 
 
         [Invoke]
+        // [Deny(RolesString = "Users")]
         public byte[] TestComplexInvoke(AddressInfo info, KeyVal[] keys)
         {
             string vals = string.Join(",", keys?.Select(k => k.val).ToArray());

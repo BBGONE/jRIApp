@@ -7,9 +7,9 @@ namespace RIAPP.DataService.Core.Security
     ///     the other authorize attributes
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = false)]
-    public class DenyAuthorizeAttribute : AuthorizeAttribute, IDenyAuthorizeData
+    public class DenyAttribute : AuthorizeAttribute, IDenyAuthorizeData
     {
-        public DenyAuthorizeAttribute() : base()
+        public DenyAttribute() : base()
         {
         }
     }

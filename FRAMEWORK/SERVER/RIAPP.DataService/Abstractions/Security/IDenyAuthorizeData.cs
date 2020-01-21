@@ -1,6 +1,6 @@
 ﻿namespace RIAPP.DataService.Core.Security
 {
-    interface IDenyAuthorizeData : IAuthorizeData
+    public interface IDenyAuthorizeData : IAuthorizeData
     {
     }
 }

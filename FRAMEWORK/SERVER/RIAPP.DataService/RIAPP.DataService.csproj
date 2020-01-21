@@ -159,7 +159,7 @@
     <Compile Include="Core\Security\AuthorizeAttribute.cs" />
     <Compile Include="Core\Security\AuthorizeParameters.cs" />
     <Compile Include="Core\Security\Authorizer.cs" />
-    <Compile Include="Core\Security\DenyAuthorizeAttribute.cs" />
+    <Compile Include="Core\Security\DenyAttribute.cs" />
     <Compile Include="Core\Security\OverrideAuthorizeAttribute.cs" />
     <Compile Include="Core\Security\SecurityHelper.cs" />
     <Compile Include="Core\Security\UserProvider.cs" />

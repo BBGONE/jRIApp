@@ -104,16 +104,20 @@ namespace RIAPP.DataService.Core.Security
             }
 
             var permits = authorizeData.Where(a => !(a is IDenyAuthorizeData));
+            
+            int cnt = 0;
 
             foreach (var role in permits.SelectMany(a => a.Roles))
             {
+                ++cnt;
+
                 if (User.IsInRole(role))
                 {
                     return true;
                 }
             }
 
-            return false;
+            return cnt > 0 ? false : true;
         }
 
         private IEnumerable<IAuthorizeData> GetServiceAuthorization()
