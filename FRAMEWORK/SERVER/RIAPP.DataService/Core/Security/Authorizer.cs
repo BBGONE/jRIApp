@@ -93,17 +93,27 @@ namespace RIAPP.DataService.Core.Security
                 return false;
             }
 
-            int cnt = 0;
-            foreach (var role in authorizeData.SelectMany(a => a.Roles))
+            var denies = authorizeData.Where(a => a is IDenyAuthorizeData);
+
+            foreach (var role in denies.SelectMany(a => a.Roles))
             {
-                ++cnt;
+                if (User.IsInRole(role))
+                {
+                    return false;
+                }
+            }
+
+            var permits = authorizeData.Where(a => !(a is IDenyAuthorizeData));
+
+            foreach (var role in permits.SelectMany(a => a.Roles))
+            {
                 if (User.IsInRole(role))
                 {
                     return true;
                 }
             }
 
-            return cnt > 0 ? false : true;
+            return false;
         }
 
         private IEnumerable<IAuthorizeData> GetServiceAuthorization()

@@ -25,7 +25,8 @@ namespace RIAPP.DataService.Core.Security
 
         public static MethodAuthorization GetMethodAuthorization(this MethodInfoData method)
         {
-            var attr = method.MethodInfo.GetCustomAttributes(false);
+            var attr = method.MethodInfo.GetCustomAttributes(false).ToArray();
+
             var methodAuthorization = new MethodAuthorization
             {
                 MethodName = method.MethodInfo.Name,
@@ -39,29 +40,26 @@ namespace RIAPP.DataService.Core.Security
                 return methodAuthorization;
             }
 
-            var attributes = attr.Where(a => a is IAuthorizeData).Cast<IAuthorizeData>().ToArray();
-
-            // the override attribute replaces all authorization for the method
-            var overrides = attributes.OfType<IOverrideAuthorizeData>();
+            var denies = attr.Where(a => a is IDenyAuthorizeData).Cast<IAuthorizeData>().ToArray();
+            var overrides = attr.Where(a => a is IOverrideAuthorizeData).Cast<IAuthorizeData>().ToArray();
 
             if (overrides.Any())
             {
                 methodAuthorization.IsOverride = true;
-                methodAuthorization.AuthorizeData = overrides;
+                methodAuthorization.AuthorizeData = Enumerable.Union(denies, overrides);
                 return methodAuthorization;
             }
 
-            if (attributes.Any())
-            {
-                methodAuthorization.AuthorizeData = attributes;
-            }
+            var permits = attr.Where(a => a is IAuthorizeData && !(a is IDenyAuthorizeData) && !(a is IOverrideAuthorizeData)).Cast<IAuthorizeData>().ToArray();
+
+            methodAuthorization.AuthorizeData = Enumerable.Union(denies, permits);
 
             return methodAuthorization;
         }
 
         public static DataManagerAuthorization GetDataManagerAuthorization(this Type managerType)
         {
-            var attr = managerType.GetCustomAttributes(false);
+            var attr = managerType.GetCustomAttributes(false).ToArray();
 
             var managerAuthorization = new DataManagerAuthorization
             {
@@ -77,43 +75,43 @@ namespace RIAPP.DataService.Core.Security
                 return managerAuthorization;
             }
 
-            var attributes = attr.Where(a => a is IAuthorizeData).Cast<IAuthorizeData>().ToArray();
-
-            // the override attribute replaces all higher and the current authorization
-            var overrides = attributes.OfType<IOverrideAuthorizeData>();
+            var denies = attr.Where(a => a is IDenyAuthorizeData).Cast<IAuthorizeData>().ToArray();
+            var overrides = attr.Where(a => a is IOverrideAuthorizeData).Cast<IAuthorizeData>().ToArray();
 
             if (overrides.Any())
             {
                 managerAuthorization.IsOverride = true;
-                managerAuthorization.AuthorizeData = overrides;
+                managerAuthorization.AuthorizeData = Enumerable.Union(denies, overrides);
                 return managerAuthorization;
             }
 
-            if (attributes.Any())
-            {
-                managerAuthorization.AuthorizeData = attributes;
-            }
+            var permits = attr.Where(a => a is IAuthorizeData && !(a is IDenyAuthorizeData) && !(a is IOverrideAuthorizeData)).Cast<IAuthorizeData>().ToArray();
+            
+            managerAuthorization.AuthorizeData = Enumerable.Union(denies, permits);
 
             return managerAuthorization;
         }
 
         public static IEnumerable<IAuthorizeData> GetTypeAuthorization(this Type instanceType)
         {
-            var attributes = instanceType.GetCustomAttributes(false).Where(a => a is IAuthorizeData).Cast<IAuthorizeData>().ToArray();
+            var attr = instanceType.GetCustomAttributes(false).ToArray();
+           
+            var denies = attr.Where(a => a is IDenyAuthorizeData).Cast<IAuthorizeData>().ToArray();
+            var overrides = attr.Where(a => a is IOverrideAuthorizeData).Cast<IAuthorizeData>().ToArray();
 
-            // the override attribute replaces all authorization
-            var overrides = attributes.OfType<IOverrideAuthorizeData>();
             if (overrides.Any())
             {
-                return overrides;
+                return Enumerable.Union(denies, overrides);
             }
 
-            return attributes;
+            var permits = attr.Where(a => a is IAuthorizeData && !(a is IDenyAuthorizeData) && !(a is IOverrideAuthorizeData)).Cast<IAuthorizeData>().ToArray();
+            return Enumerable.Union(denies, permits);
         }
 
         private static IEnumerable<DataManagerAuthorization> _GetDataManagersAuthorization(IEnumerable<MethodInfoData> methods)
         {
             var selectedMethods = methods.Where(m => m.IsInDataManager).ToArray();
+
             if (!selectedMethods.Any())
             {
                 return Enumerable.Empty<DataManagerAuthorization>();

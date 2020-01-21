@@ -95,6 +95,7 @@
     <Compile Include="Abstractions\Security\IAllowAnonymous.cs" />
     <Compile Include="Abstractions\Security\IAuthorizeData.cs" />
     <Compile Include="Abstractions\Security\IAuthorizer.cs" />
+    <Compile Include="Abstractions\Security\IDenyAuthorizeData.cs" />
     <Compile Include="Abstractions\Security\IOverrideAuthorizeData.cs" />
     <Compile Include="Abstractions\Security\IUserProvider.cs" />
     <Compile Include="Abstractions\Utils\IDataHelper.cs" />
@@ -158,6 +159,7 @@
     <Compile Include="Core\Security\AuthorizeAttribute.cs" />
     <Compile Include="Core\Security\AuthorizeParameters.cs" />
     <Compile Include="Core\Security\Authorizer.cs" />
+    <Compile Include="Core\Security\DenyAuthorizeAttribute.cs" />
     <Compile Include="Core\Security\OverrideAuthorizeAttribute.cs" />
     <Compile Include="Core\Security\SecurityHelper.cs" />
     <Compile Include="Core\Security\UserProvider.cs" />
