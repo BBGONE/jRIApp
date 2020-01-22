@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Claims;
 
 namespace RIAPP.DataService.Core.Security
 {
@@ -26,6 +27,23 @@ namespace RIAPP.DataService.Core.Security
                     Roles = value.Split(',', ';');
                 }
             }
+        }
+
+        public virtual bool IsAuthorized(ClaimsPrincipal user)
+        {
+            int cnt = 0;
+
+            foreach (var role in Roles)
+            {
+                ++cnt;
+
+                if (user.IsInRole(role))
+                {
+                    return true;
+                }
+            }
+
+            return cnt > 0 ? false : true;
         }
     }
 }

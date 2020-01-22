@@ -95,23 +95,23 @@ namespace RIAPP.DataService.Core.Security
 
             var denies = authorizeData.Where(a => a is IDenyAuthorizeData);
 
-            foreach (var role in denies.SelectMany(a => a.Roles))
+            foreach (var item in denies)
             {
-                if (User.IsInRole(role))
+                if (!item.IsAuthorized(User))
                 {
                     return false;
                 }
             }
 
-            var permits = authorizeData.Where(a => !(a is IDenyAuthorizeData));
+            var authorizers = authorizeData.Where(a => !(a is IDenyAuthorizeData));
             
             int cnt = 0;
 
-            foreach (var role in permits.SelectMany(a => a.Roles))
+            foreach (var item in authorizers)
             {
                 ++cnt;
 
-                if (User.IsInRole(role))
+                if (item.IsAuthorized(User))
                 {
                     return true;
                 }
@@ -179,7 +179,7 @@ namespace RIAPP.DataService.Core.Security
                 return false;
             }
 
-            // if it does not ovveride authorization for the service
+            // if it does not overide authorization for the service
             if (!ownerAuthorization.IsOverride && !allowServiceAccess)
             {
                 return false;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Claims;
 
 namespace RIAPP.DataService.Core.Security
 {
@@ -11,6 +12,19 @@ namespace RIAPP.DataService.Core.Security
     {
         public DenyAttribute() : base()
         {
+        }
+
+        public override bool IsAuthorized(ClaimsPrincipal user)
+        {
+            foreach (var role in Roles)
+            {
+                if (user.IsInRole(role))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
