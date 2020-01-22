@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Core.Security
 {
@@ -29,8 +30,10 @@ namespace RIAPP.DataService.Core.Security
             }
         }
 
-        public virtual bool IsAuthorized(ClaimsPrincipal user)
+        public virtual async Task<bool> IsAuthorized(ClaimsPrincipal user)
         {
+            await Task.CompletedTask;
+
             int cnt = 0;
 
             foreach (var role in Roles)

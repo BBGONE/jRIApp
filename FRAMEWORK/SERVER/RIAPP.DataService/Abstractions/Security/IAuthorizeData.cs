@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Core.Security
 {
@@ -6,6 +7,6 @@ namespace RIAPP.DataService.Core.Security
     {
         string[] Roles { get; }
         string RolesString { get; }
-        bool IsAuthorized(ClaimsPrincipal user);
+        Task<bool> IsAuthorized(ClaimsPrincipal user);
     }
 }

@@ -97,7 +97,7 @@ namespace RIAPP.DataService.Core.Security
 
             foreach (var item in denies)
             {
-                if (!item.IsAuthorized(User))
+                if (!(await item.IsAuthorized(User)))
                 {
                     return false;
                 }
@@ -111,7 +111,7 @@ namespace RIAPP.DataService.Core.Security
             {
                 ++cnt;
 
-                if (item.IsAuthorized(User))
+                if (await item.IsAuthorized(User))
                 {
                     return true;
                 }
