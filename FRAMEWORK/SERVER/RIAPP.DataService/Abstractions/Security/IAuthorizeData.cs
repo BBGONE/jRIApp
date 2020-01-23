@@ -5,6 +5,6 @@ namespace RIAPP.DataService.Core.Security
 {
     public interface IAuthorizeData
     {
-        Task<bool> IsAuthorized(ClaimsPrincipal user);
+        Task<bool> IsAuthorized(AuthorizationContext authorizationContext);
     }
 }

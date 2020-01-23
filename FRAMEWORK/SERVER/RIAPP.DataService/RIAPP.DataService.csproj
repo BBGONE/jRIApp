@@ -158,6 +158,7 @@
     <Compile Include="Core\Security\AllowAnonymousAttribute.cs" />
     <Compile Include="Core\Security\AuthorizeAttribute.cs" />
     <Compile Include="Core\Security\AuthorizeParameters.cs" />
+    <Compile Include="Core\Security\AuthorizationContext.cs" />
     <Compile Include="Core\Security\Authorizer.cs" />
     <Compile Include="Core\Security\DenyAttribute.cs" />
     <Compile Include="Core\Security\OverrideAuthorizeAttribute.cs" />
@@ -332,6 +333,7 @@
     <Compile Include="Utils\Pipeline\IRequestContext.cs" />
     <Compile Include="Utils\Pipeline\RequestDelegate.cs" />
     <Compile Include="Utils\RequestCallContext.cs" />
+    <Compile Include="Utils\ServiceFactory.cs" />
     <Compile Include="Utils\TemplateParser.cs" />
     <Compile Include="Utils\ValidationHelper.cs" />
     <Compile Include="Utils\ValueConverter.cs" />

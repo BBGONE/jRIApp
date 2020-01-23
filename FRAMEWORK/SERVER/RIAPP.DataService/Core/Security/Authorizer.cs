@@ -13,26 +13,16 @@ namespace RIAPP.DataService.Core.Security
         where TService : BaseDomainService
     {
         private const string ANONYMOUS_USER = "ANONYMOUS_USER";
-
         private readonly Lazy<IEnumerable<IAuthorizeData>> _serviceAuthorization;
-        private readonly IUserProvider _userProvider;
+      
 
-        public Authorizer(TService service, IUserProvider userProvider)
+        public Authorizer(AuthorizationContext<TService> authorizationContext)
         {
-            this.ServiceType = service.GetType();
-            this._userProvider = userProvider ?? throw new ArgumentNullException(nameof(userProvider), ErrorStrings.ERR_NO_USER);
-            this._serviceAuthorization = new Lazy<IEnumerable<IAuthorizeData>>(() => ServiceType.GetTypeAuthorization(), true);
+            this.AuthorizationContext = authorizationContext ?? throw new ArgumentNullException(nameof(authorizationContext));
+            this._serviceAuthorization = new Lazy<IEnumerable<IAuthorizeData>>(() => AuthorizationContext.Service.GetType().GetTypeAuthorization(), true);
         }
 
-        public ClaimsPrincipal User
-        {
-            get
-            {
-                return this._userProvider.User;
-            }
-        }
-
-        public Type ServiceType { get; }
+        public AuthorizationContext AuthorizationContext { get; }
 
         /// <summary>
         ///  throws AccesDeniedExeption if user have no rights to execute operation
@@ -44,10 +34,7 @@ namespace RIAPP.DataService.Core.Security
 
             if (!await CheckAccess(authorizationTree))
             {
-                var user = this.User == null || this.User.Identity == null || !this.User.Identity.IsAuthenticated
-                    ? ANONYMOUS_USER
-                    : this.User.Identity.Name;
-                throw new AccessDeniedException(string.Format(ErrorStrings.ERR_USER_ACCESS_DENIED, user));
+                throw new AccessDeniedException(string.Format(ErrorStrings.ERR_USER_ACCESS_DENIED, this.UserName));
             }
         }
 
@@ -65,14 +52,28 @@ namespace RIAPP.DataService.Core.Security
         {
             if (!await CanAccessMethod(method))
             {
-                var user = this.User == null || this.User.Identity == null || !this.User.Identity.IsAuthenticated
-                    ? ANONYMOUS_USER
-                    : this.User.Identity.Name;
-                throw new AccessDeniedException(string.Format(ErrorStrings.ERR_USER_ACCESS_DENIED, user));
+                throw new AccessDeniedException(string.Format(ErrorStrings.ERR_USER_ACCESS_DENIED, this.UserName));
             }
         }
 
         #region Private methods
+        private ClaimsPrincipal User
+        {
+            get
+            {
+                return this.AuthorizationContext.User;
+            }
+        }
+
+        private string UserName
+        {
+            get
+            {
+                return this.User == null || this.User.Identity == null || !this.User.Identity.IsAuthenticated
+                    ? ANONYMOUS_USER
+                    : this.User.Identity.Name;
+            }
+        }
 
         private async Task<bool> CheckAccessCore(IEnumerable<IAuthorizeData> authorizeData)
         {
@@ -97,7 +98,7 @@ namespace RIAPP.DataService.Core.Security
 
             foreach (var item in denies)
             {
-                if (!(await item.IsAuthorized(User)))
+                if (!(await item.IsAuthorized(AuthorizationContext)))
                 {
                     return false;
                 }
@@ -111,7 +112,7 @@ namespace RIAPP.DataService.Core.Security
             {
                 ++cnt;
 
-                if (await item.IsAuthorized(User))
+                if (await item.IsAuthorized(AuthorizationContext))
                 {
                     return true;
                 }

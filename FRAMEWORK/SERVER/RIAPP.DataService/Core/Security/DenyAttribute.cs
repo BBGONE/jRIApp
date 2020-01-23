@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Core.Security
@@ -15,13 +14,13 @@ namespace RIAPP.DataService.Core.Security
         {
         }
 
-        public override async Task<bool> IsAuthorized(ClaimsPrincipal user)
+        public override async Task<bool> IsAuthorized(AuthorizationContext authorizationContext)
         {
             await Task.CompletedTask;
 
             foreach (var role in Roles)
             {
-                if (user.IsInRole(role))
+                if (authorizationContext.User.IsInRole(role))
                 {
                     return false;
                 }

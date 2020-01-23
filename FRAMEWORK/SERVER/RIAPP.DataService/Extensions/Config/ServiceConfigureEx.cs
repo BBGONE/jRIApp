@@ -17,6 +17,22 @@ namespace RIAPP.DataService.Core.Config
 {
     public static class ServiceConfigureEx
     {
+        class ServiceFactory<TService> : IServiceFactory<TService>
+            where TService : BaseDomainService
+        {
+            private readonly IServiceProvider _sp;
+
+            public ServiceFactory(IServiceProvider sp)
+            {
+                _sp = sp;
+            }
+
+            public object GetInstance(Type serviceType)
+            {
+                return _sp.GetService(serviceType);
+            }
+        }
+
         public static void AddDomainService<TService>(this IServiceCollection services,
             Action<ServiceOptions> configure)
          where TService : BaseDomainService
@@ -26,7 +42,11 @@ namespace RIAPP.DataService.Core.Config
 
             var getUser = options.UserFactory ?? throw new ArgumentNullException(nameof(options.UserFactory), ErrorStrings.ERR_NO_USER);
 
+            services.TryAddScoped<IServiceFactory<TService>, ServiceFactory<TService>>();
+
             services.TryAddScoped<IUserProvider>((sp) => new UserProvider(() => getUser(sp)));
+
+            services.TryAddScoped<AuthorizationContext<TService>>();
 
             services.TryAddScoped<IAuthorizer<TService>, Authorizer<TService>>();
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace RIAPP.DataService.Core.Security
@@ -30,7 +29,7 @@ namespace RIAPP.DataService.Core.Security
             }
         }
 
-        public virtual async Task<bool> IsAuthorized(ClaimsPrincipal user)
+        public virtual async Task<bool> IsAuthorized(AuthorizationContext authorizationContext)
         {
             await Task.CompletedTask;
 
@@ -40,7 +39,7 @@ namespace RIAPP.DataService.Core.Security
             {
                 ++cnt;
 
-                if (user.IsInRole(role))
+                if (authorizationContext.User.IsInRole(role))
                 {
                     return true;
                 }
