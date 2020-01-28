@@ -72,11 +72,11 @@ namespace RIAPP.DataService.Core.Metadata
             return new RunTimeMetadata(dbSets, dbSetsByTypeLookUp, associations, svcMethods, operMethods, designTimeMetadata.TypeScriptImports.ToArray());
         }
 
-        private static MethodType _GetMethodType(MethodInfo methodInfo, IEnumerable<MethodInfoData> crudMethods)
+        private static MethodType _GetMethodType(MethodInfo methodInfo, IEnumerable<MethodInfoData> dataManagerMethods)
         {
-            if (crudMethods != null)
+            if (dataManagerMethods != null)
             {
-                var crudMethod = crudMethods.FirstOrDefault(m => m.MethodInfo == methodInfo);
+                var crudMethod = dataManagerMethods.FirstOrDefault(m => m.MethodInfo == methodInfo);
                 if (crudMethod != null)
                 {
                     return crudMethod.MethodType;
@@ -93,17 +93,17 @@ namespace RIAPP.DataService.Core.Metadata
                 return MethodType.Invoke;
             }
 
-            if (crudMethods == null && methodInfo.IsDefined(typeof(InsertAttribute), false))
+            if (dataManagerMethods == null && methodInfo.IsDefined(typeof(InsertAttribute), false))
             {
                 return MethodType.Insert;
             }
 
-            if (crudMethods == null && methodInfo.IsDefined(typeof(UpdateAttribute), false))
+            if (dataManagerMethods == null && methodInfo.IsDefined(typeof(UpdateAttribute), false))
             {
                 return MethodType.Update;
             }
 
-            if (crudMethods == null && methodInfo.IsDefined(typeof(DeleteAttribute), false))
+            if (dataManagerMethods == null && methodInfo.IsDefined(typeof(DeleteAttribute), false))
             {
                 return MethodType.Delete;
             }
@@ -122,56 +122,57 @@ namespace RIAPP.DataService.Core.Metadata
         }
 
         /// <summary>
-        ///     Get CRUD methods from DataManager which implements IDataManager<TModel> interface
+        ///     Gets CRUD methods from DataManager which implements IDataManager<TModel> interface
         /// </summary>
         /// <param name="fromType"></param>
         /// <param name="intType"></param>
         /// <returns></returns>
-        private static IEnumerable<MethodInfoData> _GetCRUDMethods(Type fromType, Type intType)
+        private static IEnumerable<MethodInfoData> _GetDataManagerCRUDMethods(Type fromType, Type modelType)
         {
-            var list = new List<MethodInfoData>();
-            var map = fromType.GetInterfaceMap(intType);
-            for (var ctr = 0; ctr < map.InterfaceMethods.Length; ctr++)
+            // removes duplicates of the method (there are could be synch and async methods)
+            IDictionary<MethodType, MethodInfoData> methodTypes = new Dictionary<MethodType, MethodInfoData>();
+            
+            void AddMethodInfoData(MethodType methodType, MethodInfo methodInfo)
             {
-                var im = map.InterfaceMethods[ctr];
-                var tm = map.TargetMethods[ctr];
-                bool isDeclaring = tm.DeclaringType == fromType;
-                if (isDeclaring)
+                if (!methodTypes.ContainsKey(methodType) && methodInfo.GetParameters().FirstOrDefault()?.ParameterType == modelType)
                 {
-                    switch (im.Name)
+                    methodTypes.Add(methodType, new MethodInfoData
                     {
-                        case "Insert":
-                            list.Add(new MethodInfoData
-                            {
-                                OwnerType = fromType,
-                                MethodInfo = tm,
-                                MethodType = MethodType.Insert,
-                                IsInDataManager = true
-                            });
-                            break;
-                        case "Update":
-                            list.Add(new MethodInfoData
-                            {
-                                OwnerType = fromType,
-                                MethodInfo = tm,
-                                MethodType = MethodType.Update,
-                                IsInDataManager = true
-                            });
-                            break;
-                        case "Delete":
-                            list.Add(new MethodInfoData
-                            {
-                                OwnerType = fromType,
-                                MethodInfo = tm,
-                                MethodType = MethodType.Delete,
-                                IsInDataManager = true
-                            });
-                            break;
-                    }
+                        OwnerType = fromType,
+                        MethodInfo = methodInfo,
+                        MethodType = methodType,
+                        IsInDataManager = true
+                    });
                 }
+            };
+
+            void AddMethod(MethodInfo method)
+            {
+                switch (method.Name)
+                {
+                    case "Insert":
+                    case "InsertAsync":
+                        AddMethodInfoData(MethodType.Insert, method);
+                        break;
+                    case "Update":
+                    case "UpdateAsync":
+                        AddMethodInfoData(MethodType.Update, method);
+                        break;
+                    case "Delete":
+                    case "DeleteAsync":
+                        AddMethodInfoData(MethodType.Delete, method);
+                        break;
+                }
+            };
+
+            var methods = fromType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+
+            foreach(var method in methods)
+            {
+                AddMethod(method);
             }
 
-            return list;
+            return methodTypes.Values.ToArray();
         }
 
         private static IEnumerable<MethodInfoData> _GetAllMethods(Type fromType)
@@ -181,11 +182,14 @@ namespace RIAPP.DataService.Core.Metadata
             var dataManagerInterface = interfTypes.Where(i =>
                         i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDataManager<>) &&
                         i.GetGenericArguments().Count() == 1).FirstOrDefault();
+
             bool isDataManager = dataManagerInterface != null;
             IEnumerable<MethodInfoData> crudMethods = null;
+
             if (isDataManager)
             {
-                crudMethods = _GetCRUDMethods(fromType, dataManagerInterface);
+                Type modelType = dataManagerInterface.GetGenericArguments().First();
+                crudMethods = _GetDataManagerCRUDMethods(fromType, modelType);
             }
 
             var allList = methodInfos.Select(m => new MethodInfoData

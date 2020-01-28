@@ -36,7 +36,7 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
             }
         }
 
-        private void Insert(CRUDContext<TService> ctx, RunTimeMetadata metadata, ChangeSetRequest changeSet, IChangeSetGraph graph, RowInfo rowInfo)
+        private async Task Insert(CRUDContext<TService> ctx, RunTimeMetadata metadata, ChangeSetRequest changeSet, IChangeSetGraph graph, RowInfo rowInfo)
         {
             var service = ctx.Service;
             var serviceHelper = ctx.ServiceContainer.GetServiceHelper();
@@ -46,11 +46,11 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
             using (var callContext = new RequestCallContext(CRUDContext<TService>.CreateRequestContext(service, changeSet, rowInfo)))
             {
                 rowInfo.SetChangeState(new EntityChangeState { ParentRows = graph.GetParents(rowInfo) });
-                serviceHelper.InsertEntity(metadata, rowInfo);
+                await serviceHelper.InsertEntity(metadata, rowInfo);
             }
         }
 
-        private void Update(CRUDContext<TService> ctx, RunTimeMetadata metadata, ChangeSetRequest changeSet, RowInfo rowInfo)
+        private async Task Update(CRUDContext<TService> ctx, RunTimeMetadata metadata, ChangeSetRequest changeSet, RowInfo rowInfo)
         {
             var service = ctx.Service;
             var serviceHelper = ctx.ServiceContainer.GetServiceHelper();
@@ -60,11 +60,11 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
             using (var callContext = new RequestCallContext(CRUDContext<TService>.CreateRequestContext(service, changeSet, rowInfo)))
             {
                 rowInfo.SetChangeState(new EntityChangeState());
-                serviceHelper.UpdateEntity(metadata, rowInfo);
+                await serviceHelper.UpdateEntity(metadata, rowInfo);
             }
         }
 
-        private void Delete(CRUDContext<TService> ctx, RunTimeMetadata metadata, ChangeSetRequest changeSet, RowInfo rowInfo)
+        private async Task Delete(CRUDContext<TService> ctx, RunTimeMetadata metadata, ChangeSetRequest changeSet, RowInfo rowInfo)
         {
             var service = ctx.Service;
             var serviceHelper = ctx.ServiceContainer.GetServiceHelper();
@@ -74,7 +74,7 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
             using (var callContext = new RequestCallContext(CRUDContext<TService>.CreateRequestContext(service, changeSet, rowInfo)))
             {
                 rowInfo.SetChangeState(new EntityChangeState());
-                serviceHelper.DeleteEntity(metadata, rowInfo); ;
+                await serviceHelper.DeleteEntity(metadata, rowInfo); ;
             }
         }
 
@@ -95,19 +95,19 @@ namespace RIAPP.DataService.Core.UseCases.CRUDMiddleware
                 foreach (var rowInfo in graph.InsertList)
                 {
                     currentRowInfo = rowInfo;
-                    this.Insert(ctx, metadata, changeSet, graph, rowInfo);
+                    await this.Insert(ctx, metadata, changeSet, graph, rowInfo);
                 }
 
                 foreach (RowInfo rowInfo in graph.UpdateList)
                 {
                     currentRowInfo = rowInfo;
-                    this.Update(ctx, metadata, changeSet, rowInfo);
+                    await this.Update(ctx, metadata, changeSet, rowInfo);
                 }
 
                 foreach (RowInfo rowInfo in graph.DeleteList)
                 {
                     currentRowInfo = rowInfo;
-                    this.Delete(ctx, metadata, changeSet, rowInfo);
+                    await this.Delete(ctx, metadata, changeSet, rowInfo);
                 }
             }
             catch (Exception ex)

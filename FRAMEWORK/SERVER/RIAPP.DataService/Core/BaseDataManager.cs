@@ -31,21 +31,6 @@ namespace RIAPP.DataService.Core
             get { return RequestContext.CurrentQueryInfo; }
         }
 
-        public virtual void Insert(TModel model)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual void Update(TModel model)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual void Delete(TModel model)
-        {
-            throw new NotImplementedException();
-        }
-
         public virtual Task AfterExecuteChangeSet(ChangeSetRequest changeSet)
         {
             return Task.CompletedTask;

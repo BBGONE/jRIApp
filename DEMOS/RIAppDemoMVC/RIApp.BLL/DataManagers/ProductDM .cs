@@ -44,7 +44,7 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
         }
 
         [Authorize(Roles = new[] { ADMINS_ROLE })]
-        public override void Insert(Product product)
+        public void Insert(Product product)
         {
             product.ModifiedDate = DateTime.Now;
             product.rowguid = Guid.NewGuid();
@@ -52,7 +52,7 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
         }
 
         [Authorize(Roles = new[] { ADMINS_ROLE })]
-        public override void Update(Product product)
+        public void Update(Product product)
         {
             product.ModifiedDate = DateTime.Now;
             var orig = GetOriginal();
@@ -61,8 +61,9 @@ namespace RIAppDemo.BLL.DataServices.DataManagers
         }
 
         [Authorize(Roles = new[] { ADMINS_ROLE })]
-        public override void Delete(Product product)
+        public async Task DeleteAsync(Product product)
         {
+            await Task.Delay(10); // just for testing
             DB.Products.Attach(product);
             DB.Products.Remove(product);
         }

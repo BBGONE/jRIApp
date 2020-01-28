@@ -342,7 +342,7 @@ namespace RIAPP.DataService.Core
         }
 
 
-        public void InsertEntity(RunTimeMetadata metadata, RowInfo rowInfo)
+        public async Task InsertEntity(RunTimeMetadata metadata, RowInfo rowInfo)
         {
             DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
             if (rowInfo.changeType != ChangeType.Added)
@@ -362,10 +362,14 @@ namespace RIAPP.DataService.Core
             UpdateEntityFromRowInfo(dbEntity, rowInfo, false);
             rowInfo.GetChangeState().Entity = dbEntity;
             var instance = GetMethodOwner(methodData);
-            methodData.MethodInfo.Invoke(instance, new[] { dbEntity });
+            var res = methodData.MethodInfo.Invoke(instance, new[] { dbEntity });
+            if (res is Task)
+            {
+                await (res as Task);
+            }
         }
 
-        public void UpdateEntity(RunTimeMetadata metadata, RowInfo rowInfo)
+        public async Task UpdateEntity(RunTimeMetadata metadata, RowInfo rowInfo)
         {
             DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
             if (rowInfo.changeType != ChangeType.Updated)
@@ -388,10 +392,14 @@ namespace RIAPP.DataService.Core
             rowInfo.GetChangeState().OriginalEntity = original;
             var instance = GetMethodOwner(methodData);
             //apply this changes to entity that is in the database (this is done in user domain service method)
-            methodData.MethodInfo.Invoke(instance, new[] { dbEntity });
+            var res = methodData.MethodInfo.Invoke(instance, new[] { dbEntity });
+            if (res is Task)
+            {
+                await (res as Task);
+            }
         }
 
-        public void DeleteEntity(RunTimeMetadata metadata, RowInfo rowInfo)
+        public async Task DeleteEntity(RunTimeMetadata metadata, RowInfo rowInfo)
         {
             DbSetInfo dbSetInfo = rowInfo.GetDbSetInfo();
             if (rowInfo.changeType != ChangeType.Deleted)
@@ -412,7 +420,11 @@ namespace RIAPP.DataService.Core
             rowInfo.GetChangeState().Entity = dbEntity;
             rowInfo.GetChangeState().OriginalEntity = dbEntity;
             var instance = GetMethodOwner(methodData);
-            methodData.MethodInfo.Invoke(instance, new[] { dbEntity });
+            var res =  methodData.MethodInfo.Invoke(instance, new[] { dbEntity });
+            if (res is Task)
+            {
+                await (res as Task);
+            }
         }
 
         public async Task<bool> ValidateEntity(RunTimeMetadata metadata, RequestContext requestContext)
