@@ -72,62 +72,29 @@ namespace RIAPP.DataService.Core.Metadata
             return new RunTimeMetadata(dbSets, dbSetsByTypeLookUp, associations, svcMethods, operMethods, designTimeMetadata.TypeScriptImports.ToArray());
         }
 
-        private static MethodType _GetMethodType(MethodInfo methodInfo, IEnumerable<MethodInfoData> dataManagerMethods)
+        private static readonly Dictionary<Type, MethodType> _attributeMap = new Dictionary<Type, MethodType>()
         {
-            if (dataManagerMethods != null)
-            {
-                var crudMethod = dataManagerMethods.FirstOrDefault(m => m.MethodInfo == methodInfo);
-                if (crudMethod != null)
-                {
-                    return crudMethod.MethodType;
-                }
-            }
+            { typeof(QueryAttribute), MethodType.Query },
+            { typeof(InvokeAttribute), MethodType.Invoke },
+            { typeof(InsertAttribute), MethodType.Insert },
+            { typeof(UpdateAttribute), MethodType.Update },
+            { typeof(DeleteAttribute), MethodType.Delete },
+            { typeof(ValidateAttribute), MethodType.Validate },
+            { typeof(RefreshAttribute), MethodType.Refresh }
+        };
 
-            if (methodInfo.IsDefined(typeof(QueryAttribute), false))
-            {
-                return MethodType.Query;
-            }
-
-            if (methodInfo.IsDefined(typeof(InvokeAttribute), false))
-            {
-                return MethodType.Invoke;
-            }
-
-            if (dataManagerMethods == null && methodInfo.IsDefined(typeof(InsertAttribute), false))
-            {
-                return MethodType.Insert;
-            }
-
-            if (dataManagerMethods == null && methodInfo.IsDefined(typeof(UpdateAttribute), false))
-            {
-                return MethodType.Update;
-            }
-
-            if (dataManagerMethods == null && methodInfo.IsDefined(typeof(DeleteAttribute), false))
-            {
-                return MethodType.Delete;
-            }
-
-            if (methodInfo.IsDefined(typeof(ValidateAttribute), false))
-            {
-                return MethodType.Validate;
-            }
-
-            if (methodInfo.IsDefined(typeof(RefreshAttribute), false))
-            {
-                return MethodType.Refresh;
-            }
-
-            return MethodType.None;
+        private static MethodType _GetMethodType(MethodInfo methodInfo)
+        {
+            return _attributeMap.FirstOrDefault(kv => methodInfo.IsDefined(kv.Key, false)).Value;
         }
 
         /// <summary>
         ///     Gets CRUD methods from DataManager which implements IDataManager<TModel> interface
         /// </summary>
         /// <param name="fromType"></param>
-        /// <param name="intType"></param>
+        /// <param name="modelType"></param>
         /// <returns></returns>
-        private static IEnumerable<MethodInfoData> _GetDataManagerCRUDMethods(Type fromType, Type modelType)
+        private static IDictionary<MethodType, MethodInfoData> _GetDataManagerCRUDMethods(Type fromType, Type modelType)
         {
             // removes duplicates of the method (there are could be synch and async methods)
             IDictionary<MethodType, MethodInfoData> methodTypes = new Dictionary<MethodType, MethodInfoData>();
@@ -172,9 +139,14 @@ namespace RIAPP.DataService.Core.Metadata
                 AddMethod(method);
             }
 
-            return methodTypes.Values.ToArray();
+            return methodTypes;
         }
 
+        /// <summary>
+        /// Gets all operational methods from supplied type (DataService or DataManager)
+        /// </summary>
+        /// <param name="fromType"></param>
+        /// <returns></returns>
         private static IEnumerable<MethodInfoData> _GetAllMethods(Type fromType)
         {
             var methodInfos = fromType.GetMethods(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.Public);
@@ -184,49 +156,70 @@ namespace RIAPP.DataService.Core.Metadata
                         i.GetGenericArguments().Count() == 1).FirstOrDefault();
 
             bool isDataManager = dataManagerInterface != null;
-            IEnumerable<MethodInfoData> crudMethods = null;
+
+            IEnumerable<MethodInfoData> allList = methodInfos.Select(m => new MethodInfoData
+            {
+                OwnerType = fromType,
+                MethodInfo = m,
+                MethodType = _GetMethodType(m),
+                IsInDataManager = isDataManager
+            }).Where(m => m.MethodType != MethodType.None);
+
+            IEnumerable<MethodInfoData> UnionMethods(IEnumerable<MethodInfoData> list, IDictionary<MethodType, MethodInfoData> crudMethods)
+            {
+                foreach(var kv in crudMethods)
+                {
+                    yield return kv.Value;
+                }
+
+                foreach(var item in list)
+                {
+                    if (!crudMethods.ContainsKey(item.MethodType))
+                    {
+                        yield return item;
+                    }
+                }
+            };
+
+            IEnumerable<MethodInfoData> result;
+
 
             if (isDataManager)
             {
                 Type modelType = dataManagerInterface.GetGenericArguments().First();
-                crudMethods = _GetDataManagerCRUDMethods(fromType, modelType);
+                IDictionary<MethodType, MethodInfoData> crudMethods = _GetDataManagerCRUDMethods(fromType, modelType);
+                result = UnionMethods(allList, crudMethods).ToArray();
+            }
+            else
+            {
+                result = allList.ToArray();
             }
 
-            var allList = methodInfos.Select(m => new MethodInfoData
+            foreach (MethodInfoData data in result)
             {
-                OwnerType = fromType,
-                MethodInfo = m,
-                MethodType = _GetMethodType(m, crudMethods),
-                IsInDataManager = isDataManager
-            }).Where(m => m.MethodType != MethodType.None).ToArray();
-
-            Array.ForEach(allList, data =>
-            {
-                if (isDataManager)
+                switch (data.MethodType)
                 {
-                    data.EntityType = dataManagerInterface.GetGenericArguments().First();
+                    case MethodType.Query:
+                        data.EntityType = data.MethodInfo.ReturnType.GetTaskResultType().GetGenericArguments().First();
+                        break;
+                    case MethodType.Invoke:
+                        data.EntityType = null;
+                        break;
+                    case MethodType.Refresh:
+                        data.EntityType = data.MethodInfo.ReturnType.GetTaskResultType();
+                        break;
+                    case MethodType.Insert:
+                    case MethodType.Update:
+                    case MethodType.Delete:
+                    case MethodType.Validate:
+                        data.EntityType = data.MethodInfo.GetParameters().First().ParameterType;
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unknown Method Type: {data.MethodType}");
                 }
-                else
-                {
-                    switch (data.MethodType)
-                    {
-                        case MethodType.Query:
-                            data.EntityType = data.MethodInfo.ReturnType.GetTaskResultType().GetGenericArguments().First();
-                            break;
-                        case MethodType.Invoke:
-                            data.EntityType = null;
-                            break;
-                        case MethodType.Refresh:
-                            data.EntityType = data.MethodInfo.ReturnType.GetTaskResultType();
-                            break;
-                        default:
-                            data.EntityType = data.MethodInfo.GetParameters().First().ParameterType;
-                            break;
-                    }
-                }
-            });
+            }
 
-            return allList;
+            return result;
         }
 
         private void ProcessMethodDescriptions(Type fromType, MethodMap svcMethods, OperationalMethods operMethods, DbSetsDictionary dbSets, ILookup<Type, DbSetInfo> dbSetsByTypeLookUp)
