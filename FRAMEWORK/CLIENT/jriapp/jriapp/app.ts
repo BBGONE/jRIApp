@@ -103,7 +103,8 @@ export class Application extends BaseObject implements IApplication {
     }
     private _cleanUpObjMaps(): void {
         const self = this;
-        this._objMaps.forEach((objMap) => {
+        for (const objMap of this._objMaps)
+        {
             forEach(objMap, (name) => {
                 const obj = objMap[name];
                 if (sys.isBaseObj(obj)) {
@@ -112,7 +113,7 @@ export class Application extends BaseObject implements IApplication {
                     }
                 }
             });
-        });
+        }
         this._objMaps = [];
     }
     private _initAppModules() : void {

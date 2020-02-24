@@ -114,13 +114,14 @@ export class WaitQueue extends BaseObject {
                     }
                 }
 
-                found.forEach(function (task) {
+                for (const task of found)
+                {
                     try {
                         task.action.apply(self._owner, task.args);
                     } catch (ex) {
                         self._owner.handleError(ex, self);
                     }
-                });
+                }
             }
         } finally {
             if (propQueue.length === 0) {

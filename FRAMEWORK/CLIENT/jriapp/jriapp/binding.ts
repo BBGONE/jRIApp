@@ -237,7 +237,7 @@ export class Binding extends BaseObject implements IBinding {
         }
         this.setDisposing();
         const self = this;
-        forEach(this._pathItems, (key, old) => {
+        forEach(this._pathItems, (_key, old) => {
             self._cleanUp(old);
         });
         this._pathItems = Indexer();

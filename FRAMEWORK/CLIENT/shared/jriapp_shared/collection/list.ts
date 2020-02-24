@@ -87,7 +87,8 @@ export abstract class BaseList<TItem extends IListItem, TObj extends IIndexer<an
 
         self._fieldMap = Indexer();
         self._fieldInfos = [];
-        props.forEach(function (prop) {
+        for (const prop of props)
+        {
             const fldInfo = BaseCollection.getEmptyFieldInfo(prop.name);
             fldInfo.dataType = prop.dtype;
             self._fieldMap[prop.name] = fldInfo;
@@ -96,7 +97,7 @@ export abstract class BaseList<TItem extends IListItem, TObj extends IIndexer<an
                 fld.dependents = null;
                 fld.fullName = fullName;
             });
-        });
+        }
     }
     protected _clear(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER) {
         super._clear(reason, oper);
@@ -127,25 +128,28 @@ export abstract class BaseList<TItem extends IListItem, TObj extends IIndexer<an
         return this._fieldInfos;
     }
     fillItems(objArray: TObj[], clearAll?: boolean) {
-        const self = this, newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
+        const self = this, newItems: TItem[] = [], items: TItem[] = [];
         if (!objArray) {
             objArray = [];
         }
+
         try {
             if (!!clearAll) {
                 this.clear();
             }
-            objArray.forEach(function (obj) {
+
+            for (const obj of objArray)
+            {
                 const item = self.createItem(obj), oldItem = self.getItemByKey(item._key);
                 if (!oldItem) {
-                    positions.push(self._appendItem(item));
+                    self._appendItem(item);
                     newItems.push(item);
                     items.push(item);
                     item._aspect._setIsAttached(true);
                 } else {
                     items.push(oldItem);
                 }
-            });
+            }
 
             if (newItems.length > 0) {
                 this.objEvents.raiseProp("count");
@@ -155,8 +159,7 @@ export abstract class BaseList<TItem extends IListItem, TObj extends IIndexer<an
                 changeType: COLL_CHANGE_TYPE.Reset,
                 reason: COLL_CHANGE_REASON.None,
                 oper: COLL_CHANGE_OPER.Fill,
-                items: items,
-                pos: positions
+                items: items
             });
             this._onFillEnd({
                 items: items,
@@ -172,9 +175,10 @@ export abstract class BaseList<TItem extends IListItem, TObj extends IIndexer<an
         });
     }
     resetStatus(): void {
-        this.items.forEach(function (item) {
+        for (const item of this.items)
+        {
             item._aspect._resetStatus();
-        });
+        }
     }
     toArray(): TObj[] {
         return this.items.map((item) => {

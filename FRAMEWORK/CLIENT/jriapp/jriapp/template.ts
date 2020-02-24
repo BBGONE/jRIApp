@@ -229,12 +229,13 @@ class Template extends BaseObject implements ITemplate {
         // first return elements with the needed data attributes those are inside template
         const els = this.findElByDataName(name), res: IElView[] = [],
             viewStore = boot.app.viewFactory.store;
-        els.forEach((el) => {
+        for(const el of els)
+        {
             const elView = viewStore.getElView(el);
             if (!!elView) {
                 res.push(elView);
             }
-        });
+        }
         return res;
     }
     toString(): string {

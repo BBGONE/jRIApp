@@ -529,11 +529,9 @@ export class Helper {
     static parseOptions(parseType: PARSE_TYPE, parts: string[], dataContext: any): object {
         let [first, ...rest] = parts;
         let obj = helper.parseOption(parseType, first, dataContext) || {};
-        if (rest.length > 0) {
-            rest.forEach((val) => {
-                const obj2 = helper.parseOption(parseType, val, dataContext);
-                obj = extend(obj, obj2);
-            });
+        for (const val of rest) {
+            const obj2 = helper.parseOption(parseType, val, dataContext);
+            obj = extend(obj, obj2);
         }
 
         return obj;
@@ -561,7 +559,8 @@ export class Helper {
 
         const kvals = funcs.getKeyVals(part);
 
-        kvals.forEach(function (kv) {
+        for (const kv of kvals)
+        {
             if (parseType === PARSE_TYPE.BINDING && !kv.val && startsWith(kv.key, TOKEN.THIS)) {
                 kv.val = kv.key.substr(THIS_LEN); // extract property
                 kv.key = TOKEN.TARGET_PATH;
@@ -573,7 +572,7 @@ export class Helper {
                 res[kv.key] = _undefined;
                 _reportBug(err);
             }
-        });
+        }
 
         return res;
     }

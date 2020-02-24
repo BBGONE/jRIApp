@@ -21,11 +21,12 @@ export class LifeTimeScope extends BaseObject implements ILifeTimeScope {
             return;
         }
         this.setDisposing();
-        this._objs.forEach(function (obj) {
+        for (const obj of this._objs)
+        {
             if (!obj.getIsStateDirty()) {
                 obj.dispose();
             }
-        });
+        }
         this._objs = [];
         super.dispose();
     }

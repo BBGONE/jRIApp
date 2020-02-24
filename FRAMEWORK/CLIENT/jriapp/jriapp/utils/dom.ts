@@ -129,9 +129,10 @@ export class DomUtils {
         if (!children) {
             return;
         }
-        children.forEach((node) => {
+        for (const node of children)
+        {
             parent.appendChild(node);
-        });
+        }
     }
     static prepend(parent: Node, child: Node): void {
         if (!child) {

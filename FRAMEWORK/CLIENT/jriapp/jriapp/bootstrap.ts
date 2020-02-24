@@ -160,11 +160,12 @@ function getRequiredModules(el: DocumentFragment): string[] {
             if (isGetExpr(attr)) {
                 const ids = getBraceContent(attr, BRACKETS.ROUND);
                 const parts = getGetParts(ids);
-                parts.forEach((val) => {
+                for (const val of parts)
+                {
                     if (!!val) {
                         result.push(...val.split(","));
                     }
-                });
+                }
             } else {
                 result.push(...attr.split(","));
             }
@@ -177,15 +178,15 @@ function getRequiredModules(el: DocumentFragment): string[] {
 
     const hashMap = Indexer();
 
-    result.forEach((name) => {
-        if (!name) {
-            return;
-        }
-        name = fastTrim(name);
+    for (const name of result)
+    {
         if (!!name) {
-            hashMap[name] = name;
+            const _name = fastTrim(name);
+            if (!!_name) {
+                hashMap[_name] = _name;
+            }      
         }
-    });
+    }
 
     return Object.keys(hashMap);
 }
@@ -355,24 +356,26 @@ export class Bootstrap extends BaseObject implements IDataProvider, ISvcStore {
     }
     private _processOptions(owner: IDataProvider, root: HTMLElement | HTMLDocument): void {
         const jsons = dom.queryAll<Element>(root, _OPTION_SELECTOR);
-        jsons.forEach((el) => {
+        for (const el of jsons)
+        {
             const name = el.getAttribute("id");
             if (!name) {
                 throw new Error(ERRS.ERR_OPTIONS_HAS_NO_ID);
             }
             registerOptions(owner, name, el.innerHTML);
-        });
+        }
     }
     private _processTemplates(owner: IDataProvider, root: HTMLElement | HTMLDocument): void {
         const self = this, templates = dom.queryAll<Element>(root, _TEMPLATE_SELECTOR);
-        templates.forEach((el) => {
+        for (const el of templates)
+        {
             const name = el.getAttribute("id");
             if (!name) {
                 throw new Error(ERRS.ERR_TEMPLATE_HAS_NO_ID);
             }
             const html = el.innerHTML;
             self._processTemplate(owner, name, html);
-        });
+        }
     }
     private _processTemplate(owner: IDataProvider, name: string, html: string): void {
         const frag = dom.getDocFragment(fastTrim(html)), required = getRequiredModules(frag);

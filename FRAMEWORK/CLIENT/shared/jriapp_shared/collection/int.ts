@@ -93,7 +93,6 @@ export interface ICollChangedArgs<TItem extends ICollectionItem> {
     reason: COLL_CHANGE_REASON;
     oper: COLL_CHANGE_OPER;
     items: TItem[];
-    pos?: number[];
     old_key?: string;
     new_key?: string;
 }

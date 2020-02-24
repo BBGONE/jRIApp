@@ -169,16 +169,19 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
         checkDetached(this);
         const coll = this.coll, self = this, item = self.item, changed: string[] = [];
         coll.errors.removeAllErrors(item);
-        coll.getFieldNames().forEach((name) => {
+        const names = coll.getFieldNames();
+        for(const name of names)
+        {
             if (self._getValue(name, VALS_VERSION.Temporary) !== self._getValue(name, VALS_VERSION.Current)) {
                 changed.push(name);
             }
-        });
+        }
         this._restoreVals(VALS_VERSION.Temporary);
         // refresh User interface when values restored
-        changed.forEach((name) => {
+        for (const name of changed)
+        {
             sys.raiseProp(this.item, name);
-        });
+        }
 
         return true;
     }
@@ -314,8 +317,8 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
         }
         const res: string[] = [];
         forEach(itemErrors, (name, errs) => {
-            for (let i = 0; i < errs.length; i += 1) {
-                res.push(`${name}: ${errs[i]}`);
+            for (const err of errs) {
+                res.push(`${name}: ${err}`);
             }
         });
         return res.join("|");

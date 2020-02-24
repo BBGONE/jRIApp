@@ -78,16 +78,18 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
         this._onCollectionChanged(args);
     }
     protected _filterForPaging(items: TItem[]): TItem[] {
-        let pos = -1, cnt = -1;
+        let taken = 0, skipped = 0;
         const result: TItem[] = [], skip = this.pageSize * this.pageIndex, take = this.pageSize;
         for (const item of items) {
-            cnt += 1;
-            if (cnt < skip) {
-                break;
-            }
-            pos += 1;
-            if (pos < take) {
-                result.push(item);
+            if (skipped < skip) {
+                skipped += 1;
+            } else {
+                if (taken < take) {
+                    result.push(item);
+                    taken += 1;
+                } else {
+                    break;
+                }
             }
         }
 

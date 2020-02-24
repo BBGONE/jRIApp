@@ -19,9 +19,10 @@ export class PropWatcher extends BaseObject {
         }
         this.setDisposing();
         const self = this;
-        this._objs.forEach(function (obj) {
+        for (const obj of this._objs)
+        {
             self.removeWatch(obj);
-        });
+        }
         this._objs = [];
         super.dispose();
     }

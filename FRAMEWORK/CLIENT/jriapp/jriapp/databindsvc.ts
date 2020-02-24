@@ -69,12 +69,13 @@ function toBindable(el: HTMLElement): IBindable {
 
 function getBindables(scope: Document | HTMLElement): IBindable[] {
     const result: IBindable[] = [], allElems = dom.queryAll<HTMLElement>(scope, "*");
-    allElems.forEach((el) => {
+    for (const el of allElems)
+    {
         const res = toBindable(el);
         if (!!res) {
             result.push(res);
         }
-    });
+    }
 
     return result;
 }
@@ -177,7 +178,8 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             // skip all the bindings inside dataforms (because a dataform performs databinding itself in its own scope)
             const bindables = filterBindables(scope, bindElems);
 
-            bindables.forEach((bindElem) => {
+            for (const bindElem of bindables)
+            {
                 const factory = self._elViewFactory;
                 let elView = factory.getElView(bindElem.el);
                 if (!elView) {
@@ -186,7 +188,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
                     lftm.addObj(elView);
                 }
                 bindElem.elView = elView;
-            });
+            }
 
             const viewsArr = bindables.map((bindElem) => {
                 self._bindElView({

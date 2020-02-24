@@ -141,7 +141,8 @@ export class Validations {
         }
 
         const index = Indexer<IValidationInfo>();
-        vals.forEach((val) => {
+        for(const val of vals)
+        {
             const name = !val.fieldName ? "*" : val.fieldName;
             const test = index[name];
             if (!!test) {
@@ -149,7 +150,7 @@ export class Validations {
             } else {
                 index[name] = val;
             }
-        });
+        }
 
         return fn_toArray(index);
     }

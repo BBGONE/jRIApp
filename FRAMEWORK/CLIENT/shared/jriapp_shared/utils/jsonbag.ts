@@ -137,9 +137,10 @@ export class JsonBag extends BaseObject implements IEditable, IErrorNotification
     }
     protected _addErrors(errors: IValidationInfo[]): void {
         const self = this;
-        errors.forEach(function (err) {
+        for (const err of errors)
+        {
             self._addError(err.fieldName, err.errors, true);
-        });
+        }
         this._onErrorsChanged();
     }
     protected _addError(fieldName: string, errors: string[], ignoreChangeErrors?: boolean): void {

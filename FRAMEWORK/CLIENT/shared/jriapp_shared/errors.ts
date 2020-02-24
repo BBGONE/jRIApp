@@ -71,33 +71,34 @@ export class AggregateError extends BaseError {
         const hashMap: {
             [name: string]: any;
         } = Indexer();
-        this._errors.forEach((err) => {
-            if (!err) {
-                return;
-            }
-            let str = "";
-            if (err instanceof AggregateError) {
-                str = (<AggregateError>err).message;
-            } else if (err instanceof Error) {
-                str = (<Error>err).message;
-            } else if (!!err.message) {
-                str = "" + err.message;
-            } else {
-                str = "" + err;
-            }
+        for (const err of this._errors)
+        {
+            if (!!err) {
+                let str = "";
+                if (err instanceof AggregateError) {
+                    str = (<AggregateError>err).message;
+                } else if (err instanceof Error) {
+                    str = (<Error>err).message;
+                } else if (!!err.message) {
+                    str = "" + err.message;
+                } else {
+                    str = "" + err;
+                }
 
-            hashMap[str] = "";
-        });
+                hashMap[str] = "";
+            }
+        }
 
         let msg = "";
         const errs = Object.keys(hashMap);
 
-        errs.forEach((err) => {
+        for(const err of errs)
+        {
             if (!!msg) {
                 msg += "\r\n";
             }
             msg += "" + err;
-        });
+        }
 
         if (!msg) {
             msg = "Aggregate Error";

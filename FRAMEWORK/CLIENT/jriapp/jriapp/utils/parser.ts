@@ -25,9 +25,10 @@ function _splitIntoParts(str: string): string[] {
     if (isGetExpr(str)) {
         const ids = getBraceContent(str, BRACKETS.ROUND);
         const args = getGetParts(ids);
-        args.forEach((val) => {
+        for(const val of args)
+        {
             _appendPart(parts, trim(val));
-        });
+        }
     } else {
         _appendPart(parts, trim(str));
     }
@@ -50,12 +51,11 @@ export class Parser {
     }
     static parseBindings(bindings: string[]): TBindingInfo[] {
         let parts: string[] = [];
-        bindings.forEach((str) => {
+        for (const str of bindings)
+        {
             const arr = _splitIntoParts(str);
-            for (let i = 0; i < arr.length; ++i){
-                parts.push(arr[i]);
-            }
-        });
+            parts.push(...arr);
+        }
         return <any>_parseBindings(PARSE_TYPE.BINDING, parts, null);
     }
     static parseViewOptions(options: string, dataContext: any): object {

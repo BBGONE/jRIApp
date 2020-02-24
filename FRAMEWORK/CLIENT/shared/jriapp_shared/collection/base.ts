@@ -321,33 +321,31 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
             throw new Error(ERRS.ERR_ITEM_IS_ATTACHED);
         }
         const pos = this._appendItem(item);
-        this._onAddNew(item, pos);
+        this._onAddNew(item);
         this._onCountChanged();
         this._onCurrentChanging(item);
         this._currentPos = pos;
         this._onCurrentChanged();
         return pos;
     }
-    protected _onAddNew(item: TItem, pos: number): void {
+    protected _onAddNew(item: TItem): void {
         item._aspect._setIsAttached(true);
         const args = {
             changeType: COLL_CHANGE_TYPE.Add,
             reason: COLL_CHANGE_REASON.None,
             oper: COLL_CHANGE_OPER.AddNew,
             items: [item],
-            pos: [pos],
             new_key: item._key
         };
         this._onCollectionChanged(args);
     }
-    protected _onRemoved(item: TItem, pos: number): void {
+    protected _onRemoved(item: TItem): void {
         try {
             this._onCollectionChanged({
                 changeType: COLL_CHANGE_TYPE.Remove,
                 reason: COLL_CHANGE_REASON.None,
                 oper: COLL_CHANGE_OPER.Remove,
                 items: [item],
-                pos: [pos],
                 old_key: item._key
             });
         } finally {
@@ -468,14 +466,16 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this._itemsByKey = Indexer();
         // dispose items only if this collection owns it!
         if (this._isOwnsItems()) {
-            oldItems.forEach((item) => {
+            for (const item of oldItems)
+            {
                 item._aspect._setIsAttached(false);
-            });
+            }
             if (oldItems.length > 0) {
                 utils.queue.enque(() => {
-                    oldItems.forEach((item) => {
+                    for (const item of oldItems)
+                    {
                         item.dispose();
-                    });
+                    }
                 });
             }
         }
@@ -484,8 +484,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
                 changeType: COLL_CHANGE_TYPE.Reset,
                 reason: reason,
                 oper: oper,
-                items: [],
-                pos: []
+                items: []
             });
         }
         this.objEvents.raise(COLL_EVENTS.cleared, { reason: reason });
@@ -494,10 +493,11 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
     protected _replaceItems(reason: COLL_CHANGE_REASON, oper: COLL_CHANGE_OPER, items: TItem[]): void {
         this._clear(reason, oper);
         this._items = items;
-        items.forEach((item, index) => {
+        for(const item of items)
+        {
             this._itemsByKey[item._key] = item;
             item._aspect._setIsAttached(true);
-        });
+        }
     }
     protected _appendItem(item: TItem): number {
         this._items.push(item);
@@ -521,7 +521,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         if (oldPos < 0) {
             throw new Error(ERRS.ERR_ITEM_IS_NOTFOUND);
         }
-        this._onRemoved(item, oldPos);
+        this._onRemoved(item);
         delete this._itemsByKey[key];
         return oldPos;
     }
@@ -836,8 +836,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
                     changeType: COLL_CHANGE_TYPE.Reset,
                     reason: COLL_CHANGE_REASON.Sorting,
                     oper: COLL_CHANGE_OPER.Sort,
-                    items: [],
-                    pos: []
+                    items: []
                 });
             } finally {
                 self._setIsLoading(false);
