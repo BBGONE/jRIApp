@@ -3988,23 +3988,12 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             this._onCollectionChanged(args);
         };
         DataView.prototype._filterForPaging = function (items) {
-            var taken = 0, skipped = 0;
-            var result = [], skip = this.pageSize * this.pageIndex, take = this.pageSize;
-            for (var _i = 0, items_2 = items; _i < items_2.length; _i++) {
-                var item = items_2[_i];
-                if (skipped < skip) {
-                    skipped += 1;
-                }
-                else {
-                    if (taken < take) {
-                        result.push(item);
-                        taken += 1;
-                    }
-                    else {
-                        break;
-                    }
-                }
+            var len = items.length, skip = this.pageSize * this.pageIndex, take = this.pageSize;
+            var start = skip, end = len > (start + take) ? (start + take) : len;
+            if (start >= len) {
+                return [];
             }
+            var result = items.slice(start, end);
             return result;
         };
         DataView.prototype._onViewRefreshed = function (args) {
@@ -4635,5 +4624,5 @@ define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/datavie
     __export(entity_aspect_2);
     __export(error_3);
     __export(complexprop_1);
-    exports.VERSION = "3.0.2";
+    exports.VERSION = "3.0.3";
 });

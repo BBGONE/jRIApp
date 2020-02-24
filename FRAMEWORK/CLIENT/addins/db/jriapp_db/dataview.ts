@@ -78,8 +78,14 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
         this._onCollectionChanged(args);
     }
     protected _filterForPaging(items: TItem[]): TItem[] {
-        let taken = 0, skipped = 0;
-        const result: TItem[] = [], skip = this.pageSize * this.pageIndex, take = this.pageSize;
+        // let taken = 0, skipped = 0;
+        const len = items.length, skip = this.pageSize * this.pageIndex, take = this.pageSize;
+        const start = skip, end = len > (start + take) ? (start + take) : len;
+        if (start >= len) {
+            return [];
+        }
+        
+        /*
         for (const item of items) {
             if (skipped < skip) {
                 skipped += 1;
@@ -92,7 +98,8 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
                 }
             }
         }
-
+        */
+        const result = items.slice(start, end);
         return result;
     }
     protected _onViewRefreshed(args: {}): void {
