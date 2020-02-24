@@ -513,7 +513,6 @@ declare module "jriapp_shared/collection/int" {
         reason: COLL_CHANGE_REASON;
         oper: COLL_CHANGE_OPER;
         items: TItem[];
-        pos?: number[];
         old_key?: string;
         new_key?: string;
     }
@@ -1159,8 +1158,8 @@ declare module "jriapp_shared/collection/base" {
         protected _onItemAdding(item: TItem): void;
         protected _onItemAdded(item: TItem): void;
         protected _addNew(item: TItem): number;
-        protected _onAddNew(item: TItem, pos: number): void;
-        protected _onRemoved(item: TItem, pos: number): void;
+        protected _onAddNew(item: TItem): void;
+        protected _onRemoved(item: TItem): void;
         protected _onPageSizeChanged(): void;
         protected _onPageChanging(): boolean;
         protected _onPageChanged(): void;
@@ -1494,7 +1493,7 @@ declare module "jriapp_shared/collection/dictionary" {
         constructor(keyName: string, props: IPropInfo[]);
         protected createItem(obj?: TObj): TItem;
         protected _onItemAdded(item: TItem): void;
-        protected _onRemoved(item: TItem, pos: number): void;
+        protected _onRemoved(item: TItem): void;
         get keyName(): string;
         toString(): string;
     }
@@ -1533,5 +1532,5 @@ declare module "jriapp_shared" {
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";
     export { Lazy, TValueFactory } from "jriapp_shared/utils/lazy";
-    export const VERSION = "3.0.0";
+    export const VERSION = "3.0.1";
 }

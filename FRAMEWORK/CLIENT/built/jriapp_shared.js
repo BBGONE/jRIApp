@@ -1267,33 +1267,34 @@ define("jriapp_shared/errors", ["require", "exports", "jriapp_shared/consts", "j
         Object.defineProperty(AggregateError.prototype, "message", {
             get: function () {
                 var hashMap = Indexer();
-                this._errors.forEach(function (err) {
-                    if (!err) {
-                        return;
+                for (var _i = 0, _a = this._errors; _i < _a.length; _i++) {
+                    var err = _a[_i];
+                    if (!!err) {
+                        var str = "";
+                        if (err instanceof AggregateError) {
+                            str = err.message;
+                        }
+                        else if (err instanceof Error) {
+                            str = err.message;
+                        }
+                        else if (!!err.message) {
+                            str = "" + err.message;
+                        }
+                        else {
+                            str = "" + err;
+                        }
+                        hashMap[str] = "";
                     }
-                    var str = "";
-                    if (err instanceof AggregateError) {
-                        str = err.message;
-                    }
-                    else if (err instanceof Error) {
-                        str = err.message;
-                    }
-                    else if (!!err.message) {
-                        str = "" + err.message;
-                    }
-                    else {
-                        str = "" + err;
-                    }
-                    hashMap[str] = "";
-                });
+                }
                 var msg = "";
                 var errs = Object.keys(hashMap);
-                errs.forEach(function (err) {
+                for (var _b = 0, errs_1 = errs; _b < errs_1.length; _b++) {
+                    var err = errs_1[_b];
                     if (!!msg) {
                         msg += "\r\n";
                     }
                     msg += "" + err;
-                });
+                }
                 if (!msg) {
                     msg = "Aggregate Error";
                 }
@@ -2443,9 +2444,10 @@ define("jriapp_shared/utils/jsonbag", ["require", "exports", "jriapp_shared/obje
         };
         JsonBag.prototype._addErrors = function (errors) {
             var self = this;
-            errors.forEach(function (err) {
+            for (var _i = 0, errors_4 = errors; _i < errors_4.length; _i++) {
+                var err = errors_4[_i];
                 self._addError(err.fieldName, err.errors, true);
-            });
+            }
             this._onErrorsChanged();
         };
         JsonBag.prototype._addError = function (fieldName, errors, ignoreChangeErrors) {
@@ -2691,7 +2693,7 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
     }());
     exports.AsyncUtils = AsyncUtils;
 });
-define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/errors", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/deferred", "jriapp_shared/utils/async"], function (require, exports, strUtils_2, errors_4, coreutils_9, deferred_4, async_1) {
+define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/errors", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/deferred", "jriapp_shared/utils/async"], function (require, exports, strUtils_2, errors_5, coreutils_9, deferred_4, async_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var forEach = coreutils_9.CoreUtils.forEach, merge = coreutils_9.CoreUtils.merge, Indexer = coreutils_9.CoreUtils.Indexer, startsWith = strUtils_2.StringUtils.startsWith, format = strUtils_2.StringUtils.format, createDeferred = async_1.AsyncUtils.createDeferred;
@@ -2714,7 +2716,7 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
                 }
                 else {
                     if (HttpUtils.isStatusOK(status)) {
-                        deferred.reject(new errors_4.DummyError(new Error(format('Status: "{0}" loading from URL: "{1}"', status, url))));
+                        deferred.reject(new errors_5.DummyError(new Error(format('Status: "{0}" loading from URL: "{1}"', status, url))));
                     }
                     else {
                         deferred.reject(new Error(format('Error: "{0}" to load from URL: "{1}"', status, url)));
@@ -2947,14 +2949,15 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
                             propQueue.splice(i, 1);
                         }
                     }
-                    found.forEach(function (task) {
+                    for (var _i = 0, found_1 = found; _i < found_1.length; _i++) {
+                        var task_1 = found_1[_i];
                         try {
-                            task.action.apply(self._owner, task.args);
+                            task_1.action.apply(self._owner, task_1.args);
                         }
                         catch (ex) {
                             self._owner.handleError(ex, self);
                         }
-                    });
+                    }
                 }
             }
             finally {
@@ -3297,7 +3300,7 @@ define("jriapp_shared/collection/utils", ["require", "exports", "jriapp_shared/u
         }
     };
 });
-define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/utils", "jriapp_shared/errors"], function (require, exports, object_3, lang_7, waitqueue_1, utils_2, utils_3, errors_5) {
+define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/object", "jriapp_shared/lang", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/utils", "jriapp_shared/collection/utils", "jriapp_shared/errors"], function (require, exports, object_3, lang_7, waitqueue_1, utils_2, utils_3, errors_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = utils_2.Utils, _a = utils.core, forEach = _a.forEach, getTimeZoneOffset = _a.getTimeZoneOffset, getNewID = _a.getNewID, Indexer = _a.Indexer, _b = utils.str, format = _b.format, startsWith = _b.startsWith, _c = utils.check, _undefined = _c._undefined, isArray = _c.isArray, isUndefined = _c.isUndefined, sys = utils.sys, stringifyValue = utils_3.ValueUtils.stringifyValue, getObjectField = utils_3.CollUtils.getObjectField;
@@ -3575,33 +3578,31 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                 throw new Error(lang_7.ERRS.ERR_ITEM_IS_ATTACHED);
             }
             var pos = this._appendItem(item);
-            this._onAddNew(item, pos);
+            this._onAddNew(item);
             this._onCountChanged();
             this._onCurrentChanging(item);
             this._currentPos = pos;
             this._onCurrentChanged();
             return pos;
         };
-        BaseCollection.prototype._onAddNew = function (item, pos) {
+        BaseCollection.prototype._onAddNew = function (item) {
             item._aspect._setIsAttached(true);
             var args = {
                 changeType: 1,
                 reason: 0,
                 oper: 2,
                 items: [item],
-                pos: [pos],
                 new_key: item._key
             };
             this._onCollectionChanged(args);
         };
-        BaseCollection.prototype._onRemoved = function (item, pos) {
+        BaseCollection.prototype._onRemoved = function (item) {
             try {
                 this._onCollectionChanged({
                     changeType: 0,
                     reason: 0,
                     oper: 3,
                     items: [item],
-                    pos: [pos],
                     old_key: item._key
                 });
             }
@@ -3722,14 +3723,16 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._items = [];
             this._itemsByKey = Indexer();
             if (this._isOwnsItems()) {
-                oldItems.forEach(function (item) {
+                for (var _i = 0, oldItems_1 = oldItems; _i < oldItems_1.length; _i++) {
+                    var item = oldItems_1[_i];
                     item._aspect._setIsAttached(false);
-                });
+                }
                 if (oldItems.length > 0) {
                     utils.queue.enque(function () {
-                        oldItems.forEach(function (item) {
+                        for (var _i = 0, oldItems_2 = oldItems; _i < oldItems_2.length; _i++) {
+                            var item = oldItems_2[_i];
                             item.dispose();
-                        });
+                        }
                     });
                 }
             }
@@ -3738,21 +3741,20 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                     changeType: 2,
                     reason: reason,
                     oper: oper,
-                    items: [],
-                    pos: []
+                    items: []
                 });
             }
             this.objEvents.raise("cleared", { reason: reason });
             this._onCountChanged();
         };
         BaseCollection.prototype._replaceItems = function (reason, oper, items) {
-            var _this = this;
             this._clear(reason, oper);
             this._items = items;
-            items.forEach(function (item, index) {
-                _this._itemsByKey[item._key] = item;
+            for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
+                var item = items_1[_i];
+                this._itemsByKey[item._key] = item;
                 item._aspect._setIsAttached(true);
-            });
+            }
         };
         BaseCollection.prototype._appendItem = function (item) {
             this._items.push(item);
@@ -3776,7 +3778,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             if (oldPos < 0) {
                 throw new Error(lang_7.ERRS.ERR_ITEM_IS_NOTFOUND);
             }
-            this._onRemoved(item, oldPos);
+            this._onRemoved(item);
             delete this._itemsByKey[key];
             return oldPos;
         };
@@ -3893,7 +3895,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             if (this.isEditing) {
                 EditingItem = this._EditingItem;
                 if (!EditingItem._aspect.endEdit() && EditingItem._aspect.getIsHasErrors()) {
-                    this.handleError(new errors_5.ValidationError(EditingItem._aspect.getAllErrors(), EditingItem), EditingItem);
+                    this.handleError(new errors_6.ValidationError(EditingItem._aspect.getAllErrors(), EditingItem), EditingItem);
                     this.cancelEdit();
                 }
             }
@@ -4088,8 +4090,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
                         changeType: 2,
                         reason: 2,
                         oper: 5,
-                        items: [],
-                        pos: []
+                        items: []
                     });
                 }
                 finally {
@@ -4520,23 +4521,24 @@ define("jriapp_shared/collection/validation", ["require", "exports", "jriapp_sha
                 return [];
             }
             var index = Indexer();
-            vals.forEach(function (val) {
-                var name = !val.fieldName ? "*" : val.fieldName;
-                var test = index[name];
+            for (var _i = 0, vals_1 = vals; _i < vals_1.length; _i++) {
+                var val = vals_1[_i];
+                var name_1 = !val.fieldName ? "*" : val.fieldName;
+                var test = index[name_1];
                 if (!!test) {
                     test.errors = test.errors.concat(val.errors);
                 }
                 else {
-                    index[name] = val;
+                    index[name_1] = val;
                 }
-            });
+            }
             return fn_toArray(index);
         };
         return Validations;
     }());
     exports.Validations = Validations;
 });
-define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/utils", "jriapp_shared/collection/utils", "jriapp_shared/errors", "jriapp_shared/collection/validation"], function (require, exports, object_4, utils_5, utils_6, errors_6, validation_1) {
+define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/object", "jriapp_shared/utils/utils", "jriapp_shared/collection/utils", "jriapp_shared/errors", "jriapp_shared/collection/validation"], function (require, exports, object_4, utils_5, utils_6, errors_7, validation_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = utils_5.Utils, _a = utils.core, forEach = _a.forEach, getValue = _a.getValue, setValue = _a.setValue, Indexer = _a.Indexer, isNt = utils.check.isNt, sys = utils.sys, ERROR = utils.err, cloneVals = utils_6.CollUtils.cloneVals, walkFields = utils_6.CollUtils.walkFields;
@@ -4640,7 +4642,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 try {
                     item._aspect.endEdit();
                     if (item._aspect.getIsHasErrors()) {
-                        this.handleError(new errors_6.ValidationError(item._aspect.getAllErrors(), item), item);
+                        this.handleError(new errors_7.ValidationError(item._aspect.getAllErrors(), item), item);
                         item._aspect.cancelEdit();
                     }
                 }
@@ -4672,22 +4674,24 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             return true;
         };
         ItemAspect.prototype._cancelEdit = function () {
-            var _this = this;
             if (!this.isEditing) {
                 return false;
             }
             checkDetached(this);
             var coll = this.coll, self = this, item = self.item, changed = [];
             coll.errors.removeAllErrors(item);
-            coll.getFieldNames().forEach(function (name) {
-                if (self._getValue(name, 1) !== self._getValue(name, 0)) {
-                    changed.push(name);
+            var names = coll.getFieldNames();
+            for (var _i = 0, names_1 = names; _i < names_1.length; _i++) {
+                var name_2 = names_1[_i];
+                if (self._getValue(name_2, 1) !== self._getValue(name_2, 0)) {
+                    changed.push(name_2);
                 }
-            });
+            }
             this._restoreVals(1);
-            changed.forEach(function (name) {
-                sys.raiseProp(_this.item, name);
-            });
+            for (var _a = 0, changed_1 = changed; _a < changed_1.length; _a++) {
+                var name_3 = changed_1[_a];
+                sys.raiseProp(this.item, name_3);
+            }
             return true;
         };
         ItemAspect.prototype._skipValidate = function (fieldInfo, val) {
@@ -4816,8 +4820,9 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             }
             var res = [];
             forEach(itemErrors, function (name, errs) {
-                for (var i = 0; i < errs.length; i += 1) {
-                    res.push(name + ": " + errs[i]);
+                for (var _i = 0, errs_2 = errs; _i < errs_2.length; _i++) {
+                    var err = errs_2[_i];
+                    res.push(name + ": " + err);
                 }
             });
             return res.join("|");
@@ -5180,7 +5185,7 @@ define("jriapp_shared/collection/item", ["require", "exports", "jriapp_shared/ob
     }(object_5.BaseObject));
     exports.CollectionItem = CollectionItem;
 });
-define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_9, utils_8, base_1, aspect_1, errors_7) {
+define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/utils/utils", "jriapp_shared/lang", "jriapp_shared/collection/utils", "jriapp_shared/collection/base", "jriapp_shared/collection/aspect", "jriapp_shared/errors"], function (require, exports, utils_7, lang_9, utils_8, base_1, aspect_1, errors_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils = utils_7.Utils, Indexer = utils.core.Indexer, format = utils.str.format, isArray = utils.check.isArray, walkField = utils_8.CollUtils.walkField, initVals = utils_8.CollUtils.initVals, sys = utils.sys;
@@ -5205,7 +5210,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     errors.removeError(item, name);
                     var validationInfo = this._validateField(name);
                     if (!!validationInfo && validationInfo.errors.length > 0) {
-                        throw new errors_7.ValidationError([validationInfo], this);
+                        throw new errors_8.ValidationError([validationInfo], this);
                     }
                 }
                 catch (ex) {
@@ -5213,7 +5218,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                         error = ex;
                     }
                     else {
-                        error = new errors_7.ValidationError([
+                        error = new errors_8.ValidationError([
                             { fieldName: name, errors: [ex.message] }
                         ], this);
                     }
@@ -5260,7 +5265,8 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             }
             self._fieldMap = Indexer();
             self._fieldInfos = [];
-            props.forEach(function (prop) {
+            for (var _i = 0, props_1 = props; _i < props_1.length; _i++) {
+                var prop = props_1[_i];
                 var fldInfo = base_1.BaseCollection.getEmptyFieldInfo(prop.name);
                 fldInfo.dataType = prop.dtype;
                 self._fieldMap[prop.name] = fldInfo;
@@ -5269,7 +5275,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     fld.dependents = null;
                     fld.fullName = fullName;
                 });
-            });
+            }
         };
         BaseList.prototype._clear = function (reason, oper) {
             _super.prototype._clear.call(this, reason, oper);
@@ -5295,7 +5301,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             return this._fieldInfos;
         };
         BaseList.prototype.fillItems = function (objArray, clearAll) {
-            var self = this, newItems = [], positions = [], items = [];
+            var self = this, newItems = [], items = [];
             if (!objArray) {
                 objArray = [];
             }
@@ -5303,10 +5309,11 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                 if (!!clearAll) {
                     this.clear();
                 }
-                objArray.forEach(function (obj) {
+                for (var _i = 0, objArray_1 = objArray; _i < objArray_1.length; _i++) {
+                    var obj = objArray_1[_i];
                     var item = self.createItem(obj), oldItem = self.getItemByKey(item._key);
                     if (!oldItem) {
-                        positions.push(self._appendItem(item));
+                        self._appendItem(item);
                         newItems.push(item);
                         items.push(item);
                         item._aspect._setIsAttached(true);
@@ -5314,7 +5321,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     else {
                         items.push(oldItem);
                     }
-                });
+                }
                 if (newItems.length > 0) {
                     this.objEvents.raiseProp("count");
                 }
@@ -5324,8 +5331,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
                     changeType: 2,
                     reason: 0,
                     oper: 1,
-                    items: items,
-                    pos: positions
+                    items: items
                 });
                 this._onFillEnd({
                     items: items,
@@ -5341,9 +5347,10 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
             });
         };
         BaseList.prototype.resetStatus = function () {
-            this.items.forEach(function (item) {
+            for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
+                var item = _a[_i];
                 item._aspect._resetStatus();
-            });
+            }
         };
         BaseList.prototype.toArray = function () {
             return this.items.map(function (item) {
@@ -5357,7 +5364,7 @@ define("jriapp_shared/collection/list", ["require", "exports", "jriapp_shared/ut
     }(base_1.BaseCollection));
     exports.BaseList = BaseList;
 });
-define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/strutils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/validation", "jriapp_shared/collection/list", "jriapp_shared/errors"], function (require, exports, coreutils_12, sysutils_5, strutils_6, debounce_2, item_1, validation_2, list_1, errors_8) {
+define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/strutils", "jriapp_shared/utils/debounce", "jriapp_shared/collection/item", "jriapp_shared/collection/validation", "jriapp_shared/collection/list", "jriapp_shared/errors"], function (require, exports, coreutils_12, sysutils_5, strutils_6, debounce_2, item_1, validation_2, list_1, errors_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var getValue = coreutils_12.CoreUtils.getValue, setValue = coreutils_12.CoreUtils.setValue, Indexer = coreutils_12.CoreUtils.Indexer, startsWith = strutils_6.StringUtils.startsWith, trimBrackets = strutils_6.StringUtils.trimBrackets, sys = sysutils_5.SysUtils;
@@ -5417,7 +5424,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                     errors.removeError(this, name);
                     var validation = this._aspect._validateField(name);
                     if (!!validation && validation.errors.length > 0) {
-                        throw new errors_8.ValidationError([validation], this);
+                        throw new errors_9.ValidationError([validation], this);
                     }
                 }
                 catch (ex) {
@@ -5426,7 +5433,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                         error = ex;
                     }
                     else {
-                        error = new errors_8.ValidationError([
+                        error = new errors_9.ValidationError([
                             { fieldName: name, errors: [ex.message] }
                         ], this);
                     }
@@ -5781,9 +5788,9 @@ define("jriapp_shared/collection/dictionary", ["require", "exports", "jriapp_sha
             }
             this.objEvents.raiseProp("[" + item._key + "]");
         };
-        BaseDictionary.prototype._onRemoved = function (item, pos) {
+        BaseDictionary.prototype._onRemoved = function (item) {
             var key = item[this._keyName];
-            _super.prototype._onRemoved.call(this, item, pos);
+            _super.prototype._onRemoved.call(this, item);
             this.objEvents.raiseProp("[" + key + "]");
         };
         Object.defineProperty(BaseDictionary.prototype, "keyName", {
@@ -5849,7 +5856,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/dates", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, consts_3, int_2, errors_9, object_7, jsonbag_1, jsonarray_1, dates_2, weakmap_1, lang_11, base_3, item_2, aspect_2, list_3, dictionary_1, errors_10, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/dates", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, consts_3, int_2, errors_10, object_7, jsonbag_1, jsonarray_1, dates_2, weakmap_1, lang_11, base_3, item_2, aspect_2, list_3, dictionary_1, errors_11, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5857,7 +5864,7 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_s
     Object.defineProperty(exports, "__esModule", { value: true });
     __export(consts_3);
     __export(int_2);
-    __export(errors_9);
+    __export(errors_10);
     __export(object_7);
     __export(jsonbag_1);
     __export(jsonarray_1);
@@ -5871,11 +5878,11 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_s
     exports.ListItemAspect = list_3.ListItemAspect;
     exports.BaseList = list_3.BaseList;
     exports.BaseDictionary = dictionary_1.BaseDictionary;
-    exports.ValidationError = errors_10.ValidationError;
+    exports.ValidationError = errors_11.ValidationError;
     __export(ideferred_1);
     exports.Utils = utils_11.Utils;
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_3.Debounce;
     exports.Lazy = lazy_1.Lazy;
-    exports.VERSION = "3.0.0";
+    exports.VERSION = "3.0.1";
 });

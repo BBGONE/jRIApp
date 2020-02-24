@@ -199,7 +199,7 @@ export class DataForm extends BaseObject {
 
         for (const el of contentElements)
         {
-            // check if the element inside a nested dataform
+            // checks - the element is not inside a nested dataform
             if (!viewChecks.isInNestedForm(self._el, forms, el)) {
                 const attr = el.getAttribute(DATA_ATTR.DATA_CONTENT),
                     op = parseContentAttr(attr);

@@ -244,7 +244,7 @@ declare module "jriapp_db/dbset" {
         protected _removeFromChanged(key: string): void;
         protected _setQuery(query: DataQuery<TItem, TObj>): void;
         protected _onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS): void;
-        protected _onRemoved(item: TItem, pos: number): void;
+        protected _onRemoved(item: TItem): void;
         protected _onLoaded(items: TItem[]): void;
         protected _destroyQuery(): void;
         protected _getNames(): IFieldName[];
@@ -805,14 +805,10 @@ declare module "jriapp_db/int" {
         k: string;
         v: any[];
     }
-    export interface IQueryItems<TItem extends IEntityItem> {
-        items: TItem[];
-        pos: number[];
-    }
     export interface IQueryResult<TItem extends IEntityItem> {
         fetchedItems: TItem[];
         items: TItem[];
-        newItems: IQueryItems<TItem>;
+        newItems: TItem[];
         reason: COLL_CHANGE_REASON;
         outOfBandData: any;
     }
@@ -858,7 +854,7 @@ declare module "jriapp_db/dataview" {
         constructor(options: IDataViewOptions<TItem>);
         dispose(): void;
         protected _isOwnsItems(): boolean;
-        protected _onAddNew(item: TItem, pos: number): void;
+        protected _onAddNew(item: TItem): void;
         protected _filterForPaging(items: TItem[]): TItem[];
         protected _onViewRefreshed(args: {}): void;
         protected _refresh(reason: COLL_CHANGE_REASON): void;
@@ -869,8 +865,8 @@ declare module "jriapp_db/dataview" {
             clear: boolean;
             isAppend: boolean;
         }): TItem[];
-        protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<TItem>): void;
-        protected _onDSStatusChanged(sender: any, args: ICollItemStatusArgs<TItem>): void;
+        protected _onDSCollectionChanged(_sender: any, args: ICollChangedArgs<TItem>): void;
+        protected _onDSStatusChanged(_sender: any, args: ICollItemStatusArgs<TItem>): void;
         protected _bindDS(): void;
         protected _unbindDS(): void;
         protected _checkCurrentChanging(newCurrent: TItem): void;
@@ -997,5 +993,5 @@ declare module "jriapp_db" {
     export * from "jriapp_db/entity_aspect";
     export * from "jriapp_db/error";
     export * from "jriapp_db/complexprop";
-    export const VERSION = "3.0.1";
+    export const VERSION = "3.0.2";
 }

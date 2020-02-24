@@ -1656,12 +1656,13 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         };
         ListBox.prototype._clear = function () {
             var self = this, keys = Object.keys(self._keyMap);
-            keys.forEach(function (key) {
+            for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+                var key = keys_1[_i];
                 var data = self._keyMap[key];
                 if (!!data && !!data.item) {
                     data.item.objEvents.offNS(self._uniqueID);
                 }
-            });
+            }
             this.el.options.length = 0;
             this._keyMap = Indexer();
             this._valMap = Indexer();
@@ -1673,12 +1674,13 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             try {
                 this._clear();
                 this._addOption(null, false);
-                var cnt_1 = 0;
+                var cnt = 0;
                 if (!!ds) {
-                    ds.forEach(function (item) {
+                    for (var _i = 0, _a = ds.items; _i < _a.length; _i++) {
+                        var item = _a[_i];
                         self._addOption(item, false);
-                        ++cnt_1;
-                    });
+                        ++cnt;
+                    }
                 }
                 if (this._isDSFilled && !isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
                     this.selectedValue = null;
@@ -1686,7 +1688,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 else {
                     self.updateSelected(this._selectedValue);
                 }
-                if (cnt_1 > 0) {
+                if (cnt > 0) {
                     this._isDSFilled = true;
                 }
             }
@@ -1742,16 +1744,18 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                         break;
                     case 1:
                         {
-                            args.items.forEach(function (item) {
+                            for (var _i = 0, _a = args.items; _i < _a.length; _i++) {
+                                var item = _a[_i];
                                 self._addOption(item, item._aspect.isNew);
-                            });
+                            }
                         }
                         break;
                     case 0:
                         {
-                            args.items.forEach(function (item) {
+                            for (var _b = 0, _c = args.items; _b < _c.length; _b++) {
+                                var item = _c[_b];
                                 self._removeOption(item);
-                            });
+                            }
                             if (!!self._textProvider) {
                                 self._resetText();
                             }
@@ -2371,11 +2375,12 @@ define("jriapp_ui/content/lookup", ["require", "exports", "jriapp_shared", "jria
         };
         LookupContent.prototype.onListRefreshed = function () {
             var bindings = this.lfScope.getObjs().filter(function (obj) { return sys.isBinding(obj); }).map(function (obj) { return obj; });
-            bindings.forEach(function (binding) {
+            for (var _i = 0, bindings_1 = bindings; _i < bindings_1.length; _i++) {
+                var binding = bindings_1[_i];
                 if (binding.targetPath.length > 0 && binding.targetPath[0] === "value") {
                     binding.updateTarget();
                 }
-            });
+            }
         };
         LookupContent.prototype.createListBox = function (lookUpOptions) {
             var el = doc.createElement("select"), options = {
@@ -2718,35 +2723,39 @@ define("jriapp_ui/utils/errors", ["require", "exports", "jriapp_shared", "jriapp
     }
     function getErrorTipInfo(errors) {
         var tip = ["<b>", jriapp_shared_14.LocaleSTRS.VALIDATE.errorInfo, "</b>", "<br/>"];
-        errors.forEach(function (info) {
+        for (var _i = 0, errors_1 = errors; _i < errors_1.length; _i++) {
+            var info = errors_1[_i];
             var res = "";
-            info.errors.forEach(function (str) {
+            for (var _a = 0, _b = info.errors; _a < _b.length; _a++) {
+                var str = _b[_a];
                 res = res + " " + str;
-            });
+            }
             tip.push(res);
             res = "";
-        });
+        }
         return tip.join("");
     }
     function getFormErrorTipInfo(errors) {
         var tip = ["<b>", jriapp_shared_14.LocaleSTRS.VALIDATE.errorInfo, "</b>", "<ul>"];
-        errors.forEach(function (info) {
+        for (var _i = 0, errors_2 = errors; _i < errors_2.length; _i++) {
+            var info = errors_2[_i];
             var fieldName = info.fieldName;
             var res = "";
             if (!!fieldName) {
                 res = jriapp_shared_14.LocaleSTRS.VALIDATE.errorField + " " + fieldName;
             }
-            info.errors.forEach(function (str) {
+            for (var _a = 0, _b = info.errors; _a < _b.length; _a++) {
+                var str = _b[_a];
                 if (!!res) {
                     res = res + " -> " + str;
                 }
                 else {
                     res = str;
                 }
-            });
+            }
             tip.push("<li>" + res + "</li>");
             res = "";
-        });
+        }
         tip.push("</ul>");
         return tip.join("");
     }
@@ -3963,7 +3972,7 @@ define("jriapp_ui/datagrid/cells/expander", ["require", "exports", "jriapp/utils
 define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/datagrid/columns/base"], function (require, exports, jriapp_shared_20, dom_17, bootstrap_14, base_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var utils = jriapp_shared_20.Utils, Indexer = utils.core.Indexer, dom = dom_17.DomUtils, boot = bootstrap_14.bootstrap;
+    var utils = jriapp_shared_20.Utils, _a = utils.core, Indexer = _a.Indexer, forEach = _a.forEach, dom = dom_17.DomUtils, boot = bootstrap_14.bootstrap;
     var DataColumn = (function (_super) {
         __extends(DataColumn, _super);
         function DataColumn(grid, options) {
@@ -3985,7 +3994,7 @@ define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_shared"
             this.setDisposing();
             var self = this;
             this._contentType = null;
-            utils.core.forEach(self._objCache, function (key) {
+            forEach(self._objCache, function (key) {
                 self._objCache[key].dispose();
             });
             self._objCache = null;
@@ -4258,23 +4267,25 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
         };
         ActionsCell.prototype._setupButtons = function (btns) {
             var self = this, isActionsToolTips = self.grid.options.isActionsToolTips;
-            btns.forEach(function (btn) {
+            for (var _i = 0, btns_1 = btns; _i < btns_1.length; _i++) {
+                var btn = btns_1[_i];
                 dom.setData(btn, "cell", self);
-                var name = btn.getAttribute("data-name");
+                var name_1 = btn.getAttribute("data-name");
                 if (isActionsToolTips) {
-                    baseview_5.addToolTip(btn, jriapp_shared_21.LocaleSTRS.TEXT[consts_1.txtMap[name]]);
+                    baseview_5.addToolTip(btn, jriapp_shared_21.LocaleSTRS.TEXT[consts_1.txtMap[name_1]]);
                 }
                 btn.setAttribute("data-scope", self.column.uniqueID);
-            });
+            }
         };
         ActionsCell.prototype._cleanUp = function (td) {
             var self = this, btns = dom.queryAll(td, actionsSelector), isActionsToolTips = self.grid.options.isActionsToolTips;
-            btns.forEach(function (el) {
-                dom.removeData(el);
+            for (var _i = 0, btns_2 = btns; _i < btns_2.length; _i++) {
+                var btn = btns_2[_i];
+                dom.removeData(btn);
                 if (isActionsToolTips) {
-                    baseview_5.addToolTip(el, null);
+                    baseview_5.addToolTip(btn, null);
                 }
-            });
+            }
         };
         Object.defineProperty(ActionsCell.prototype, "editBtnsHTML", {
             get: function () {
@@ -5527,7 +5538,10 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             this._unWrapTable();
             dom.removeClass([this._table], "ria-data-table");
             dom.removeClass([this._tHeadRow], "ria-col-info");
-            this._columns.forEach(function (col) { col.dispose(); });
+            for (var _i = 0, _a = this._columns; _i < _a.length; _i++) {
+                var col = _a[_i];
+                col.dispose();
+            }
             this._columns = [];
             this._table = null;
             this._options = {};
@@ -5976,10 +5990,11 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             var rows = this._rows;
             this._rows = [];
             this._rowMap = Indexer();
-            rows.forEach(function (row) {
+            for (var _i = 0, rows_1 = rows; _i < rows_1.length; _i++) {
+                var row = rows_1[_i];
                 row.isDetached = true;
                 row.dispose();
-            });
+            }
         };
         DataGrid.prototype._wrapTable = function () {
             var options = this._options;
@@ -6019,17 +6034,18 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         };
         DataGrid.prototype._createColumns = function () {
             var self = this, headCells = this._tHeadCells, cellInfos = [];
-            var cnt = headCells.length;
-            for (var i = 0; i < cnt; i += 1) {
-                var th = headCells[i], attr = this._parseColumnAttr(th.getAttribute("data-column"), th.getAttribute("data-content"));
+            for (var _i = 0, headCells_1 = headCells; _i < headCells_1.length; _i++) {
+                var th = headCells_1[_i];
+                var attr = this._parseColumnAttr(th.getAttribute("data-column"), th.getAttribute("data-content"));
                 cellInfos.push({ th: th, colInfo: attr });
             }
-            cellInfos.forEach(function (cellInfo) {
+            for (var _a = 0, cellInfos_1 = cellInfos; _a < cellInfos_1.length; _a++) {
+                var cellInfo = cellInfos_1[_a];
                 var col = self._createColumn(cellInfo);
                 if (!!col) {
                     self._columns.push(col);
                 }
-            });
+            }
             self.updateColumnsSize();
         };
         DataGrid.prototype._createColumn = function (cellInfo) {
@@ -6091,9 +6107,10 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             }
             this._clearGrid();
             var docFr = doc.createDocumentFragment(), oldTbody = this._tBodyEl, newTbody = doc.createElement("tbody");
-            ds.items.forEach(function (item, index) {
+            for (var _i = 0, _a = ds.items; _i < _a.length; _i++) {
+                var item = _a[_i];
                 self._createRowForItem(docFr, item, false);
-            });
+            }
             newTbody.appendChild(docFr);
             self.table.replaceChild(newTbody, oldTbody);
             if (isPageChanged) {
@@ -6180,13 +6197,15 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             }
             var width = 0;
             var header = this._header;
-            this._columns.forEach(function (col) {
+            for (var _i = 0, _a = this._columns; _i < _a.length; _i++) {
+                var col = _a[_i];
                 width += col.width;
-            });
+            }
             header.style.width = (width + "px");
-            this._columns.forEach(function (col) {
+            for (var _b = 0, _c = this._columns; _b < _c.length; _b++) {
+                var col = _c[_b];
                 col.updateWidth();
-            });
+            }
         };
         DataGrid.prototype.sortByColumn = function (column) {
             var ds = this.dataSource;
@@ -6198,12 +6217,12 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             return promise;
         };
         DataGrid.prototype.selectRows = function (isSelect) {
-            this._rows.forEach(function (row) {
-                if (row.isDeleted) {
-                    return;
+            for (var _i = 0, _a = this._rows; _i < _a.length; _i++) {
+                var row = _a[_i];
+                if (!row.isDeleted) {
+                    row.isSelected = isSelect;
                 }
-                row.isSelected = isSelect;
-            });
+            }
         };
         DataGrid.prototype.findRowByItem = function (item) {
             var row = this._rowMap[item._key];
@@ -6220,14 +6239,14 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         };
         DataGrid.prototype.getSelectedRows = function () {
             var res = [];
-            this._rows.forEach(function (row) {
-                if (row.isDeleted) {
-                    return;
+            for (var _i = 0, _a = this._rows; _i < _a.length; _i++) {
+                var row = _a[_i];
+                if (!row.isDeleted) {
+                    if (row.isSelected) {
+                        res.push(row);
+                    }
                 }
-                if (row.isSelected) {
-                    res.push(row);
-                }
-            });
+            }
             return res;
         };
         DataGrid.prototype.showEditDialog = function () {
@@ -6643,9 +6662,10 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                         if (!_this._grid || _this._grid.getIsStateDirty()) {
                             return;
                         }
-                        _this._grid.rows.forEach(function (row) {
+                        for (var _i = 0, _a = _this._grid.rows; _i < _a.length; _i++) {
+                            var row = _a[_i];
                             row.updateUIState();
-                        });
+                        }
                     });
                     this.objEvents.raiseProp("stateProvider");
                 }
@@ -6694,9 +6714,10 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
         css["otherPage"] = "ria-pager-other-page";
     })(css || (css = {}));
     function _removeToolTips(toolTips) {
-        toolTips.forEach(function (el) {
+        for (var _i = 0, toolTips_1 = toolTips; _i < toolTips_1.length; _i++) {
+            var el = toolTips_1[_i];
             baseview_7.addToolTip(el, null);
-        });
+        }
     }
     var Pager = (function (_super) {
         __extends(Pager, _super);
@@ -7514,9 +7535,12 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                     }
                     break;
                 case 0:
-                    args.items.forEach(function (item) {
-                        self._removeItem(item);
-                    });
+                    {
+                        for (var _i = 0, _a = args.items; _i < _a.length; _i++) {
+                            var item = _a[_i];
+                            self._removeItem(item);
+                        }
+                    }
                     break;
                 case 3:
                     {
@@ -7597,9 +7621,10 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 return;
             }
             self._el.innerHTML = "";
-            keys.forEach(function (key) {
+            for (var _i = 0, keys_2 = keys; _i < keys_2.length; _i++) {
+                var key = keys_2[_i];
                 self._removeItemByKey(key);
-            });
+            }
         };
         StackPanel.prototype._removeItemByKey = function (key) {
             var self = this, mappedItem = self._itemMap[key];
@@ -7621,9 +7646,10 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                 return;
             }
             var docFr = doc.createDocumentFragment();
-            ds.forEach(function (item) {
+            for (var _i = 0, _a = ds.items; _i < _a.length; _i++) {
+                var item = _a[_i];
                 self._appendItem(docFr, item);
-            });
+            }
             self.el.appendChild(docFr);
         };
         StackPanel.prototype.setDataSource = function (v) {
@@ -8136,22 +8162,22 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             }
             var contentElements = utils.arr.fromList(this._el.querySelectorAll(DataForm._DATA_CONTENT_SELECTOR)), isEditing = this.isEditing;
             var forms = utils.arr.fromList(this._el.querySelectorAll(DataForm._DATA_FORM_SELECTOR));
-            contentElements.forEach(function (el) {
-                if (viewChecks.isInNestedForm(self._el, forms, el)) {
-                    return;
-                }
-                var attr = el.getAttribute("data-content"), op = int_3.parseContentAttr(attr);
-                if (!!op.fieldName && !op.fieldInfo) {
-                    op.fieldInfo = getFieldInfo(dctx, op.fieldName);
-                    if (!op.fieldInfo) {
-                        throw new Error(format(jriapp_shared_34.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
+            for (var _i = 0, contentElements_1 = contentElements; _i < contentElements_1.length; _i++) {
+                var el = contentElements_1[_i];
+                if (!viewChecks.isInNestedForm(self._el, forms, el)) {
+                    var attr = el.getAttribute("data-content"), op = int_3.parseContentAttr(attr);
+                    if (!!op.fieldName && !op.fieldInfo) {
+                        op.fieldInfo = getFieldInfo(dctx, op.fieldName);
+                        if (!op.fieldInfo) {
+                            throw new Error(format(jriapp_shared_34.LocaleERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
+                        }
                     }
+                    var contentType = boot.contentFactory.getContentType(op);
+                    var content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing });
+                    self._content.push(content);
+                    content.render();
                 }
-                var contentType = boot.contentFactory.getContentType(op);
-                var content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing });
-                self._content.push(content);
-                content.render();
-            });
+            }
             var promise = self.app._getInternal().bindElements({
                 scope: this._el,
                 bind: 2,
@@ -8164,27 +8190,30 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                 }
                 self._lfTime = lftm;
                 var bindings = self._getBindings();
-                bindings.forEach(function (binding) {
+                for (var _i = 0, bindings_2 = bindings; _i < bindings_2.length; _i++) {
+                    var binding = bindings_2[_i];
                     if (!binding.isSourceFixed) {
                         binding.source = dctx;
                     }
-                });
+                }
                 self._contentCreated = true;
             });
         };
         DataForm.prototype._updateCreatedContent = function () {
             var dctx = this._dataContext, self = this;
             try {
-                this._content.forEach(function (content) {
+                for (var _i = 0, _a = this._content; _i < _a.length; _i++) {
+                    var content = _a[_i];
                     content.dataContext = dctx;
                     content.isEditing = self.isEditing;
-                });
+                }
                 var bindings = this._getBindings();
-                bindings.forEach(function (binding) {
+                for (var _b = 0, bindings_3 = bindings; _b < bindings_3.length; _b++) {
+                    var binding = bindings_3[_b];
                     if (!binding.isSourceFixed) {
                         binding.source = dctx;
                     }
-                });
+                }
             }
             catch (ex) {
                 utils.err.reThrow(ex, this.handleError(ex, this));
@@ -8260,9 +8289,10 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             this._errNotification = null;
         };
         DataForm.prototype._clearContent = function () {
-            this._content.forEach(function (content) {
+            for (var _i = 0, _a = this._content; _i < _a.length; _i++) {
+                var content = _a[_i];
                 content.dispose();
-            });
+            }
             this._content = [];
             if (!!this._lfTime) {
                 this._lfTime.dispose();
@@ -9437,7 +9467,7 @@ define("jriapp_ui/content/all", ["require", "exports", "jriapp_ui/content/basic"
     exports.DateTimeContent = datetime_2.DateTimeContent;
     exports.LookupContent = lookup_2.LookupContent;
 });
-define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/content/factory", "jriapp_ui/utils/tooltip", "jriapp_ui/utils/datepicker", "jriapp_ui/utils/errors", "jriapp_ui/dialog", "jriapp_ui/dynacontent", "jriapp_ui/datagrid/datagrid", "jriapp_ui/pager", "jriapp_ui/listbox", "jriapp_ui/stackpanel", "jriapp_ui/tabs", "jriapp_ui/baseview", "jriapp_ui/template", "jriapp_ui/dataform", "jriapp_ui/datepicker", "jriapp_ui/anchor", "jriapp_ui/block", "jriapp_ui/busy", "jriapp_ui/button", "jriapp_ui/checkbox", "jriapp_ui/checkbox3", "jriapp_ui/command", "jriapp_ui/expander", "jriapp_ui/hidden", "jriapp_ui/img", "jriapp_ui/input", "jriapp_ui/radio", "jriapp_ui/span", "jriapp_ui/textarea", "jriapp_ui/textbox", "jriapp_ui/utils/dblclick", "jriapp_ui/utils/jquery", "jriapp_ui/content/all"], function (require, exports, bootstrap_34, factory_1, tooltip_1, datepicker_1, errors_1, dialog_2, dynacontent_1, datagrid_1, pager_1, listbox_2, stackpanel_1, tabs_1, baseview_17, template_9, dataform_1, datepicker_2, anchor_2, block_1, busy_1, button_1, checkbox_2, checkbox3_1, command_3, expander_4, hidden_1, img_1, input_5, radio_1, span_2, textarea_2, textbox_5, dblclick_2, jquery_8, all_1) {
+define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/content/factory", "jriapp_ui/utils/tooltip", "jriapp_ui/utils/datepicker", "jriapp_ui/utils/errors", "jriapp_ui/dialog", "jriapp_ui/dynacontent", "jriapp_ui/datagrid/datagrid", "jriapp_ui/pager", "jriapp_ui/listbox", "jriapp_ui/stackpanel", "jriapp_ui/tabs", "jriapp_ui/baseview", "jriapp_ui/template", "jriapp_ui/dataform", "jriapp_ui/datepicker", "jriapp_ui/anchor", "jriapp_ui/block", "jriapp_ui/busy", "jriapp_ui/button", "jriapp_ui/checkbox", "jriapp_ui/checkbox3", "jriapp_ui/command", "jriapp_ui/expander", "jriapp_ui/hidden", "jriapp_ui/img", "jriapp_ui/input", "jriapp_ui/radio", "jriapp_ui/span", "jriapp_ui/textarea", "jriapp_ui/textbox", "jriapp_ui/utils/dblclick", "jriapp_ui/utils/jquery", "jriapp_ui/content/all"], function (require, exports, bootstrap_34, factory_1, tooltip_1, datepicker_1, errors_3, dialog_2, dynacontent_1, datagrid_1, pager_1, listbox_2, stackpanel_1, tabs_1, baseview_17, template_9, dataform_1, datepicker_2, anchor_2, block_1, busy_1, button_1, checkbox_2, checkbox3_1, command_3, expander_4, hidden_1, img_1, input_5, radio_1, span_2, textarea_2, textbox_5, dblclick_2, jquery_8, all_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -9484,11 +9514,11 @@ define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/conten
     exports.JQueryUtils = jquery_8.JQueryUtils;
     exports.$ = jquery_8.$;
     __export(all_1);
-    exports.VERSION = "3.0.3";
+    exports.VERSION = "3.0.4";
     var boot = bootstrap_34.bootstrap;
     factory_1.initContentFactory();
     boot.registerSvc("ITooltipService", tooltip_1.createToolTipSvc());
     boot.registerSvc("IDatepicker", datepicker_1.createDatepickerSvc());
-    boot.registerSvc("IUIErrorsService", errors_1.createUIErrorsSvc());
+    boot.registerSvc("IUIErrorsService", errors_3.createUIErrorsSvc());
     boot.loadOwnStyle("jriapp_ui");
 });

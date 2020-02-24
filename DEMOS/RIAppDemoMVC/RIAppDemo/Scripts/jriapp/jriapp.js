@@ -653,11 +653,10 @@ define("jriapp/parsing/helper", ["require", "exports", "jriapp_shared", "jriapp/
         Helper.parseOptions = function (parseType, parts, dataContext) {
             var first = parts[0], rest = parts.slice(1);
             var obj = helper.parseOption(parseType, first, dataContext) || {};
-            if (rest.length > 0) {
-                rest.forEach(function (val) {
-                    var obj2 = helper.parseOption(parseType, val, dataContext);
-                    obj = extend(obj, obj2);
-                });
+            for (var _i = 0, rest_1 = rest; _i < rest_1.length; _i++) {
+                var val = rest_1[_i];
+                var obj2 = helper.parseOption(parseType, val, dataContext);
+                obj = extend(obj, obj2);
             }
             return obj;
         };
@@ -679,7 +678,8 @@ define("jriapp/parsing/helper", ["require", "exports", "jriapp_shared", "jriapp/
                 return helper.parseGetExpr(parseType, expr, dataContext);
             }
             var kvals = funcs.getKeyVals(part);
-            kvals.forEach(function (kv) {
+            for (var _i = 0, kvals_1 = kvals; _i < kvals_1.length; _i++) {
+                var kv = kvals_1[_i];
                 if (parseType === 1 && !kv.val && startsWith(kv.key, "this.")) {
                     kv.val = kv.key.substr(int_1.THIS_LEN);
                     kv.key = "targetPath";
@@ -691,7 +691,7 @@ define("jriapp/parsing/helper", ["require", "exports", "jriapp_shared", "jriapp/
                     res[kv.key] = _undefined;
                     _reportBug(err);
                 }
-            });
+            }
             return res;
         };
         return Helper;
@@ -719,9 +719,10 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/pa
         if (isGetExpr(str)) {
             var ids = getBraceContent(str, 0);
             var args = getGetParts(ids);
-            args.forEach(function (val) {
+            for (var _i = 0, args_1 = args; _i < args_1.length; _i++) {
+                var val = args_1[_i];
                 _appendPart(parts, trim(val));
-            });
+            }
         }
         else {
             _appendPart(parts, trim(str));
@@ -743,12 +744,11 @@ define("jriapp/utils/parser", ["require", "exports", "jriapp_shared", "jriapp/pa
         };
         Parser.parseBindings = function (bindings) {
             var parts = [];
-            bindings.forEach(function (str) {
+            for (var _i = 0, bindings_1 = bindings; _i < bindings_1.length; _i++) {
+                var str = bindings_1[_i];
                 var arr = _splitIntoParts(str);
-                for (var i = 0; i < arr.length; ++i) {
-                    parts.push(arr[i]);
-                }
-            });
+                parts.push.apply(parts, arr);
+            }
             return _parseBindings(1, parts, null);
         };
         Parser.parseViewOptions = function (options, dataContext) {
@@ -1638,9 +1638,10 @@ define("jriapp/utils/dom", ["require", "exports", "jriapp_shared", "jriapp/utils
             if (!children) {
                 return;
             }
-            children.forEach(function (node) {
+            for (var _i = 0, children_1 = children; _i < children_1.length; _i++) {
+                var node = children_1[_i];
                 parent.appendChild(node);
-            });
+            }
         };
         DomUtils.prepend = function (parent, child) {
             if (!child) {
@@ -2205,11 +2206,12 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
                 if (isGetExpr(attr)) {
                     var ids = getBraceContent(attr, 0);
                     var parts = getGetParts(ids);
-                    parts.forEach(function (val) {
+                    for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
+                        var val = parts_1[_i];
                         if (!!val) {
                             result.push.apply(result, val.split(","));
                         }
-                    });
+                    }
                 }
                 else {
                     result.push.apply(result, attr.split(","));
@@ -2220,15 +2222,15 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
             return result;
         }
         var hashMap = Indexer();
-        result.forEach(function (name) {
-            if (!name) {
-                return;
+        for (var _a = 0, result_1 = result; _a < result_1.length; _a++) {
+            var name_1 = result_1[_a];
+            if (!!name_1) {
+                var _name = fastTrim(name_1);
+                if (!!_name) {
+                    hashMap[_name] = _name;
+                }
             }
-            name = fastTrim(name);
-            if (!!name) {
-                hashMap[name] = name;
-            }
-        });
+        }
         return Object.keys(hashMap);
     }
     var Bootstrap = (function (_super) {
@@ -2366,24 +2368,26 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
         };
         Bootstrap.prototype._processOptions = function (owner, root) {
             var jsons = dom.queryAll(root, _OPTION_SELECTOR);
-            jsons.forEach(function (el) {
-                var name = el.getAttribute("id");
-                if (!name) {
+            for (var _i = 0, jsons_1 = jsons; _i < jsons_1.length; _i++) {
+                var el = jsons_1[_i];
+                var name_2 = el.getAttribute("id");
+                if (!name_2) {
                     throw new Error(ERRS.ERR_OPTIONS_HAS_NO_ID);
                 }
-                registerOptions(owner, name, el.innerHTML);
-            });
+                registerOptions(owner, name_2, el.innerHTML);
+            }
         };
         Bootstrap.prototype._processTemplates = function (owner, root) {
             var self = this, templates = dom.queryAll(root, _TEMPLATE_SELECTOR);
-            templates.forEach(function (el) {
-                var name = el.getAttribute("id");
-                if (!name) {
+            for (var _i = 0, templates_1 = templates; _i < templates_1.length; _i++) {
+                var el = templates_1[_i];
+                var name_3 = el.getAttribute("id");
+                if (!name_3) {
                     throw new Error(ERRS.ERR_TEMPLATE_HAS_NO_ID);
                 }
                 var html = el.innerHTML;
-                self._processTemplate(owner, name, html);
-            });
+                self._processTemplate(owner, name_3, html);
+            }
         };
         Bootstrap.prototype._processTemplate = function (owner, name, html) {
             var frag = dom.getDocFragment(fastTrim(html)), required = getRequiredModules(frag);
@@ -3068,7 +3072,7 @@ define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstr
             }
             this.setDisposing();
             var self = this;
-            forEach(this._pathItems, function (key, old) {
+            forEach(this._pathItems, function (_key, old) {
                 self._cleanUp(old);
             });
             this._pathItems = Indexer();
@@ -3807,12 +3811,13 @@ define("jriapp/template", ["require", "exports", "jriapp_shared", "jriapp/bootst
         };
         Template.prototype.findElViewsByDataName = function (name) {
             var els = this.findElByDataName(name), res = [], viewStore = boot.app.viewFactory.store;
-            els.forEach(function (el) {
+            for (var _i = 0, els_1 = els; _i < els_1.length; _i++) {
+                var el = els_1[_i];
                 var elView = viewStore.getElView(el);
                 if (!!elView) {
                     res.push(elView);
                 }
-            });
+            }
             return res;
         };
         Template.prototype.toString = function () {
@@ -3893,11 +3898,12 @@ define("jriapp/utils/lifetime", ["require", "exports", "jriapp_shared"], functio
                 return;
             }
             this.setDisposing();
-            this._objs.forEach(function (obj) {
+            for (var _i = 0, _a = this._objs; _i < _a.length; _i++) {
+                var obj = _a[_i];
                 if (!obj.getIsStateDirty()) {
                     obj.dispose();
                 }
-            });
+            }
             this._objs = [];
             _super.prototype.dispose.call(this);
         };
@@ -3947,9 +3953,10 @@ define("jriapp/utils/propwatcher", ["require", "exports", "jriapp_shared"], func
             }
             this.setDisposing();
             var self = this;
-            this._objs.forEach(function (obj) {
+            for (var _i = 0, _a = this._objs; _i < _a.length; _i++) {
+                var obj = _a[_i];
                 self.removeWatch(obj);
-            });
+            }
             this._objs = [];
             _super.prototype.dispose.call(this);
         };
@@ -4303,12 +4310,13 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
     }
     function getBindables(scope) {
         var result = [], allElems = dom.queryAll(scope, "*");
-        allElems.forEach(function (el) {
+        for (var _i = 0, allElems_1 = allElems; _i < allElems_1.length; _i++) {
+            var el = allElems_1[_i];
             var res = toBindable(el);
             if (!!res) {
                 result.push(res);
             }
-        });
+        }
         return result;
     }
     function filterBindables(scope, bindElems) {
@@ -4391,7 +4399,8 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
             try {
                 var bindElems = getBindables(scope);
                 var bindables = filterBindables(scope, bindElems);
-                bindables.forEach(function (bindElem) {
+                for (var _i = 0, bindables_1 = bindables; _i < bindables_1.length; _i++) {
+                    var bindElem = bindables_1[_i];
                     var factory = self._elViewFactory;
                     var elView = factory.getElView(bindElem.el);
                     if (!elView) {
@@ -4400,7 +4409,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
                         lftm.addObj(elView);
                     }
                     bindElem.elView = elView;
-                });
+                }
                 var viewsArr = bindables.map(function (bindElem) {
                     self._bindElView({
                         bind: bindElem,
@@ -4523,7 +4532,7 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
         };
         Application.prototype._cleanUpObjMaps = function () {
             var self = this;
-            this._objMaps.forEach(function (objMap) {
+            var _loop_1 = function (objMap) {
                 forEach(objMap, function (name) {
                     var obj = objMap[name];
                     if (sys.isBaseObj(obj)) {
@@ -4532,7 +4541,11 @@ define("jriapp/app", ["require", "exports", "jriapp_shared", "jriapp/bootstrap",
                         }
                     }
                 });
-            });
+            };
+            for (var _i = 0, _a = this._objMaps; _i < _a.length; _i++) {
+                var objMap = _a[_i];
+                _loop_1(objMap);
+            }
             this._objMaps = [];
         };
         Application.prototype._initAppModules = function () {
@@ -4825,6 +4838,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "3.0.0";
+    exports.VERSION = "3.0.1";
     bootstrap_7.Bootstrap._initFramework();
 });
