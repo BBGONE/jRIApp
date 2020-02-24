@@ -156,13 +156,15 @@ export class Association extends BaseObject {
                 changed = self._mapParentItems(args.items);
                 break;
             case COLL_CHANGE_TYPE.Remove:
-                args.items.forEach((item) => {
-                    const key = self._unMapParentItem(item);
-                    if (!!key) {
-                        changedKeys[key] = null;
+                {
+                    for (const item of args.items) {
+                        const key = self._unMapParentItem(item);
+                        if (!!key) {
+                            changedKeys[key] = null;
+                        }
                     }
-                });
-                changed = Object.keys(changedKeys);
+                    changed = Object.keys(changedKeys);
+                }
                 break;
             case COLL_CHANGE_TYPE.Remap:
                 {
@@ -254,29 +256,33 @@ export class Association extends BaseObject {
                     // nothing
                     break;
                 case DELETE_ACTION.Cascade:
-                    children.forEach((child) => {
-                        child._aspect.deleteItem();
-                    });
+                    {
+                        for (const child of children) {
+                            child._aspect.deleteItem();
+                        }
+                    }
                     break;
                 case DELETE_ACTION.SetNulls:
-                    children.forEach((child) => {
-                        const isEdit = child._aspect.isEditing;
-                        if (!isEdit) {
-                            child._aspect.beginEdit();
-                        }
-                        try {
-                            self._childFldInfos.forEach((f) => {
-                                (<any>child)[f.fieldName] = null;
-                            });
+                    {
+                        for (const child of children) {
+                            const isEdit = child._aspect.isEditing;
                             if (!isEdit) {
-                                child._aspect.endEdit();
+                                child._aspect.beginEdit();
                             }
-                        } finally {
-                            if (!isEdit) {
-                                child._aspect.cancelEdit();
+                            try {
+                                for (const f of self._childFldInfos) {
+                                    (<any>child)[f.fieldName] = null;
+                                }
+                                if (!isEdit) {
+                                    child._aspect.endEdit();
+                                }
+                            } finally {
+                                if (!isEdit) {
+                                    child._aspect.cancelEdit();
+                                }
                             }
                         }
-                    });
+                    }
                     break;
             }
             if (!!fkey) {
@@ -295,13 +301,16 @@ export class Association extends BaseObject {
                 changed = self._mapChildren(items);
                 break;
             case COLL_CHANGE_TYPE.Remove:
-                items.forEach(function (item) {
-                    const key = self._unMapChildItem(item);
-                    if (!!key) {
-                        (<any>changedKeys)[key] = null;
+                {
+                    for(const item of items)
+                    {
+                        const key = self._unMapChildItem(item);
+                        if (!!key) {
+                            (<any>changedKeys)[key] = null;
+                        }
                     }
-                });
-                changed = Object.keys(changedKeys);
+                    changed = Object.keys(changedKeys);
+                }
                 break;
             case COLL_CHANGE_TYPE.Remap:
                 {
@@ -333,25 +342,25 @@ export class Association extends BaseObject {
         const self = this;
         if (changedPkeys.length > 0 || changedCkeys.length > 0) {
             // parentToChildren
-            changedPkeys.forEach((key) => {
+            for (const key of changedPkeys) {
                 const res = self._changed[key] || { children: {}, parent: null };
-                const arr = self._childMap[key];
-                if (!!arr) {
-                    for (let i = 0; i < arr.length; i += 1) {
-                        res.children[arr[i]._key] = arr[i];
+                const children = self._childMap[key];
+                if (!!children) {
+                    for (const child of children) {
+                        res.children[child._key] = child;
                     }
                 }
                 self._changed[key] = res;
-            });
+            }
             // childrenToParent
-            changedCkeys.forEach((key) => {
+            for (const key of changedCkeys) {
                 const res = self._changed[key] || { children: {}, parent: null };
                 const item = self._parentMap[key];
                 if (!!item) {
                     res.parent = item;
                 }
                 self._changed[key] = res;
-            });
+            }
 
             this._debounce.enque(this._notifyBound);
         }

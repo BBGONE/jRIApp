@@ -139,10 +139,11 @@ export class EntityAspect<TItem extends IEntityItem = IEntityItem, TObj extends 
     protected _onFieldChanged(fieldName: string, fieldInfo?: IFieldInfo): void {
         sys.raiseProp(this.item, fieldName);
         const info = fieldInfo || this.coll.getFieldInfo(fieldName);
-        if (!!info.dependents && info.dependents.length > 0) {
-            info.dependents.forEach((d) => {
+        if (!!info.dependents) {
+            for (const d of info.dependents)
+            {
                 sys.raiseProp(this.item, d);
-            });
+            }
         }
     }
     protected _getValueChange(fullName: string, fieldInfo: IFieldInfo, changedOnly: boolean): IValueChange {
@@ -271,13 +272,14 @@ export class EntityAspect<TItem extends IEntityItem = IEntityItem, TObj extends 
         dbSet.errors.removeAllErrors(this.item);
         this._setStatus(this._savedStatus);
         this._savedStatus = null;
-        changes.forEach((v) => {
-            const fld = dbSet.getFieldInfo(v.fieldName);
+        for (const change of changes)
+        {
+            const fld = dbSet.getFieldInfo(change.fieldName);
             if (!fld) {
-                throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, v.fieldName));
+                throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, self.dbSetName, change.fieldName));
             }
-            self._onFieldChanged(v.fieldName, fld);
-        });
+            self._onFieldChanged(change.fieldName, fld);
+        }
         return true;
     }
     // override
@@ -365,13 +367,15 @@ export class EntityAspect<TItem extends IEntityItem = IEntityItem, TObj extends 
             if (!refreshMode) {
                 refreshMode = REFRESH_MODE.RefreshCurrent;
             }
-            rowInfo.values.forEach((val) => {
+
+            for (const val of rowInfo.values)
+            {
                 fn_walkChanges(val, (fullName, vc) => {
                     if ((vc.flags & FLAGS.Refreshed)) {
                         self._refreshValue(vc.val, fullName, refreshMode);
                     }
                 });
-            });
+            }
 
             if (oldStatus === ITEM_STATUS.Updated) {
                 const changes = this._getValueChanges(true);
@@ -543,11 +547,12 @@ export class EntityAspect<TItem extends IEntityItem = IEntityItem, TObj extends 
                 }
                 self._setStatus(ITEM_STATUS.None);
                 errors.removeAllErrors(this.item);
-                changes.forEach((v) => {
-                    fn_walkChanges(v, (fullName) => {
+                for (const change of changes)
+                {
+                    fn_walkChanges(change, (fullName) => {
                         self._onFieldChanged(fullName, dbSet.getFieldInfo(fullName));
                     });
-                });
+                }
                 internal.onCommitChanges(this.item, false, true, oldStatus);
             }
         }

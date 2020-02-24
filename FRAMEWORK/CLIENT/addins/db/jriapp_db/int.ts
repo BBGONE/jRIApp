@@ -199,15 +199,10 @@ export interface IRowData {
     k: string; v: any[]; // key and values
 }
 
-export interface IQueryItems<TItem extends IEntityItem> {
-    items: TItem[];
-    pos: number[];
-}
-
 export interface IQueryResult<TItem extends IEntityItem> {
     fetchedItems: TItem[];
     items: TItem[];
-    newItems: IQueryItems<TItem>;
+    newItems: TItem[];
     reason: COLL_CHANGE_REASON;
     outOfBandData: any;
 }

@@ -28,9 +28,10 @@ export class DbSets extends BaseObject {
             return;
         }
         this.setDisposing();
-        this._arrDbSets.forEach((dbSet) => {
+        for (const dbSet of this._arrDbSets)
+        {
             dbSet.dispose();
-        });
+        }
         this._arrDbSets = [];
         this._dbSets = null;
         this._dbContext = null;

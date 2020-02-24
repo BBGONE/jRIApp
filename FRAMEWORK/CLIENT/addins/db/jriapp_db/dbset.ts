@@ -32,7 +32,8 @@ function doFieldDependences(dbSet: TDbSet, info: IFieldInfo) {
         return;
     }
     const deps: string[] = info.dependentOn.split(",");
-    deps.forEach((depOn) => {
+    for(const depOn of deps)
+    {
         const depOnFld = dbSet.getFieldInfo(depOn);
         if (!depOnFld) {
             throw new Error(format(ERRS.ERR_CALC_FIELD_DEFINE, depOn));
@@ -43,7 +44,7 @@ function doFieldDependences(dbSet: TDbSet, info: IFieldInfo) {
         if (depOnFld.dependents.indexOf(info.fullName) < 0) {
             depOnFld.dependents.push(info.fullName);
         }
-    });
+    }
 }
 
 export interface IFillFromServiceArgs {
@@ -137,13 +138,15 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
         this._changeCount = 0;
         this._changeCache = Indexer();
         this._ignorePageChanged = false;
-        fieldInfos.forEach((f) => {
+        for (const f of fieldInfos)
+        {
             self._fieldMap[f.fieldName] = f;
             walkField(f, (fld, fullName) => {
                 fld.dependents = [];
                 fld.fullName = fullName;
             });
-        });
+        }
+
         walkFields(fieldInfos, (fld, fullName) => {
             if (fld.fieldType === FIELD_TYPE.Navigation) {
                 // navigation fields can NOT be on nested fields
@@ -278,12 +281,13 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
         if (isChild) {
             fieldInfo.isReadOnly = false;
             self._childAssocMap[assocs[0].childToParentName] = assocs[0];
-            assocs[0].fieldRels.forEach((frel) => {
+            for (const frel of assocs[0].fieldRels)
+            {
                 const childFld = self.getFieldInfo(frel.childField);
                 if (!fieldInfo.isReadOnly && (childFld.isReadOnly && !childFld.allowClientDefault)) {
                     fieldInfo.isReadOnly = true;
                 }
-            });
+            }
             // this property should return parent
             result.getFunc = (item: TItem) => {
                 const assoc = self.dbContext.getAssociation(assocName);
@@ -531,13 +535,12 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
             changeType: !isClearAll ? COLL_CHANGE_TYPE.Add : COLL_CHANGE_TYPE.Reset,
             reason: result.reason,
             oper: COLL_CHANGE_OPER.Fill,
-            items: result.newItems.items,
-            pos: result.newItems.pos
+            items: result.newItems
         });
 
         this._onFillEnd({
             items: result.items,
-            newItems: result.newItems.items,
+            newItems: result.newItems,
             reason: result.reason
         });
 
@@ -579,7 +582,7 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
             return item;
         });
 
-        let arr = fetchedItems;
+        let _fetchedItems = fetchedItems;
 
         if (!!query && !query.getIsStateDirty()) {
             if (query.isIncludeTotalCount && !isNt(res.totalCount)) {
@@ -592,32 +595,31 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
                     dataCache.totalCount = res.totalCount;
                 }
                 dataCache.fill(res.pageIndex, fetchedItems);
-                arr = <TItem[]>dataCache.getPageItems(query.pageIndex);
+                _fetchedItems = <TItem[]>dataCache.getPageItems(query.pageIndex);
             }
         }
 
-        const newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
-        arr.forEach((item) => {
+        const newItems: TItem[] = [], items: TItem[] = [];
+
+        for(const item of _fetchedItems)
+        {
             const oldItem = self.getItemByKey(item._key);
             if (!oldItem) {
-                positions.push(self._appendItem(item));
+                self._appendItem(item);
                 newItems.push(item);
                 items.push(item);
                 item._aspect._setIsAttached(true);
             } else {
                 items.push(oldItem);
             }
-        });
+        }
 
         if (newItems.length > 0) {
             this._onCountChanged();
         }
 
         const result: IQueryResult<TItem> = {
-            newItems: {
-                items: newItems,
-                pos: positions
-            },
+            newItems: newItems,
             fetchedItems: fetchedItems,
             items: items,
             reason: info.reason,
@@ -640,21 +642,18 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
 
         this._replaceItems(args.reason, COLL_CHANGE_OPER.Fill, arr);
 
-        const positions: number[] = [], items: TItem[] = [];
-        arr.forEach((item, index) => {
-            positions.push(index);
+        const items: TItem[] = [];
+
+        for (const item of arr) {
             items.push(item);
-        });
+        }
 
         if (items.length > 0) {
             this._onCountChanged();
         }
 
         const result: IQueryResult<TItem> = {
-            newItems: {
-                items: items,
-                pos: positions
-            },
+            newItems: items,
             fetchedItems: null,
             items: items,
             reason: args.reason,
@@ -666,7 +665,8 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
     }
     protected _commitChanges(rows: IRowInfo[]): void {
         const self = this;
-        rows.forEach((rowInfo) => {
+        for(const rowInfo of rows)
+        {
             const oldKey = rowInfo.clientKey, newKey = rowInfo.serverKey,
                 item: TItem = self.getItemByKey(oldKey);
             if (!item) {
@@ -687,7 +687,7 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
                     new_key: newKey
                 });
             }
-        });
+        }
     }
     protected _setItemInvalid(row: IRowInfo): TItem {
         const item = this.getItemByKey(row.clientKey), errors = Indexer<string[]>();
@@ -710,14 +710,14 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
     }
     protected _getChanges(): IRowInfo[] {
         const changes: IRowInfo[] = [], csh = this._changeCache;
-        forEach(csh, (key, item) => {
+        forEach(csh, (_key, item) => {
             changes.push(item._aspect._getRowInfo());
         });
         return changes;
     }
     protected _getTrackAssocInfo(): ITrackAssoc[] {
         const self = this, res: ITrackAssoc[] = [], csh = this._changeCache, trackAssoc = self._trackAssoc;
-        forEach(csh, (key, item) => {
+        forEach(csh, (_key, item) => {
             forEach(trackAssoc, (assocName, assocInfo) => {
                 const parentKey = item._aspect._getFieldVal(assocInfo.childToParentName),
                     childKey = item._key;
@@ -759,16 +759,16 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
     protected _onItemStatusChanged(item: TItem, oldStatus: ITEM_STATUS): void {
         super._onItemStatusChanged(item, oldStatus);
         if (item._aspect.isDeleted && this.isSubmitOnDelete) {
-            this.dbContext.submitChanges().catch((err) => {
+            this.dbContext.submitChanges().catch((_err) => {
                 utils.queue.enque(() => {
                     this.dbContext.rejectChanges();
                 });
             });
         }
     }
-    protected _onRemoved(item: TItem, pos: number): void {
+    protected _onRemoved(item: TItem): void {
         this._removeFromChanged(item._key);
-        super._onRemoved(item, pos);
+        super._onRemoved(item);
     }
     // reports ALL the values returned from the server 
     // it is not not triggered when loaded from the Data Cache
@@ -836,7 +836,8 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
         names: IFieldName[];
         rows: IRowData[];
     }): void {
-        data.rows.forEach((row) => {
+        for (const row of data.rows)
+        {
             // row.key already a string value generated on server (no need to convert to string)
             const key = row.k;
             if (!key) {
@@ -847,7 +848,7 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
             if (!!item) {
                 this._refreshValues("", item, row.v, data.names, REFRESH_MODE.RefreshCurrent);
             }
-        });
+        }
     }
     // fill items from row data (in wire format)
     fillData(data: {
@@ -877,11 +878,11 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
             return item;
         });
 
-        const newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
+        const newItems: TItem[] = [], items: TItem[] = [];
         fetchedItems.forEach((item) => {
             const oldItem = self.getItemByKey(item._key);
             if (!oldItem) {
-                positions.push(self._appendItem(item));
+                self._appendItem(item);
                 newItems.push(item);
                 items.push(item);
                 item._aspect._setIsAttached(true);
@@ -897,10 +898,7 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
         this.totalCount = fetchedItems.length;
 
         const result: IQueryResult<TItem> = {
-            newItems: {
-                items: newItems,
-                pos: positions
-            },
+            newItems: newItems,
             fetchedItems: fetchedItems,
             items: items,
             reason: COLL_CHANGE_REASON.None,
@@ -923,11 +921,11 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
             return self.createEntityFromObj(obj);
         });
 
-        const newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [];
+        const newItems: TItem[] = [], items: TItem[] = [];
         fetchedItems.forEach((item) => {
             const oldItem = self.getItemByKey(item._key);
             if (!oldItem) {
-                positions.push(self._appendItem(item));
+                self._appendItem(item);
                 newItems.push(item);
                 items.push(item);
                 item._aspect._setIsAttached(true);
@@ -943,10 +941,7 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
         this.totalCount = fetchedItems.length;
 
         const result: IQueryResult<TItem> = {
-            newItems: {
-                items: newItems,
-                pos: positions
-            },
+            newItems: newItems,
             fetchedItems: fetchedItems,
             items: items,
             reason: COLL_CHANGE_REASON.None,

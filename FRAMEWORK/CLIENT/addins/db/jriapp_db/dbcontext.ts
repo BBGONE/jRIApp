@@ -7,7 +7,7 @@ import { ValueUtils } from "jriapp_shared/collection/utils";
 import {
     IEntityItem, IRefreshRequest, IRefreshResponse, IQueryResult, IQueryInfo, IAssociationInfo, IAssocConstructorOptions,
     IPermissionsInfo, IInvokeRequest, IInvokeResponse, IQueryRequest, IQueryResponse, ITrackAssoc,
-    IChangeRequest, IChangeResponse, IRowInfo, IQueryParamInfo, ISubset
+    IChangeRequest, IChangeResponse, IRowInfo, ISubset
 } from "./int";
 import { DATA_OPER, REFRESH_MODE } from "./const";
 import { TDbSet } from "./dbset";
@@ -141,9 +141,10 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         this.abortRequests();
         this._waitQueue.dispose();
         this._waitQueue = null;
-        this._arrAssoc.forEach((assoc) => {
+        for (const assoc of this._arrAssoc)
+        {
             assoc.dispose();
-        });
+        }
         this._arrAssoc = [];
         this._assoc = <TAssoc>{};
         this._dbSets.dispose();
@@ -179,20 +180,22 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
     }
     protected _initAssociations(associations: IAssociationInfo[]): void {
         const self = this;
-        associations.forEach((assoc) => {
+        for (const assoc of associations)
+        {
             self._initAssociation(assoc);
-        });
+        }
     }
     protected _initMethods(methods: IQueryInfo[]): void {
         const self = this;
-        methods.forEach((info) => {
-            if (info.isQuery) {
-                self._queryInfo[info.methodName] = info;
+        for (const method of methods)
+        {
+            if (method.isQuery) {
+                self._queryInfo[method.methodName] = method;
             } else {
                 // service method info
-                self._initMethod(info);
+                self._initMethod(method);
             }
-        });
+        }
     }
     protected _updatePermissions(info: IPermissionsInfo): void {
         this._serverTimezone = info.serverTimezone;
@@ -271,12 +274,13 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
     protected _getMethodParams(methodInfo: IQueryInfo, args: { [paramName: string]: any; }): IInvokeRequest {
         const self = this, methodName: string = methodInfo.methodName,
             data: IInvokeRequest = { methodName: methodName, paramInfo: { parameters: [] } },
-            paramInfos = methodInfo.parameters, len = paramInfos.length;
+            paramInfos = methodInfo.parameters;
+
         if (!args) {
             args = Indexer();
         }
-        for (let i = 0; i < len; i += 1) {
-            const pinfo: IQueryParamInfo = paramInfos[i];
+
+        for (const pinfo of paramInfos) {
             let val = args[pinfo.name];
             if (!pinfo.isNullable && !pinfo.isArray && !(pinfo.dataType === DATA_TYPE.String || pinfo.dataType === DATA_TYPE.Binary) && isNt(val)) {
                 throw new Error(format(ERRS.ERR_SVC_METH_PARAM_INVALID, pinfo.name, val, methodInfo.methodName));
@@ -287,16 +291,18 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             if (pinfo.isArray && !isNt(val) && !isArray(val)) {
                 val = [val];
             }
+
             let value: string = null;
             // byte arrays are optimized for serialization
             if (pinfo.dataType === DATA_TYPE.Binary && isArray(val)) {
                 value = JSON.stringify(val);
             } else if (isArray(val)) {
                 const arr: string[] = [];
-                for (let k = 0; k < val.length; k += 1) {
+                for (const _val of val) {
                     // first convert all values to string
-                    arr.push(stringifyValue(val[k], pinfo.dateConversion, pinfo.dataType, self.serverTimezone));
+                    arr.push(stringifyValue(_val, pinfo.dateConversion, pinfo.dataType, self.serverTimezone));
                 }
+
                 value = JSON.stringify(arr);
             } else {
                 value = stringifyValue(val, pinfo.dateConversion, pinfo.dataType, self.serverTimezone);
@@ -337,14 +343,16 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         if (!isHasSubsets) {
             return;
         }
-        subsets.forEach((subset) => {
+
+        for (const subset of subsets)
+        {
             const dbSet = self.getDbSet(subset.dbSetName);
             if (!refreshOnly) {
                 dbSet.fillData(subset, !isClearAll);
             } else {
                 dbSet.refreshData(subset);
             }
-        });
+        }
     }
     protected _onLoaded(response: IQueryResponse, query: TDataQuery, reason: COLL_CHANGE_REASON): IStatefulPromise<IQueryResult<IEntityItem>> {
         const self = this;
@@ -377,7 +385,8 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
                 const submitted: IEntityItem[] = [], notvalid: IEntityItem[] = [];
                 response.dbSets.forEach((jsDB) => {
                     const dbSet = self._dbSets.getDbSet(jsDB.dbSetName);
-                    jsDB.rows.forEach((row) => {
+                    for (const row of jsDB.rows)
+                    {
                         const item = dbSet.getItemByKey(row.clientKey);
                         if (!item) {
                             throw new Error(format(ERRS.ERR_KEY_IS_NOTFOUND, row.clientKey));
@@ -387,7 +396,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
                             dbSet._getInternal().setItemInvalid(row);
                             notvalid.push(item);
                         }
-                    });
+                    }
                 });
                 throw new SubmitError(ex, submitted, notvalid);
             }

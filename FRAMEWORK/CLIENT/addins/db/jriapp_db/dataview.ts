@@ -67,32 +67,30 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
         return false;
     }
     // override
-    protected _onAddNew(item: TItem, pos: number): void {
+    protected _onAddNew(item: TItem): void {
         const args = {
             changeType: COLL_CHANGE_TYPE.Add,
             reason: COLL_CHANGE_REASON.None,
             oper: COLL_CHANGE_OPER.AddNew,
             items: [item],
-            pos: [pos],
             new_key: item._key
         };
         this._onCollectionChanged(args);
     }
     protected _filterForPaging(items: TItem[]): TItem[] {
-        let skip = 0, take = 0, pos = -1, cnt = -1;
-        const result: TItem[] = [];
-        skip = this.pageSize * this.pageIndex;
-        take = this.pageSize;
-        items.forEach((item) => {
+        let pos = -1, cnt = -1;
+        const result: TItem[] = [], skip = this.pageSize * this.pageIndex, take = this.pageSize;
+        for (const item of items) {
             cnt += 1;
             if (cnt < skip) {
-                return;
+                break;
             }
             pos += 1;
             if (pos < take) {
                 result.push(item);
             }
-        });
+        }
+
         return result;
     }
     protected _onViewRefreshed(args: {}): void {
@@ -148,24 +146,24 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
             isAppend: false
         }, data);
 
-        const self = this, newItems: TItem[] = [], positions: number[] = [], items: TItem[] = [], isClearAll = !!data.clear;
+        const self = this, newItems: TItem[] = [], items: TItem[] = [], isClearAll = !!data.clear;
 
         if (!!isClearAll) {
             this._clear(data.reason, COLL_CHANGE_OPER.Fill);
         }
 
-        const arr = (this.isPagingEnabled && !data.isAppend) ? this._filterForPaging(data.items) : data.items;
+        const _items = (this.isPagingEnabled && !data.isAppend) ? this._filterForPaging(data.items) : data.items;
 
-        arr.forEach((item) => {
+        for (const item of _items) {
             const oldItem = self.getItemByKey(item._key);
             if (!oldItem) {
-                positions.push(self._appendItem(item));
+                self._appendItem(item);
                 newItems.push(item);
                 items.push(item);
             } else {
                 items.push(oldItem);
             }
-        });
+        }
 
         if (newItems.length > 0) {
             this._onCountChanged();
@@ -181,8 +179,7 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
             changeType: COLL_CHANGE_TYPE.Reset,
             reason: data.reason,
             oper: COLL_CHANGE_OPER.Fill,
-            items: newItems,
-            pos: positions
+            items: newItems
         });
 
         this._onFillEnd({
@@ -197,7 +194,7 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
 
         return newItems;
     }
-    protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<TItem>): void {
+    protected _onDSCollectionChanged(_sender: any, args: ICollChangedArgs<TItem>): void {
         const self = this;
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
@@ -215,13 +212,12 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
                 break;
             case COLL_CHANGE_TYPE.Remove:
                 {
-                    args.items.forEach((item) => {
-                        const key = item._key;
-                        item = self.getItemByKey(key);
-                        if (!!item) {
-                            self.removeItem(item);
+                    for (const item of args.items) {
+                        const _item = self.getItemByKey(item._key);
+                        if (!!_item) {
+                            self.removeItem(_item);
                         }
-                    });
+                    }
                 }
                 break;
             case COLL_CHANGE_TYPE.Remap:
@@ -237,7 +233,7 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
                 throw new Error(format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
         }
     }
-    protected _onDSStatusChanged(sender: any, args: ICollItemStatusArgs<TItem>): void {
+    protected _onDSStatusChanged(_sender: any, args: ICollItemStatusArgs<TItem>): void {
         const self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, canFilter = !!self._fn_filter;
 
         if (!self.getItemByKey(key)) {
@@ -263,12 +259,12 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
             return;
         }
         ds.addOnCollChanged(self._onDSCollectionChanged, self.uniqueID, self, TPriority.AboveNormal);
-        ds.addOnBeginEdit((sender, args) => {
+        ds.addOnBeginEdit((_sender, args) => {
             if (!!self.getItemByKey(args.item._key)) {
                 self._onEditing(args.item, true, false);
             }
         }, self.uniqueID, null, TPriority.AboveNormal);
-        ds.addOnEndEdit((sender, args) => {
+        ds.addOnEndEdit((_sender, args) => {
             let isOk: boolean;
             const item = args.item, canFilter = !!self._fn_filter;
             if (!self.getItemByKey(item._key)) {
@@ -288,19 +284,19 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
                 }
             }
         }, self.uniqueID, null, TPriority.AboveNormal);
-        ds.addOnErrorsChanged((sender, args) => {
+        ds.addOnErrorsChanged((_sender, args) => {
             if (!!self.getItemByKey(args.item._key)) {
                 self._getInternal().onErrorsChanged(args);
             }
         }, self.uniqueID, null, TPriority.AboveNormal);
         ds.addOnStatusChanged(self._onDSStatusChanged, self.uniqueID, self, TPriority.AboveNormal);
 
-        ds.addOnItemDeleting((sender, args) => {
+        ds.addOnItemDeleting((_sender, args) => {
             if (!!self.getItemByKey(args.item._key)) {
                 self._onItemDeleting(args);
             }
         }, self.uniqueID, null, TPriority.AboveNormal);
-        ds.addOnItemAdded((sender, args) => {
+        ds.addOnItemAdded((_sender, args) => {
             if (self._isAddingNew) {
                 if (!self.getItemByKey(args.item._key)) {
                     self._addNew(args.item);
@@ -310,7 +306,7 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
                 self._onItemAdded(args.item);
             }
         }, self.uniqueID, null, TPriority.AboveNormal);
-        ds.addOnItemAdding((sender, args) => {
+        ds.addOnItemAdding((_sender, args) => {
             if (self._isAddingNew) {
                 self._onItemAdding(args.item);
             }
