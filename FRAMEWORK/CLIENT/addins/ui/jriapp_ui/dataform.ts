@@ -197,25 +197,26 @@ export class DataForm extends BaseObject {
         // select all dataforms inside the scope
         const forms = utils.arr.fromList<HTMLElement>(this._el.querySelectorAll(DataForm._DATA_FORM_SELECTOR));
 
-        contentElements.forEach((el) => {
+        for (const el of contentElements)
+        {
             // check if the element inside a nested dataform
-            if (viewChecks.isInNestedForm(self._el, forms, el)) {
-                return;
-            }
-            const attr = el.getAttribute(DATA_ATTR.DATA_CONTENT),
-                op = parseContentAttr(attr);
-            if (!!op.fieldName && !op.fieldInfo) {
-                op.fieldInfo = getFieldInfo(dctx, op.fieldName);
-                if (!op.fieldInfo) {
-                    throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
+            if (!viewChecks.isInNestedForm(self._el, forms, el)) {
+                const attr = el.getAttribute(DATA_ATTR.DATA_CONTENT),
+                    op = parseContentAttr(attr);
+                if (!!op.fieldName && !op.fieldInfo) {
+                    op.fieldInfo = getFieldInfo(dctx, op.fieldName);
+                    if (!op.fieldInfo) {
+                        throw new Error(format(ERRS.ERR_DBSET_INVALID_FIELDNAME, "", op.fieldName));
+                    }
                 }
-            }
 
-            const contentType = boot.contentFactory.getContentType(op);
-            const content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing });
-            self._content.push(content);
-            content.render();
-        });
+                const contentType = boot.contentFactory.getContentType(op);
+                const content = new contentType({ parentEl: el, contentOptions: op, dataContext: dctx, isEditing: isEditing });
+                self._content.push(content);
+                content.render();
+            }
+        }
+
         const promise = self.app._getInternal().bindElements({
             scope: this._el,
             bind: BindScope.DataForm,
@@ -227,30 +228,34 @@ export class DataForm extends BaseObject {
                 lftm.dispose();
                 return;
             }
+
             self._lfTime = lftm;
             const bindings = self._getBindings();
-            bindings.forEach((binding) => {
+            for (const binding of bindings)
+            {
                 if (!binding.isSourceFixed) {
                     binding.source = dctx;
                 }
-            });
+            }
             self._contentCreated = true;
         });
     }
     private _updateCreatedContent(): void {
         const dctx: any = this._dataContext, self = this;
         try {
-            this._content.forEach((content) => {
+            for (const content of this._content)
+            {
                 content.dataContext = dctx;
                 content.isEditing = self.isEditing;
-            });
+            }
 
             const bindings = this._getBindings();
-            bindings.forEach((binding) => {
+            for (const binding of bindings)
+            {
                 if (!binding.isSourceFixed) {
                     binding.source = dctx;
                 }
-            });
+            }
         } catch (ex) {
             utils.err.reThrow(ex, this.handleError(ex, this));
         }
@@ -326,9 +331,10 @@ export class DataForm extends BaseObject {
         this._errNotification = null;
     }
     private _clearContent(): void {
-        this._content.forEach((content) => {
+        for (const content of this._content)
+        {
             content.dispose();
-        });
+        }
         this._content = [];
         if (!!this._lfTime) {
             this._lfTime.dispose();

@@ -257,12 +257,13 @@ export class ListBox extends BaseObject implements ISubscriber {
     }
     private _clear(): void {
         const self = this, keys = Object.keys(self._keyMap);
-        keys.forEach((key) => {
+        for (const key of keys)
+        {
             const data = self._keyMap[key];
             if (!!data && !!data.item) {
                 data.item.objEvents.offNS(self._uniqueID);
             }
-        });
+        }
         this.el.options.length = 0;
         this._keyMap = Indexer();
         this._valMap = Indexer();
@@ -276,10 +277,11 @@ export class ListBox extends BaseObject implements ISubscriber {
             this._addOption(null, false);
             let cnt = 0;
             if (!!ds) {
-                ds.forEach((item) => {
+                for (const item of ds.items)
+                {
                     self._addOption(item, false);
                     ++cnt;
-                });
+                }
             }
 
             if (this._isDSFilled && !isNt(this._selectedValue) && !this.getByValue(this._selectedValue)) {
@@ -347,16 +349,19 @@ export class ListBox extends BaseObject implements ISubscriber {
                     break;
                 case COLL_CHANGE_TYPE.Add:
                     {
-                        args.items.forEach((item) => {
+                        for (const item of args.items)
+                        {
                             self._addOption(item, item._aspect.isNew);
-                        });
+                        }
                     }
                     break;
                 case COLL_CHANGE_TYPE.Remove:
                     {
-                        args.items.forEach((item) => {
+                        for (const item of args.items)
+                        {
                             self._removeOption(item);
-                        });
+                        }
+
                         if (!!self._textProvider) {
                             self._resetText();
                         }

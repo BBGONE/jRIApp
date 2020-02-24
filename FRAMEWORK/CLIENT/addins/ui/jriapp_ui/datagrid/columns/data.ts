@@ -9,7 +9,7 @@ import { css } from "../consts";
 import { BaseColumn, ICellInfo } from "./base";
 import { DataGrid } from "../datagrid";
 
-const utils = Utils, { Indexer } = utils.core, dom = DomUtils, boot = bootstrap;
+const utils = Utils, { Indexer, forEach } = utils.core, dom = DomUtils, boot = bootstrap;
 
 export class DataColumn extends BaseColumn {
     private _sortOrder: SORT_ORDER;
@@ -36,7 +36,7 @@ export class DataColumn extends BaseColumn {
         this.setDisposing();
         const self = this;
         this._contentType = null;
-        utils.core.forEach(self._objCache, (key) => {
+        forEach(self._objCache, (key) => {
             self._objCache[key].dispose();
         });
         self._objCache = null;

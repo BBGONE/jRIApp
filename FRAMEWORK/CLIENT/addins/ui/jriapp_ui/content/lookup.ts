@@ -127,12 +127,13 @@ export class LookupContent extends BasicContent implements IExternallyCachable {
     }
     protected onListRefreshed(): void {
         const bindings = this.lfScope.getObjs().filter((obj) => sys.isBinding(obj)).map((obj) => <IBinding>obj);
-        bindings.forEach((binding) => {
+        for (const binding of bindings)
+        {
             if (binding.targetPath.length > 0 && binding.targetPath[0] === "value")
             {
                 binding.updateTarget();
             }
-        });
+        }
     }
     protected createListBox(lookUpOptions: ILookupOptions): ListBoxElView {
         const el = doc.createElement("select"), options = {

@@ -35,24 +35,26 @@ export class ActionsCell extends BaseCell<ActionsColumn> {
     }
     private _setupButtons(btns: Element[]): void {
         const self = this, isActionsToolTips = self.grid.options.isActionsToolTips;
-        btns.forEach((btn) => {
+        for(const btn of btns)
+        {
             dom.setData(btn, "cell", self);
             const name = btn.getAttribute(DATA_ATTR.DATA_NAME);
             if (isActionsToolTips) {
                 addToolTip(btn, STRS.TEXT[txtMap[name]]);
             }
             btn.setAttribute(DATA_ATTR.DATA_EVENT_SCOPE, self.column.uniqueID);
-        });
+        }
     }
     private _cleanUp(td: HTMLTableCellElement): void {
         const self = this, btns = dom.queryAll<Element>(td, actionsSelector),
             isActionsToolTips = self.grid.options.isActionsToolTips;
-        btns.forEach((el) => {
-            dom.removeData(el);
+        for (const btn of btns)
+        {
+            dom.removeData(btn);
             if (isActionsToolTips) {
-                addToolTip(el, null);
+                addToolTip(btn, null);
             }
-        });
+        }
     }
     protected get editBtnsHTML(): string[] {
         if (!editBtnsHTML) {

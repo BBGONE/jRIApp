@@ -223,9 +223,12 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
                 }
                 break;
             case COLL_CHANGE_TYPE.Remove:
-                args.items.forEach(function (item) {
-                    self._removeItem(item);
-                });
+                {
+                    for (const item of args.items)
+                    {
+                        self._removeItem(item);
+                    }
+                }
                 break;
             case COLL_CHANGE_TYPE.Remap:
                 {
@@ -306,9 +309,10 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             return;
         }
         self._el.innerHTML = "";
-        keys.forEach((key) => {
+        for(const key of keys)
+        {
             self._removeItemByKey(key);
-        });
+        }
     }
     protected _removeItemByKey(key: string): void {
         const self = this, mappedItem = self._itemMap[key];
@@ -330,9 +334,10 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
             return;
         }
         const docFr = doc.createDocumentFragment();
-        ds.forEach((item) => {
+        for (const item of ds.items)
+        {
             self._appendItem(docFr, item);
-        });
+        }
         self.el.appendChild(docFr);
     }
     protected setDataSource(v: ICollection<ICollectionItem>) {

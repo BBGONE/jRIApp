@@ -330,7 +330,10 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         this._unWrapTable();
         dom.removeClass([this._table], css.dataTable);
         dom.removeClass([this._tHeadRow], css.columnInfo);
-        this._columns.forEach((col) => { col.dispose(); });
+        for (const col of this._columns)
+        {
+            col.dispose();
+        }
         this._columns = [];
         this._table = null;
         this._options = <any>{};
@@ -780,10 +783,11 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         const rows = this._rows;
         this._rows = [];
         this._rowMap = Indexer();
-        rows.forEach((row) => {
+        for (const row of rows)
+        {
             row.isDetached = true;
             row.dispose();
-        });
+        }
     }
     protected _wrapTable(): void {
         const options = this._options;
@@ -828,19 +832,19 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     protected _createColumns(): void {
         const self = this, headCells = this._tHeadCells, cellInfos: ICellInfo[] = [];
-        const cnt = headCells.length;
 
-        for (let i = 0; i < cnt; i += 1) {
-            const th = headCells[i], attr = this._parseColumnAttr(th.getAttribute(DATA_ATTR.DATA_COLUMN), th.getAttribute(DATA_ATTR.DATA_CONTENT));
+        for (const th of headCells) {
+            const attr = this._parseColumnAttr(th.getAttribute(DATA_ATTR.DATA_COLUMN), th.getAttribute(DATA_ATTR.DATA_CONTENT));
             cellInfos.push({ th: th, colInfo: attr });
         }
 
-        cellInfos.forEach((cellInfo) => {
+        for (const cellInfo of cellInfos)
+        {
             const col = self._createColumn(cellInfo);
             if (!!col) {
                 self._columns.push(col);
             }
-        });
+        }
 
         self.updateColumnsSize();
     }
@@ -905,9 +909,10 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         this._clearGrid();
         const docFr = doc.createDocumentFragment(), oldTbody = this._tBodyEl, newTbody = doc.createElement("tbody");
-        ds.items.forEach((item, index) => {
+        for (const item of ds.items)
+        {
             self._createRowForItem(docFr, item, false);
-        });
+        }
         newTbody.appendChild(docFr);
         self.table.replaceChild(newTbody, oldTbody);
         if (isPageChanged) {
@@ -990,15 +995,17 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         let width = 0;
         const header = this._header;
-        this._columns.forEach((col) => {
+        for (const col of this._columns)
+        {
             width += col.width;
-        });
+        }
 
         header.style.width = (width + "px");
 
-        this._columns.forEach((col) => {
+        for (const col of this._columns)
+        {
             col.updateWidth();
-        });
+        }
     }
     sortByColumn(column: DataColumn): IPromise<any> {
         const ds = this.dataSource;
@@ -1010,12 +1017,12 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         return promise;
     }
     selectRows(isSelect: boolean): void {
-        this._rows.forEach((row) => {
-            if (row.isDeleted) {
-                return;
+        for (const row of this._rows)
+        {
+            if (!row.isDeleted) {
+                row.isSelected = isSelect;
             }
-            row.isSelected = isSelect;
-        });
+        }
     }
     findRowByItem(item: ICollectionItem): Row {
         const row = this._rowMap[item._key];
@@ -1032,14 +1039,15 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
     }
     getSelectedRows(): Row[] {
         const res: Row[] = [];
-        this._rows.forEach((row) => {
-            if (row.isDeleted) {
-                return;
+        for (const row of this._rows) 
+        {
+            if (!row.isDeleted) {
+                if (row.isSelected) {
+                    res.push(row);
+                }
+
             }
-            if (row.isSelected) {
-                res.push(row);
-            }
-        });
+        }
         return res;
     }
     showEditDialog(): boolean {
@@ -1371,9 +1379,10 @@ export class DataGridElView extends BaseElView implements ISelectableProvider {
                 if (!this._grid || this._grid.getIsStateDirty()) {
                     return;
                 }
-                this._grid.rows.forEach((row) => {
+                for (const row of this._grid.rows)
+                {
                     row.updateUIState();
-                });
+                }
             });
             this.objEvents.raiseProp("stateProvider");
         }

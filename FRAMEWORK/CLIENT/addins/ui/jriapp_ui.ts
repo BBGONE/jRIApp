@@ -42,7 +42,7 @@ export { DblClick } from "./jriapp_ui/utils/dblclick";
 export { JQueryUtils, $ } from "./jriapp_ui/utils/jquery";
 export * from "./jriapp_ui/content/all";
 
-export const VERSION = "3.0.3";
+export const VERSION = "3.0.4";
 
 const boot = bootstrap;
 

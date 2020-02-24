@@ -37,9 +37,10 @@ export interface IPagerOptions {
 }
 
 function _removeToolTips(toolTips: Element[]): void {
-    toolTips.forEach((el) => {
+    for (const el of toolTips)
+    {
         addToolTip(el, null);
-    });
+    }
 }
 
 export class Pager extends BaseObject implements ISelectableProvider {

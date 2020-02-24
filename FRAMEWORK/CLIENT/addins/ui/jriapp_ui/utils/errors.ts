@@ -15,35 +15,41 @@ function addToolTip(el: Element, tip: string, isError?: boolean, pos?: string) {
 
 function getErrorTipInfo(errors: IValidationInfo[]): string {
     const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<br/>"];
-    errors.forEach((info) => {
+    for (const info of errors)
+    {
         let res = "";
-        info.errors.forEach((str) => {
-            res = res + " " + str;
-        });
+        for (const str of info.errors)
+        {
+            res = `${res} ${str}`;
+        }
         tip.push(res);
         res = "";
-    });
+    }
     return tip.join("");
 }
 
 function getFormErrorTipInfo(errors: IValidationInfo[]): string {
     const tip = ["<b>", STRS.VALIDATE.errorInfo, "</b>", "<ul>"];
-    errors.forEach((info) => {
+
+    for (const info of errors)
+    {
         const fieldName = info.fieldName;
         let res = "";
         if (!!fieldName) {
             res = STRS.VALIDATE.errorField + " " + fieldName;
         }
-        info.errors.forEach((str) => {
+        for (const str of info.errors)
+        {
             if (!!res) {
-                res = res + " -> " + str;
+                res = `${res} -> ${str}`;
             } else {
                 res = str;
             }
-        });
-        tip.push("<li>" + res + "</li>");
+        }
+        tip.push(`<li>${res}</li>`);
         res = "";
-    });
+    }
+
     tip.push("</ul>");
     return tip.join("");
 }
