@@ -5884,5 +5884,5 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_s
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_3.Debounce;
     exports.Lazy = lazy_1.Lazy;
-    exports.VERSION = "3.0.1";
+    exports.VERSION = "3.0.2";
 });

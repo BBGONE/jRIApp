@@ -23,4 +23,4 @@ export { WaitQueue, IWaitQueueItem } from "./jriapp_shared/utils/waitqueue";
 export { Debounce } from "./jriapp_shared/utils/debounce";
 export { Lazy, TValueFactory } from "./jriapp_shared/utils/lazy";
 
-export const VERSION = "3.0.1";
+export const VERSION = "3.0.2";

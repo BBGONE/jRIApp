@@ -35,26 +35,26 @@ declare module "jriapp_shared/utils/ideferred" {
         abort(reason?: string): void;
     }
     export type IThenable<T> = PromiseLike<T>;
-    export interface IPromise<T> {
+    export interface IPromise<T = any> {
         then<TResult1 = T, TResult2 = never>(onFulfilled?: ((value: T) => TResult1 | IThenable<TResult1>) | undefined | null, onRejected?: ((reason: any) => TResult2 | IThenable<TResult2>) | undefined | null): IPromise<TResult1 | TResult2>;
         catch<TResult = never>(onRejected?: ((reason: any) => TResult | IThenable<TResult>) | undefined | null): IPromise<T | TResult>;
         finally(onFinally: () => void): IPromise<T>;
     }
     export interface IVoidPromise extends IPromise<void> {
     }
-    export interface IStatefulPromise<T> extends IPromiseState {
+    export interface IStatefulPromise<T = any> extends IPromiseState {
         then<TResult1 = T, TResult2 = never>(onFulfilled?: ((value: T) => TResult1 | IThenable<TResult1>) | undefined | null, onRejected?: ((reason: any) => TResult2 | IThenable<TResult2>) | undefined | null): IStatefulPromise<TResult1 | TResult2>;
         catch<TResult = never>(onRejected?: ((reason: any) => TResult | IThenable<TResult>) | undefined | null): IStatefulPromise<T | TResult>;
         finally(onFinally: () => void): IStatefulPromise<T>;
     }
-    export interface IAbortablePromise<T> extends IStatefulPromise<T>, IAbortable {
+    export interface IAbortablePromise<T = any> extends IStatefulPromise<T>, IAbortable {
     }
-    export interface IStatefulDeferred<T> extends IPromiseState {
+    export interface IStatefulDeferred<T = any> extends IPromiseState {
         resolve(value?: T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>): IStatefulPromise<T>;
         reject(error?: any): IStatefulPromise<T>;
         promise(): IStatefulPromise<T>;
     }
-    export type IDeferred<T> = IStatefulDeferred<T>;
+    export type IDeferred<T = any> = IStatefulDeferred<T>;
 }
 declare module "jriapp_shared/int" {
     import { DEBUG_LEVEL } from "jriapp_shared/consts";
@@ -860,7 +860,7 @@ declare module "jriapp_shared/utils/queue" {
 declare module "jriapp_shared/utils/deferred" {
     import { IStatefulDeferred, IStatefulPromise, ITaskQueue, PromiseState, IThenable, IPromise, IAbortablePromise, IAbortable } from "jriapp_shared/utils/ideferred";
     import { TFunc } from "jriapp_shared/int";
-    export function createDefer<T>(isSync?: boolean): IStatefulDeferred<T>;
+    export function createDefer<T = any>(isSync?: boolean): IStatefulDeferred<T>;
     export function createSyncDefer<T>(): IStatefulDeferred<T>;
     export function getTaskQueue(): ITaskQueue;
     export function whenAll<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
@@ -869,7 +869,7 @@ declare module "jriapp_shared/utils/deferred" {
         (): IThenable<T>;
     }[]): IStatefulPromise<T[]>;
     export type TDispatcher = (closure: TFunc) => void;
-    export class Promise<T> implements IStatefulPromise<T> {
+    export class Promise<T = any> implements IStatefulPromise<T> {
         private _deferred;
         constructor(fn: (resolve: (res?: T) => void, reject: (err?: any) => void) => void, dispatcher?: TDispatcher);
         then<TResult1 = T, TResult2 = never>(onFulfilled?: ((value: T) => TResult1 | IThenable<TResult1>) | undefined | null, onRejected?: ((reason: any) => TResult2 | IThenable<TResult2>) | undefined | null): IStatefulPromise<TResult1 | TResult2>;
@@ -884,7 +884,7 @@ declare module "jriapp_shared/utils/deferred" {
         state(): PromiseState;
         deferred(): IStatefulDeferred<T>;
     }
-    export class AbortablePromise<T> implements IAbortablePromise<T> {
+    export class AbortablePromise<T = any> implements IAbortablePromise<T> {
         private _deferred;
         private _abortable;
         private _aborted;
@@ -1532,5 +1532,5 @@ declare module "jriapp_shared" {
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";
     export { Lazy, TValueFactory } from "jriapp_shared/utils/lazy";
-    export const VERSION = "3.0.1";
+    export const VERSION = "3.0.2";
 }

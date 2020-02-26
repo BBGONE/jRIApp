@@ -23,14 +23,17 @@ export interface IDataViewOptions<TItem extends ICollectionItem> {
     fn_filter?: (item: TItem) => boolean;
     fn_sort?: (item1: TItem, item2: TItem) => number;
     fn_itemsProvider?: (ds: ICollection<TItem>) => TItem[];
-    refreshTimeout?: number
+    refreshTimeout?: number;
+    // for example, if we want to sort the underlying dataSource, instead of the default sortLocal
+    fn_sortHandler?: (this: DataView<TItem>, fieldNames: string[], sortOrder: SORT_ORDER) => IPromise<any>;
 }
 
 export class DataView<TItem extends ICollectionItem = ICollectionItem> extends BaseCollection<TItem> {
     private _dataSource: ICollection<TItem>;
-    private _fn_filter: (item: TItem) => boolean;
-    private _fn_sort: (item1: TItem, item2: TItem) => number;
-    private _fn_itemsProvider: (ds: ICollection<TItem>) => TItem[];
+    private _fn_filter: (item: TItem) => boolean | null;
+    private _fn_sort: (item1: TItem, item2: TItem) => number | null;
+    private _fn_itemsProvider: (ds: ICollection<TItem>) => TItem[] | null;
+    private _fn_sortHandler: (this: DataView<TItem>, fieldNames: string[], sortOrder: SORT_ORDER) => IPromise<any> | null;
     private _isAddingNew: boolean;
     private _refreshDebounce: Debounce;
 
@@ -44,9 +47,10 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
         }
         this._refreshDebounce = new Debounce(options.refreshTimeout || 0);
         this._dataSource = options.dataSource;
-        this._fn_filter = !options.fn_filter ? null : options.fn_filter;
-        this._fn_sort = !options.fn_sort ? null : options.fn_sort;
-        this._fn_itemsProvider = !options.fn_itemsProvider ? null : options.fn_itemsProvider;
+        this._fn_filter = options.fn_filter || null;
+        this._fn_sort = options.fn_sort || null;
+        this._fn_itemsProvider = options.fn_itemsProvider || null;
+        this._fn_sortHandler = options.fn_sortHandler || null;
         this._isAddingNew = false;
         this._bindDS();
     }
@@ -353,7 +357,7 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
         }
     }
     // override
-    itemFactory(aspect: ItemAspect<TItem, any>): TItem {
+    itemFactory(_aspect: ItemAspect<TItem, any>): TItem {
         throw new Error("Not implemented");
     }
     // override
@@ -409,6 +413,13 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
         this.errors.removeAllErrors(item);
         this.totalCount = this.totalCount - 1;
         this._resetCurrent(oldPos);
+    }
+    sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
+        if (!!this._fn_sortHandler) {
+            return this._fn_sortHandler(fieldNames, sortOrder);
+        } else {
+            return super.sortLocal(fieldNames, sortOrder);
+        }
     }
     sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {
         this._fn_sort = this._getSortFn(fieldNames, sortOrder);

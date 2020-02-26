@@ -843,12 +843,14 @@ declare module "jriapp_db/dataview" {
         fn_sort?: (item1: TItem, item2: TItem) => number;
         fn_itemsProvider?: (ds: ICollection<TItem>) => TItem[];
         refreshTimeout?: number;
+        fn_sortHandler?: (this: DataView<TItem>, fieldNames: string[], sortOrder: SORT_ORDER) => IPromise<any>;
     }
     export class DataView<TItem extends ICollectionItem = ICollectionItem> extends BaseCollection<TItem> {
         private _dataSource;
         private _fn_filter;
         private _fn_sort;
         private _fn_itemsProvider;
+        private _fn_sortHandler;
         private _isAddingNew;
         private _refreshDebounce;
         constructor(options: IDataViewOptions<TItem>);
@@ -872,7 +874,7 @@ declare module "jriapp_db/dataview" {
         protected _checkCurrentChanging(newCurrent: TItem): void;
         protected _onPageChanged(): void;
         protected _clear(reason: COLL_CHANGE_REASON, oper?: COLL_CHANGE_OPER): void;
-        itemFactory(aspect: ItemAspect<TItem, any>): TItem;
+        itemFactory(_aspect: ItemAspect<TItem, any>): TItem;
         protected _createNew(): TItem;
         _getStrValue(val: any, fieldInfo: IFieldInfo): string;
         getFieldNames(): string[];
@@ -884,6 +886,7 @@ declare module "jriapp_db/dataview" {
         appendItems(items: TItem[]): TItem[];
         addNew(): TItem;
         removeItem(item: TItem): void;
+        sort(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
         sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any>;
         clear(): void;
         refresh(): void;
@@ -993,5 +996,5 @@ declare module "jriapp_db" {
     export * from "jriapp_db/entity_aspect";
     export * from "jriapp_db/error";
     export * from "jriapp_db/complexprop";
-    export const VERSION = "3.0.3";
+    export const VERSION = "3.0.4";
 }

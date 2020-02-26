@@ -3955,9 +3955,10 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }
             _this._refreshDebounce = new jriapp_shared_9.Debounce(options.refreshTimeout || 0);
             _this._dataSource = options.dataSource;
-            _this._fn_filter = !options.fn_filter ? null : options.fn_filter;
-            _this._fn_sort = !options.fn_sort ? null : options.fn_sort;
-            _this._fn_itemsProvider = !options.fn_itemsProvider ? null : options.fn_itemsProvider;
+            _this._fn_filter = options.fn_filter || null;
+            _this._fn_sort = options.fn_sort || null;
+            _this._fn_itemsProvider = options.fn_itemsProvider || null;
+            _this._fn_sortHandler = options.fn_sortHandler || null;
             _this._isAddingNew = false;
             _this._bindDS();
             return _this;
@@ -4237,7 +4238,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 this.totalCount = 0;
             }
         };
-        DataView.prototype.itemFactory = function (aspect) {
+        DataView.prototype.itemFactory = function (_aspect) {
             throw new Error("Not implemented");
         };
         DataView.prototype._createNew = function () {
@@ -4289,6 +4290,14 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             this.errors.removeAllErrors(item);
             this.totalCount = this.totalCount - 1;
             this._resetCurrent(oldPos);
+        };
+        DataView.prototype.sort = function (fieldNames, sortOrder) {
+            if (!!this._fn_sortHandler) {
+                return this._fn_sortHandler(fieldNames, sortOrder);
+            }
+            else {
+                return _super.prototype.sortLocal.call(this, fieldNames, sortOrder);
+            }
         };
         DataView.prototype.sortLocal = function (fieldNames, sortOrder) {
             var _this = this;
@@ -4624,5 +4633,5 @@ define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/datavie
     __export(entity_aspect_2);
     __export(error_3);
     __export(complexprop_1);
-    exports.VERSION = "3.0.3";
+    exports.VERSION = "3.0.4";
 });

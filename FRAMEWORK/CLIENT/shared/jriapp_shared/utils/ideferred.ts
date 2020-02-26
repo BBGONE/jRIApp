@@ -16,7 +16,7 @@ export interface IAbortable {
 
 export type IThenable<T> = PromiseLike<T>;
 
-export interface IPromise<T> {
+export interface IPromise<T = any> {
     then<TResult1 = T, TResult2 = never>(
         onFulfilled?: ((value: T) => TResult1 | IThenable<TResult1>) | undefined | null,
         onRejected?: ((reason: any) => TResult2 | IThenable<TResult2>) | undefined | null
@@ -30,7 +30,7 @@ export interface IPromise<T> {
 export interface IVoidPromise extends IPromise<void> {
 }
 
-export interface IStatefulPromise<T> extends IPromiseState {
+export interface IStatefulPromise<T = any> extends IPromiseState {
     then<TResult1 = T, TResult2 = never>(
         onFulfilled?: ((value: T) => TResult1 | IThenable<TResult1>) | undefined | null,
         onRejected?: ((reason: any) => TResult2 | IThenable<TResult2>) | undefined | null
@@ -41,13 +41,13 @@ export interface IStatefulPromise<T> extends IPromiseState {
     finally(onFinally: () => void): IStatefulPromise<T>;
 }
 
-export interface IAbortablePromise<T> extends IStatefulPromise<T>, IAbortable {
+export interface IAbortablePromise<T = any> extends IStatefulPromise<T>, IAbortable {
 }
 
-export interface IStatefulDeferred<T> extends IPromiseState {
+export interface IStatefulDeferred<T = any> extends IPromiseState {
     resolve(value?: T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>): IStatefulPromise<T>;
     reject(error?: any): IStatefulPromise<T>;
     promise(): IStatefulPromise<T>;
 }
 
-export type IDeferred<T> = IStatefulDeferred<T>;
+export type IDeferred<T = any> = IStatefulDeferred<T>;

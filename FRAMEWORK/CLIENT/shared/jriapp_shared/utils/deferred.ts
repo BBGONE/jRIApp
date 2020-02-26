@@ -12,7 +12,7 @@ import { TFunc } from "../int";
 const { _undefined, isFunc, isThenable, isArray } = Checks, arrHelper = ArrayHelper;
 let taskQueue: TaskQueue = null;
 
-export function createDefer<T>(isSync?: boolean): IStatefulDeferred<T> {
+export function createDefer<T = any>(isSync?: boolean): IStatefulDeferred<T> {
     return new Promise<T>(null, (!isSync ? fn_enque : fn_exec)).deferred();
 }
 
@@ -127,7 +127,7 @@ class Callback {
     }
 }
 
-class Deferred<T> implements IStatefulDeferred<T> {
+class Deferred<T = any> implements IStatefulDeferred<T> {
     private readonly _promise: IStatefulPromise<T>;
     private readonly _dispatcher: TDispatcher;
     private _stack: Array<Callback>;
@@ -257,7 +257,7 @@ class Deferred<T> implements IStatefulDeferred<T> {
     }
 }
 
-export class Promise<T> implements IStatefulPromise<T> {
+export class Promise<T = any> implements IStatefulPromise<T> {
     private _deferred: Deferred<T>;
 
     constructor(fn: (resolve: (res?: T) => void, reject: (err?: any) => void) => void, dispatcher?: TDispatcher) {
@@ -332,7 +332,7 @@ export class Promise<T> implements IStatefulPromise<T> {
     }
 }
 
-export class AbortablePromise<T> implements IAbortablePromise<T> {
+export class AbortablePromise<T = any> implements IAbortablePromise<T> {
     private _deferred: IStatefulDeferred<T>;
     private _abortable: IAbortable;
     private _aborted: boolean;
