@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { DATA_TYPE, COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
 import {
-    IIndexer, IVoidPromise, IBaseObject, TEventHandler, TErrorHandler, LocaleERRS as ERRS,
+    IIndexer, IPromise, IBaseObject, TEventHandler, TErrorHandler, LocaleERRS as ERRS,
     BaseObject, Utils, WaitQueue, Lazy, IStatefulPromise, IAbortablePromise, PromiseState } from "jriapp_shared";
 import { ValueUtils } from "jriapp_shared/collection/utils";
 import {
@@ -89,7 +89,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
     private _serviceUrl: string;
     private _isSubmiting: boolean;
     private _isHasChanges: boolean;
-    private _pendingSubmit: { promise: IVoidPromise; };
+    private _pendingSubmit: { promise: IPromise; };
     private _serverTimezone: number;
     private _waitQueue: WaitQueue;
     private _internal: IInternalDbxtMethods;
@@ -170,7 +170,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             throw new Error(ERRS.ERR_DOMAIN_CONTEXT_INITIALIZED);
         }
         this._dbSets = this._createDbSets();
-        this._dbSets.addOnDbSetCreating((s, args) => {
+        this._dbSets.addOnDbSetCreating((_, args) => {
             this.objEvents.raise(DBCTX_EVENTS.DBSET_CREATING, args);
         });
         const associations = this._createAssociations();
@@ -770,7 +770,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
     initialize(options: {
         serviceUrl: string;
         permissions?: IPermissionsInfo;
-    }): IVoidPromise {
+    }): IPromise {
         if (!!this._initState) {
             return this._initState;
         }
@@ -856,7 +856,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         }
         return fn();
     }
-    submitChanges(): IVoidPromise {
+    submitChanges(): IPromise {
         const self = this;
         // don't submit when another submit is already in the queue
         if (!!this._pendingSubmit) {

@@ -49,9 +49,9 @@ declare module "jriapp_ui/content/basic" {
         protected updateBindingSource(): void;
         protected cleanUp(): void;
         protected getFieldInfo(): IFieldInfo;
-        protected getParam(isEdit: boolean): any;
-        protected getConverter(isEdit: boolean): IConverter;
-        protected getViewName(isEdit: boolean): string;
+        protected getParam(_isEdit: boolean): any;
+        protected getConverter(_isEdit: boolean): IConverter;
+        protected getViewName(_isEdit: boolean): string;
         protected createdEditingView(): IContentView;
         protected createdReadingView(): IContentView;
         protected beforeCreateView(): boolean;
@@ -119,7 +119,7 @@ declare module "jriapp_ui/utils/eventbag" {
         private _dic;
         private _onChange;
         constructor(onChange: (sender: EventBag, args: IEventChangedArgs) => void);
-        isHasProp(prop: string): boolean;
+        isHasProp(_prop: string): boolean;
         getProp(name: string): ICommand;
         setProp(name: string, command: ICommand): void;
         get isPropertyBag(): boolean;
@@ -145,8 +145,8 @@ declare module "jriapp_ui/utils/cssbag" {
     export class CSSBag extends BaseObject implements IPropertyBag {
         private _el;
         constructor(el: Element);
-        isHasProp(prop: string): boolean;
-        getProp(name: string): any;
+        isHasProp(_prop: string): boolean;
+        getProp(_name: string): any;
         setProp(name: string, val: any): void;
         get isPropertyBag(): boolean;
         toString(): string;
@@ -169,8 +169,8 @@ declare module "jriapp_ui/baseview" {
         dispose(): void;
         private _getStore;
         protected _onEventChanged(args: IEventChangedArgs): void;
-        protected _onEventAdded(name: string, newVal: ICommand): void;
-        protected _onEventDeleted(name: string, oldVal: ICommand): void;
+        protected _onEventAdded(name: string, _newVal: ICommand): void;
+        protected _onEventDeleted(name: string, _oldVal: ICommand): void;
         protected _applyToolTip(): void;
         protected _setIsSubcribed(flag: SubscribeFlags): void;
         protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
@@ -217,9 +217,9 @@ declare module "jriapp_ui/textbox" {
     };
     export class TextBoxElView<TElement extends HTMLInputElement | HTMLTextAreaElement = HTMLInputElement> extends InputElView<TElement> {
         constructor(el: TElement, options: ITextBoxOptions);
-        handle_change(e: Event): boolean;
+        handle_change(_e: Event): boolean;
         handle_keypress(e: KeyboardEvent): boolean;
-        handle_keyup(e: KeyboardEvent): void;
+        handle_keyup(_e: KeyboardEvent): void;
         addOnKeyPress(fn: (sender: TextBoxElView<TElement>, args: TKeyPressArgs) => void, nmspace?: string): void;
         offOnKeyPress(nmspace?: string): void;
         toString(): string;
@@ -287,7 +287,7 @@ declare module "jriapp_ui/content/number" {
     export class NumberContent extends BasicContent {
         static _allowedKeys: number[];
         private get allowedKeys();
-        protected getConverter(isEdit: boolean): IConverter;
+        protected getConverter(_isEdit: boolean): IConverter;
         protected createView(): void;
         protected previewKeyPress(keyCode: number, value: string): boolean;
         toString(): string;
@@ -298,7 +298,7 @@ declare module "jriapp_ui/content/date" {
     import { BasicContent } from "jriapp_ui/content/basic";
     export class DateContent extends BasicContent {
         constructor(options: IConstructorContentOptions);
-        protected getConverter(isEdit: boolean): IConverter;
+        protected getConverter(_isEdit: boolean): IConverter;
         protected getViewName(isEdit: boolean): string;
         toString(): string;
     }
@@ -307,8 +307,8 @@ declare module "jriapp_ui/content/datetime" {
     import { IConverter } from "jriapp/int";
     import { BasicContent } from "jriapp_ui/content/basic";
     export class DateTimeContent extends BasicContent {
-        protected getParam(isEdit: boolean): any;
-        protected getConverter(isEdit: boolean): IConverter;
+        protected getParam(_isEdit: boolean): any;
+        protected getConverter(_isEdit: boolean): IConverter;
         toString(): string;
     }
 }
@@ -372,9 +372,9 @@ declare module "jriapp_ui/listbox" {
         protected _onSelectedChanged(): void;
         protected _getValue(item: ICollectionItem): any;
         protected _getText(item: ICollectionItem, index: number): string;
-        protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
+        protected _onDSCollectionChanged(_: any, args: ICollChangedArgs<ICollectionItem>): void;
         protected _onEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean): void;
-        protected _onStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS): void;
+        protected _onStatusChanged(item: ICollectionItem, _oldStatus: ITEM_STATUS): void;
         protected _onCommitChanges(item: ICollectionItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
         protected getItemIndex(item: ICollectionItem): number;
         protected getByValue(val: any): IMappedItem;
@@ -388,7 +388,7 @@ declare module "jriapp_ui/listbox" {
         protected get selectedIndex(): number;
         protected set selectedIndex(v: number);
         isSubscribed(flag: SubscribeFlags): boolean;
-        handle_change(e: Event): boolean;
+        handle_change(_e: Event): boolean;
         addOnRefreshed(fn: TEventHandler<ListBox, {}>, nmspace?: string, context?: any): void;
         offOnRefreshed(nmspace?: string): void;
         getText(val: any): string;
@@ -572,7 +572,7 @@ declare module "jriapp_ui/dialog" {
         }>, nmspace?: string, context?: IBaseObject): void;
         offOnRefresh(nmspace?: string): void;
         protected _createDialog(): void;
-        templateLoading(template: ITemplate): void;
+        templateLoading(_template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
         protected _createTemplate(): ITemplate;
@@ -623,14 +623,14 @@ declare module "jriapp_ui/dialog" {
     }
 }
 declare module "jriapp_ui/dynacontent" {
-    import { IVoidPromise } from "jriapp_shared";
+    import { IPromise } from "jriapp_shared";
     import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
     import { BaseElView } from "jriapp_ui/baseview";
     export interface IDynaContentAnimation {
         beforeShow(template: ITemplate, isFirstShow: boolean): void;
-        show(template: ITemplate, isFirstShow: boolean): IVoidPromise;
+        show(template: ITemplate, isFirstShow: boolean): IPromise;
         beforeHide(template: ITemplate): void;
-        hide(template: ITemplate): IVoidPromise;
+        hide(template: ITemplate): IPromise;
         stop(): void;
         isAnimateFirstShow: boolean;
     }
@@ -647,8 +647,8 @@ declare module "jriapp_ui/dynacontent" {
         private _dsDebounce;
         constructor(el: HTMLElement, options: IDynaContentOptions);
         templateLoading(template: ITemplate): void;
-        templateLoaded(template: ITemplate, error?: any): void;
-        templateUnLoading(template: ITemplate): void;
+        templateLoaded(template: ITemplate, _error?: any): void;
+        templateUnLoading(_template: ITemplate): void;
         private _templateChanging;
         dispose(): void;
         get template(): ITemplate;
@@ -800,9 +800,9 @@ declare module "jriapp_ui/datagrid/columns/base" {
         private _template;
         constructor(grid: DataGrid, options: ICellInfo);
         dispose(): void;
-        templateLoading(template: ITemplate): void;
-        templateLoaded(template: ITemplate, error?: any): void;
-        templateUnLoading(template: ITemplate): void;
+        templateLoading(_template: ITemplate): void;
+        templateLoaded(_template: ITemplate, _error?: any): void;
+        templateUnLoading(_template: ITemplate): void;
         scrollIntoView(isUp: boolean): void;
         updateWidth(): void;
         protected _onColumnClicked(): void;
@@ -871,7 +871,7 @@ declare module "jriapp_ui/datagrid/cells/data" {
         dispose(): void;
         protected _initContent(): void;
         _beginEdit(): void;
-        _endEdit(isCanceled: boolean): void;
+        _endEdit(_isCanceled: boolean): void;
         toString(): string;
     }
 }
@@ -1021,10 +1021,10 @@ declare module "jriapp_ui/datagrid/cells/base" {
         protected _click: DblClick;
         private _num;
         constructor(options: ICellOptions);
-        protected _onCellClicked(row?: Row): void;
-        protected _onDblClicked(row?: Row): void;
+        protected _onCellClicked(_row?: Row): void;
+        protected _onDblClicked(_row?: Row): void;
         isSubscribed(flag: SubscribeFlags): boolean;
-        handle_click(e: Event): void;
+        handle_click(_e: Event): void;
         click(): void;
         scrollIntoView(): void;
         dispose(): void;
@@ -1250,13 +1250,13 @@ declare module "jriapp_ui/datagrid/datagrid" {
         protected _parseColumnAttr(columnAttr: string, contentAttr: string): IColumnInfo;
         protected _findUndeleted(row: Row, isUp: boolean): Row;
         protected _onDSCurrentChanged(prevCurrent: ICollectionItem, newCurrent: ICollectionItem): void;
-        protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
+        protected _onDSCollectionChanged(_: any, args: ICollChangedArgs<ICollectionItem>): void;
         protected _updateTableDisplay(): void;
         protected _onPageChanged(): void;
         protected _onItemEdit(item: ICollectionItem, isBegin: boolean, isCanceled: boolean): void;
-        protected _onItemAdded(sender: any, args: ICollItemAddedArgs<ICollectionItem>): void;
+        protected _onItemAdded(_: any, args: ICollItemAddedArgs<ICollectionItem>): void;
         protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS): void;
-        protected _onDSErrorsChanged(sender: any, args: ICollItemArgs<ICollectionItem>): void;
+        protected _onDSErrorsChanged(_: any, args: ICollItemArgs<ICollectionItem>): void;
         protected _bindDS(): void;
         protected _unbindDS(): void;
         protected _clearGrid(): void;
@@ -1355,7 +1355,7 @@ declare module "jriapp_ui/datagrid/datagrid" {
         toString(): string;
         dispose(): void;
         private _bindGridEvents;
-        protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
+        protected _setErrors(_el: HTMLElement, _errors: IValidationInfo[]): void;
         get dataSource(): ICollection<ICollectionItem>;
         set dataSource(v: ICollection<ICollectionItem>);
         get grid(): DataGrid;
@@ -1454,7 +1454,7 @@ declare module "jriapp_ui/pager" {
         private _pager;
         constructor(el: HTMLElement, options: IPagerViewOptions);
         dispose(): void;
-        protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
+        protected _setErrors(_el: HTMLElement, _errors: IValidationInfo[]): void;
         toString(): string;
         get dataSource(): ICollection<ICollectionItem>;
         set dataSource(v: ICollection<ICollectionItem>);
@@ -1492,17 +1492,17 @@ declare module "jriapp_ui/stackpanel" {
         constructor(el: HTMLElement, options: IStackPanelConstructorOptions);
         dispose(): void;
         protected _onKeyDown(key: number, event: Event): void;
-        protected _onKeyUp(key: number, event: Event): void;
+        protected _onKeyUp(_key: number, _event: Event): void;
         protected _updateCurrent(item: ICollectionItem, withScroll: boolean): void;
         protected _onDSCurrentChanged(): void;
-        protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void;
+        protected _onDSCollectionChanged(_: any, args: ICollChangedArgs<ICollectionItem>): void;
         protected _onItemStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS): void;
         protected _createTemplate(item: ICollectionItem, parentEl: HTMLElement): ITemplate;
         protected _appendItems(newItems: ICollectionItem[]): void;
         protected _appendItem(parent: Node, item: ICollectionItem): void;
         protected _bindDS(): void;
         protected _unbindDS(): void;
-        protected _onItemClicked(div: HTMLElement, item: ICollectionItem): void;
+        protected _onItemClicked(_div: HTMLElement, item: ICollectionItem): void;
         protected _clearContent(): void;
         protected _removeItemByKey(key: string): void;
         protected _removeItem(item: ICollectionItem): void;
@@ -1593,7 +1593,7 @@ declare module "jriapp_ui/template" {
         private _command;
         constructor(el: HTMLElement, options: IViewOptions);
         private invokeCommand;
-        templateLoading(template: ITemplate): void;
+        templateLoading(_template: ITemplate): void;
         templateLoaded(template: ITemplate, error?: any): void;
         templateUnLoading(template: ITemplate): void;
         toString(): string;
@@ -1650,7 +1650,7 @@ declare module "jriapp_ui/dataform" {
         private _form;
         constructor(el: HTMLElement, options: IFormViewOptions);
         dispose(): void;
-        protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
+        protected _setErrors(_el: HTMLElement, _errors: IValidationInfo[]): void;
         toString(): string;
         get dataContext(): IBaseObject;
         set dataContext(v: IBaseObject);
@@ -1803,7 +1803,7 @@ declare module "jriapp_ui/checkbox" {
         private _hidden;
         constructor(chk: HTMLInputElement, options?: ICheckBoxViewOptions);
         dispose(): void;
-        handle_change(e: Event): boolean;
+        handle_change(_e: Event): boolean;
         protected _updateState(): void;
         protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         toString(): string;
@@ -1823,7 +1823,7 @@ declare module "jriapp_ui/checkbox3" {
         private _hidden;
         constructor(chk: HTMLInputElement, options?: ICheckBoxViewOptions);
         dispose(): void;
-        handle_change(e: Event): boolean;
+        handle_change(_e: Event): boolean;
         protected _updateState(): void;
         protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void;
         toString(): string;
@@ -1920,5 +1920,5 @@ declare module "jriapp_ui" {
     export { DblClick } from "jriapp_ui/utils/dblclick";
     export { JQueryUtils, $ } from "jriapp_ui/utils/jquery";
     export * from "jriapp_ui/content/all";
-    export const VERSION = "3.0.4";
+    export const VERSION = "3.0.5";
 }

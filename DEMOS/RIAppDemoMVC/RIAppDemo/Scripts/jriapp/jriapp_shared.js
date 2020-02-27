@@ -872,13 +872,13 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lan
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var isFunc = checks_3.Checks.isFunc, isHasProp = checks_3.Checks.isHasProp, isArray = checks_3.Checks.isArray, isNt = checks_3.Checks.isNt, _undefined = checks_3.Checks._undefined, startsWith = strUtils_1.StringUtils.startsWith, trim = strUtils_1.StringUtils.fastTrim, trimBrackets = strUtils_1.StringUtils.trimBrackets, format = strUtils_1.StringUtils.format, trimQuotes = strUtils_1.StringUtils.trimQuotes;
-    function dummyIsBaseObj(obj) {
+    function dummyIsBaseObj(_obj) {
         return false;
     }
-    function dummyIsCollection(obj) {
+    function dummyIsCollection(_obj) {
         return false;
     }
-    function dummyIsValidationError(obj) {
+    function dummyIsValidationError(_obj) {
         return false;
     }
     function isPropBag(obj) {
@@ -1110,8 +1110,7 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lan
             }
             obj[prop] = val;
         };
-        SysUtils.resolveOwner = function (root, path, separator) {
-            if (separator === void 0) { separator = "."; }
+        SysUtils.resolveOwner = function (root, path) {
             if (!path) {
                 return root;
             }
@@ -1156,10 +1155,10 @@ define("jriapp_shared/utils/sysutils", ["require", "exports", "jriapp_shared/lan
                 obj.objEvents.raiseProp(lastName);
             }
         };
-        SysUtils.isBinding = function (obj) { return false; };
+        SysUtils.isBinding = function () { return false; };
         SysUtils.isPropBag = isPropBag;
         SysUtils.isCollection = dummyIsCollection;
-        SysUtils.getItemByProp = function (obj, prop) { return null; };
+        SysUtils.getItemByProp = function () { return null; };
         SysUtils.isValidationError = dummyIsValidationError;
         SysUtils.isBaseObj = dummyIsBaseObj;
         return SysUtils;
@@ -1641,49 +1640,35 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
         return new ObjectEvents(owner);
     }
     exports.createObjectEvents = createObjectEvents;
-    var DummyEvents = (function () {
-        function DummyEvents() {
+    exports.dummyEvents = {
+        canRaise: function (_name) { return false; },
+        on: function (_name, _handler, _nmspace, _context, _priority) {
+            throw new Error("Object disposed");
+        },
+        off: function (_name, _nmspace) { return void 0; },
+        offNS: function (_nmspace) { return void 0; },
+        raise: function (_name, _args) { return void 0; },
+        raiseProp: function (_name) { return void 0; },
+        onProp: function (_prop, _handler, _nmspace, _context, _priority) {
+            throw new Error("Object disposed");
+        },
+        offProp: function (_prop, _nmspace) { return void 0; },
+        addOnDisposed: function (_handler, _nmspace, _context, _priority) {
+            throw new Error("Object disposed");
+        },
+        offOnDisposed: function (_nmspace) {
+            throw new Error("Object disposed");
+        },
+        addOnError: function (_handler, _nmspace, _context, _priority) {
+            throw new Error("Object disposed");
+        },
+        offOnError: function (_nmspace) {
+            throw new Error("Object disposed");
+        },
+        get owner() {
+            return null;
         }
-        DummyEvents.prototype.canRaise = function (name) {
-            return false;
-        };
-        DummyEvents.prototype.on = function (name, handler, nmspace, context, priority) {
-            throw new Error("Object disposed");
-        };
-        DummyEvents.prototype.off = function (name, nmspace) {
-        };
-        DummyEvents.prototype.offNS = function (nmspace) {
-        };
-        DummyEvents.prototype.raise = function (name, args) {
-        };
-        DummyEvents.prototype.raiseProp = function (name) {
-        };
-        DummyEvents.prototype.onProp = function (prop, handler, nmspace, context, priority) {
-            throw new Error("Object disposed");
-        };
-        DummyEvents.prototype.offProp = function (prop, nmspace) {
-        };
-        DummyEvents.prototype.addOnDisposed = function (handler, nmspace, context, priority) {
-            this.on("disposed", handler, nmspace, context, priority);
-        };
-        DummyEvents.prototype.offOnDisposed = function (nmspace) {
-            this.off("disposed", nmspace);
-        };
-        DummyEvents.prototype.addOnError = function (handler, nmspace, context, priority) {
-            this.on("error", handler, nmspace, context, priority);
-        };
-        DummyEvents.prototype.offOnError = function (nmspace) {
-            this.off("error", nmspace);
-        };
-        Object.defineProperty(DummyEvents.prototype, "owner", {
-            get: function () {
-                return null;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return DummyEvents;
-    }());
+    };
     var ObjectEvents = (function () {
         function ObjectEvents(owner) {
             this._events = null;
@@ -1761,7 +1746,6 @@ define("jriapp_shared/object", ["require", "exports", "jriapp_shared/lang", "jri
         return ObjectEvents;
     }());
     exports.ObjectEvents = ObjectEvents;
-    exports.dummyEvents = new DummyEvents();
     var BaseObject = (function () {
         function BaseObject() {
             this._objState = 0;
@@ -2708,7 +2692,7 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
             var req = new XMLHttpRequest();
             req.open(method, url, true);
             req.responseType = "text";
-            req.onload = function (e) {
+            req.onload = function () {
                 var status = "" + req.status;
                 if (status === "200") {
                     var res = req.response;
@@ -2723,13 +2707,13 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
                     }
                 }
             };
-            req.onerror = function (e) {
+            req.onerror = function () {
                 deferred.reject(new Error(format('Error: "{0}" to load from URL: "{1}"', req.status, url)));
             };
             req.ontimeout = function () {
                 deferred.reject(new Error(format('Error: "Request Timeout" to load from URL: "{0}"', url)));
             };
-            req.onabort = function (e) {
+            req.onabort = function () {
                 deferred.reject(new Error(format('HTTP Request Operation Aborted for URL: "{0}"', url)));
             };
             req.timeout = HttpUtils.ajaxTimeOut * 1000;
@@ -2985,7 +2969,7 @@ define("jriapp_shared/utils/waitqueue", ["require", "exports", "jriapp_shared/ob
             if (!propQueue) {
                 propQueue = [];
                 this._queue[property] = propQueue;
-                this._owner.objEvents.onProp(property, function (s, a) {
+                this._owner.objEvents.onProp(property, function () {
                     setTimeout(function () {
                         if (self.getIsStateDirty()) {
                             return;
@@ -3526,7 +3510,7 @@ define("jriapp_shared/collection/base", ["require", "exports", "jriapp_shared/ob
             this._pkInfo = pk;
             return this._pkInfo;
         };
-        BaseCollection.prototype._checkCurrentChanging = function (newCurrent) {
+        BaseCollection.prototype._checkCurrentChanging = function (_newCurrent) {
             try {
                 this.endEdit();
             }
@@ -4599,7 +4583,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             var bag = this._valueBag;
             this._valueBag = null;
             if (!!bag) {
-                forEach(bag, function (name, val) {
+                forEach(bag, function (_name, val) {
                     disposeVal(val, coll.uniqueID);
                 });
             }
@@ -4694,7 +4678,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             }
             return true;
         };
-        ItemAspect.prototype._skipValidate = function (fieldInfo, val) {
+        ItemAspect.prototype._skipValidate = function (_fieldInfo, _val) {
             return false;
         };
         ItemAspect.prototype._validateItem = function () {
@@ -4844,7 +4828,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             }
             internal.onEditing(item, true, false);
             if (!!this._valueBag && this.isEditing) {
-                forEach(this._valueBag, function (name, obj) {
+                forEach(this._valueBag, function (_name, obj) {
                     if (!!obj && sys.isEditable(obj.val)) {
                         obj.val.beginEdit();
                     }
@@ -4861,7 +4845,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
             internal.onBeforeEditing(item, false, false);
             var customEndEdit = true;
             if (!!this._valueBag) {
-                forEach(this._valueBag, function (name, obj) {
+                forEach(this._valueBag, function (_name, obj) {
                     if (!!obj && sys.isEditable(obj.val)) {
                         if (!obj.val.endEdit()) {
                             customEndEdit = false;
@@ -4886,7 +4870,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
                 var coll = this.coll, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
                 internal.onBeforeEditing(item, false, true);
                 if (!!this._valueBag) {
-                    forEach(this._valueBag, function (name, obj) {
+                    forEach(this._valueBag, function (_name, obj) {
                         if (!!obj && sys.isEditable(obj.val)) {
                             obj.val.cancelEdit();
                         }
@@ -4921,7 +4905,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.getIsHasErrors = function () {
             var res = !!this.coll.errors.getErrors(this.item);
             if (!res && !!this._valueBag) {
-                forEach(this._valueBag, function (name, obj) {
+                forEach(this._valueBag, function (_name, obj) {
                     if (!!obj) {
                         var errNotification = sys.getErrorNotification(obj.val);
                         if (!!errNotification && errNotification.getIsHasErrors()) {
@@ -4959,7 +4943,7 @@ define("jriapp_shared/collection/aspect", ["require", "exports", "jriapp_shared/
         ItemAspect.prototype.getAllErrors = function () {
             var res = [];
             if (!!this._valueBag) {
-                forEach(this._valueBag, function (name, obj) {
+                forEach(this._valueBag, function (_name, obj) {
                     var errNotification = sys.getErrorNotification(obj.val);
                     if (!!errNotification) {
                         res = res.concat(errNotification.getAllErrors());
@@ -5482,7 +5466,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
             _this.addOnBeginEdit(function (_, a) {
                 _this._saveVal = JSON.stringify(a.item.val);
             });
-            _this.addOnEndEdit(function (s, a) {
+            _this.addOnEndEdit(function (_, a) {
                 var item = a.item;
                 if (a.isCanceled) {
                     _this._saveVal = null;
@@ -5495,7 +5479,7 @@ define("jriapp_shared/utils/anylist", ["require", "exports", "jriapp_shared/util
                     _this.onChanged();
                 }
             });
-            _this.addOnCollChanged(function (s, a) {
+            _this.addOnCollChanged(function (_, a) {
                 switch (a.changeType) {
                     case 0:
                         {
@@ -5651,13 +5635,13 @@ define("jriapp_shared/utils/jsonarray", ["require", "exports", "jriapp_shared/ob
                     this._list = new anylist_1.AnyList(function (vals) {
                         _this.updateArray(vals);
                     });
-                    this._list.addOnValidateField(function (s, args) {
+                    this._list.addOnValidateField(function (_, args) {
                         var validationInfo = _this._validateField(args.item, args.fieldName);
                         if (!!validationInfo && validationInfo.errors.length > 0) {
                             args.errors = validationInfo.errors;
                         }
                     }, this._uniqueID);
-                    this._list.addOnValidateItem(function (s, args) {
+                    this._list.addOnValidateItem(function (_, args) {
                         var validationInfos = _this._validateBag(args.item);
                         args.result = validationInfos;
                     }, this._uniqueID);
@@ -5884,5 +5868,5 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_s
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_3.Debounce;
     exports.Lazy = lazy_1.Lazy;
-    exports.VERSION = "3.0.2";
+    exports.VERSION = "3.0.3";
 });

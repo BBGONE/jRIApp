@@ -210,10 +210,10 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
         };
         let internal = this._getInternal();
         this._setInternal(merge(extraInternal, internal));
-        this.dbContext.objEvents.onProp("isSubmiting", (s, a) => {
+        this.dbContext.objEvents.onProp("isSubmiting", () => {
             self.objEvents.raiseProp("isBusy");
         }, this.dbSetName);
-        this.objEvents.onProp("isLoading", (s, a) => {
+        this.objEvents.onProp("isLoading", () => {
             self.objEvents.raiseProp("isBusy");
         });
     }
@@ -255,10 +255,10 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
     }
     protected _doNavigationField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): INavFieldImpl<TItem> {
         const self = this, result: INavFieldImpl<TItem> = {
-            getFunc: (item) => {
+            getFunc: (_item) => {
                 throw new Error(`Navigation get function for the field: ${fieldInfo.fieldName} is not implemented`);
             },
-            setFunc: (v: any, item: TItem) => {
+            setFunc: (_v: any, _item: TItem) => {
                 throw new Error(`Navigation set function for the field: ${fieldInfo.fieldName} is not implemented`);
             }
         };
@@ -334,9 +334,9 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
         }
         return result;
     }
-    protected _doCalculatedField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): ICalcFieldImpl<TItem> {
+    protected _doCalculatedField(_opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): ICalcFieldImpl<TItem> {
         const self = this, result: ICalcFieldImpl<TItem> = {
-            getFunc: (item) => { throw new Error(format("Calculated field:'{0}' is not initialized", fieldInfo.fieldName)); }
+            getFunc: (_item) => { throw new Error(format("Calculated field:'{0}' is not initialized", fieldInfo.fieldName)); }
         };
         fieldInfo.isReadOnly = true;
         if (!!fieldInfo.dependentOn) {
@@ -788,7 +788,7 @@ export abstract class DbSet<TItem extends IEntityItem = IEntityItem, TObj extend
     }
     protected _getNames(): IFieldName[] {
         const fieldInfos = this.getFieldInfos(), names: IFieldName[] = [];
-        walkFields(fieldInfos, (fld, fullName, arr) => {
+        walkFields(fieldInfos, (fld, _fullName, arr) => {
             if (fld.fieldType === FIELD_TYPE.Object) {
                 const res: any[] = [];
                 arr.push({

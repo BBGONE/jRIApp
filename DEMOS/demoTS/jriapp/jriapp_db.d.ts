@@ -215,7 +215,7 @@ declare module "jriapp_db/dbset" {
         handleError(error: any, source: any): boolean;
         protected _mapAssocFields(): void;
         protected _doNavigationField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): INavFieldImpl<TItem>;
-        protected _doCalculatedField(opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): ICalcFieldImpl<TItem>;
+        protected _doCalculatedField(_opts: IDbSetConstuctorOptions, fieldInfo: IFieldInfo): ICalcFieldImpl<TItem>;
         protected _refreshValues(path: string, item: IEntityItem, values: any[], names: IFieldName[], rm: REFRESH_MODE): void;
         protected _applyFieldVals(vals: any, path: string, values: any[], names: IFieldName[]): void;
         protected _getNewKey(): string;
@@ -344,7 +344,7 @@ declare module "jriapp_db/association" {
         protected _onParentCommitChanges(item: IEntityItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
         protected _storeParentFKey(item: IEntityItem): void;
         protected _checkParentFKey(item: IEntityItem): void;
-        protected _onParentStatusChanged(item: IEntityItem, oldStatus: ITEM_STATUS): void;
+        protected _onParentStatusChanged(item: IEntityItem, _oldStatus: ITEM_STATUS): void;
         protected _onChildCollChanged(args: ICollChangedArgs<IEntityItem>): void;
         protected _notifyChildrenChanged(changed: string[]): void;
         protected _notifyParentChanged(changed: string[]): void;
@@ -354,7 +354,7 @@ declare module "jriapp_db/association" {
         protected _onChildCommitChanges(item: IEntityItem, isBegin: boolean, isRejected: boolean, status: ITEM_STATUS): void;
         protected _storeChildFKey(item: IEntityItem): void;
         protected _checkChildFKey(item: IEntityItem): void;
-        protected _onChildStatusChanged(item: IEntityItem, oldStatus: ITEM_STATUS): void;
+        protected _onChildStatusChanged(item: IEntityItem, _oldStatus: ITEM_STATUS): void;
         protected _getItemKey(finf: IFieldInfo[], ds: TDbSet, item: IEntityItem): string;
         protected _resetChildMap(): void;
         protected _resetParentMap(): void;
@@ -411,7 +411,7 @@ declare module "jriapp_db/error" {
 }
 declare module "jriapp_db/dbcontext" {
     import { COLL_CHANGE_REASON } from "jriapp_shared/collection/const";
-    import { IIndexer, IVoidPromise, IBaseObject, TEventHandler, TErrorHandler, BaseObject, IStatefulPromise, IAbortablePromise } from "jriapp_shared";
+    import { IIndexer, IPromise, IBaseObject, TEventHandler, TErrorHandler, BaseObject, IStatefulPromise, IAbortablePromise } from "jriapp_shared";
     import { IEntityItem, IRefreshResponse, IQueryResult, IQueryInfo, IAssociationInfo, IPermissionsInfo, IInvokeRequest, IInvokeResponse, IQueryResponse, IChangeRequest, IChangeResponse, ISubset } from "jriapp_db/int";
     import { DATA_OPER } from "jriapp_db/const";
     import { TDbSet } from "jriapp_db/dbset";
@@ -521,7 +521,7 @@ declare module "jriapp_db/dbcontext" {
         initialize(options: {
             serviceUrl: string;
             permissions?: IPermissionsInfo;
-        }): IVoidPromise;
+        }): IPromise;
         addOnDisposed(handler: TEventHandler<DbContext, any>, nmspace?: string, context?: object): void;
         offOnDisposed(nmspace?: string): void;
         addOnError(handler: TErrorHandler<DbContext>, nmspace?: string, context?: object): void;
@@ -537,7 +537,7 @@ declare module "jriapp_db/dbcontext" {
         getDbSet(name: string): TDbSet;
         findDbSet(name: string): TDbSet;
         getAssociation(name: string): Association;
-        submitChanges(): IVoidPromise;
+        submitChanges(): IPromise;
         load(query: TDataQuery): IStatefulPromise<IQueryResult<IEntityItem>>;
         acceptChanges(): void;
         rejectChanges(): void;
@@ -558,7 +558,7 @@ declare module "jriapp_db/dbcontext" {
 }
 declare module "jriapp_db/entity_aspect" {
     import { ITEM_STATUS, VALS_VERSION } from "jriapp_shared/collection/const";
-    import { IBaseObject, IVoidPromise, IIndexer, IStatefulPromise } from "jriapp_shared";
+    import { IBaseObject, IPromise, IIndexer, IStatefulPromise } from "jriapp_shared";
     import { IFieldInfo } from "jriapp_shared/collection/int";
     import { ItemAspect } from "jriapp_shared/collection/aspect";
     import { REFRESH_MODE } from "jriapp_db/const";
@@ -579,7 +579,7 @@ declare module "jriapp_db/entity_aspect" {
         protected _onFieldChanged(fieldName: string, fieldInfo?: IFieldInfo): void;
         protected _getValueChange(fullName: string, fieldInfo: IFieldInfo, changedOnly: boolean): IValueChange;
         protected _getValueChanges(changedOnly: boolean): IValueChange[];
-        protected _fldChanging(fieldName: string, fieldInfo: IFieldInfo, oldV: any, newV: any): boolean;
+        protected _fldChanging(_fieldName: string, _fieldInfo: IFieldInfo, _oldV: any, _newV: any): boolean;
         protected _skipValidate(fieldInfo: IFieldInfo, val: any): boolean;
         protected _beginEdit(): boolean;
         protected _endEdit(): boolean;
@@ -603,7 +603,7 @@ declare module "jriapp_db/entity_aspect" {
         deleteOnSubmit(): boolean;
         acceptChanges(): void;
         rejectChanges(): void;
-        submitChanges(): IVoidPromise;
+        submitChanges(): IPromise;
         refresh(): IStatefulPromise<TItem>;
         toString(): string;
         protected get hasOrigVals(): boolean;
@@ -867,8 +867,8 @@ declare module "jriapp_db/dataview" {
             clear: boolean;
             isAppend: boolean;
         }): TItem[];
-        protected _onDSCollectionChanged(_sender: any, args: ICollChangedArgs<TItem>): void;
-        protected _onDSStatusChanged(_sender: any, args: ICollItemStatusArgs<TItem>): void;
+        protected _onDSCollectionChanged(_: any, args: ICollChangedArgs<TItem>): void;
+        protected _onDSStatusChanged(_: any, args: ICollItemStatusArgs<TItem>): void;
         protected _bindDS(): void;
         protected _unbindDS(): void;
         protected _checkCurrentChanging(newCurrent: TItem): void;
@@ -902,6 +902,8 @@ declare module "jriapp_db/dataview" {
         set fn_sort(v: (item1: TItem, item2: TItem) => number);
         get fn_itemsProvider(): (ds: ICollection<TItem>) => TItem[];
         set fn_itemsProvider(v: (ds: ICollection<TItem>) => TItem[]);
+        get fn_sortHandler(): (this: DataView<TItem>, fieldNames: string[], sortOrder: SORT_ORDER) => IPromise<any> | null;
+        set fn_sortHandler(v: (this: DataView<TItem>, fieldNames: string[], sortOrder: SORT_ORDER) => IPromise<any> | null);
         toString(): string;
     }
     export type TDataView = DataView;
@@ -996,5 +998,5 @@ declare module "jriapp_db" {
     export * from "jriapp_db/entity_aspect";
     export * from "jriapp_db/error";
     export * from "jriapp_db/complexprop";
-    export const VERSION = "3.0.4";
+    export const VERSION = "3.0.5";
 }

@@ -89,7 +89,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
         const bag = this._valueBag;
         this._valueBag = null;
         if (!!bag) {
-            forEach(bag, (name, val) => {
+            forEach(bag, (_name, val) => {
                 disposeVal(val, coll.uniqueID);
             });
         }
@@ -185,7 +185,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
 
         return true;
     }
-    protected _skipValidate(fieldInfo: IFieldInfo, val: any) {
+    protected _skipValidate(_fieldInfo: IFieldInfo, _val: any) {
         return false;
     }
     protected _validateItem(): IValidationInfo[] {
@@ -341,7 +341,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
         }
         internal.onEditing(item, true, false);
         if (!!this._valueBag && this.isEditing) {
-            forEach(this._valueBag, (name, obj) => {
+            forEach(this._valueBag, (_name, obj) => {
                 if (!!obj && sys.isEditable(obj.val)) {
                     obj.val.beginEdit();
                 }
@@ -358,7 +358,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
         internal.onBeforeEditing(item, false, false);
         let customEndEdit = true;
         if (!!this._valueBag) {
-            forEach(this._valueBag, (name, obj) => {
+            forEach(this._valueBag, (_name, obj) => {
                 if (!!obj && sys.isEditable(obj.val)) {
                     if (!obj.val.endEdit()) {
                         customEndEdit = false;
@@ -383,7 +383,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
             const coll = this.coll, internal = coll._getInternal(), item = this.item, isNew = this.isNew;
             internal.onBeforeEditing(item, false, true);
             if (!!this._valueBag) {
-                forEach(this._valueBag, (name, obj) => {
+                forEach(this._valueBag, (_name, obj) => {
                     if (!!obj && sys.isEditable(obj.val)) {
                         obj.val.cancelEdit();
                     }
@@ -417,7 +417,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
     getIsHasErrors(): boolean {
         let res = !!this.coll.errors.getErrors(this.item);
         if (!res && !!this._valueBag) {
-            forEach(this._valueBag, (name, obj) => {
+            forEach(this._valueBag, (_name, obj) => {
                 if (!!obj) {
                     const errNotification = sys.getErrorNotification(obj.val);
                     if (!!errNotification && errNotification.getIsHasErrors()) {
@@ -455,7 +455,7 @@ export abstract class ItemAspect<TItem extends ICollectionItem = ICollectionItem
     getAllErrors(): IValidationInfo[] {
         let res: IValidationInfo[] = [];
         if (!!this._valueBag) {
-            forEach(this._valueBag, (name, obj) => {
+            forEach(this._valueBag, (_name, obj) => {
                 const errNotification = sys.getErrorNotification(obj.val);
                 if (!!errNotification) {
                     res = res.concat(errNotification.getAllErrors());

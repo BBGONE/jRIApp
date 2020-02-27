@@ -695,7 +695,7 @@ declare module "jriapp_shared/utils/sysutils" {
         static getPathParts(path: string): string[];
         static getProp(obj: any, prop: string): any;
         static setProp(obj: any, prop: string, val: any): void;
-        static resolveOwner(root: any, path: string, separator?: string): any;
+        static resolveOwner(root: any, path: string): any;
         static resolvePath(root: any, path: string): any;
         static resolvePath2(root: any, srcParts: string[]): any;
         static raiseProp(obj: IBaseObject, path: string): void;
@@ -794,6 +794,7 @@ declare module "jriapp_shared/object" {
         disposed = "disposed"
     }
     export function createObjectEvents(owner: IBaseObject): IObjectEvents;
+    export const dummyEvents: IObjectEvents;
     export class ObjectEvents implements IObjectEvents {
         private _events;
         private _owner;
@@ -812,7 +813,6 @@ declare module "jriapp_shared/object" {
         offOnError(nmspace?: string): void;
         get owner(): IBaseObject;
     }
-    export const dummyEvents: IObjectEvents;
     export class BaseObject implements IBaseObject {
         private _objState;
         private _objEvents;
@@ -1147,7 +1147,7 @@ declare module "jriapp_shared/collection/base" {
         protected _setInternal<T extends IInternalCollMethods<TItem>>(internal: T): void;
         protected _updatePermissions(perms: IPermissions): void;
         protected _getPKFieldInfos(): IFieldInfo[];
-        protected _checkCurrentChanging(newCurrent: TItem): void;
+        protected _checkCurrentChanging(_newCurrent: TItem): void;
         protected _onCurrentChanging(newCurrent: TItem): void;
         protected _onCurrentChanged(): void;
         protected _onCountChanged(): void;
@@ -1314,7 +1314,7 @@ declare module "jriapp_shared/collection/aspect" {
         protected _beginEdit(): boolean;
         protected _endEdit(): boolean;
         protected _cancelEdit(): boolean;
-        protected _skipValidate(fieldInfo: IFieldInfo, val: any): boolean;
+        protected _skipValidate(_fieldInfo: IFieldInfo, _val: any): boolean;
         protected _validateItem(): IValidationInfo[];
         protected _validateField(fieldName: string): IValidationInfo;
         protected _validateFields(): IValidationInfo[];
@@ -1532,5 +1532,5 @@ declare module "jriapp_shared" {
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";
     export { Lazy, TValueFactory } from "jriapp_shared/utils/lazy";
-    export const VERSION = "3.0.2";
+    export const VERSION = "3.0.3";
 }

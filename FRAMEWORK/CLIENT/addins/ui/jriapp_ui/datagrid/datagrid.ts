@@ -615,7 +615,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             }
         }
     }
-    protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void {
+    protected _onDSCollectionChanged(_: any, args: ICollChangedArgs<ICollectionItem>): void {
         const self = this;
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
@@ -697,7 +697,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         }
         this.objEvents.raiseProp("editingRow");
     }
-    protected _onItemAdded(sender: any, args: ICollItemAddedArgs<ICollectionItem>): void {
+    protected _onItemAdded(_: any, args: ICollItemAddedArgs<ICollectionItem>): void {
         const item = args.item, row = this._rowMap[item._key];
         if (!row) {
             return;
@@ -726,7 +726,7 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
             row.isDeleted = false;
         }
     }
-    protected _onDSErrorsChanged(sender: any, args: ICollItemArgs<ICollectionItem>): void {
+    protected _onDSErrorsChanged(_: any, args: ICollItemArgs<ICollectionItem>): void {
         const row = this._rowMap[args.item._key];
         if (!row) {
             return;
@@ -750,18 +750,18 @@ export class DataGrid extends BaseObject implements ISelectableProvider {
         ds.addOnCurrentChanged(() => {
             self._updateCurrent();
         }, self._uniqueID, self);
-        ds.addOnBeginEdit((sender, args) => {
+        ds.addOnBeginEdit((_, args) => {
             self._onItemEdit(args.item, true, false);
         }, self._uniqueID);
-        ds.addOnEndEdit((sender, args) => {
+        ds.addOnEndEdit((_, args) => {
             self._onItemEdit(args.item, false, args.isCanceled);
         }, self._uniqueID);
         ds.addOnErrorsChanged(self._onDSErrorsChanged, self._uniqueID, self);
-        ds.addOnStatusChanged((sender, args) => {
+        ds.addOnStatusChanged((_, args) => {
             self._onItemStatusChanged(args.item, args.oldStatus);
         }, self._uniqueID);
         ds.addOnItemAdded(self._onItemAdded, self._uniqueID, self);
-        ds.addOnItemAdding((s, a) => {
+        ds.addOnItemAdding(() => {
             self.collapseDetails();
         }, self._uniqueID);
     }
@@ -1343,12 +1343,12 @@ export class DataGridElView extends BaseElView implements ISelectableProvider {
     }
     private _bindGridEvents(): void {
         const self = this;
-        this._grid.addOnRowStateChanged((sender, args) => {
+        this._grid.addOnRowStateChanged((_, args) => {
             if (!!self._stateProvider) {
                 args.css = self._stateProvider.getCSS(args.row.item, args.val);
             }
         }, this.uniqueID);
-        self._grid.objEvents.onProp("*", (sender, args) => {
+        self._grid.objEvents.onProp("*", (_, args) => {
             switch (args.property) {
                 case "dataSource":
                     self.objEvents.raiseProp(args.property);
@@ -1357,7 +1357,7 @@ export class DataGridElView extends BaseElView implements ISelectableProvider {
         }, self.uniqueID);
     }
     // override
-    protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void {
+    protected _setErrors(_el: HTMLElement, _errors: IValidationInfo[]): void {
         // noop
     }
     get dataSource(): ICollection<ICollectionItem> {

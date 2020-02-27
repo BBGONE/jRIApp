@@ -39,10 +39,10 @@ class LookupConverter implements IConverter {
     constructor(content: LookupContent) {
         this._content = content;
     }
-    convertToSource(val: any, param: any, dataContext: any): number {
+    convertToSource(_val: any, _param: any, _dataContext: any): number {
         return _undefined;
     }
-    convertToTarget(val: any, param: any, dataContext: any): string {
+    convertToTarget(val: any, _param: any, _dataContext: any): string {
         return this._content.getLookupText(val);
     }
     toString(): string {

@@ -16,7 +16,7 @@ export class NumberContent extends BasicContent {
         return NumberContent._allowedKeys;
     }
     // override
-    protected getConverter(isEdit: boolean): IConverter {
+    protected getConverter(_isEdit: boolean): IConverter {
         const  finf = this.getFieldInfo();
         switch (finf.dataType) {
             case DATA_TYPE.Integer:
@@ -32,7 +32,7 @@ export class NumberContent extends BasicContent {
         super.createView();
         const self = this;
         if (self.view instanceof TextBoxElView) {
-            (<TextBoxElView>self.view).addOnKeyPress(function (sender, args) {
+            (<TextBoxElView>self.view).addOnKeyPress(function (_, args) {
                 args.isCancel = !self.previewKeyPress(args.keyCode, args.value);
             });
         }

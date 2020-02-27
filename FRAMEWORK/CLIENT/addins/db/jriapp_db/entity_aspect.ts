@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { FIELD_TYPE, DATA_TYPE, ITEM_STATUS, VALS_VERSION } from "jriapp_shared/collection/const";
 import {
-    IBaseObject, IVoidPromise, IIndexer, IStatefulPromise, LocaleERRS as ERRS, Utils, IValidationError
+    IBaseObject, IPromise, IIndexer, IStatefulPromise, LocaleERRS as ERRS, Utils, IValidationError
 } from "jriapp_shared";
 import { ValidationError } from "jriapp_shared/errors";
 import { ICancellableArgs, IFieldInfo } from "jriapp_shared/collection/int";
@@ -229,7 +229,7 @@ export class EntityAspect<TItem extends IEntityItem = IEntityItem, TObj extends 
         });
         return res2;
     }
-    protected _fldChanging(fieldName: string, fieldInfo: IFieldInfo, oldV: any, newV: any): boolean {
+    protected _fldChanging(_fieldName: string, _fieldInfo: IFieldInfo, _oldV: any, _newV: any): boolean {
         if (!this._origVals) {
             this._storeVals(VALS_VERSION.Original);
         }
@@ -557,12 +557,12 @@ export class EntityAspect<TItem extends IEntityItem = IEntityItem, TObj extends 
             }
         }
     }
-    submitChanges(): IVoidPromise {
+    submitChanges(): IPromise {
         const removeHandler = () => {
             dbxt.offOnSubmitError(uniqueID);
         };
         const dbxt = this.dbSet.dbContext, uniqueID = uuid();
-        dbxt.addOnSubmitError((sender, args) => {
+        dbxt.addOnSubmitError((_, args) => {
             if (args.error instanceof SubmitError) {
                 const submitErr: SubmitError = args.error;
                 if (submitErr.notValidated.length > 0) {

@@ -208,13 +208,13 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
         BasicContent.prototype.getFieldInfo = function () {
             return this._options.fieldInfo;
         };
-        BasicContent.prototype.getParam = function (isEdit) {
+        BasicContent.prototype.getParam = function (_isEdit) {
             return null;
         };
-        BasicContent.prototype.getConverter = function (isEdit) {
+        BasicContent.prototype.getConverter = function (_isEdit) {
             return null;
         };
-        BasicContent.prototype.getViewName = function (isEdit) {
+        BasicContent.prototype.getViewName = function (_isEdit) {
             return null;
         };
         BasicContent.prototype.createdEditingView = function () {
@@ -541,7 +541,7 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
             _this._onChange = onChange;
             return _this;
         }
-        EventBag.prototype.isHasProp = function (prop) {
+        EventBag.prototype.isHasProp = function (_prop) {
             return true;
         };
         EventBag.prototype.getProp = function (name) {
@@ -683,10 +683,10 @@ define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared", "jriapp
             _this._el = el;
             return _this;
         }
-        CSSBag.prototype.isHasProp = function (prop) {
+        CSSBag.prototype.isHasProp = function (_prop) {
             return true;
         };
-        CSSBag.prototype.getProp = function (name) {
+        CSSBag.prototype.getProp = function (_name) {
             return _undefined;
         };
         CSSBag.prototype.setProp = function (name, val) {
@@ -805,7 +805,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                     break;
             }
         };
-        BaseElView.prototype._onEventAdded = function (name, newVal) {
+        BaseElView.prototype._onEventAdded = function (name, _newVal) {
             var self = this;
             if (this.getIsStateDirty()) {
                 return;
@@ -816,7 +816,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                 }
             }, this.uniqueID);
         };
-        BaseElView.prototype._onEventDeleted = function (name, oldVal) {
+        BaseElView.prototype._onEventDeleted = function (name, _oldVal) {
             dom.events.off(this.el, name, this.uniqueID);
         };
         BaseElView.prototype._applyToolTip = function () {
@@ -917,7 +917,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                     if (this.getIsStateDirty()) {
                         return _undefined;
                     }
-                    this._viewState._eventBag = new eventbag_1.EventBag(function (s, a) {
+                    this._viewState._eventBag = new eventbag_1.EventBag(function (_, a) {
                         _this._onEventChanged(a);
                     });
                 }
@@ -1075,7 +1075,7 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
             }
             return _this;
         }
-        TextBoxElView.prototype.handle_change = function (e) {
+        TextBoxElView.prototype.handle_change = function (_e) {
             this.objEvents.raiseProp("value");
             return true;
         };
@@ -1091,7 +1091,7 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
             }
             return true;
         };
-        TextBoxElView.prototype.handle_keyup = function (e) {
+        TextBoxElView.prototype.handle_keyup = function (_e) {
             this.objEvents.raiseProp("value");
         };
         TextBoxElView.prototype.addOnKeyPress = function (fn, nmspace) {
@@ -1144,7 +1144,7 @@ define("jriapp_ui/content/string", ["require", "exports", "jriapp_ui/textbox", "
             _super.prototype.createView.call(this);
             var self = this, fieldInfo = self.getFieldInfo();
             if (self.view instanceof textbox_1.TextBoxElView) {
-                self.view.addOnKeyPress(function (sender, args) {
+                self.view.addOnKeyPress(function (_, args) {
                     args.isCancel = !self.previewKeyPress(fieldInfo, args.keyCode, args.value);
                 });
             }
@@ -1245,7 +1245,7 @@ define("jriapp_ui/content/multyline", ["require", "exports", "jriapp_shared", "j
             _super.prototype.createView.call(this);
             var self = this, fieldInfo = self.getFieldInfo();
             if (self.view instanceof textarea_1.TextAreaElView) {
-                self.view.addOnKeyPress(function (sender, args) {
+                self.view.addOnKeyPress(function (_, args) {
                     args.isCancel = !self.previewKeyPress(fieldInfo, args.keyCode, args.value);
                 });
             }
@@ -1355,7 +1355,7 @@ define("jriapp_ui/content/number", ["require", "exports", "jriapp/bootstrap", "j
             enumerable: true,
             configurable: true
         });
-        NumberContent.prototype.getConverter = function (isEdit) {
+        NumberContent.prototype.getConverter = function (_isEdit) {
             var finf = this.getFieldInfo();
             switch (finf.dataType) {
                 case 3:
@@ -1370,7 +1370,7 @@ define("jriapp_ui/content/number", ["require", "exports", "jriapp/bootstrap", "j
             _super.prototype.createView.call(this);
             var self = this;
             if (self.view instanceof textbox_3.TextBoxElView) {
-                self.view.addOnKeyPress(function (sender, args) {
+                self.view.addOnKeyPress(function (_, args) {
                     args.isCancel = !self.previewKeyPress(args.keyCode, args.value);
                 });
             }
@@ -1414,7 +1414,7 @@ define("jriapp_ui/content/date", ["require", "exports", "jriapp_shared", "jriapp
             _this = _super.call(this, options) || this;
             return _this;
         }
-        DateContent.prototype.getConverter = function (isEdit) {
+        DateContent.prototype.getConverter = function (_isEdit) {
             return this.app.getConverter("dateConverter");
         };
         DateContent.prototype.getViewName = function (isEdit) {
@@ -1435,7 +1435,7 @@ define("jriapp_ui/content/datetime", ["require", "exports", "jriapp/bootstrap", 
         function DateTimeContent() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        DateTimeContent.prototype.getParam = function (isEdit) {
+        DateTimeContent.prototype.getParam = function (_isEdit) {
             var finf = this.getFieldInfo(), defaults = bootstrap_7.bootstrap.defaults;
             switch (finf.dataType) {
                 case 6:
@@ -1448,7 +1448,7 @@ define("jriapp_ui/content/datetime", ["require", "exports", "jriapp/bootstrap", 
                     return null;
             }
         };
-        DateTimeContent.prototype.getConverter = function (isEdit) {
+        DateTimeContent.prototype.getConverter = function (_isEdit) {
             return this.app.getConverter("dateTimeConverter");
         };
         DateTimeContent.prototype.toString = function () {
@@ -1548,16 +1548,16 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 return;
             }
             ds.addOnCollChanged(self._onDSCollectionChanged, self._uniqueID, self);
-            ds.addOnBeginEdit(function (sender, args) {
+            ds.addOnBeginEdit(function (_, args) {
                 self._onEdit(args.item, true, false);
             }, self._uniqueID);
-            ds.addOnEndEdit(function (sender, args) {
+            ds.addOnEndEdit(function (_, args) {
                 self._onEdit(args.item, false, args.isCanceled);
             }, self._uniqueID);
-            ds.addOnStatusChanged(function (sender, args) {
+            ds.addOnStatusChanged(function (_, args) {
                 self._onStatusChanged(args.item, args.oldStatus);
             }, self._uniqueID);
-            ds.addOnCommitChanges(function (sender, args) {
+            ds.addOnCommitChanges(function (_, args) {
                 self._onCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
             }, self._uniqueID);
         };
@@ -1732,7 +1732,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             }
             return (!this._textProvider) ? res : this._textProvider.getText(item, index, res);
         };
-        ListBox.prototype._onDSCollectionChanged = function (sender, args) {
+        ListBox.prototype._onDSCollectionChanged = function (_, args) {
             var self = this;
             this.beginTrackSelected();
             try {
@@ -1813,7 +1813,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                 }
             }
         };
-        ListBox.prototype._onStatusChanged = function (item, oldStatus) {
+        ListBox.prototype._onStatusChanged = function (item, _oldStatus) {
             var newStatus = item._aspect.status;
             this.beginTrackSelected();
             if (newStatus === 3) {
@@ -1974,7 +1974,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
         ListBox.prototype.isSubscribed = function (flag) {
             return !this._options.nodelegate && flag === 2;
         };
-        ListBox.prototype.handle_change = function (e) {
+        ListBox.prototype.handle_change = function (_e) {
             if (this._isRefreshing) {
                 return true;
             }
@@ -2145,7 +2145,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             var _this = _super.call(this, el, options) || this;
             var self = _this;
             self._listBox = new ListBox(el, options);
-            self._listBox.objEvents.onProp("*", function (sender, args) {
+            self._listBox.objEvents.onProp("*", function (_, args) {
                 switch (args.property) {
                     case "dataSource":
                     case "isEnabled":
@@ -2297,10 +2297,10 @@ define("jriapp_ui/content/lookup", ["require", "exports", "jriapp_shared", "jria
         function LookupConverter(content) {
             this._content = content;
         }
-        LookupConverter.prototype.convertToSource = function (val, param, dataContext) {
+        LookupConverter.prototype.convertToSource = function (_val, _param, _dataContext) {
             return _undefined;
         };
-        LookupConverter.prototype.convertToTarget = function (val, param, dataContext) {
+        LookupConverter.prototype.convertToTarget = function (val, _param, _dataContext) {
             return this._content.getLookupText(val);
         };
         LookupConverter.prototype.toString = function () {
@@ -2531,7 +2531,7 @@ define("jriapp_ui/content/factory", ["require", "exports", "jriapp_shared", "jri
     function initContentFactory() {
         if (!factoryInstance) {
             factoryInstance = new ContentFactory();
-            bootstrap_9.bootstrap.contentFactory.addFactory(function (nextFactory) {
+            bootstrap_9.bootstrap.contentFactory.addFactory(function (_nextFactory) {
                 return factoryInstance;
             });
         }
@@ -2928,10 +2928,10 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 title: options.title,
                 autoOpen: false,
                 modal: true,
-                open: function (event, ui) {
+                open: function () {
                     self._onOpen();
                 },
-                close: function (event, ui) {
+                close: function () {
                     self._onClose();
                 },
                 buttons: self._getButtons()
@@ -2963,7 +2963,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                 ERROR.reThrow(ex, this.handleError(ex, this));
             }
         };
-        DataEditDialog.prototype.templateLoading = function (template) {
+        DataEditDialog.prototype.templateLoading = function (_template) {
         };
         DataEditDialog.prototype.templateLoaded = function (template, error) {
             if (this.getIsStateDirty() || !!error) {
@@ -3391,7 +3391,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                 this._animation.beforeShow(template, isFirstShow);
             }
         };
-        DynaContentElView.prototype.templateLoaded = function (template, error) {
+        DynaContentElView.prototype.templateLoaded = function (template, _error) {
             if (this.getIsStateDirty()) {
                 return;
             }
@@ -3403,9 +3403,9 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                 this._animation.show(template, isFirstShow);
             }
         };
-        DynaContentElView.prototype.templateUnLoading = function (template) {
+        DynaContentElView.prototype.templateUnLoading = function (_template) {
         };
-        DynaContentElView.prototype._templateChanging = function (oldName, newName) {
+        DynaContentElView.prototype._templateChanging = function (_oldName, newName) {
             var self = this;
             try {
                 if (!newName && !!self._template) {
@@ -3784,7 +3784,7 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
             }
             _this._grid._getInternal().getHeader().appendChild(col);
             bootstrap_13.selectableProviderWeakMap.set(_this._col, _this._grid);
-            dom.events.on(_this._col, "click", function (e) {
+            dom.events.on(_this._col, "click", function () {
                 grid._getInternal().setCurrentColumn(self);
                 self._onColumnClicked();
             }, _this.uniqueID);
@@ -3824,11 +3824,11 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
             this._options = null;
             _super.prototype.dispose.call(this);
         };
-        BaseColumn.prototype.templateLoading = function (template) {
+        BaseColumn.prototype.templateLoading = function (_template) {
         };
-        BaseColumn.prototype.templateLoaded = function (template, error) {
+        BaseColumn.prototype.templateLoaded = function (_template, _error) {
         };
-        BaseColumn.prototype.templateUnLoading = function (template) {
+        BaseColumn.prototype.templateUnLoading = function (_template) {
         };
         BaseColumn.prototype.scrollIntoView = function (isUp) {
             if (this.getIsStateDirty()) {
@@ -4017,11 +4017,11 @@ define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_shared"
         DataColumn.prototype._getInitContentFn = function () {
             var self = this;
             return function (content) {
-                content.addOnObjectCreated(function (sender, args) {
+                content.addOnObjectCreated(function (_, args) {
                     self._cacheObject(args.objectKey, args.result);
                     args.isCachedExternally = !!self._getCachedObject(args.objectKey);
                 });
-                content.addOnObjectNeeded(function (sender, args) {
+                content.addOnObjectNeeded(function (_, args) {
                     args.result = self._getCachedObject(args.objectKey);
                 });
             };
@@ -4131,7 +4131,7 @@ define("jriapp_ui/datagrid/cells/data", ["require", "exports", "jriapp/utils/dom
                 this._content.isEditing = true;
             }
         };
-        DataCell.prototype._endEdit = function (isCanceled) {
+        DataCell.prototype._endEdit = function (_isCanceled) {
             if (this._content.isEditing) {
                 this._content.isEditing = false;
             }
@@ -4177,7 +4177,7 @@ define("jriapp_ui/datagrid/columns/actions", ["require", "exports", "jriapp/util
                     return self.uniqueID === attr && tag === "span";
                 }
             });
-            _this.grid.addOnRowAction(function (sender, args) {
+            _this.grid.addOnRowAction(function (_, args) {
                 switch (args.action) {
                     case 0:
                         self._onOk(args.row.actionsCell);
@@ -4840,15 +4840,15 @@ define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_shared", 
             _this._row.tr.appendChild(_this._td);
             return _this;
         }
-        BaseCell.prototype._onCellClicked = function (row) {
+        BaseCell.prototype._onCellClicked = function (_row) {
         };
-        BaseCell.prototype._onDblClicked = function (row) {
+        BaseCell.prototype._onDblClicked = function (_row) {
             this.grid._getInternal().onCellDblClicked(this);
         };
         BaseCell.prototype.isSubscribed = function (flag) {
             return flag === 1;
         };
-        BaseCell.prototype.handle_click = function (e) {
+        BaseCell.prototype.handle_click = function (_e) {
             this.grid._getInternal().setCurrentColumn(this.column);
             this.click();
         };
@@ -5012,7 +5012,7 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_shared"
             _this._uniqueID = getNewID("drow");
             _this._createCell(options.details_id);
             dom.addClass([tr], "ria-row-details");
-            _this._grid.addOnRowExpanded(function (sender, args) {
+            _this._grid.addOnRowExpanded(function (_, args) {
                 if (!args.isExpanded && !!args.collapsedRow) {
                     self._setParentRow(null);
                 }
@@ -5821,7 +5821,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 }
             }
         };
-        DataGrid.prototype._onDSCollectionChanged = function (sender, args) {
+        DataGrid.prototype._onDSCollectionChanged = function (_, args) {
             var self = this;
             switch (args.changeType) {
                 case 2:
@@ -5904,7 +5904,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             }
             this.objEvents.raiseProp("editingRow");
         };
-        DataGrid.prototype._onItemAdded = function (sender, args) {
+        DataGrid.prototype._onItemAdded = function (_, args) {
             var item = args.item, row = this._rowMap[item._key];
             if (!row) {
                 return;
@@ -5933,7 +5933,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 row.isDeleted = false;
             }
         };
-        DataGrid.prototype._onDSErrorsChanged = function (sender, args) {
+        DataGrid.prototype._onDSErrorsChanged = function (_, args) {
             var row = this._rowMap[args.item._key];
             if (!row) {
                 return;
@@ -5957,18 +5957,18 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             ds.addOnCurrentChanged(function () {
                 self._updateCurrent();
             }, self._uniqueID, self);
-            ds.addOnBeginEdit(function (sender, args) {
+            ds.addOnBeginEdit(function (_, args) {
                 self._onItemEdit(args.item, true, false);
             }, self._uniqueID);
-            ds.addOnEndEdit(function (sender, args) {
+            ds.addOnEndEdit(function (_, args) {
                 self._onItemEdit(args.item, false, args.isCanceled);
             }, self._uniqueID);
             ds.addOnErrorsChanged(self._onDSErrorsChanged, self._uniqueID, self);
-            ds.addOnStatusChanged(function (sender, args) {
+            ds.addOnStatusChanged(function (_, args) {
                 self._onItemStatusChanged(args.item, args.oldStatus);
             }, self._uniqueID);
             ds.addOnItemAdded(self._onItemAdded, self._uniqueID, self);
-            ds.addOnItemAdding(function (s, a) {
+            ds.addOnItemAdding(function () {
                 self.collapseDetails();
             }, self._uniqueID);
         };
@@ -6618,12 +6618,12 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
         };
         DataGridElView.prototype._bindGridEvents = function () {
             var self = this;
-            this._grid.addOnRowStateChanged(function (sender, args) {
+            this._grid.addOnRowStateChanged(function (_, args) {
                 if (!!self._stateProvider) {
                     args.css = self._stateProvider.getCSS(args.row.item, args.val);
                 }
             }, this.uniqueID);
-            self._grid.objEvents.onProp("*", function (sender, args) {
+            self._grid.objEvents.onProp("*", function (_, args) {
                 switch (args.property) {
                     case "dataSource":
                         self.objEvents.raiseProp(args.property);
@@ -6631,7 +6631,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 }
             }, self.uniqueID);
         };
-        DataGridElView.prototype._setErrors = function (el, errors) {
+        DataGridElView.prototype._setErrors = function (_el, _errors) {
         };
         Object.defineProperty(DataGridElView.prototype, "dataSource", {
             get: function () {
@@ -6912,7 +6912,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             if (!ds) {
                 return;
             }
-            ds.addOnCollChanged(function (sender, args) {
+            ds.addOnCollChanged(function (_, args) {
                 switch (args.changeType) {
                     case 2:
                         {
@@ -7291,7 +7291,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             var _this = _super.call(this, el, options) || this;
             var self = _this;
             _this._pager = new Pager(el, options);
-            self._pager.objEvents.onProp("*", function (sender, args) {
+            self._pager.objEvents.onProp("*", function (_, args) {
                 switch (args.property) {
                     case "dataSource":
                     case "parentControl":
@@ -7311,7 +7311,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             }
             _super.prototype.dispose.call(this);
         };
-        PagerElView.prototype._setErrors = function (el, errors) {
+        PagerElView.prototype._setErrors = function (_el, _errors) {
         };
         PagerElView.prototype.toString = function () {
             return "PagerElView";
@@ -7492,7 +7492,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             }
             this._isKeyNavigation = false;
         };
-        StackPanel.prototype._onKeyUp = function (key, event) {
+        StackPanel.prototype._onKeyUp = function (_key, _event) {
         };
         StackPanel.prototype._updateCurrent = function (item, withScroll) {
             var self = this, old = self._currentItem;
@@ -7521,7 +7521,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             var ds = this.dataSource, cur = ds.currentItem;
             this._updateCurrent(cur, !!cur);
         };
-        StackPanel.prototype._onDSCollectionChanged = function (sender, args) {
+        StackPanel.prototype._onDSCollectionChanged = function (_, args) {
             var self = this;
             switch (args.changeType) {
                 case 2:
@@ -7599,7 +7599,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             }
             ds.addOnCollChanged(self._onDSCollectionChanged, self._uniqueID, self);
             ds.addOnCurrentChanged(self._onDSCurrentChanged, self._uniqueID, self);
-            ds.addOnStatusChanged(function (sender, args) {
+            ds.addOnStatusChanged(function (_, args) {
                 self._onItemStatusChanged(args.item, args.oldStatus);
             }, self._uniqueID);
         };
@@ -7610,7 +7610,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             }
             ds.objEvents.offNS(self._uniqueID);
         };
-        StackPanel.prototype._onItemClicked = function (div, item) {
+        StackPanel.prototype._onItemClicked = function (_div, item) {
             this._updateCurrent(item, false);
             this.dataSource.currentItem = item;
             this.objEvents.raise("item_clicked", { item: item });
@@ -7783,12 +7783,12 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             var self = _this;
             _this._panelEvents = null;
             _this._panel = new StackPanel(el, options);
-            _this._panel.addOnItemClicked(function (sender, args) {
+            _this._panel.addOnItemClicked(function (_, args) {
                 if (!!self._panelEvents) {
                     self._panelEvents.onItemClicked(args.item);
                 }
             }, _this.uniqueID);
-            _this._panel.objEvents.onProp("*", function (sender, args) {
+            _this._panel.objEvents.onProp("*", function (_, args) {
                 switch (args.property) {
                     case "dataSource":
                         self.objEvents.raiseProp(args.property);
@@ -7975,7 +7975,7 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/uti
                 cmd.execute(args);
             }
         };
-        TemplateElView.prototype.templateLoading = function (template) {
+        TemplateElView.prototype.templateLoading = function (_template) {
         };
         TemplateElView.prototype.templateLoaded = function (template, error) {
             if (!!error) {
@@ -8404,7 +8404,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             var _this = _super.call(this, el, options) || this;
             var self = _this;
             _this._form = new DataForm(el, options);
-            _this._form.objEvents.onProp("dataContext", function (form, args) {
+            _this._form.objEvents.onProp("dataContext", function () {
                 self.objEvents.raiseProp("dataContext");
             }, _this.uniqueID);
             return _this;
@@ -8419,7 +8419,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             }
             _super.prototype.dispose.call(this);
         };
-        DataFormElView.prototype._setErrors = function (el, errors) {
+        DataFormElView.prototype._setErrors = function (_el, _errors) {
         };
         DataFormElView.prototype.toString = function () {
             return "DataFormElView";
@@ -8537,7 +8537,7 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
                 this._commandFlags &= ~(1 << flag);
             }
         };
-        CommandElView.prototype._onCanExecuteChanged = function (cmd, args) {
+        CommandElView.prototype._onCanExecuteChanged = function (cmd, _args) {
             this.isEnabled = cmd.canExecute(this._getCommandParam());
         };
         CommandElView.prototype._getCommandParam = function () {
@@ -9175,7 +9175,7 @@ define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/uti
             }
             _super.prototype.dispose.call(this);
         };
-        CheckBoxElView.prototype.handle_change = function (e) {
+        CheckBoxElView.prototype.handle_change = function (_e) {
             var chk = this.el;
             if (this.checked !== chk.checked) {
                 this.checked = chk.checked;
@@ -9260,7 +9260,7 @@ define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/ut
             }
             _super.prototype.dispose.call(this);
         };
-        CheckBoxThreeStateElView.prototype.handle_change = function (e) {
+        CheckBoxThreeStateElView.prototype.handle_change = function (_e) {
             if (this.checked === null) {
                 this.checked = true;
             }
@@ -9514,7 +9514,7 @@ define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/conten
     exports.JQueryUtils = jquery_8.JQueryUtils;
     exports.$ = jquery_8.$;
     __export(all_1);
-    exports.VERSION = "3.0.4";
+    exports.VERSION = "3.0.5";
     var boot = bootstrap_34.bootstrap;
     factory_1.initContentFactory();
     boot.registerSvc("ITooltipService", tooltip_1.createToolTipSvc());

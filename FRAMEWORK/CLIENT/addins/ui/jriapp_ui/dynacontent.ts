@@ -1,5 +1,5 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
-import { Utils, IVoidPromise, Debounce } from "jriapp_shared";
+import { Utils, IPromise, Debounce } from "jriapp_shared";
 import { ITemplate, ITemplateEvents, IViewOptions } from "jriapp/int";
 import { DomUtils } from "jriapp/utils/dom";
 import { createTemplate } from "jriapp/template";
@@ -10,9 +10,9 @@ const utils = Utils, sys = utils.sys, dom = DomUtils;
 
 export interface IDynaContentAnimation {
     beforeShow(template: ITemplate, isFirstShow: boolean): void;
-    show(template: ITemplate, isFirstShow: boolean): IVoidPromise;
+    show(template: ITemplate, isFirstShow: boolean): IPromise;
     beforeHide(template: ITemplate): void;
-    hide(template: ITemplate): IVoidPromise;
+    hide(template: ITemplate): IPromise;
     stop(): void;
     isAnimateFirstShow: boolean;
 }
@@ -50,7 +50,7 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
             this._animation.beforeShow(template, isFirstShow);
         }
     }
-    templateLoaded(template: ITemplate, error?: any): void {
+    templateLoaded(template: ITemplate, _error?: any): void {
         if (this.getIsStateDirty()) {
             return;
         }
@@ -64,10 +64,10 @@ export class DynaContentElView extends BaseElView implements ITemplateEvents {
             this._animation.show(template, isFirstShow);
         }
     }
-    templateUnLoading(template: ITemplate): void {
+    templateUnLoading(_template: ITemplate): void {
         // noop
     }
-    private _templateChanging(oldName: string, newName: string) {
+    private _templateChanging(_oldName: string, newName: string) {
         const self = this;
         try {
             if (!newName && !!self._template) {

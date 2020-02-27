@@ -1,11 +1,11 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import { IElView, ITemplateElView } from "../int";
 
-function dummyIsElView(obj: any): obj is IElView {
+function dummyIsElView(_obj: any): _obj is IElView {
     return false;
 }
 
-function dummyIsTemplateElView(obj: any): obj is ITemplateElView {
+function dummyIsTemplateElView(_obj: any): _obj is ITemplateElView {
     return false;
 }
 export class ViewChecks {

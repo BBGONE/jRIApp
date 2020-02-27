@@ -106,21 +106,21 @@ export class Association extends BaseObject {
         if (!ds) {
             return;
         }
-        ds.addOnCollChanged((sender, args) => {
+        ds.addOnCollChanged((_, args) => {
             self._onParentCollChanged(args);
         }, self._uniqueID, null, TPriority.High);
-        ds.addOnBeginEdit((sender, args) => {
+        ds.addOnBeginEdit((_, args) => {
             self._onParentEdit(args.item, true, false);
         }, self._uniqueID, null, TPriority.High);
-        ds.addOnEndEdit((sender, args) => {
+        ds.addOnEndEdit((_, args) => {
             self._onParentEdit(args.item, false, args.isCanceled);
         }, self._uniqueID, null, TPriority.High);
-        ds.addOnItemDeleting((sender, args) => {
+        ds.addOnItemDeleting(() => {
         }, self._uniqueID, null, TPriority.High);
-        ds.addOnStatusChanged((sender, args) => {
+        ds.addOnStatusChanged((_, args) => {
             self._onParentStatusChanged(args.item, args.oldStatus);
         }, self._uniqueID, null, TPriority.High);
-        ds.addOnCommitChanges((sender, args) => {
+        ds.addOnCommitChanges((_, args) => {
             self._onParentCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
         }, self._uniqueID, null, TPriority.High);
     }
@@ -129,19 +129,19 @@ export class Association extends BaseObject {
         if (!ds) {
             return;
         }
-        ds.addOnCollChanged((sender, args) => {
+        ds.addOnCollChanged((_, args) => {
             self._onChildCollChanged(args);
         }, self._uniqueID, null, TPriority.High);
-        ds.addOnBeginEdit((sender, args) => {
+        ds.addOnBeginEdit((_, args) => {
             self._onChildEdit(args.item, true, false);
         }, self._uniqueID, null, TPriority.High);
-        ds.addOnEndEdit((sender, args) => {
+        ds.addOnEndEdit((_, args) => {
             self._onChildEdit(args.item, false, args.isCanceled);
         }, self._uniqueID, null, TPriority.High);
-        ds.addOnStatusChanged((sender, args) => {
+        ds.addOnStatusChanged((_, args) => {
             self._onChildStatusChanged(args.item, args.oldStatus);
         }, self._uniqueID, null, TPriority.High);
-        ds.addOnCommitChanges((sender, args) => {
+        ds.addOnCommitChanges((_, args) => {
             self._onChildCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
         }, self._uniqueID, null, TPriority.High);
     }
@@ -244,7 +244,7 @@ export class Association extends BaseObject {
             }
         }
     }
-    protected _onParentStatusChanged(item: IEntityItem, oldStatus: ITEM_STATUS): void {
+    protected _onParentStatusChanged(item: IEntityItem, _oldStatus: ITEM_STATUS): void {
         const self = this, newStatus = item._aspect.status;
         let fkey: string = null;
         let children: IEntityItem[];
@@ -450,7 +450,7 @@ export class Association extends BaseObject {
             }
         }
     }
-    protected _onChildStatusChanged(item: IEntityItem, oldStatus: ITEM_STATUS): void {
+    protected _onChildStatusChanged(item: IEntityItem, _oldStatus: ITEM_STATUS): void {
         const self = this, newStatus = item._aspect.status;
         let fkey = self.getChildFKey(item);
         if (!fkey) {

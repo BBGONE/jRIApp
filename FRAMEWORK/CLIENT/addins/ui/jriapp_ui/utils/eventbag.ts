@@ -25,7 +25,7 @@ export class EventBag extends BaseObject implements IPropertyBag {
         this._onChange = onChange;
     }
     // override
-    isHasProp(prop: string): boolean {
+    isHasProp(_prop: string): boolean {
         return true;
     }
     // implement IPropertyBag

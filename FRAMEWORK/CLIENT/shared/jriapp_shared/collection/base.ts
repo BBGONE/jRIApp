@@ -268,7 +268,7 @@ export abstract class BaseCollection<TItem extends ICollectionItem> extends Base
         this._pkInfo = pk;
         return this._pkInfo;
     }
-    protected _checkCurrentChanging(newCurrent: TItem): void {
+    protected _checkCurrentChanging(_newCurrent: TItem): void {
         try {
             this.endEdit();
         } catch (ex) {

@@ -7,7 +7,7 @@ import { BasicContent } from "./basic";
 
 export class DateTimeContent extends BasicContent {
     // override
-    protected getParam(isEdit: boolean): any {
+    protected getParam(_isEdit: boolean): any {
         const finf = this.getFieldInfo(), defaults = bootstrap.defaults;
         switch (finf.dataType) {
             case DATA_TYPE.DateTime:
@@ -21,7 +21,7 @@ export class DateTimeContent extends BasicContent {
         }
     }
     // override
-    protected getConverter(isEdit: boolean): IConverter {
+    protected getConverter(_isEdit: boolean): IConverter {
         return this.app.getConverter("dateTimeConverter");
     }
     toString() {

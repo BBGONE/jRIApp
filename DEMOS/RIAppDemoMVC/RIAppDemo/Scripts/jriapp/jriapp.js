@@ -921,10 +921,10 @@ define("jriapp/content", ["require", "exports", "jriapp_shared"], function (requ
     var LastFactory = (function () {
         function LastFactory() {
         }
-        LastFactory.prototype.getContentType = function (options) {
+        LastFactory.prototype.getContentType = function (_options) {
             throw new Error(ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
         };
-        LastFactory.prototype.isExternallyCachable = function (contentType) {
+        LastFactory.prototype.isExternallyCachable = function (_contentType) {
             return false;
         };
         return LastFactory;
@@ -2660,10 +2660,10 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
 define("jriapp/utils/viewchecks", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    function dummyIsElView(obj) {
+    function dummyIsElView(_obj) {
         return false;
     }
-    function dummyIsTemplateElView(obj) {
+    function dummyIsTemplateElView(_obj) {
         return false;
     }
     var ViewChecks = (function () {
@@ -2687,10 +2687,10 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
     var BaseConverter = (function () {
         function BaseConverter() {
         }
-        BaseConverter.prototype.convertToSource = function (val, param, dataContext) {
+        BaseConverter.prototype.convertToSource = function (val, _param, _dataContext) {
             return val;
         };
-        BaseConverter.prototype.convertToTarget = function (val, param, dataContext) {
+        BaseConverter.prototype.convertToTarget = function (val, _param, _dataContext) {
             return (isNt(val)) ? null : val;
         };
         return BaseConverter;
@@ -2700,14 +2700,14 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
     var DateConverter = (function () {
         function DateConverter() {
         }
-        DateConverter.prototype.convertToSource = function (val, param, dataContext) {
+        DateConverter.prototype.convertToSource = function (val, _param, dataContext) {
             if (!val) {
                 return null;
             }
             var defaults = boot.defaults, datepicker = boot.getSvc("IDatepicker");
             return (!!datepicker) ? datepicker.parseDate(val) : dateTimeConverter.convertToSource(val, defaults.dateFormat, dataContext);
         };
-        DateConverter.prototype.convertToTarget = function (val, param, dataContext) {
+        DateConverter.prototype.convertToTarget = function (val, _param, dataContext) {
             if (isNt(val)) {
                 return "";
             }
@@ -2724,10 +2724,10 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
     var DateTimeConverter = (function () {
         function DateTimeConverter() {
         }
-        DateTimeConverter.prototype.convertToSource = function (val, param, dataContext) {
+        DateTimeConverter.prototype.convertToSource = function (val, param, _dataContext) {
             return strToDate(val, param);
         };
-        DateTimeConverter.prototype.convertToTarget = function (val, param, dataContext) {
+        DateTimeConverter.prototype.convertToTarget = function (val, param, _dataContext) {
             return dateToStr(val, param);
         };
         DateTimeConverter.prototype.toString = function () {
@@ -2740,7 +2740,7 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
     var NumberConverter = (function () {
         function NumberConverter() {
         }
-        NumberConverter.prototype.convertToSource = function (val, param, dataContext) {
+        NumberConverter.prototype.convertToSource = function (val, param, _dataContext) {
             if (isNt(val)) {
                 return null;
             }
@@ -2776,7 +2776,7 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
             }
             return num;
         };
-        NumberConverter.prototype.convertToTarget = function (val, param, dataContext) {
+        NumberConverter.prototype.convertToTarget = function (val, param, _dataContext) {
             if (isNt(val)) {
                 return "";
             }
@@ -2808,10 +2808,10 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
     var IntegerConverter = (function () {
         function IntegerConverter() {
         }
-        IntegerConverter.prototype.convertToSource = function (val, param, dataContext) {
+        IntegerConverter.prototype.convertToSource = function (val, _param, dataContext) {
             return numberConverter.convertToSource(val, exports.NUM_CONV.Integer, dataContext);
         };
-        IntegerConverter.prototype.convertToTarget = function (val, param, dataContext) {
+        IntegerConverter.prototype.convertToTarget = function (val, _param, dataContext) {
             return numberConverter.convertToTarget(val, exports.NUM_CONV.Integer, dataContext);
         };
         IntegerConverter.prototype.toString = function () {
@@ -2824,10 +2824,10 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
     var SmallIntConverter = (function () {
         function SmallIntConverter() {
         }
-        SmallIntConverter.prototype.convertToSource = function (val, param, dataContext) {
+        SmallIntConverter.prototype.convertToSource = function (val, _param, dataContext) {
             return numberConverter.convertToSource(val, exports.NUM_CONV.SmallInt, dataContext);
         };
-        SmallIntConverter.prototype.convertToTarget = function (val, param, dataContext) {
+        SmallIntConverter.prototype.convertToTarget = function (val, _param, dataContext) {
             return numberConverter.convertToTarget(val, exports.NUM_CONV.SmallInt, dataContext);
         };
         SmallIntConverter.prototype.toString = function () {
@@ -2840,10 +2840,10 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
     var DecimalConverter = (function () {
         function DecimalConverter() {
         }
-        DecimalConverter.prototype.convertToSource = function (val, param, dataContext) {
+        DecimalConverter.prototype.convertToSource = function (val, _param, dataContext) {
             return numberConverter.convertToSource(val, exports.NUM_CONV.Decimal, dataContext);
         };
-        DecimalConverter.prototype.convertToTarget = function (val, param, dataContext) {
+        DecimalConverter.prototype.convertToTarget = function (val, _param, dataContext) {
             return numberConverter.convertToTarget(val, exports.NUM_CONV.Decimal, dataContext);
         };
         DecimalConverter.prototype.toString = function () {
@@ -2856,10 +2856,10 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
     var FloatConverter = (function () {
         function FloatConverter() {
         }
-        FloatConverter.prototype.convertToSource = function (val, param, dataContext) {
+        FloatConverter.prototype.convertToSource = function (val, _param, dataContext) {
             return numberConverter.convertToSource(val, exports.NUM_CONV.Float, dataContext);
         };
-        FloatConverter.prototype.convertToTarget = function (val, param, dataContext) {
+        FloatConverter.prototype.convertToTarget = function (val, _param, dataContext) {
             return numberConverter.convertToTarget(val, exports.NUM_CONV.Float, dataContext);
         };
         FloatConverter.prototype.toString = function () {
@@ -2872,15 +2872,16 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
     var NotConverter = (function () {
         function NotConverter() {
         }
-        NotConverter.prototype.convertToSource = function (val, param, dataContext) {
+        NotConverter.prototype.convertToSource = function (val, _param, _dataContext) {
             return !val;
         };
-        NotConverter.prototype.convertToTarget = function (val, param, dataContext) {
+        NotConverter.prototype.convertToTarget = function (val, _param, _dataContext) {
             return !val;
         };
         return NotConverter;
     }());
     exports.NotConverter = NotConverter;
+    var notConverter = new NotConverter();
     boot.registerConverter("BaseConverter", exports.baseConverter);
     boot.registerConverter("dateConverter", dateConverter);
     boot.registerConverter("dateTimeConverter", dateTimeConverter);
@@ -2889,7 +2890,7 @@ define("jriapp/converter", ["require", "exports", "jriapp_shared", "jriapp/boots
     boot.registerConverter("smallIntConverter", smallIntConverter);
     boot.registerConverter("decimalConverter", decimalConverter);
     boot.registerConverter("floatConverter", floatConverter);
-    boot.registerConverter("notConverter", new NotConverter());
+    boot.registerConverter("notConverter", notConverter);
 });
 define("jriapp/binding", ["require", "exports", "jriapp_shared", "jriapp/bootstrap"], function (require, exports, jriapp_shared_13, bootstrap_4) {
     "use strict";
@@ -3965,7 +3966,7 @@ define("jriapp/utils/propwatcher", ["require", "exports", "jriapp_shared"], func
         };
         PropWatcher.prototype.addPropWatch = function (obj, prop, fnOnChange) {
             var self = this;
-            obj.objEvents.onProp(prop, function (s, a) {
+            obj.objEvents.onProp(prop, function (_, a) {
                 fnOnChange(a.property);
             }, self.uniqueID);
             if (self._objs.indexOf(obj) < 0) {
@@ -3974,7 +3975,7 @@ define("jriapp/utils/propwatcher", ["require", "exports", "jriapp_shared"], func
         };
         PropWatcher.prototype.addWatch = function (obj, props, fnOnChange) {
             var self = this;
-            obj.objEvents.onProp("*", function (s, a) {
+            obj.objEvents.onProp("*", function (_, a) {
                 if (props.indexOf(a.property) > -1) {
                     fnOnChange(a.property);
                 }
@@ -4419,7 +4420,7 @@ define("jriapp/databindsvc", ["require", "exports", "jriapp_shared", "jriapp/uti
                     return bindElem.elView;
                 }).filter(function (v) { return !!v.viewMounted; });
                 var viewMap = toMap(viewsArr, function (v) { return v.uniqueID; });
-                forEach(viewMap, function (n, v) { v.viewMounted(); });
+                forEach(viewMap, function (_n, v) { v.viewMounted(); });
                 defer.resolve(lftm);
             }
             catch (err) {
@@ -4838,6 +4839,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "3.0.1";
+    exports.VERSION = "3.0.2";
     bootstrap_7.Bootstrap._initFramework();
 });

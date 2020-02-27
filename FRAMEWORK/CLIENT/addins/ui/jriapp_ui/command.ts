@@ -62,7 +62,7 @@ export class CommandElView<TElement extends HTMLElement = HTMLElement> extends B
             this._commandFlags &= ~(1 << flag);
         }
     }
-    private _onCanExecuteChanged(cmd: ICommand, args: any): void {
+    private _onCanExecuteChanged(cmd: ICommand, _args: any): void {
         this.isEnabled = cmd.canExecute(this._getCommandParam());
     }
     protected _getCommandParam(): any {

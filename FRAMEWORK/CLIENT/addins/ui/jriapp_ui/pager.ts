@@ -269,7 +269,7 @@ export class Pager extends BaseObject implements ISelectableProvider {
         if (!ds) {
             return;
         }
-        ds.addOnCollChanged((sender, args) => {
+        ds.addOnCollChanged((_, args) => {
             switch (args.changeType) {
                 case COLL_CHANGE_TYPE.Reset:
                     {
@@ -596,7 +596,7 @@ export class PagerElView extends BaseElView implements ISelectableProvider {
         super(el, options);
         const self = this;
         this._pager = new Pager(el, options);
-        self._pager.objEvents.onProp("*", (sender, args) => {
+        self._pager.objEvents.onProp("*", (_, args) => {
             switch (args.property) {
                 case "dataSource":
                 case "parentControl":
@@ -616,7 +616,7 @@ export class PagerElView extends BaseElView implements ISelectableProvider {
         super.dispose();
     }
     // override
-    protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void {
+    protected _setErrors(_el: HTMLElement, _errors: IValidationInfo[]): void {
         // noop
     }
     toString(): string {

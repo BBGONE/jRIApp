@@ -110,7 +110,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
                 break;
         }
     }
-    protected _onEventAdded(name: string, newVal: ICommand): void {
+    protected _onEventAdded(name: string, _newVal: ICommand): void {
         const self = this;
         if (this.getIsStateDirty()) {
             return;
@@ -121,7 +121,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
             }
         }, this.uniqueID);
     }
-    protected _onEventDeleted(name: string, oldVal: ICommand): void {
+    protected _onEventDeleted(name: string, _oldVal: ICommand): void {
         dom.events.off(this.el, name, this.uniqueID);
     }
     protected _applyToolTip(): void {
@@ -197,7 +197,7 @@ export class BaseElView<TElement extends HTMLElement = HTMLElement> extends Base
             if (this.getIsStateDirty()) {
                 return _undefined;
             }
-            this._viewState._eventBag = new EventBag((s, a) => {
+            this._viewState._eventBag = new EventBag((_, a) => {
                 this._onEventChanged(a);
             });
         }

@@ -147,16 +147,16 @@ export class ListBox extends BaseObject implements ISubscriber {
             return;
         }
         ds.addOnCollChanged(self._onDSCollectionChanged, self._uniqueID, self);
-        ds.addOnBeginEdit((sender, args) => {
+        ds.addOnBeginEdit((_, args) => {
             self._onEdit(args.item, true, false);
         }, self._uniqueID);
-        ds.addOnEndEdit((sender, args) => {
+        ds.addOnEndEdit((_, args) => {
             self._onEdit(args.item, false, args.isCanceled);
         }, self._uniqueID);
-        ds.addOnStatusChanged((sender, args) => {
+        ds.addOnStatusChanged((_, args) => {
             self._onStatusChanged(args.item, args.oldStatus);
         }, self._uniqueID);
-        ds.addOnCommitChanges((sender, args) => {
+        ds.addOnCommitChanges((_, args) => {
             self._onCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
         }, self._uniqueID);
     }
@@ -337,7 +337,7 @@ export class ListBox extends BaseObject implements ISubscriber {
 
         return (!this._textProvider) ? res : this._textProvider.getText(item, index, res);
     }
-    protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>) {
+    protected _onDSCollectionChanged(_: any, args: ICollChangedArgs<ICollectionItem>) {
         const self = this;
         this.beginTrackSelected();
         try {
@@ -415,7 +415,7 @@ export class ListBox extends BaseObject implements ISubscriber {
             }
         }
     }
-    protected _onStatusChanged(item: ICollectionItem, oldStatus: ITEM_STATUS) {
+    protected _onStatusChanged(item: ICollectionItem, _oldStatus: ITEM_STATUS) {
         const newStatus = item._aspect.status;
         this.beginTrackSelected();
         if (newStatus === ITEM_STATUS.Deleted) {
@@ -574,7 +574,7 @@ export class ListBox extends BaseObject implements ISubscriber {
     isSubscribed(flag: SubscribeFlags): boolean {
         return !this._options.nodelegate && flag === SubscribeFlags.change;
     }
-    handle_change(e: Event): boolean {
+    handle_change(_e: Event): boolean {
         if (this._isRefreshing) {
             return true;
         }
@@ -706,7 +706,7 @@ export class ListBoxElView extends BaseElView {
         super(el, options);
         const self = this;
         self._listBox = new ListBox(el, <IListBoxConstructorOptions>options);
-        self._listBox.objEvents.onProp("*", (sender, args) => {
+        self._listBox.objEvents.onProp("*", (_, args) => {
             switch (args.property) {
                 case "dataSource":
                 case "isEnabled":

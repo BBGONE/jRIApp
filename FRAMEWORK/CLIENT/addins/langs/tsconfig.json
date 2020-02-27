@@ -12,7 +12,8 @@
     "noUnusedParameters": true,
     "noUnusedLocals": true,
     "noImplicitThis": true,
-    "noImplicitReturns": true
+    "noImplicitReturns": true,
+    "lib": [ "ES2015", "DOM" ]
   },
   "files": [
     "jriapp_ru.ts"

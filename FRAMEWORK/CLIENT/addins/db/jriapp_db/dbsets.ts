@@ -39,7 +39,7 @@ export class DbSets extends BaseObject {
     }
     protected _dbSetCreated(dbSet: TDbSet): void {
         this._arrDbSets.push(dbSet);
-        dbSet.objEvents.onProp("isHasChanges", (sender, args) => {
+        dbSet.objEvents.onProp("isHasChanges", (sender) => {
             this._dbContext._getInternal().onDbSetHasChangesChanged(sender);
         });
     }

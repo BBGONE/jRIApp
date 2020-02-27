@@ -11,15 +11,15 @@ import { StringUtils } from "./strUtils";
 const { isFunc, isHasProp, isArray, isNt, _undefined } = Checks,
     { startsWith, fastTrim: trim, trimBrackets, format, trimQuotes } = StringUtils;
 
-function dummyIsBaseObj(obj: any): obj is IBaseObject {
+function dummyIsBaseObj(_obj: any): _obj is IBaseObject {
     return false;
 }
 
-function dummyIsCollection(obj: any): obj is ICollection<any> {
+function dummyIsCollection(_obj: any): _obj is ICollection<any> {
     return false;
 }
 
-function dummyIsValidationError(obj: any): obj is IValidationError {
+function dummyIsValidationError(_obj: any): _obj is IValidationError {
     return false;
 }
 
@@ -29,12 +29,12 @@ function isPropBag(obj: any): obj is IPropertyBag {
 
 export class SysUtils {
     // DUMMY implementations
-    static isBinding: (obj: any) => boolean = (obj: any) => { return false; };
+    static isBinding: (obj: any) => boolean = () => { return false; };
     static readonly isPropBag: (obj: any) => obj is IPropertyBag = isPropBag;
 
     // DUMMY implementations collection
     static isCollection: (obj: any) => obj is ICollection<any> = dummyIsCollection;
-    static getItemByProp: (obj: any, prop: string) => any = (obj: any, prop: string) => { return null; };
+    static getItemByProp: (obj: any, prop: string) => any = () => { return null; };
     static isValidationError: (obj: any) => obj is IValidationError = dummyIsValidationError;
     // System  Helper functions
     static isBaseObj: (obj: any) => obj is IBaseObject = dummyIsBaseObj;
@@ -275,7 +275,7 @@ export class SysUtils {
         obj[prop] = val;
     }
     // the object that directly has this property (last object in chain obj1.obj2.lastObj)
-    static resolveOwner(root: any, path: string, separator = "."): any {
+    static resolveOwner(root: any, path: string): any {
        if (!path) {
             return root;
         }

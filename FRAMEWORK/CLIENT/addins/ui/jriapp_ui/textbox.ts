@@ -47,7 +47,7 @@ export class TextBoxElView<TElement extends HTMLInputElement | HTMLTextAreaEleme
             }
         }
     }
-    handle_change(e: Event): boolean {
+    handle_change(_e: Event): boolean {
         this.objEvents.raiseProp("value");
         // stop propagation
         return true;
@@ -65,7 +65,7 @@ export class TextBoxElView<TElement extends HTMLInputElement | HTMLTextAreaEleme
         // stop propagation
         return true;
     }
-    handle_keyup(e: KeyboardEvent): void {
+    handle_keyup(_e: KeyboardEvent): void {
         this.objEvents.raiseProp("value");
     }
     addOnKeyPress(fn: (sender: TextBoxElView<TElement>, args: TKeyPressArgs) => void, nmspace?: string) {

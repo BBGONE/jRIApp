@@ -149,7 +149,7 @@ export class WaitQueue extends BaseObject {
         if (!propQueue) {
             propQueue = [];
             this._queue[property] = propQueue;
-            this._owner.objEvents.onProp(property, function (s, a) {
+            this._owner.objEvents.onProp(property, function () {
                 setTimeout(function () {
                     if (self.getIsStateDirty()) {
                         return;

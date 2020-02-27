@@ -19,7 +19,7 @@ export class StringContent extends BasicContent {
         super.createView();
         const self = this, fieldInfo = self.getFieldInfo();
         if (self.view instanceof TextBoxElView) {
-            (<TextBoxElView>self.view).addOnKeyPress(function (sender, args) {
+            (<TextBoxElView>self.view).addOnKeyPress(function (_, args) {
                 args.isCancel = !self.previewKeyPress(fieldInfo, args.keyCode, args.value);
             });
         }

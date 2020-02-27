@@ -44,7 +44,7 @@ export class ActionsColumn extends BaseColumn {
                 }
             });
 
-        this.grid.addOnRowAction((sender, args) => {
+        this.grid.addOnRowAction((_, args) => {
             switch (args.action) {
                 case ROW_ACTION.OK:
                     self._onOk(args.row.actionsCell);

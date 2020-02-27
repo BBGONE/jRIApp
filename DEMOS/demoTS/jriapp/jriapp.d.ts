@@ -819,48 +819,48 @@ declare module "jriapp/converter" {
         SmallInt: number;
     };
     export class BaseConverter implements IConverter {
-        convertToSource(val: any, param: any, dataContext: any): any;
-        convertToTarget(val: any, param: any, dataContext: any): any;
+        convertToSource(val: any, _param: any, _dataContext: any): any;
+        convertToTarget(val: any, _param: any, _dataContext: any): any;
     }
     export let baseConverter: BaseConverter;
     export class DateConverter implements IConverter {
-        convertToSource(val: any, param: any, dataContext: any): Date;
-        convertToTarget(val: any, param: any, dataContext: any): string;
+        convertToSource(val: any, _param: any, dataContext: any): Date;
+        convertToTarget(val: any, _param: any, dataContext: any): string;
         toString(): string;
     }
     export class DateTimeConverter implements IConverter {
-        convertToSource(val: string, param: string, dataContext: any): Date;
-        convertToTarget(val: Date, param: string, dataContext: any): string;
+        convertToSource(val: string, param: string, _dataContext: any): Date;
+        convertToTarget(val: Date, param: string, _dataContext: any): string;
         toString(): string;
     }
     export class NumberConverter implements IConverter {
-        convertToSource(val: any, param: any, dataContext: any): number;
-        convertToTarget(val: any, param: any, dataContext: any): string;
+        convertToSource(val: any, param: any, _dataContext: any): number;
+        convertToTarget(val: any, param: any, _dataContext: any): string;
         toString(): string;
     }
     export class IntegerConverter implements IConverter {
-        convertToSource(val: any, param: any, dataContext: any): number;
-        convertToTarget(val: any, param: any, dataContext: any): string;
+        convertToSource(val: any, _param: any, dataContext: any): number;
+        convertToTarget(val: any, _param: any, dataContext: any): string;
         toString(): string;
     }
     export class SmallIntConverter implements IConverter {
-        convertToSource(val: any, param: any, dataContext: any): number;
-        convertToTarget(val: any, param: any, dataContext: any): string;
+        convertToSource(val: any, _param: any, dataContext: any): number;
+        convertToTarget(val: any, _param: any, dataContext: any): string;
         toString(): string;
     }
     export class DecimalConverter implements IConverter {
-        convertToSource(val: any, param: any, dataContext: any): number;
-        convertToTarget(val: any, param: any, dataContext: any): string;
+        convertToSource(val: any, _param: any, dataContext: any): number;
+        convertToTarget(val: any, _param: any, dataContext: any): string;
         toString(): string;
     }
     export class FloatConverter implements IConverter {
-        convertToSource(val: any, param: any, dataContext: any): number;
-        convertToTarget(val: any, param: any, dataContext: any): string;
+        convertToSource(val: any, _param: any, dataContext: any): number;
+        convertToTarget(val: any, _param: any, dataContext: any): string;
         toString(): string;
     }
     export class NotConverter implements IConverter {
-        convertToSource(val: any, param: any, dataContext: any): boolean;
-        convertToTarget(val: any, param: any, dataContext: any): boolean;
+        convertToSource(val: any, _param: any, _dataContext: any): boolean;
+        convertToTarget(val: any, _param: any, _dataContext: any): boolean;
     }
 }
 declare module "jriapp/binding" {
@@ -1101,5 +1101,5 @@ declare module "jriapp" {
     export { PropWatcher } from "jriapp/utils/propwatcher";
     export { ViewModel, BaseCommand, Command, ICommand } from "jriapp/mvvm";
     export { Application } from "jriapp/app";
-    export const VERSION = "3.0.1";
+    export const VERSION = "3.0.2";
 }

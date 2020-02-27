@@ -94,14 +94,14 @@ export class JsonArray extends BaseObject {
                 this.updateArray(vals);
             });
 
-            this._list.addOnValidateField((s, args) => {
+            this._list.addOnValidateField((_, args) => {
                 const validationInfo = this._validateField(args.item, args.fieldName);
                 if (!!validationInfo && validationInfo.errors.length > 0) {
                     args.errors = validationInfo.errors;
                 }
             }, this._uniqueID);
 
-            this._list.addOnValidateItem((s, args) => {
+            this._list.addOnValidateItem((_, args) => {
                 const validationInfos = this._validateBag(args.item);
                 args.result = validationInfos;
             }, this._uniqueID);

@@ -52,7 +52,7 @@ export class CheckBoxThreeStateElView extends InputElView<HTMLInputElement> {
         }
         super.dispose();
     }
-    handle_change(e: Event): boolean {
+    handle_change(_e: Event): boolean {
         if (this.checked === null) {
             this.checked = true;
         } else {

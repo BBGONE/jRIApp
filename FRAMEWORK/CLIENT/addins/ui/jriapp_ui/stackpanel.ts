@@ -180,7 +180,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         }
         this._isKeyNavigation = false;
     }
-    protected _onKeyUp(key: number, event: Event): void {
+    protected _onKeyUp(_key: number, _event: Event): void {
     }
     protected _updateCurrent(item: ICollectionItem, withScroll: boolean): void {
         const self = this, old = self._currentItem;
@@ -209,7 +209,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         const ds = this.dataSource, cur = ds.currentItem;
         this._updateCurrent(cur, !!cur);
     }
-    protected _onDSCollectionChanged(sender: any, args: ICollChangedArgs<ICollectionItem>): void {
+    protected _onDSCollectionChanged(_: any, args: ICollChangedArgs<ICollectionItem>): void {
         const self = this;
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
@@ -287,7 +287,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         }
         ds.addOnCollChanged(self._onDSCollectionChanged, self._uniqueID, self);
         ds.addOnCurrentChanged(self._onDSCurrentChanged, self._uniqueID, self);
-        ds.addOnStatusChanged((sender, args) => {
+        ds.addOnStatusChanged((_, args) => {
             self._onItemStatusChanged(args.item, args.oldStatus);
         }, self._uniqueID);
     }
@@ -298,7 +298,7 @@ export class StackPanel extends BaseObject implements ISelectableProvider {
         }
         ds.objEvents.offNS(self._uniqueID);
     }
-    protected _onItemClicked(div: HTMLElement, item: ICollectionItem): void {
+    protected _onItemClicked(_div: HTMLElement, item: ICollectionItem): void {
         this._updateCurrent(item, false);
         this.dataSource.currentItem = item;
         this.objEvents.raise(PNL_EVENTS.item_clicked, { item: item });
@@ -462,12 +462,12 @@ export class StackPanelElView extends BaseElView implements ISelectableProvider 
         const self = this;
         this._panelEvents = null;
         this._panel = new StackPanel(el, <IStackPanelConstructorOptions>options);
-        this._panel.addOnItemClicked((sender, args) => {
+        this._panel.addOnItemClicked((_, args) => {
             if (!!self._panelEvents) {
                 self._panelEvents.onItemClicked(args.item);
             }
         }, this.uniqueID);
-        this._panel.objEvents.onProp("*", (sender, args) => {
+        this._panel.objEvents.onProp("*", (_, args) => {
             switch (args.property) {
                 case "dataSource":
                     self.objEvents.raiseProp(args.property);

@@ -178,10 +178,10 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             title: options.title,
             autoOpen: false,
             modal: true,
-            open: (event, ui) => {
+            open: () => {
                 self._onOpen();
             },
-            close: (event, ui) => {
+            close: () => {
                 self._onClose();
             },
             buttons: self._getButtons()
@@ -211,7 +211,7 @@ export class DataEditDialog extends BaseObject implements ITemplateEvents {
             ERROR.reThrow(ex, this.handleError(ex, this));
         }
     }
-    templateLoading(template: ITemplate): void {
+    templateLoading(_template: ITemplate): void {
         // noop
     }
     templateLoaded(template: ITemplate, error?: any): void {

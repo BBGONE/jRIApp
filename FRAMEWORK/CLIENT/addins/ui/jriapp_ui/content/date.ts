@@ -15,7 +15,7 @@ export class DateContent extends BasicContent {
         super(options);
     }
     // override
-    protected getConverter(isEdit: boolean): IConverter {
+    protected getConverter(_isEdit: boolean): IConverter {
         return this.app.getConverter("dateConverter");
     }
     protected getViewName(isEdit: boolean): string {

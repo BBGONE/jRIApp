@@ -24,7 +24,7 @@ export interface IDataViewOptions<TItem extends ICollectionItem> {
     fn_sort?: (item1: TItem, item2: TItem) => number;
     fn_itemsProvider?: (ds: ICollection<TItem>) => TItem[];
     refreshTimeout?: number;
-    // for example, if we want to sort the underlying dataSource, instead of the default sortLocal
+    // can be used, if we want to delegate sorting to the underlying dataSource, instead of the default sortLocal
     fn_sortHandler?: (this: DataView<TItem>, fieldNames: string[], sortOrder: SORT_ORDER) => IPromise<any>;
 }
 
@@ -64,6 +64,7 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
         this._dataSource = null;
         this._fn_filter = null;
         this._fn_sort = null;
+        this._fn_sortHandler = null;
         super.dispose();
     }
     // override
@@ -207,7 +208,7 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
 
         return newItems;
     }
-    protected _onDSCollectionChanged(_sender: any, args: ICollChangedArgs<TItem>): void {
+    protected _onDSCollectionChanged(_: any, args: ICollChangedArgs<TItem>): void {
         const self = this;
         switch (args.changeType) {
             case COLL_CHANGE_TYPE.Reset:
@@ -246,7 +247,7 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
                 throw new Error(format(ERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
         }
     }
-    protected _onDSStatusChanged(_sender: any, args: ICollItemStatusArgs<TItem>): void {
+    protected _onDSStatusChanged(_: any, args: ICollItemStatusArgs<TItem>): void {
         const self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, canFilter = !!self._fn_filter;
 
         if (!self.getItemByKey(key)) {
@@ -272,12 +273,12 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
             return;
         }
         ds.addOnCollChanged(self._onDSCollectionChanged, self.uniqueID, self, TPriority.AboveNormal);
-        ds.addOnBeginEdit((_sender, args) => {
+        ds.addOnBeginEdit((_, args) => {
             if (!!self.getItemByKey(args.item._key)) {
                 self._onEditing(args.item, true, false);
             }
         }, self.uniqueID, null, TPriority.AboveNormal);
-        ds.addOnEndEdit((_sender, args) => {
+        ds.addOnEndEdit((_, args) => {
             let isOk: boolean;
             const item = args.item, canFilter = !!self._fn_filter;
             if (!self.getItemByKey(item._key)) {
@@ -297,19 +298,19 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
                 }
             }
         }, self.uniqueID, null, TPriority.AboveNormal);
-        ds.addOnErrorsChanged((_sender, args) => {
+        ds.addOnErrorsChanged((_, args) => {
             if (!!self.getItemByKey(args.item._key)) {
                 self._getInternal().onErrorsChanged(args);
             }
         }, self.uniqueID, null, TPriority.AboveNormal);
         ds.addOnStatusChanged(self._onDSStatusChanged, self.uniqueID, self, TPriority.AboveNormal);
 
-        ds.addOnItemDeleting((_sender, args) => {
+        ds.addOnItemDeleting((_, args) => {
             if (!!self.getItemByKey(args.item._key)) {
                 self._onItemDeleting(args);
             }
         }, self.uniqueID, null, TPriority.AboveNormal);
-        ds.addOnItemAdded((_sender, args) => {
+        ds.addOnItemAdded((_, args) => {
             if (self._isAddingNew) {
                 if (!self.getItemByKey(args.item._key)) {
                     self._addNew(args.item);
@@ -319,7 +320,7 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
                 self._onItemAdded(args.item);
             }
         }, self.uniqueID, null, TPriority.AboveNormal);
-        ds.addOnItemAdding((_sender, args) => {
+        ds.addOnItemAdding((_, args) => {
             if (self._isAddingNew) {
                 self._onItemAdding(args.item);
             }
@@ -477,6 +478,15 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
     set fn_itemsProvider(v) {
         if (this._fn_itemsProvider !== v) {
             this._fn_itemsProvider = v;
+            this._refresh(COLL_CHANGE_REASON.Refresh);
+        }
+    }
+    get fn_sortHandler(): (this: DataView<TItem>, fieldNames: string[], sortOrder: SORT_ORDER) => IPromise<any> | null {
+        return this._fn_sortHandler;
+    }
+    set fn_sortHandler(v) {
+        if (this._fn_sortHandler !== v) {
+            this._fn_sortHandler = v;
             this._refresh(COLL_CHANGE_REASON.Refresh);
         }
     }

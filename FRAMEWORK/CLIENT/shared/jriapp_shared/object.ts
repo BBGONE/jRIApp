@@ -31,44 +31,37 @@ export function createObjectEvents(owner: IBaseObject): IObjectEvents {
     return new ObjectEvents(owner);
 }
 
-class DummyEvents implements IObjectEvents {
-    canRaise(name: string): boolean {
-        return false;
-    }
-    on(name: string, handler: TEventHandler, nmspace?: string, context?: object, priority?: TPriority): void {
+export const dummyEvents: IObjectEvents = {
+    canRaise: (_name: string) => false,
+    on: (_name: string, _handler: TEventHandler, _nmspace?: string, _context?: object, _priority?: TPriority): void => {
         throw new Error("Object disposed");
-    }
-    off(name?: string, nmspace?: string): void {
-    }
+    },
+    off: (_name?: string, _nmspace?: string): void => void 0,
     // remove event handlers by their namespace
-    offNS(nmspace?: string): void {
-    }
-    raise(name: string, args: any): void {
-    }
-    raiseProp(name: string): void {
-    }
+    offNS: (_nmspace?: string): void => void 0,
+    raise: (_name: string, _args: any): void => void 0,
+    raiseProp: (_name: string): void => void 0,
     // to subscribe for changes on all properties, pass in the prop parameter: '*'
-    onProp(prop: string, handler: TPropChangedHandler, nmspace?: string, context?: object, priority?: TPriority): void {
+    onProp: (_prop: string, _handler: TPropChangedHandler, _nmspace?: string, _context?: object, _priority?: TPriority): void => {
         throw new Error("Object disposed");
-    }
-    offProp(prop?: string, nmspace?: string): void {
-    }
-    addOnDisposed(handler: TEventHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void {
-        this.on(OBJ_EVENTS.disposed, handler, nmspace, context, priority);
-    }
-    offOnDisposed(nmspace?: string): void {
-        this.off(OBJ_EVENTS.disposed, nmspace);
-    }
-    addOnError(handler: TErrorHandler<IBaseObject>, nmspace?: string, context?: object, priority?: TPriority): void {
-        this.on(OBJ_EVENTS.error, handler, nmspace, context, priority);
-    }
-    offOnError(nmspace?: string): void {
-        this.off(OBJ_EVENTS.error, nmspace);
-    }
+    },
+    offProp: (_prop?: string, _nmspace?: string): void => void 0,
+    addOnDisposed: (_handler: TEventHandler<IBaseObject>, _nmspace?: string, _context?: object, _priority?: TPriority): void => {
+        throw new Error("Object disposed");
+    },
+    offOnDisposed: (_nmspace?: string): void => {
+        throw new Error("Object disposed");
+    },
+    addOnError: (_handler: TErrorHandler<IBaseObject>, _nmspace?: string, _context?: object, _priority?: TPriority): void => {
+        throw new Error("Object disposed");
+    },
+    offOnError: (_nmspace?: string): void => {
+        throw new Error("Object disposed");
+    },
     get owner(): IBaseObject {
         return null;
     }
-}
+} as const;
 
 export class ObjectEvents implements IObjectEvents {
     private _events: IIndexer<IEventList>;
@@ -145,8 +138,6 @@ export class ObjectEvents implements IObjectEvents {
         return this._owner;
     }
 }
-
-export const dummyEvents: IObjectEvents = new DummyEvents();
 
 export class BaseObject implements IBaseObject {
     private _objState: ObjState;

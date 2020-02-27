@@ -31,7 +31,7 @@ export class PropWatcher extends BaseObject {
     }
     addPropWatch(obj: IBaseObject, prop: string, fnOnChange: (prop: string) => void): void {
         const self = this;
-        obj.objEvents.onProp(prop, function (s, a) {
+        obj.objEvents.onProp(prop, function (_, a) {
             fnOnChange(a.property);
         }, self.uniqueID);
 
@@ -41,7 +41,7 @@ export class PropWatcher extends BaseObject {
     }
     addWatch(obj: IBaseObject, props: string[], fnOnChange: (prop: string) => void): void {
         const self = this;
-        obj.objEvents.onProp("*", function (s, a) {
+        obj.objEvents.onProp("*", function (_, a) {
             if (props.indexOf(a.property) > -1) {
                 fnOnChange(a.property);
             }

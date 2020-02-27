@@ -97,7 +97,7 @@ class ContentFactory implements IContentFactory {
 export function initContentFactory() {
     if (!factoryInstance) {
         factoryInstance = new ContentFactory();
-        bootstrap.contentFactory.addFactory((nextFactory?: IContentFactory) => {
+        bootstrap.contentFactory.addFactory((_nextFactory?: IContentFactory) => {
             return factoryInstance;
         });
     }

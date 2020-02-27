@@ -45,15 +45,15 @@ export class BaseCell<TColumn extends BaseColumn> extends BaseObject implements 
         this._click = new DblClick();
         this._row.tr.appendChild(this._td);
     }
-    protected _onCellClicked(row?: Row) {
+    protected _onCellClicked(_row?: Row) {
     }
-    protected _onDblClicked(row?: Row) {
+    protected _onDblClicked(_row?: Row) {
         this.grid._getInternal().onCellDblClicked(this);
     }
     isSubscribed(flag: SubscribeFlags): boolean {
         return flag === SubscribeFlags.click;
     }
-    handle_click(e: Event) {
+    handle_click(_e: Event) {
         this.grid._getInternal().setCurrentColumn(this.column);
         this.click();
     }

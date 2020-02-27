@@ -33,7 +33,7 @@ export class TemplateElView extends BaseElView implements ITemplateEvents {
             cmd.execute(args);
         }
     }
-    templateLoading(template: ITemplate): void {
+    templateLoading(_template: ITemplate): void {
         // noop
     }
     templateLoaded(template: ITemplate, error?: any): void {

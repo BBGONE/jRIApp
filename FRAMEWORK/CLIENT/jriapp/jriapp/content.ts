@@ -14,10 +14,10 @@ export function createContentFactoryList(): IContentFactoryList {
 
 // the base content factory It is always the last in the chain of factories
 class LastFactory implements IContentFactory {
-    getContentType(options: IContentOptions): IContentConstructor {
+    getContentType(_options: IContentOptions): IContentConstructor {
         throw new Error(ERRS.ERR_BINDING_CONTENT_NOT_FOUND);
     }
-    isExternallyCachable(contentType: IContentConstructor): boolean {
+    isExternallyCachable(_contentType: IContentConstructor): boolean {
         return false;
     }
 }

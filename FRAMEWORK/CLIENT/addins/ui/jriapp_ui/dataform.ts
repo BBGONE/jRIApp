@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
     Utils, IBaseObject, IEditable, IErrorNotification,
-    IValidationInfo, IVoidPromise, BaseObject, LocaleERRS as ERRS
+    IValidationInfo, IPromise, BaseObject, LocaleERRS as ERRS
 } from "jriapp_shared";
 import { IFieldInfo } from "jriapp_shared/collection/int";
 import { DomUtils } from "jriapp/utils/dom";
@@ -130,7 +130,7 @@ export class DataForm extends BaseObject {
     private _editable: IEditable;
     private _errNotification: IErrorNotification;
     private _parentDataForm: IElView;
-    private _contentPromise: IVoidPromise;
+    private _contentPromise: IPromise;
 
     constructor(el: HTMLElement, options: IFormOptions) {
         super();
@@ -186,7 +186,7 @@ export class DataForm extends BaseObject {
     private _getBindings(): Binding[] {
         return !this._lfTime ? [] : this._lfTime.findAll<Binding>(sys.isBinding);
     }
-    private _createContent(): IVoidPromise {
+    private _createContent(): IPromise {
         const dctx: any = this._dataContext, self = this;
         if (!dctx) {
             return _reject<void>("DataForm's DataContext is not set");
@@ -438,7 +438,7 @@ export class DataFormElView extends BaseElView {
         super(el, options);
         const self = this;
         this._form = new DataForm(el, options);
-        this._form.objEvents.onProp("dataContext", (form, args) => {
+        this._form.objEvents.onProp("dataContext", () => {
             self.objEvents.raiseProp("dataContext");
         }, this.uniqueID);
     }
@@ -453,7 +453,7 @@ export class DataFormElView extends BaseElView {
         super.dispose();
     }
     // override
-    protected _setErrors(el: HTMLElement, errors: IValidationInfo[]): void {
+    protected _setErrors(_el: HTMLElement, _errors: IValidationInfo[]): void {
         // noop
     }
     toString(): string {

@@ -18,7 +18,7 @@ export class HttpUtils {
         const req = new XMLHttpRequest();
         req.open(method, url, true);
         req.responseType = "text";
-        req.onload = function (e) {
+        req.onload = function () {
             const status = "" + req.status;
             if (status === "200") {
                 const res: string = req.response;
@@ -31,13 +31,13 @@ export class HttpUtils {
                 }
             }
         };
-        req.onerror = function (e) {
+        req.onerror = function () {
             deferred.reject(new Error(format('Error: "{0}" to load from URL: "{1}"', req.status, url)));
         };
         req.ontimeout = function () {
             deferred.reject(new Error(format('Error: "Request Timeout" to load from URL: "{0}"', url)));
         };
-        req.onabort = function (e) {
+        req.onabort = function () {
             deferred.reject(new Error(format('HTTP Request Operation Aborted for URL: "{0}"', url)));
         };
         req.timeout = HttpUtils.ajaxTimeOut * 1000;

@@ -52,7 +52,7 @@ export class DataCell extends BaseCell<DataColumn> {
             this._content.isEditing = true;
         }
     }
-    _endEdit(isCanceled: boolean): void {
+    _endEdit(_isCanceled: boolean): void {
         if (this._content.isEditing) {
             this._content.isEditing = false;
         }

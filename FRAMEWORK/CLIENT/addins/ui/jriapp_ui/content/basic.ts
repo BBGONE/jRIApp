@@ -206,13 +206,13 @@ export class BasicContent extends BaseObject implements IContent {
     protected getFieldInfo(): IFieldInfo {
         return this._options.fieldInfo;
     }
-    protected getParam(isEdit: boolean): any {
+    protected getParam(_isEdit: boolean): any {
         return null;
     }
-    protected getConverter(isEdit: boolean): IConverter {
+    protected getConverter(_isEdit: boolean): IConverter {
         return null;
     }
-    protected getViewName(isEdit: boolean): string {
+    protected getViewName(_isEdit: boolean): string {
         return null;
     }
     protected createdEditingView(): IContentView {

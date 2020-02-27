@@ -12,24 +12,24 @@ const utils = Utils, { isNt, isNumber } = utils.check, { format, stripNonNumeric
 export const NUM_CONV = { None: 0, Integer: 1, Decimal: 2, Float: 3, SmallInt: 4 };
 
 export class BaseConverter implements IConverter {
-    convertToSource(val: any, param: any, dataContext: any): any {
+    convertToSource(val: any, _param: any, _dataContext: any): any {
         return val;
     }
-    convertToTarget(val: any, param: any, dataContext: any): any {
+    convertToTarget(val: any, _param: any, _dataContext: any): any {
         return (isNt(val)) ? null : val;
     }
 }
 export let baseConverter = new BaseConverter();
 
 export class DateConverter implements IConverter {
-    convertToSource(val: any, param: any, dataContext: any): Date {
+    convertToSource(val: any, _param: any, dataContext: any): Date {
         if (!val) {
             return null;
         }
         const defaults = boot.defaults, datepicker = boot.getSvc<IDatepicker>("IDatepicker");
         return (!!datepicker) ? datepicker.parseDate(val) : dateTimeConverter.convertToSource(val, defaults.dateFormat, dataContext);
     }
-    convertToTarget(val: any, param: any, dataContext: any): string {
+    convertToTarget(val: any, _param: any, dataContext: any): string {
         if (isNt(val)) {
             return "";
         }
@@ -43,10 +43,10 @@ export class DateConverter implements IConverter {
 const dateConverter = new DateConverter();
 
 export class DateTimeConverter implements IConverter {
-    convertToSource(val: string, param: string, dataContext: any): Date {
+    convertToSource(val: string, param: string, _dataContext: any): Date {
         return strToDate(val, param);
     }
-    convertToTarget(val: Date, param: string, dataContext: any): string {
+    convertToTarget(val: Date, param: string, _dataContext: any): string {
         return dateToStr(val, param);
     }
     toString() {
@@ -56,7 +56,7 @@ export class DateTimeConverter implements IConverter {
 const dateTimeConverter = new DateTimeConverter();
 
 export class NumberConverter implements IConverter {
-    convertToSource(val: any, param: any, dataContext: any): number {
+    convertToSource(val: any, param: any, _dataContext: any): number {
         if (isNt(val)) {
             return null;
         }
@@ -93,7 +93,7 @@ export class NumberConverter implements IConverter {
         }
         return num;
     }
-    convertToTarget(val: any, param: any, dataContext: any): string {
+    convertToTarget(val: any, param: any, _dataContext: any): string {
         if (isNt(val)) {
             return "";
         }
@@ -123,10 +123,10 @@ export class NumberConverter implements IConverter {
 const numberConverter = new NumberConverter();
 
 export class IntegerConverter implements IConverter {
-    convertToSource(val: any, param: any, dataContext: any): number {
+    convertToSource(val: any, _param: any, dataContext: any): number {
         return numberConverter.convertToSource(val, NUM_CONV.Integer, dataContext);
     }
-    convertToTarget(val: any, param: any, dataContext: any): string {
+    convertToTarget(val: any, _param: any, dataContext: any): string {
         return numberConverter.convertToTarget(val, NUM_CONV.Integer, dataContext);
     }
     toString() {
@@ -136,10 +136,10 @@ export class IntegerConverter implements IConverter {
 const integerConverter = new IntegerConverter();
 
 export class SmallIntConverter implements IConverter {
-    convertToSource(val: any, param: any, dataContext: any): number {
+    convertToSource(val: any, _param: any, dataContext: any): number {
         return numberConverter.convertToSource(val, NUM_CONV.SmallInt, dataContext);
     }
-    convertToTarget(val: any, param: any, dataContext: any): string {
+    convertToTarget(val: any, _param: any, dataContext: any): string {
         return numberConverter.convertToTarget(val, NUM_CONV.SmallInt, dataContext);
     }
     toString() {
@@ -149,10 +149,10 @@ export class SmallIntConverter implements IConverter {
 const smallIntConverter = new SmallIntConverter();
 
 export class DecimalConverter implements IConverter {
-    convertToSource(val: any, param: any, dataContext: any): number {
+    convertToSource(val: any, _param: any, dataContext: any): number {
         return numberConverter.convertToSource(val, NUM_CONV.Decimal, dataContext);
     }
-    convertToTarget(val: any, param: any, dataContext: any): string {
+    convertToTarget(val: any, _param: any, dataContext: any): string {
         return numberConverter.convertToTarget(val, NUM_CONV.Decimal, dataContext);
     }
     toString() {
@@ -162,10 +162,10 @@ export class DecimalConverter implements IConverter {
 const decimalConverter = new DecimalConverter();
 
 export class FloatConverter implements IConverter {
-    convertToSource(val: any, param: any, dataContext: any): number {
+    convertToSource(val: any, _param: any, dataContext: any): number {
         return numberConverter.convertToSource(val, NUM_CONV.Float, dataContext);
     }
-    convertToTarget(val: any, param: any, dataContext: any): string {
+    convertToTarget(val: any, _param: any, dataContext: any): string {
         return numberConverter.convertToTarget(val, NUM_CONV.Float, dataContext);
     }
     toString() {
@@ -175,13 +175,15 @@ export class FloatConverter implements IConverter {
 const floatConverter = new FloatConverter();
 
 export class NotConverter implements IConverter {
-    convertToSource(val: any, param: any, dataContext: any): boolean {
+    convertToSource(val: any, _param: any, _dataContext: any): boolean {
         return !val;
     }
-    convertToTarget(val: any, param: any, dataContext: any): boolean {
+    convertToTarget(val: any, _param: any, _dataContext: any): boolean {
         return !val;
     }
 }
+
+const notConverter = new NotConverter();
 
 boot.registerConverter("BaseConverter", baseConverter);
 boot.registerConverter("dateConverter", dateConverter);
@@ -191,4 +193,4 @@ boot.registerConverter("integerConverter", integerConverter);
 boot.registerConverter("smallIntConverter", smallIntConverter);
 boot.registerConverter("decimalConverter", decimalConverter);
 boot.registerConverter("floatConverter", floatConverter);
-boot.registerConverter("notConverter", new NotConverter());
+boot.registerConverter("notConverter", notConverter);

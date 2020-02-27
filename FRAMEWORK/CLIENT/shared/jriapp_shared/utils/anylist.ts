@@ -126,7 +126,7 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
             this._saveVal = JSON.stringify(a.item.val);
         });
 
-        this.addOnEndEdit((s, a) => {
+        this.addOnEndEdit((_, a) => {
             const item = a.item;
 
             if (a.isCanceled) {
@@ -142,7 +142,7 @@ export class AnyList extends BaseList<IAnyValItem, IAnyVal> {
             }
         });
 
-        this.addOnCollChanged((s, a) => {
+        this.addOnCollChanged((_, a) => {
             switch (a.changeType) {
                 case COLL_CHANGE_TYPE.Remove:
                     {

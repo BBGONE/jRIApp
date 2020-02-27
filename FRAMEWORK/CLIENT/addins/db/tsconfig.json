@@ -11,7 +11,9 @@
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noImplicitThis": true,
-    "noImplicitReturns": true
+    "noImplicitReturns": true,
+    "noUnusedParameters": true,
+    "lib": [ "ES2015", "ES2015.Promise", "DOM" ]
   },
   "files": [
     "jriapp_db.ts"

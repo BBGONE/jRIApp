@@ -59,7 +59,7 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         selectableProviderWeakMap.set(this._col, this._grid);
 
         // a click on column itself
-        dom.events.on(this._col, "click", (e) => {
+        dom.events.on(this._col, "click", () => {
             grid._getInternal().setCurrentColumn(self);
             self._onColumnClicked();
         }, this.uniqueID);
@@ -102,13 +102,13 @@ export class BaseColumn extends BaseObject implements ITemplateEvents {
         this._options = null;
         super.dispose();
     }
-    templateLoading(template: ITemplate): void {
+    templateLoading(_template: ITemplate): void {
         // noop
     }
-    templateLoaded(template: ITemplate, error?: any): void {
+    templateLoaded(_template: ITemplate, _error?: any): void {
         // noop
     }
-    templateUnLoading(template: ITemplate): void {
+    templateUnLoading(_template: ITemplate): void {
         // noop
     }
     scrollIntoView(isUp: boolean): void {

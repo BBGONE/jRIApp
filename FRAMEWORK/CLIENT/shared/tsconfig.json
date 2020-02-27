@@ -11,7 +11,9 @@
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noImplicitReturns": true,
-    "noImplicitThis": true
+    "noImplicitThis": true,
+    "noUnusedParameters": true,
+    "lib": [ "ES2015", "DOM"]
   },
   "files": [
     "jriapp_shared.ts"

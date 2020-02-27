@@ -200,7 +200,7 @@ class DataBindingService extends BaseObject implements IDataBindingService, IErr
             }).filter((v) => !!v.viewMounted);
 
             const viewMap = toMap(viewsArr, (v) => v.uniqueID);
-            forEach(viewMap, (n, v) => { v.viewMounted(); });
+            forEach(viewMap, (_n, v) => { v.viewMounted(); });
 
             defer.resolve(lftm);
         } catch (err) {

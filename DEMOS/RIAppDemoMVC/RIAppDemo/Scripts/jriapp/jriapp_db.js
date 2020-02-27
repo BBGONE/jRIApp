@@ -713,10 +713,10 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             };
             var internal = _this._getInternal();
             _this._setInternal(merge(extraInternal, internal));
-            _this.dbContext.objEvents.onProp("isSubmiting", function (s, a) {
+            _this.dbContext.objEvents.onProp("isSubmiting", function () {
                 self.objEvents.raiseProp("isBusy");
             }, _this.dbSetName);
-            _this.objEvents.onProp("isLoading", function (s, a) {
+            _this.objEvents.onProp("isLoading", function () {
                 self.objEvents.raiseProp("isBusy");
             });
             return _this;
@@ -759,10 +759,10 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype._doNavigationField = function (opts, fieldInfo) {
             var self = this, result = {
-                getFunc: function (item) {
+                getFunc: function (_item) {
                     throw new Error("Navigation get function for the field: " + fieldInfo.fieldName + " is not implemented");
                 },
-                setFunc: function (v, item) {
+                setFunc: function (_v, _item) {
                     throw new Error("Navigation set function for the field: " + fieldInfo.fieldName + " is not implemented");
                 }
             };
@@ -833,9 +833,9 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             }
             return result;
         };
-        DbSet.prototype._doCalculatedField = function (opts, fieldInfo) {
+        DbSet.prototype._doCalculatedField = function (_opts, fieldInfo) {
             var self = this, result = {
-                getFunc: function (item) { throw new Error(format("Calculated field:'{0}' is not initialized", fieldInfo.fieldName)); }
+                getFunc: function (_item) { throw new Error(format("Calculated field:'{0}' is not initialized", fieldInfo.fieldName)); }
             };
             fieldInfo.isReadOnly = true;
             if (!!fieldInfo.dependentOn) {
@@ -1252,7 +1252,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
         };
         DbSet.prototype._getNames = function () {
             var fieldInfos = this.getFieldInfos(), names = [];
-            walkFields(fieldInfos, function (fld, fullName, arr) {
+            walkFields(fieldInfos, function (fld, _fullName, arr) {
                 if (fld.fieldType === 5) {
                     var res = [];
                     arr.push({
@@ -1588,7 +1588,7 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (re
         DbSets.prototype._dbSetCreated = function (dbSet) {
             var _this = this;
             this._arrDbSets.push(dbSet);
-            dbSet.objEvents.onProp("isHasChanges", function (sender, args) {
+            dbSet.objEvents.onProp("isHasChanges", function (sender) {
                 _this._dbContext._getInternal().onDbSetHasChangesChanged(sender);
             });
         };
@@ -1716,21 +1716,21 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             if (!ds) {
                 return;
             }
-            ds.addOnCollChanged(function (sender, args) {
+            ds.addOnCollChanged(function (_, args) {
                 self._onParentCollChanged(args);
             }, self._uniqueID, null, 2);
-            ds.addOnBeginEdit(function (sender, args) {
+            ds.addOnBeginEdit(function (_, args) {
                 self._onParentEdit(args.item, true, false);
             }, self._uniqueID, null, 2);
-            ds.addOnEndEdit(function (sender, args) {
+            ds.addOnEndEdit(function (_, args) {
                 self._onParentEdit(args.item, false, args.isCanceled);
             }, self._uniqueID, null, 2);
-            ds.addOnItemDeleting(function (sender, args) {
+            ds.addOnItemDeleting(function () {
             }, self._uniqueID, null, 2);
-            ds.addOnStatusChanged(function (sender, args) {
+            ds.addOnStatusChanged(function (_, args) {
                 self._onParentStatusChanged(args.item, args.oldStatus);
             }, self._uniqueID, null, 2);
-            ds.addOnCommitChanges(function (sender, args) {
+            ds.addOnCommitChanges(function (_, args) {
                 self._onParentCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
             }, self._uniqueID, null, 2);
         };
@@ -1739,19 +1739,19 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             if (!ds) {
                 return;
             }
-            ds.addOnCollChanged(function (sender, args) {
+            ds.addOnCollChanged(function (_, args) {
                 self._onChildCollChanged(args);
             }, self._uniqueID, null, 2);
-            ds.addOnBeginEdit(function (sender, args) {
+            ds.addOnBeginEdit(function (_, args) {
                 self._onChildEdit(args.item, true, false);
             }, self._uniqueID, null, 2);
-            ds.addOnEndEdit(function (sender, args) {
+            ds.addOnEndEdit(function (_, args) {
                 self._onChildEdit(args.item, false, args.isCanceled);
             }, self._uniqueID, null, 2);
-            ds.addOnStatusChanged(function (sender, args) {
+            ds.addOnStatusChanged(function (_, args) {
                 self._onChildStatusChanged(args.item, args.oldStatus);
             }, self._uniqueID, null, 2);
-            ds.addOnCommitChanges(function (sender, args) {
+            ds.addOnCommitChanges(function (_, args) {
                 self._onChildCommitChanges(args.item, args.isBegin, args.isRejected, args.status);
             }, self._uniqueID, null, 2);
         };
@@ -1855,7 +1855,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                 }
             }
         };
-        Association.prototype._onParentStatusChanged = function (item, oldStatus) {
+        Association.prototype._onParentStatusChanged = function (item, _oldStatus) {
             var self = this, newStatus = item._aspect.status;
             var fkey = null;
             var children;
@@ -2063,7 +2063,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
                 }
             }
         };
-        Association.prototype._onChildStatusChanged = function (item, oldStatus) {
+        Association.prototype._onChildStatusChanged = function (item, _oldStatus) {
             var self = this, newStatus = item._aspect.status;
             var fkey = self.getChildFKey(item);
             if (!fkey) {
@@ -2536,7 +2536,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 throw new Error(jriapp_shared_7.LocaleERRS.ERR_DOMAIN_CONTEXT_INITIALIZED);
             }
             this._dbSets = this._createDbSets();
-            this._dbSets.addOnDbSetCreating(function (s, args) {
+            this._dbSets.addOnDbSetCreating(function (_, args) {
                 _this.objEvents.raise("dbset_creating", args);
             });
             var associations = this._createAssociations();
@@ -3539,7 +3539,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             });
             return res2;
         };
-        EntityAspect.prototype._fldChanging = function (fieldName, fieldInfo, oldV, newV) {
+        EntityAspect.prototype._fldChanging = function (_fieldName, _fieldInfo, _oldV, _newV) {
             if (!this._origVals) {
                 this._storeVals(2);
             }
@@ -3866,7 +3866,7 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
                 dbxt.offOnSubmitError(uniqueID);
             };
             var dbxt = this.dbSet.dbContext, uniqueID = uuid();
-            dbxt.addOnSubmitError(function (sender, args) {
+            dbxt.addOnSubmitError(function (_, args) {
                 if (args.error instanceof error_2.SubmitError) {
                     var submitErr = args.error;
                     if (submitErr.notValidated.length > 0) {
@@ -3973,6 +3973,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             this._dataSource = null;
             this._fn_filter = null;
             this._fn_sort = null;
+            this._fn_sortHandler = null;
             _super.prototype.dispose.call(this);
         };
         DataView.prototype._isOwnsItems = function () {
@@ -4086,7 +4087,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             }
             return newItems;
         };
-        DataView.prototype._onDSCollectionChanged = function (_sender, args) {
+        DataView.prototype._onDSCollectionChanged = function (_, args) {
             var self = this;
             switch (args.changeType) {
                 case 2:
@@ -4126,7 +4127,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                     throw new Error(format(jriapp_shared_9.LocaleERRS.ERR_COLLECTION_CHANGETYPE_INVALID, args.changeType));
             }
         };
-        DataView.prototype._onDSStatusChanged = function (_sender, args) {
+        DataView.prototype._onDSStatusChanged = function (_, args) {
             var self = this, item = args.item, key = args.key, oldStatus = args.oldStatus, canFilter = !!self._fn_filter;
             if (!self.getItemByKey(key)) {
                 if (canFilter) {
@@ -4152,12 +4153,12 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 return;
             }
             ds.addOnCollChanged(self._onDSCollectionChanged, self.uniqueID, self, 1);
-            ds.addOnBeginEdit(function (_sender, args) {
+            ds.addOnBeginEdit(function (_, args) {
                 if (!!self.getItemByKey(args.item._key)) {
                     self._onEditing(args.item, true, false);
                 }
             }, self.uniqueID, null, 1);
-            ds.addOnEndEdit(function (_sender, args) {
+            ds.addOnEndEdit(function (_, args) {
                 var isOk;
                 var item = args.item, canFilter = !!self._fn_filter;
                 if (!self.getItemByKey(item._key)) {
@@ -4178,18 +4179,18 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                     }
                 }
             }, self.uniqueID, null, 1);
-            ds.addOnErrorsChanged(function (_sender, args) {
+            ds.addOnErrorsChanged(function (_, args) {
                 if (!!self.getItemByKey(args.item._key)) {
                     self._getInternal().onErrorsChanged(args);
                 }
             }, self.uniqueID, null, 1);
             ds.addOnStatusChanged(self._onDSStatusChanged, self.uniqueID, self, 1);
-            ds.addOnItemDeleting(function (_sender, args) {
+            ds.addOnItemDeleting(function (_, args) {
                 if (!!self.getItemByKey(args.item._key)) {
                     self._onItemDeleting(args);
                 }
             }, self.uniqueID, null, 1);
-            ds.addOnItemAdded(function (_sender, args) {
+            ds.addOnItemAdded(function (_, args) {
                 if (self._isAddingNew) {
                     if (!self.getItemByKey(args.item._key)) {
                         self._addNew(args.item);
@@ -4199,7 +4200,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                     self._onItemAdded(args.item);
                 }
             }, self.uniqueID, null, 1);
-            ds.addOnItemAdding(function (_sender, args) {
+            ds.addOnItemAdding(function (_, args) {
                 if (self._isAddingNew) {
                     self._onItemAdding(args.item);
                 }
@@ -4381,6 +4382,19 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             set: function (v) {
                 if (this._fn_itemsProvider !== v) {
                     this._fn_itemsProvider = v;
+                    this._refresh(3);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DataView.prototype, "fn_sortHandler", {
+            get: function () {
+                return this._fn_sortHandler;
+            },
+            set: function (v) {
+                if (this._fn_sortHandler !== v) {
+                    this._fn_sortHandler = v;
                     this._refresh(3);
                 }
             },
@@ -4633,5 +4647,5 @@ define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/datavie
     __export(entity_aspect_2);
     __export(error_3);
     __export(complexprop_1);
-    exports.VERSION = "3.0.4";
+    exports.VERSION = "3.0.5";
 });

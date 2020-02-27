@@ -51,7 +51,7 @@ export class CheckBoxElView extends InputElView<HTMLInputElement> {
         }
         super.dispose();
     }
-    handle_change(e: Event): boolean {
+    handle_change(_e: Event): boolean {
         const chk = this.el;
         if (this.checked !== chk.checked) {
             this.checked = chk.checked;
