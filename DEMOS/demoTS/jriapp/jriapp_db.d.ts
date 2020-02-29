@@ -506,7 +506,7 @@ declare module "jriapp_db/dbcontext" {
             fn_onEnd: () => void;
             fn_onErr: (ex: any) => void;
             fn_onOK: (res: IRefreshResponse) => void;
-        }): void;
+        }): IStatefulPromise;
         protected _refreshItem(item: IEntityItem): IStatefulPromise<IEntityItem>;
         protected _getQueryInfo(name: string): IQueryInfo;
         protected _onDbSetHasChangesChanged(dbSet: TDbSet): void;
@@ -998,5 +998,5 @@ declare module "jriapp_db" {
     export * from "jriapp_db/entity_aspect";
     export * from "jriapp_db/error";
     export * from "jriapp_db/complexprop";
-    export const VERSION = "3.0.5";
+    export const VERSION = "3.0.6";
 }

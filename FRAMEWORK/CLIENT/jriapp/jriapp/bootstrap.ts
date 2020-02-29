@@ -16,7 +16,7 @@ import { TemplateLoader, registerLoader } from "./utils/tloader";
 import { createCssLoader } from "./utils/sloader";
 import { PathHelper } from "./utils/path";
 import { DomUtils } from "./utils/dom";
-import { Promise } from "jriapp_shared/utils/deferred";
+import { StatefulPromise } from "jriapp_shared/utils/deferred";
 import { createQueue } from "jriapp_shared/utils/queue";
 import { Helper as ParseHelper } from "./parsing/helper";
 
@@ -35,7 +35,7 @@ export const subscribeWeakMap: IWeakMap = createWeakMap(), selectableProviderWea
 
     // check if promise globally available
     if (!("Promise" in win)) {
-        win.Promise = Promise;
+        win.Promise = StatefulPromise;
     }
 
     // check if requestAnimationFrame implemented

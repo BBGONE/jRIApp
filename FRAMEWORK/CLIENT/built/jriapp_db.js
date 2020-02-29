@@ -2902,7 +2902,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
         DbContext.prototype._loadRefresh = function (args) {
             var self = this;
             args.fn_onStart();
-            delay(function () {
+            return delay().then(function () {
                 self._checkDisposed();
                 var request = {
                     dbSetName: args.item._aspect.dbSetName,
@@ -4647,5 +4647,5 @@ define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/datavie
     __export(entity_aspect_2);
     __export(error_3);
     __export(complexprop_1);
-    exports.VERSION = "3.0.5";
+    exports.VERSION = "3.0.6";
 });

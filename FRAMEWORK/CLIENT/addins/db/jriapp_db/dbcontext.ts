@@ -574,12 +574,13 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         fn_onEnd: () => void;
         fn_onErr: (ex: any) => void;
         fn_onOK: (res: IRefreshResponse) => void;
-    }) {
+    }): IStatefulPromise {
         const self = this;
         args.fn_onStart();
 
-        delay<string>(() => {
+        return delay().then(() => {
             self._checkDisposed();
+
             const request: IRefreshRequest = {
                 dbSetName: args.item._aspect.dbSetName,
                 rowInfo: args.item._aspect._getRowInfo()

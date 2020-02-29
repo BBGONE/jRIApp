@@ -1958,7 +1958,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     var _undefined = checks_6.Checks._undefined, isFunc = checks_6.Checks.isFunc, isThenable = checks_6.Checks.isThenable, isArray = checks_6.Checks.isArray, arrHelper = arrhelper_1.ArrayHelper;
     var taskQueue = null;
     function createDefer(isSync) {
-        return new Promise(null, (!isSync ? fn_enque : fn_exec)).deferred();
+        return new StatefulPromise(null, isSync).deferred();
     }
     exports.createDefer = createDefer;
     function createSyncDefer() {
@@ -1979,20 +1979,22 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     }
     exports.whenAll = whenAll;
     function race(promises) {
-        return new Promise(function (res, rej) {
+        return new StatefulPromise(function (res, rej) {
             promises.forEach(function (p) { return p.then(res).then(_undefined, rej); });
         });
     }
     exports.race = race;
     function promiseSerial(funcs) {
-        return funcs.reduce(function (promise, func) { return promise.then(function (result) { return func().then(function (res) { return result.concat(res); }); }); }, Promise.resolve([]));
+        return funcs.reduce(function (promise, func) { return promise.then(function (result) { return func().then(function (res) { return result.concat(res); }); }); }, StatefulPromise.resolve([]));
     }
     exports.promiseSerial = promiseSerial;
-    function fn_enque(task) {
-        getTaskQueue().enque(task);
-    }
-    function fn_exec(task) {
-        task();
+    function dispatch(isSync, task) {
+        if (!isSync) {
+            getTaskQueue().enque(task);
+        }
+        else {
+            task();
+        }
     }
     var TaskQueue = (function () {
         function TaskQueue() {
@@ -2007,11 +2009,11 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         return TaskQueue;
     }());
     var Callback = (function () {
-        function Callback(dispatcher, successCB, errorCB) {
-            this._dispatcher = dispatcher;
+        function Callback(isSync, successCB, errorCB) {
+            this._isSync = isSync;
             this._successCB = successCB;
             this._errorCB = errorCB;
-            this._deferred = new Promise(null, dispatcher).deferred();
+            this._deferred = new StatefulPromise(null, isSync).deferred();
         }
         Callback.prototype.resolve = function (value, defer) {
             var _this = this;
@@ -2019,11 +2021,11 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
                 this._deferred.resolve(value);
                 return;
             }
-            if (!!defer) {
-                this._dispatcher(function () { return _this._dispatch(_this._successCB, value); });
+            if (!defer) {
+                this._dispatch(this._successCB, value);
             }
             else {
-                this._dispatch(this._successCB, value);
+                dispatch(this._isSync, function () { return _this._dispatch(_this._successCB, value); });
             }
         };
         Callback.prototype.reject = function (error, defer) {
@@ -2032,11 +2034,11 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
                 this._deferred.reject(error);
                 return;
             }
-            if (!!defer) {
-                this._dispatcher(function () { return _this._dispatch(_this._errorCB, error); });
+            if (!defer) {
+                this._dispatch(this._errorCB, error);
             }
             else {
-                this._dispatch(this._errorCB, error);
+                dispatch(this._isSync, function () { return _this._dispatch(_this._errorCB, error); });
             }
         };
         Callback.prototype._dispatch = function (callback, arg) {
@@ -2058,9 +2060,10 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         return Callback;
     }());
     var Deferred = (function () {
-        function Deferred(promise, dispatcher) {
+        function Deferred(promise, isSync) {
+            if (isSync === void 0) { isSync = false; }
             this._promise = promise;
-            this._dispatcher = dispatcher;
+            this._isSync = isSync;
             this._value = _undefined;
             this._error = _undefined;
             this._state = 0;
@@ -2090,7 +2093,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
                 }
                 else {
                     this._state = 1;
-                    this._dispatcher(function () {
+                    dispatch(this._isSync, function () {
                         _this._state = 2;
                         _this._value = value;
                         var stackSize = _this._stack.length;
@@ -2111,7 +2114,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         Deferred.prototype._reject = function (error) {
             var _this = this;
             this._state = 1;
-            this._dispatcher(function () {
+            dispatch(this._isSync, function () {
                 _this._state = 3;
                 _this._error = error;
                 var stackSize = _this._stack.length;
@@ -2126,7 +2129,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
             if (!isFunc(successCB) && !isFunc(errorCB)) {
                 return this._promise;
             }
-            var cb = new Callback(this._dispatcher, successCB, errorCB);
+            var cb = new Callback(this._isSync, successCB, errorCB);
             switch (this._state) {
                 case 0:
                 case 1:
@@ -2161,9 +2164,10 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         };
         return Deferred;
     }());
-    var Promise = (function () {
-        function Promise(fn, dispatcher) {
-            var disp = (!dispatcher ? fn_enque : dispatcher), deferred = new Deferred(this, disp);
+    var StatefulPromise = (function () {
+        function StatefulPromise(fn, isSync) {
+            if (isSync === void 0) { isSync = false; }
+            var deferred = new Deferred(this, isSync);
             this._deferred = deferred;
             if (!!fn) {
                 getTaskQueue().enque(function () {
@@ -2171,48 +2175,48 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
                 });
             }
         }
-        Promise.prototype.then = function (onFulfilled, onRejected) {
+        StatefulPromise.prototype.then = function (onFulfilled, onRejected) {
             return this._deferred._then(onFulfilled, onRejected);
         };
-        Promise.prototype.catch = function (onRejected) {
+        StatefulPromise.prototype.catch = function (onRejected) {
             return this._deferred._then(_undefined, onRejected);
         };
-        Promise.prototype.finally = function (onFinally) {
+        StatefulPromise.prototype.finally = function (onFinally) {
             return this._deferred._then(function (res) {
                 onFinally();
                 return res;
             }, function (err) {
                 onFinally();
-                return Promise.reject(err);
+                return StatefulPromise.reject(err);
             });
         };
-        Promise.all = function () {
+        StatefulPromise.all = function () {
             var args = arrHelper.fromList(arguments);
             return (args.length === 1 && isArray(args[0])) ? whenAll(args[0]) : whenAll(args);
         };
-        Promise.race = function () {
+        StatefulPromise.race = function () {
             var args = arrHelper.fromList(arguments);
             return (args.length === 1 && isArray(args[0])) ? race(args[0]) : race(args);
         };
-        Promise.reject = function (reason, isSync) {
+        StatefulPromise.reject = function (reason, isSync) {
             var deferred = createDefer(isSync);
             deferred.reject(reason);
             return deferred.promise();
         };
-        Promise.resolve = function (value, isSync) {
+        StatefulPromise.resolve = function (value, isSync) {
             var deferred = createDefer(isSync);
             deferred.resolve(value);
             return deferred.promise();
         };
-        Promise.prototype.state = function () {
+        StatefulPromise.prototype.state = function () {
             return this._deferred.state();
         };
-        Promise.prototype.deferred = function () {
+        StatefulPromise.prototype.deferred = function () {
             return this._deferred;
         };
-        return Promise;
+        return StatefulPromise;
     }());
-    exports.Promise = Promise;
+    exports.StatefulPromise = StatefulPromise;
     var AbortablePromise = (function () {
         function AbortablePromise(deferred, abortable) {
             this._deferred = deferred;
@@ -2631,7 +2635,7 @@ define("jriapp_shared/utils/logger", ["require", "exports"], function (require, 
 define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/checks"], function (require, exports, deferred_3, checks_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var isString = checks_8.Checks.isString, _whenAll = deferred_3.whenAll, _race = deferred_3.race, _getTaskQueue = deferred_3.getTaskQueue, _createDefer = deferred_3.createDefer;
+    var isString = checks_8.Checks.isString, isFunc = checks_8.Checks.isFunc, _whenAll = deferred_3.whenAll, _race = deferred_3.race, _getTaskQueue = deferred_3.getTaskQueue, _createDefer = deferred_3.createDefer;
     var AsyncUtils = (function () {
         function AsyncUtils() {
         }
@@ -2639,10 +2643,10 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
             return _createDefer(isSync);
         };
         AsyncUtils.reject = function (reason, isSync) {
-            return deferred_3.Promise.reject(reason, isSync);
+            return deferred_3.StatefulPromise.reject(reason, isSync);
         };
         AsyncUtils.resolve = function (value, isSync) {
-            return deferred_3.Promise.resolve(value, isSync);
+            return deferred_3.StatefulPromise.resolve(value, isSync);
         };
         AsyncUtils.promiseSerial = function (funcs) {
             return deferred_3.promiseSerial(funcs);
@@ -2656,17 +2660,23 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
         AsyncUtils.getTaskQueue = function () {
             return _getTaskQueue();
         };
-        AsyncUtils.delay = function (func, time) {
-            var deferred = deferred_3.createDefer(true);
-            setTimeout(function () {
-                try {
-                    deferred.resolve(func());
-                }
-                catch (err) {
-                    deferred.reject(err);
-                }
-            }, !time ? 0 : time);
-            return deferred.promise();
+        AsyncUtils.delay = function (funcORvalue, time) {
+            if (time === void 0) { time = 0; }
+            return new deferred_3.StatefulPromise(function (resolve, reject) {
+                setTimeout(function () {
+                    try {
+                        if (isFunc(funcORvalue)) {
+                            resolve(funcORvalue());
+                        }
+                        else {
+                            resolve(funcORvalue);
+                        }
+                    }
+                    catch (err) {
+                        reject(err);
+                    }
+                }, time);
+            }, true);
         };
         AsyncUtils.parseJSON = function (res) {
             return AsyncUtils.delay(function () {
@@ -5868,5 +5878,5 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_s
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_3.Debounce;
     exports.Lazy = lazy_1.Lazy;
-    exports.VERSION = "3.0.3";
+    exports.VERSION = "3.0.4";
 });

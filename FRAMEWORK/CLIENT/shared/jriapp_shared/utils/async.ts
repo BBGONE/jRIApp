@@ -3,21 +3,23 @@ import {
     ITaskQueue, IStatefulDeferred, IStatefulPromise, IPromise, IThenable
 } from "./ideferred";
 import {
-    createDefer, whenAll, race, getTaskQueue, Promise, promiseSerial
+    createDefer, whenAll, race, getTaskQueue, StatefulPromise, promiseSerial
 } from "./deferred";
 import { Checks } from "./checks";
 
-const { isString } = Checks, _whenAll = whenAll, _race = race, _getTaskQueue = getTaskQueue, _createDefer = createDefer;
+const { isString, isFunc } = Checks, _whenAll = whenAll, _race = race, _getTaskQueue = getTaskQueue, _createDefer = createDefer;
+
+export type TDelayedFunc<T> = () => IPromise<T> | T;
 
 export class AsyncUtils {
     static createDeferred<T>(isSync?: boolean): IStatefulDeferred<T> {
         return _createDefer<T>(isSync);
     }
     static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T> {
-        return Promise.reject(reason, isSync);
+        return StatefulPromise.reject(reason, isSync);
     }
     static resolve<T>(value?: T, isSync?: boolean): IStatefulPromise<T> {
-        return Promise.resolve(value, isSync);
+        return StatefulPromise.resolve(value, isSync);
     }
     /**
      * execute sequentially
@@ -35,18 +37,20 @@ export class AsyncUtils {
     static getTaskQueue(): ITaskQueue {
         return _getTaskQueue();
     }
-    static delay<T>(func: () => IPromise<T> | T, time?: number): IStatefulPromise<T>;
-    static delay(func: () => any, time?: number): IStatefulPromise<any> {
-        const deferred = createDefer<any>(true);
-        setTimeout(() => {
-            try {
-                deferred.resolve(func());
-            } catch (err) {
-                deferred.reject(err);
-            }
-        }, !time ? 0 : time);
-
-        return deferred.promise();
+    static delay<T = any>(funcORvalue?: TDelayedFunc<T> | T, time: number = 0): IStatefulPromise<T> {
+        return new StatefulPromise((resolve, reject) => {
+            setTimeout(() => {
+                try {
+                    if (isFunc(funcORvalue)) {
+                        resolve(funcORvalue());
+                    } else {
+                        resolve(funcORvalue);
+                    }
+                } catch (err) {
+                    reject(err);
+                }
+            }, time);
+        }, true);
     }
     static parseJSON<T>(res: string | any): IStatefulPromise<T>;
     static parseJSON(res: any): IStatefulPromise<any> {

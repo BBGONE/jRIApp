@@ -2076,7 +2076,7 @@ define("jriapp/bootstrap", ["require", "exports", "jriapp_shared", "jriapp/elvie
     (function () {
         var win = dom.window;
         if (!("Promise" in win)) {
-            win.Promise = deferred_1.Promise;
+            win.Promise = deferred_1.StatefulPromise;
         }
         if (!win.requestAnimationFrame) {
             var requestAnimationFrame_1 = win.requestAnimationFrame || win.mozRequestAnimationFrame ||
@@ -4820,7 +4820,7 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     __export(const_1);
     __export(int_5);
     __export(jsonbag_1);
-    exports.Promise = deferred_2.Promise;
+    exports.StatefulPromise = deferred_2.StatefulPromise;
     exports.KEYS = consts_1.KEYS;
     exports.BINDING_MODE = consts_1.BINDING_MODE;
     exports.BindTo = consts_1.BindTo;
@@ -4839,6 +4839,6 @@ define("jriapp", ["require", "exports", "jriapp/bootstrap", "jriapp_shared", "jr
     exports.BaseCommand = mvvm_1.BaseCommand;
     exports.Command = mvvm_1.Command;
     exports.Application = app_1.Application;
-    exports.VERSION = "3.0.2";
+    exports.VERSION = "3.0.3";
     bootstrap_7.Bootstrap._initFramework();
 });

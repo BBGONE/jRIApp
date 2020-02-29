@@ -5,7 +5,7 @@ export * from "jriapp_shared";
 export * from "jriapp_shared/collection/const";
 export * from "jriapp_shared/collection/int";
 export * from "jriapp_shared/utils/jsonbag";
-export { Promise } from "jriapp_shared/utils/deferred";
+export { StatefulPromise } from "jriapp_shared/utils/deferred";
 export { KEYS, BINDING_MODE, BindTo, SubscribeFlags } from "./jriapp/consts";
 export {
     IAppOptions, IApplication, TBindingMode, ITemplate, ITemplateEvents, IBinding, TBindingInfo,
@@ -25,6 +25,6 @@ export { ViewModel, BaseCommand, Command, ICommand } from "./jriapp/mvvm";
 
 export { Application } from "./jriapp/app";
 
-export const VERSION = "3.0.2";
+export const VERSION = "3.0.3";
 
 Bootstrap._initFramework();

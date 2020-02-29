@@ -860,6 +860,7 @@ declare module "jriapp_shared/utils/queue" {
 declare module "jriapp_shared/utils/deferred" {
     import { IStatefulDeferred, IStatefulPromise, ITaskQueue, PromiseState, IThenable, IPromise, IAbortablePromise, IAbortable } from "jriapp_shared/utils/ideferred";
     import { TFunc } from "jriapp_shared/int";
+    export type TResolved<T> = T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>;
     export function createDefer<T = any>(isSync?: boolean): IStatefulDeferred<T>;
     export function createSyncDefer<T>(): IStatefulDeferred<T>;
     export function getTaskQueue(): ITaskQueue;
@@ -869,9 +870,9 @@ declare module "jriapp_shared/utils/deferred" {
         (): IThenable<T>;
     }[]): IStatefulPromise<T[]>;
     export type TDispatcher = (closure: TFunc) => void;
-    export class Promise<T = any> implements IStatefulPromise<T> {
+    export class StatefulPromise<T = any> implements IStatefulPromise<T> {
         private _deferred;
-        constructor(fn: (resolve: (res?: T) => void, reject: (err?: any) => void) => void, dispatcher?: TDispatcher);
+        constructor(fn: (resolve: (res?: TResolved<T>) => void, reject: (err?: any) => void) => void, isSync?: boolean);
         then<TResult1 = T, TResult2 = never>(onFulfilled?: ((value: T) => TResult1 | IThenable<TResult1>) | undefined | null, onRejected?: ((reason: any) => TResult2 | IThenable<TResult2>) | undefined | null): IStatefulPromise<TResult1 | TResult2>;
         catch<TResult = never>(onRejected?: ((reason: any) => TResult | IThenable<TResult>) | undefined | null): IStatefulPromise<T | TResult>;
         finally(onFinally: () => void): IStatefulPromise<T>;
@@ -880,7 +881,7 @@ declare module "jriapp_shared/utils/deferred" {
         static race<T>(...promises: Array<IPromise<T>>): IPromise<T>;
         static race<T>(promises: Array<IPromise<T>>): IPromise<T>;
         static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T>;
-        static resolve<T>(value?: T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>, isSync?: boolean): IStatefulPromise<T>;
+        static resolve<T>(value?: TResolved<T>, isSync?: boolean): IStatefulPromise<T>;
         state(): PromiseState;
         deferred(): IStatefulDeferred<T>;
     }
@@ -976,6 +977,7 @@ declare module "jriapp_shared/utils/logger" {
 }
 declare module "jriapp_shared/utils/async" {
     import { ITaskQueue, IStatefulDeferred, IStatefulPromise, IPromise, IThenable } from "jriapp_shared/utils/ideferred";
+    export type TDelayedFunc<T> = () => IPromise<T> | T;
     export class AsyncUtils {
         static createDeferred<T>(isSync?: boolean): IStatefulDeferred<T>;
         static reject<T>(reason?: any, isSync?: boolean): IStatefulPromise<T>;
@@ -986,7 +988,7 @@ declare module "jriapp_shared/utils/async" {
         static whenAll<T>(args: Array<T | IThenable<T>>): IStatefulPromise<T[]>;
         static race<T>(promises: Array<IThenable<T>>): IPromise<T>;
         static getTaskQueue(): ITaskQueue;
-        static delay<T>(func: () => IPromise<T> | T, time?: number): IStatefulPromise<T>;
+        static delay<T = any>(funcORvalue?: TDelayedFunc<T> | T, time?: number): IStatefulPromise<T>;
         static parseJSON<T>(res: string | any): IStatefulPromise<T>;
     }
 }
@@ -1532,5 +1534,5 @@ declare module "jriapp_shared" {
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";
     export { Lazy, TValueFactory } from "jriapp_shared/utils/lazy";
-    export const VERSION = "3.0.3";
+    export const VERSION = "3.0.4";
 }

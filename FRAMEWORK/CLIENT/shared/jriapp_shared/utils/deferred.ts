@@ -12,8 +12,10 @@ import { TFunc } from "../int";
 const { _undefined, isFunc, isThenable, isArray } = Checks, arrHelper = ArrayHelper;
 let taskQueue: TaskQueue = null;
 
+export type TResolved<T> = T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>;
+
 export function createDefer<T = any>(isSync?: boolean): IStatefulDeferred<T> {
-    return new Promise<T>(null, (!isSync ? fn_enque : fn_exec)).deferred();
+    return new StatefulPromise<T>(null, isSync).deferred();
 }
 
 export function createSyncDefer<T>(): IStatefulDeferred<T> {
@@ -35,7 +37,7 @@ export function whenAll<T>(promises: Array<T | IThenable<T>>): IStatefulPromise<
 }
 
 export function race<T>(promises: IThenable<T>[]): IStatefulPromise<T> {
-    return new Promise((res, rej) => {
+    return new StatefulPromise((res, rej) => {
         promises.forEach(p => p.then(res).then(_undefined, rej));
     });
 }
@@ -47,17 +49,18 @@ export function race<T>(promises: IThenable<T>[]): IStatefulPromise<T> {
  */
 export function promiseSerial<T>(funcs: { (): IThenable<T>; }[]): IStatefulPromise<T[]> {
     return funcs.reduce((promise, func) => promise.then(result => func().then((res) => result.concat(res))),
-        Promise.resolve<T[]>([]));
+        StatefulPromise.resolve<T[]>([]));
 }
 
 export type TDispatcher = (closure: TFunc) => void;
 
-function fn_enque(task: () => void) {
-    getTaskQueue().enque(task);
-}
-
-function fn_exec(task: () => void) {
-    task();
+function dispatch(isSync: boolean, task: () => void): void {
+    if (!isSync) {
+        getTaskQueue().enque(task);
+    }
+    else {
+        task();
+    }
 }
 
 class TaskQueue implements ITaskQueue {
@@ -77,16 +80,16 @@ class TaskQueue implements ITaskQueue {
 }
 
 class Callback {
-    private readonly _dispatcher: TDispatcher;
+    private readonly _isSync: boolean;
     private readonly _successCB: any;
     private readonly _errorCB: any;
     private readonly _deferred: IStatefulDeferred<any>;
 
-    constructor(dispatcher: TDispatcher, successCB: any, errorCB: any) {
-        this._dispatcher = dispatcher;
+    constructor(isSync: boolean, successCB: any, errorCB: any) {
+        this._isSync = isSync;
         this._successCB = successCB;
         this._errorCB = errorCB;
-        this._deferred = new Promise<any>(null, dispatcher).deferred();
+        this._deferred = new StatefulPromise<any>(null, isSync).deferred();
     }
 
     resolve(value: any, defer: boolean): void {
@@ -95,10 +98,10 @@ class Callback {
             return;
         }
 
-        if (!!defer) {
-            this._dispatcher(() => this._dispatch(this._successCB, value));
-        } else {
+        if (!defer) {
             this._dispatch(this._successCB, value);
+        } else {
+            dispatch(this._isSync, () => this._dispatch(this._successCB, value));
         }
     }
     reject(error: any, defer: boolean): void {
@@ -107,10 +110,10 @@ class Callback {
             return;
         }
 
-        if (!!defer) {
-            this._dispatcher(() => this._dispatch(this._errorCB, error));
-        } else {
+        if (!defer) {
             this._dispatch(this._errorCB, error);
+        } else {
+            dispatch(this._isSync, () => this._dispatch(this._errorCB, error));
         }
     }
     private _dispatch(callback: (arg: any) => any, arg: any): void {
@@ -129,15 +132,15 @@ class Callback {
 
 class Deferred<T = any> implements IStatefulDeferred<T> {
     private readonly _promise: IStatefulPromise<T>;
-    private readonly _dispatcher: TDispatcher;
+    private readonly _isSync: boolean;
     private _stack: Array<Callback>;
     private _state: PromiseState;
     private _value: T;
     private _error: any;
 
-    constructor(promise: IStatefulPromise<T>, dispatcher: TDispatcher) {
+    constructor(promise: IStatefulPromise<T>, isSync: boolean = false) {
         this._promise = promise;
-        this._dispatcher = dispatcher;
+        this._isSync = isSync;
         this._value = _undefined;
         this._error = _undefined;
         this._state = PromiseState.Pending;
@@ -171,12 +174,11 @@ class Deferred<T = any> implements IStatefulDeferred<T> {
             } else {
                 this._state = PromiseState.ResolutionInProgress;
 
-                this._dispatcher(() => {
+                dispatch(this._isSync, () => {
                     this._state = PromiseState.Resolved;
                     this._value = value;
 
                     const stackSize = this._stack.length;
-
                     for (let i = 0; i < stackSize; i++) {
                         this._stack[i].resolve(value, false);
                     }
@@ -195,7 +197,7 @@ class Deferred<T = any> implements IStatefulDeferred<T> {
     private _reject(error?: any): IStatefulDeferred<T> {
         this._state = PromiseState.ResolutionInProgress;
 
-        this._dispatcher(() => {
+        dispatch(this._isSync, () => {
             this._state = PromiseState.Rejected;
             this._error = error;
 
@@ -214,7 +216,7 @@ class Deferred<T = any> implements IStatefulDeferred<T> {
             return this._promise;
         }
 
-        const cb = new Callback(this._dispatcher, successCB, errorCB);
+        const cb = new Callback(this._isSync, successCB, errorCB);
 
         switch (this._state) {
             case PromiseState.Pending:
@@ -234,7 +236,7 @@ class Deferred<T = any> implements IStatefulDeferred<T> {
         return cb.deferred.promise();
     }
 
-    resolve(value?: T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>): IStatefulPromise<T> {
+    resolve(value?: TResolved<T>): IStatefulPromise<T> {
         if (this._state !== PromiseState.Pending) {
             return this.promise();
         }
@@ -257,11 +259,11 @@ class Deferred<T = any> implements IStatefulDeferred<T> {
     }
 }
 
-export class Promise<T = any> implements IStatefulPromise<T> {
+export class StatefulPromise<T = any> implements IStatefulPromise<T> {
     private _deferred: Deferred<T>;
 
-    constructor(fn: (resolve: (res?: T) => void, reject: (err?: any) => void) => void, dispatcher?: TDispatcher) {
-        const disp = (!dispatcher ? fn_enque : dispatcher), deferred = new Deferred<T>(this, disp);
+    constructor(fn: (resolve: (res?: TResolved<T>) => void, reject: (err?: any) => void) => void, isSync: boolean = false) {
+        const deferred = new Deferred<T>(this, isSync);
         this._deferred = deferred;
         if (!!fn) {
             getTaskQueue().enque(() => {
@@ -289,7 +291,7 @@ export class Promise<T = any> implements IStatefulPromise<T> {
             return res;
         }, (err: any) => {
             onFinally();
-            return Promise.reject(err);
+            return StatefulPromise.reject(err);
         });
     }
 
@@ -317,7 +319,7 @@ export class Promise<T = any> implements IStatefulPromise<T> {
         return deferred.promise();
     }
 
-    static resolve<T>(value?: T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>, isSync?: boolean): IStatefulPromise<T> {
+    static resolve<T>(value?: TResolved<T>, isSync?: boolean): IStatefulPromise<T> {
         const deferred = createDefer<T>(isSync);
         deferred.resolve(value);
         return deferred.promise();
