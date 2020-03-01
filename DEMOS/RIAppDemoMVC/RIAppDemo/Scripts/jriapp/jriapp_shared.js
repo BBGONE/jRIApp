@@ -1952,7 +1952,7 @@ define("jriapp_shared/utils/queue", ["require", "exports", "jriapp_shared/utils/
     }
     exports.createQueue = createQueue;
 });
-define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/errors", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/queue"], function (require, exports, errors_2, checks_6, arrhelper_1, queue_1) {
+define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/utils/error", "jriapp_shared/errors", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/queue"], function (require, exports, error_3, errors_2, checks_6, arrhelper_1, queue_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var _undefined = checks_6.Checks._undefined, isFunc = checks_6.Checks.isFunc, isThenable = checks_6.Checks.isThenable, isArray = checks_6.Checks.isArray, arrHelper = arrhelper_1.ArrayHelper;
@@ -2269,13 +2269,12 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         __extends(AbortablePromise, _super);
         function AbortablePromise(fn) {
             var _this = _super.call(this, null, false) || this;
-            var tokenSource = new CancellationTokenSource();
-            _this._tokenSource = tokenSource;
+            _this._tokenSource = new CancellationTokenSource();
             _this._aborted = false;
             if (!!fn) {
-                var deferred_2 = _this.deferred();
+                var deferred_2 = _this.deferred(), tokenSource_1 = _this._tokenSource;
                 getTaskQueue().enque(function () {
-                    fn(function (res) { return deferred_2.resolve(res); }, function (err) { return deferred_2.reject(err); }, tokenSource.token);
+                    fn(function (res) { return deferred_2.resolve(res); }, function (err) { return deferred_2.reject(err); }, tokenSource_1.token);
                 });
             }
             return _this;
@@ -2285,9 +2284,11 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
             if (!self._aborted) {
                 self._aborted = true;
                 self.deferred().reject(new errors_2.AbortError(reason)).catch(function (err) {
-                    if (err instanceof errors_2.AbortError) {
+                    if (!!self._tokenSource && error_3.ERROR.checkIsAbort(err)) {
                         self._tokenSource.cancel();
                     }
+                }).finally(function () {
+                    self._tokenSource = null;
                 });
             }
         };
@@ -2295,10 +2296,10 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
     }(StatefulPromise));
     exports.AbortablePromise = AbortablePromise;
 });
-define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/error"], function (require, exports, deferred_3, error_3) {
+define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/error"], function (require, exports, deferred_3, error_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var error = error_3.ERROR, win = window;
+    var error = error_4.ERROR, win = window;
     var Debounce = (function () {
         function Debounce(interval) {
             if (interval === void 0) { interval = 0; }
@@ -2746,10 +2747,11 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
             return chk.length === 3 && startsWith(chk, "2");
         };
         HttpUtils._getXMLRequest = function (url, method, deferred, headers) {
+            var _a;
             var req = new XMLHttpRequest();
             req.open(method, url, true);
             req.responseType = "text";
-            deferred.token.register(function () { req.abort(); });
+            (_a = deferred.token) === null || _a === void 0 ? void 0 : _a.register(function () { req.abort(); });
             req.onload = function () {
                 var status = "" + req.status;
                 if (status === "200") {
@@ -2890,7 +2892,7 @@ define("jriapp_shared/utils/dates", ["require", "exports", "jriapp_shared/utils/
     }());
     exports.DateUtils = DateUtils;
 });
-define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred", "jriapp_shared/utils/dates"], function (require, exports, coreutils_10, debug_2, error_4, logger_1, sysutils_4, async_1, http_1, strutils_5, checks_10, arrhelper_2, deferred_6, dates_1) {
+define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred", "jriapp_shared/utils/dates"], function (require, exports, coreutils_10, debug_2, error_5, logger_1, sysutils_4, async_1, http_1, strutils_5, checks_10, arrhelper_2, deferred_6, dates_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Utils = (function () {
@@ -2902,7 +2904,7 @@ define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/
         Utils.http = http_1.HttpUtils;
         Utils.core = coreutils_10.CoreUtils;
         Utils.defer = async_1.AsyncUtils;
-        Utils.err = error_4.ERROR;
+        Utils.err = error_5.ERROR;
         Utils.log = logger_1.LOGGER;
         Utils.debug = debug_2.DEBUG;
         Utils.sys = sysutils_4.SysUtils;
@@ -5931,5 +5933,5 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_s
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_3.Debounce;
     exports.Lazy = lazy_1.Lazy;
-    exports.VERSION = "3.0.6";
+    exports.VERSION = "3.0.7";
 });

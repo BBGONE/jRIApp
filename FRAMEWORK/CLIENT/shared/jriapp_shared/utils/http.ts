@@ -18,14 +18,14 @@ export class HttpUtils {
         deferred: {
             resolve: (res?: TResolved<string>) => void;
             reject: (err?: any) => void;
-            token: ICancellationToken;
+            token?: ICancellationToken;
         },
         headers?: IIndexer<string>): XMLHttpRequest {
         const req = new XMLHttpRequest();
         req.open(method, url, true);
         req.responseType = "text";
 
-        deferred.token.register(() => { req.abort(); });
+        deferred.token?.register(() => { req.abort(); });
 
         req.onload = function () {
             const status = "" + req.status;

@@ -3,6 +3,7 @@ import {
     IStatefulDeferred, IStatefulPromise, ITaskQueue, PromiseState, TResolved,
     IThenable, IPromise, IAbortablePromise, ICancellationToken, ICancellationTokenSource
 } from "./ideferred";
+import { ERROR } from "./error";
 import { AbortError } from "../errors";
 import { Checks } from "./checks";
 import { ArrayHelper } from "./arrhelper";
@@ -382,12 +383,11 @@ export class AbortablePromise<T = any> extends StatefulPromise implements IAbort
 
     constructor(fn: (resolve: (res?: TResolved<T>) => void, reject: (err?: any) => void, token: ICancellationToken) => void) {
         super(null, false);
-        const tokenSource = new CancellationTokenSource();
-        this._tokenSource = tokenSource;
+        this._tokenSource = new CancellationTokenSource();
         this._aborted = false;
 
         if (!!fn) {
-            const deferred = this.deferred();
+            const deferred = this.deferred(), tokenSource = this._tokenSource;
             getTaskQueue().enque(() => {
                 fn((res?: T) => deferred.resolve(res), (err?: any) => deferred.reject(err), tokenSource.token);
             });
@@ -399,9 +399,11 @@ export class AbortablePromise<T = any> extends StatefulPromise implements IAbort
         if (!self._aborted) {
             self._aborted = true;
             self.deferred().reject(new AbortError(reason)).catch((err) => {
-                if (err instanceof AbortError) {
+                if (!!self._tokenSource && ERROR.checkIsAbort(err)) {
                     self._tokenSource.cancel();
                 }
+            }).finally(() => {
+                self._tokenSource = null;
             });
         }
     }
