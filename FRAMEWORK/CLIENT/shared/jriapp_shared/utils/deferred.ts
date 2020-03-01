@@ -1,7 +1,7 @@
 ﻿/** The MIT License (MIT) Copyright(c) 2016-present Maxim V.Tsapov */
 import {
-    IStatefulDeferred, IStatefulPromise, ITaskQueue, PromiseState,
-    IThenable, IPromise, IAbortablePromise, IAbortable
+    IStatefulDeferred, IStatefulPromise, ITaskQueue, PromiseState, TResolved,
+    IThenable, IPromise, IAbortablePromise, ICancellationToken, ICancellationTokenSource
 } from "./ideferred";
 import { AbortError } from "../errors";
 import { Checks } from "./checks";
@@ -11,8 +11,6 @@ import { TFunc } from "../int";
 
 const { _undefined, isFunc, isThenable, isArray } = Checks, arrHelper = ArrayHelper;
 let taskQueue: TaskQueue = null;
-
-export type TResolved<T> = T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>;
 
 export function createDefer<T = any>(isSync?: boolean): IStatefulDeferred<T> {
     return new StatefulPromise<T>(null, isSync).deferred();
@@ -334,45 +332,65 @@ export class StatefulPromise<T = any> implements IStatefulPromise<T> {
     }
 }
 
-export class AbortablePromise<T = any> implements IAbortablePromise<T> {
-    private _deferred: IStatefulDeferred<T>;
-    private _abortable: IAbortable;
+export class CancellationTokenSource implements ICancellationTokenSource {
+    private _callbacks: { (reason?: string): void }[];
+    private _isCancelled: boolean;
+
+    constructor() {
+        this._callbacks = [];
+        this._isCancelled = false;
+    }
+    register(fn: (reason?: string) => void) {
+        this._callbacks.push(fn);
+    }
+    cancel(reason?: string) {
+        if (this._isCancelled) {
+            return;
+        }
+        const callbacks = this._callbacks;
+        this._callbacks = [];
+        this._isCancelled = true;
+        getTaskQueue().enque(() => {
+            for (const callback of callbacks) {
+                callback(reason);
+            }
+        });
+    }
+    get isCancelled(): boolean {
+        return this._isCancelled;
+    }
+    get token(): ICancellationToken {
+        return this;
+    }
+}
+
+export class AbortablePromise<T = any> extends StatefulPromise implements IAbortablePromise<T> {
+    private _tokenSource: ICancellationTokenSource;
     private _aborted: boolean;
 
-    constructor(deferred: IStatefulDeferred<T>, abortable: IAbortable) {
-        this._deferred = deferred;
-        this._abortable = abortable;
+    constructor(fn: (resolve: (res?: TResolved<T>) => void, reject: (err?: any) => void, token: ICancellationToken) => void) {
+        super(null, false);
+        const tokenSource = new CancellationTokenSource();
+        this._tokenSource = tokenSource;
         this._aborted = false;
-    }
 
-    then<TResult1 = T, TResult2 = never>(
-        onFulfilled?: ((value: T) => TResult1 | IThenable<TResult1>) | undefined | null,
-        onRejected?: ((reason: any) => TResult2 | IThenable<TResult2>) | undefined | null
-    ): IStatefulPromise<TResult1 | TResult2 > {
-        return this._deferred.promise().then(onFulfilled, onRejected);
-    }
-
-    catch<TResult = never>(
-        onRejected?: ((reason: any) => TResult | IThenable<TResult>) | undefined | null
-    ): IStatefulPromise<T | TResult> {
-        return this._deferred.promise().catch(onRejected);
-    }
-
-    finally(onFinally: () => void): IStatefulPromise<T> {
-        return this._deferred.promise().finally(onFinally);
+        if (!!fn) {
+            const deferred = this.deferred();
+            getTaskQueue().enque(() => {
+                fn((res?: T) => deferred.resolve(res), (err?: any) => deferred.reject(err), tokenSource.token);
+            });
+        }
     }
 
     abort(reason?: string): void {
-        if (this._aborted) {
-            return;
-        }
         const self = this;
-        self._deferred.reject(new AbortError(reason));
-        self._aborted = true;
-        setTimeout(() => { self._abortable.abort(); }, 0);
-    }
-
-    state(): PromiseState {
-        return this._deferred.state();
+        if (!self._aborted) {
+            self._aborted = true;
+            self.deferred().reject(new AbortError(reason)).catch((err) => {
+                if (err instanceof AbortError) {
+                    self._tokenSource.cancel();
+                }
+            });
+        }
     }
 }

@@ -2217,38 +2217,76 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         return StatefulPromise;
     }());
     exports.StatefulPromise = StatefulPromise;
-    var AbortablePromise = (function () {
-        function AbortablePromise(deferred, abortable) {
-            this._deferred = deferred;
-            this._abortable = abortable;
-            this._aborted = false;
+    var CancellationTokenSource = (function () {
+        function CancellationTokenSource() {
+            this._callbacks = [];
+            this._isCancelled = false;
         }
-        AbortablePromise.prototype.then = function (onFulfilled, onRejected) {
-            return this._deferred.promise().then(onFulfilled, onRejected);
+        CancellationTokenSource.prototype.register = function (fn) {
+            this._callbacks.push(fn);
         };
-        AbortablePromise.prototype.catch = function (onRejected) {
-            return this._deferred.promise().catch(onRejected);
-        };
-        AbortablePromise.prototype.finally = function (onFinally) {
-            return this._deferred.promise().finally(onFinally);
-        };
-        AbortablePromise.prototype.abort = function (reason) {
-            if (this._aborted) {
+        CancellationTokenSource.prototype.cancel = function (reason) {
+            if (this._isCancelled) {
                 return;
             }
-            var self = this;
-            self._deferred.reject(new errors_2.AbortError(reason));
-            self._aborted = true;
-            setTimeout(function () { self._abortable.abort(); }, 0);
+            var callbacks = this._callbacks;
+            this._callbacks = [];
+            this._isCancelled = true;
+            getTaskQueue().enque(function () {
+                for (var _i = 0, callbacks_1 = callbacks; _i < callbacks_1.length; _i++) {
+                    var callback = callbacks_1[_i];
+                    callback(reason);
+                }
+            });
         };
-        AbortablePromise.prototype.state = function () {
-            return this._deferred.state();
+        Object.defineProperty(CancellationTokenSource.prototype, "isCancelled", {
+            get: function () {
+                return this._isCancelled;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CancellationTokenSource.prototype, "token", {
+            get: function () {
+                return this;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return CancellationTokenSource;
+    }());
+    exports.CancellationTokenSource = CancellationTokenSource;
+    var AbortablePromise = (function (_super) {
+        __extends(AbortablePromise, _super);
+        function AbortablePromise(fn) {
+            var _this = _super.call(this, null, false) || this;
+            var tokenSource = new CancellationTokenSource();
+            _this._tokenSource = tokenSource;
+            _this._aborted = false;
+            if (!!fn) {
+                var deferred_2 = _this.deferred();
+                getTaskQueue().enque(function () {
+                    fn(function (res) { return deferred_2.resolve(res); }, function (err) { return deferred_2.reject(err); }, tokenSource.token);
+                });
+            }
+            return _this;
+        }
+        AbortablePromise.prototype.abort = function (reason) {
+            var self = this;
+            if (!self._aborted) {
+                self._aborted = true;
+                self.deferred().reject(new errors_2.AbortError(reason)).catch(function (err) {
+                    if (err instanceof errors_2.AbortError) {
+                        self._tokenSource.cancel();
+                    }
+                });
+            }
         };
         return AbortablePromise;
-    }());
+    }(StatefulPromise));
     exports.AbortablePromise = AbortablePromise;
 });
-define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/error"], function (require, exports, deferred_2, error_3) {
+define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/error"], function (require, exports, deferred_3, error_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var error = error_3.ERROR, win = window;
@@ -2291,7 +2329,7 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
                     }
                 };
                 if (!this._interval) {
-                    this._timer = deferred_2.getTaskQueue().enque(callback);
+                    this._timer = deferred_3.getTaskQueue().enque(callback);
                 }
                 else {
                     this._timer = setTimeout(callback, this._interval);
@@ -2301,7 +2339,7 @@ define("jriapp_shared/utils/debounce", ["require", "exports", "jriapp_shared/uti
         Debounce.prototype.cancel = function () {
             if (!!this._timer) {
                 if (!this._interval) {
-                    deferred_2.getTaskQueue().cancel(this._timer);
+                    deferred_3.getTaskQueue().cancel(this._timer);
                 }
                 else {
                     clearTimeout(this._timer);
@@ -2632,10 +2670,10 @@ define("jriapp_shared/utils/logger", ["require", "exports"], function (require, 
     }());
     exports.LOGGER = LOGGER;
 });
-define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/checks"], function (require, exports, deferred_3, checks_8) {
+define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/deferred", "jriapp_shared/utils/checks"], function (require, exports, deferred_4, checks_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var isString = checks_8.Checks.isString, isFunc = checks_8.Checks.isFunc, _whenAll = deferred_3.whenAll, _race = deferred_3.race, _getTaskQueue = deferred_3.getTaskQueue, _createDefer = deferred_3.createDefer;
+    var isString = checks_8.Checks.isString, isFunc = checks_8.Checks.isFunc, _whenAll = deferred_4.whenAll, _race = deferred_4.race, _getTaskQueue = deferred_4.getTaskQueue, _createDefer = deferred_4.createDefer;
     var AsyncUtils = (function () {
         function AsyncUtils() {
         }
@@ -2643,13 +2681,13 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
             return _createDefer(isSync);
         };
         AsyncUtils.reject = function (reason, isSync) {
-            return deferred_3.StatefulPromise.reject(reason, isSync);
+            return deferred_4.StatefulPromise.reject(reason, isSync);
         };
         AsyncUtils.resolve = function (value, isSync) {
-            return deferred_3.StatefulPromise.resolve(value, isSync);
+            return deferred_4.StatefulPromise.resolve(value, isSync);
         };
         AsyncUtils.promiseSerial = function (funcs) {
-            return deferred_3.promiseSerial(funcs);
+            return deferred_4.promiseSerial(funcs);
         };
         AsyncUtils.whenAll = function (args) {
             return _whenAll(args);
@@ -2662,7 +2700,7 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
         };
         AsyncUtils.delay = function (funcORvalue, time) {
             if (time === void 0) { time = 0; }
-            return new deferred_3.StatefulPromise(function (resolve, reject) {
+            return new deferred_4.StatefulPromise(function (resolve, reject) {
                 setTimeout(function () {
                     try {
                         if (isFunc(funcORvalue)) {
@@ -2687,21 +2725,22 @@ define("jriapp_shared/utils/async", ["require", "exports", "jriapp_shared/utils/
     }());
     exports.AsyncUtils = AsyncUtils;
 });
-define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/errors", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/deferred", "jriapp_shared/utils/async"], function (require, exports, strUtils_2, errors_5, coreutils_9, deferred_4, async_1) {
+define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/strutils", "jriapp_shared/errors", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/deferred"], function (require, exports, strUtils_2, errors_5, coreutils_9, deferred_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var forEach = coreutils_9.CoreUtils.forEach, merge = coreutils_9.CoreUtils.merge, Indexer = coreutils_9.CoreUtils.Indexer, startsWith = strUtils_2.StringUtils.startsWith, format = strUtils_2.StringUtils.format, createDeferred = async_1.AsyncUtils.createDeferred;
+    var forEach = coreutils_9.CoreUtils.forEach, merge = coreutils_9.CoreUtils.merge, Indexer = coreutils_9.CoreUtils.Indexer, startsWith = strUtils_2.StringUtils.startsWith, fastTrim = strUtils_2.StringUtils.fastTrim;
     var HttpUtils = (function () {
         function HttpUtils() {
         }
         HttpUtils.isStatusOK = function (status) {
-            var chk = "" + status;
+            var chk = fastTrim("" + status);
             return chk.length === 3 && startsWith(chk, "2");
         };
         HttpUtils._getXMLRequest = function (url, method, deferred, headers) {
             var req = new XMLHttpRequest();
             req.open(method, url, true);
             req.responseType = "text";
+            deferred.token.register(function () { req.abort(); });
             req.onload = function () {
                 var status = "" + req.status;
                 if (status === "200") {
@@ -2710,21 +2749,21 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
                 }
                 else {
                     if (HttpUtils.isStatusOK(status)) {
-                        deferred.reject(new errors_5.DummyError(new Error(format('Status: "{0}" loading from URL: "{1}"', status, url))));
+                        deferred.reject(new errors_5.DummyError(new Error("Status: \"" + status + "\" loading from URL: \"" + url + "\"")));
                     }
                     else {
-                        deferred.reject(new Error(format('Error: "{0}" to load from URL: "{1}"', status, url)));
+                        deferred.reject(new Error("Error: \"" + status + "\" to load from URL: \"" + url + "\""));
                     }
                 }
             };
             req.onerror = function () {
-                deferred.reject(new Error(format('Error: "{0}" to load from URL: "{1}"', req.status, url)));
+                deferred.reject(new Error("Error: \"" + req.status + "\" to load from URL: \"" + url + "\""));
             };
             req.ontimeout = function () {
-                deferred.reject(new Error(format('Error: "Request Timeout" to load from URL: "{0}"', url)));
+                deferred.reject(new Error("Error: \"Request Timeout\" to load from URL: \"" + url + "\""));
             };
             req.onabort = function () {
-                deferred.reject(new Error(format('HTTP Request Operation Aborted for URL: "{0}"', url)));
+                deferred.reject(new Error("HTTP Request Operation Aborted for URL: \"" + url + "\""));
             };
             req.timeout = HttpUtils.ajaxTimeOut * 1000;
             var _headers = merge(HttpUtils.defaultHeaders);
@@ -2736,14 +2775,16 @@ define("jriapp_shared/utils/http", ["require", "exports", "jriapp_shared/utils/s
         };
         HttpUtils.postAjax = function (url, postData, headers) {
             var _headers = merge(headers, { "Content-Type": "application/json; charset=utf-8" });
-            var deferred = createDeferred(), req = HttpUtils._getXMLRequest(url, "POST", deferred, _headers);
-            req.send(postData);
-            return new deferred_4.AbortablePromise(deferred, req);
+            return new deferred_5.AbortablePromise(function (resolve, reject, token) {
+                var req = HttpUtils._getXMLRequest(url, "POST", { resolve: resolve, reject: reject, token: token }, _headers);
+                req.send(postData);
+            });
         };
         HttpUtils.getAjax = function (url, headers) {
-            var deferred = createDeferred(), req = HttpUtils._getXMLRequest(url, "GET", deferred, headers);
-            req.send(null);
-            return new deferred_4.AbortablePromise(deferred, req);
+            return new deferred_5.AbortablePromise(function (resolve, reject, token) {
+                var req = HttpUtils._getXMLRequest(url, "GET", { resolve: resolve, reject: reject, token: token }, headers);
+                req.send(null);
+            });
         };
         HttpUtils.defaultHeaders = Indexer();
         HttpUtils.ajaxTimeOut = 600;
@@ -2840,7 +2881,7 @@ define("jriapp_shared/utils/dates", ["require", "exports", "jriapp_shared/utils/
     }());
     exports.DateUtils = DateUtils;
 });
-define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred", "jriapp_shared/utils/dates"], function (require, exports, coreutils_10, debug_2, error_4, logger_1, sysutils_4, async_2, http_1, strutils_5, checks_10, arrhelper_2, deferred_5, dates_1) {
+define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/coreutils", "jriapp_shared/utils/debug", "jriapp_shared/utils/error", "jriapp_shared/utils/logger", "jriapp_shared/utils/sysutils", "jriapp_shared/utils/async", "jriapp_shared/utils/http", "jriapp_shared/utils/strutils", "jriapp_shared/utils/checks", "jriapp_shared/utils/arrhelper", "jriapp_shared/utils/deferred", "jriapp_shared/utils/dates"], function (require, exports, coreutils_10, debug_2, error_4, logger_1, sysutils_4, async_1, http_1, strutils_5, checks_10, arrhelper_2, deferred_6, dates_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Utils = (function () {
@@ -2851,12 +2892,12 @@ define("jriapp_shared/utils/utils", ["require", "exports", "jriapp_shared/utils/
         Utils.arr = arrhelper_2.ArrayHelper;
         Utils.http = http_1.HttpUtils;
         Utils.core = coreutils_10.CoreUtils;
-        Utils.defer = async_2.AsyncUtils;
+        Utils.defer = async_1.AsyncUtils;
         Utils.err = error_4.ERROR;
         Utils.log = logger_1.LOGGER;
         Utils.debug = debug_2.DEBUG;
         Utils.sys = sysutils_4.SysUtils;
-        Utils.queue = deferred_5.getTaskQueue();
+        Utils.queue = deferred_6.getTaskQueue();
         Utils.dates = dates_1.DateUtils;
         return Utils;
     }());
@@ -5850,7 +5891,7 @@ define("jriapp_shared/utils/lazy", ["require", "exports", "jriapp_shared/utils/c
     }());
     exports.Lazy = Lazy;
 });
-define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/dates", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, consts_3, int_2, errors_10, object_7, jsonbag_1, jsonarray_1, dates_2, weakmap_1, lang_11, base_3, item_2, aspect_2, list_3, dictionary_1, errors_11, ideferred_1, utils_11, waitqueue_2, debounce_3, lazy_1) {
+define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_shared/int", "jriapp_shared/errors", "jriapp_shared/object", "jriapp_shared/utils/jsonbag", "jriapp_shared/utils/jsonarray", "jriapp_shared/utils/dates", "jriapp_shared/utils/weakmap", "jriapp_shared/lang", "jriapp_shared/collection/base", "jriapp_shared/collection/item", "jriapp_shared/collection/aspect", "jriapp_shared/collection/list", "jriapp_shared/collection/dictionary", "jriapp_shared/errors", "jriapp_shared/utils/ideferred", "jriapp_shared/utils/deferred", "jriapp_shared/utils/utils", "jriapp_shared/utils/waitqueue", "jriapp_shared/utils/debounce", "jriapp_shared/utils/lazy"], function (require, exports, consts_3, int_2, errors_10, object_7, jsonbag_1, jsonarray_1, dates_2, weakmap_1, lang_11, base_3, item_2, aspect_2, list_3, dictionary_1, errors_11, ideferred_1, deferred_7, utils_11, waitqueue_2, debounce_3, lazy_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -5874,9 +5915,12 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_s
     exports.BaseDictionary = dictionary_1.BaseDictionary;
     exports.ValidationError = errors_11.ValidationError;
     __export(ideferred_1);
+    exports.StatefulPromise = deferred_7.StatefulPromise;
+    exports.AbortablePromise = deferred_7.AbortablePromise;
+    exports.CancellationTokenSource = deferred_7.CancellationTokenSource;
     exports.Utils = utils_11.Utils;
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_3.Debounce;
     exports.Lazy = lazy_1.Lazy;
-    exports.VERSION = "3.0.4";
+    exports.VERSION = "3.0.5";
 });

@@ -2630,7 +2630,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }
         };
         DbContext.prototype._tryAbortRequest = function (operType, name) {
-            var reqs = this._requests.filter(function (req) { return req.operType === operType && req.name === name; });
+            var reqs = this._requests.filter(function (req) { return operType.indexOf(req.operType) > -1 && req.name === name; });
             reqs.forEach(function (r) { r.req.abort(); });
         };
         DbContext.prototype._getMethodParams = function (methodInfo, args) {
@@ -3033,7 +3033,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
                 }
             };
             if (query.isClearPrevData) {
-                self._tryAbortRequest(2, context.dbSetName);
+                self._tryAbortRequest([2, 4], context.dbSetName);
             }
             context.dbSet.waitForNotBusy(function () {
                 try {
@@ -4647,5 +4647,5 @@ define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/datavie
     __export(entity_aspect_2);
     __export(error_3);
     __export(complexprop_1);
-    exports.VERSION = "3.0.6";
+    exports.VERSION = "3.0.7";
 });

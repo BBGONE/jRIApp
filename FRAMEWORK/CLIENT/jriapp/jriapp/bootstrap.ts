@@ -2,7 +2,7 @@
 import {
     DUMY_ERROR, IIndexer, IBaseObject, IPromise, TErrorHandler,
     TEventHandler, TPriority, LocaleERRS, BaseObject, Utils, ObjectEvents,
-    IObjectEvents, createWeakMap, IWeakMap, BRACKETS
+    IObjectEvents, createWeakMap, IWeakMap, BRACKETS, StatefulPromise
 } from "jriapp_shared";
 import { STORE_KEY, SubscribeFlags, DATA_ATTR } from "./consts";
 import {
@@ -16,7 +16,6 @@ import { TemplateLoader, registerLoader } from "./utils/tloader";
 import { createCssLoader } from "./utils/sloader";
 import { PathHelper } from "./utils/path";
 import { DomUtils } from "./utils/dom";
-import { StatefulPromise } from "jriapp_shared/utils/deferred";
 import { createQueue } from "jriapp_shared/utils/queue";
 import { Helper as ParseHelper } from "./parsing/helper";
 

@@ -267,8 +267,8 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
             self.objEvents.raiseProp("isBusy");
         }
     }
-    protected _tryAbortRequest(operType: DATA_OPER, name: string): void {
-        const reqs = this._requests.filter((req) => { return req.operType === operType && req.name === name; });
+    protected _tryAbortRequest(operType: DATA_OPER[], name: string): void {
+        const reqs = this._requests.filter((req) => { return operType.indexOf(req.operType) > -1 && req.name === name; });
         reqs.forEach((r) => { r.req.abort(); });
     }
     protected _getMethodParams(methodInfo: IQueryInfo, args: { [paramName: string]: any; }): IInvokeRequest {
@@ -711,7 +711,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         };
 
         if (query.isClearPrevData) {
-            self._tryAbortRequest(DATA_OPER.Query, context.dbSetName);
+            self._tryAbortRequest([DATA_OPER.Query, DATA_OPER.Refresh], context.dbSetName);
         }
 
         context.dbSet.waitForNotBusy(() => {

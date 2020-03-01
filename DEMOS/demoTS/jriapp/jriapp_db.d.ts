@@ -466,7 +466,7 @@ declare module "jriapp_db/dbcontext" {
         protected _initAssociation(assoc: IAssociationInfo): void;
         protected _initMethod(methodInfo: IQueryInfo): void;
         protected _addRequestPromise(req: IAbortablePromise<any>, operType: DATA_OPER, name?: string): void;
-        protected _tryAbortRequest(operType: DATA_OPER, name: string): void;
+        protected _tryAbortRequest(operType: DATA_OPER[], name: string): void;
         protected _getMethodParams(methodInfo: IQueryInfo, args: {
             [paramName: string]: any;
         }): IInvokeRequest;
@@ -998,5 +998,5 @@ declare module "jriapp_db" {
     export * from "jriapp_db/entity_aspect";
     export * from "jriapp_db/error";
     export * from "jriapp_db/complexprop";
-    export const VERSION = "3.0.6";
+    export const VERSION = "3.0.7";
 }

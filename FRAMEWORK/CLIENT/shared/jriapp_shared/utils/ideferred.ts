@@ -10,10 +10,6 @@ export interface ITaskQueue {
     cancel(taskId: number): void;
 }
 
-export interface IAbortable {
-    abort(reason?: string): void;
-}
-
 export type IThenable<T> = PromiseLike<T>;
 
 export interface IPromise<T = any> {
@@ -41,6 +37,20 @@ export interface IStatefulPromise<T = any> extends IPromiseState {
     finally(onFinally: () => void): IStatefulPromise<T>;
 }
 
+export interface ICancellationToken {
+    register(fn: (reason?: string) => void): void;
+    readonly isCancelled: boolean;
+}
+
+export interface ICancellationTokenSource extends ICancellationToken {
+    cancel(reason?: string): void;
+    readonly token: ICancellationToken;
+}
+
+export interface IAbortable {
+    abort(reason?: string): void;
+}
+
 export interface IAbortablePromise<T = any> extends IStatefulPromise<T>, IAbortable {
 }
 
@@ -51,3 +61,6 @@ export interface IStatefulDeferred<T = any> extends IPromiseState {
 }
 
 export type IDeferred<T = any> = IStatefulDeferred<T>;
+
+export type TResolved<T> = T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>;
+

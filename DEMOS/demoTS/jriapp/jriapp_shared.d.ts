@@ -31,9 +31,6 @@ declare module "jriapp_shared/utils/ideferred" {
         enque(task: () => void): number;
         cancel(taskId: number): void;
     }
-    export interface IAbortable {
-        abort(reason?: string): void;
-    }
     export type IThenable<T> = PromiseLike<T>;
     export interface IPromise<T = any> {
         then<TResult1 = T, TResult2 = never>(onFulfilled?: ((value: T) => TResult1 | IThenable<TResult1>) | undefined | null, onRejected?: ((reason: any) => TResult2 | IThenable<TResult2>) | undefined | null): IPromise<TResult1 | TResult2>;
@@ -47,6 +44,17 @@ declare module "jriapp_shared/utils/ideferred" {
         catch<TResult = never>(onRejected?: ((reason: any) => TResult | IThenable<TResult>) | undefined | null): IStatefulPromise<T | TResult>;
         finally(onFinally: () => void): IStatefulPromise<T>;
     }
+    export interface ICancellationToken {
+        register(fn: (reason?: string) => void): void;
+        readonly isCancelled: boolean;
+    }
+    export interface ICancellationTokenSource extends ICancellationToken {
+        cancel(reason?: string): void;
+        readonly token: ICancellationToken;
+    }
+    export interface IAbortable {
+        abort(reason?: string): void;
+    }
     export interface IAbortablePromise<T = any> extends IStatefulPromise<T>, IAbortable {
     }
     export interface IStatefulDeferred<T = any> extends IPromiseState {
@@ -55,6 +63,7 @@ declare module "jriapp_shared/utils/ideferred" {
         promise(): IStatefulPromise<T>;
     }
     export type IDeferred<T = any> = IStatefulDeferred<T>;
+    export type TResolved<T> = T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>;
 }
 declare module "jriapp_shared/int" {
     import { DEBUG_LEVEL } from "jriapp_shared/consts";
@@ -858,9 +867,8 @@ declare module "jriapp_shared/utils/queue" {
     export function createQueue(interval?: number): IQueue;
 }
 declare module "jriapp_shared/utils/deferred" {
-    import { IStatefulDeferred, IStatefulPromise, ITaskQueue, PromiseState, IThenable, IPromise, IAbortablePromise, IAbortable } from "jriapp_shared/utils/ideferred";
+    import { IStatefulDeferred, IStatefulPromise, ITaskQueue, PromiseState, TResolved, IThenable, IPromise, IAbortablePromise, ICancellationToken, ICancellationTokenSource } from "jriapp_shared/utils/ideferred";
     import { TFunc } from "jriapp_shared/int";
-    export type TResolved<T> = T | PromiseLike<T> | IThenable<T> | IPromise<T> | IStatefulPromise<T>;
     export function createDefer<T = any>(isSync?: boolean): IStatefulDeferred<T>;
     export function createSyncDefer<T>(): IStatefulDeferred<T>;
     export function getTaskQueue(): ITaskQueue;
@@ -885,16 +893,20 @@ declare module "jriapp_shared/utils/deferred" {
         state(): PromiseState;
         deferred(): IStatefulDeferred<T>;
     }
-    export class AbortablePromise<T = any> implements IAbortablePromise<T> {
-        private _deferred;
-        private _abortable;
+    export class CancellationTokenSource implements ICancellationTokenSource {
+        private _callbacks;
+        private _isCancelled;
+        constructor();
+        register(fn: (reason?: string) => void): void;
+        cancel(reason?: string): void;
+        get isCancelled(): boolean;
+        get token(): ICancellationToken;
+    }
+    export class AbortablePromise<T = any> extends StatefulPromise implements IAbortablePromise<T> {
+        private _tokenSource;
         private _aborted;
-        constructor(deferred: IStatefulDeferred<T>, abortable: IAbortable);
-        then<TResult1 = T, TResult2 = never>(onFulfilled?: ((value: T) => TResult1 | IThenable<TResult1>) | undefined | null, onRejected?: ((reason: any) => TResult2 | IThenable<TResult2>) | undefined | null): IStatefulPromise<TResult1 | TResult2>;
-        catch<TResult = never>(onRejected?: ((reason: any) => TResult | IThenable<TResult>) | undefined | null): IStatefulPromise<T | TResult>;
-        finally(onFinally: () => void): IStatefulPromise<T>;
+        constructor(fn: (resolve: (res?: TResolved<T>) => void, reject: (err?: any) => void, token: ICancellationToken) => void);
         abort(reason?: string): void;
-        state(): PromiseState;
     }
 }
 declare module "jriapp_shared/utils/debounce" {
@@ -1530,9 +1542,10 @@ declare module "jriapp_shared" {
     export { BaseDictionary } from "jriapp_shared/collection/dictionary";
     export { ValidationError } from "jriapp_shared/errors";
     export * from "jriapp_shared/utils/ideferred";
+    export { StatefulPromise, AbortablePromise, CancellationTokenSource } from "jriapp_shared/utils/deferred";
     export { Utils } from "jriapp_shared/utils/utils";
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";
     export { Lazy, TValueFactory } from "jriapp_shared/utils/lazy";
-    export const VERSION = "3.0.4";
+    export const VERSION = "3.0.5";
 }
