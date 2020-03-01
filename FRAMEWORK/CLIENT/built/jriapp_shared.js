@@ -2221,23 +2221,32 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/err
         function CancellationTokenSource() {
             this._callbacks = [];
             this._isCancelled = false;
+            this._reason = "";
         }
-        CancellationTokenSource.prototype.register = function (fn) {
-            this._callbacks.push(fn);
-        };
-        CancellationTokenSource.prototype.cancel = function (reason) {
-            if (this._isCancelled) {
-                return;
-            }
+        CancellationTokenSource.prototype._cancel = function () {
             var callbacks = this._callbacks;
             this._callbacks = [];
-            this._isCancelled = true;
+            var reason = this._reason;
             getTaskQueue().enque(function () {
                 for (var _i = 0, callbacks_1 = callbacks; _i < callbacks_1.length; _i++) {
                     var callback = callbacks_1[_i];
                     callback(reason);
                 }
             });
+        };
+        CancellationTokenSource.prototype.register = function (fn) {
+            this._callbacks.push(fn);
+            if (this._isCancelled) {
+                this._cancel();
+            }
+        };
+        CancellationTokenSource.prototype.cancel = function (reason) {
+            if (this._isCancelled) {
+                return;
+            }
+            this._isCancelled = true;
+            this._reason = reason;
+            this._cancel();
         };
         Object.defineProperty(CancellationTokenSource.prototype, "isCancelled", {
             get: function () {
@@ -5922,5 +5931,5 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_s
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_3.Debounce;
     exports.Lazy = lazy_1.Lazy;
-    exports.VERSION = "3.0.5";
+    exports.VERSION = "3.0.6";
 });

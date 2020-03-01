@@ -268,7 +268,7 @@ export abstract class DbContext<TDbSets extends DbSets = DbSets, TMethods = any,
         }
     }
     protected _tryAbortRequest(operType: DATA_OPER[], name: string): void {
-        const reqs = this._requests.filter((req) => { return operType.indexOf(req.operType) > -1 && req.name === name; });
+        const reqs = this._requests.filter((req) => { return req.name === name && operType.indexOf(req.operType) > -1; });
         reqs.forEach((r) => { r.req.abort(); });
     }
     protected _getMethodParams(methodInfo: IQueryInfo, args: { [paramName: string]: any; }): IInvokeRequest {

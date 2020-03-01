@@ -896,7 +896,9 @@ declare module "jriapp_shared/utils/deferred" {
     export class CancellationTokenSource implements ICancellationTokenSource {
         private _callbacks;
         private _isCancelled;
+        private _reason;
         constructor();
+        private _cancel;
         register(fn: (reason?: string) => void): void;
         cancel(reason?: string): void;
         get isCancelled(): boolean;
@@ -1547,5 +1549,5 @@ declare module "jriapp_shared" {
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";
     export { Lazy, TValueFactory } from "jriapp_shared/utils/lazy";
-    export const VERSION = "3.0.5";
+    export const VERSION = "3.0.6";
 }

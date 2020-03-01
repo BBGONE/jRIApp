@@ -335,26 +335,38 @@ export class StatefulPromise<T = any> implements IStatefulPromise<T> {
 export class CancellationTokenSource implements ICancellationTokenSource {
     private _callbacks: { (reason?: string): void }[];
     private _isCancelled: boolean;
+    private _reason: string;
 
     constructor() {
         this._callbacks = [];
         this._isCancelled = false;
+        this._reason = "";
     }
-    register(fn: (reason?: string) => void) {
-        this._callbacks.push(fn);
-    }
-    cancel(reason?: string) {
-        if (this._isCancelled) {
-            return;
-        }
+    private _cancel():void {
         const callbacks = this._callbacks;
         this._callbacks = [];
-        this._isCancelled = true;
+        const reason = this._reason;
+
         getTaskQueue().enque(() => {
             for (const callback of callbacks) {
                 callback(reason);
             }
         });
+    }
+
+    register(fn: (reason?: string) => void) {
+        this._callbacks.push(fn);
+        if (this._isCancelled) {
+            this._cancel();
+        }
+    }
+    cancel(reason?: string) {
+        if (this._isCancelled) {
+            return;
+        }
+        this._isCancelled = true;
+        this._reason = reason;
+        this._cancel();
     }
     get isCancelled(): boolean {
         return this._isCancelled;

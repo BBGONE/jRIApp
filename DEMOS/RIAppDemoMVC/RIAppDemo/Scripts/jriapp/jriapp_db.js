@@ -2630,7 +2630,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             }
         };
         DbContext.prototype._tryAbortRequest = function (operType, name) {
-            var reqs = this._requests.filter(function (req) { return operType.indexOf(req.operType) > -1 && req.name === name; });
+            var reqs = this._requests.filter(function (req) { return req.name === name && operType.indexOf(req.operType) > -1; });
             reqs.forEach(function (r) { r.req.abort(); });
         };
         DbContext.prototype._getMethodParams = function (methodInfo, args) {
