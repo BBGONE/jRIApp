@@ -2269,10 +2269,18 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/uti
         __extends(AbortablePromise, _super);
         function AbortablePromise(fn) {
             var _this = _super.call(this, null, false) || this;
-            _this._tokenSource = new CancellationTokenSource();
+            _this._tokenSource = null;
             _this._aborted = false;
             if (!!fn) {
-                var deferred_2 = _this.deferred(), tokenSource_1 = _this._tokenSource;
+                _this._tokenSource = new CancellationTokenSource();
+                var self_1 = _this, deferred_2 = self_1.deferred(), tokenSource_1 = self_1._tokenSource;
+                self_1.catch(function (err) {
+                    if (!!self_1._tokenSource && error_3.ERROR.checkIsAbort(err)) {
+                        self_1._tokenSource.cancel();
+                    }
+                }).finally(function () {
+                    self_1._tokenSource = null;
+                });
                 getTaskQueue().enque(function () {
                     fn(function (res) { return deferred_2.resolve(res); }, function (err) { return deferred_2.reject(err); }, tokenSource_1.token);
                 });
@@ -2283,13 +2291,7 @@ define("jriapp_shared/utils/deferred", ["require", "exports", "jriapp_shared/uti
             var self = this;
             if (!self._aborted) {
                 self._aborted = true;
-                self.deferred().reject(new errors_2.AbortError(reason)).catch(function (err) {
-                    if (!!self._tokenSource && error_3.ERROR.checkIsAbort(err)) {
-                        self._tokenSource.cancel();
-                    }
-                }).finally(function () {
-                    self._tokenSource = null;
-                });
+                self.deferred().reject(new errors_2.AbortError(reason));
             }
         };
         return AbortablePromise;
@@ -5933,5 +5935,5 @@ define("jriapp_shared", ["require", "exports", "jriapp_shared/consts", "jriapp_s
     exports.WaitQueue = waitqueue_2.WaitQueue;
     exports.Debounce = debounce_3.Debounce;
     exports.Lazy = lazy_1.Lazy;
-    exports.VERSION = "3.0.7";
+    exports.VERSION = "3.0.8";
 });

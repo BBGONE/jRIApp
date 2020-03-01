@@ -868,7 +868,6 @@ declare module "jriapp_shared/utils/queue" {
 }
 declare module "jriapp_shared/utils/deferred" {
     import { IStatefulDeferred, IStatefulPromise, ITaskQueue, PromiseState, TResolved, IThenable, IPromise, IAbortablePromise, ICancellationToken, ICancellationTokenSource } from "jriapp_shared/utils/ideferred";
-    import { TFunc } from "jriapp_shared/int";
     export function createDefer<T = any>(isSync?: boolean): IStatefulDeferred<T>;
     export function createSyncDefer<T>(): IStatefulDeferred<T>;
     export function getTaskQueue(): ITaskQueue;
@@ -877,7 +876,6 @@ declare module "jriapp_shared/utils/deferred" {
     export function promiseSerial<T>(funcs: {
         (): IThenable<T>;
     }[]): IStatefulPromise<T[]>;
-    export type TDispatcher = (closure: TFunc) => void;
     export class StatefulPromise<T = any> implements IStatefulPromise<T> {
         private _deferred;
         constructor(fn: (resolve: (res?: TResolved<T>) => void, reject: (err?: any) => void) => void, isSync?: boolean);
@@ -1549,5 +1547,5 @@ declare module "jriapp_shared" {
     export { WaitQueue, IWaitQueueItem } from "jriapp_shared/utils/waitqueue";
     export { Debounce } from "jriapp_shared/utils/debounce";
     export { Lazy, TValueFactory } from "jriapp_shared/utils/lazy";
-    export const VERSION = "3.0.7";
+    export const VERSION = "3.0.8";
 }
