@@ -2,7 +2,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -14,6 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 define(["require", "exports", "jriapp_shared", "jriapp_db"], function (require, exports, RIAPP, dbMOD) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DbContext = exports.DbSets = exports.FileSystemObjectDb = void 0;
     var FileSystemObjectEntity = (function (_super) {
         __extends(FileSystemObjectEntity, _super);
         function FileSystemObjectEntity(aspect) {
@@ -24,53 +25,53 @@ define(["require", "exports", "jriapp_shared", "jriapp_db"], function (require, 
         };
         Object.defineProperty(FileSystemObjectEntity.prototype, "Key", {
             get: function () { return this._aspect._getFieldVal('Key'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FileSystemObjectEntity.prototype, "ParentKey", {
             get: function () { return this._aspect._getFieldVal('ParentKey'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FileSystemObjectEntity.prototype, "Name", {
             get: function () { return this._aspect._getFieldVal('Name'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FileSystemObjectEntity.prototype, "Level", {
             get: function () { return this._aspect._getFieldVal('Level'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FileSystemObjectEntity.prototype, "HasSubDirs", {
             get: function () { return this._aspect._getFieldVal('HasSubDirs'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FileSystemObjectEntity.prototype, "IsFolder", {
             get: function () { return this._aspect._getFieldVal('IsFolder'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FileSystemObjectEntity.prototype, "fullPath", {
             get: function () { return this._aspect._getCalcFieldVal('fullPath'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FileSystemObjectEntity.prototype, "ExtraProps", {
             get: function () { return this._aspect._getCalcFieldVal('ExtraProps'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FileSystemObjectEntity.prototype, "Parent", {
             get: function () { return this._aspect._getNavFieldVal('Parent'); },
             set: function (v) { this._aspect._setNavFieldVal('Parent', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FileSystemObjectEntity.prototype, "Children", {
             get: function () { return this._aspect._getNavFieldVal('Children'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return FileSystemObjectEntity;
@@ -127,7 +128,7 @@ define(["require", "exports", "jriapp_shared", "jriapp_db"], function (require, 
         }
         Object.defineProperty(DbSets.prototype, "FileSystemObject", {
             get: function () { return this.getDbSet("FileSystemObject"); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DbSets;

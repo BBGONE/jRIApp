@@ -2,7 +2,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -11,9 +11,20 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 define("jriapp_db/const", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DATA_OPER = exports.DELETE_ACTION = exports.REFRESH_MODE = exports.FLAGS = void 0;
     var FLAGS;
     (function (FLAGS) {
         FLAGS[FLAGS["None"] = 0] = "None";
@@ -47,6 +58,7 @@ define("jriapp_db/const", ["require", "exports"], function (require, exports) {
 define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DataCache = void 0;
     var utils = jriapp_shared_1.Utils, isNt = utils.check.isNt, _a = utils.core, forEach = _a.forEach, Indexer = _a.Indexer;
     var DataCache = (function (_super) {
         __extends(DataCache, _super);
@@ -201,21 +213,21 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function 
                 }
                 return result;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataCache.prototype, "pageSize", {
             get: function () {
                 return this._query.pageSize;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataCache.prototype, "loadPageCount", {
             get: function () {
                 return this._query.loadPageCount;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataCache.prototype, "totalCount", {
@@ -231,7 +243,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function 
                     this.objEvents.raiseProp("totalCount");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataCache.prototype, "cacheSize", {
@@ -239,7 +251,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function 
                 var indexes = Object.keys(this._pages);
                 return indexes.length;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DataCache;
@@ -249,6 +261,7 @@ define("jriapp_db/datacache", ["require", "exports", "jriapp_shared"], function 
 define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/datacache"], function (require, exports, jriapp_shared_2, utils_1, datacache_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DataQuery = void 0;
     var utils = jriapp_shared_2.Utils, _a = utils.check, isNt = _a.isNt, isArray = _a.isArray, isDate = _a.isDate, format = utils.str.format, Indexer = utils.core.Indexer, arrHelper = utils.arr, valUtils = utils_1.ValueUtils;
     var DataQuery = (function (_super) {
         __extends(DataQuery, _super);
@@ -430,42 +443,42 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             get: function () {
                 return this._dbSet.dbContext.serverTimezone;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "dbSet", {
             get: function () {
                 return this._dbSet;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "dbSetName", {
             get: function () {
                 return this._dbSet.dbSetName;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "queryName", {
             get: function () {
                 return this._queryInfo.methodName;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "filterInfo", {
             get: function () {
                 return this._filterInfo;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "sortInfo", {
             get: function () {
                 return this._sortInfo;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "isIncludeTotalCount", {
@@ -475,7 +488,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             set: function (v) {
                 this._isIncludeTotalCount = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "isClearPrevData", {
@@ -485,7 +498,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             set: function (v) {
                 this._isClearPrevData = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "pageSize", {
@@ -497,7 +510,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                     this._pageSize = v;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "pageIndex", {
@@ -509,7 +522,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                     this._pageIndex = v;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "params", {
@@ -522,7 +535,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                     this._cacheInvalidated = true;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "isPagingEnabled", {
@@ -532,7 +545,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
             set: function (v) {
                 this._isPagingEnabled = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "loadPageCount", {
@@ -551,7 +564,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                     this.objEvents.raiseProp("loadPageCount");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "isClearCacheOnEveryLoad", {
@@ -564,7 +577,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                     this.objEvents.raiseProp("isClearCacheOnEveryLoad");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "isForAppend", {
@@ -577,14 +590,14 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
                     this.objEvents.raiseProp("isForAppend");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataQuery.prototype, "isCacheValid", {
             get: function () {
                 return !!this._dataCache && !this._cacheInvalidated && !this.isForAppend;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DataQuery;
@@ -594,6 +607,7 @@ define("jriapp_db/dataquery", ["require", "exports", "jriapp_shared", "jriapp_sh
 define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base", "jriapp_shared/collection/utils", "jriapp_db/dataquery", "jriapp_db/entity_aspect"], function (require, exports, jriapp_shared_3, base_1, utils_2, dataquery_1, entity_aspect_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DbSet = void 0;
     var utils = jriapp_shared_3.Utils, _a = utils.check, isArray = _a.isArray, isNt = _a.isNt, format = utils.str.format, _b = utils.core, getValue = _b.getValue, setValue = _b.setValue, merge = _b.merge, forEach = _b.forEach, Indexer = _b.Indexer, ERROR = utils.err, parseValue = utils_2.ValueUtils.parseValue, stringifyValue = utils_2.ValueUtils.stringifyValue, getPKFields = utils_2.CollUtils.getPKFields, walkField = utils_2.CollUtils.walkField, walkFields = utils_2.CollUtils.walkFields, objToVals = utils_2.CollUtils.objToVals, initVals = utils_2.CollUtils.initVals, getObjectField = utils_2.CollUtils.getObjectField;
     function doFieldDependences(dbSet, info) {
         if (!info.dependentOn) {
@@ -1494,28 +1508,28 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
             get: function () {
                 return this._dbContext;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSet.prototype, "dbSetName", {
             get: function () {
                 return this._dbSetName;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSet.prototype, "query", {
             get: function () {
                 return this._query;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSet.prototype, "isHasChanges", {
             get: function () {
                 return this._changeCount > 0;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSet.prototype, "cacheSize", {
@@ -1527,7 +1541,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                 }
                 return 0;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSet.prototype, "isSubmitOnDelete", {
@@ -1540,14 +1554,14 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
                     this.objEvents.raiseProp("isSubmitOnDelete");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSet.prototype, "isBusy", {
             get: function () {
                 return this.isLoading || this.dbContext.isSubmiting;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DbSet;
@@ -1557,6 +1571,7 @@ define("jriapp_db/dbset", ["require", "exports", "jriapp_shared", "jriapp_shared
 define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DbSets = void 0;
     var utils = jriapp_shared_4.Utils, Indexer = utils.core.Indexer, format = utils.str.format;
     var DBSETS_EVENTS;
     (function (DBSETS_EVENTS) {
@@ -1615,14 +1630,14 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (re
             get: function () {
                 return Object.keys(this._dbSets);
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSets.prototype, "arrDbSets", {
             get: function () {
                 return this._arrDbSets;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         DbSets.prototype.findDbSet = function (name) {
@@ -1646,6 +1661,7 @@ define("jriapp_db/dbsets", ["require", "exports", "jriapp_shared"], function (re
 define("jriapp_db/association", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Association = void 0;
     var utils = jriapp_shared_5.Utils, format = utils.str.format, _a = utils.core, getNewID = _a.getNewID, extend = _a.extend, Indexer = _a.Indexer, arrHelper = utils.arr;
     var Association = (function (_super) {
         __extends(Association, _super);
@@ -2271,56 +2287,56 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
             get: function () {
                 return this._name;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Association.prototype, "parentToChildrenName", {
             get: function () {
                 return this._parentToChildrenName;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Association.prototype, "childToParentName", {
             get: function () {
                 return this._childToParentName;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Association.prototype, "parentDS", {
             get: function () {
                 return this._parentDS;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Association.prototype, "childDS", {
             get: function () {
                 return this._childDS;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Association.prototype, "parentFldInfos", {
             get: function () {
                 return this._parentFldInfos;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Association.prototype, "childFldInfos", {
             get: function () {
                 return this._childFldInfos;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Association.prototype, "onDeleteAction", {
             get: function () {
                 return this._onDeleteAction;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return Association;
@@ -2330,6 +2346,7 @@ define("jriapp_db/association", ["require", "exports", "jriapp_shared"], functio
 define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.SubmitError = exports.SvcValidationError = exports.ConcurrencyError = exports.AccessDeniedError = exports.DataOperationError = void 0;
     var format = jriapp_shared_6.Utils.str.format;
     var DataOperationError = (function (_super) {
         __extends(DataOperationError, _super);
@@ -2354,14 +2371,14 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
             get: function () {
                 return this._operationName;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataOperationError.prototype, "origError", {
             get: function () {
                 return this._origError;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DataOperationError;
@@ -2412,12 +2429,12 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
         }
         Object.defineProperty(SubmitError.prototype, "allSubmitted", {
             get: function () { return this._allSubmitted; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SubmitError.prototype, "notValidated", {
             get: function () { return this._notValidated; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return SubmitError;
@@ -2427,6 +2444,7 @@ define("jriapp_db/error", ["require", "exports", "jriapp_shared"], function (req
 define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/utils", "jriapp_db/association", "jriapp_db/error"], function (require, exports, jriapp_shared_7, utils_3, association_1, error_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DbContext = void 0;
     var utils = jriapp_shared_7.Utils, http = utils.http, _a = utils.check, isArray = _a.isArray, isNt = _a.isNt, isFunc = _a.isFunc, isString = _a.isString, _b = utils.str, format = _b.format, endsWith = _b.endsWith, _c = utils.core, getTimeZoneOffset = _c.getTimeZoneOffset, merge = _c.merge, Indexer = _c.Indexer, ERROR = utils.err, stringifyValue = utils_3.ValueUtils.stringifyValue, _d = utils.defer, delay = _d.delay, createDeferred = _d.createDeferred;
     var DATA_SVC_METH;
     (function (DATA_SVC_METH) {
@@ -3252,70 +3270,70 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             get: function () {
                 return this._assoc;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "serviceMethods", {
             get: function () {
                 return this._svcMethods;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "dbSets", {
             get: function () {
                 return this._dbSets;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "serviceUrl", {
             get: function () {
                 return this._serviceUrl;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "isInitialized", {
             get: function () {
                 return !!this._initState && this._initState.state() === 2;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "isBusy", {
             get: function () {
                 return (this.requestCount > 0) || this.isSubmiting;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "isSubmiting", {
             get: function () {
                 return this._isSubmiting;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "serverTimezone", {
             get: function () {
                 return this._serverTimezone;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "isHasChanges", {
             get: function () {
                 return this._isHasChanges;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "requestCount", {
             get: function () {
                 return this._requests.length;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbContext.prototype, "requestHeaders", {
@@ -3325,7 +3343,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
             set: function (v) {
                 this._requestHeaders = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DbContext;
@@ -3335,6 +3353,7 @@ define("jriapp_db/dbcontext", ["require", "exports", "jriapp_shared", "jriapp_sh
 define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriapp_shared/errors", "jriapp_shared/collection/utils", "jriapp_shared/collection/aspect", "jriapp_db/error"], function (require, exports, jriapp_shared_8, errors_1, utils_4, aspect_1, error_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.EntityAspect = void 0;
     var utils = jriapp_shared_8.Utils, _undefined = utils.check._undefined, format = utils.str.format, _a = utils.core, getValue = _a.getValue, setValue = _a.setValue, uuid = _a.uuid, compareVals = utils_4.ValueUtils.compareVals, parseValue = utils_4.ValueUtils.parseValue, sys = utils.sys;
     function fn_isNotSubmittable(fieldInfo) {
         switch (fieldInfo.fieldType) {
@@ -3889,42 +3908,42 @@ define("jriapp_db/entity_aspect", ["require", "exports", "jriapp_shared", "jriap
             get: function () {
                 return !!this._origVals;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(EntityAspect.prototype, "srvKey", {
             get: function () {
                 return this._srvKey;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(EntityAspect.prototype, "isCanSubmit", {
             get: function () {
                 return true;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(EntityAspect.prototype, "dbSetName", {
             get: function () {
                 return this.dbSet.dbSetName;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(EntityAspect.prototype, "serverTimezone", {
             get: function () {
                 return this.dbSet.dbContext.serverTimezone;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(EntityAspect.prototype, "dbSet", {
             get: function () {
                 return this.coll;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return EntityAspect;
@@ -3938,6 +3957,7 @@ define("jriapp_db/int", ["require", "exports"], function (require, exports) {
 define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_shared/collection/base"], function (require, exports, jriapp_shared_9, base_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DataView = void 0;
     var utils = jriapp_shared_9.Utils, isFunc = utils.check.isFunc, format = utils.str.format, extend = utils.core.extend, ERROR = utils.err, sys = utils.sys;
     var VIEW_EVENTS;
     (function (VIEW_EVENTS) {
@@ -4297,7 +4317,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                 return this._fn_sortHandler(fieldNames, sortOrder);
             }
             else {
-                return _super.prototype.sortLocal.call(this, fieldNames, sortOrder);
+                return this.sortLocal(fieldNames, sortOrder);
             }
         };
         DataView.prototype.sortLocal = function (fieldNames, sortOrder) {
@@ -4318,14 +4338,14 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
             get: function () {
                 return this._dataSource.errors;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "dataSource", {
             get: function () {
                 return this._dataSource;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "isPagingEnabled", {
@@ -4339,14 +4359,14 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                     this._refresh(0);
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "permissions", {
             get: function () {
                 return this._dataSource.permissions;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "fn_filter", {
@@ -4359,7 +4379,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                     this._refresh(0);
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "fn_sort", {
@@ -4372,7 +4392,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                     this._refresh(2);
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "fn_itemsProvider", {
@@ -4385,7 +4405,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                     this._refresh(3);
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataView.prototype, "fn_sortHandler", {
@@ -4398,7 +4418,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
                     this._refresh(3);
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         DataView.prototype.toString = function () {
@@ -4411,6 +4431,7 @@ define("jriapp_db/dataview", ["require", "exports", "jriapp_shared", "jriapp_sha
 define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jriapp_db/dataview"], function (require, exports, jriapp_shared_10, dataview_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ChildDataView = void 0;
     var utils = jriapp_shared_10.Utils, coreUtils = utils.core;
     var ChildDataView = (function (_super) {
         __extends(ChildDataView, _super);
@@ -4484,14 +4505,14 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
             set: function (v) {
                 this._setParent(v);
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ChildDataView.prototype, "association", {
             get: function () {
                 return this._association;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return ChildDataView;
@@ -4501,6 +4522,7 @@ define("jriapp_db/child_dataview", ["require", "exports", "jriapp_shared", "jria
 define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ChildComplexProperty = exports.RootComplexProperty = exports.BaseComplexProperty = void 0;
     var utils = jriapp_shared_11.Utils, format = utils.str.format;
     var BaseComplexProperty = (function (_super) {
         __extends(BaseComplexProperty, _super);
@@ -4629,23 +4651,21 @@ define("jriapp_db/complexprop", ["require", "exports", "jriapp_shared"], functio
 });
 define("jriapp_db", ["require", "exports", "jriapp_db/dbset", "jriapp_db/dataview", "jriapp_db/child_dataview", "jriapp_db/association", "jriapp_db/const", "jriapp_db/dbcontext", "jriapp_db/dbsets", "jriapp_db/dataquery", "jriapp_db/entity_aspect", "jriapp_db/error", "jriapp_db/complexprop"], function (require, exports, dbset_1, dataview_2, child_dataview_1, association_2, const_1, dbcontext_1, dbsets_1, dataquery_2, entity_aspect_2, error_3, complexprop_1) {
     "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DbSet = dbset_1.DbSet;
-    __export(dataview_2);
-    __export(child_dataview_1);
-    __export(association_2);
-    exports.REFRESH_MODE = const_1.REFRESH_MODE;
-    exports.DELETE_ACTION = const_1.DELETE_ACTION;
-    exports.DATA_OPER = const_1.DATA_OPER;
-    exports.FLAGS = const_1.FLAGS;
-    __export(dbcontext_1);
-    __export(dbsets_1);
-    __export(dataquery_2);
-    __export(entity_aspect_2);
-    __export(error_3);
-    __export(complexprop_1);
-    exports.VERSION = "3.0.7";
+    exports.VERSION = exports.FLAGS = exports.DATA_OPER = exports.DELETE_ACTION = exports.REFRESH_MODE = exports.DbSet = void 0;
+    Object.defineProperty(exports, "DbSet", { enumerable: true, get: function () { return dbset_1.DbSet; } });
+    __exportStar(dataview_2, exports);
+    __exportStar(child_dataview_1, exports);
+    __exportStar(association_2, exports);
+    Object.defineProperty(exports, "REFRESH_MODE", { enumerable: true, get: function () { return const_1.REFRESH_MODE; } });
+    Object.defineProperty(exports, "DELETE_ACTION", { enumerable: true, get: function () { return const_1.DELETE_ACTION; } });
+    Object.defineProperty(exports, "DATA_OPER", { enumerable: true, get: function () { return const_1.DATA_OPER; } });
+    Object.defineProperty(exports, "FLAGS", { enumerable: true, get: function () { return const_1.FLAGS; } });
+    __exportStar(dbcontext_1, exports);
+    __exportStar(dbsets_1, exports);
+    __exportStar(dataquery_2, exports);
+    __exportStar(entity_aspect_2, exports);
+    __exportStar(error_3, exports);
+    __exportStar(complexprop_1, exports);
+    exports.VERSION = "3.0.8";
 });

@@ -2,7 +2,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -14,6 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], function (require, exports, RIAPP, dbMOD) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DbContext = exports.DbSets = exports.SalesOrderHeaderDb = exports.SalesOrderDetailDb = exports.SalesInfoDb = exports.ProductModelDb = exports.ProductCategoryDb = exports.ProductDb = exports.LookUpProductDb = exports.CustomerJSONDb = exports.CustomerAddressDb = exports.CustomerDb = exports.AddressInfoDb = exports.AddressDb = exports.Customer_ComplexProp = exports.Customer_ComplexProp1 = exports.HistoryList = exports.RadioValDictionary = exports.StrKeyValDictionary = exports.KeyValDictionary = exports.TestList = exports.TestDictionary = exports.TestEnum2 = exports.TestEnum = void 0;
     var TestEnum;
     (function (TestEnum) {
         TestEnum[TestEnum["None"] = 0] = "None";
@@ -36,37 +37,37 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         Object.defineProperty(_TestModelListItem.prototype, "Key", {
             get: function () { return this._aspect._getProp('Key'); },
             set: function (v) { this._aspect._setProp('Key', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(_TestModelListItem.prototype, "SomeProperty1", {
             get: function () { return this._aspect._getProp('SomeProperty1'); },
             set: function (v) { this._aspect._setProp('SomeProperty1', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(_TestModelListItem.prototype, "SomeProperty2", {
             get: function () { return this._aspect._getProp('SomeProperty2'); },
             set: function (v) { this._aspect._setProp('SomeProperty2', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(_TestModelListItem.prototype, "SomeProperty3", {
             get: function () { return this._aspect._getProp('SomeProperty3'); },
             set: function (v) { this._aspect._setProp('SomeProperty3', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(_TestModelListItem.prototype, "MoreComplexProperty", {
             get: function () { return this._aspect._getProp('MoreComplexProperty'); },
             set: function (v) { this._aspect._setProp('MoreComplexProperty', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(_TestModelListItem.prototype, "EnumProperty", {
             get: function () { return this._aspect._getProp('EnumProperty'); },
             set: function (v) { this._aspect._setProp('EnumProperty', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         _TestModelListItem.prototype.toString = function () {
@@ -113,13 +114,13 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         Object.defineProperty(_KeyValListItem.prototype, "key", {
             get: function () { return this._aspect._getProp('key'); },
             set: function (v) { this._aspect._setProp('key', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(_KeyValListItem.prototype, "val", {
             get: function () { return this._aspect._getProp('val'); },
             set: function (v) { this._aspect._setProp('val', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         _KeyValListItem.prototype.toString = function () {
@@ -152,13 +153,13 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         Object.defineProperty(_StrKeyValListItem.prototype, "key", {
             get: function () { return this._aspect._getProp('key'); },
             set: function (v) { this._aspect._setProp('key', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(_StrKeyValListItem.prototype, "val", {
             get: function () { return this._aspect._getProp('val'); },
             set: function (v) { this._aspect._setProp('val', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         _StrKeyValListItem.prototype.toString = function () {
@@ -191,19 +192,19 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         Object.defineProperty(_RadioValListItem.prototype, "key", {
             get: function () { return this._aspect._getProp('key'); },
             set: function (v) { this._aspect._setProp('key', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(_RadioValListItem.prototype, "value", {
             get: function () { return this._aspect._getProp('value'); },
             set: function (v) { this._aspect._setProp('value', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(_RadioValListItem.prototype, "comment", {
             get: function () { return this._aspect._getProp('comment'); },
             set: function (v) { this._aspect._setProp('comment', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         _RadioValListItem.prototype.toString = function () {
@@ -236,13 +237,13 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         Object.defineProperty(_HistoryItemListItem.prototype, "radioValue", {
             get: function () { return this._aspect._getProp('radioValue'); },
             set: function (v) { this._aspect._setProp('radioValue', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(_HistoryItemListItem.prototype, "time", {
             get: function () { return this._aspect._getProp('time'); },
             set: function (v) { this._aspect._setProp('time', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         _HistoryItemListItem.prototype.toString = function () {
@@ -272,13 +273,13 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         Object.defineProperty(Customer_ComplexProp1.prototype, "EmailAddress", {
             get: function () { return this.getValue('ComplexProp.ComplexProp.EmailAddress'); },
             set: function (v) { this.setValue('ComplexProp.ComplexProp.EmailAddress', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Customer_ComplexProp1.prototype, "Phone", {
             get: function () { return this.getValue('ComplexProp.ComplexProp.Phone'); },
             set: function (v) { this.setValue('ComplexProp.ComplexProp.Phone', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Customer_ComplexProp1.prototype.toString = function () {
@@ -297,31 +298,31 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         Object.defineProperty(Customer_ComplexProp.prototype, "FirstName", {
             get: function () { return this.getValue('ComplexProp.FirstName'); },
             set: function (v) { this.setValue('ComplexProp.FirstName', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Customer_ComplexProp.prototype, "MiddleName", {
             get: function () { return this.getValue('ComplexProp.MiddleName'); },
             set: function (v) { this.setValue('ComplexProp.MiddleName', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Customer_ComplexProp.prototype, "LastName", {
             get: function () { return this.getValue('ComplexProp.LastName'); },
             set: function (v) { this.setValue('ComplexProp.LastName', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Customer_ComplexProp.prototype, "Name", {
             get: function () { return this.getEntity()._getCalcFieldVal('ComplexProp.Name'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Customer_ComplexProp.prototype, "ComplexProp", {
             get: function () { if (!this._ComplexProp) {
                 this._ComplexProp = new Customer_ComplexProp1('ComplexProp', this);
             } return this._ComplexProp; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Customer_ComplexProp.prototype.toString = function () {
@@ -340,58 +341,58 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         };
         Object.defineProperty(AddressEntity.prototype, "AddressID", {
             get: function () { return this._aspect._getFieldVal('AddressID'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressEntity.prototype, "AddressLine1", {
             get: function () { return this._aspect._getFieldVal('AddressLine1'); },
             set: function (v) { this._aspect._setFieldVal('AddressLine1', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressEntity.prototype, "AddressLine2", {
             get: function () { return this._aspect._getFieldVal('AddressLine2'); },
             set: function (v) { this._aspect._setFieldVal('AddressLine2', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressEntity.prototype, "City", {
             get: function () { return this._aspect._getFieldVal('City'); },
             set: function (v) { this._aspect._setFieldVal('City', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressEntity.prototype, "StateProvince", {
             get: function () { return this._aspect._getFieldVal('StateProvince'); },
             set: function (v) { this._aspect._setFieldVal('StateProvince', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressEntity.prototype, "CountryRegion", {
             get: function () { return this._aspect._getFieldVal('CountryRegion'); },
             set: function (v) { this._aspect._setFieldVal('CountryRegion', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressEntity.prototype, "PostalCode", {
             get: function () { return this._aspect._getFieldVal('PostalCode'); },
             set: function (v) { this._aspect._setFieldVal('PostalCode', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressEntity.prototype, "rowguid", {
             get: function () { return this._aspect._getFieldVal('rowguid'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressEntity.prototype, "ModifiedDate", {
             get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressEntity.prototype, "CustomerAddresses", {
             get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return AddressEntity;
@@ -440,32 +441,32 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         };
         Object.defineProperty(AddressInfoEntity.prototype, "AddressID", {
             get: function () { return this._aspect._getFieldVal('AddressID'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressInfoEntity.prototype, "AddressLine1", {
             get: function () { return this._aspect._getFieldVal('AddressLine1'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressInfoEntity.prototype, "City", {
             get: function () { return this._aspect._getFieldVal('City'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressInfoEntity.prototype, "StateProvince", {
             get: function () { return this._aspect._getFieldVal('StateProvince'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressInfoEntity.prototype, "CountryRegion", {
             get: function () { return this._aspect._getFieldVal('CountryRegion'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressInfoEntity.prototype, "CustomerAddresses", {
             get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return AddressInfoEntity;
@@ -511,75 +512,75 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         };
         Object.defineProperty(CustomerEntity.prototype, "CustomerID", {
             get: function () { return this._aspect._getFieldVal('CustomerID'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerEntity.prototype, "NameStyle", {
             get: function () { return this._aspect._getFieldVal('NameStyle'); },
             set: function (v) { this._aspect._setFieldVal('NameStyle', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerEntity.prototype, "Title", {
             get: function () { return this._aspect._getFieldVal('Title'); },
             set: function (v) { this._aspect._setFieldVal('Title', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerEntity.prototype, "Suffix", {
             get: function () { return this._aspect._getFieldVal('Suffix'); },
             set: function (v) { this._aspect._setFieldVal('Suffix', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerEntity.prototype, "CompanyName", {
             get: function () { return this._aspect._getFieldVal('CompanyName'); },
             set: function (v) { this._aspect._setFieldVal('CompanyName', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerEntity.prototype, "SalesPerson", {
             get: function () { return this._aspect._getFieldVal('SalesPerson'); },
             set: function (v) { this._aspect._setFieldVal('SalesPerson', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerEntity.prototype, "PasswordHash", {
             get: function () { return this._aspect._getFieldVal('PasswordHash'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerEntity.prototype, "PasswordSalt", {
             get: function () { return this._aspect._getFieldVal('PasswordSalt'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerEntity.prototype, "rowguid", {
             get: function () { return this._aspect._getFieldVal('rowguid'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerEntity.prototype, "ModifiedDate", {
             get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerEntity.prototype, "ComplexProp", {
             get: function () { if (!this._ComplexProp) {
                 this._ComplexProp = new Customer_ComplexProp('ComplexProp', this._aspect);
             } return this._ComplexProp; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerEntity.prototype, "AddressCount", {
             get: function () { return this._aspect._getFieldVal('AddressCount'); },
             set: function (v) { this._aspect._setFieldVal('AddressCount', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerEntity.prototype, "CustomerAddresses", {
             get: function () { return this._aspect._getNavFieldVal('CustomerAddresses'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return CustomerEntity;
@@ -627,47 +628,47 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         Object.defineProperty(CustomerAddressEntity.prototype, "CustomerID", {
             get: function () { return this._aspect._getFieldVal('CustomerID'); },
             set: function (v) { this._aspect._setFieldVal('CustomerID', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerAddressEntity.prototype, "AddressID", {
             get: function () { return this._aspect._getFieldVal('AddressID'); },
             set: function (v) { this._aspect._setFieldVal('AddressID', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerAddressEntity.prototype, "AddressType", {
             get: function () { return this._aspect._getFieldVal('AddressType'); },
             set: function (v) { this._aspect._setFieldVal('AddressType', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerAddressEntity.prototype, "rowguid", {
             get: function () { return this._aspect._getFieldVal('rowguid'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerAddressEntity.prototype, "ModifiedDate", {
             get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerAddressEntity.prototype, "Customer", {
             get: function () { return this._aspect._getNavFieldVal('Customer'); },
             set: function (v) { this._aspect._setNavFieldVal('Customer', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerAddressEntity.prototype, "Address", {
             get: function () { return this._aspect._getNavFieldVal('Address'); },
             set: function (v) { this._aspect._setNavFieldVal('Address', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerAddressEntity.prototype, "AddressInfo", {
             get: function () { return this._aspect._getNavFieldVal('AddressInfo'); },
             set: function (v) { this._aspect._setNavFieldVal('AddressInfo', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return CustomerAddressEntity;
@@ -716,23 +717,23 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         };
         Object.defineProperty(CustomerJSONEntity.prototype, "CustomerID", {
             get: function () { return this._aspect._getFieldVal('CustomerID'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerJSONEntity.prototype, "Data", {
             get: function () { return this._aspect._getFieldVal('Data'); },
             set: function (v) { this._aspect._setFieldVal('Data', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerJSONEntity.prototype, "rowguid", {
             get: function () { return this._aspect._getFieldVal('rowguid'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerJSONEntity.prototype, "Customer", {
             get: function () { return this._aspect._getCalcFieldVal('Customer'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return CustomerJSONEntity;
@@ -778,13 +779,13 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         Object.defineProperty(LookUpProductEntity.prototype, "ProductID", {
             get: function () { return this._aspect._getFieldVal('ProductID'); },
             set: function (v) { this._aspect._setFieldVal('ProductID', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(LookUpProductEntity.prototype, "Name", {
             get: function () { return this._aspect._getFieldVal('Name'); },
             set: function (v) { this._aspect._setFieldVal('Name', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return LookUpProductEntity;
@@ -828,105 +829,105 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         };
         Object.defineProperty(ProductEntity.prototype, "ProductID", {
             get: function () { return this._aspect._getFieldVal('ProductID'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "Name", {
             get: function () { return this._aspect._getFieldVal('Name'); },
             set: function (v) { this._aspect._setFieldVal('Name', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "ProductNumber", {
             get: function () { return this._aspect._getFieldVal('ProductNumber'); },
             set: function (v) { this._aspect._setFieldVal('ProductNumber', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "Color", {
             get: function () { return this._aspect._getFieldVal('Color'); },
             set: function (v) { this._aspect._setFieldVal('Color', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "StandardCost", {
             get: function () { return this._aspect._getFieldVal('StandardCost'); },
             set: function (v) { this._aspect._setFieldVal('StandardCost', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "ListPrice", {
             get: function () { return this._aspect._getFieldVal('ListPrice'); },
             set: function (v) { this._aspect._setFieldVal('ListPrice', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "Size", {
             get: function () { return this._aspect._getFieldVal('Size'); },
             set: function (v) { this._aspect._setFieldVal('Size', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "Weight", {
             get: function () { return this._aspect._getFieldVal('Weight'); },
             set: function (v) { this._aspect._setFieldVal('Weight', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "ProductCategoryID", {
             get: function () { return this._aspect._getFieldVal('ProductCategoryID'); },
             set: function (v) { this._aspect._setFieldVal('ProductCategoryID', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "ProductModelID", {
             get: function () { return this._aspect._getFieldVal('ProductModelID'); },
             set: function (v) { this._aspect._setFieldVal('ProductModelID', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "SellStartDate", {
             get: function () { return this._aspect._getFieldVal('SellStartDate'); },
             set: function (v) { this._aspect._setFieldVal('SellStartDate', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "SellEndDate", {
             get: function () { return this._aspect._getFieldVal('SellEndDate'); },
             set: function (v) { this._aspect._setFieldVal('SellEndDate', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "DiscontinuedDate", {
             get: function () { return this._aspect._getFieldVal('DiscontinuedDate'); },
             set: function (v) { this._aspect._setFieldVal('DiscontinuedDate', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "rowguid", {
             get: function () { return this._aspect._getFieldVal('rowguid'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "ModifiedDate", {
             get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "IsActive", {
             get: function () { return this._aspect._getCalcFieldVal('IsActive'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "ThumbnailPhotoFileName", {
             get: function () { return this._aspect._getFieldVal('ThumbnailPhotoFileName'); },
             set: function (v) { this._aspect._setFieldVal('ThumbnailPhotoFileName', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductEntity.prototype, "SalesOrderDetails", {
             get: function () { return this._aspect._getNavFieldVal('SalesOrderDetails'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return ProductEntity;
@@ -978,31 +979,31 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         };
         Object.defineProperty(ProductCategoryEntity.prototype, "ProductCategoryID", {
             get: function () { return this._aspect._getFieldVal('ProductCategoryID'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductCategoryEntity.prototype, "ParentProductCategoryID", {
             get: function () { return this._aspect._getFieldVal('ParentProductCategoryID'); },
             set: function (v) { this._aspect._setFieldVal('ParentProductCategoryID', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductCategoryEntity.prototype, "Name", {
             get: function () { return this._aspect._getFieldVal('Name'); },
             set: function (v) { this._aspect._setFieldVal('Name', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductCategoryEntity.prototype, "rowguid", {
             get: function () { return this._aspect._getFieldVal('rowguid'); },
             set: function (v) { this._aspect._setFieldVal('rowguid', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductCategoryEntity.prototype, "ModifiedDate", {
             get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
             set: function (v) { this._aspect._setFieldVal('ModifiedDate', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return ProductCategoryEntity;
@@ -1046,13 +1047,13 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         };
         Object.defineProperty(ProductModelEntity.prototype, "ProductModelID", {
             get: function () { return this._aspect._getFieldVal('ProductModelID'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductModelEntity.prototype, "Name", {
             get: function () { return this._aspect._getFieldVal('Name'); },
             set: function (v) { this._aspect._setFieldVal('Name', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return ProductModelEntity;
@@ -1097,7 +1098,7 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         Object.defineProperty(SalesInfoEntity.prototype, "SalesPerson", {
             get: function () { return this._aspect._getFieldVal('SalesPerson'); },
             set: function (v) { this._aspect._setFieldVal('SalesPerson', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return SalesInfoEntity;
@@ -1142,61 +1143,61 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         Object.defineProperty(SalesOrderDetailEntity.prototype, "SalesOrderID", {
             get: function () { return this._aspect._getFieldVal('SalesOrderID'); },
             set: function (v) { this._aspect._setFieldVal('SalesOrderID', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderDetailEntity.prototype, "SalesOrderDetailID", {
             get: function () { return this._aspect._getFieldVal('SalesOrderDetailID'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderDetailEntity.prototype, "OrderQty", {
             get: function () { return this._aspect._getFieldVal('OrderQty'); },
             set: function (v) { this._aspect._setFieldVal('OrderQty', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderDetailEntity.prototype, "ProductID", {
             get: function () { return this._aspect._getFieldVal('ProductID'); },
             set: function (v) { this._aspect._setFieldVal('ProductID', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderDetailEntity.prototype, "UnitPrice", {
             get: function () { return this._aspect._getFieldVal('UnitPrice'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderDetailEntity.prototype, "UnitPriceDiscount", {
             get: function () { return this._aspect._getFieldVal('UnitPriceDiscount'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderDetailEntity.prototype, "LineTotal", {
             get: function () { return this._aspect._getFieldVal('LineTotal'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderDetailEntity.prototype, "rowguid", {
             get: function () { return this._aspect._getFieldVal('rowguid'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderDetailEntity.prototype, "ModifiedDate", {
             get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderDetailEntity.prototype, "SalesOrderHeader", {
             get: function () { return this._aspect._getNavFieldVal('SalesOrderHeader'); },
             set: function (v) { this._aspect._setNavFieldVal('SalesOrderHeader', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderDetailEntity.prototype, "Product", {
             get: function () { return this._aspect._getNavFieldVal('Product'); },
             set: function (v) { this._aspect._setNavFieldVal('Product', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return SalesOrderDetailEntity;
@@ -1240,146 +1241,146 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         };
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "SalesOrderID", {
             get: function () { return this._aspect._getFieldVal('SalesOrderID'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "RevisionNumber", {
             get: function () { return this._aspect._getFieldVal('RevisionNumber'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "OrderDate", {
             get: function () { return this._aspect._getFieldVal('OrderDate'); },
             set: function (v) { this._aspect._setFieldVal('OrderDate', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "DueDate", {
             get: function () { return this._aspect._getFieldVal('DueDate'); },
             set: function (v) { this._aspect._setFieldVal('DueDate', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "ShipDate", {
             get: function () { return this._aspect._getFieldVal('ShipDate'); },
             set: function (v) { this._aspect._setFieldVal('ShipDate', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "Status", {
             get: function () { return this._aspect._getFieldVal('Status'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "OnlineOrderFlag", {
             get: function () { return this._aspect._getFieldVal('OnlineOrderFlag'); },
             set: function (v) { this._aspect._setFieldVal('OnlineOrderFlag', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "SalesOrderNumber", {
             get: function () { return this._aspect._getFieldVal('SalesOrderNumber'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "PurchaseOrderNumber", {
             get: function () { return this._aspect._getFieldVal('PurchaseOrderNumber'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "AccountNumber", {
             get: function () { return this._aspect._getFieldVal('AccountNumber'); },
             set: function (v) { this._aspect._setFieldVal('AccountNumber', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "CustomerID", {
             get: function () { return this._aspect._getFieldVal('CustomerID'); },
             set: function (v) { this._aspect._setFieldVal('CustomerID', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "ShipToAddressID", {
             get: function () { return this._aspect._getFieldVal('ShipToAddressID'); },
             set: function (v) { this._aspect._setFieldVal('ShipToAddressID', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "BillToAddressID", {
             get: function () { return this._aspect._getFieldVal('BillToAddressID'); },
             set: function (v) { this._aspect._setFieldVal('BillToAddressID', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "ShipMethod", {
             get: function () { return this._aspect._getFieldVal('ShipMethod'); },
             set: function (v) { this._aspect._setFieldVal('ShipMethod', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "CreditCardApprovalCode", {
             get: function () { return this._aspect._getFieldVal('CreditCardApprovalCode'); },
             set: function (v) { this._aspect._setFieldVal('CreditCardApprovalCode', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "SubTotal", {
             get: function () { return this._aspect._getFieldVal('SubTotal'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "TaxAmt", {
             get: function () { return this._aspect._getFieldVal('TaxAmt'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "Freight", {
             get: function () { return this._aspect._getFieldVal('Freight'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "TotalDue", {
             get: function () { return this._aspect._getFieldVal('TotalDue'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "Comment", {
             get: function () { return this._aspect._getFieldVal('Comment'); },
             set: function (v) { this._aspect._setFieldVal('Comment', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "rowguid", {
             get: function () { return this._aspect._getFieldVal('rowguid'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "ModifiedDate", {
             get: function () { return this._aspect._getFieldVal('ModifiedDate'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "SalesOrderDetails", {
             get: function () { return this._aspect._getNavFieldVal('SalesOrderDetails'); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "Customer", {
             get: function () { return this._aspect._getNavFieldVal('Customer'); },
             set: function (v) { this._aspect._setNavFieldVal('Customer', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "Address", {
             get: function () { return this._aspect._getNavFieldVal('Address'); },
             set: function (v) { this._aspect._setNavFieldVal('Address', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SalesOrderHeaderEntity.prototype, "Address1", {
             get: function () { return this._aspect._getNavFieldVal('Address1'); },
             set: function (v) { this._aspect._setNavFieldVal('Address1', v); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return SalesOrderHeaderEntity;
@@ -1433,62 +1434,62 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
         }
         Object.defineProperty(DbSets.prototype, "Address", {
             get: function () { return this.getDbSet("Address"); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSets.prototype, "AddressInfo", {
             get: function () { return this.getDbSet("AddressInfo"); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSets.prototype, "Customer", {
             get: function () { return this.getDbSet("Customer"); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSets.prototype, "CustomerAddress", {
             get: function () { return this.getDbSet("CustomerAddress"); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSets.prototype, "CustomerJSON", {
             get: function () { return this.getDbSet("CustomerJSON"); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSets.prototype, "LookUpProduct", {
             get: function () { return this.getDbSet("LookUpProduct"); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSets.prototype, "Product", {
             get: function () { return this.getDbSet("Product"); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSets.prototype, "ProductCategory", {
             get: function () { return this.getDbSet("ProductCategory"); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSets.prototype, "ProductModel", {
             get: function () { return this.getDbSet("ProductModel"); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSets.prototype, "SalesInfo", {
             get: function () { return this.getDbSet("SalesInfo"); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSets.prototype, "SalesOrderDetail", {
             get: function () { return this.getDbSet("SalesOrderDetail"); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DbSets.prototype, "SalesOrderHeader", {
             get: function () { return this.getDbSet("SalesOrderHeader"); },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DbSets;
@@ -1515,6 +1516,7 @@ define("demo/demoDB", ["require", "exports", "jriapp_shared", "jriapp_db"], func
 define("mastDetDemo/prodAutocomplete", ["require", "exports", "autocomplete"], function (require, exports, AUTOCOMPLETE) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.initModule = exports.ProductAutoComplete = void 0;
     var ProductAutoComplete = (function (_super) {
         __extends(ProductAutoComplete, _super);
         function ProductAutoComplete(el, options) {
@@ -1579,7 +1581,7 @@ define("mastDetDemo/prodAutocomplete", ["require", "exports", "autocomplete"], f
                     return null;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return ProductAutoComplete;
@@ -1594,6 +1596,7 @@ define("mastDetDemo/prodAutocomplete", ["require", "exports", "autocomplete"], f
 define("mastDetDemo/productVM", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ProductVM = void 0;
     var ProductVM = (function (_super) {
         __extends(ProductVM, _super);
         function ProductVM(orderDetailVM) {
@@ -1645,27 +1648,27 @@ define("mastDetDemo/productVM", ["require", "exports", "jriapp"], function (requ
         };
         Object.defineProperty(ProductVM.prototype, "_customerDbSet", {
             get: function () { return this._orderDetailVM.orderVM.customerVM.dbSet; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductVM.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductVM.prototype, "dbSets", {
             get: function () { return this.dbContext.dbSets; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductVM.prototype, "currentItem", {
             get: function () { return this._dbSet.currentItem; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ProductVM.prototype, "dbSet", {
             get: function () { return this._dbSet; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return ProductVM;
@@ -1675,6 +1678,7 @@ define("mastDetDemo/productVM", ["require", "exports", "jriapp"], function (requ
 define("mastDetDemo/orderDetVM", ["require", "exports", "jriapp", "jriapp_ui", "mastDetDemo/productVM"], function (require, exports, RIAPP, uiMOD, productVM_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.OrderDetailVM = void 0;
     var utils = RIAPP.Utils, $ = uiMOD.$;
     var OrderDetailVM = (function (_super) {
         __extends(OrderDetailVM, _super);
@@ -1727,22 +1731,22 @@ define("mastDetDemo/orderDetVM", ["require", "exports", "jriapp", "jriapp_ui", "
         };
         Object.defineProperty(OrderDetailVM.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderDetailVM.prototype, "dbSets", {
             get: function () { return this.dbContext.dbSets; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderDetailVM.prototype, "currentItem", {
             get: function () { return this._dbSet.currentItem; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderDetailVM.prototype, "dbSet", {
             get: function () { return this._dbSet; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderDetailVM.prototype, "currentOrder", {
@@ -1754,12 +1758,12 @@ define("mastDetDemo/orderDetVM", ["require", "exports", "jriapp", "jriapp_ui", "
                     this.load();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderDetailVM.prototype, "orderVM", {
             get: function () { return this._orderVM; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return OrderDetailVM;
@@ -1769,6 +1773,7 @@ define("mastDetDemo/orderDetVM", ["require", "exports", "jriapp", "jriapp_ui", "
 define("mastDetDemo/addressVM", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.AddressVM = void 0;
     var AddressVM = (function (_super) {
         __extends(AddressVM, _super);
         function AddressVM(orderVM) {
@@ -1821,32 +1826,32 @@ define("mastDetDemo/addressVM", ["require", "exports", "jriapp"], function (requ
         };
         Object.defineProperty(AddressVM.prototype, "_customerDbSet", {
             get: function () { return this._orderVM.customerVM.dbSet; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressVM.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressVM.prototype, "dbSets", {
             get: function () { return this.dbContext.dbSets; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressVM.prototype, "currentItem", {
             get: function () { return this._dbSet.currentItem; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressVM.prototype, "dbSet", {
             get: function () { return this._dbSet; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AddressVM.prototype, "orderVM", {
             get: function () { return this._orderVM; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return AddressVM;
@@ -1856,6 +1861,7 @@ define("mastDetDemo/addressVM", ["require", "exports", "jriapp"], function (requ
 define("mastDetDemo/orderVM", ["require", "exports", "jriapp", "jriapp_ui", "demo/demoDB", "mastDetDemo/orderDetVM", "mastDetDemo/addressVM"], function (require, exports, RIAPP, uiMOD, DEMODB, orderDetVM_1, addressVM_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.OrderVM = void 0;
     var utils = RIAPP.Utils, $ = uiMOD.$, dates = utils.dates;
     var OrderVM = (function (_super) {
         __extends(OrderVM, _super);
@@ -1979,32 +1985,32 @@ define("mastDetDemo/orderVM", ["require", "exports", "jriapp", "jriapp_ui", "dem
         };
         Object.defineProperty(OrderVM.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderVM.prototype, "dbSets", {
             get: function () { return this.dbContext.dbSets; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderVM.prototype, "currentItem", {
             get: function () { return this._dbSet.currentItem; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderVM.prototype, "dbSet", {
             get: function () { return this._dbSet; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderVM.prototype, "addNewCommand", {
             get: function () { return this._addNewCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderVM.prototype, "orderStatuses", {
             get: function () { return this._orderStatuses; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderVM.prototype, "currentCustomer", {
@@ -2016,27 +2022,27 @@ define("mastDetDemo/orderVM", ["require", "exports", "jriapp", "jriapp_ui", "dem
                     this.load();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderVM.prototype, "customerVM", {
             get: function () { return this._customerVM; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderVM.prototype, "orderDetailsVM", {
             get: function () { return this._orderDetailVM; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderVM.prototype, "selectedTabIndex", {
             get: function () { return this._selectedTabIndex; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderVM.prototype, "tabsEvents", {
             get: function () { return this; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(OrderVM.prototype, "grid", {
@@ -2047,7 +2053,7 @@ define("mastDetDemo/orderVM", ["require", "exports", "jriapp", "jriapp_ui", "dem
                 else
                     this._removeGrid();
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return OrderVM;
@@ -2057,6 +2063,7 @@ define("mastDetDemo/orderVM", ["require", "exports", "jriapp", "jriapp_ui", "dem
 define("mastDetDemo/customerVM", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui", "mastDetDemo/orderVM"], function (require, exports, RIAPP, dbMOD, uiMOD, orderVM_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.CustomerVM = void 0;
     var utils = RIAPP.Utils, $ = uiMOD.$;
     var CustomerVM = (function (_super) {
         __extends(CustomerVM, _super);
@@ -2180,52 +2187,52 @@ define("mastDetDemo/customerVM", ["require", "exports", "jriapp", "jriapp_db", "
         };
         Object.defineProperty(CustomerVM.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerVM.prototype, "dbSets", {
             get: function () { return this.dbContext.dbSets; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerVM.prototype, "dbSet", {
             get: function () { return this._dbSet; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerVM.prototype, "currentItem", {
             get: function () { return this._dbSet.currentItem; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerVM.prototype, "addNewCommand", {
             get: function () { return this._addNewCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerVM.prototype, "saveCommand", {
             get: function () { return this._saveCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerVM.prototype, "undoCommand", {
             get: function () { return this._undoCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerVM.prototype, "loadCommand", {
             get: function () { return this._loadCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerVM.prototype, "ordersVM", {
             get: function () { return this._ordersVM; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerVM.prototype, "custAdressView", {
             get: function () { return this._custAdressView; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerVM.prototype, "grid", {
@@ -2236,7 +2243,7 @@ define("mastDetDemo/customerVM", ["require", "exports", "jriapp", "jriapp_db", "
                 else
                     this._removeGrid();
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return CustomerVM;
@@ -2246,6 +2253,7 @@ define("mastDetDemo/customerVM", ["require", "exports", "jriapp", "jriapp_db", "
 define("mastDetDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "common", "mastDetDemo/customerVM"], function (require, exports, RIAPP, DEMODB, COMMON, customerVM_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DemoApplication = void 0;
     var DemoApplication = (function (_super) {
         __extends(DemoApplication, _super);
         function DemoApplication(options) {
@@ -2302,27 +2310,27 @@ define("mastDetDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "commo
         };
         Object.defineProperty(DemoApplication.prototype, "options", {
             get: function () { return this._options; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "dbContext", {
             get: function () { return this._dbContext; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "errorVM", {
             get: function () { return this._errorVM; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "customerVM", {
             get: function () { return this._customerVM; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "TEXT", {
             get: function () { return RIAPP.LocaleSTRS.TEXT; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DemoApplication;
@@ -2332,6 +2340,7 @@ define("mastDetDemo/app", ["require", "exports", "jriapp", "demo/demoDB", "commo
 define("mastDetDemo/main", ["require", "exports", "jriapp", "common", "autocomplete", "mastDetDemo/prodAutocomplete", "mastDetDemo/app"], function (require, exports, RIAPP, COMMON, AUTOCOMPLETE, PRODAUTOCOMPLETE, app_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.start = void 0;
     var bootstrap = RIAPP.bootstrap;
     bootstrap.objEvents.addOnError(function (_s, args) {
         debugger;

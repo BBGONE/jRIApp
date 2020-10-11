@@ -2,7 +2,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -36,6 +36,7 @@ define("abstractions/tabs", ["require", "exports"], function (require, exports) 
 define("testobject", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.TestObject = void 0;
     var demoRows = [{ num: 1, someVal: "someVal1" }, { num: 2, someVal: "someVal2" }, { num: 3, someVal: "someVal3" }, { num: 4, someVal: "someVal4" }, { num: 5, someVal: "someVal5" }];
     var demoTabs = [{
             name: "tab1", heading: {
@@ -107,7 +108,7 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
                     this.objEvents.raiseProp("testValue");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "rows", {
@@ -120,7 +121,7 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
                     this.objEvents.raiseProp("rows");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "page", {
@@ -133,12 +134,12 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
                     this.objEvents.raiseProp("page");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "reverseCommand", {
             get: function () { return this._reverseCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "selectedRow", {
@@ -151,14 +152,14 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
                     this.objEvents.raiseProp("selectedRow");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "tabs", {
             get: function () {
                 return this._tabs;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return TestObject;
@@ -168,6 +169,7 @@ define("testobject", ["require", "exports", "jriapp"], function (require, export
 define("app", ["require", "exports", "jriapp", "testobject"], function (require, exports, RIAPP, testobject_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DemoApplication = void 0;
     var tabs = ["Description", "Reviews"];
     var tabs2 = ["tab1", "tab2", "tab3"];
     var DemoApplication = (function (_super) {
@@ -215,7 +217,7 @@ define("app", ["require", "exports", "jriapp", "testobject"], function (require,
                     this.objEvents.raiseProp("activeTabName");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "activeTabName2", {
@@ -228,14 +230,14 @@ define("app", ["require", "exports", "jriapp", "testobject"], function (require,
                     this.objEvents.raiseProp("activeTabName2");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "testObj", {
             get: function () {
                 return this._testObj;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DemoApplication;
@@ -245,6 +247,7 @@ define("app", ["require", "exports", "jriapp", "testobject"], function (require,
 define("views/react", ["require", "exports", "jriapp", "jriapp_ui", "react-dom", "redux"], function (require, exports, RIAPP, uiMOD, react_dom_1, Redux) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ReactElView = exports.mergeOptions = void 0;
     function mergeOptions(options, defaults) {
         var ret = {};
         Object.keys(defaults).forEach(function (key) {
@@ -323,14 +326,14 @@ define("views/react", ["require", "exports", "jriapp", "jriapp_ui", "react-dom",
             get: function () {
                 return this._store;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ReactElView.prototype, "state", {
             get: function () {
                 return this._state;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         ReactElView.prototype.toString = function () {
@@ -343,6 +346,7 @@ define("views/react", ["require", "exports", "jriapp", "jriapp_ui", "react-dom",
 define("actions/common", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.propertyChanged = void 0;
     function propertyChanged(name, value) {
         return { type: "CHANGE_PROP", name: name, value: value };
     }
@@ -351,6 +355,7 @@ define("actions/common", ["require", "exports"], function (require, exports) {
 define("views/simple", ["require", "exports", "react", "views/react", "actions/common"], function (require, exports, React, react_1, common_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.initModule = exports.SimpleElView = void 0;
     var spacerStyle = {
         marginLeft: '15px',
         marginRight: '5px',
@@ -407,7 +412,7 @@ define("views/simple", ["require", "exports", "react", "views/react", "actions/c
             set: function (v) {
                 this.dispatch(common_1.propertyChanged("value", v));
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SimpleElView.prototype, "title", {
@@ -417,7 +422,7 @@ define("views/simple", ["require", "exports", "react", "views/react", "actions/c
             set: function (v) {
                 this.dispatch(common_1.propertyChanged("title", v));
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         SimpleElView.prototype.toString = function () {
@@ -593,6 +598,7 @@ define("components/connected-pager", ["require", "exports", "react-redux", "acti
 define("views/pager", ["require", "exports", "react", "react-redux", "views/react", "actions/common", "components/connected-pager"], function (require, exports, React, react_redux_2, react_2, common_3, connected_pager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.initModule = exports.PagerElView = void 0;
     var _reducer = function (initialState, state, action) {
         var _a;
         switch (action.type) {
@@ -636,7 +642,7 @@ define("views/pager", ["require", "exports", "react", "react-redux", "views/reac
             set: function (v) {
                 this.dispatch(common_3.propertyChanged("total", v));
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(PagerElView.prototype, "current", {
@@ -646,7 +652,7 @@ define("views/pager", ["require", "exports", "react", "react-redux", "views/reac
             set: function (v) {
                 this.dispatch(common_3.propertyChanged("current", v));
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(PagerElView.prototype, "visiblePages", {
@@ -656,7 +662,7 @@ define("views/pager", ["require", "exports", "react", "react-redux", "views/reac
             set: function (v) {
                 this.dispatch(common_3.propertyChanged("visiblePages", v));
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         PagerElView.prototype.toString = function () {
@@ -758,6 +764,7 @@ define("components/template", ["require", "exports", "react", "jriapp/template",
 define("views/templated", ["require", "exports", "react", "views/react", "actions/common", "components/template"], function (require, exports, React, react_3, common_4, template_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.initModule = exports.TemplatedElView = void 0;
     var rowStyle = {
         display: 'inline-block',
     };
@@ -814,7 +821,7 @@ define("views/templated", ["require", "exports", "react", "views/react", "action
             set: function (v) {
                 this.dispatch(common_4.propertyChanged("templateId", v));
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TemplatedElView.prototype, "rows", {
@@ -824,14 +831,14 @@ define("views/templated", ["require", "exports", "react", "views/react", "action
             set: function (v) {
                 this.dispatch(common_4.propertyChanged("rows", v));
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TemplatedElView.prototype, "keyName", {
             get: function () {
                 return this.state.keyName;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TemplatedElView.prototype, "selectedRow", {
@@ -841,7 +848,7 @@ define("views/templated", ["require", "exports", "react", "views/react", "action
             set: function (v) {
                 this.dispatch(common_4.propertyChanged("selectedRow", v));
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         TemplatedElView.prototype.toString = function () {
@@ -901,6 +908,7 @@ define("components/tabs", ["require", "exports", "react", "components/template"]
 define("views/tabs", ["require", "exports", "react", "views/react", "actions/common", "components/tabs"], function (require, exports, React, react_4, common_5, tabs_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.initModule = exports.TabsElView = void 0;
     var _reducer = function (initialState, state, action) {
         var _a;
         switch (action.type) {
@@ -943,7 +951,7 @@ define("views/tabs", ["require", "exports", "react", "views/react", "actions/com
             set: function (v) {
                 this.dispatch(common_5.propertyChanged("activeTabName", v));
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TabsElView.prototype, "tabs", {
@@ -953,7 +961,7 @@ define("views/tabs", ["require", "exports", "react", "views/react", "actions/com
             set: function (v) {
                 this.dispatch(common_5.propertyChanged("tabs", v));
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         TabsElView.prototype.toString = function () {
@@ -1035,6 +1043,7 @@ define("components/tabs-old2", ["require", "exports", "react", "react"], functio
 define("views/tabs-old", ["require", "exports", "react", "views/react", "actions/common", "components/tabs-old2"], function (require, exports, React, react_6, common_6, tabs_old2_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.initModule = exports.TabsElView = void 0;
     var _reducer = function (initialState, state, action) {
         var _a;
         switch (action.type) {
@@ -1087,7 +1096,7 @@ define("views/tabs-old", ["require", "exports", "react", "views/react", "actions
             set: function (v) {
                 this.dispatch(common_6.propertyChanged("activeTabName", v));
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         TabsElView.prototype.toString = function () {
@@ -1104,6 +1113,7 @@ define("views/tabs-old", ["require", "exports", "react", "views/react", "actions
 define("main", ["require", "exports", "jriapp", "app", "views/simple", "views/pager", "views/templated", "views/tabs", "views/tabs-old"], function (require, exports, RIAPP, app_1, simple_1, pager_2, templated_1, tabs_2, tabs_old_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.start = void 0;
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
     bootstrap.objEvents.addOnError(function (_s, args) {
         debugger;

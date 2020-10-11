@@ -2,7 +2,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -25,6 +25,7 @@ var __assign = (this && this.__assign) || function () {
 define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], function (require, exports, RIAPP, dbMOD, uiMOD) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.initModule = exports.ErrorViewModel = exports.FileImgElView = exports.DownloadLinkElView = exports.addTextQuery = void 0;
     var utils = RIAPP.Utils;
     function addTextQuery(query, fldName, val) {
         var tmp;
@@ -73,7 +74,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                     this.objEvents.raiseProp('text');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DownloadLinkElView.prototype, "href", {
@@ -88,7 +89,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                     this.objEvents.raiseProp("href");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DownloadLinkElView.prototype, "id", {
@@ -104,7 +105,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                     this.objEvents.raiseProp('id');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DownloadLinkElView;
@@ -153,7 +154,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                     this.reloadImg();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FileImgElView.prototype, "src", {
@@ -174,7 +175,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                     }
                 });
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FileImgElView.prototype, "id", {
@@ -193,7 +194,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                     this.objEvents.raiseProp('id');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return FileImgElView;
@@ -280,7 +281,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                     this.objEvents.raiseProp('errorCount');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ErrorViewModel.prototype, "title", {
@@ -294,7 +295,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                     this.objEvents.raiseProp('title');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ErrorViewModel.prototype, "message", {
@@ -308,14 +309,14 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
                     this.objEvents.raiseProp('message');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ErrorViewModel.prototype, "errorCount", {
             get: function () {
                 return this._errors.length + 1;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return ErrorViewModel;
@@ -331,6 +332,7 @@ define("common", ["require", "exports", "jriapp", "jriapp_db", "jriapp_ui"], fun
 define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], function (require, exports, RIAPP, uiMOD, COMMON) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.initModule = exports.AutoCompleteElView = void 0;
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$, dom = RIAPP.DOM;
     function findElemViewInTemplate(template, name) {
         var arr = template.findElViewsByDataName(name);
@@ -583,14 +585,14 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             get: function () {
                 return this._fieldName;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AutoCompleteElView.prototype, "templateId", {
             get: function () {
                 return this._templateId;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AutoCompleteElView.prototype, "currentSelection", {
@@ -602,14 +604,14 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
                     return null;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AutoCompleteElView.prototype, "template", {
             get: function () {
                 return this._template;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AutoCompleteElView.prototype, "dataContext", {
@@ -619,14 +621,14 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
             set: function (v) {
                 this.setDataContext(v);
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AutoCompleteElView.prototype, "gridDataSource", {
             get: function () {
                 return this._gridDataSource;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AutoCompleteElView.prototype, "value", {
@@ -642,14 +644,14 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
                     this.objEvents.raiseProp("value");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AutoCompleteElView.prototype, "isLoading", {
             get: function () {
                 return this._isLoading;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return AutoCompleteElView;
@@ -663,6 +665,7 @@ define("autocomplete", ["require", "exports", "jriapp", "jriapp_ui", "common"], 
 define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.HeaderVM = exports.contentPanel = exports.topPanel = void 0;
     var $ = uiMOD.$;
     exports.topPanel = "#demoHeader";
     exports.contentPanel = "#demoContent";
@@ -711,17 +714,17 @@ define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (requir
         };
         Object.defineProperty(HeaderVM.prototype, "expanderCommand", {
             get: function () { return this._expanderCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(HeaderVM.prototype, "$contentPanel", {
             get: function () { return this._$contentPanel; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(HeaderVM.prototype, "$topPanel", {
             get: function () { return this._$topPanel; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return HeaderVM;
@@ -731,6 +734,7 @@ define("header", ["require", "exports", "jriapp", "jriapp_ui"], function (requir
 define("mixobj", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_shared/utils/error", "jriapp_shared/utils/weakmap", "jriapp_shared/object"], function (require, exports, checks_1, error_1, weakmap_1, object_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.MixObject = void 0;
     var checks = checks_1.Checks, signature = object_1.objSignature, weakmap = weakmap_1.createWeakMap();
     function MixObject(Base) {
         return (function (_super) {
@@ -798,14 +802,14 @@ define("mixobj", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_sh
                     }
                     return state.events;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(class_1.prototype, "__objSig", {
                 get: function () {
                     return signature;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             return class_1;
@@ -816,6 +820,7 @@ define("mixobj", ["require", "exports", "jriapp_shared/utils/checks", "jriapp_sh
 define("monthpicker", ["require", "exports", "jriapp_ui"], function (require, exports, uiMOD) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.initModule = exports.MonthPickerElView = void 0;
     var $ = uiMOD.$;
     var MonthPickerElView = (function (_super) {
         __extends(MonthPickerElView, _super);
@@ -852,6 +857,7 @@ define("monthpicker", ["require", "exports", "jriapp_ui"], function (require, ex
 define("ssevents", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.SSEventsVM = void 0;
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
     var SSEventsVM = (function (_super) {
         __extends(SSEventsVM, _super);
@@ -988,32 +994,32 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
         };
         Object.defineProperty(SSEventsVM.prototype, "es", {
             get: function () { return this._es; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SSEventsVM.prototype, "openESCommand", {
             get: function () { return this._openESCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SSEventsVM.prototype, "closeESCommand", {
             get: function () { return this._closeESCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SSEventsVM.prototype, "url", {
             get: function () { return this._url; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SSEventsVM.prototype, "baseUrl", {
             get: function () { return this._baseUrl; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SSEventsVM.prototype, "clientID", {
             get: function () { return this._clientID; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return SSEventsVM;
@@ -1023,6 +1029,7 @@ define("ssevents", ["require", "exports", "jriapp"], function (require, exports,
 define("uploader", ["require", "exports", "jriapp_shared"], function (require, exports, RIAPP) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Uploader = void 0;
     var utils = RIAPP.Utils, _async = utils.defer, CHUNK_SIZE = (512 * 1024);
     var Uploader = (function (_super) {
         __extends(Uploader, _super);
@@ -1084,12 +1091,12 @@ define("uploader", ["require", "exports", "jriapp_shared"], function (require, e
         };
         Object.defineProperty(Uploader.prototype, "uploadUrl", {
             get: function () { return this._uploadUrl; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Uploader.prototype, "fileName", {
             get: function () { return this._file.name; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return Uploader;
@@ -1099,6 +1106,7 @@ define("uploader", ["require", "exports", "jriapp_shared"], function (require, e
 define("websocket", ["require", "exports", "jriapp"], function (require, exports, RIAPP) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.WebSocketsVM = void 0;
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils;
     var WebSocketsVM = (function (_super) {
         __extends(WebSocketsVM, _super);
@@ -1249,28 +1257,28 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
         };
         Object.defineProperty(WebSocketsVM.prototype, "ws", {
             get: function () { return this._ws; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(WebSocketsVM.prototype, "openWsCommand", {
             get: function () { return this._openWsCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(WebSocketsVM.prototype, "closeWsCommand", {
             get: function () { return this._closeWsCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(WebSocketsVM.prototype, "url", {
             get: function () { return this._url; },
             set: function (v) { this._url = v; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(WebSocketsVM.prototype, "clientID", {
             get: function () { return this._clientID; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return WebSocketsVM;
@@ -1280,6 +1288,7 @@ define("websocket", ["require", "exports", "jriapp"], function (require, exports
 define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (require, exports, RIAPP, uiMOD) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.initModule = exports.DropDownBoxElView = void 0;
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, $ = uiMOD.$, dom = RIAPP.DOM;
     function findElemViewInTemplate(template, name) {
         var arr = template.findElViewsByDataName(name);
@@ -1562,7 +1571,7 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
         };
         Object.defineProperty(DropDownBoxElView.prototype, "templateId", {
             get: function () { return this._templateId; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DropDownBoxElView.prototype, "info", {
@@ -1573,7 +1582,7 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
                 utils.core.forEach(this._selected, function (_, v) { res.push(v.text); });
                 return res.sort().join(",");
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DropDownBoxElView.prototype, "selected", {
@@ -1587,17 +1596,17 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
                     this._clear(true);
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DropDownBoxElView.prototype, "template", {
             get: function () { return this._template; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DropDownBoxElView.prototype, "dataSource", {
             get: function () { return this._dataSource; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DropDownBoxElView.prototype, "value", {
@@ -1612,7 +1621,7 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
                     this.objEvents.raiseProp("value");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DropDownBoxElView.prototype, "selectedCount", {
@@ -1624,7 +1633,7 @@ define("dropdownbox", ["require", "exports", "jriapp", "jriapp_ui"], function (r
                     this.objEvents.raiseProp('selectedCount');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DropDownBoxElView;

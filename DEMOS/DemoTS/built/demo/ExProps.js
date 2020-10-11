@@ -2,7 +2,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -14,6 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports, RIAPP, dbMOD) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ExProps = exports.infoType = void 0;
     exports.infoType = "BASE_ROOT";
     var ChildDataView = (function (_super) {
         __extends(ChildDataView, _super);
@@ -118,22 +119,22 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
         };
         Object.defineProperty(ExProps.prototype, "item", {
             get: function () { return this._item; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ExProps.prototype, "childView", {
             get: function () { return this._childView; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ExProps.prototype, "toggleCommand", {
             get: function () { return this._toggleCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ExProps.prototype, "clickCommand", {
             get: function () { return this._clickCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ExProps.prototype, "css1", {
@@ -149,14 +150,14 @@ define(["require", "exports", "jriapp", "jriapp_db"], function (require, exports
                 css += folder_css;
                 return css;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ExProps.prototype, "css2", {
             get: function () {
                 return this.item.HasSubDirs ? 'dynatree-expander' : 'dynatree-connector';
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return ExProps;

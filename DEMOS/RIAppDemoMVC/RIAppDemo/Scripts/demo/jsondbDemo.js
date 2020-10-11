@@ -2,7 +2,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -14,6 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 define(["require", "exports", "jriapp", "./demoDB", "common"], function (require, exports, RIAPP, DEMODB, COMMON) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.start = exports.DemoApplication = exports.CustomerViewModel = exports.CustomerBag = void 0;
     var bootstrap = RIAPP.bootstrap;
     var CustomerBag = (function (_super) {
         __extends(CustomerBag, _super);
@@ -48,21 +49,24 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                     }
                 },
                 {
-                    fieldName: "[Title]", fn: function (bag, errors) {
+                    fieldName: "[Title]",
+                    fn: function (bag, errors) {
                         if (!bag.getProp("[Title]")) {
                             errors.push('Title must be filled');
                         }
                     }
                 },
                 {
-                    fieldName: "[Level1.FirstName]", fn: function (bag, errors) {
+                    fieldName: "[Level1.FirstName]",
+                    fn: function (bag, errors) {
                         if (!bag.getProp("[Level1.FirstName]")) {
                             errors.push('First name must be filled');
                         }
                     }
                 },
                 {
-                    fieldName: "[Level1.LastName]", fn: function (bag, errors) {
+                    fieldName: "[Level1.LastName]",
+                    fn: function (bag, errors) {
                         if (!bag.getProp("[Level1.LastName]")) {
                             errors.push('Last name must be filled');
                         }
@@ -88,14 +92,16 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         };
         CustomerBag.prototype.initAddressValidations = function (addresses) {
             var validations = [{
-                    fieldName: "[City]", fn: function (bag, errors) {
+                    fieldName: "[City]",
+                    fn: function (bag, errors) {
                         if (!bag.getProp("[City]")) {
                             errors.push('City must be filled');
                         }
                     }
                 },
                 {
-                    fieldName: "[Line1]", fn: function (bag, errors) {
+                    fieldName: "[Line1]",
+                    fn: function (bag, errors) {
                         if (!bag.getProp("[Line1]")) {
                             errors.push('Line1 name must be filled');
                         }
@@ -139,14 +145,14 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                 }
                 return this._addresses.list;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerBag.prototype, "dateFormat", {
             get: function () {
                 return "DD.MM.YYYY HH:mm:ss";
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return CustomerBag;
@@ -225,47 +231,47 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         };
         Object.defineProperty(CustomerViewModel.prototype, "dbSet", {
             get: function () { return this._dbSet; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerViewModel.prototype, "addNewCommand", {
             get: function () { return this._addNewCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerViewModel.prototype, "addNewAddrCommand", {
             get: function () { return this._addNewAddrCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerViewModel.prototype, "saveCommand", {
             get: function () { return this._saveCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerViewModel.prototype, "undoCommand", {
             get: function () { return this._undoCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerViewModel.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerViewModel.prototype, "dbSets", {
             get: function () { return this.dbContext.dbSets; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerViewModel.prototype, "currentItem", {
             get: function () { return this._dbSet.currentItem; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CustomerViewModel.prototype, "loadCommand", {
             get: function () { return this._loadCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return CustomerViewModel;
@@ -316,29 +322,29 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         };
         Object.defineProperty(DemoApplication.prototype, "options", {
             get: function () { return this._options; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "dbContext", {
             get: function () { return this._dbContext; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "errorVM", {
             get: function () { return this._errorVM; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "customerVM", {
             get: function () { return this._customerVM; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "dateFormat", {
             get: function () {
                 return "MM.DD.YYYY HH:mm:ss";
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DemoApplication;

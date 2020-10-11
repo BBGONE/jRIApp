@@ -2,7 +2,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -14,6 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "common"], function (require, exports, RIAPP, uiMOD, FOLDERBROWSER_SVC, COMMON) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.start = exports.DemoApplication = exports.FolderBrowserVM = exports.FolderBrowser = void 0;
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, coreUtils = RIAPP.Utils.core, $ = uiMOD.$;
     var FolderBrowser = (function (_super) {
         __extends(FolderBrowser, _super);
@@ -116,12 +117,12 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
         };
         Object.defineProperty(FolderBrowser.prototype, "dbContext", {
             get: function () { return this.app.dbContext; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FolderBrowser.prototype, "loadRootCommand", {
             get: function () { return this._loadRootCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FolderBrowser.prototype, "infotype", {
@@ -130,12 +131,12 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
                 this._infotype = v;
                 this.objEvents.raiseProp('infotype');
             } },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FolderBrowser.prototype, "dbSet", {
             get: function () { return this._dbSet; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return FolderBrowser;
@@ -222,7 +223,7 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
         };
         Object.defineProperty(FolderBrowserVM.prototype, "folderBrowser", {
             get: function () { return this._folderBrowser; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FolderBrowserVM.prototype, "selectedItem", {
@@ -233,17 +234,17 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
                     this.objEvents.raiseProp('selectedItem');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FolderBrowserVM.prototype, "dialogCommand", {
             get: function () { return this._dialogCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FolderBrowserVM.prototype, "includeFiles", {
             get: function () { return this._options.includeFiles; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FolderBrowserVM.prototype, "infotype", {
@@ -252,7 +253,7 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
                 this._infotype = v;
                 this.objEvents.raiseProp('infotype');
             } },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return FolderBrowserVM;
@@ -338,37 +339,37 @@ define(["require", "exports", "jriapp", "jriapp_ui", "./folderBrowserSvc", "comm
         };
         Object.defineProperty(DemoApplication.prototype, "options", {
             get: function () { return this._options; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "errorVM", {
             get: function () { return this._errorVM; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "TEXT", {
             get: function () { return RIAPP.LocaleSTRS.TEXT; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "fbrowserVM1", {
             get: function () { return this._fbrowserVM1; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "fbrowserVM2", {
             get: function () { return this._fbrowserVM2; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "selectedPath", {
             get: function () { return this._selectedPath; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "dbContext", {
             get: function () { return this._dbContext; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DemoApplication;

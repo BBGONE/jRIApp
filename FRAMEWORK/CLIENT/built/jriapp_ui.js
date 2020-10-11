@@ -2,7 +2,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -11,9 +11,20 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 define("jriapp_ui/int", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.cssStyles = void 0;
     var cssStyles;
     (function (cssStyles) {
         cssStyles["fieldError"] = "ria-field-error";
@@ -34,6 +45,7 @@ define("jriapp_ui/int", ["require", "exports"], function (require, exports) {
 define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp/binding", "jriapp/utils/lifetime"], function (require, exports, jriapp_shared_1, dom_1, bootstrap_1, binding_1, lifetime_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.BasicContent = exports.getBindingOption = exports.getView = void 0;
     var utils = jriapp_shared_1.Utils, dom = dom_1.DomUtils, doc = dom.document, extend = utils.core.extend, boot = bootstrap_1.bootstrap, sys = utils.sys;
     function getView(el, name, options) {
         var factory = boot.app.viewFactory, elView = factory.store.getElView(el);
@@ -281,28 +293,28 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
                 }
                 return this._lfScope;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BasicContent.prototype, "parentEl", {
             get: function () {
                 return this._parentEl;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BasicContent.prototype, "el", {
             get: function () {
                 return this._el;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BasicContent.prototype, "view", {
             get: function () {
                 return this._view;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BasicContent.prototype, "isEditing", {
@@ -315,7 +327,7 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
                     this.render();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BasicContent.prototype, "dataContext", {
@@ -328,28 +340,28 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
                     this.updateBindingSource();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BasicContent.prototype, "isReadOnly", {
             get: function () {
                 return this._isReadOnly;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BasicContent.prototype, "options", {
             get: function () {
                 return this._options;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BasicContent.prototype, "app", {
             get: function () {
                 return boot.app;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return BasicContent;
@@ -359,6 +371,7 @@ define("jriapp_ui/content/basic", ["require", "exports", "jriapp_shared", "jriap
 define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp/template"], function (require, exports, jriapp_shared_2, dom_2, bootstrap_2, template_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.TemplateContent = void 0;
     var utils = jriapp_shared_2.Utils, extend = utils.core.extend, dom = dom_2.DomUtils, boot = bootstrap_2.bootstrap, ERROR = utils.err;
     var TemplateContent = (function (_super) {
         __extends(TemplateContent, _super);
@@ -473,14 +486,14 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
             get: function () {
                 return this._parentEl;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TemplateContent.prototype, "template", {
             get: function () {
                 return this._template;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TemplateContent.prototype, "isEditing", {
@@ -493,7 +506,7 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
                     this.render();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TemplateContent.prototype, "dataContext", {
@@ -508,14 +521,14 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
                     }
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TemplateContent.prototype, "app", {
             get: function () {
                 return boot.app;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return TemplateContent;
@@ -525,6 +538,7 @@ define("jriapp_ui/content/template", ["require", "exports", "jriapp_shared", "jr
 define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.EventBag = exports.EVENT_CHANGE_TYPE = void 0;
     var utils = jriapp_shared_3.Utils, Indexer = utils.core.Indexer, trimBrackets = utils.str.trimBrackets;
     var EVENT_CHANGE_TYPE;
     (function (EVENT_CHANGE_TYPE) {
@@ -597,7 +611,7 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
             get: function () {
                 return true;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         EventBag.prototype.trigger = function (eventName, args) {
@@ -634,6 +648,7 @@ define("jriapp_ui/utils/eventbag", ["require", "exports", "jriapp_shared"], func
 define("jriapp_ui/utils/propbag", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.PropertyBag = void 0;
     var utils = jriapp_shared_4.Utils, trimBrackets = utils.str.trimBrackets;
     var PropertyBag = (function (_super) {
         __extends(PropertyBag, _super);
@@ -662,7 +677,7 @@ define("jriapp_ui/utils/propbag", ["require", "exports", "jriapp_shared"], funct
             get: function () {
                 return true;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         PropertyBag.prototype.toString = function () {
@@ -675,6 +690,7 @@ define("jriapp_ui/utils/propbag", ["require", "exports", "jriapp_shared"], funct
 define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared", "jriapp/utils/dom"], function (require, exports, jriapp_shared_5, dom_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.CSSBag = void 0;
     var utils = jriapp_shared_5.Utils, _a = utils.check, _undefined = _a._undefined, isArray = _a.isArray, isString = _a.isString, dom = dom_3.DomUtils, trimBrackets = utils.str.trimBrackets;
     var CSSBag = (function (_super) {
         __extends(CSSBag, _super);
@@ -712,7 +728,7 @@ define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared", "jriapp
             get: function () {
                 return true;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         CSSBag.prototype.toString = function () {
@@ -725,6 +741,7 @@ define("jriapp_ui/utils/cssbag", ["require", "exports", "jriapp_shared", "jriapp
 define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/bootstrap", "jriapp_ui/utils/eventbag", "jriapp_ui/utils/propbag", "jriapp_ui/utils/cssbag"], function (require, exports, jriapp_shared_6, dom_4, viewchecks_1, bootstrap_3, eventbag_1, propbag_1, cssbag_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.BaseElView = exports.addToolTip = exports.EVENT_CHANGE_TYPE = void 0;
     var utils = jriapp_shared_6.Utils, getNewID = utils.core.getNewID, dom = dom_4.DomUtils, _undefined = utils.check._undefined, boot = bootstrap_3.bootstrap, viewChecks = viewchecks_1.ViewChecks, subscribeMap = bootstrap_3.subscribeWeakMap;
     viewChecks.isElView = function (obj) {
         return !!obj && obj instanceof BaseElView;
@@ -842,14 +859,14 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
             get: function () {
                 return this._el;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "uniqueID", {
             get: function () {
                 return this._uniqueID;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "isVisible", {
@@ -873,7 +890,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                     this.objEvents.raiseProp("isVisible");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "validationErrors", {
@@ -886,14 +903,14 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                     this.objEvents.raiseProp("validationErrors");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "dataName", {
             get: function () {
                 return this._el.getAttribute("data-name");
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "toolTip", {
@@ -907,7 +924,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                     this.objEvents.raiseProp("toolTip");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "events", {
@@ -923,7 +940,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                 }
                 return this._viewState._eventBag;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "props", {
@@ -936,7 +953,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                 }
                 return this._viewState._propBag;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "classes", {
@@ -949,14 +966,14 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                 }
                 return this._viewState._classBag;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "isDelegationOn", {
             get: function () {
                 return !!(this._subscribeFlags & (1 << 0));
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "css", {
@@ -977,14 +994,14 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
                     this.objEvents.raiseProp("css");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseElView.prototype, "app", {
             get: function () {
                 return boot.app;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return BaseElView;
@@ -996,6 +1013,7 @@ define("jriapp_ui/baseview", ["require", "exports", "jriapp_shared", "jriapp/uti
 define("jriapp_ui/input", ["require", "exports", "jriapp_ui/baseview"], function (require, exports, baseview_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.InputElView = void 0;
     var InputElView = (function (_super) {
         __extends(InputElView, _super);
         function InputElView() {
@@ -1016,7 +1034,7 @@ define("jriapp_ui/input", ["require", "exports", "jriapp_ui/baseview"], function
                     this.objEvents.raiseProp("isEnabled");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(InputElView.prototype, "value", {
@@ -1031,7 +1049,7 @@ define("jriapp_ui/input", ["require", "exports", "jriapp_ui/baseview"], function
                     this.objEvents.raiseProp("value");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return InputElView;
@@ -1041,6 +1059,7 @@ define("jriapp_ui/input", ["require", "exports", "jriapp_ui/baseview"], function
 define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/input"], function (require, exports, dom_5, bootstrap_4, input_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.TextBoxElView = void 0;
     var dom = dom_5.DomUtils, subscribeMap = bootstrap_4.subscribeWeakMap;
     var TXTBOX_EVENTS;
     (function (TXTBOX_EVENTS) {
@@ -1114,7 +1133,7 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
                     this.objEvents.raiseProp("color");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return TextBoxElView;
@@ -1125,6 +1144,7 @@ define("jriapp_ui/textbox", ["require", "exports", "jriapp/utils/dom", "jriapp/b
 define("jriapp_ui/content/string", ["require", "exports", "jriapp_ui/textbox", "jriapp_ui/content/basic"], function (require, exports, textbox_1, basic_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.StringContent = void 0;
     var StringContent = (function (_super) {
         __extends(StringContent, _super);
         function StringContent() {
@@ -1137,7 +1157,7 @@ define("jriapp_ui/content/string", ["require", "exports", "jriapp_ui/textbox", "
                 }
                 return StringContent._allowedKeys;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         StringContent.prototype.createView = function () {
@@ -1166,6 +1186,7 @@ define("jriapp_ui/content/string", ["require", "exports", "jriapp_ui/textbox", "
 define("jriapp_ui/textarea", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/textbox"], function (require, exports, bootstrap_5, textbox_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.TextAreaElView = void 0;
     var TextAreaElView = (function (_super) {
         __extends(TextAreaElView, _super);
         function TextAreaElView(el, options) {
@@ -1189,7 +1210,7 @@ define("jriapp_ui/textarea", ["require", "exports", "jriapp/bootstrap", "jriapp_
                     this.objEvents.raiseProp("wrap");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return TextAreaElView;
@@ -1200,6 +1221,7 @@ define("jriapp_ui/textarea", ["require", "exports", "jriapp/bootstrap", "jriapp_
 define("jriapp_ui/content/multyline", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp_ui/textarea", "jriapp_ui/content/basic"], function (require, exports, jriapp_shared_7, dom_6, textarea_1, basic_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.MultyLineContent = void 0;
     var utils = jriapp_shared_7.Utils, NAME = "multyline", format = utils.str.format, dom = dom_6.DomUtils, doc = dom.document;
     var MultyLineContent = (function (_super) {
         __extends(MultyLineContent, _super);
@@ -1218,7 +1240,7 @@ define("jriapp_ui/content/multyline", ["require", "exports", "jriapp_shared", "j
                 }
                 return MultyLineContent._allowedKeys;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MultyLineContent.prototype.createdEditingView = function () {
@@ -1267,6 +1289,7 @@ define("jriapp_ui/content/multyline", ["require", "exports", "jriapp_shared", "j
 define("jriapp_ui/content/bool", ["require", "exports", "jriapp/utils/dom", "jriapp_ui/content/basic"], function (require, exports, dom_7, basic_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.BoolContent = void 0;
     var dom = dom_7.DomUtils, doc = dom.document;
     var BoolContent = (function (_super) {
         __extends(BoolContent, _super);
@@ -1340,6 +1363,7 @@ define("jriapp_ui/content/bool", ["require", "exports", "jriapp/utils/dom", "jri
 define("jriapp_ui/content/number", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/textbox", "jriapp_ui/content/basic"], function (require, exports, bootstrap_6, textbox_3, basic_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.NumberContent = void 0;
     var NumberContent = (function (_super) {
         __extends(NumberContent, _super);
         function NumberContent() {
@@ -1352,7 +1376,7 @@ define("jriapp_ui/content/number", ["require", "exports", "jriapp/bootstrap", "j
                 }
                 return NumberContent._allowedKeys;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         NumberContent.prototype.getConverter = function (_isEdit) {
@@ -1402,6 +1426,7 @@ define("jriapp_ui/content/number", ["require", "exports", "jriapp/bootstrap", "j
 define("jriapp_ui/content/date", ["require", "exports", "jriapp_shared", "jriapp_ui/content/basic"], function (require, exports, jriapp_shared_8, basic_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DateContent = void 0;
     var utils = jriapp_shared_8.Utils, format = utils.str.format;
     var NAME = "datepicker";
     var DateContent = (function (_super) {
@@ -1430,6 +1455,7 @@ define("jriapp_ui/content/date", ["require", "exports", "jriapp_shared", "jriapp
 define("jriapp_ui/content/datetime", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/content/basic"], function (require, exports, bootstrap_7, basic_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DateTimeContent = void 0;
     var DateTimeContent = (function (_super) {
         __extends(DateTimeContent, _super);
         function DateTimeContent() {
@@ -1461,6 +1487,7 @@ define("jriapp_ui/content/datetime", ["require", "exports", "jriapp/bootstrap", 
 define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, jriapp_shared_9, dom_8, bootstrap_8, baseview_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ListBoxElView = exports.ListBox = void 0;
     var utils = jriapp_shared_9.Utils, dom = dom_8.DomUtils, doc = dom.document, sys = utils.sys, _a = utils.check, _undefined = _a._undefined, isString = _a.isString, isNt = _a.isNt, _b = utils.core, forEach = _b.forEach, extend = _b.extend, getNewID = _b.getNewID, Indexer = _b.Indexer, boot = bootstrap_8.bootstrap, subscribeMap = bootstrap_8.subscribeWeakMap;
     var LISTBOX_EVENTS;
     (function (LISTBOX_EVENTS) {
@@ -1968,7 +1995,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     this.el.selectedIndex = v;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         ListBox.prototype.isSubscribed = function (flag) {
@@ -2004,7 +2031,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     this.objEvents.raiseProp("dataSource");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "selectedValue", {
@@ -2023,7 +2050,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     }
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "selectedItem", {
@@ -2044,7 +2071,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     }
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "valuePath", {
@@ -2058,7 +2085,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     this.objEvents.raiseProp("valuePath");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "textPath", {
@@ -2072,14 +2099,14 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     this.objEvents.raiseProp("textPath");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "statePath", {
             get: function () {
                 return this._options.statePath;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "isEnabled", {
@@ -2092,7 +2119,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     this.objEvents.raiseProp("isEnabled");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "textProvider", {
@@ -2109,7 +2136,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     this.objEvents.raiseProp("textProvider");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "stateProvider", {
@@ -2126,14 +2153,14 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     this.objEvents.raiseProp("stateProvider");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBox.prototype, "el", {
             get: function () {
                 return this._el;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return ListBox;
@@ -2194,7 +2221,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     this.objEvents.raiseProp("isEnabled");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBoxElView.prototype, "dataSource", {
@@ -2207,7 +2234,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     self._listBox.dataSource = v;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBoxElView.prototype, "selectedValue", {
@@ -2219,7 +2246,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
                     this._listBox.selectedValue = v;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBoxElView.prototype, "selectedItem", {
@@ -2229,7 +2256,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             set: function (v) {
                 this._listBox.selectedItem = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBoxElView.prototype, "valuePath", {
@@ -2239,7 +2266,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             set: function (v) {
                 this._listBox.valuePath = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBoxElView.prototype, "textPath", {
@@ -2249,7 +2276,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             set: function (v) {
                 this._listBox.textPath = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBoxElView.prototype, "textProvider", {
@@ -2259,7 +2286,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             set: function (v) {
                 this._listBox.textProvider = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBoxElView.prototype, "stateProvider", {
@@ -2269,14 +2296,14 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
             set: function (v) {
                 this._listBox.stateProvider = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ListBoxElView.prototype, "listBox", {
             get: function () {
                 return this._listBox;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return ListBoxElView;
@@ -2287,6 +2314,7 @@ define("jriapp_ui/listbox", ["require", "exports", "jriapp_shared", "jriapp/util
 define("jriapp_ui/content/lookup", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp_ui/listbox", "jriapp_ui/content/basic"], function (require, exports, jriapp_shared_10, dom_9, listbox_1, basic_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.LookupContent = void 0;
     var utils = jriapp_shared_10.Utils, dom = dom_9.DomUtils, doc = dom.document, _undefined = utils.check._undefined, format = utils.str.format, getNewID = utils.core.getNewID, sys = utils.sys;
     var LOOKUP_EVENTS;
     (function (LOOKUP_EVENTS) {
@@ -2446,7 +2474,7 @@ define("jriapp_ui/content/lookup", ["require", "exports", "jriapp_shared", "jria
             get: function () {
                 return this._uniqueID;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return LookupContent;
@@ -2456,6 +2484,7 @@ define("jriapp_ui/content/lookup", ["require", "exports", "jriapp_shared", "jria
 define("jriapp_ui/content/factory", ["require", "exports", "jriapp_shared", "jriapp_ui/content/basic", "jriapp_ui/content/template", "jriapp_ui/content/string", "jriapp_ui/content/multyline", "jriapp_ui/content/bool", "jriapp_ui/content/number", "jriapp_ui/content/date", "jriapp_ui/content/datetime", "jriapp_ui/content/lookup", "jriapp/bootstrap"], function (require, exports, jriapp_shared_11, basic_8, template_2, string_1, multyline_1, bool_1, number_1, date_1, datetime_1, lookup_1, bootstrap_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.initContentFactory = void 0;
     var utils = jriapp_shared_11.Utils, format = utils.str.format;
     var factoryInstance;
     var ContentFactory = (function () {
@@ -2541,6 +2570,7 @@ define("jriapp_ui/content/factory", ["require", "exports", "jriapp_shared", "jri
 define("jriapp_ui/utils/jquery", ["require", "exports", "jriapp_shared"], function (require, exports, jriapp_shared_12) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.JQueryUtils = exports.$ = void 0;
     if (!("jQuery" in window)) {
         throw new Error(jriapp_shared_12.LocaleERRS.ERR_APP_NEED_JQUERY);
     }
@@ -2562,6 +2592,7 @@ define("jriapp_ui/utils/jquery", ["require", "exports", "jriapp_shared"], functi
 define("jriapp_ui/utils/tooltip", ["require", "exports", "jriapp_ui/utils/jquery", "jriapp/utils/dom"], function (require, exports, jquery_1, dom_10) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.createToolTipSvc = exports.css = void 0;
     var window = dom_10.DomUtils.window;
     var css;
     (function (css) {
@@ -2616,6 +2647,7 @@ define("jriapp_ui/utils/tooltip", ["require", "exports", "jriapp_ui/utils/jquery
 define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jriapp_ui/utils/jquery"], function (require, exports, jriapp_shared_13, jquery_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.createDatepickerSvc = void 0;
     var ERRS = jriapp_shared_13.LocaleERRS;
     function createDatepickerSvc() {
         return new Datepicker();
@@ -2680,7 +2712,7 @@ define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jr
                     this.objEvents.raiseProp("dateFormat");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Datepicker.prototype, "datepickerRegion", {
@@ -2700,14 +2732,14 @@ define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jr
                     }
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Datepicker.prototype, "datePickerFn", {
             get: function () {
                 return jquery_2.$.datepicker;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return Datepicker;
@@ -2716,6 +2748,7 @@ define("jriapp_ui/utils/datepicker", ["require", "exports", "jriapp_shared", "jr
 define("jriapp_ui/utils/errors", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp/utils/dom"], function (require, exports, jriapp_shared_14, bootstrap_10, dom_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.createUIErrorsSvc = void 0;
     var boot = bootstrap_10.bootstrap, dom = dom_11.DomUtils, formMap = jriapp_shared_14.createWeakMap();
     function addToolTip(el, tip, isError, pos) {
         var svc = boot.getSvc("ITooltipService");
@@ -2811,6 +2844,7 @@ define("jriapp_ui/utils/errors", ["require", "exports", "jriapp_shared", "jriapp
 define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/utils/jquery", "jriapp/utils/dom", "jriapp/template", "jriapp/bootstrap", "jriapp/mvvm"], function (require, exports, jriapp_shared_15, jquery_3, dom_12, template_3, bootstrap_11, mvvm_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DialogVM = exports.DataEditDialog = exports.DIALOG_ACTION = void 0;
     var utils = jriapp_shared_15.Utils, _a = utils.check, _undefined = _a._undefined, isFunc = _a.isFunc, format = utils.str.format, _b = utils.core, extend = _b.extend, getNewID = _b.getNewID, sys = utils.sys, _async = utils.defer, dom = dom_12.DomUtils, doc = dom.document, ERROR = utils.err, boot = bootstrap_11.bootstrap;
     var DIALOG_ACTION;
     (function (DIALOG_ACTION) {
@@ -2865,19 +2899,19 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
         };
         Object.defineProperty(SubmitInfo.prototype, "dataContext", {
             get: function () { return this._dataContext; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SubmitInfo.prototype, "submitError", {
             get: function () { return this._submitError; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SubmitInfo.prototype, "editable", {
             get: function () {
                 return this._editable;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return SubmitInfo;
@@ -3207,21 +3241,21 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                     this.objEvents.raiseProp("dataContext");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "result", {
             get: function () {
                 return this._result;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "template", {
             get: function () {
                 return this._template;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "isSubmitOnOK", {
@@ -3234,7 +3268,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                     this.objEvents.raiseProp("isSubmitOnOK");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "width", {
@@ -3248,7 +3282,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                     this.objEvents.raiseProp("width");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "height", {
@@ -3262,7 +3296,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                     this.objEvents.raiseProp("height");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "title", {
@@ -3276,7 +3310,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                     this.objEvents.raiseProp("title");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "canRefresh", {
@@ -3290,7 +3324,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                     this.objEvents.raiseProp("canRefresh");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataEditDialog.prototype, "canCancel", {
@@ -3304,7 +3338,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
                     this.objEvents.raiseProp("canCancel");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DataEditDialog;
@@ -3368,6 +3402,7 @@ define("jriapp_ui/dialog", ["require", "exports", "jriapp_shared", "jriapp_ui/ut
 define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/template", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, jriapp_shared_16, dom_13, template_4, bootstrap_12, baseview_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DynaContentElView = void 0;
     var utils = jriapp_shared_16.Utils, sys = utils.sys, dom = dom_13.DomUtils;
     var DynaContentElView = (function (_super) {
         __extends(DynaContentElView, _super);
@@ -3478,7 +3513,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
         };
         Object.defineProperty(DynaContentElView.prototype, "template", {
             get: function () { return this._template; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DynaContentElView.prototype, "templateID", {
@@ -3496,7 +3531,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                     this.objEvents.raiseProp("templateID");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DynaContentElView.prototype, "dataContext", {
@@ -3514,7 +3549,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                     this.objEvents.raiseProp("dataContext");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DynaContentElView.prototype, "animation", {
@@ -3525,7 +3560,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
                     this.objEvents.raiseProp("animation");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DynaContentElView;
@@ -3536,6 +3571,7 @@ define("jriapp_ui/dynacontent", ["require", "exports", "jriapp_shared", "jriapp/
 define("jriapp_ui/content/int", ["require", "exports", "jriapp_shared", "jriapp/utils/parser"], function (require, exports, jriapp_shared_17, parser_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.parseContentAttr = void 0;
     var utils = jriapp_shared_17.Utils, parseBool = utils.core.parseBool, _undefined = utils.check._undefined, parser = parser_1.Parser;
     function parseContentAttr(contentAttr) {
         var contentOptions = {
@@ -3580,6 +3616,7 @@ define("jriapp_ui/content/int", ["require", "exports", "jriapp_shared", "jriapp/
 define("jriapp_ui/datagrid/consts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.PROP_NAME = exports.txtMap = exports.css = exports.ROW_ACTION = exports.ROW_POSITION = exports.COLUMN_TYPE = void 0;
     var COLUMN_TYPE;
     (function (COLUMN_TYPE) {
         COLUMN_TYPE["DATA"] = "data";
@@ -3649,6 +3686,7 @@ define("jriapp_ui/datagrid/consts", ["require", "exports"], function (require, e
 define("jriapp_ui/datagrid/animation", ["require", "exports", "jriapp_shared", "jriapp_ui/utils/jquery"], function (require, exports, jriapp_shared_18, jquery_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DefaultAnimation = void 0;
     var DefaultAnimation = (function (_super) {
         __extends(DefaultAnimation, _super);
         function DefaultAnimation() {
@@ -3696,6 +3734,7 @@ define("jriapp_ui/datagrid/animation", ["require", "exports", "jriapp_shared", "
 define("jriapp_ui/utils/dblclick", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DblClick = void 0;
     var DblClick = (function () {
         function DblClick(interval) {
             if (interval === void 0) { interval = 0; }
@@ -3755,7 +3794,7 @@ define("jriapp_ui/utils/dblclick", ["require", "exports"], function (require, ex
             set: function (v) {
                 this._interval = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DblClick;
@@ -3765,6 +3804,7 @@ define("jriapp_ui/utils/dblclick", ["require", "exports"], function (require, ex
 define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/template", "jriapp_ui/baseview", "jriapp/bootstrap"], function (require, exports, jriapp_shared_19, dom_14, template_5, baseview_4, bootstrap_13) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.BaseColumn = void 0;
     var utils = jriapp_shared_19.Utils, dom = dom_14.DomUtils, doc = dom.document, getNewID = utils.core.getNewID;
     var BaseColumn = (function (_super) {
         __extends(BaseColumn, _super);
@@ -3848,49 +3888,49 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
             get: function () {
                 return this._uniqueID;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseColumn.prototype, "width", {
             get: function () {
                 return this._th.offsetWidth;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseColumn.prototype, "th", {
             get: function () {
                 return this._th;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseColumn.prototype, "col", {
             get: function () {
                 return this._col;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseColumn.prototype, "grid", {
             get: function () {
                 return this._grid;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseColumn.prototype, "options", {
             get: function () {
                 return this._options;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseColumn.prototype, "title", {
             get: function () {
                 return this._options.title;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseColumn.prototype, "isSelected", {
@@ -3903,7 +3943,7 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
                     dom.setClass([this._col], "ria-col-selected", !this._isSelected);
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return BaseColumn;
@@ -3913,6 +3953,7 @@ define("jriapp_ui/datagrid/columns/base", ["require", "exports", "jriapp_shared"
 define("jriapp_ui/datagrid/columns/expander", ["require", "exports", "jriapp/utils/dom", "jriapp_ui/datagrid/columns/base"], function (require, exports, dom_15, base_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ExpanderColumn = void 0;
     var dom = dom_15.DomUtils;
     var ExpanderColumn = (function (_super) {
         __extends(ExpanderColumn, _super);
@@ -3931,6 +3972,7 @@ define("jriapp_ui/datagrid/columns/expander", ["require", "exports", "jriapp/uti
 define("jriapp_ui/datagrid/cells/expander", ["require", "exports", "jriapp/utils/dom", "jriapp_ui/datagrid/cells/base"], function (require, exports, dom_16, base_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ExpanderCell = void 0;
     var dom = dom_16.DomUtils;
     var ExpanderCell = (function (_super) {
         __extends(ExpanderCell, _super);
@@ -3972,6 +4014,7 @@ define("jriapp_ui/datagrid/cells/expander", ["require", "exports", "jriapp/utils
 define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/datagrid/columns/base"], function (require, exports, jriapp_shared_20, dom_17, bootstrap_14, base_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DataColumn = void 0;
     var utils = jriapp_shared_20.Utils, _a = utils.core, Indexer = _a.Indexer, forEach = _a.forEach, dom = dom_17.DomUtils, boot = bootstrap_14.bootstrap;
     var DataColumn = (function (_super) {
         __extends(DataColumn, _super);
@@ -4049,21 +4092,21 @@ define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_shared"
             get: function () {
                 return this._contentType;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataColumn.prototype, "isSortable", {
             get: function () {
                 return !!(this.options.sortable);
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataColumn.prototype, "sortMemberName", {
             get: function () {
                 return this.options.sortMemberName;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataColumn.prototype, "sortOrder", {
@@ -4078,7 +4121,7 @@ define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_shared"
                     this.objEvents.raiseProp("sortOrder");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DataColumn;
@@ -4088,6 +4131,7 @@ define("jriapp_ui/datagrid/columns/data", ["require", "exports", "jriapp_shared"
 define("jriapp_ui/datagrid/cells/data", ["require", "exports", "jriapp/utils/dom", "jriapp_ui/datagrid/cells/base"], function (require, exports, dom_18, base_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DataCell = void 0;
     var dom = dom_18.DomUtils;
     var DataCell = (function (_super) {
         __extends(DataCell, _super);
@@ -4146,6 +4190,7 @@ define("jriapp_ui/datagrid/cells/data", ["require", "exports", "jriapp/utils/dom
 define("jriapp_ui/datagrid/columns/actions", ["require", "exports", "jriapp/utils/dom", "jriapp_ui/datagrid/columns/base"], function (require, exports, dom_19, base_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ActionsColumn = void 0;
     var dom = dom_19.DomUtils;
     var ActionsColumn = (function (_super) {
         __extends(ActionsColumn, _super);
@@ -4242,6 +4287,7 @@ define("jriapp_ui/datagrid/columns/actions", ["require", "exports", "jriapp/util
 define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/int", "jriapp_ui/baseview", "jriapp_ui/datagrid/consts", "jriapp_ui/datagrid/cells/base"], function (require, exports, jriapp_shared_21, dom_20, int_1, baseview_5, consts_1, base_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ActionsCell = exports.deleteName = exports.editName = void 0;
     var utils = jriapp_shared_21.Utils, dom = dom_20.DomUtils, format = utils.str.format;
     exports.editName = "img_edit", exports.deleteName = "img_delete";
     var actionsSelector = 'span[data-role="row-action"]';
@@ -4294,7 +4340,7 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
                 }
                 return editBtnsHTML;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ActionsCell.prototype, "viewBtnsHTML", {
@@ -4304,7 +4350,7 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
                 }
                 return viewBtnsHTML;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         ActionsCell.prototype._createButtons = function (isEditing) {
@@ -4345,14 +4391,14 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
             get: function () {
                 return this.grid.isCanEdit;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ActionsCell.prototype, "isCanDelete", {
             get: function () {
                 return this.grid.isCanDelete;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return ActionsCell;
@@ -4362,6 +4408,7 @@ define("jriapp_ui/datagrid/cells/actions", ["require", "exports", "jriapp_shared
 define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp_ui/datagrid/columns/base"], function (require, exports, jriapp_shared_22, dom_21, base_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.RowSelectorColumn = void 0;
     var utils = jriapp_shared_22.Utils, dom = dom_21.DomUtils, doc = dom.document, _undefined = utils.check._undefined;
     var RowSelectorColumn = (function (_super) {
         __extends(RowSelectorColumn, _super);
@@ -4424,7 +4471,7 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
                     this.objEvents.raiseProp("checked");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return RowSelectorColumn;
@@ -4434,6 +4481,7 @@ define("jriapp_ui/datagrid/columns/rowselector", ["require", "exports", "jriapp_
 define("jriapp_ui/datagrid/cells/rowselector", ["require", "exports", "jriapp/utils/dom", "jriapp_ui/datagrid/cells/base"], function (require, exports, dom_22, base_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.RowSelectorCell = void 0;
     var dom = dom_22.DomUtils, doc = dom.document;
     var RowSelectorCell = (function (_super) {
         __extends(RowSelectorCell, _super);
@@ -4472,7 +4520,7 @@ define("jriapp_ui/datagrid/cells/rowselector", ["require", "exports", "jriapp/ut
                     this._chk.checked = bv;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         RowSelectorCell.prototype.toString = function () {
@@ -4485,6 +4533,7 @@ define("jriapp_ui/datagrid/cells/rowselector", ["require", "exports", "jriapp/ut
 define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp_ui/datagrid/cells/expander", "jriapp_ui/datagrid/cells/data", "jriapp_ui/datagrid/cells/actions", "jriapp_ui/datagrid/cells/rowselector", "jriapp_ui/datagrid/columns/expander", "jriapp_ui/datagrid/columns/actions", "jriapp_ui/datagrid/columns/rowselector"], function (require, exports, jriapp_shared_23, dom_23, expander_1, data_1, actions_1, rowselector_1, expander_2, actions_2, rowselector_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Row = void 0;
     var utils = jriapp_shared_23.Utils, dom = dom_23.DomUtils, doc = dom.document, sys = utils.sys, getNewID = utils.core.getNewID;
     function fnState(row) {
         var path = row.grid.options.rowStateField, val = (!row.item || !path) ? null : sys.resolvePath(row.item, path), css = row.grid._getInternal().onRowStateChanged(row, val);
@@ -4650,77 +4699,77 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
             get: function () {
                 return this.tr.getBoundingClientRect();
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "height", {
             get: function () {
                 return this.tr.offsetHeight;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "width", {
             get: function () {
                 return this.tr.offsetWidth;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "tr", {
             get: function () {
                 return this._tr;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "grid", {
             get: function () {
                 return this._grid;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "item", {
             get: function () {
                 return this._item;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "cells", {
             get: function () {
                 return this._cells;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "columns", {
             get: function () {
                 return this._grid.columns;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "uniqueID", {
             get: function () {
                 return this._uniqueID;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "itemKey", {
             get: function () {
                 return (!this._item) ? null : this._item._key;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "isCurrent", {
             get: function () {
                 return this.grid.currentItem === this.item;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "isSelected", {
@@ -4737,7 +4786,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
                     this.grid._getInternal().onRowSelectionChanged(this);
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "isExpanded", {
@@ -4754,21 +4803,21 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
                     }
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "expanderCell", {
             get: function () {
                 return this._expanderCell;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "actionsCell", {
             get: function () {
                 return this._actionsCell;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "isDeleted", {
@@ -4784,7 +4833,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
                     dom.setClass([this._tr], "ria-row-deleted", !this._isDeleted);
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "isDetached", {
@@ -4794,21 +4843,21 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
             set: function (v) {
                 this._isDetached = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "isEditing", {
             get: function () {
                 return !!this._item && this._item._aspect.isEditing;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Row.prototype, "isHasStateField", {
             get: function () {
                 return !!this._grid.options.rowStateField;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return Row;
@@ -4818,6 +4867,7 @@ define("jriapp_ui/datagrid/rows/row", ["require", "exports", "jriapp_shared", "j
 define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/utils/dblclick"], function (require, exports, jriapp_shared_24, dom_24, bootstrap_15, dblclick_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.BaseCell = void 0;
     var utils = jriapp_shared_24.Utils, dom = dom_24.DomUtils, doc = dom.document, subscribeMap = bootstrap_15.subscribeWeakMap;
     var BaseCell = (function (_super) {
         __extends(BaseCell, _super);
@@ -4877,39 +4927,39 @@ define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_shared", 
         };
         Object.defineProperty(BaseCell.prototype, "td", {
             get: function () { return this._td; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseCell.prototype, "row", {
             get: function () { return this._row; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseCell.prototype, "column", {
             get: function () { return this._column; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseCell.prototype, "grid", {
             get: function () {
                 return this._row.grid;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseCell.prototype, "item", {
             get: function () { return this._row.item; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseCell.prototype, "uniqueID", {
             get: function () { return this._row.uniqueID + "_" + this._num; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseCell.prototype, "num", {
             get: function () { return this._num; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return BaseCell;
@@ -4919,6 +4969,7 @@ define("jriapp_ui/datagrid/cells/base", ["require", "exports", "jriapp_shared", 
 define("jriapp_ui/datagrid/cells/details", ["require", "exports", "jriapp_shared", "jriapp/template", "jriapp/utils/dom"], function (require, exports, jriapp_shared_25, template_6, dom_25) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DetailsCell = void 0;
     var dom = dom_25.DomUtils, doc = dom.document;
     var DetailsCell = (function (_super) {
         __extends(DetailsCell, _super);
@@ -4956,21 +5007,21 @@ define("jriapp_ui/datagrid/cells/details", ["require", "exports", "jriapp_shared
             get: function () {
                 return this._td;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DetailsCell.prototype, "row", {
             get: function () {
                 return this._row;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DetailsCell.prototype, "grid", {
             get: function () {
                 return this._row.grid;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DetailsCell.prototype, "item", {
@@ -4980,14 +5031,14 @@ define("jriapp_ui/datagrid/cells/details", ["require", "exports", "jriapp_shared
             set: function (v) {
                 this._template.dataContext = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DetailsCell.prototype, "template", {
             get: function () {
                 return this._template;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DetailsCell;
@@ -4997,6 +5048,7 @@ define("jriapp_ui/datagrid/cells/details", ["require", "exports", "jriapp_shared
 define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp_ui/datagrid/cells/details"], function (require, exports, jriapp_shared_26, dom_26, details_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DetailsRow = void 0;
     var utils = jriapp_shared_26.Utils, coreUtils = utils.core, dom = dom_26.DomUtils, doc = dom.document, getNewID = coreUtils.getNewID;
     var DetailsRow = (function (_super) {
         __extends(DetailsRow, _super);
@@ -5089,35 +5141,35 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_shared"
             get: function () {
                 return this.tr.getBoundingClientRect();
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DetailsRow.prototype, "height", {
             get: function () {
                 return this.tr.offsetHeight;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DetailsRow.prototype, "width", {
             get: function () {
                 return this.tr.offsetHeight;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DetailsRow.prototype, "tr", {
             get: function () {
                 return this._tr;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DetailsRow.prototype, "grid", {
             get: function () {
                 return this._grid;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DetailsRow.prototype, "item", {
@@ -5129,28 +5181,28 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_shared"
                     this._item = v;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DetailsRow.prototype, "cell", {
             get: function () {
                 return this._cell;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DetailsRow.prototype, "uniqueID", {
             get: function () {
                 return this._uniqueID;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DetailsRow.prototype, "itemKey", {
             get: function () {
                 return (!this._item) ? null : this._item._key;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DetailsRow.prototype, "parentRow", {
@@ -5170,7 +5222,7 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_shared"
                     }
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DetailsRow;
@@ -5180,6 +5232,7 @@ define("jriapp_ui/datagrid/rows/details", ["require", "exports", "jriapp_shared"
 define("jriapp_ui/datagrid/cells/fillspace", ["require", "exports", "jriapp_shared", "jriapp/utils/dom"], function (require, exports, jriapp_shared_27, dom_27) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.FillSpaceCell = void 0;
     var dom = dom_27.DomUtils, doc = dom.document;
     var FillSpaceCell = (function (_super) {
         __extends(FillSpaceCell, _super);
@@ -5211,28 +5264,28 @@ define("jriapp_ui/datagrid/cells/fillspace", ["require", "exports", "jriapp_shar
             get: function () {
                 return this._td;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FillSpaceCell.prototype, "row", {
             get: function () {
                 return this._row;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FillSpaceCell.prototype, "grid", {
             get: function () {
                 return this._row.grid;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FillSpaceCell.prototype, "div", {
             get: function () {
                 return this._div;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FillSpaceCell.prototype, "height", {
@@ -5242,7 +5295,7 @@ define("jriapp_ui/datagrid/cells/fillspace", ["require", "exports", "jriapp_shar
             set: function (v) {
                 this._div.style.height = (!v ? 0 : v) + "px";
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return FillSpaceCell;
@@ -5252,6 +5305,7 @@ define("jriapp_ui/datagrid/cells/fillspace", ["require", "exports", "jriapp_shar
 define("jriapp_ui/datagrid/rows/fillspace", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp_ui/datagrid/cells/fillspace"], function (require, exports, jriapp_shared_28, dom_28, fillspace_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.FillSpaceRow = void 0;
     var dom = dom_28.DomUtils, doc = dom.document;
     var FillSpaceRow = (function (_super) {
         __extends(FillSpaceRow, _super);
@@ -5295,21 +5349,21 @@ define("jriapp_ui/datagrid/rows/fillspace", ["require", "exports", "jriapp_share
             get: function () {
                 return this._tr;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FillSpaceRow.prototype, "grid", {
             get: function () {
                 return this._grid;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FillSpaceRow.prototype, "cell", {
             get: function () {
                 return this._cell;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FillSpaceRow.prototype, "height", {
@@ -5319,7 +5373,7 @@ define("jriapp_ui/datagrid/rows/fillspace", ["require", "exports", "jriapp_share
             set: function (v) {
                 this._cell.height = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return FillSpaceRow;
@@ -5329,12 +5383,13 @@ define("jriapp_ui/datagrid/rows/fillspace", ["require", "exports", "jriapp_share
 define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/utils/parser", "jriapp/bootstrap", "jriapp_ui/baseview", "jriapp_ui/content/int", "jriapp_ui/dialog", "jriapp_ui/datagrid/animation", "jriapp_ui/datagrid/rows/row", "jriapp_ui/datagrid/rows/details", "jriapp_ui/datagrid/rows/fillspace", "jriapp_ui/datagrid/columns/expander", "jriapp_ui/datagrid/columns/data", "jriapp_ui/datagrid/columns/actions", "jriapp_ui/datagrid/columns/rowselector", "jriapp_ui/datagrid/rows/row", "jriapp_ui/datagrid/columns/base", "jriapp_ui/datagrid/consts", "jriapp_ui/datagrid/animation", "jriapp_ui/utils/jquery"], function (require, exports, jriapp_shared_29, dom_29, parser_2, bootstrap_16, baseview_6, int_2, dialog_1, animation_1, row_1, details_2, fillspace_2, expander_3, data_2, actions_3, rowselector_3, row_2, base_9, consts_2, animation_2, jquery_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DataGridRow = row_2.Row;
-    exports.DataGridColumn = base_9.BaseColumn;
-    exports.ROW_POSITION = consts_2.ROW_POSITION;
-    exports.COLUMN_TYPE = consts_2.COLUMN_TYPE;
-    exports.ROW_ACTION = consts_2.ROW_ACTION;
-    exports.DefaultAnimation = animation_2.DefaultAnimation;
+    exports.DataGridElView = exports.DataGrid = exports.findDataGrid = exports.getDataGrids = exports.DefaultAnimation = exports.ROW_ACTION = exports.COLUMN_TYPE = exports.ROW_POSITION = exports.DataGridColumn = exports.DataGridRow = void 0;
+    Object.defineProperty(exports, "DataGridRow", { enumerable: true, get: function () { return row_2.Row; } });
+    Object.defineProperty(exports, "DataGridColumn", { enumerable: true, get: function () { return base_9.BaseColumn; } });
+    Object.defineProperty(exports, "ROW_POSITION", { enumerable: true, get: function () { return consts_2.ROW_POSITION; } });
+    Object.defineProperty(exports, "COLUMN_TYPE", { enumerable: true, get: function () { return consts_2.COLUMN_TYPE; } });
+    Object.defineProperty(exports, "ROW_ACTION", { enumerable: true, get: function () { return consts_2.ROW_ACTION; } });
+    Object.defineProperty(exports, "DefaultAnimation", { enumerable: true, get: function () { return animation_2.DefaultAnimation; } });
     var utils = jriapp_shared_29.Utils, format = utils.str.format, _a = utils.core, forEach = _a.forEach, merge = _a.merge, getNewID = _a.getNewID, extend = _a.extend, Indexer = _a.Indexer, ERROR = utils.err, sys = utils.sys, dom = dom_29.DomUtils, parser = parser_2.Parser, doc = dom.document, win = dom.window, boot = bootstrap_16.bootstrap;
     var _columnWidthInterval, _gridsCount = 0;
     var _createdGrids = Indexer();
@@ -6373,42 +6428,42 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             get: function () {
                 return this._selectable;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "table", {
             get: function () {
                 return this._table;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "options", {
             get: function () {
                 return this._options;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "_tBodyEl", {
             get: function () {
                 return this.table.tBodies[0];
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "_tHeadEl", {
             get: function () {
                 return this.table.tHead;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "_tFootEl", {
             get: function () {
                 return this.table.tFoot;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "_tHeadRow", {
@@ -6422,7 +6477,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 }
                 return trs[0];
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "_tHeadCells", {
@@ -6430,21 +6485,21 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 var row = this._tHeadRow;
                 return (!row) ? [] : utils.arr.fromList(row.cells);
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "uniqueID", {
             get: function () {
                 return this._uniqueID;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "name", {
             get: function () {
                 return this._name;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "dataSource", {
@@ -6457,28 +6512,28 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     this.objEvents.raiseProp("dataSource");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "rows", {
             get: function () {
                 return this._rows;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "columns", {
             get: function () {
                 return this._columns;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "rowSelectorCol", {
             get: function () {
                 return this._rowSelectorCol;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "currentItem", {
@@ -6493,7 +6548,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 }
                 ds.currentItem = item;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "currentRow", {
@@ -6511,21 +6566,21 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     this.currentItem = null;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "editingRow", {
             get: function () {
                 return this._editingRow;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "isHasEditor", {
             get: function () {
                 return (!!this._options.editor && !!this._options.editor.templateID);
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "isCanEdit", {
@@ -6536,7 +6591,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 var ds = this.dataSource;
                 return !!ds && ds.permissions.canEditRow;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "isCanDelete", {
@@ -6547,7 +6602,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 var ds = this.dataSource;
                 return !!ds && ds.permissions.canDeleteRow;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "isCanAddNew", {
@@ -6555,7 +6610,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 var ds = this.dataSource;
                 return !!ds && ds.permissions.canAddRow;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "isUseScrollInto", {
@@ -6565,7 +6620,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             set: function (v) {
                 this._options.isUseScrollInto = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "syncSetDatasource", {
@@ -6575,7 +6630,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             set: function (v) {
                 this._options.syncSetDatasource = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGrid.prototype, "animation", {
@@ -6585,7 +6640,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                 }
                 return this.options.animation;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DataGrid;
@@ -6640,14 +6695,14 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
             set: function (v) {
                 this.grid.dataSource = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGridElView.prototype, "grid", {
             get: function () {
                 return this._grid;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGridElView.prototype, "stateProvider", {
@@ -6670,7 +6725,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     this.objEvents.raiseProp("stateProvider");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGridElView.prototype, "animation", {
@@ -6683,14 +6738,14 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
                     this.objEvents.raiseProp("animation");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataGridElView.prototype, "selectable", {
             get: function () {
                 return this._grid.selectable;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DataGridElView;
@@ -6702,6 +6757,7 @@ define("jriapp_ui/datagrid/datagrid", ["require", "exports", "jriapp_shared", "j
 define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp_ui/baseview", "jriapp_ui/baseview", "jriapp/bootstrap"], function (require, exports, jriapp_shared_30, dom_30, baseview_7, baseview_8, bootstrap_17) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.PagerElView = exports.Pager = void 0;
     var utils = jriapp_shared_30.Utils, dom = dom_30.DomUtils, doc = dom.document, sys = utils.sys, format = utils.str.format, _a = utils.core, getNewID = _a.getNewID, extend = _a.extend, boot = bootstrap_17.bootstrap;
     var _STRS = jriapp_shared_30.LocaleSTRS.PAGER;
     var css;
@@ -7071,7 +7127,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             get: function () {
                 return this._el;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "dataSource", {
@@ -7084,7 +7140,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     this.objEvents.raiseProp("dataSource");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "pageCount", {
@@ -7103,7 +7159,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     return result;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "rowCount", {
@@ -7117,7 +7173,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     this.objEvents.raiseProp("rowCount");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "rowsPerPage", {
@@ -7130,7 +7186,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     this.render();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "currentPage", {
@@ -7144,7 +7200,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     this.objEvents.raiseProp("currentPage");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "useSlider", {
@@ -7157,7 +7213,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     this.render();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "sliderSize", {
@@ -7170,7 +7226,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     this.render();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "hideOnSinglePage", {
@@ -7183,7 +7239,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     this.render();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "showTip", {
@@ -7196,7 +7252,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     this.render();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "showInfo", {
@@ -7209,7 +7265,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     this.render();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "showPreviousAndNext", {
@@ -7222,7 +7278,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     this.render();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "showNumbers", {
@@ -7235,7 +7291,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     this.render();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "isVisible", {
@@ -7259,14 +7315,14 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     this.objEvents.raiseProp("isVisible");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "selectable", {
             get: function () {
                 return !this._parentControl ? null : this._parentControl.selectable;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Pager.prototype, "parentControl", {
@@ -7279,7 +7335,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
                     this.objEvents.raiseProp("parentControl");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return Pager;
@@ -7323,21 +7379,21 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             set: function (v) {
                 this._pager.dataSource = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(PagerElView.prototype, "pager", {
             get: function () {
                 return this._pager;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(PagerElView.prototype, "selectable", {
             get: function () {
                 return this._pager.selectable;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(PagerElView.prototype, "parentControl", {
@@ -7347,7 +7403,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
             set: function (v) {
                 this._pager.parentControl = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return PagerElView;
@@ -7358,6 +7414,7 @@ define("jriapp_ui/pager", ["require", "exports", "jriapp_shared", "jriapp/utils/
 define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/template", "jriapp_ui/baseview", "jriapp/bootstrap"], function (require, exports, jriapp_shared_31, dom_31, template_7, baseview_9, bootstrap_18) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.StackPanelElView = exports.StackPanel = void 0;
     var utils = jriapp_shared_31.Utils, dom = dom_31.DomUtils, doc = dom.document, sys = utils.sys, format = utils.str.format, _a = utils.core, getNewID = _a.getNewID, extend = _a.extend, Indexer = _a.Indexer, boot = bootstrap_18.bootstrap;
     var css;
     (function (css) {
@@ -7722,35 +7779,35 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             get: function () {
                 return this._selectable;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(StackPanel.prototype, "el", {
             get: function () {
                 return this._el;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(StackPanel.prototype, "uniqueID", {
             get: function () {
                 return this._uniqueID;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(StackPanel.prototype, "orientation", {
             get: function () {
                 return this._options.orientation;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(StackPanel.prototype, "templateID", {
             get: function () {
                 return this._options.templateID;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(StackPanel.prototype, "dataSource", {
@@ -7763,14 +7820,14 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                     this.objEvents.raiseProp("dataSource");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(StackPanel.prototype, "currentItem", {
             get: function () {
                 return this._currentItem;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return StackPanel;
@@ -7818,7 +7875,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
             set: function (v) {
                 this._panel.dataSource = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(StackPanelElView.prototype, "panelEvents", {
@@ -7832,21 +7889,21 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
                     this.objEvents.raiseProp("panelEvents");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(StackPanelElView.prototype, "panel", {
             get: function () {
                 return this._panel;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(StackPanelElView.prototype, "selectable", {
             get: function () {
                 return this._panel.selectable;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return StackPanelElView;
@@ -7859,6 +7916,7 @@ define("jriapp_ui/stackpanel", ["require", "exports", "jriapp_shared", "jriapp/u
 define("jriapp_ui/tabs", ["require", "exports", "jriapp_shared", "jriapp_ui/utils/jquery", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, jriapp_shared_32, jquery_6, bootstrap_19, baseview_10) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.TabsElView = void 0;
     var utils = jriapp_shared_32.Utils, coreUtils = utils.core;
     var TabsElView = (function (_super) {
         __extends(TabsElView, _super);
@@ -7935,7 +7993,7 @@ define("jriapp_ui/tabs", ["require", "exports", "jriapp_shared", "jriapp_ui/util
                     }
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TabsElView.prototype, "tabIndex", {
@@ -7947,7 +8005,7 @@ define("jriapp_ui/tabs", ["require", "exports", "jriapp_shared", "jriapp_ui/util
                 var $el = jquery_6.$(this.el);
                 $el.tabs("option", "active", v);
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return TabsElView;
@@ -7958,6 +8016,7 @@ define("jriapp_ui/tabs", ["require", "exports", "jriapp_shared", "jriapp_ui/util
 define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/utils/viewchecks", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, jriapp_shared_33, viewchecks_2, bootstrap_20, baseview_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.TemplateElView = void 0;
     var utils = jriapp_shared_33.Utils, viewChecks = viewchecks_2.ViewChecks, boot = bootstrap_20.bootstrap, ERROR = utils.err;
     viewChecks.isTemplateElView = function (obj) {
         return !!obj && obj instanceof TemplateElView;
@@ -8013,7 +8072,7 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/uti
                     this.objEvents.raiseProp("command");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return TemplateElView;
@@ -8025,6 +8084,7 @@ define("jriapp_ui/template", ["require", "exports", "jriapp_shared", "jriapp/uti
 define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/utils/viewchecks", "jriapp/bootstrap", "jriapp_ui/baseview", "jriapp_ui/content/int"], function (require, exports, jriapp_shared_34, dom_32, viewchecks_3, bootstrap_21, baseview_12, int_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DataFormElView = exports.DataForm = void 0;
     var utils = jriapp_shared_34.Utils, dom = dom_32.DomUtils, isFunc = utils.check.isFunc, getNewID = utils.core.getNewID, format = utils.str.format, sys = utils.sys, boot = bootstrap_21.bootstrap, viewChecks = viewchecks_3.ViewChecks, _reject = utils.defer.reject;
     viewChecks.isDataForm = function (el) {
         if (!el) {
@@ -8313,14 +8373,14 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
             get: function () {
                 return boot.app;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataForm.prototype, "el", {
             get: function () {
                 return this._el;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataForm.prototype, "dataContext", {
@@ -8348,7 +8408,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                 }
                 this.objEvents.raiseProp("dataContext");
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataForm.prototype, "isEditing", {
@@ -8390,7 +8450,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                     this.objEvents.raiseProp("isEditing");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         DataForm._DATA_FORM_SELECTOR = ["*[", "data-view", "='", "dataform", "']"].join("");
@@ -8433,14 +8493,14 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
                     this._form.dataContext = v;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DataFormElView.prototype, "form", {
             get: function () {
                 return this._form;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DataFormElView;
@@ -8451,6 +8511,7 @@ define("jriapp_ui/dataform", ["require", "exports", "jriapp_shared", "jriapp/uti
 define("jriapp_ui/datepicker", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/textbox"], function (require, exports, bootstrap_22, textbox_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DatePickerElView = void 0;
     var boot = bootstrap_22.bootstrap;
     var DatePickerElView = (function (_super) {
         __extends(DatePickerElView, _super);
@@ -8489,6 +8550,7 @@ define("jriapp_ui/datepicker", ["require", "exports", "jriapp/bootstrap", "jriap
 define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp_ui/baseview"], function (require, exports, jriapp_shared_35, dom_33, baseview_13) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.CommandElView = void 0;
     var utils = jriapp_shared_35.Utils, dom = dom_33.DomUtils;
     var CommandFlags;
     (function (CommandFlags) {
@@ -8595,7 +8657,7 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
                     this.objEvents.raiseProp("command");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CommandElView.prototype, "commandParam", {
@@ -8612,7 +8674,7 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
                     this.objEvents.raiseProp("commandParam");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CommandElView.prototype, "isEnabled", {
@@ -8639,21 +8701,21 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
                     this.objEvents.raiseProp("isEnabled");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CommandElView.prototype, "preventDefault", {
             get: function () {
                 return this._getCommandFlag(0);
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(CommandElView.prototype, "stopPropagation", {
             get: function () {
                 return this._getCommandFlag(1);
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return CommandElView;
@@ -8663,6 +8725,7 @@ define("jriapp_ui/command", ["require", "exports", "jriapp_shared", "jriapp/util
 define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/command"], function (require, exports, dom_34, bootstrap_23, command_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.AnchorElView = void 0;
     var dom = dom_34.DomUtils, boot = bootstrap_23.bootstrap, subscribeMap = bootstrap_23.subscribeWeakMap;
     var AnchorElView = (function (_super) {
         __extends(AnchorElView, _super);
@@ -8769,7 +8832,7 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                     this.objEvents.raiseProp("imageSrc");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AnchorElView.prototype, "glyph", {
@@ -8781,7 +8844,7 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                     this.objEvents.raiseProp("glyph");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AnchorElView.prototype, "html", {
@@ -8796,7 +8859,7 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                     this.objEvents.raiseProp("html");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AnchorElView.prototype, "text", {
@@ -8811,7 +8874,7 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                     this.objEvents.raiseProp("text");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(AnchorElView.prototype, "href", {
@@ -8826,7 +8889,7 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                     this.objEvents.raiseProp("href");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return AnchorElView;
@@ -8838,6 +8901,7 @@ define("jriapp_ui/anchor", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
 define("jriapp_ui/span", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, bootstrap_24, baseview_14) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.SpanElView = void 0;
     var SpanElView = (function (_super) {
         __extends(SpanElView, _super);
         function SpanElView() {
@@ -8859,7 +8923,7 @@ define("jriapp_ui/span", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/b
                     this.objEvents.raiseProp("value");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SpanElView.prototype, "value", {
@@ -8869,7 +8933,7 @@ define("jriapp_ui/span", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/b
             set: function (v) {
                 this.text = v;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(SpanElView.prototype, "html", {
@@ -8884,7 +8948,7 @@ define("jriapp_ui/span", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/b
                     this.objEvents.raiseProp("html");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return SpanElView;
@@ -8895,6 +8959,7 @@ define("jriapp_ui/span", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/b
 define("jriapp_ui/block", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/span"], function (require, exports, bootstrap_25, span_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.BlockElView = void 0;
     var boot = bootstrap_25.bootstrap;
     var BlockElView = (function (_super) {
         __extends(BlockElView, _super);
@@ -8915,7 +8980,7 @@ define("jriapp_ui/block", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/
                     this.objEvents.raiseProp("width");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BlockElView.prototype, "height", {
@@ -8929,7 +8994,7 @@ define("jriapp_ui/block", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/
                     this.objEvents.raiseProp("height");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return BlockElView;
@@ -8942,6 +9007,7 @@ define("jriapp_ui/block", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/
 define("jriapp_ui/busy", ["require", "exports", "jriapp_shared", "jriapp_ui/utils/jquery", "jriapp/bootstrap", "jriapp/utils/dom", "jriapp_ui/baseview"], function (require, exports, jriapp_shared_36, jquery_7, bootstrap_26, dom_35, baseview_15) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.BusyElView = void 0;
     var isNt = jriapp_shared_36.Utils.check.isNt, boot = bootstrap_26.bootstrap, dom = dom_35.DomUtils;
     var BusyElView = (function (_super) {
         __extends(BusyElView, _super);
@@ -9015,7 +9081,7 @@ define("jriapp_ui/busy", ["require", "exports", "jriapp_shared", "jriapp_ui/util
                     self.objEvents.raiseProp("isBusy");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BusyElView.prototype, "delay", {
@@ -9026,7 +9092,7 @@ define("jriapp_ui/busy", ["require", "exports", "jriapp_shared", "jriapp_ui/util
                     this.objEvents.raiseProp("delay");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return BusyElView;
@@ -9038,6 +9104,7 @@ define("jriapp_ui/busy", ["require", "exports", "jriapp_shared", "jriapp_ui/util
 define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/command"], function (require, exports, dom_36, bootstrap_27, command_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ButtonElView = void 0;
     var boot = bootstrap_27.bootstrap, dom = dom_36.DomUtils, subscribeMap = bootstrap_27.subscribeWeakMap;
     var ButtonElView = (function (_super) {
         __extends(ButtonElView, _super);
@@ -9089,7 +9156,7 @@ define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                     this.objEvents.raiseProp("value");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ButtonElView.prototype, "text", {
@@ -9104,7 +9171,7 @@ define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                     this.objEvents.raiseProp("text");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ButtonElView.prototype, "html", {
@@ -9124,7 +9191,7 @@ define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
                     this.objEvents.raiseProp("html");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return ButtonElView;
@@ -9137,6 +9204,7 @@ define("jriapp_ui/button", ["require", "exports", "jriapp/utils/dom", "jriapp/bo
 define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/input"], function (require, exports, jriapp_shared_37, dom_37, bootstrap_28, input_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.CheckBoxElView = void 0;
     var dom = dom_37.DomUtils, isNt = jriapp_shared_37.Utils.check.isNt, boot = bootstrap_28.bootstrap, subscribeMap = bootstrap_28.subscribeWeakMap;
     var CheckBoxElView = (function (_super) {
         __extends(CheckBoxElView, _super);
@@ -9209,7 +9277,7 @@ define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/uti
                     this.objEvents.raiseProp("checked");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return CheckBoxElView;
@@ -9221,6 +9289,7 @@ define("jriapp_ui/checkbox", ["require", "exports", "jriapp_shared", "jriapp/uti
 define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/utils/dom", "jriapp/bootstrap", "jriapp_ui/input"], function (require, exports, jriapp_shared_38, dom_38, bootstrap_29, input_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.CheckBoxThreeStateElView = void 0;
     var isNt = jriapp_shared_38.Utils.check.isNt, dom = dom_38.DomUtils, boot = bootstrap_29.bootstrap, subscribeMap = bootstrap_29.subscribeWeakMap;
     var CheckBoxThreeStateElView = (function (_super) {
         __extends(CheckBoxThreeStateElView, _super);
@@ -9297,7 +9366,7 @@ define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/ut
                     this.objEvents.raiseProp("checked");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return CheckBoxThreeStateElView;
@@ -9309,6 +9378,7 @@ define("jriapp_ui/checkbox3", ["require", "exports", "jriapp_shared", "jriapp/ut
 define("jriapp_ui/expander", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/anchor"], function (require, exports, bootstrap_30, anchor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ExpanderElView = exports.PROP_NAME = void 0;
     var PROP_NAME;
     (function (PROP_NAME) {
         PROP_NAME["isExpanded"] = "isExpanded";
@@ -9362,7 +9432,7 @@ define("jriapp_ui/expander", ["require", "exports", "jriapp/bootstrap", "jriapp_
                     this.objEvents.raiseProp("isExpanded");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return ExpanderElView;
@@ -9373,6 +9443,7 @@ define("jriapp_ui/expander", ["require", "exports", "jriapp/bootstrap", "jriapp_
 define("jriapp_ui/hidden", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/input"], function (require, exports, bootstrap_31, input_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.HiddenElView = void 0;
     var HiddenElView = (function (_super) {
         __extends(HiddenElView, _super);
         function HiddenElView() {
@@ -9389,6 +9460,7 @@ define("jriapp_ui/hidden", ["require", "exports", "jriapp/bootstrap", "jriapp_ui
 define("jriapp_ui/img", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/baseview"], function (require, exports, bootstrap_32, baseview_16) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ImgElView = void 0;
     var ImgElView = (function (_super) {
         __extends(ImgElView, _super);
         function ImgElView() {
@@ -9408,7 +9480,7 @@ define("jriapp_ui/img", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/ba
                     this.objEvents.raiseProp("src");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return ImgElView;
@@ -9419,6 +9491,7 @@ define("jriapp_ui/img", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/ba
 define("jriapp_ui/radio", ["require", "exports", "jriapp_shared", "jriapp/bootstrap", "jriapp_ui/checkbox"], function (require, exports, jriapp_shared_39, bootstrap_33, checkbox_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.RadioElView = void 0;
     var isNt = jriapp_shared_39.Utils.check.isNt;
     var RadioElView = (function (_super) {
         __extends(RadioElView, _super);
@@ -9439,14 +9512,14 @@ define("jriapp_ui/radio", ["require", "exports", "jriapp_shared", "jriapp/bootst
                     this.objEvents.raiseProp("value");
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(RadioElView.prototype, "name", {
             get: function () {
                 return this.el.name;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return RadioElView;
@@ -9457,63 +9530,62 @@ define("jriapp_ui/radio", ["require", "exports", "jriapp_shared", "jriapp/bootst
 define("jriapp_ui/content/all", ["require", "exports", "jriapp_ui/content/basic", "jriapp_ui/content/template", "jriapp_ui/content/string", "jriapp_ui/content/multyline", "jriapp_ui/content/bool", "jriapp_ui/content/number", "jriapp_ui/content/date", "jriapp_ui/content/datetime", "jriapp_ui/content/lookup"], function (require, exports, basic_9, template_8, string_2, multyline_2, bool_2, number_2, date_2, datetime_2, lookup_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.BasicContent = basic_9.BasicContent;
-    exports.TemplateContent = template_8.TemplateContent;
-    exports.StringContent = string_2.StringContent;
-    exports.MultyLineContent = multyline_2.MultyLineContent;
-    exports.BoolContent = bool_2.BoolContent;
-    exports.NumberContent = number_2.NumberContent;
-    exports.DateContent = date_2.DateContent;
-    exports.DateTimeContent = datetime_2.DateTimeContent;
-    exports.LookupContent = lookup_2.LookupContent;
+    exports.LookupContent = exports.DateTimeContent = exports.DateContent = exports.NumberContent = exports.BoolContent = exports.MultyLineContent = exports.StringContent = exports.TemplateContent = exports.BasicContent = void 0;
+    Object.defineProperty(exports, "BasicContent", { enumerable: true, get: function () { return basic_9.BasicContent; } });
+    Object.defineProperty(exports, "TemplateContent", { enumerable: true, get: function () { return template_8.TemplateContent; } });
+    Object.defineProperty(exports, "StringContent", { enumerable: true, get: function () { return string_2.StringContent; } });
+    Object.defineProperty(exports, "MultyLineContent", { enumerable: true, get: function () { return multyline_2.MultyLineContent; } });
+    Object.defineProperty(exports, "BoolContent", { enumerable: true, get: function () { return bool_2.BoolContent; } });
+    Object.defineProperty(exports, "NumberContent", { enumerable: true, get: function () { return number_2.NumberContent; } });
+    Object.defineProperty(exports, "DateContent", { enumerable: true, get: function () { return date_2.DateContent; } });
+    Object.defineProperty(exports, "DateTimeContent", { enumerable: true, get: function () { return datetime_2.DateTimeContent; } });
+    Object.defineProperty(exports, "LookupContent", { enumerable: true, get: function () { return lookup_2.LookupContent; } });
 });
 define("jriapp_ui", ["require", "exports", "jriapp/bootstrap", "jriapp_ui/content/factory", "jriapp_ui/utils/tooltip", "jriapp_ui/utils/datepicker", "jriapp_ui/utils/errors", "jriapp_ui/dialog", "jriapp_ui/dynacontent", "jriapp_ui/datagrid/datagrid", "jriapp_ui/pager", "jriapp_ui/listbox", "jriapp_ui/stackpanel", "jriapp_ui/tabs", "jriapp_ui/baseview", "jriapp_ui/template", "jriapp_ui/dataform", "jriapp_ui/datepicker", "jriapp_ui/anchor", "jriapp_ui/block", "jriapp_ui/busy", "jriapp_ui/button", "jriapp_ui/checkbox", "jriapp_ui/checkbox3", "jriapp_ui/command", "jriapp_ui/expander", "jriapp_ui/hidden", "jriapp_ui/img", "jriapp_ui/input", "jriapp_ui/radio", "jriapp_ui/span", "jriapp_ui/textarea", "jriapp_ui/textbox", "jriapp_ui/utils/dblclick", "jriapp_ui/utils/jquery", "jriapp_ui/content/all"], function (require, exports, bootstrap_34, factory_1, tooltip_1, datepicker_1, errors_3, dialog_2, dynacontent_1, datagrid_1, pager_1, listbox_2, stackpanel_1, tabs_1, baseview_17, template_9, dataform_1, datepicker_2, anchor_2, block_1, busy_1, button_1, checkbox_2, checkbox3_1, command_3, expander_4, hidden_1, img_1, input_5, radio_1, span_2, textarea_2, textbox_5, dblclick_2, jquery_8, all_1) {
     "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DIALOG_ACTION = dialog_2.DIALOG_ACTION;
-    exports.DataEditDialog = dialog_2.DataEditDialog;
-    exports.DialogVM = dialog_2.DialogVM;
-    exports.DynaContentElView = dynacontent_1.DynaContentElView;
-    exports.DataGrid = datagrid_1.DataGrid;
-    exports.DataGridColumn = datagrid_1.DataGridColumn;
-    exports.DataGridRow = datagrid_1.DataGridRow;
-    exports.DataGridElView = datagrid_1.DataGridElView;
-    exports.ROW_POSITION = datagrid_1.ROW_POSITION;
-    exports.findDataGrid = datagrid_1.findDataGrid;
-    exports.getDataGrids = datagrid_1.getDataGrids;
-    __export(pager_1);
-    exports.ListBox = listbox_2.ListBox;
-    exports.ListBoxElView = listbox_2.ListBoxElView;
-    __export(stackpanel_1);
-    __export(tabs_1);
-    exports.BaseElView = baseview_17.BaseElView;
-    exports.addToolTip = baseview_17.addToolTip;
-    exports.TemplateElView = template_9.TemplateElView;
-    exports.DataForm = dataform_1.DataForm;
-    exports.DataFormElView = dataform_1.DataFormElView;
-    exports.DatePickerElView = datepicker_2.DatePickerElView;
-    exports.AnchorElView = anchor_2.AnchorElView;
-    exports.BlockElView = block_1.BlockElView;
-    exports.BusyElView = busy_1.BusyElView;
-    exports.ButtonElView = button_1.ButtonElView;
-    exports.CheckBoxElView = checkbox_2.CheckBoxElView;
-    exports.CheckBoxThreeStateElView = checkbox3_1.CheckBoxThreeStateElView;
-    exports.CommandElView = command_3.CommandElView;
-    exports.ExpanderElView = expander_4.ExpanderElView;
-    exports.HiddenElView = hidden_1.HiddenElView;
-    exports.ImgElView = img_1.ImgElView;
-    exports.InputElView = input_5.InputElView;
-    exports.RadioElView = radio_1.RadioElView;
-    exports.SpanElView = span_2.SpanElView;
-    exports.TextAreaElView = textarea_2.TextAreaElView;
-    exports.TextBoxElView = textbox_5.TextBoxElView;
-    exports.DblClick = dblclick_2.DblClick;
-    exports.JQueryUtils = jquery_8.JQueryUtils;
-    exports.$ = jquery_8.$;
-    __export(all_1);
+    exports.VERSION = exports.$ = exports.JQueryUtils = exports.DblClick = exports.TextBoxElView = exports.TextAreaElView = exports.SpanElView = exports.RadioElView = exports.InputElView = exports.ImgElView = exports.HiddenElView = exports.ExpanderElView = exports.CommandElView = exports.CheckBoxThreeStateElView = exports.CheckBoxElView = exports.ButtonElView = exports.BusyElView = exports.BlockElView = exports.AnchorElView = exports.DatePickerElView = exports.DataFormElView = exports.DataForm = exports.TemplateElView = exports.addToolTip = exports.BaseElView = exports.ListBoxElView = exports.ListBox = exports.getDataGrids = exports.findDataGrid = exports.ROW_POSITION = exports.DataGridElView = exports.DataGridRow = exports.DataGridColumn = exports.DataGrid = exports.DynaContentElView = exports.DialogVM = exports.DataEditDialog = exports.DIALOG_ACTION = void 0;
+    Object.defineProperty(exports, "DIALOG_ACTION", { enumerable: true, get: function () { return dialog_2.DIALOG_ACTION; } });
+    Object.defineProperty(exports, "DataEditDialog", { enumerable: true, get: function () { return dialog_2.DataEditDialog; } });
+    Object.defineProperty(exports, "DialogVM", { enumerable: true, get: function () { return dialog_2.DialogVM; } });
+    Object.defineProperty(exports, "DynaContentElView", { enumerable: true, get: function () { return dynacontent_1.DynaContentElView; } });
+    Object.defineProperty(exports, "DataGrid", { enumerable: true, get: function () { return datagrid_1.DataGrid; } });
+    Object.defineProperty(exports, "DataGridColumn", { enumerable: true, get: function () { return datagrid_1.DataGridColumn; } });
+    Object.defineProperty(exports, "DataGridRow", { enumerable: true, get: function () { return datagrid_1.DataGridRow; } });
+    Object.defineProperty(exports, "DataGridElView", { enumerable: true, get: function () { return datagrid_1.DataGridElView; } });
+    Object.defineProperty(exports, "ROW_POSITION", { enumerable: true, get: function () { return datagrid_1.ROW_POSITION; } });
+    Object.defineProperty(exports, "findDataGrid", { enumerable: true, get: function () { return datagrid_1.findDataGrid; } });
+    Object.defineProperty(exports, "getDataGrids", { enumerable: true, get: function () { return datagrid_1.getDataGrids; } });
+    __exportStar(pager_1, exports);
+    Object.defineProperty(exports, "ListBox", { enumerable: true, get: function () { return listbox_2.ListBox; } });
+    Object.defineProperty(exports, "ListBoxElView", { enumerable: true, get: function () { return listbox_2.ListBoxElView; } });
+    __exportStar(stackpanel_1, exports);
+    __exportStar(tabs_1, exports);
+    Object.defineProperty(exports, "BaseElView", { enumerable: true, get: function () { return baseview_17.BaseElView; } });
+    Object.defineProperty(exports, "addToolTip", { enumerable: true, get: function () { return baseview_17.addToolTip; } });
+    Object.defineProperty(exports, "TemplateElView", { enumerable: true, get: function () { return template_9.TemplateElView; } });
+    Object.defineProperty(exports, "DataForm", { enumerable: true, get: function () { return dataform_1.DataForm; } });
+    Object.defineProperty(exports, "DataFormElView", { enumerable: true, get: function () { return dataform_1.DataFormElView; } });
+    Object.defineProperty(exports, "DatePickerElView", { enumerable: true, get: function () { return datepicker_2.DatePickerElView; } });
+    Object.defineProperty(exports, "AnchorElView", { enumerable: true, get: function () { return anchor_2.AnchorElView; } });
+    Object.defineProperty(exports, "BlockElView", { enumerable: true, get: function () { return block_1.BlockElView; } });
+    Object.defineProperty(exports, "BusyElView", { enumerable: true, get: function () { return busy_1.BusyElView; } });
+    Object.defineProperty(exports, "ButtonElView", { enumerable: true, get: function () { return button_1.ButtonElView; } });
+    Object.defineProperty(exports, "CheckBoxElView", { enumerable: true, get: function () { return checkbox_2.CheckBoxElView; } });
+    Object.defineProperty(exports, "CheckBoxThreeStateElView", { enumerable: true, get: function () { return checkbox3_1.CheckBoxThreeStateElView; } });
+    Object.defineProperty(exports, "CommandElView", { enumerable: true, get: function () { return command_3.CommandElView; } });
+    Object.defineProperty(exports, "ExpanderElView", { enumerable: true, get: function () { return expander_4.ExpanderElView; } });
+    Object.defineProperty(exports, "HiddenElView", { enumerable: true, get: function () { return hidden_1.HiddenElView; } });
+    Object.defineProperty(exports, "ImgElView", { enumerable: true, get: function () { return img_1.ImgElView; } });
+    Object.defineProperty(exports, "InputElView", { enumerable: true, get: function () { return input_5.InputElView; } });
+    Object.defineProperty(exports, "RadioElView", { enumerable: true, get: function () { return radio_1.RadioElView; } });
+    Object.defineProperty(exports, "SpanElView", { enumerable: true, get: function () { return span_2.SpanElView; } });
+    Object.defineProperty(exports, "TextAreaElView", { enumerable: true, get: function () { return textarea_2.TextAreaElView; } });
+    Object.defineProperty(exports, "TextBoxElView", { enumerable: true, get: function () { return textbox_5.TextBoxElView; } });
+    Object.defineProperty(exports, "DblClick", { enumerable: true, get: function () { return dblclick_2.DblClick; } });
+    Object.defineProperty(exports, "JQueryUtils", { enumerable: true, get: function () { return jquery_8.JQueryUtils; } });
+    Object.defineProperty(exports, "$", { enumerable: true, get: function () { return jquery_8.$; } });
+    __exportStar(all_1, exports);
     exports.VERSION = "3.0.5";
     var boot = bootstrap_34.bootstrap;
     factory_1.initContentFactory();

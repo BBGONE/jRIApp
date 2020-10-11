@@ -2,7 +2,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -14,6 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 define(["require", "exports", "jriapp", "./demoDB", "common"], function (require, exports, RIAPP, DEMODB, COMMON) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.appOptions = exports.DemoApplication = exports.RadioDemo2VM = exports.RadioDemoVM = exports.RadioValueConverter = void 0;
     var bootstrap = RIAPP.bootstrap;
     var RadioValueConverter = (function (_super) {
         __extends(RadioValueConverter, _super);
@@ -59,17 +60,17 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
                     this._onRadioValueChanged();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(RadioDemoVM.prototype, "radioValues", {
             get: function () { return this._radioValues; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(RadioDemoVM.prototype, "testDict", {
             get: function () { return this._testDict; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return RadioDemoVM;
@@ -108,12 +109,12 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         };
         Object.defineProperty(RadioDemo2VM.prototype, "historyList", {
             get: function () { return this._historyList; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(RadioDemo2VM.prototype, "clearListCommand", {
             get: function () { return this._clearListCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return RadioDemo2VM;
@@ -154,17 +155,17 @@ define(["require", "exports", "jriapp", "./demoDB", "common"], function (require
         };
         Object.defineProperty(DemoApplication.prototype, "errorVM", {
             get: function () { return this._errorVM; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "TEXT", {
             get: function () { return RIAPP.LocaleSTRS.TEXT; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "demoVM", {
             get: function () { return this._demoVM; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DemoApplication;

@@ -419,7 +419,7 @@ export class DataView<TItem extends ICollectionItem = ICollectionItem> extends B
         if (!!this._fn_sortHandler) {
             return this._fn_sortHandler(fieldNames, sortOrder);
         } else {
-            return super.sortLocal(fieldNames, sortOrder);
+            return this.sortLocal(fieldNames, sortOrder);
         }
     }
     sortLocal(fieldNames: string[], sortOrder: SORT_ORDER): IPromise<any> {

@@ -2,7 +2,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -14,6 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], function (require, exports, RIAPP, DEMODB, COMMON, MONTHPICKER) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.appOptions = exports.DemoApplication = exports.TestObject = exports.NotConverter = exports.YearMonthConverter = exports.UppercaseConverter = void 0;
     var bootstrap = RIAPP.bootstrap, utils = RIAPP.Utils, dates = utils.dates;
     var UppercaseConverter = (function (_super) {
         __extends(UppercaseConverter, _super);
@@ -133,7 +134,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
                     this._testCommand.raiseCanExecuteChanged();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "testProperty2", {
@@ -144,7 +145,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
                     this.objEvents.raiseProp('testProperty2');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "testProperty3", {
@@ -155,7 +156,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
                     this.objEvents.raiseProp('testProperty3');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "boolProperty", {
@@ -166,17 +167,17 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
                     this.objEvents.raiseProp('boolProperty');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "testCommand", {
             get: function () { return this._testCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "paramCommand", {
             get: function () { return this._paramCommand; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "testToolTip", {
@@ -184,7 +185,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
                 return "Click the button to execute the command.<br/>" +
                     "P.S. <b>command is active when the testProperty1 length > 3</b>";
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "format", {
@@ -195,7 +196,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
                     this.objEvents.raiseProp('format');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "formatItem", {
@@ -206,19 +207,19 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
                     this.objEvents.raiseProp('formatItem');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "isEnabled", {
             get: function () {
                 return utils.check.isString(this.testProperty1) && this.testProperty1.length > 3;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "formats", {
             get: function () { return this._formats; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "month", {
@@ -229,12 +230,12 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
                     this.objEvents.raiseProp('month');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "months", {
             get: function () { return this._months; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TestObject.prototype, "yearmonth", {
@@ -245,7 +246,7 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
                     this.objEvents.raiseProp('yearmonth');
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return TestObject;
@@ -288,17 +289,17 @@ define(["require", "exports", "jriapp", "./demoDB", "common", "monthpicker"], fu
         };
         Object.defineProperty(DemoApplication.prototype, "errorVM", {
             get: function () { return this._errorVM; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "TEXT", {
             get: function () { return RIAPP.LocaleSTRS.TEXT; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(DemoApplication.prototype, "testObject", {
             get: function () { return this._testObject; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return DemoApplication;
