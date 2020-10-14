@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Dynamic.Core.Validation;
@@ -8,6 +7,7 @@ using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
+using JetBrains.Annotations;
 
 namespace System.Linq.Dynamic.Core
 {
@@ -40,10 +40,11 @@ namespace System.Linq.Dynamic.Core
         private static readonly MethodInfo EqualityComparerDefault = EqualityComparer.GetMethod("get_Default", BindingFlags.Static | BindingFlags.Public);
         private static readonly MethodInfo EqualityComparerEquals = EqualityComparer.GetMethod("Equals", new[] { EqualityComparerGenericArgument, EqualityComparerGenericArgument });
         private static readonly MethodInfo EqualityComparerGetHashCode = EqualityComparer.GetMethod("GetHashCode", new[] { EqualityComparerGenericArgument });
+
         private static int _index = -1;
 
-        private static readonly string DynamicAssemblyName = "System.Linq.Dynamic.Core.DynamicClasses, Version=1.0.0.0";
-        private static readonly string DynamicModuleName = "System.Linq.Dynamic.Core.DynamicClasses";
+        private static string DynamicAssemblyName = "System.Linq.Dynamic.Core.DynamicClasses, Version=1.0.0.0";
+        private static string DynamicModuleName = "System.Linq.Dynamic.Core.DynamicClasses";
 
         /// <summary>
         /// Initializes the <see cref="DynamicClassFactory"/> class.
@@ -244,7 +245,10 @@ namespace System.Linq.Dynamic.Core
                             ilgeneratorToString.Emit(OpCodes.Pop);
                         }
 
-                        if (createParameterCtor)
+                        // Only create the default and with params constructor when there are any params.
+                        // Otherwise default constructor is not needed because it matches the default
+                        // one provided by the runtime when no constructor is present
+                        if (createParameterCtor && names.Any())
                         {
                             // .ctor default
                             ConstructorBuilder constructorDef = tb.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig, CallingConventions.HasThis, EmptyTypes);
@@ -256,7 +260,7 @@ namespace System.Linq.Dynamic.Core
                             ilgeneratorConstructorDef.Emit(OpCodes.Ret);
 
                             // .ctor with params
-                            ConstructorBuilder constructor = tb.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig, CallingConventions.HasThis, generics.Select(p => p).ToArray());
+                            ConstructorBuilder constructor = tb.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig, CallingConventions.HasThis, generics.ToArray());
                             constructor.SetCustomAttribute(DebuggerHiddenAttributeBuilder);
 
                             ILGenerator ilgeneratorConstructor = constructor.GetILGenerator();

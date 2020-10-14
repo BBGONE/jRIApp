@@ -23,7 +23,7 @@ namespace System.Linq.Dynamic.Core
             Check.NotNull(source, nameof(source));
             Check.NotNull(type, nameof(type));
 
-            return Task.Run(() => source.ToDynamicArray());
+            return Task.Run(() => source.ToDynamicArray(type));
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace System.Linq.Dynamic.Core
             Check.NotNull(source, nameof(source));
             Check.NotNull(type, nameof(type));
 
-            return Task.Run(() => source.ToDynamicList());
+            return Task.Run(() => source.ToDynamicList(type));
         }
 
         /// <summary>

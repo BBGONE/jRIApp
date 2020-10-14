@@ -17,20 +17,41 @@ namespace System.Linq.Dynamic.Core.Parser.SupportedMethods
             _parsingConfig = parsingConfig;
         }
 
-        public bool ContainsMethod(Type type, string methodName, bool staticAccess, Expression[] args)
+        public bool ContainsMethod(Type type, string methodName, bool staticAccess, Expression instance, ref Expression[] args)
         {
-            return FindMethod(type, methodName, staticAccess, args, out var _) == 1;
+            // NOTE: `instance` is not passed by ref in the method signature by design. The ContainsMethod should not change the instance.
+            // However, args by reference is required for backward compatibility (removing "ref" will break some tests)
+
+            return FindMethod(type, methodName, staticAccess, ref instance, ref args, out _) == 1;
         }
 
-        public int FindMethod(Type type, string methodName, bool staticAccess, Expression[] args, out MethodBase method)
+        public int FindMethod(Type type, string methodName, bool staticAccess, ref Expression instance, ref Expression[] args, out MethodBase method)
         {
             foreach (Type t in SelfAndBaseTypes(type))
             {
                 MethodInfo[] methods = t.GetTypeInfo().DeclaredMethods.Where(x => (x.IsStatic || !staticAccess) && x.Name.ToLowerInvariant() == methodName.ToLowerInvariant()).ToArray();
-                int count = FindBestMethod(methods, args, out method);
+                int count = FindBestMethod(methods, ref args, out method);
                 if (count != 0)
                 {
                     return count;
+                }
+            }
+
+            if (instance != null)
+            {
+                // TRY to solve with registered extension methods 
+                if (_parsingConfig.CustomTypeProvider.GetExtensionMethods().TryGetValue(type, out var methods))
+                {
+                    var argsList = args.ToList();
+                    argsList.Insert(0, instance);
+                    var extensionMethodArgs = argsList.ToArray();
+                    int count = FindBestMethod(methods.Cast<MethodBase>(), ref extensionMethodArgs, out method);
+                    if (count != 0)
+                    {
+                        instance = null;
+                        args = extensionMethodArgs;
+                        return count;
+                    }
                 }
             }
 
@@ -38,16 +59,20 @@ namespace System.Linq.Dynamic.Core.Parser.SupportedMethods
             return 0;
         }
 
-        public int FindBestMethod(IEnumerable<MethodBase> methods, Expression[] args, out MethodBase method)
+        public int FindBestMethod(IEnumerable<MethodBase> methods, ref Expression[] args, out MethodBase method)
         {
-            MethodData[] applicable = methods.
-                Select(m => new MethodData { MethodBase = m, Parameters = m.GetParameters() }).
-                Where(m => IsApplicable(m, args)).
-                ToArray();
+            // passing args by reference is now required with the params array support.
+
+            var inlineArgs = args;
+
+            MethodData[] applicable = methods
+                .Select(m => new MethodData { MethodBase = m, Parameters = m.GetParameters() })
+                .Where(m => IsApplicable(m, inlineArgs))
+                .ToArray();
 
             if (applicable.Length > 1)
             {
-                applicable = applicable.Where(m => applicable.All(n => m == n || IsBetterThan(args, m, n))).ToArray();
+                applicable = applicable.Where(m => applicable.All(n => m == n || IsBetterThan(inlineArgs, m, n))).ToArray();
             }
 
             if (args.Length == 2 && applicable.Length > 1 && (args[0].Type == typeof(Guid?) || args[1].Type == typeof(Guid?)))
@@ -58,11 +83,8 @@ namespace System.Linq.Dynamic.Core.Parser.SupportedMethods
             if (applicable.Length == 1)
             {
                 MethodData md = applicable[0];
-                for (int i = 0; i < args.Length; i++)
-                {
-                    args[i] = md.Args[i];
-                }
                 method = md.MethodBase;
+                args = md.Args;
             }
             else
             {
@@ -82,7 +104,7 @@ namespace System.Linq.Dynamic.Core.Parser.SupportedMethods
                     IEnumerable<MethodBase> methods = members.OfType<PropertyInfo>().
                     Select(p => (MethodBase)p.GetMethod);
 
-                    int count = FindBestMethod(methods, args, out method);
+                    int count = FindBestMethod(methods, ref args, out method);
                     if (count != 0)
                     {
                         return count;
@@ -96,27 +118,70 @@ namespace System.Linq.Dynamic.Core.Parser.SupportedMethods
 
         bool IsApplicable(MethodData method, Expression[] args)
         {
-            if (method.Parameters.Length != args.Length)
+            bool isParamArray = method.Parameters.Length > 0 && method.Parameters.Last().IsDefined(typeof(ParamArrayAttribute), false);
+
+            // if !paramArray, the number of parameter must be equal
+            // if paramArray, the last parameter is optional
+            if ((!isParamArray && method.Parameters.Length != args.Length) ||
+                (isParamArray && method.Parameters.Length - 1 > args.Length))
             {
                 return false;
             }
 
-            Expression[] promotedArgs = new Expression[args.Length];
-            for (int i = 0; i < args.Length; i++)
+            Expression[] promotedArgs = new Expression[method.Parameters.Length];
+            for (int i = 0; i < method.Parameters.Length; i++)
             {
-                ParameterInfo pi = method.Parameters[i];
-                if (pi.IsOut)
+                if (isParamArray && i == method.Parameters.Length - 1)
                 {
-                    return false;
-                }
+                    if (method.Parameters.Length == args.Length + 1
+                        || (method.Parameters.Length == args.Length && args[i] is ConstantExpression constantExpression && constantExpression.Value == null))
+                    {
+                        promotedArgs[promotedArgs.Length - 1] = Expression.Constant(null, method.Parameters.Last().ParameterType);
+                    }
+                    else if (method.Parameters.Length == args.Length && method.Parameters.Last().ParameterType == args.Last().Type)
+                    {
+                        promotedArgs[promotedArgs.Length - 1] = args.Last();
+                    }
+                    else
+                    {
+                        var paramType = method.Parameters.Last().ParameterType;
+                        var paramElementType = paramType.GetElementType();
 
-                Expression promoted = this._parsingConfig.ExpressionPromoter.Promote(args[i], pi.ParameterType, false, method.MethodBase.DeclaringType != typeof(IEnumerableSignatures));
-                if (promoted == null)
-                {
-                    return false;
+                        List<Expression> arrayInitializerExpressions = new List<Expression>();
+
+                        for (int j = method.Parameters.Length - 1; j < args.Length; j++)
+                        {
+                            Expression promoted = this._parsingConfig.ExpressionPromoter.Promote(args[j], paramElementType, false, method.MethodBase.DeclaringType != typeof(IEnumerableSignatures));
+                            if (promoted == null)
+                            {
+                                return false;
+                            }
+
+                            arrayInitializerExpressions.Add(promoted);
+                        }
+
+                        var paramExpression = Expression.NewArrayInit(paramElementType, arrayInitializerExpressions);
+
+                        promotedArgs[promotedArgs.Length - 1] = paramExpression;
+                    }
                 }
-                promotedArgs[i] = promoted;
+                else
+                {
+                    ParameterInfo pi = method.Parameters[i];
+                    if (pi.IsOut)
+                    {
+                        return false;
+                    }
+
+                    Expression promoted = this._parsingConfig.ExpressionPromoter.Promote(args[i], pi.ParameterType, false, method.MethodBase.DeclaringType != typeof(IEnumerableSignatures));
+                    if (promoted == null)
+                    {
+                        return false;
+                    }
+                    promotedArgs[i] = promoted;
+                }
             }
+
             method.Args = promotedArgs;
             return true;
         }
@@ -217,10 +282,7 @@ namespace System.Linq.Dynamic.Core.Parser.SupportedMethods
             if (!types.Contains(type))
             {
                 types.Add(type);
-                foreach (Type t in type.GetInterfaces())
-                {
-                    AddInterface(types, t);
-                }
+                foreach (Type t in type.GetInterfaces()) AddInterface(types, t);
             }
         }
     }

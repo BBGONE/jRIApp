@@ -20,10 +20,7 @@ namespace System.Linq.Dynamic.Core.Parser
                     foreach (Type intfType in type.GetInterfaces())
                     {
                         Type found = FindGenericType(generic, intfType);
-                        if (found != null)
-                        {
-                            return found;
-                        }
+                        if (found != null) return found;
                     }
                 }
 
@@ -50,71 +47,53 @@ namespace System.Linq.Dynamic.Core.Parser
             {
                 return false;
             }
-            Type sc = st.GetTypeInfo().IsEnum ? typeof(Object) : st;
-            Type tc = tt.GetTypeInfo().IsEnum ? typeof(Object) : tt;
+            Type sc = st.GetTypeInfo().IsEnum ? typeof(object) : st;
+            Type tc = tt.GetTypeInfo().IsEnum ? typeof(object) : tt;
 
-            if (sc == typeof(SByte))
+            if (sc == typeof(sbyte))
             {
-                if (tc == typeof(SByte) || tc == typeof(Int16) || tc == typeof(Int32) || tc == typeof(Int64) || tc == typeof(Single) || tc == typeof(Double) || tc == typeof(Decimal))
-                {
+                if (tc == typeof(sbyte) || tc == typeof(short) || tc == typeof(int) || tc == typeof(long) || tc == typeof(float) || tc == typeof(double) || tc == typeof(decimal))
                     return true;
-                }
             }
-            else if (sc == typeof(Byte))
+            else if (sc == typeof(byte))
             {
-                if (tc == typeof(Byte) || tc == typeof(Int16) || tc == typeof(UInt16) || tc == typeof(Int32) || tc == typeof(UInt32) || tc == typeof(Int64) || tc == typeof(UInt64) || tc == typeof(Single) || tc == typeof(Double) || tc == typeof(Decimal))
-                {
+                if (tc == typeof(byte) || tc == typeof(short) || tc == typeof(ushort) || tc == typeof(int) || tc == typeof(uint) || tc == typeof(long) || tc == typeof(ulong) || tc == typeof(float) || tc == typeof(double) || tc == typeof(decimal))
                     return true;
-                }
             }
-            else if (sc == typeof(Int16))
+            else if (sc == typeof(short))
             {
-                if (tc == typeof(Int16) || tc == typeof(Int32) || tc == typeof(Int64) || tc == typeof(Single) || tc == typeof(Double) || tc == typeof(Decimal))
-                {
+                if (tc == typeof(short) || tc == typeof(int) || tc == typeof(long) || tc == typeof(float) || tc == typeof(double) || tc == typeof(decimal))
                     return true;
-                }
             }
-            else if (sc == typeof(UInt16))
+            else if (sc == typeof(ushort))
             {
-                if (tc == typeof(UInt16) || tc == typeof(Int32) || tc == typeof(UInt32) || tc == typeof(Int64) || tc == typeof(UInt64) || tc == typeof(Single) || tc == typeof(Double) || tc == typeof(Decimal))
-                {
+                if (tc == typeof(ushort) || tc == typeof(int) || tc == typeof(uint) || tc == typeof(long) || tc == typeof(ulong) || tc == typeof(float) || tc == typeof(double) || tc == typeof(decimal))
                     return true;
-                }
             }
-            else if (sc == typeof(Int32))
+            else if (sc == typeof(int))
             {
-                if (tc == typeof(Int32) || tc == typeof(Int64) || tc == typeof(Single) || tc == typeof(Double) || tc == typeof(Decimal))
-                {
+                if (tc == typeof(int) || tc == typeof(long) || tc == typeof(float) || tc == typeof(double) || tc == typeof(decimal))
                     return true;
-                }
             }
-            else if (sc == typeof(UInt32))
+            else if (sc == typeof(uint))
             {
-                if (tc == typeof(UInt32) || tc == typeof(Int64) || tc == typeof(UInt64) || tc == typeof(Single) || tc == typeof(Double) || tc == typeof(Decimal))
-                {
+                if (tc == typeof(uint) || tc == typeof(long) || tc == typeof(ulong) || tc == typeof(float) || tc == typeof(double) || tc == typeof(decimal))
                     return true;
-                }
             }
-            else if (sc == typeof(Int64))
+            else if (sc == typeof(long))
             {
-                if (tc == typeof(Int64) || tc == typeof(Single) || tc == typeof(Double) || tc == typeof(Decimal))
-                {
+                if (tc == typeof(long) || tc == typeof(float) || tc == typeof(double) || tc == typeof(decimal))
                     return true;
-                }
             }
-            else if (sc == typeof(UInt64))
+            else if (sc == typeof(ulong))
             {
-                if (tc == typeof(UInt64) || tc == typeof(Single) || tc == typeof(Double) || tc == typeof(Decimal))
-                {
+                if (tc == typeof(ulong) || tc == typeof(float) || tc == typeof(double) || tc == typeof(decimal))
                     return true;
-                }
             }
-            else if (sc == typeof(Single))
+            else if (sc == typeof(float))
             {
-                if (tc == typeof(Single) || tc == typeof(Double))
-                {
+                if (tc == typeof(float) || tc == typeof(double))
                     return true;
-                }
             }
 
             if (st == tt)
@@ -142,6 +121,13 @@ namespace System.Linq.Dynamic.Core.Parser
             return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
+        public static Type ToNullableType(Type type)
+        {
+            Check.NotNull(type, nameof(type));
+
+            return IsNullableType(type) ? type : typeof(Nullable<>).MakeGenericType(type);
+        }
+
         public static bool IsSignedIntegralType(Type type)
         {
             return GetNumericTypeKind(type) == 2;
@@ -161,20 +147,12 @@ namespace System.Linq.Dynamic.Core.Parser
                 return 0;
             }
 
-            if (type == typeof(Char) || type == typeof(Single) || type == typeof(Double) || type == typeof(Decimal))
-            {
+            if (type == typeof(char) || type == typeof(float) || type == typeof(double) || type == typeof(decimal))
                 return 1;
-            }
-
-            if (type == typeof(SByte) || type == typeof(Int16) || type == typeof(Int32) || type == typeof(Int64))
-            {
+            if (type == typeof(sbyte) || type == typeof(short) || type == typeof(int) || type == typeof(long))
                 return 2;
-            }
-
-            if (type == typeof(Byte) || type == typeof(UInt16) || type == typeof(UInt32) || type == typeof(UInt64))
-            {
+            if (type == typeof(byte) || type == typeof(ushort) || type == typeof(uint) || type == typeof(ulong))
                 return 3;
-            }
 
             return 0;
         }
@@ -183,12 +161,13 @@ namespace System.Linq.Dynamic.Core.Parser
         {
             Type baseType = GetNonNullableType(type);
 
-            string s = baseType.Name;
+            string name = baseType.Name;
             if (type != baseType)
             {
-                s += '?';
+                name += '?';
             }
-            return s;
+
+            return name;
         }
 
         public static Type GetNonNullableType(Type type)
@@ -242,100 +221,6 @@ namespace System.Linq.Dynamic.Core.Parser
                     AddInterface(types, t);
                 }
             }
-        }
-
-        public static object ParseNumber(string text, Type type)
-        {
-            var tp = GetNonNullableType(type);
-            if (tp == typeof(SByte))
-            {
-                sbyte sb;
-                if (sbyte.TryParse(text, out sb))
-                {
-                    return sb;
-                }
-            }
-            else if (tp == typeof(Byte))
-            {
-                byte b;
-                if (byte.TryParse(text, out b))
-                {
-                    return b;
-                }
-            }
-            else if (tp == typeof(Int16))
-            {
-                short s;
-                if (short.TryParse(text, out s))
-                {
-                    return s;
-                }
-            }
-            else if (tp == typeof(UInt16))
-            {
-                ushort us;
-                if (ushort.TryParse(text, out us))
-                {
-                    return us;
-                }
-            }
-            else if (tp == typeof(Int32))
-            {
-                int i;
-                if (int.TryParse(text, out i))
-                {
-                    return i;
-                }
-            }
-            else if (tp == typeof(UInt32))
-            {
-                uint ui;
-                if (uint.TryParse(text, out ui))
-                {
-                    return ui;
-                }
-            }
-            else if (tp == typeof(Int64))
-            {
-                long l;
-                if (long.TryParse(text, out l))
-                {
-                    return l;
-                }
-            }
-            else if (tp == typeof(UInt64))
-            {
-                ulong ul;
-                if (ulong.TryParse(text, out ul))
-                {
-                    return ul;
-                }
-            }
-            else if (tp == typeof(Single))
-            {
-                float f;
-                if (float.TryParse(text, out f))
-                {
-                    return f;
-                }
-            }
-            else if (tp == typeof(Double))
-            {
-                double d;
-                if (double.TryParse(text, out d))
-                {
-                    return d;
-                }
-            }
-            else if (tp == typeof(Decimal))
-            {
-                decimal e;
-                if (decimal.TryParse(text, out e))
-                {
-                    return e;
-                }
-            }
-            return null;
         }
 
         public static object ParseEnum(string value, Type type)

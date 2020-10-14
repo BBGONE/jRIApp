@@ -24,6 +24,7 @@ namespace System.Linq.Dynamic.Core
         /// </summary>
         /// <param name="source">A <see cref="IEnumerable"/> to create an array from.</param>
         /// <returns>An array that contains the elements from the input sequence.</returns>
+
         public static dynamic[] ToDynamicArray([NotNull] this IEnumerable source)
         {
             Check.NotNull(source, nameof(source));

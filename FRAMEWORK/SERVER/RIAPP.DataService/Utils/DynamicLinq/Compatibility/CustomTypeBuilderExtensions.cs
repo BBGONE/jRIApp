@@ -1,5 +1,6 @@
 ﻿using System.Reflection.Emit;
 
+// ReSharper disable once CheckNamespace
 namespace System.Reflection
 {
     internal static class CustomTypeBuilderExtensions

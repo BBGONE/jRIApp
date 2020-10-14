@@ -1,22 +1,20 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using JetBrains.Annotations;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
+using JetBrains.Annotations;
+// using System.Reflection;
 
 // Copied from https://github.com/aspnet/EntityFramework/blob/dev/src/Shared/Check.cs
 namespace System.Linq.Dynamic.Core.Validation
 {
     [DebuggerStepThrough]
-    public static class Check
+    internal static class Check
     {
-        [ContractAnnotation("value:null => halt")]
-        public static T Condition<T>([NoEnumeration] T value, [NotNull] Predicate<T> condition, [InvokerParameterName] [NotNull] string parameterName)
+        public static T Condition<T>([ValidatedNotNull, NoEnumeration] T value, [ValidatedNotNull, NotNull] Predicate<T> condition, [InvokerParameterName, ValidatedNotNull, NotNull] string parameterName)
         {
             NotNull(condition, nameof(condition));
-            NotNull(value, nameof(value));
 
             if (!condition(value))
             {
@@ -29,7 +27,7 @@ namespace System.Linq.Dynamic.Core.Validation
         }
 
         [ContractAnnotation("value:null => halt")]
-        public static T NotNull<T>([NoEnumeration] T value, [InvokerParameterName] [NotNull] string parameterName)
+        public static T NotNull<T>([ValidatedNotNull, NoEnumeration] T value, [InvokerParameterName, ValidatedNotNull, NotNull] string parameterName)
         {
             if (ReferenceEquals(value, null))
             {
@@ -44,8 +42,8 @@ namespace System.Linq.Dynamic.Core.Validation
         [ContractAnnotation("value:null => halt")]
         public static T NotNull<T>(
             [NoEnumeration] T value,
-            [InvokerParameterName] [NotNull] string parameterName,
-            [NotNull] string propertyName)
+            [InvokerParameterName, ValidatedNotNull, NotNull] string parameterName,
+            [ValidatedNotNull, NotNull] string propertyName)
         {
             if (ReferenceEquals(value, null))
             {
@@ -58,23 +56,23 @@ namespace System.Linq.Dynamic.Core.Validation
             return value;
         }
 
+        //[ContractAnnotation("value:null => halt")]
+        //public static IList<T> NotEmpty<T>(IList<T> value, [InvokerParameterName, ValidatedNotNull, NotNull] string parameterName)
+        //{
+        //    NotNull(value, parameterName);
+
+        //    if (value.Count == 0)
+        //    {
+        //        NotEmpty(parameterName, nameof(parameterName));
+
+        //        throw new ArgumentException(CoreStrings.CollectionArgumentIsEmpty(parameterName));
+        //    }
+
+        //    return value;
+        //}
+
         [ContractAnnotation("value:null => halt")]
-        public static IList<T> NotEmpty<T>(IList<T> value, [InvokerParameterName] [NotNull] string parameterName)
-        {
-            NotNull(value, parameterName);
-
-            if (value.Count == 0)
-            {
-                NotEmpty(parameterName, nameof(parameterName));
-
-                throw new ArgumentException(CoreStrings.CollectionArgumentIsEmpty(parameterName));
-            }
-
-            return value;
-        }
-
-        [ContractAnnotation("value:null => halt")]
-        public static string NotEmpty(string value, [InvokerParameterName] [NotNull] string parameterName)
+        public static string NotEmpty(string value, [InvokerParameterName, ValidatedNotNull, NotNull] string parameterName)
         {
             Exception e = null;
             if (ReferenceEquals(value, null))
@@ -96,20 +94,19 @@ namespace System.Linq.Dynamic.Core.Validation
             return value;
         }
 
-        public static string NullButNotEmpty(string value, [InvokerParameterName] [NotNull] string parameterName)
-        {
-            if (!ReferenceEquals(value, null)
-                && (value.Length == 0))
-            {
-                NotEmpty(parameterName, nameof(parameterName));
+        //public static string NullButNotEmpty(string value, [InvokerParameterName, ValidatedNotNull, NotNull] string parameterName)
+        //{
+        //    if (!ReferenceEquals(value, null) && value.Length == 0)
+        //    {
+        //        NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(CoreStrings.ArgumentIsEmpty(parameterName));
-            }
+        //        throw new ArgumentException(CoreStrings.ArgumentIsEmpty(parameterName));
+        //    }
 
-            return value;
-        }
+        //    return value;
+        //}
 
-        public static IList<T> HasNoNulls<T>(IList<T> value, [InvokerParameterName] [NotNull] string parameterName)
+        public static IList<T> HasNoNulls<T>(IList<T> value, [InvokerParameterName, ValidatedNotNull, NotNull] string parameterName)
             where T : class
         {
             NotNull(value, parameterName);
@@ -124,16 +121,16 @@ namespace System.Linq.Dynamic.Core.Validation
             return value;
         }
 
-        public static Type ValidEntityType(Type value, [InvokerParameterName] [NotNull] string parameterName)
-        {
-            if (!value.GetTypeInfo().IsClass)
-            {
-                NotEmpty(parameterName, nameof(parameterName));
+        //public static Type ValidEntityType(Type value, [InvokerParameterName, ValidatedNotNull, NotNull] string parameterName)
+        //{
+        //    if (!value.GetTypeInfo().IsClass)
+        //    {
+        //        NotEmpty(parameterName, nameof(parameterName));
 
-                throw new ArgumentException(CoreStrings.InvalidEntityType(value, parameterName));
-            }
+        //        throw new ArgumentException(CoreStrings.InvalidEntityType(value, parameterName));
+        //    }
 
-            return value;
-        }
+        //    return value;
+        //}
     }
 }

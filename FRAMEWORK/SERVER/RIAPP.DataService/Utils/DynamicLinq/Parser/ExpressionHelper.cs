@@ -1,8 +1,9 @@
-﻿using JetBrains.Annotations;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq.Dynamic.Core.Validation;
 using System.Linq.Expressions;
 using System.Reflection;
+using JetBrains.Annotations;
 
 namespace System.Linq.Dynamic.Core.Parser
 {
@@ -16,6 +17,14 @@ namespace System.Linq.Dynamic.Core.Parser
             Check.NotNull(parsingConfig, nameof(parsingConfig));
 
             _parsingConfig = parsingConfig;
+        }
+
+        public void WrapConstantExpression(ref Expression argument)
+        {
+            if (_parsingConfig.UseParameterizedNamesInDynamicQuery)
+            {
+                _constantExpressionWrapper.Wrap(ref argument);
+            }
         }
 
         public void ConvertNumericTypeToBiggestCommonTypeForBinaryOperator(ref Expression left, ref Expression right)
@@ -192,7 +201,6 @@ namespace System.Linq.Dynamic.Core.Parser
             {
                 return Expression.Constant(dateTime, typeof(DateTime));
             }
-
             if (type == typeof(Guid) && Guid.TryParse(text, out Guid guid))
             {
                 return Expression.Constant(guid, typeof(Guid));
@@ -224,6 +232,103 @@ namespace System.Linq.Dynamic.Core.Parser
                 _constantExpressionWrapper.Wrap(ref left);
                 _constantExpressionWrapper.Wrap(ref right);
             }
+        }
+
+        public bool TryGenerateAndAlsoNotNullExpression(Expression sourceExpression, bool addSelf, out Expression generatedExpression)
+        {
+            var expressions = CollectExpressions(addSelf, sourceExpression);
+
+            if (expressions.Count == 1 && !(expressions[0] is MethodCallExpression))
+            {
+                generatedExpression = sourceExpression;
+                return false;
+            }
+
+            // Reverse the list
+            expressions.Reverse();
+
+            // Convert all expressions into '!= null'
+            var binaryExpressions = expressions.Select(expression => Expression.NotEqual(expression, Expression.Constant(null))).ToArray();
+
+            // Convert all binary expressions into `AndAlso(...)`
+            generatedExpression = binaryExpressions[0];
+            for (int i = 1; i < binaryExpressions.Length; i++)
+            {
+                generatedExpression = Expression.AndAlso(generatedExpression, binaryExpressions[i]);
+            }
+
+            return true;
+        }
+
+        public bool ExpressionQualifiesForNullPropagation(Expression expression)
+        {
+            return expression is MemberExpression || expression is ParameterExpression || expression is MethodCallExpression;
+        }
+
+        private Expression GetMemberExpression(Expression expression)
+        {
+            if (ExpressionQualifiesForNullPropagation(expression))
+            {
+                return expression;
+            }
+
+            if (expression is LambdaExpression lambdaExpression)
+            {
+                if (lambdaExpression.Body is MemberExpression bodyAsMemberExpression)
+                {
+                    return bodyAsMemberExpression;
+                }
+
+                if (lambdaExpression.Body is UnaryExpression bodyAsUnaryExpression)
+                {
+                    return bodyAsUnaryExpression.Operand;
+                }
+            }
+
+            return null;
+        }
+
+        private List<Expression> CollectExpressions(bool addSelf, Expression sourceExpression)
+        {
+            Expression expression = GetMemberExpression(sourceExpression);
+
+            var list = new List<Expression>();
+
+            if (addSelf && expression is MemberExpression memberExpressionFirst)
+            {
+                if (TypeHelper.IsNullableType(memberExpressionFirst.Type) || !memberExpressionFirst.Type.GetTypeInfo().IsValueType)
+                {
+                    list.Add(sourceExpression);
+                }
+            }
+
+            bool expressionRecognized;
+            do
+            {
+                switch (expression)
+                {
+                    case MemberExpression memberExpression:
+                        expression = GetMemberExpression(memberExpression.Expression);
+                        expressionRecognized = true;
+                        break;
+
+                    case MethodCallExpression methodCallExpression:
+                        expression = methodCallExpression.Arguments.First();
+                        expressionRecognized = true;
+                        break;
+
+                    default:
+                        expressionRecognized = false;
+                        break;
+                }
+
+                if (expressionRecognized && ExpressionQualifiesForNullPropagation(expression))
+                {
+                    list.Add(expression);
+                }
+            } while (expressionRecognized);
+
+            return list;
         }
     }
 }

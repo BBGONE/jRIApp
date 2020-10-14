@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using System.Reflection;
 
 namespace System.Linq.Dynamic.Core.Parser
 {
@@ -9,23 +10,33 @@ namespace System.Linq.Dynamic.Core.Parser
     {
         public void Wrap(ref Expression expression)
         {
-            if (expression is ConstantExpression)
+            if (expression is ConstantExpression constantExpression)
             {
-                var constantExpression = expression as ConstantExpression;
-
                 if (constantExpression.Type == typeof(bool))
                 {
                     expression = WrappedConstant((bool)constantExpression.Value);
                 }
-                if (constantExpression.Type == typeof(char))
+                else if (constantExpression.Type == typeof(bool?))
+                {
+                    expression = WrappedConstant((bool?)constantExpression.Value);
+                }
+                else if (constantExpression.Type == typeof(char))
                 {
                     expression = WrappedConstant((char)constantExpression.Value);
                 }
-                if (constantExpression.Type == typeof(byte))
+                else if (constantExpression.Type == typeof(char?))
+                {
+                    expression = WrappedConstant((char?)constantExpression.Value);
+                }
+                else if (constantExpression.Type == typeof(byte))
                 {
                     expression = WrappedConstant((byte)constantExpression.Value);
                 }
-                if (constantExpression.Type == typeof(sbyte))
+                else if (constantExpression.Type == typeof(byte?))
+                {
+                    expression = WrappedConstant((byte?)constantExpression.Value);
+                }
+                else if (constantExpression.Type == typeof(sbyte))
                 {
                     expression = WrappedConstant((sbyte)constantExpression.Value);
                 }
@@ -37,77 +48,143 @@ namespace System.Linq.Dynamic.Core.Parser
                 {
                     expression = WrappedConstant((float)constantExpression.Value);
                 }
+                else if (constantExpression.Type == typeof(float?))
+                {
+                    expression = WrappedConstant((float?)constantExpression.Value);
+                }
                 else if (constantExpression.Type == typeof(decimal))
                 {
                     expression = WrappedConstant((decimal)constantExpression.Value);
+                }
+                else if (constantExpression.Type == typeof(decimal?))
+                {
+                    expression = WrappedConstant((decimal?)constantExpression.Value);
                 }
                 else if (constantExpression.Type == typeof(double))
                 {
                     expression = WrappedConstant((double)constantExpression.Value);
                 }
+                else if (constantExpression.Type == typeof(double?))
+                {
+                    expression = WrappedConstant((double?)constantExpression.Value);
+                }
                 else if (constantExpression.Type == typeof(long))
                 {
                     expression = WrappedConstant((long)constantExpression.Value);
+                }
+                else if (constantExpression.Type == typeof(long?))
+                {
+                    expression = WrappedConstant((long?)constantExpression.Value);
                 }
                 else if (constantExpression.Type == typeof(ulong))
                 {
                     expression = WrappedConstant((ulong)constantExpression.Value);
                 }
+                else if (constantExpression.Type == typeof(ulong?))
+                {
+                    expression = WrappedConstant((ulong?)constantExpression.Value);
+                }
                 else if (constantExpression.Type == typeof(int))
                 {
                     expression = WrappedConstant((int)constantExpression.Value);
+                }
+                else if (constantExpression.Type == typeof(int?))
+                {
+                    expression = WrappedConstant((int?)constantExpression.Value);
                 }
                 else if (constantExpression.Type == typeof(uint))
                 {
                     expression = WrappedConstant((uint)constantExpression.Value);
                 }
+                else if (constantExpression.Type == typeof(uint?))
+                {
+                    expression = WrappedConstant((uint?)constantExpression.Value);
+                }
                 else if (constantExpression.Type == typeof(short))
                 {
                     expression = WrappedConstant((short)constantExpression.Value);
+                }
+                else if (constantExpression.Type == typeof(short?))
+                {
+                    expression = WrappedConstant((short?)constantExpression.Value);
                 }
                 else if (constantExpression.Type == typeof(ushort))
                 {
                     expression = WrappedConstant((ushort)constantExpression.Value);
                 }
+                else if (constantExpression.Type == typeof(ushort?))
+                {
+                    expression = WrappedConstant((ushort?)constantExpression.Value);
+                }
                 else if (constantExpression.Type == typeof(Guid))
                 {
                     expression = WrappedConstant((Guid)constantExpression.Value);
+                }
+                else if (constantExpression.Type == typeof(Guid?))
+                {
+                    expression = WrappedConstant((Guid?)constantExpression.Value);
                 }
                 else if (constantExpression.Type == typeof(DateTime))
                 {
                     expression = WrappedConstant((DateTime)constantExpression.Value);
                 }
+                else if (constantExpression.Type == typeof(DateTime?))
+                {
+                    expression = WrappedConstant((DateTime?)constantExpression.Value);
+                }
                 else if (constantExpression.Type == typeof(DateTimeOffset))
                 {
                     expression = WrappedConstant((DateTimeOffset)constantExpression.Value);
+                }
+                else if (constantExpression.Type == typeof(DateTimeOffset?))
+                {
+                    expression = WrappedConstant((DateTimeOffset?)constantExpression.Value);
                 }
                 else if (constantExpression.Type == typeof(TimeSpan))
                 {
                     expression = WrappedConstant((TimeSpan)constantExpression.Value);
                 }
+                else if (constantExpression.Type == typeof(TimeSpan?))
+                {
+                    expression = WrappedConstant((TimeSpan?)constantExpression.Value);
+                }
 
                 return;
             }
 
-            if (expression is NewExpression)
+            if (expression is NewExpression newExpression)
             {
-                var newExpression = expression as NewExpression;
-
                 if (newExpression.Type == typeof(Guid))
                 {
                     expression = WrappedConstant(Expression.Lambda<Func<Guid>>(newExpression).Compile()());
+                }
+                else if (newExpression.Type == typeof(Guid?))
+                {
+                    expression = WrappedConstant(Expression.Lambda<Func<Guid?>>(newExpression).Compile()());
                 }
                 else if (newExpression.Type == typeof(DateTime))
                 {
                     expression = WrappedConstant(Expression.Lambda<Func<DateTime>>(newExpression).Compile()());
                 }
+                else if (newExpression.Type == typeof(DateTime?))
+                {
+                    expression = WrappedConstant(Expression.Lambda<Func<DateTime?>>(newExpression).Compile()());
+                }
                 else if (newExpression.Type == typeof(DateTimeOffset))
                 {
                     expression = WrappedConstant(Expression.Lambda<Func<DateTimeOffset>>(newExpression).Compile()());
                 }
+                else if (newExpression.Type == typeof(DateTimeOffset?))
+                {
+                    expression = WrappedConstant(Expression.Lambda<Func<DateTimeOffset?>>(newExpression).Compile()());
+                }
                 else if (newExpression.Type == typeof(TimeSpan))
                 {
                     expression = WrappedConstant(Expression.Lambda<Func<TimeSpan>>(newExpression).Compile()());
+                }
+                else if (newExpression.Type == typeof(TimeSpan?))
+                {
+                    expression = WrappedConstant(Expression.Lambda<Func<TimeSpan?>>(newExpression).Compile()());
                 }
             }
         }

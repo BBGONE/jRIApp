@@ -1,5 +1,5 @@
-﻿using JetBrains.Annotations;
-using System.Globalization;
+﻿using System.Globalization;
+using JetBrains.Annotations;
 
 // copied from https://github.com/aspnet/EntityFramework/blob/dev/src/Microsoft.EntityFrameworkCore/Properties/CoreStrings.resx
 namespace System.Linq.Dynamic.Core.Validation

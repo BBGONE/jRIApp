@@ -6,21 +6,20 @@ using System.Reflection;
 namespace System.Linq.Dynamic.Core.CustomTypeProviders
 {
     /// <summary>
-    /// The abstract DynamicLinqCustomTypeProvider which is used by the <see cref="IDynamicLinkCustomTypeProvider"/> and can be used by a custom TypeProvider like in .NET Core.
+    /// The abstract DynamicLinqCustomTypeProvider which is used by the DefaultDynamicLinqCustomTypeProvider and can be used by a custom TypeProvider like in .NET Core.
     /// </summary>
     public abstract class AbstractDynamicLinqCustomTypeProvider
     {
         /// <summary>
-        /// Finds the types marked with DynamicLinqTypeAttribute.
+        /// Finds the unique types marked with DynamicLinqTypeAttribute.
         /// </summary>
         /// <param name="assemblies">The assemblies to process.</param>
-        /// <returns>IEnumerable{Type}</returns>
+        /// <returns><see cref="IEnumerable{Type}" /></returns>
         protected IEnumerable<Type> FindTypesMarkedWithDynamicLinqTypeAttribute([NotNull] IEnumerable<Assembly> assemblies)
         {
             Check.NotNull(assemblies, nameof(assemblies));
-            assemblies = assemblies.Where(x => !x.IsDynamic);
-            var definedTypes = GetAssemblyTypes(assemblies);
-            return definedTypes.Where(x => x.CustomAttributes.Any(y => y.AttributeType == typeof(DynamicLinqTypeAttribute))).Select(x => x.AsType());
+            assemblies = assemblies.Where(a => !a.IsDynamic);
+            return GetAssemblyTypesWithDynamicLinqTypeAttribute(assemblies).Distinct().ToArray();
         }
 
         /// <summary>
@@ -34,7 +33,7 @@ namespace System.Linq.Dynamic.Core.CustomTypeProviders
             Check.NotNull(assemblies, nameof(assemblies));
             Check.NotEmpty(typeName, nameof(typeName));
 
-            foreach (Assembly assembly in assemblies)
+            foreach (var assembly in assemblies)
             {
                 Type resolvedType = assembly.GetType(typeName, false, true);
                 if (resolvedType != null)
@@ -47,28 +46,61 @@ namespace System.Linq.Dynamic.Core.CustomTypeProviders
         }
 
         /// <summary>
-        /// Gets the assembly types in an Exception friendly way.
+        /// Resolve a type by the simple name which is registered in the current application domain.
+        /// </summary>
+        /// <param name="assemblies">The assemblies to inspect.</param>
+        /// <param name="simpleTypeName">The simple typename to resolve.</param>
+        /// <returns>A resolved <see cref="Type"/> or null when not found.</returns>
+        protected Type ResolveTypeBySimpleName([NotNull] IEnumerable<Assembly> assemblies, [NotNull] string simpleTypeName)
+        {
+            Check.NotNull(assemblies, nameof(assemblies));
+            Check.NotEmpty(simpleTypeName, nameof(simpleTypeName));
+
+            foreach (var assembly in assemblies)
+            {
+                var fullnames = assembly.GetTypes().Select(t => t.FullName).Distinct();
+                var firstMatchingFullname = fullnames.FirstOrDefault(fn => fn.EndsWith($".{simpleTypeName}"));
+
+                if (firstMatchingFullname != null)
+                {
+                    Type resolvedType = assembly.GetType(firstMatchingFullname, false, true);
+                    if (resolvedType != null)
+                    {
+                        return resolvedType;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the assembly types annotated with <see cref="DynamicLinqTypeAttribute"/> in an Exception friendly way.
         /// </summary>
         /// <param name="assemblies">The assemblies to process.</param>
-        /// <returns>IEnumerable{Type}</returns>
-        protected IEnumerable<TypeInfo> GetAssemblyTypes([NotNull] IEnumerable<Assembly> assemblies)
+        /// <returns><see cref="IEnumerable{Type}" /></returns>
+        protected IEnumerable<Type> GetAssemblyTypesWithDynamicLinqTypeAttribute([NotNull] IEnumerable<Assembly> assemblies)
         {
             Check.NotNull(assemblies, nameof(assemblies));
 
             foreach (var assembly in assemblies)
             {
-                IEnumerable<TypeInfo> definedTypes = null;
+                Type[] definedTypes = null;
 
                 try
                 {
-                    definedTypes = assembly.DefinedTypes;
+                    definedTypes = assembly.ExportedTypes.Where(t => t.GetTypeInfo().IsDefined(typeof(DynamicLinqTypeAttribute), false)).ToArray();
+                }
+                catch (ReflectionTypeLoadException reflectionTypeLoadException)
+                {
+                    definedTypes = reflectionTypeLoadException.Types;
                 }
                 catch
                 {
-                    // Ignore error
+                    // Ignore all other exceptions
                 }
 
-                if (definedTypes != null)
+                if (definedTypes != null && definedTypes.Length > 0)
                 {
                     foreach (var definedType in definedTypes)
                     {

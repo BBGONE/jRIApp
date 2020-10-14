@@ -261,40 +261,49 @@
     <Compile Include="Utils\DynamicLinq\AssemblyBuilderFactory.cs" />
     <Compile Include="Utils\DynamicLinq\Compatibility\CustomIntrospectionExtensions.cs" />
     <Compile Include="Utils\DynamicLinq\Compatibility\CustomTypeBuilderExtensions.cs" />
+    <Compile Include="Utils\DynamicLinq\Compatibility\LambdaExpressionExtensions.cs" />
     <Compile Include="Utils\DynamicLinq\CustomTypeProviders\AbstractDynamicLinqCustomTypeProvider.cs" />
     <Compile Include="Utils\DynamicLinq\CustomTypeProviders\DefaultDynamicLinqCustomTypeProvider.cs" />
     <Compile Include="Utils\DynamicLinq\CustomTypeProviders\DynamicLinqTypeAttribute.cs" />
     <Compile Include="Utils\DynamicLinq\CustomTypeProviders\IDynamicLinkCustomTypeProvider.cs" />
     <Compile Include="Utils\DynamicLinq\DefaultAssemblyHelper.cs" />
+    <Compile Include="Utils\DynamicLinq\DefaultQueryableAnalyzer.cs" />
     <Compile Include="Utils\DynamicLinq\DynamicClass.cs" />
     <Compile Include="Utils\DynamicLinq\DynamicClassFactory.cs" />
     <Compile Include="Utils\DynamicLinq\DynamicEnumerableAsyncExtensions.cs" />
     <Compile Include="Utils\DynamicLinq\DynamicEnumerableExtensions.cs" />
     <Compile Include="Utils\DynamicLinq\DynamicExpressionArgument.cs" />
     <Compile Include="Utils\DynamicLinq\DynamicExpressionParser.cs" />
-    <Compile Include="Utils\DynamicLinq\DynamicGetMemberBinder.cs" />
     <Compile Include="Utils\DynamicLinq\DynamicOrdering.cs" />
     <Compile Include="Utils\DynamicLinq\DynamicProperty.cs" />
     <Compile Include="Utils\DynamicLinq\DynamicQueryableExtensions.cs" />
+    <Compile Include="Utils\DynamicLinq\Dynamic\DynamicIndexer.cs" />
     <Compile Include="Utils\DynamicLinq\Exceptions\ParseException.cs" />
     <Compile Include="Utils\DynamicLinq\ExtensibilityPoint.cs" />
-    <Compile Include="Utils\DynamicLinq\Extensions\LinqProviderExtensions.cs" />
+    <Compile Include="Utils\DynamicLinq\Extensions\ExpandObjectExtensions.cs" />
     <Compile Include="Utils\DynamicLinq\GroupResult.cs" />
     <Compile Include="Utils\DynamicLinq\IAssemblyHelper.cs" />
+    <Compile Include="Utils\DynamicLinq\IQueryableAnalyzer.cs" />
     <Compile Include="Utils\DynamicLinq\PagedResult.cs" />
     <Compile Include="Utils\DynamicLinq\ParameterExpressionHelper.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\ConstantExpressionHelper.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\ConstantExpressionWrapper.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\Constants.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\EnumerationsFromMscorlib.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\ExpressionHelper.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\ExpressionParser.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\ExpressionPromoter.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\IConstantExpressionWrapper.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\IExpressionHelper.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\IExpressionPromoter.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\IKeywordsHelper.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\ITypeFinder.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\KeywordsHelper.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\NumberParser.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\PredefinedTypesHelper.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\StringParser.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\SupportedMethods\CompareConversionType.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\SupportedMethods\IDictionarySignatures.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\SupportedMethods\IEnumerableSignatures.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\SupportedMethods\IQueryableSignatures.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\SupportedMethods\MethodData.cs" />
@@ -308,17 +317,22 @@
     <Compile Include="Utils\DynamicLinq\Parser\SupportedOperands\IRelationalSignatures.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\SupportedOperands\IShiftSignatures.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\SupportedOperands\ISubtractSignatures.cs" />
+    <Compile Include="Utils\DynamicLinq\Parser\TypeFinder.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\TypeHelper.cs" />
     <Compile Include="Utils\DynamicLinq\Parser\WrappedValue.cs" />
     <Compile Include="Utils\DynamicLinq\ParsingConfig.cs" />
+    <Compile Include="Utils\DynamicLinq\Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\DynamicLinq\Res.cs" />
     <Compile Include="Utils\DynamicLinq\Tokenizer\TextParser.cs" />
     <Compile Include="Utils\DynamicLinq\Tokenizer\Token.cs" />
     <Compile Include="Utils\DynamicLinq\Tokenizer\TokenId.cs" />
-    <Compile Include="Utils\DynamicLinq\TypeConverterFactory.cs" />
+    <Compile Include="Utils\DynamicLinq\TypeConverters\CustomDateTimeConverter.cs" />
+    <Compile Include="Utils\DynamicLinq\TypeConverters\ITypeConverterFactory.cs" />
+    <Compile Include="Utils\DynamicLinq\TypeConverters\TypeConverterFactory.cs" />
     <Compile Include="Utils\DynamicLinq\Util\ParameterExpressionRenamer.cs" />
     <Compile Include="Utils\DynamicLinq\Validation\Check.cs" />
     <Compile Include="Utils\DynamicLinq\Validation\CoreStrings.cs" />
+    <Compile Include="Utils\DynamicLinq\Validation\ValidatedNotNullAttribute.cs" />
     <Compile Include="Utils\JetBrains.Annotations.cs" />
     <Compile Include="Utils\MultiMap.cs" />
     <Compile Include="Utils\Pipeline\PipelineBuilder.cs" />
@@ -341,6 +355,8 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="Utils\DynamicLinq\System.Linq.Dynamic.Core.csproj" />
+    <None Include="Utils\DynamicLinq\System.Linq.Dynamic.Core.snk" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\ChildComplexProperty.txt" />
@@ -360,7 +376,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Utils\DynamicLinq\LinkerConfig.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

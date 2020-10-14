@@ -1,4 +1,5 @@
-﻿namespace System.Reflection
+﻿// ReSharper disable once CheckNamespace
+namespace System.Reflection
 {
     /// <summary>
     /// https://github.com/castleproject/Core/blob/netcore/src/Castle.Core/Compatibility/IntrospectionExtensions.cs

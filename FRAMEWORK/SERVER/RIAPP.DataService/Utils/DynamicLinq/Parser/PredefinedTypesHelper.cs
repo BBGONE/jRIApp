@@ -1,11 +1,14 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Dynamic.Core.Validation;
+using System.Text.RegularExpressions;
 
 namespace System.Linq.Dynamic.Core.Parser
 {
     internal static class PredefinedTypesHelper
     {
+        private static readonly string Version = Regex.Match(typeof(PredefinedTypesHelper).AssemblyQualifiedName, @"\d+\.\d+\.\d+\.\d+").ToString();
+
         // These shorthands have different name than actual type and therefore not recognized by default from the PredefinedTypes.
         public static readonly IDictionary<string, Type> PredefinedTypesShorthands = new Dictionary<string, Type>
         {
@@ -46,8 +49,11 @@ namespace System.Linq.Dynamic.Core.Parser
 
         static PredefinedTypesHelper()
         {
-            TryAdd("Microsoft.EntityFrameworkCore.DynamicLinq.DynamicFunctions, Microsoft.EntityFrameworkCore.DynamicLinq, Version=1.0.0.0, Culture=neutral, PublicKeyToken=974e7e1b462f3693", 3);
+            /*
+            TryAdd($"Microsoft.EntityFrameworkCore.DynamicLinq.DynamicFunctions, Microsoft.EntityFrameworkCore.DynamicLinq, Version={Version}, Culture=neutral, PublicKeyToken=974e7e1b462f3693", 3);
+            */
         }
+
 
         private static void TryAdd(string typeName, int x)
         {
@@ -70,12 +76,14 @@ namespace System.Linq.Dynamic.Core.Parser
             Check.NotNull(config, nameof(config));
             Check.NotNull(type, nameof(type));
 
-            if (PredefinedTypes.ContainsKey(type))
+            var nonNullableType = TypeHelper.GetNonNullableType(type);
+            if (PredefinedTypes.ContainsKey(nonNullableType))
             {
                 return true;
             }
 
-            return config.CustomTypeProvider != null && config.CustomTypeProvider.GetCustomTypes().Contains(type);
+            return config.CustomTypeProvider != null &&
+                   (config.CustomTypeProvider.GetCustomTypes().Contains(type) || config.CustomTypeProvider.GetCustomTypes().Contains(nonNullableType));
         }
     }
 }

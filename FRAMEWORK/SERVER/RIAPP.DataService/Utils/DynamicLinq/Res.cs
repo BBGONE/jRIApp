@@ -1,6 +1,6 @@
 ﻿namespace System.Linq.Dynamic.Core
 {
-    public static class Res
+    internal static class Res
     {
         public const string AmbiguousConstructorInvocation = "Ambiguous invocation of '{0}' constructor";
         public const string AmbiguousIndexerInvocation = "Ambiguous invocation of indexer in type '{0}'";
@@ -22,6 +22,8 @@
         public const string ExpressionExpected = "Expression expected";
         public const string ExpressionTypeMismatch = "Expression of type '{0}' expected";
         public const string FirstExprMustBeBool = "The first expression must be of type 'Boolean'";
+        public const string FunctionRequiresOneArg = "The '{0}' function requires one argument";
+        public const string FunctionRequiresOneNotNullArg = "The '{0}' function requires one argument which is not null.";
         public const string HexCharExpected = "Hexadecimal character expected";
         public const string IQueryableProviderNotAsync = "The provider for the source IQueryable doesn't implement IAsyncQueryProvider/IDbAsyncQueryProvider. Only providers that implement IAsyncQueryProvider/IDbAsyncQueryProvider can be used for Entity Framework asynchronous operations.";
         public const string IdentifierExpected = "Identifier expected";
@@ -42,13 +44,15 @@
         public const string MinusCannotBeAppliedToUnsignedInteger = "'-' cannot be applied to unsigned integers.";
         public const string MissingAsClause = "Expression is missing an 'as' clause";
         public const string NeitherTypeConvertsToOther = "Neither of the types '{0}' and '{1}' converts to the other";
-        public const string NoApplicableAggregate = "No applicable aggregate method '{0}' exists";
+        public const string NoApplicableAggregate = "No applicable aggregate method '{0}({1})' exists";
         public const string NoApplicableIndexer = "No applicable indexer exists in type '{0}'";
         public const string NoApplicableMethod = "No applicable method '{0}' exists in type '{1}'";
         public const string NoItInScope = "No 'it' is in scope";
         public const string NoMatchingConstructor = "No matching constructor in type '{0}'";
         public const string NoParentInScope = "No 'parent' is in scope";
         public const string NoRootInScope = "No 'root' is in scope";
+        public const string NullPropagationRequiresCorrectArgs = "The 'np' (null-propagation) function requires 1 or 2 arguments";
+        public const string NullPropagationRequiresValidExpression = "The 'np' (null-propagation) function requires the first argument to be a MemberExpression, ParameterExpression or MethodCallExpression";
         public const string OpenBracketExpected = "'[' expected";
         public const string OpenCurlyParenExpected = "'{' expected";
         public const string OpenParenExpected = "'(' expected";
@@ -57,7 +61,9 @@
         public const string SyntaxError = "Syntax error";
         public const string TokenExpected = "{0} expected";
         public const string TypeHasNoNullableForm = "Type '{0}' has no nullable form";
-        public const string TypeNotFound = "Type '{0}' not Found";
+        public const string TypeNotFound = "Type '{0}' not found";
+        public const string UnexpectedUnclosedString = "Unexpected end of string with unclosed string at position {0} near '{1}'.";
+        public const string UnexpectedUnrecognizedEscapeSequence = "Unexpected unrecognized escape sequence at position {0} near '{1}'.";
         public const string UnknownIdentifier = "Unknown identifier '{0}'";
         public const string UnknownPropertyOrField = "No property or field '{0}' exists in type '{1}'";
         public const string UnterminatedStringLiteral = "Unterminated string literal";

@@ -6,25 +6,36 @@ namespace System.Linq.Dynamic.Core.Tokenizer
 {
     internal class TextParser
     {
-        private static readonly char NumberDecimalSeparator = '.';
+        private const char DefaultNumberDecimalSeparator = '.';
+
+        private static readonly char[] EscapeCharacters = new[] { '\\', 'a', 'b', 'f', 'n', 'r', 't', 'v' };
 
         // These aliases are supposed to simply the where clause and make it more human readable
-        // As an addition it is compatible with the OData.Filter specification
-        private static readonly Dictionary<string, TokenId> _predefinedAliases = new Dictionary<string, TokenId>
+        private static readonly Dictionary<string, TokenId> PredefinedOperatorAliases = new Dictionary<string, TokenId>(StringComparer.OrdinalIgnoreCase)
         {
-            {"eq", TokenId.Equal},
-            {"ne", TokenId.ExclamationEqual},
-            {"neq", TokenId.ExclamationEqual},
-            {"lt", TokenId.LessThan},
-            {"le", TokenId.LessThanEqual},
-            {"gt", TokenId.GreaterThan},
-            {"ge", TokenId.GreaterThanEqual},
-            {"and", TokenId.DoubleAmphersand},
-            {"or", TokenId.DoubleBar},
-            {"not", TokenId.Exclamation},
-            {"mod", TokenId.Percent}
+            { "eq", TokenId.Equal },
+            { "equal", TokenId.Equal },
+            { "ne", TokenId.ExclamationEqual },
+            { "notequal", TokenId.ExclamationEqual },
+            { "neq", TokenId.ExclamationEqual },
+            { "lt", TokenId.LessThan },
+            { "LessThan", TokenId.LessThan },
+            { "le", TokenId.LessThanEqual },
+            { "LessThanEqual", TokenId.LessThanEqual },
+            { "gt", TokenId.GreaterThan },
+            { "GreaterThan", TokenId.GreaterThan },
+            { "ge", TokenId.GreaterThanEqual },
+            { "GreaterThanEqual", TokenId.GreaterThanEqual },
+            { "and", TokenId.DoubleAmphersand },
+            { "AndAlso", TokenId.DoubleAmphersand },
+            { "or", TokenId.DoubleBar },
+            { "OrElse", TokenId.DoubleBar },
+            { "not", TokenId.Exclamation },
+            { "mod", TokenId.Percent }
         };
 
+        private readonly ParsingConfig _config;
+        private readonly char _numberDecimalSeparator;
         private readonly string _text;
         private readonly int _textLen;
 
@@ -32,10 +43,14 @@ namespace System.Linq.Dynamic.Core.Tokenizer
         private char _ch;
         public Token CurrentToken;
 
-        public TextParser(string text)
+        public TextParser(ParsingConfig config, string text)
         {
+            _config = config;
+            _numberDecimalSeparator = config.NumberParseCulture?.NumberFormat.NumberDecimalSeparator[0] ?? DefaultNumberDecimalSeparator;
+
             _text = text;
             _textLen = _text.Length;
+
             SetTextPos(0);
             NextToken();
         }
@@ -52,8 +67,17 @@ namespace System.Linq.Dynamic.Core.Tokenizer
             {
                 _textPos++;
             }
-
             _ch = _textPos < _textLen ? _text[_textPos] : '\0';
+        }
+
+        public char PeekNextChar()
+        {
+            if (_textPos + 1 < _textLen)
+            {
+                return _text[_textPos + 1];
+            }
+
+            return '\0';
         }
 
         public void NextToken()
@@ -256,34 +280,42 @@ namespace System.Linq.Dynamic.Core.Tokenizer
 
                 case '"':
                 case '\'':
+                    bool balanced = false;
                     char quote = _ch;
-                    do
+
+                    NextChar();
+
+                    while (_textPos < _textLen && _ch != quote)
                     {
-                        bool escaped;
+                        char next = PeekNextChar();
 
-                        do
+                        if (_ch == '\\')
                         {
-                            escaped = false;
-                            NextChar();
-
-                            if (_ch == '\\')
+                            if (EscapeCharacters.Contains(next))
                             {
-                                escaped = true;
-                                if (_textPos < _textLen)
-                                {
-                                    NextChar();
-                                }
+                                NextChar();
                             }
-                        }
-                        while (_textPos < _textLen && (_ch != quote || escaped));
 
-                        if (_textPos == _textLen)
-                        {
-                            throw ParseError(_textPos, Res.UnterminatedStringLiteral);
+                            if (next == '"')
+                            {
+                                NextChar();
+                            }
                         }
 
                         NextChar();
-                    } while (_ch == quote);
+
+                        if (_ch == quote)
+                        {
+                            balanced = !balanced;
+                        }
+                    }
+
+                    if (_textPos == _textLen && !balanced)
+                    {
+                        throw ParseError(_textPos, Res.UnterminatedStringLiteral);
+                    }
+
+                    NextChar();
 
                     tokenId = TokenId.StringLiteral;
                     break;
@@ -325,14 +357,8 @@ namespace System.Linq.Dynamic.Core.Tokenizer
                             NextChar();
                             if (_ch == 'L')
                             {
-                                if (_text[_textPos - 1] == 'U')
-                                {
-                                    NextChar();
-                                }
-                                else
-                                {
-                                    throw ParseError(_textPos, Res.InvalidIntegerQualifier, _text.Substring(_textPos - 1, 2));
-                                }
+                                if (_text[_textPos - 1] == 'U') NextChar();
+                                else throw ParseError(_textPos, Res.InvalidIntegerQualifier, _text.Substring(_textPos - 1, 2));
                             }
                             ValidateExpression();
                             break;
@@ -343,7 +369,7 @@ namespace System.Linq.Dynamic.Core.Tokenizer
                             break;
                         }
 
-                        if (_ch == NumberDecimalSeparator)
+                        if (_ch == _numberDecimalSeparator)
                         {
                             tokenId = TokenId.RealLiteral;
                             NextChar();
@@ -358,11 +384,7 @@ namespace System.Linq.Dynamic.Core.Tokenizer
                         {
                             tokenId = TokenId.RealLiteral;
                             NextChar();
-                            if (_ch == '+' || _ch == '-')
-                            {
-                                NextChar();
-                            }
-
+                            if (_ch == '+' || _ch == '-') NextChar();
                             ValidateDigit();
                             do
                             {
@@ -370,21 +392,9 @@ namespace System.Linq.Dynamic.Core.Tokenizer
                             } while (char.IsDigit(_ch));
                         }
 
-                        if (_ch == 'F' || _ch == 'f')
-                        {
-                            NextChar();
-                        }
-
-                        if (_ch == 'D' || _ch == 'd')
-                        {
-                            NextChar();
-                        }
-
-                        if (_ch == 'M' || _ch == 'm')
-                        {
-                            NextChar();
-                        }
-
+                        if (_ch == 'F' || _ch == 'f') NextChar();
+                        if (_ch == 'D' || _ch == 'd') NextChar();
+                        if (_ch == 'M' || _ch == 'm') NextChar();
                         break;
                     }
 
@@ -453,10 +463,9 @@ namespace System.Linq.Dynamic.Core.Tokenizer
             return new ParseException(string.Format(CultureInfo.CurrentCulture, format, args), pos);
         }
 
-        private static TokenId GetAliasedTokenId(TokenId t, string alias)
+        private static TokenId GetAliasedTokenId(TokenId tokenId, string alias)
         {
-            TokenId id;
-            return t == TokenId.Identifier && _predefinedAliases.TryGetValue(alias, out id) ? id : t;
+            return tokenId == TokenId.Identifier && PredefinedOperatorAliases.TryGetValue(alias, out TokenId id) ? id : tokenId;
         }
 
         private static bool IsHexChar(char c)
