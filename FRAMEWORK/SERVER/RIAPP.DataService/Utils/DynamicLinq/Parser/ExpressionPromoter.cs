@@ -17,7 +17,7 @@ namespace System.Linq.Dynamic.Core.Parser
 
             if (ce != null)
             {
-                if (ce == Constants.NullLiteral || ce.Value == null)
+                if (ce.IsNull())
                 {
                     if (!type.GetTypeInfo().IsValueType || TypeHelper.IsNullableType(type))
                     {

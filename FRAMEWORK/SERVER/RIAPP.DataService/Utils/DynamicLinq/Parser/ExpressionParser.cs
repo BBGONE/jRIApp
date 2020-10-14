@@ -456,8 +456,9 @@ namespace System.Linq.Dynamic.Core.Parser
 
                 if (isEquality && (!left.Type.GetTypeInfo().IsValueType && !right.Type.GetTypeInfo().IsValueType || left.Type == typeof(Guid) && right.Type == typeof(Guid)))
                 {
+                  
                     // If left or right is NullLiteral, just continue. Else check if the types differ.
-                    if (!(left == Constants.NullLiteral || right == Constants.NullLiteral) && left.Type != right.Type)
+                    if (!(left.IsNull() || right.IsNull()) && left.Type != right.Type)
                     {
                         if (left.Type.IsAssignableFrom(right.Type))
                         {
@@ -1129,8 +1130,8 @@ namespace System.Linq.Dynamic.Core.Parser
 
             if (expr1.Type != expr2.Type)
             {
-                Expression expr1As2 = expr2 != Constants.NullLiteral ? _parsingConfig.ExpressionPromoter.Promote(expr1, expr2.Type, true, false) : null;
-                Expression expr2As1 = expr1 != Constants.NullLiteral ? _parsingConfig.ExpressionPromoter.Promote(expr2, expr1.Type, true, false) : null;
+                Expression expr1As2 = !expr2.IsNull() ? _parsingConfig.ExpressionPromoter.Promote(expr1, expr2.Type, true, false) : null;
+                Expression expr2As1 = !expr1.IsNull() ? _parsingConfig.ExpressionPromoter.Promote(expr2, expr1.Type, true, false) : null;
                 if (expr1As2 != null && expr2As1 == null)
                 {
                     expr1 = expr1As2;
@@ -1141,8 +1142,8 @@ namespace System.Linq.Dynamic.Core.Parser
                 }
                 else
                 {
-                    string type1 = expr1 != Constants.NullLiteral ? expr1.Type.Name : "null";
-                    string type2 = expr2 != Constants.NullLiteral ? expr2.Type.Name : "null";
+                    string type1 = !expr1.IsNull() ? expr1.Type.Name : "null";
+                    string type2 = !expr2.IsNull() ? expr2.Type.Name : "null";
                     if (expr1As2 != null)
                     {
                         throw ParseError(errorPos, Res.BothTypesConvertToOther, type1, type2);
